@@ -22,4 +22,12 @@ package org.apache.hadoop.hive.ql.ddl;
  * Marker interface for all DDL operation descriptors.
  */
 public interface DDLDesc {
+  /**
+   * DDL Desc for operation which needs write id.
+   */
+  interface DDLDescWithWriteId extends DDLDesc {
+    void setWriteId(long writeId);
+    String getFullTableName();
+    boolean mayNeedWriteId();
+  }
 }

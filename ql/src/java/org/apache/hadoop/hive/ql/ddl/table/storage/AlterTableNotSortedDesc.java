@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.ddl.table.storage;
 
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -33,10 +32,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Not Sorted", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableNotSortedDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableNotSortedDesc.class, AlterTableNotSortedOperation.class);
-  }
 
   public AlterTableNotSortedDesc(String tableName, Map<String, String> partitionSpec) throws SemanticException {
     super(AlterTableType.NOT_SORTED, tableName, partitionSpec, null, false, false, null);

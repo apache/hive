@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -31,10 +30,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Not Skewed", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableNotSkewedDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableNotSkewedDesc.class, AlterTableNotSkewedOperation.class);
-  }
 
   public AlterTableNotSkewedDesc(String tableName) throws SemanticException {
     super(AlterTableType.NOT_SKEWED, tableName, null, null, false, false, null);

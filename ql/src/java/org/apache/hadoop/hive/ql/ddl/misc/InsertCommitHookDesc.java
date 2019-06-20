@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.misc;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -32,10 +31,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Commit Insert Hook", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class InsertCommitHookDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(InsertCommitHookDesc.class, InsertCommitHookOperation.class);
-  }
 
   private final Table table;
   private final boolean overwrite;

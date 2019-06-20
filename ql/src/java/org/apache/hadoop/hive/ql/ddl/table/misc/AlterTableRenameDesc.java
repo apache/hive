@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.misc;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -32,10 +31,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Rename Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableRenameDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableRenameDesc.class, AlterTableRenameOperation.class);
-  }
 
   private final String newName;
 

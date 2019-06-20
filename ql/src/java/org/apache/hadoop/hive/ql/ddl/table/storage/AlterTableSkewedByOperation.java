@@ -30,12 +30,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of setting the location of a table.
  */
-public class AlterTableSkewedByOperation extends AbstractAlterTableOperation {
-  private final AlterTableSkewedByDesc desc;
-
+public class AlterTableSkewedByOperation extends AbstractAlterTableOperation<AlterTableSkewedByDesc> {
   public AlterTableSkewedByOperation(DDLOperationContext context, AlterTableSkewedByDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

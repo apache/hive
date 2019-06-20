@@ -30,12 +30,9 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 /**
  * Operation process of removing the REPL_FIRST_INC_PENDING_FLAG parameter from some tables or databases.
  */
-public class ReplRemoveFirstIncLoadPendFlagOperation extends DDLOperation {
-  private final ReplRemoveFirstIncLoadPendFlagDesc desc;
-
+public class ReplRemoveFirstIncLoadPendFlagOperation extends DDLOperation<ReplRemoveFirstIncLoadPendFlagDesc> {
   public ReplRemoveFirstIncLoadPendFlagOperation(DDLOperationContext context, ReplRemoveFirstIncLoadPendFlagDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

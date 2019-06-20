@@ -2,4 +2,4 @@ PREHOOK: query: CREATE TABLE DELETEJAR(KEY STRING, VALUE STRING) ROW FORMAT SERD
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@DELETEJAR
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Cannot validate serde: org.apache.hadoop.hive.serde2.TestSerDe
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Cannot validate serde: org.apache.hadoop.hive.serde2.TestSerDe

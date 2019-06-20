@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of creating a workload management trigger.
  */
-public class CreateWMTriggerOperation extends DDLOperation {
-  private final CreateWMTriggerDesc desc;
-
+public class CreateWMTriggerOperation extends DDLOperation<CreateWMTriggerDesc> {
   public CreateWMTriggerOperation(DDLOperationContext context, CreateWMTriggerDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

@@ -17,4 +17,4 @@ PREHOOK: query: alter table alter_partition_change_col_dup_col change c2 c1 deci
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_partition_change_col_dup_col
 PREHOOK: Output: default@alter_partition_change_col_dup_col
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Duplicate column name: c1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Duplicate column name: c1

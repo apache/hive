@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -32,10 +31,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName="Create WM Trigger", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateWMTriggerDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1705317739121300923L;
-
-  static {
-    DDLTask2.registerOperation(CreateWMTriggerDesc.class, CreateWMTriggerOperation.class);
-  }
 
   private final WMTrigger trigger;
 

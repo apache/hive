@@ -45,12 +45,9 @@ import com.google.common.collect.Lists;
 /**
  * Operation process of setting properties of a table.
  */
-public class AlterTableSetPropertiesOperation extends AbstractAlterTableOperation {
-  private final AlterTableSetPropertiesDesc desc;
-
+public class AlterTableSetPropertiesOperation extends AbstractAlterTableOperation<AlterTableSetPropertiesDesc> {
   public AlterTableSetPropertiesOperation(DDLOperationContext context, AlterTableSetPropertiesDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

@@ -43,17 +43,14 @@ import com.google.common.util.concurrent.ListenableFuture;
 /**
  * Operation process of altering a resource plan.
  */
-public class AlterResourcePlanOperation extends DDLOperation {
-  private final AlterResourcePlanDesc desc;
-
+public class AlterResourcePlanOperation extends DDLOperation<AlterResourcePlanDesc> {
   // Note: the resource plan operations are going to be annotated with namespace based on the config
   //       inside Hive.java. We don't want HS2 to be aware of namespaces beyond that, or to even see
   //       that there exist other namespaces, because one HS2 always operates inside just one and we
   //       don't want this complexity to bleed everywhere. Therefore, this code doesn't care about
   //       namespaces - Hive.java will transparently scope everything. That's the idea anyway.
   public AlterResourcePlanOperation(DDLOperationContext context, AlterResourcePlanDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

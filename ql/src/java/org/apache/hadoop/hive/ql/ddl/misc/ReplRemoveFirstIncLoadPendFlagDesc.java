@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.ddl.misc;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +30,6 @@ import java.io.Serializable;
 @Explain(displayName = "Set First Incr Load Pend Flag", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ReplRemoveFirstIncLoadPendFlagDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(ReplRemoveFirstIncLoadPendFlagDesc.class, ReplRemoveFirstIncLoadPendFlagOperation.class);
-  }
 
   private final String databaseName;
 

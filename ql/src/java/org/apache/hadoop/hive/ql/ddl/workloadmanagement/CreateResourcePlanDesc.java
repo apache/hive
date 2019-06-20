@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -32,14 +31,10 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class CreateResourcePlanDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = -3492803425541479414L;
 
-  static {
-    DDLTask2.registerOperation(CreateResourcePlanDesc.class, CreateResourcePlanOperation.class);
-  }
-
   private final String planName;
   private final Integer queryParallelism;
-  private String copyFromName;
-  private boolean ifNotExists;
+  private final String copyFromName;
+  private final boolean ifNotExists;
 
   public CreateResourcePlanDesc(String planName, Integer queryParallelism, String copyFromName, boolean ifNotExists) {
     this.planName = planName;

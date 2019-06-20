@@ -31,8 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of turning of sorting.
  */
-public class AlterTableNotSortedOperation extends AbstractAlterTableOperation {
-
+public class AlterTableNotSortedOperation extends AbstractAlterTableOperation<AlterTableNotSortedDesc> {
   public AlterTableNotSortedOperation(DDLOperationContext context, AlterTableNotSortedDesc desc) {
     super(context, desc);
   }

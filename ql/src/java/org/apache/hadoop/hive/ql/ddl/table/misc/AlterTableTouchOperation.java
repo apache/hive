@@ -33,12 +33,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of touching a table.
  */
-public class AlterTableTouchOperation extends DDLOperation {
-  private final AlterTableTouchDesc desc;
-
+public class AlterTableTouchOperation extends DDLOperation<AlterTableTouchDesc> {
   public AlterTableTouchOperation(DDLOperationContext context, AlterTableTouchDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

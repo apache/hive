@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.table.storage;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +30,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @Explain(displayName = "Compact", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableCompactDesc implements DDLDesc {
-  static {
-    DDLTask2.registerOperation(AlterTableCompactDesc.class, AlterTableCompactOperation.class);
-  }
-
   private final String tableName;
   private final Map<String, String> partitionSpec;
   private final String compactionType;

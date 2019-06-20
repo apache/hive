@@ -8,6 +8,6 @@ PREHOOK: query: create table aa ( test STRING )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@aa
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. java.util.regex.PatternSyntaxException: Unclosed character class near index 7
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.util.regex.PatternSyntaxException: Unclosed character class near index 7
 [^\](.*)
        ^

@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -35,10 +34,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Set Skewed Location", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableSetSkewedLocationDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableSetSkewedLocationDesc.class, AlterTableSetSkewedLocationOperation.class);
-  }
 
   private final Map<List<String>, String> skewedLocations;
 

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.table.storage;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -30,10 +29,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @Explain(displayName = "Unarchive", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableUnarchiveDesc implements DDLDesc {
-  static {
-    DDLTask2.registerOperation(AlterTableUnarchiveDesc.class, AlterTableUnarchiveOperation.class);
-  }
-
   private final String tableName;
   private final Map<String, String> partitionSpec;
 

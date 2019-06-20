@@ -40,12 +40,9 @@ import org.apache.hadoop.io.IOUtils;
 /**
  * Operation process showing the tables.
  */
-public class ShowTablesOperation extends DDLOperation {
-  private final ShowTablesDesc desc;
-
+public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
   public ShowTablesOperation(DDLOperationContext context, ShowTablesDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

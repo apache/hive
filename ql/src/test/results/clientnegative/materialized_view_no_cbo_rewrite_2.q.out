@@ -33,4 +33,4 @@ PREHOOK: query: alter materialized view cmv_mat_view enable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
 PREHOOK: Input: default@cmv_mat_view
 PREHOOK: Output: default@cmv_mat_view
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. org.apache.hadoop.hive.ql.metadata.HiveException: Cannot enable automatic rewriting for materialized view. Plan not optimized by CBO because the statement has sort by
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Cannot enable automatic rewriting for materialized view. Plan not optimized by CBO because the statement has sort by

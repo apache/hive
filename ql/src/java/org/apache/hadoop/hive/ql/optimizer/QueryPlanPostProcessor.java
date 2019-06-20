@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -108,7 +108,7 @@ public class QueryPlanPostProcessor {
           work instanceof BasicStatsWork ||
           work instanceof ConditionalWork ||
           work instanceof CopyWork ||
-          work instanceof DDLWork2 ||
+          work instanceof DDLWork ||
           work instanceof DependencyCollectionWork ||
           work instanceof ExplainSQRewriteWork ||
           work instanceof FetchWork ||

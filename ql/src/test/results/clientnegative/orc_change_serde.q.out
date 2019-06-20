@@ -10,4 +10,4 @@ PREHOOK: query: alter table src_orc set serde 'org.apache.hadoop.hive.serde2.col
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@src_orc
 PREHOOK: Output: default@src_orc
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Changing SerDe (from OrcSerde) is not supported for table default.src_orc. File format may be incompatible
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Changing SerDe (from OrcSerde) is not supported for table default.src_orc. File format may be incompatible

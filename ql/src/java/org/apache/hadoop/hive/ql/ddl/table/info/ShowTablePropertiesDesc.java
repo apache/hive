@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.table.info;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -33,10 +32,6 @@ public class ShowTablePropertiesDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final String SCHEMA = "prpt_name,prpt_value#string:string";
-
-  static {
-    DDLTask2.registerOperation(ShowTablePropertiesDesc.class, ShowTablePropertiesOperation.class);
-  }
 
   private final String resFile;
   private final String tableName;

@@ -36,8 +36,8 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.creation.DropTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableSetPropertiesDesc;
@@ -151,7 +151,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     try {
       ReadEntity dbForTmpTable = new ReadEntity(db.getDatabase(exportTable.getDbName()));
       inputs.add(dbForTmpTable); //so the plan knows we are 'reading' this db - locks, security...
-      DDLTask2 createTableTask = (DDLTask2) TaskFactory.get(new DDLWork2(new HashSet<>(), new HashSet<>(), ctlt), conf);
+      DDLTask createTableTask = (DDLTask) TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), ctlt), conf);
       createTableTask.setConf(conf); //above get() doesn't set it
       createTableTask.execute(new DriverContext(new Context(conf)));
       newTable = db.getTable(newTableName);
@@ -192,13 +192,13 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     mapProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.TRUE.toString());
     AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(newTableName, null, null, false,
         mapProps, false, false, null);
-    addExportTask(rootTasks, exportTask, TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), alterTblDesc)));
+    addExportTask(rootTasks, exportTask, TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
 
     // Now make a task to drop temp table
     // {@link DDLSemanticAnalyzer#analyzeDropTable(ASTNode ast, TableType expectedType)
     ReplicationSpec replicationSpec = new ReplicationSpec();
     DropTableDesc dropTblDesc = new DropTableDesc(newTableName, TableType.MANAGED_TABLE, false, true, replicationSpec);
-    Task<DDLWork2> dropTask = TaskFactory.get(new DDLWork2(new HashSet<>(), new HashSet<>(), dropTblDesc), conf);
+    Task<DDLWork> dropTask = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc), conf);
     exportTask.addDependentTask(dropTask);
     markReadEntityForUpdate();
     if (ctx.isExplainPlan()) {
@@ -252,7 +252,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * Makes the exportTask run after all other tasks of the "insert into T ..." are done.
    */
   private void addExportTask(List<Task<?>> rootTasks,
-      Task<ExportWork> exportTask, Task<DDLWork2> alterTable) {
+      Task<ExportWork> exportTask, Task<DDLWork> alterTable) {
     for (Task<? extends  Serializable> t : rootTasks) {
       if (t.getNumChild() <= 0) {
         //todo: ConditionalTask#addDependentTask(Task) doesn't do the right thing: HIVE-18978

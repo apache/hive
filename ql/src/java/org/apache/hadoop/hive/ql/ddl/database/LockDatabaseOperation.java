@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of locking a database.
  */
-public class LockDatabaseOperation extends DDLOperation {
-  private final LockDatabaseDesc desc;
-
+public class LockDatabaseOperation extends DDLOperation<LockDatabaseDesc> {
   public LockDatabaseOperation(DDLOperationContext context, LockDatabaseDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

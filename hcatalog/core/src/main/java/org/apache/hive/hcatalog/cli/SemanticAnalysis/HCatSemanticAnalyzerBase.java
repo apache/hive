@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -97,10 +97,10 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
       hive = context.getHive();
 
       for (Task<? extends Serializable> task : rootTasks) {
-        if (task.getWork() instanceof DDLWork2) {
-          DDLWork2 work = (DDLWork2) task.getWork();
+        if (task.getWork() instanceof DDLWork) {
+          DDLWork work = (DDLWork) task.getWork();
           if (work != null) {
-            authorizeDDLWork2(context, hive, work);
+            authorizeDDLWork(context, hive, work);
           }
         }
       }
@@ -114,10 +114,10 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
   }
 
   /**
-   * Authorized the given DDLWork2. It is only for the interim time while DDLTask and DDLWork are being refactored.
+   * Authorized the given DDLWork. It is only for the interim time while DDLTask and DDLWork are being refactored.
    */
-  protected void authorizeDDLWork2(HiveSemanticAnalyzerHookContext context,
-                  Hive hive, DDLWork2 work) throws HiveException {
+  protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext context,
+                  Hive hive, DDLWork work) throws HiveException {
   }
 
   protected void authorize(Privilege[] inputPrivs, Privilege[] outputPrivs)

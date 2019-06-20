@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.privilege;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -35,10 +34,6 @@ public class ShowPrincipalsDesc implements DDLDesc, Serializable {
   public static final String SCHEMA =
       "principal_name,principal_type,grant_option,grantor,grantor_type,grant_time#" +
       "string:string:boolean:string:string:bigint";
-
-  static {
-    DDLTask2.registerOperation(ShowPrincipalsDesc.class, ShowPrincipalsOperation.class);
-  }
 
   private final String name;
   private final String resFile;

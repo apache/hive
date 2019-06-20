@@ -48,12 +48,9 @@ import org.apache.hive.common.util.AnnotationUtils;
 /**
  * Operation process of creating a table like an existing one.
  */
-public class CreateTableLikeOperation extends DDLOperation {
-  private final CreateTableLikeDesc desc;
-
+public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> {
   public CreateTableLikeOperation(DDLOperationContext context, CreateTableLikeDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

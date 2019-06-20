@@ -15,13 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.ddl.table.column;
 
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -35,10 +35,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Add Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableAddColumnsDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableAddColumnsDesc.class, AlterTableAddColumnsOperation.class);
-  }
 
   private final List<FieldSchema> newColumns;
 

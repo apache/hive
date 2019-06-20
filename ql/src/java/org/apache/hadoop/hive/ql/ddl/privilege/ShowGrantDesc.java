@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.ddl.privilege;
+
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -30,10 +31,6 @@ public class ShowGrantDesc implements DDLDesc {
       "database,table,partition,column,principal_name,principal_type,privilege," +
       "grant_option,grant_time,grantor#" +
       "string:string:string:string:string:string:string:boolean:bigint:string";
-
-  static {
-    DDLTask2.registerOperation(ShowGrantDesc.class, ShowGrantOperation.class);
-  }
 
   private final String resFile;
   private final PrincipalDesc principal;

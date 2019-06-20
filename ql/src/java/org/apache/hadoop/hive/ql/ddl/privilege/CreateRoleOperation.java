@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 /**
  * Operation process of creating a role.
  */
-public class CreateRoleOperation extends DDLOperation {
-  private final CreateRoleDesc desc;
-
+public class CreateRoleOperation extends DDLOperation<CreateRoleDesc> {
   public CreateRoleOperation(DDLOperationContext context, CreateRoleDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

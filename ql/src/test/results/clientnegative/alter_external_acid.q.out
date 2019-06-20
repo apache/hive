@@ -10,4 +10,4 @@ PREHOOK: query: alter table acid_external set TBLPROPERTIES ('transactional'='tr
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@acid_external
 PREHOOK: Output: default@acid_external
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Unable to alter table. default.acid_external cannot be declared transactional because it's an external table
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. default.acid_external cannot be declared transactional because it's an external table

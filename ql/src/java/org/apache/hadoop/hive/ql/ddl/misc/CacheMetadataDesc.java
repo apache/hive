@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.ddl.misc;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -28,10 +27,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @Explain(displayName = "Cache Metadata", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CacheMetadataDesc implements DDLDesc {
-  static {
-    DDLTask2.registerOperation(CacheMetadataDesc.class, CacheMetadataOperation.class);
-  }
-
   private final String dbName;
   private final String tableName;
   private final String partitionName;

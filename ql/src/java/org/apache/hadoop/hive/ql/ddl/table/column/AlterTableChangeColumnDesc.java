@@ -19,12 +19,10 @@ package org.apache.hadoop.hive.ql.ddl.table.column;
 
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableWithConstraintsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.constaint.Constraints;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -32,12 +30,8 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * DDL task description for ALTER TABLE ... CHANGE COLUMN ... commands.
  */
 @Explain(displayName = "Change Column", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableChangeColumnDesc extends AbstractAlterTableWithConstraintsDesc implements DDLDescWithWriteId {
+public class AlterTableChangeColumnDesc extends AbstractAlterTableWithConstraintsDesc {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableChangeColumnDesc.class, AlterTableChangeColumnOperation.class);
-  }
 
   private final String oldColumnName;
   private final String newColumnName;

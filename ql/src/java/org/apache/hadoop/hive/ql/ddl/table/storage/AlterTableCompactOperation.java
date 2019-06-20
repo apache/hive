@@ -37,13 +37,11 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of compacting a table.
  */
-public class AlterTableCompactOperation extends DDLOperation {
+public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDesc> {
   private static final int FIVE_MINUTES_IN_MILLIES = 5*60*1000;
-  private final AlterTableCompactDesc desc;
 
   public AlterTableCompactOperation(DDLOperationContext context, AlterTableCompactDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

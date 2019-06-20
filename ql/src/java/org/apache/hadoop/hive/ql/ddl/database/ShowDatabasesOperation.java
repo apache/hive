@@ -32,12 +32,9 @@ import org.apache.hadoop.io.IOUtils;
 /**
  * Operation process of locking a database.
  */
-public class ShowDatabasesOperation extends DDLOperation {
-  private final ShowDatabasesDesc desc;
-
+public class ShowDatabasesOperation extends DDLOperation<ShowDatabasesDesc> {
   public ShowDatabasesOperation(DDLOperationContext context, ShowDatabasesDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

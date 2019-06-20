@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -40,10 +39,6 @@ public class DescTableDesc implements DDLDesc, Serializable {
       "#string:string:string:string:string:string:string:string:string:string:string:string";
   public static String getSchema(boolean colStats) {
     return colStats ? COL_STATS_SCHEMA : SCHEMA;
-  }
-
-  static {
-    DDLTask2.registerOperation(DescTableDesc.class, DescTableOperation.class);
   }
 
   private final String resFile;

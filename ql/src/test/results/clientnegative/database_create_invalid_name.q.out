@@ -6,4 +6,4 @@ default
 PREHOOK: query: CREATE DATABASE `test.db`
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test.db
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidObjectException(message:test.db is not a valid database name)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidObjectException(message:test.db is not a valid database name)

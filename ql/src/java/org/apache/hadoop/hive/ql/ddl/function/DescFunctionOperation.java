@@ -41,12 +41,9 @@ import org.apache.hive.common.util.AnnotationUtils;
 /**
  * Operation process of describing a function.
  */
-public class DescFunctionOperation extends DDLOperation {
-  private final DescFunctionDesc desc;
-
+public class DescFunctionOperation extends DDLOperation<DescFunctionDesc> {
   public DescFunctionOperation(DDLOperationContext context, DescFunctionDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

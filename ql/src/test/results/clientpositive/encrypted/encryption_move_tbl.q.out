@@ -202,7 +202,7 @@ PREHOOK: query: ALTER TABLE encrypted_db_outloc.renamed_encrypted_table_n1 RENAM
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: encrypted_db_outloc@renamed_encrypted_table_n1
 PREHOOK: Output: encrypted_db_outloc@renamed_encrypted_table_n1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Unable to alter table. Alter Table operation for encrypted_db_outloc.renamed_encrypted_table_n1 failed to move data due to: 'Got exception: org.apache.hadoop.ipc.RemoteException /build/ql/test/data/specified_db_location/renamed_encrypted_table_n1 can't be moved from an encryption zone.' See hive log file for details.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. Alter Table operation for encrypted_db_outloc.renamed_encrypted_table_n1 failed to move data due to: 'Got exception: org.apache.hadoop.ipc.RemoteException /build/ql/test/data/specified_db_location/renamed_encrypted_table_n1 can't be moved from an encryption zone.' See hive log file for details.
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:encrypted_db_outloc
@@ -230,7 +230,7 @@ PREHOOK: query: DROP DATABASE encrypted_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:encrypted_db
 PREHOOK: Output: database:encrypted_db
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidOperationException(message:Database encrypted_db is not empty. One or more tables exist.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Database encrypted_db is not empty. One or more tables exist.)
 PREHOOK: query: DROP TABLE encrypted_db_outloc.renamed_encrypted_table_n1 PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: encrypted_db_outloc@renamed_encrypted_table_n1

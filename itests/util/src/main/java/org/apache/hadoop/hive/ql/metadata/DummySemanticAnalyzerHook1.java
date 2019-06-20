@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -62,7 +62,7 @@ public class DummySemanticAnalyzerHook1 extends AbstractSemanticAnalyzerHook {
       return;
     }
 
-    CreateTableDesc desc = (CreateTableDesc) ((DDLTask2) rootTasks.get(rootTasks.size() - 1)).getWork().getDDLDesc();
+    CreateTableDesc desc = (CreateTableDesc) ((DDLTask) rootTasks.get(rootTasks.size() - 1)).getWork().getDDLDesc();
     Map<String, String> tblProps = desc.getTblProps();
     if (tblProps == null) {
       tblProps = new HashMap<String, String>();

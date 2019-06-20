@@ -37,12 +37,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * MetastoreCheck, see if the data in the metastore matches what is on the dfs. Current version checks for tables
  * and partitions that are either missing on disk on in the metastore.
  */
-public class MsckOperation extends DDLOperation {
-  private final MsckDesc desc;
-
+public class MsckOperation extends DDLOperation<MsckDesc> {
   public MsckOperation(DDLOperationContext context, MsckDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

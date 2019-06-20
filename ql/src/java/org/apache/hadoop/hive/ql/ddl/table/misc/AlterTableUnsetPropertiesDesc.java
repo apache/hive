@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.table.misc;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -35,10 +34,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Unset Properties", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableUnsetPropertiesDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableUnsetPropertiesDesc.class, AlterTableUnsetPropertiesOperation.class);
-  }
 
   private final boolean isExplicitStatsUpdate;
   private final EnvironmentContext environmentContext;

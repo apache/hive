@@ -10,4 +10,4 @@ PREHOOK: query: alter table src_orc change key k tinyint after val
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@src_orc
 PREHOOK: Output: default@src_orc
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Reordering columns is not supported for table default.src_orc. SerDe may be incompatible
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Reordering columns is not supported for table default.src_orc. SerDe may be incompatible
