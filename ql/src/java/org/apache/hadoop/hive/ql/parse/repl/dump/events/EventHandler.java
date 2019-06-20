@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import java.util.HashSet;
 
 public interface EventHandler {
   void handle(Context withinContext) throws Exception;
@@ -42,9 +43,10 @@ public interface EventHandler {
     final ReplicationSpec replicationSpec;
     final ReplScope replScope;
     final ReplScope oldReplScope;
+    HashSet<String> tablesForBootstrap;
 
-    public Context(Path eventRoot, Path cmRoot, Hive db, HiveConf hiveConf,
-        ReplicationSpec replicationSpec, ReplScope replScope, ReplScope oldReplScope) {
+    public Context(Path eventRoot, Path cmRoot, Hive db, HiveConf hiveConf, ReplicationSpec replicationSpec,
+                   ReplScope replScope, ReplScope oldReplScope, HashSet<String> tablesForBootstrap) {
       this.eventRoot = eventRoot;
       this.cmRoot = cmRoot;
       this.db = db;
@@ -52,6 +54,7 @@ public interface EventHandler {
       this.replicationSpec = replicationSpec;
       this.replScope = replScope;
       this.oldReplScope = oldReplScope;
+      this.tablesForBootstrap = tablesForBootstrap;
     }
 
     public Context(Context other) {
@@ -62,6 +65,7 @@ public interface EventHandler {
       this.replicationSpec = other.replicationSpec;
       this.replScope = other.replScope;
       this.oldReplScope = other.oldReplScope;
+      this.tablesForBootstrap = other.tablesForBootstrap;
     }
 
     void setEventRoot(Path eventRoot) {

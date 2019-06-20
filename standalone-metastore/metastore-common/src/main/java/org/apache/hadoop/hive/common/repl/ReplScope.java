@@ -53,6 +53,10 @@ public class ReplScope implements Serializable {
     return dbName;
   }
 
+  public Pattern getDbNamePattern() {
+    return dbNamePattern;
+  }
+
   public void setIncludedTablePatterns(List<String> includedTableNames) {
     this.includedTableNames = includedTableNames;
     this.includedTableNamePatterns = compilePatterns(includedTableNames);

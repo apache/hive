@@ -59,7 +59,7 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
     }
 
     if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable,
-            true, withinContext.oldReplScope, withinContext.hiveConf)) {
+            true, withinContext.tablesForBootstrap, withinContext.oldReplScope, withinContext.hiveConf)) {
       return;
     }
 

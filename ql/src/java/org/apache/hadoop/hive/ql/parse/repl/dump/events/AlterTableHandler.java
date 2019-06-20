@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -34,7 +35,7 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
   private final org.apache.hadoop.hive.metastore.api.Table before;
   private final org.apache.hadoop.hive.metastore.api.Table after;
   private final boolean isTruncateOp;
-  private final Scenario scenario;
+  private Scenario scenario;
 
   private enum Scenario {
     ALTER {
@@ -54,7 +55,14 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
       DumpType dumpType() {
         return DumpType.EVENT_TRUNCATE_TABLE;
       }
+    },
+    DROP {
+      @Override
+      DumpType dumpType() {
+        return DumpType.EVENT_RENAME_DROP_TABLE;
+      }
     };
+
 
     abstract DumpType dumpType();
   }
@@ -82,14 +90,49 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
     }
   }
 
+  // return true, if event needs to be dumped, else return false.
+  private boolean handleRenameDuringTableLevelReplication(Context withinContext) {
+    String oldName = before.getTableName();
+    String newName = after.getTableName();
+
+    if (ReplUtils.tableIncludedInReplScope(withinContext.replScope, oldName)) {
+      // If old table satisfies the filter, but the new table does not, then the old table should be dropped.
+      if (!ReplUtils.tableIncludedInReplScope(withinContext.replScope, newName)) {
+        scenario = Scenario.DROP;
+        LOG.info("Table " + oldName + " will be dropped as the table is renamed to " + newName);
+        return true;
+      }
+
+      // If both old and new table satisfies the filter, then dump the rename event.
+      return true;
+    } else  {
+      // if the old table does not satisfies the filter, but the new one satisfies, then the new table should be
+      // added to the list of tables to be bootstrapped and don't dump the event.
+      if (ReplUtils.tableIncludedInReplScope(withinContext.replScope, newName)) {
+        LOG.info("Table " + newName + " is added for bootstrap " + " during rename from " + oldName);
+        withinContext.tablesForBootstrap.add(newName);
+        return false;
+      }
+
+      // if both old and new table does not satisfies the filter, then don't dump the event.
+      return false;
+    }
+  }
+
   @Override
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} ALTER_TABLE message : {}", fromEventId(), eventMessageAsJSON);
 
     Table qlMdTableBefore = new Table(before);
+    if (Scenario.RENAME == scenario) {
+      // If the table is renamed after being added to the list of tables to be bootstrapped, then remove it from the
+      // list of tables to bne bootstrapped.
+      withinContext.tablesForBootstrap.remove(before.getTableName());
+    }
+
     if (!Utils
         .shouldReplicate(withinContext.replicationSpec, qlMdTableBefore,
-                true, withinContext.oldReplScope, withinContext.hiveConf)) {
+            true, withinContext.tablesForBootstrap, withinContext.oldReplScope, withinContext.hiveConf)) {
       return;
     }
 
@@ -97,6 +140,14 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
       if (!AcidUtils.isTransactionalTable(before) && AcidUtils.isTransactionalTable(after)) {
         LOG.info("The table " + after.getTableName() + " is converted to ACID table." +
                 " It will be replicated with bootstrap load as hive.repl.bootstrap.acid.tables is set to true.");
+        return;
+      }
+    }
+
+    // If the tables are filtered based on name, then needs to handle the rename scenarios.
+    if (withinContext.replScope != null && !withinContext.replScope.includeAllTables()) {
+      if (!handleRenameDuringTableLevelReplication(withinContext)) {
+        LOG.info("Alter event for table " + before.getTableName() + " is skipped from dumping");
         return;
       }
     }

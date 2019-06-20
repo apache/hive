@@ -53,7 +53,7 @@ class UpdatePartColStatHandler extends AbstractEventHandler<UpdatePartitionColum
     }
 
     if (!Utils.shouldReplicate(withinContext.replicationSpec, new Table(tableObj),
-            true, withinContext.oldReplScope, withinContext.hiveConf)) {
+            true, withinContext.tablesForBootstrap, withinContext.oldReplScope, withinContext.hiveConf)) {
       return;
     }
 

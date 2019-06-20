@@ -101,7 +101,7 @@ class AlterPartitionHandler extends AbstractEventHandler<AlterPartitionMessage> 
 
     Table qlMdTable = new Table(tableObject);
     if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable,
-            true, withinContext.oldReplScope,  withinContext.hiveConf)) {
+            true, withinContext.tablesForBootstrap, withinContext.oldReplScope,  withinContext.hiveConf)) {
       return;
     }
 

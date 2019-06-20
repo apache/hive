@@ -38,7 +38,7 @@ class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnSt
     LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
     Table qlMdTable = new Table(eventMessage.getTableObject());
     if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable,
-            true, withinContext.oldReplScope, withinContext.hiveConf)) {
+            true, withinContext.tablesForBootstrap, withinContext.oldReplScope, withinContext.hiveConf)) {
       return;
     }
 

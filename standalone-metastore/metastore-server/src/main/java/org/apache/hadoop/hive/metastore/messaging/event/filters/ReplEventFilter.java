@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.messaging.event.filters;
 
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 
 /**
  * Utility function that constructs a notification filter to check if table is accepted for replication.
@@ -30,12 +31,22 @@ public class ReplEventFilter extends BasicFilter {
     this.replScope = replScope;
   }
 
+  // Return false if all the tables are included, as bootstrap during rename is done only in case filter set for tables.
+  boolean isAlterDuringTableLevelReplication(final NotificationEvent event) {
+    if (replScope.includeAllTables() || !replScope.getDbNamePattern().matcher(event.getDbName()).matches()) {
+      return false;
+    }
+    return event.getEventType().equals(MessageBuilder.ALTER_TABLE_EVENT);
+  }
+
   @Override
   boolean shouldAccept(final NotificationEvent event) {
     // All txn related events are global ones and should be always accepted.
     // For other events, if the DB/table names are included as per replication scope, then should
-    // accept the event.
-    return (isTxnRelatedEvent(event)
-            || replScope.includedInReplScope(event.getDbName(), event.getTableName()));
+    // accept the event. For alter table with table name filter, bootstrap of the table will be done if the new table
+    // name matches the filter but the old table name does not. This can be judge only after deserialize of the message.
+    return ((isTxnRelatedEvent(event)
+            || replScope.includedInReplScope(event.getDbName(), event.getTableName())
+            || isAlterDuringTableLevelReplication(event)));
   }
 }
