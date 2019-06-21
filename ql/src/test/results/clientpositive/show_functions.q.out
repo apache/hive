@@ -60,6 +60,7 @@ bround
 bucket_number
 cardinality_violation
 case
+cast_format
 cbrt
 ceil
 ceiling
@@ -338,6 +339,7 @@ POSTHOOK: query: SHOW FUNCTIONS LIKE 'c%'
 POSTHOOK: type: SHOWFUNCTIONS
 cardinality_violation
 case
+cast_format
 cbrt
 ceil
 ceiling
