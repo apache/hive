@@ -36,26 +36,11 @@ STAGE PLANS:
         $hdt$_0:$hdt$_0:src 
           Fetch Operator
             limit: -1
-        $hdt$_0:$hdt$_1:src 
+        $hdt$_0:$hdt$_2:src 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
         $hdt$_0:$hdt$_0:src 
-          TableScan
-            alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (UDFToDouble(key) < 200.0D) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
-                    1 UDFToDouble(_col0) (type: double)
-        $hdt$_0:$hdt$_1:src 
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -70,6 +55,21 @@ STAGE PLANS:
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
+        $hdt$_0:$hdt$_2:src 
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (UDFToDouble(key) < 200.0D) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
+                    1 UDFToDouble(_col0) (type: double)
 
   Stage: Stage-3
     Map Reduce

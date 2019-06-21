@@ -399,7 +399,7 @@ STAGE PLANS:
 FROM (SELECT "ikey", "bkey", "fkey", "dkey"
 FROM "SIMPLE_DERBY_TABLE1"
 WHERE "ikey" IS NOT NULL) AS "t0"
-INNER JOIN (SELECT "ikey", "bkey", "fkey", "dkey"
+INNER JOIN (SELECT "ikey", "bkey", "fkey", "dkey", "datekey"
 FROM "SIMPLE_DERBY_TABLE2"
 WHERE "ikey" IS NOT NULL) AS "t2" ON "t0"."ikey" = "t2"."ikey"
             hive.sql.query.fieldNames fkey,dkey
@@ -473,11 +473,11 @@ STAGE PLANS:
                 TableScan
                   alias: ext_simple_derby_table2
                   properties:
-                    hive.sql.query SELECT "ikey", "bkey", "fkey", "dkey"
+                    hive.sql.query SELECT "ikey", "bkey", "fkey", "dkey", "datekey"
 FROM "SIMPLE_DERBY_TABLE2"
 WHERE "ikey" IS NOT NULL
-                    hive.sql.query.fieldNames ikey,bkey,fkey,dkey
-                    hive.sql.query.fieldTypes int,bigint,float,double
+                    hive.sql.query.fieldNames ikey,bkey,fkey,dkey,datekey
+                    hive.sql.query.fieldTypes int,bigint,float,double,string
                     hive.sql.query.split true
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator

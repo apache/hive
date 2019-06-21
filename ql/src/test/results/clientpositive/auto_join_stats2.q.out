@@ -183,33 +183,17 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:smalltable 
+        $hdt$_0:src1 
           Fetch Operator
             limit: -1
-        $hdt$_1:src1 
+        $hdt$_2:smalltable2 
           Fetch Operator
             limit: -1
-        $hdt$_3:smalltable2 
+        $hdt$_3:smalltable 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:smalltable 
-          TableScan
-            alias: smalltable
-            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: UDFToDouble(key) is not null (type: boolean)
-              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
-                    1 UDFToDouble(_col0) (type: double)
-                    2 UDFToDouble(_col0) (type: double)
-        $hdt$_1:src1 
+        $hdt$_0:src1 
           TableScan
             alias: src1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -224,7 +208,7 @@ STAGE PLANS:
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
-        $hdt$_3:smalltable2 
+        $hdt$_2:smalltable2 
           TableScan
             alias: smalltable2
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
@@ -235,6 +219,22 @@ STAGE PLANS:
                 expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
+                    1 UDFToDouble(_col0) (type: double)
+                    2 UDFToDouble(_col0) (type: double)
+        $hdt$_3:smalltable 
+          TableScan
+            alias: smalltable
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)

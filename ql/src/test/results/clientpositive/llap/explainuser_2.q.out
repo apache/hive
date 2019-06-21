@@ -3670,7 +3670,7 @@ Stage-0
                 default@srcpart,c_n4,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: EXPLAIN
-SELECT
+SELECT 
 TRANSFORM(a_n19.key, a_n19.value) USING 'cat' AS (tkey, tvalue)
 FROM src a_n19 join src b_n15
 on a_n19.key = b_n15.key
@@ -3679,7 +3679,7 @@ PREHOOK: Input: cat
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
-SELECT
+SELECT 
 TRANSFORM(a_n19.key, a_n19.value) USING 'cat' AS (tkey, tvalue)
 FROM src a_n19 join src b_n15
 on a_n19.key = b_n15.key

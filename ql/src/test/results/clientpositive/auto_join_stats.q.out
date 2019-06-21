@@ -322,11 +322,11 @@ STAGE PLANS:
   Stage: Stage-11
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_2:src2 
+        $hdt$_1:src2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_2:src2 
+        $hdt$_1:src2 
           TableScan
             alias: src2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -376,30 +376,14 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:smalltable_n0 
+        $hdt$_2:smalltable2_n0 
           Fetch Operator
             limit: -1
-        $hdt$_3:smalltable2_n0 
+        $hdt$_3:smalltable_n0 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:smalltable_n0 
-          TableScan
-            alias: smalltable_n0
-            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: UDFToDouble(key) is not null (type: boolean)
-              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
-                    1 UDFToDouble(_col0) (type: double)
-                    2 UDFToDouble(_col0) (type: double)
-        $hdt$_3:smalltable2_n0 
+        $hdt$_2:smalltable2_n0 
           TableScan
             alias: smalltable2_n0
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
@@ -410,6 +394,22 @@ STAGE PLANS:
                 expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
+                    1 UDFToDouble(_col0) (type: double)
+                    2 UDFToDouble(_col0) (type: double)
+        $hdt$_3:smalltable_n0 
+          TableScan
+            alias: smalltable_n0
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
@@ -448,11 +448,11 @@ STAGE PLANS:
   Stage: Stage-12
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:src1 
+        $hdt$_0:src1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:src1 
+        $hdt$_0:src1 
           TableScan
             alias: src1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
