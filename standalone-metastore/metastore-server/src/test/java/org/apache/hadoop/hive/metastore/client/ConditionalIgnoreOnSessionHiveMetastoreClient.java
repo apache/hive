@@ -25,7 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation provides a way to skip the execution of seome tests,
+ * This annotation provides a way to skip the execution of some tests,
  * when a certain runtime criteria is met. It should be used together with {@link CustomIgnoreRule}.
  */
 @Retention(RetentionPolicy.RUNTIME)

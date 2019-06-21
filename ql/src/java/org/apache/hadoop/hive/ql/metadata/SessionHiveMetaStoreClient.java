@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,19 +51,22 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -960,8 +964,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return partitions;
     }
 
-    private List<Partition> getPartitions(List<String> partialPartVals) throws MetaException {
-      return pTree.getPartitions(partialPartVals);
+    private List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals) throws MetaException {
+      return pTree.getPartitionsByPartitionVals(partialPartVals);
     }
 
     private Partition getPartitionWithAuthInfo(List<String> partionVals, String userName, List<String> groupNames)
@@ -973,13 +977,40 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return checkPrivilegesForPartition(partition, userName, groupNames) ? partition : null;
     }
 
+    private List<Partition> listPartitions() throws MetaException {
+      return pTree.listPartitions();
+    }
+
+    private List<Partition> listPartitionsWithAuthInfo(String userName, List<String> groupNames) throws MetaException {
+      List<Partition> partitions = listPartitions();
+      List<Partition> result = new ArrayList<>();
+      partitions.forEach(p -> {
+        if (checkPrivilegesForPartition(p, userName, groupNames)) {
+          result.add(p);
+        }
+      });
+      return result;
+    }
+
+    private List<Partition> listPartitionsByPartitionValsWithAuthInfo(List<String> partialVals, String userName,
+        List<String> groupNames) throws MetaException {
+      List<Partition> partitions = pTree.getPartitionsByPartitionVals(partialVals);
+      List<Partition> result = new ArrayList<>();
+      partitions.forEach(p -> {
+        if (checkPrivilegesForPartition(p, userName, groupNames)) {
+          result.add(p);
+        }
+      });
+      return result;
+    }
+
     private boolean checkPrivilegesForPartition(Partition partition, String userName, List<String> groupNames) {
       if ((userName == null || userName.isEmpty()) && (groupNames == null || groupNames.isEmpty())) {
         return true;
       }
       PrincipalPrivilegeSet privileges = partition.getPrivileges();
       if (privileges == null) {
-        return false;
+        return true;
       }
       if (privileges.isSetUserPrivileges()) {
         if (!privileges.getUserPrivileges().containsKey(userName)) {
@@ -1004,7 +1035,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
      * via references.
      */
     private static final class PartitionTree {
-      private final Map<String, Partition> parts = new HashMap<>();
+      private final Map<String, Partition> parts = new LinkedHashMap<>();
       private final org.apache.hadoop.hive.metastore.api.Table tTable;
 
       private PartitionTree(org.apache.hadoop.hive.metastore.api.Table t) {
@@ -1053,17 +1084,28 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
        * Missing values should be represented as "" (empty strings).  May provide fewer values.
        * So if part cols are a,b,c, {"",2} is a valid list
        * {@link MetaStoreUtils#getPvals(List, Map)}
-       *
        */
-      private List<Partition> getPartitions(List<String> partialPartVals) throws MetaException {
+      private List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals) throws MetaException {
+        if (partialPartVals == null || partialPartVals.isEmpty()) {
+          throw new MetaException("Partition partial vals cannot be null or empty");
+        }
         String partNameMatcher = MetaStoreUtils.makePartNameMatcher(tTable, partialPartVals, ".*");
         List<Partition> matchedPartitions = new ArrayList<>();
-        for(String key : parts.keySet()) {
-          if(key.matches(partNameMatcher)) {
+        for (String key : parts.keySet()) {
+          if (key.matches(partNameMatcher)) {
             matchedPartitions.add(parts.get(key));
           }
         }
         return matchedPartitions;
+      }
+
+      /**
+       * Get all the partitions.
+       *
+       * @return partitions list
+       */
+      private List<Partition> listPartitions() {
+        return new ArrayList<>(parts.values());
       }
     }
   }
@@ -1084,10 +1126,6 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return super.add_partition(partition);
     }
     TempTable tt = getPartitionedTempTable(table);
-    if(tt == null) {
-      throw new IllegalStateException("TempTable not found for " +
-          Warehouse.getQualifiedName(table));
-    }
     tt.addPartition(deepCopy(partition));
     return partition;
   }
@@ -1112,10 +1150,6 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return super.add_partitions(partitions);
     }
     TempTable tt = getPartitionedTempTable(table);
-    if (tt == null) {
-      throw new IllegalStateException("TempTable not found for" +
-              table.getTableName());
-    }
     return tt.addPartitions(deepCopyPartitions(partitions));
   }
 
@@ -1126,12 +1160,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     if (table == null) {
       return super.getPartition(catName, dbName, tblName, name);
     }
-    assertPartitioned(table);
     TempTable tt = getPartitionedTempTable(table);
-    if(tt == null) {
-      throw new IllegalStateException("TempTable not found for " +
-              getCatalogQualifiedTableName(table));
-    }
     Partition partition = tt.getPartition(name);
     if (partition == null) {
       throw new NoSuchObjectException("Partition with name " + name + " for table " + tblName + " in database " +
@@ -1148,12 +1177,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     if (table == null) {
       return super.getPartition(catName, dbName, tblName, partVals);
     }
-    assertPartitioned(table);
     TempTable tt = getPartitionedTempTable(table);
-    if(tt == null) {
-      throw new IllegalStateException("TempTable not found for " +
-              getCatalogQualifiedTableName(table));
-    }
     Partition partition = tt.getPartition(partVals);
     if (partition == null) {
       throw new NoSuchObjectException("Partition with partition values " +
@@ -1179,46 +1203,134 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
           groupNames);
     }
     TempTable tt = getPartitionedTempTable(table);
-    if(tt == null) {
-      throw new IllegalStateException("TempTable not found for " +
-          Warehouse.getQualifiedName(table));
+    List<Partition> parts = tt.listPartitionsByPartitionValsWithAuthInfo(partialPvals, userName, groupNames);
+    if (parts.isEmpty()) {
+      throw new NoSuchObjectException("Partition with partition values " +
+          (partialPvals != null ? Arrays.toString(partialPvals.toArray()) : "null") +
+          " for table " + tableName + " in database " + dbName + " is not found");
     }
-    List<Partition> parts = tt.getPartitions(partialPvals);
     List<Partition> matchedParts = new ArrayList<>();
-    for(int i = 0; i < (maxParts <= 0 ? parts.size() : maxParts); i++) {
+    for(int i = 0; i < ((maxParts < 0 || maxParts > parts.size()) ? parts.size() : maxParts); i++) {
       matchedParts.add(deepCopy(parts.get(i)));
     }
     return matchedParts;
   }
 
-  /**
-   * Returns a list of partition names, i.e. "p=1/q=2" type strings.  The values (RHS of =) are
-   * escaped.
-   */
   @Override
-  public List<String> listPartitionNames(String dbName, String tableName,
-      short maxParts) throws TException {
+  public List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
+      int maxParts, String userName, List<String> groupNames)
+      throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
     if (table == null) {
-      //(assume) not a temp table - Try underlying client
-      return super.listPartitionNames(dbName, tableName, maxParts);
+      return super.listPartitionsWithAuthInfo(catName, dbName, tableName, maxParts, userName, groupNames);
     }
     TempTable tt = getPartitionedTempTable(table);
-    if(tt == null) {
-      throw new IllegalStateException("TempTable not found for " +
-          Warehouse.getQualifiedName(table));
+    List<Partition> partitions = tt.listPartitionsWithAuthInfo(userName, groupNames);
+    if (partitions.isEmpty()) {
+      throw new NoSuchObjectException(
+          "Partition for table " + tableName + " in database " + dbName + "and for user " +
+              userName + " and group names " + (groupNames != null ? Arrays.toString(groupNames.toArray()) : "null") +
+              " is not found.");
     }
-    List<String> partVals = new ArrayList<>();
-    partVals.add(""); //to get all partitions
-    List<Partition> parts = tt.getPartitions(partVals);
-    List<String> matchedParts = new ArrayList<>();
-    for(int i = 0; i < (maxParts <= 0 ? parts.size() : maxParts); i++) {
-      matchedParts.add(
-          Warehouse.makePartName(tt.tTable.getPartitionKeys(), parts.get(i).getValues()));
+    List<Partition> matchedParts = new ArrayList<>();
+    for(int i = 0; i < ((maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts); i++) {
+      matchedParts.add(deepCopy(partitions.get(i)));
     }
     return matchedParts;
   }
 
+  @Override
+  public List<String> listPartitionNames(String catName, String dbName, String tblName,
+      int maxParts) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.listPartitionNames(catName, dbName, tblName, maxParts);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt.listPartitions();
+    List<String> result = new ArrayList<>();
+    for (int i = 0; i < ((maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts); i++) {
+      result.add(makePartName(tt.tTable.getPartitionKeys(), partitions.get(i).getValues()));
+    }
+    return result;
+  }
+
+  @Override
+  public List<String> listPartitionNames(String catName, String dbName, String tblName,
+      List<String> partVals, int maxParts) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.listPartitionNames(catName, dbName, tblName, partVals, maxParts);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt.getPartitionsByPartitionVals(partVals);
+    List<String> result = new ArrayList<>();
+    for (int i = 0; i < ((maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts); i++) {
+      result.add(makePartName(tt.tTable.getPartitionKeys(), partitions.get(i).getValues()));
+    }
+    return result;
+  }
+
+  @Override
+  public List<Partition> listPartitions(String catName, String dbName, String tblName, int maxParts)
+      throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.listPartitions(catName, dbName, tblName, maxParts);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt.listPartitions();
+    List<Partition> matchedParts = new ArrayList<>();
+    for(int i = 0; i < ((maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts); i++) {
+      matchedParts.add(deepCopy(partitions.get(i)));
+    }
+    return matchedParts;
+  }
+
+  @Override
+  public List<Partition> listPartitions(String catName, String dbName, String tblName,
+      List<String> partVals, int maxParts) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.listPartitions(catName, dbName, tblName, partVals, maxParts);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt.getPartitionsByPartitionVals(partVals);
+    List<Partition> matchedParts = new ArrayList<>();
+    for(int i = 0; i < ((maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts); i++) {
+      matchedParts.add(deepCopy(partitions.get(i)));
+    }
+    return matchedParts;
+  }
+
+  @Override
+  public PartitionSpecProxy listPartitionSpecs(String catName, String dbName, String tableName,
+      int maxParts) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
+    if (table == null) {
+      return super.listPartitionSpecs(catName, dbName, tableName, maxParts);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt.listPartitions();
+    if (partitions.isEmpty()) {
+      throw new NoSuchObjectException("Partition for table " + tableName + " in database " +
+          dbName + " is not found.");
+    }
+    List<PartitionSpec> partitionSpecs;
+    PartitionSpec partitionSpec = new PartitionSpec();
+    PartitionListComposingSpec partitionListComposingSpec = new PartitionListComposingSpec(new ArrayList<>());
+    for (int i = 0; i < ((maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts); i++) {
+      partitionListComposingSpec.addToPartitions(deepCopy(partitions.get(i)));
+    }
+    partitionSpec.setCatName(catName);
+    partitionSpec.setDbName(dbName);
+    partitionSpec.setTableName(tableName);
+    partitionSpec.setRootPath(table.getSd().getLocation());
+    partitionSpec.setPartitionList(partitionListComposingSpec);
+    partitionSpecs = Arrays.asList(partitionSpec);
+
+    return PartitionSpecProxy.Factory.get(partitionSpecs);
+  }
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
@@ -1228,12 +1340,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       //(assume) not a temp table - Try underlying client
       return super.getPartitionsByNames(catName, dbName, tblName, partNames, getColStats);
     }
-    assertPartitioned(table);
     TempTable tt = getPartitionedTempTable(table);
-    if (tt == null) {
-      throw new IllegalStateException("TempTable not found for " +
-              getCatalogQualifiedTableName(table));
-    }
+
     List<Partition> partitions = tt.getPartitionsByNames(partNames);
 
     return deepCopyPartitions(partitions);
@@ -1247,13 +1355,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     if (table == null) {
       return super.getPartitionWithAuthInfo(catName, dbName, tableName, pvals, userName, groupNames);
     }
-    assertPartitioned(table);
     TempTable tt = getPartitionedTempTable(table);
-    if (tt == null) {
-      throw new IllegalStateException("TempTable not found for " +
-              getCatalogQualifiedTableName(table));
-    }
-
     Partition partition = tt.getPartitionWithAuthInfo(pvals, userName, groupNames);
     if (partition == null) {
       throw new NoSuchObjectException("Partition with partition values " +
@@ -1265,7 +1367,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     return deepCopy(partition);
   }
 
-  private static TempTable getPartitionedTempTable(org.apache.hadoop.hive.metastore.api.Table t) {
+  private  TempTable getPartitionedTempTable(org.apache.hadoop.hive.metastore.api.Table t) throws MetaException {
     String qualifiedTableName = Warehouse.
         getQualifiedName(t.getDbName().toLowerCase(), t.getTableName().toLowerCase());
     SessionState ss = SessionState.get();
@@ -1273,9 +1375,15 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       LOG.warn("No current SessionState, skipping temp partitions for " + qualifiedTableName);
       return null;
     }
-    return ss.getTempPartitions().get(qualifiedTableName);
+    assertPartitioned(t);
+    TempTable tt = ss.getTempPartitions().get(qualifiedTableName);
+    if (tt == null) {
+      throw new IllegalStateException("TempTable not found for " +
+          getCatalogQualifiedTableName(t));
+    }
+    return tt;
   }
-  private static void removeTempTable(org.apache.hadoop.hive.metastore.api.Table t) {
+  private void removeTempTable(org.apache.hadoop.hive.metastore.api.Table t) {
     String qualifiedTableName = Warehouse.
         getQualifiedName(t.getDbName().toLowerCase(), t.getTableName().toLowerCase());
     SessionState ss = SessionState.get();
@@ -1285,7 +1393,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     }
     ss.getTempPartitions().remove(Warehouse.getQualifiedName(t));
   }
-  private static void createTempTable(org.apache.hadoop.hive.metastore.api.Table t) {
+  private void createTempTable(org.apache.hadoop.hive.metastore.api.Table t) {
     if(t.getPartitionKeysSize() <= 0) {
       //do nothing as it's not a partitioned table
       return;
