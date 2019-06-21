@@ -126,8 +126,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
                                     List<String> loadWithClause,
                                     String[] bootstrappedTables,
                                     String[] expectedTables) throws Throwable {
-    return replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause, loadWithClause,
-            null, expectedTables, null);
+    return replicateAndVerify(replPolicy, oldReplPolicy, lastReplId, dumpWithClause, loadWithClause,
+            bootstrappedTables, expectedTables, null);
   }
 
   private String replicateAndVerify(String replPolicy, String oldReplPolicy, String lastReplId,
