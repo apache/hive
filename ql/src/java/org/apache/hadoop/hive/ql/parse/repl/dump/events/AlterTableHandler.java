@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
+import java.util.Set;
+
 class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
   private final org.apache.hadoop.hive.metastore.api.Table before;
   private final org.apache.hadoop.hive.metastore.api.Table after;
@@ -91,30 +93,50 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
   }
 
   // return true, if event needs to be dumped, else return false.
-  private boolean handleRenameDuringTableLevelReplication(Context withinContext) {
+  private boolean handleForTableLevelReplication(Context withinContext) {
     String oldName = before.getTableName();
     String newName = after.getTableName();
 
     if (ReplUtils.tableIncludedInReplScope(withinContext.replScope, oldName)) {
+      // If the table is renamed after being added to the list of tables to be bootstrapped, then remove it from the
+      // list of tables to be bootstrapped.
+      boolean oldTableIsPresent = withinContext.removeFromListOfTablesForBootstrap(before.getTableName());
+
       // If old table satisfies the filter, but the new table does not, then the old table should be dropped.
+      // This should be done, only if the old table is not in the list of tables to be bootstrapped which is a multi
+      // rename case. In case of multi rename, only the first rename should do the drop.
       if (!ReplUtils.tableIncludedInReplScope(withinContext.replScope, newName)) {
-        scenario = Scenario.DROP;
-        LOG.info("Table " + oldName + " will be dropped as the table is renamed to " + newName);
-        return true;
+        if (oldTableIsPresent) {
+          // If the old table was present in the list of tables to be bootstrapped, then just ignore the event.
+          return false;
+        } else {
+          scenario = Scenario.DROP;
+          LOG.info("Table " + oldName + " will be dropped as the table is renamed to " + newName);
+          return true;
+        }
       }
 
-      // If both old and new table satisfies the filter, then dump the rename event.
+      // If the old table was in the list of tables to be bootstrapped which is a multi rename case, the old table
+      // is removed from the list of tables to be bootstrapped and new one is added.
+      if (oldTableIsPresent) {
+        withinContext.addToListOfTablesForBootstrap(newName);
+        return false;
+      }
+
+      // If both old and new table satisfies the filter and old table is present at target, then dump the rename event.
+      LOG.info("both old and new table satisfies the filter");
       return true;
     } else  {
       // if the old table does not satisfies the filter, but the new one satisfies, then the new table should be
       // added to the list of tables to be bootstrapped and don't dump the event.
       if (ReplUtils.tableIncludedInReplScope(withinContext.replScope, newName)) {
         LOG.info("Table " + newName + " is added for bootstrap " + " during rename from " + oldName);
-        withinContext.tablesForBootstrap.add(newName);
+        withinContext.addToListOfTablesForBootstrap(newName);
         return false;
       }
 
       // if both old and new table does not satisfies the filter, then don't dump the event.
+      LOG.info("both old and new table not satisfies the filter");
       return false;
     }
   }
@@ -124,15 +146,17 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
     LOG.info("Processing#{} ALTER_TABLE message : {}", fromEventId(), eventMessageAsJSON);
 
     Table qlMdTableBefore = new Table(before);
+    Set<String> bootstrapTableList;
     if (Scenario.RENAME == scenario) {
-      // If the table is renamed after being added to the list of tables to be bootstrapped, then remove it from the
-      // list of tables to bne bootstrapped.
-      withinContext.tablesForBootstrap.remove(before.getTableName());
+      // Handling for table level replication is done in handleForTableLevelReplication method.
+      bootstrapTableList = null;
+    } else {
+      bootstrapTableList = withinContext.getTablesForBootstrap();
     }
 
     if (!Utils
         .shouldReplicate(withinContext.replicationSpec, qlMdTableBefore,
-            true, withinContext.tablesForBootstrap, withinContext.oldReplScope, withinContext.hiveConf)) {
+            true, bootstrapTableList, withinContext.oldReplScope, withinContext.hiveConf)) {
       return;
     }
 
@@ -145,8 +169,8 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
     }
 
     // If the tables are filtered based on name, then needs to handle the rename scenarios.
-    if (withinContext.replScope != null && !withinContext.replScope.includeAllTables()) {
-      if (!handleRenameDuringTableLevelReplication(withinContext)) {
+    if (!withinContext.replScope.includeAllTables()) {
+      if (!handleForTableLevelReplication(withinContext)) {
         LOG.info("Alter event for table " + before.getTableName() + " is skipped from dumping");
         return;
       }

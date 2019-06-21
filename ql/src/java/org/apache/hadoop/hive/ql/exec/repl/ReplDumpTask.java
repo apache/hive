@@ -76,6 +76,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
@@ -83,7 +84,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
   private static final String FUNCTION_METADATA_FILE_NAME = EximUtil.METADATA_NAME;
   private static final long SLEEP_TIME = 60000;
-  HashSet<String> tablesForBootstrap = new HashSet<>();
+  Set<String> tablesForBootstrap = new HashSet<>();
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -207,7 +208,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
     // If the table is renamed and the new name satisfies the filter but the old name does not then the table needs to
     // be bootstrapped.
-    if (tablesForBootstrap.contains(table.getTableName())) {
+    if (tablesForBootstrap.contains(table.getTableName().toLowerCase())) {
       return true;
     }
 

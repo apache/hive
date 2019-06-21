@@ -36,7 +36,7 @@ public class DropTableHandler extends AbstractMessageHandler {
       throws SemanticException {
     String actualDbName;
     String actualTblName;
-    if (context.dmd.getDumpType() == DumpType.EVENT_DROP_TABLE) {
+    if (context.dmd.getDumpType() == DumpType.EVENT_RENAME_DROP_TABLE) {
       AlterTableMessage msg = deserializer.getAlterTableMessage(context.dmd.getPayload());
       actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
       actualTblName = msg.getTable();

@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
-import java.util.HashSet;
+import java.util.Set;
 
 public interface EventHandler {
   void handle(Context withinContext) throws Exception;
@@ -43,10 +43,10 @@ public interface EventHandler {
     final ReplicationSpec replicationSpec;
     final ReplScope replScope;
     final ReplScope oldReplScope;
-    HashSet<String> tablesForBootstrap;
+    private Set<String> tablesForBootstrap;
 
     public Context(Path eventRoot, Path cmRoot, Hive db, HiveConf hiveConf, ReplicationSpec replicationSpec,
-                   ReplScope replScope, ReplScope oldReplScope, HashSet<String> tablesForBootstrap) {
+                   ReplScope replScope, ReplScope oldReplScope, Set<String> tablesForBootstrap) {
       this.eventRoot = eventRoot;
       this.cmRoot = cmRoot;
       this.db = db;
@@ -80,6 +80,20 @@ public interface EventHandler {
           eventHandler.toEventId(),
           cmRoot, hiveConf
       );
+    }
+
+    Set<String> getTablesForBootstrap() {
+      return tablesForBootstrap;
+    }
+
+    void addToListOfTablesForBootstrap(String tableName) {
+      assert tableName != null;
+      tablesForBootstrap.add(tableName.toLowerCase());
+    }
+
+    boolean removeFromListOfTablesForBootstrap(String tableName) {
+      assert tableName != null;
+      return tablesForBootstrap.remove(tableName.toLowerCase());
     }
   }
 }

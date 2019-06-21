@@ -40,7 +40,7 @@ class DropTableHandler extends AbstractEventHandler<DropTableMessage> {
 
     // If table is present in the list of tables to be bootstrapped, then remove it. Drop event can be ignored as
     // table will not be present at target. Anyways all the events related to this table is ignored.
-    if (withinContext.tablesForBootstrap.remove(event.getTableName())) {
+    if (withinContext.removeFromListOfTablesForBootstrap(event.getTableName())) {
       LOG.info("Table " + event.getTableName() + " is removed from list of tables to be bootstrapped.");
       return;
     }

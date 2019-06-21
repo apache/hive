@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -178,7 +179,7 @@ public class Utils {
    * specific checks.
    */
   public static boolean shouldReplicate(ReplicationSpec replicationSpec, Table tableHandle, boolean isEventDump,
-                                        HashSet<String> bootstrapTableList, ReplScope oldReplScope, HiveConf hiveConf) {
+                                        Set<String> bootstrapTableList, ReplScope oldReplScope, HiveConf hiveConf) {
     if (replicationSpec == null) {
       replicationSpec = new ReplicationSpec();
     }
@@ -234,7 +235,7 @@ public class Utils {
         }
 
         // Tables in the list of tables to be bootstrapped should be skipped.
-        return (!bootstrapTableList.contains(tableHandle.getTableName()));
+        return (bootstrapTableList == null || !bootstrapTableList.contains(tableHandle.getTableName()));
       }
     }
     return true;
@@ -242,7 +243,7 @@ public class Utils {
 
   public static boolean shouldReplicate(NotificationEvent tableForEvent,
                                         ReplicationSpec replicationSpec, Hive db,
-                                        boolean isEventDump, HashSet<String> bootstrapTableList,
+                                        boolean isEventDump, Set<String> bootstrapTableList,
                                         ReplScope oldReplScope,
                                         HiveConf hiveConf) {
     Table table;
