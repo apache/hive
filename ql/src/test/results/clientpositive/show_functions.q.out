@@ -41,6 +41,7 @@ bloom_filter
 bround
 cardinality_violation
 case
+cast_format
 cbrt
 ceil
 ceiling
@@ -301,6 +302,7 @@ POSTHOOK: query: SHOW FUNCTIONS '^c.*'
 POSTHOOK: type: SHOWFUNCTIONS
 cardinality_violation
 case
+cast_format
 cbrt
 ceil
 ceiling

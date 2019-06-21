@@ -247,8 +247,18 @@ castExpression
     LPAREN
           expression
           KW_AS
-          primitiveType
-    RPAREN -> ^(TOK_FUNCTION primitiveType expression)
+          toType=primitiveType
+          (fmt=KW_FORMAT StringLiteral)?
+    RPAREN
+    // simple cast
+    -> {$fmt == null}? ^(TOK_FUNCTION $toType expression)
+
+    // plain cast ... format: toType is int representing a TOK_* in HiveParser_IdentifiersParser, expression, format pattern
+    -> {((CommonTree)toType.getTree()).getChild(0) == null}?
+       ^(TOK_FUNCTION {adaptor.create(Identifier, "cast_format")} NumberLiteral[Integer.toString(((CommonTree)toType.getTree()).token.getType())] expression StringLiteral)
+
+    // cast ... format to type with 4th parameter which is length of CHAR or VARCHAR
+    -> ^(TOK_FUNCTION {adaptor.create(Identifier, "cast_format")} NumberLiteral[Integer.toString(((CommonTree)toType.getTree()).token.getType())] expression StringLiteral NumberLiteral[((CommonTree)toType.getTree()).getChild(0).getText()])
     ;
 
 caseExpression
