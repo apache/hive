@@ -75,6 +75,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
@@ -82,6 +84,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
   private static final String FUNCTION_METADATA_FILE_NAME = EximUtil.METADATA_NAME;
   private static final long SLEEP_TIME = 60000;
+  Set<String> tablesForBootstrap = new HashSet<>();
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -145,10 +148,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
    * those tables as a whole.
    * 3. If replication policy is changed/replaced, then need to examine all the tables to see if
    * any of them need to be bootstrapped as old policy doesn't include it but new one does.
+   * 4. Some tables are renamed and the new name satisfies the table list filter while old name was not.
    * @return true if need to examine tables for dump and false if not.
    */
   private boolean shouldExamineTablesToDump() {
     return (work.oldReplScope != null)
+            || !tablesForBootstrap.isEmpty()
             || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)
             || conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES);
   }
@@ -198,6 +203,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
     if (AcidUtils.isTransactionalTable(table)
             && shouldBootstrapDumpAcidTable(table.getTableName())) {
+      return true;
+    }
+
+    // If the table is renamed and the new name satisfies the filter but the old name does not then the table needs to
+    // be bootstrapped.
+    if (tablesForBootstrap.contains(table.getTableName().toLowerCase())) {
       return true;
     }
 
@@ -320,10 +331,18 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   private boolean needBootstrapAcidTablesDuringIncrementalDump() {
-    // If old replication policy is available, then it is possible some of the ACID tables might be
-    // included for bootstrap during incremental dump.
-    return (ReplUtils.includeAcidTableInDump(conf)
-            && ((work.oldReplScope != null) || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)));
+    // If acid table dump is not enabled, then no neeed to check further.
+    if (!ReplUtils.includeAcidTableInDump(conf)) {
+      return false;
+    }
+
+    // If old table level policy is available or the policy has filter based on table name then it is possible that some
+    // of the ACID tables might be included for bootstrap during incremental dump. For old policy, its because the table
+    // may not satisfying the old policy but satisfying the new policy. For filter, it may happen that the table
+    // is renamed and started satisfying the policy.
+    return ((!work.replScope.includeAllTables())
+            || (work.oldReplScope != null)
+            || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES));
   }
 
   private Path getBootstrapDbRoot(Path dumpRoot, String dbName, boolean isIncrementalPhase) {
@@ -341,7 +360,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         conf,
         getNewEventOnlyReplicationSpec(ev.getEventId()),
         work.replScope,
-        work.oldReplScope
+        work.oldReplScope,
+        tablesForBootstrap
     );
     EventHandler eventHandler = EventHandlerFactory.handlerFor(ev);
     eventHandler.handle(context);
