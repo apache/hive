@@ -125,6 +125,9 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   @Override
   public void handle(Context withinContext) throws Exception {
+    if (!ReplUtils.includeAcidTableInDump(withinContext.hiveConf)) {
+      return;
+    }
     LOG.info("Processing#{} COMMIT_TXN message : {}", fromEventId(), eventMessageAsJSON);
     String payload = eventMessageAsJSON;
 
