@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -176,8 +177,8 @@ public class Utils {
    * validates if a table can be exported, similar to EximUtil.shouldExport with few replication
    * specific checks.
    */
-  public static boolean shouldReplicate(ReplicationSpec replicationSpec, Table tableHandle,
-                                        boolean isEventDump, ReplScope oldReplScope, HiveConf hiveConf) {
+  public static boolean shouldReplicate(ReplicationSpec replicationSpec, Table tableHandle, boolean isEventDump,
+                                        Set<String> bootstrapTableList, ReplScope oldReplScope, HiveConf hiveConf) {
     if (replicationSpec == null) {
       replicationSpec = new ReplicationSpec();
     }
@@ -214,21 +215,26 @@ public class Utils {
           return false;
         }
 
-        // Skip dumping events related to ACID tables if bootstrap is enabled on it.
-        // Also, skip if current table is included only in new policy but not in old policy.
-        if (isEventDump) {
-          return !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)
-                  && ReplUtils.tableIncludedInReplScope(oldReplScope, tableHandle.getTableName());
+        // Skip dumping events related to ACID tables if bootstrap is enabled for ACID tables.
+        if (isEventDump && hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
+          return false;
         }
       }
 
-      // If replication policy is replaced with new included/excluded tables list, then events
-      // corresponding to tables which are not included in old policy but included in new policy
-      // should be skipped. Those tables would be bootstrapped along with the current incremental
-      // replication dump.
-      // Note: If any event dump reaches here, it means, table is included in new replication policy.
-      if (isEventDump && !ReplUtils.tableIncludedInReplScope(oldReplScope, tableHandle.getTableName())) {
-        return false;
+      // Tables which are selected for bootstrap should be skipped. Those tables would be bootstrapped
+      // along with the current incremental replication dump and thus no need to dump events for them.
+      // Note: If any event (other than alter table with table level replication) dump reaches here, it means, table is
+      // included in new replication policy.
+      if (isEventDump) {
+        // If replication policy is replaced with new included/excluded tables list, then events
+        // corresponding to tables which are not included in old policy but included in new policy
+        // should be skipped.
+        if (!ReplUtils.tableIncludedInReplScope(oldReplScope, tableHandle.getTableName())) {
+          return false;
+        }
+
+        // Tables in the list of tables to be bootstrapped should be skipped.
+        return (bootstrapTableList == null || !bootstrapTableList.contains(tableHandle.getTableName()));
       }
     }
     return true;
@@ -236,7 +242,8 @@ public class Utils {
 
   public static boolean shouldReplicate(NotificationEvent tableForEvent,
                                         ReplicationSpec replicationSpec, Hive db,
-                                        boolean isEventDump, ReplScope oldReplScope,
+                                        boolean isEventDump, Set<String> bootstrapTableList,
+                                        ReplScope oldReplScope,
                                         HiveConf hiveConf) {
     Table table;
     try {
@@ -247,7 +254,7 @@ public class Utils {
               .getTableName(), e);
       return false;
     }
-    return shouldReplicate(replicationSpec, table, isEventDump, oldReplScope, hiveConf);
+    return shouldReplicate(replicationSpec, table, isEventDump, bootstrapTableList, oldReplScope, hiveConf);
   }
 
   static List<Path> getDataPathList(Path fromPath, ReplicationSpec replicationSpec, HiveConf conf)
