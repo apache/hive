@@ -21,7 +21,9 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AbstractAlterDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetOwnerDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -50,7 +52,7 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
     try {
       Database oldDb = msg.getDbObjBefore();
       Database newDb = msg.getDbObjAfter();
-      AlterDatabaseDesc alterDbDesc;
+      AbstractAlterDatabaseDesc alterDbDesc;
 
       if ((oldDb.getOwnerType() == newDb.getOwnerType())
             && oldDb.getOwnerName().equalsIgnoreCase(newDb.getOwnerName())) {
@@ -70,10 +72,10 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
           }
           newDbProps.put(key, entry.getValue());
         }
-        alterDbDesc = new AlterDatabaseDesc(actualDbName, newDbProps, context.eventOnlyReplicationSpec());
+        alterDbDesc = new AlterDatabaseSetPropertiesDesc(actualDbName, newDbProps, context.eventOnlyReplicationSpec());
       } else {
-        alterDbDesc = new AlterDatabaseDesc(actualDbName, new PrincipalDesc(newDb.getOwnerName(), newDb.getOwnerType()),
-                context.eventOnlyReplicationSpec());
+        alterDbDesc = new AlterDatabaseSetOwnerDesc(actualDbName, new PrincipalDesc(newDb.getOwnerName(),
+            newDb.getOwnerType()), context.eventOnlyReplicationSpec());
       }
 
       Task<DDLWork> alterDbTask = TaskFactory.get(
