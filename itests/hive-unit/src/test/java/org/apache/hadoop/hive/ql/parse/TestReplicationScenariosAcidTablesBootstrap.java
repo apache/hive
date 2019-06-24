@@ -256,7 +256,6 @@ public class TestReplicationScenariosAcidTablesBootstrap
     verifyCompactionQueue(tables, replicatedDbName, replicaConf);
   }
 
-  @Ignore("HIVE-21879: Disabling this testcase as it is flaky.")
   @Test
   public void testBootstrapAcidTablesDuringIncrementalWithConcurrentWrites() throws Throwable {
     // Dump and load bootstrap without ACID tables.
