@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.llap.SubmitWorkInfo;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
+import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapSigner;
 import org.apache.hadoop.hive.llap.security.LlapSigner.Signable;
 import org.apache.hadoop.hive.llap.security.LlapSigner.SignedMessage;
@@ -93,6 +94,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SplitLocationInfo;
+import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -441,7 +443,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       }
 
       // This assumes LLAP cluster owner is always the HS2 user.
-      String llapUser = UserGroupInformation.getLoginUser().getShortUserName();
+      String llapUser = LlapRegistryService.currentUser();
 
       String queryUser = null;
       byte[] tokenBytes = null;
