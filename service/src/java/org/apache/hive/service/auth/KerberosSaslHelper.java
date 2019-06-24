@@ -65,7 +65,7 @@ public final class KerberosSaslHelper {
   /**
    * Helper to wrap the {@code underlyingTransport} into an assumed kerberos principal.
    * The function is used for kerberos based authentication, where {@code kerberosAuthType}
-   * is set to {@code fromSubject). If also preforms a substitution of {@code _HOST} to the
+   * is set to {@code fromSubject}. If also preforms a substitution of {@code _HOST} to the
    * local host name, if required.
    *
    * @param principal The kerberos principal to assume
