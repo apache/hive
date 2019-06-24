@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.llap.tezplugins;
 
 import com.google.common.io.ByteArrayDataOutput;
 
+import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsCollector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsSystem;
@@ -292,6 +293,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final LlapTaskSchedulerMetrics metrics;
   private final JvmPauseMonitor pauseMonitor;
   private final Random random = new Random();
+  private final LlapMetricsCollector llapMetricsCollector;
 
   private int totalGuaranteed = 0, unusedGuaranteed = 0;
 
@@ -399,6 +401,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     this.scheduledLoggingExecutor = Executors.newSingleThreadScheduledExecutor(
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LlapTaskSchedulerTimedLogThread")
             .build());
+
+    this.llapMetricsCollector = new LlapMetricsCollector(conf);
 
     String instanceId = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
 
@@ -790,6 +794,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         }
       }, 0, 10000L, TimeUnit.MILLISECONDS);
 
+      llapMetricsCollector.start();
+
       nodeEnablerFuture = nodeEnabledExecutor.submit(nodeEnablerCallable);
       Futures.addCallback(nodeEnablerFuture, new LoggingFutureCallback("NodeEnablerThread", LOG));
 
@@ -803,6 +809,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
       registry.start();
       registry.registerStateChangeListener(new NodeStateChangeListener());
+      registry.registerStateChangeListener(llapMetricsCollector);
       activeInstances = registry.getInstances();
       for (LlapServiceInstance inst : activeInstances.getAll()) {
         registerAndAddNode(new NodeInfo(inst, nodeBlacklistConf, clock,
@@ -903,6 +910,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     try {
       if (!this.isStopped.getAndSet(true)) {
         scheduledLoggingExecutor.shutdownNow();
+        llapMetricsCollector.shutdown();
 
         nodeEnablerCallable.shutdown();
         if (nodeEnablerFuture != null) {
