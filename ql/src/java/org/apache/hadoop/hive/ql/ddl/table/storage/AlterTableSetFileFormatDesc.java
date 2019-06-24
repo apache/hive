@@ -20,10 +20,9 @@ package org.apache.hadoop.hive.ql.ddl.table.storage;
 
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -34,17 +33,13 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterTableSetFileFormatDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  static {
-    DDLTask2.registerOperation(AlterTableSetFileFormatDesc.class, AlterTableSetFileFormatOperation.class);
-  }
-
   private final String inputFormat;
   private final String outputFormat;
   private final String serdeName;
 
   public AlterTableSetFileFormatDesc(String tableName, Map<String, String> partitionSpec, String inputFormat,
       String outputFormat, String serdeName) throws SemanticException {
-    super(AlterTableTypes.SET_FILE_FORMAT, tableName, partitionSpec, null, false, false, null);
+    super(AlterTableType.SET_FILE_FORMAT, tableName, partitionSpec, null, false, false, null);
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
     this.serdeName = serdeName;

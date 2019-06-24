@@ -43,8 +43,16 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
   // If this constant was created while doing constant folding, foldedFromCol holds the name of
   // original column from which it was folded.
   private transient String foldedFromCol;
+  // If this constant was created while doing constant folding, foldedFromTab holds the name of
+  // the original tabAlias from which it was folded.
+  private transient String foldedFromTab;
   // string representation of folding constant.
   private transient String foldedFromVal;
+
+  public void setFoldedTabCol(ExprNodeColumnDesc colDesc) {
+    setFoldedFromTab(colDesc.getTabAlias());
+    setFoldedFromCol(colDesc.getColumn());
+  }
 
   public ExprNodeConstantDesc setFoldedFromVal(String foldedFromVal) {
     this.foldedFromVal = foldedFromVal;
@@ -61,6 +69,14 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
 
   public void setFoldedFromCol(String foldedFromCol) {
     this.foldedFromCol = foldedFromCol;
+  }
+
+  public String getFoldedFromTab() {
+    return foldedFromTab;
+  }
+
+  public void setFoldedFromTab(String foldedFromTab) {
+    this.foldedFromTab = foldedFromTab;
   }
 
   public ExprNodeConstantDesc() {

@@ -146,6 +146,17 @@ public class SparkCompiler extends TaskCompiler {
       new ConstantPropagate(ConstantPropagateProcCtx.ConstantPropagateOption.SHORTCUT).transform(pCtx);
     }
 
+    // ATTENTION : DO NOT, I REPEAT, DO NOT WRITE ANYTHING AFTER updateBucketingVersionForUpgrade()
+    // ANYTHING WHICH NEEDS TO BE ADDED MUST BE ADDED ABOVE
+    // This call updates the bucketing version of final ReduceSinkOp based on
+    // the bucketing version of FileSinkOp. This operation must happen at the
+    // end to ensure there is no further rewrite of plan which may end up
+    // removing/updating the ReduceSinkOp as was the case with SortedDynPartitionOptimizer
+    // Update bucketing version of ReduceSinkOp if needed
+    // Note: This has been copied here from TezCompiler, change seems needed for bucketing to work
+    // properly moving forward.
+    updateBucketingVersionForUpgrade(procCtx);
+
     PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
   }
 
@@ -625,5 +636,37 @@ public class SparkCompiler extends TaskCompiler {
 
     PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
     return;
+  }
+
+  private void updateBucketingVersionForUpgrade(OptimizeSparkProcContext procCtx) {
+    // Fetch all the FileSinkOperators.
+    Set<FileSinkOperator> fsOpsAll = new HashSet<>();
+    for (TableScanOperator ts : procCtx.getParseContext().getTopOps().values()) {
+      Set<FileSinkOperator> fsOps = OperatorUtils.findOperators(
+          ts, FileSinkOperator.class);
+      fsOpsAll.addAll(fsOps);
+    }
+
+
+    for (FileSinkOperator fsOp : fsOpsAll) {
+      if (!fsOp.getConf().getTableInfo().isSetBucketingVersion()) {
+        continue;
+      }
+      // Look for direct parent ReduceSinkOp
+      // If there are more than 1 parent, bail out.
+      Operator<?> parent = fsOp;
+      List<Operator<?>> parentOps = parent.getParentOperators();
+      while (parentOps != null && parentOps.size() == 1) {
+        parent = parentOps.get(0);
+        if (!(parent instanceof ReduceSinkOperator)) {
+          parentOps = parent.getParentOperators();
+          continue;
+        }
+
+        // Found the target RSOp
+        parent.setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
+        break;
+      }
+    }
   }
 }

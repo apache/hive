@@ -642,4 +642,18 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
       wmCounters.changeStateRunning(isGuaranteed);
     }
   }
+
+  public long getQueueTime() {
+    if (wmCounters != null) {
+      return wmCounters.getQueueTime();
+    }
+    return 0;
+  }
+
+  public long getRunningTime() {
+    if (wmCounters != null) {
+      return wmCounters.getRunningTime();
+    }
+    return 0;
+  }
 }

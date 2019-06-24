@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
@@ -121,7 +121,7 @@ public class LoadDatabase {
     // If it exists, we want this to be an error condition. Repl Load is not intended to replace a
     // db.
     // TODO: we might revisit this in create-drop-recreate cases, needs some thinking on.
-    DDLWork2 work = new DDLWork2(new HashSet<>(), new HashSet<>(), createDbDesc);
+    DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), createDbDesc);
     return TaskFactory.get(work, context.hiveConf);
   }
 
@@ -133,7 +133,7 @@ public class LoadDatabase {
   private Task<? extends Serializable> setOwnerInfoTask(Database dbObj) {
     AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbObj.getName(), new PrincipalDesc(dbObj.getOwnerName(),
         dbObj.getOwnerType()), null);
-    DDLWork2 work = new DDLWork2(new HashSet<>(), new HashSet<>(), alterDbDesc);
+    DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);
     return TaskFactory.get(work, context.hiveConf);
   }
 
@@ -162,7 +162,7 @@ public class LoadDatabase {
   private static Task<? extends Serializable> alterDbTask(String dbName, Map<String, String> props,
                                                           HiveConf hiveConf) {
     AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbName, props, null);
-    DDLWork2 work = new DDLWork2(new HashSet<>(), new HashSet<>(), alterDbDesc);
+    DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);
     return TaskFactory.get(work, hiveConf);
   }
 

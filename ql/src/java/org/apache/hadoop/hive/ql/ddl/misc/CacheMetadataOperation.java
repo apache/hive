@@ -16,12 +16,27 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.misc;
+
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+
+import java.io.IOException;
+
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * ArchiveDesc.
- *
+ * Operation process of caching the metadata.
  */
-public class ArchiveDesc extends DDLDesc {
+public class CacheMetadataOperation extends DDLOperation<CacheMetadataDesc> {
+  public CacheMetadataOperation(DDLOperationContext context, CacheMetadataDesc desc) {
+    super(context, desc);
+  }
 
+  @Override
+  public int execute() throws HiveException, IOException {
+    context.getDb().cacheFileMetadata(desc.getDbName(), desc.getTableName(), desc.getPartitionName(),
+        desc.isAllPartitions());
+    return 0;
+  }
 }

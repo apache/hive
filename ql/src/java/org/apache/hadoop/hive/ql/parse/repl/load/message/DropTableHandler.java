@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.creation.DropTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -32,15 +34,24 @@ public class DropTableHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
-    DropTableMessage msg = deserializer.getDropTableMessage(context.dmd.getPayload());
-    String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
-    String actualTblName = msg.getTable();
+    String actualDbName;
+    String actualTblName;
+    if (context.dmd.getDumpType() == DumpType.EVENT_RENAME_DROP_TABLE) {
+      AlterTableMessage msg = deserializer.getAlterTableMessage(context.dmd.getPayload());
+      actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
+      actualTblName = msg.getTable();
+    } else {
+      DropTableMessage msg = deserializer.getDropTableMessage(context.dmd.getPayload());
+      actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
+      actualTblName = msg.getTable();
+    }
+
     DropTableDesc dropTableDesc = new DropTableDesc(
         actualDbName + "." + actualTblName,
         null, true, true, context.eventOnlyReplicationSpec(), false
     );
-    Task<DDLWork2> dropTableTask = TaskFactory.get(
-        new DDLWork2(readEntitySet, writeEntitySet, dropTableDesc), context.hiveConf
+    Task<DDLWork> dropTableTask = TaskFactory.get(
+        new DDLWork(readEntitySet, writeEntitySet, dropTableDesc), context.hiveConf
     );
     context.log.debug(
         "Added drop tbl task : {}:{}", dropTableTask.getId(), dropTableDesc.getTableName()

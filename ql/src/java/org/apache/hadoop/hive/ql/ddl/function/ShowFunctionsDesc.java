@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -34,10 +33,6 @@ public class ShowFunctionsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final String SCHEMA = "tab_name#string";
-
-  static {
-    DDLTask2.registerOperation(ShowFunctionsDesc.class, ShowFunctionsOperation.class);
-  }
 
   private final String resFile;
   private final String pattern;

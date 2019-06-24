@@ -652,6 +652,10 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
+    Concatenate
+      partition desc:
+        st 80.0
+      table name: default.orc_merge5a_n0
 
   Stage: Stage-1
     Move Operator

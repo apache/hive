@@ -225,7 +225,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
    *
    * @return status of executing the task
    */
-  protected abstract int execute(DriverContext driverContext);
+  public abstract int execute(DriverContext driverContext);
 
   public boolean isRootTask() {
     return rootTask;

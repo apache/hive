@@ -22,11 +22,9 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -34,12 +32,8 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * DDL task description for ALTER TABLE ... PARTITION ... RENAME TO PARTITION ... commands.
  */
 @Explain(displayName = "Rename Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableRenamePartitionDesc implements DDLDesc, Serializable, DDLDescWithWriteId {
+public class AlterTableRenamePartitionDesc implements DDLDescWithWriteId, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableRenamePartitionDesc.class, AlterTableRenamePartitionOperation.class);
-  }
 
   private final String tableName;
   private final Map<String, String> oldPartSpec;

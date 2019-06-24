@@ -265,6 +265,18 @@ public class WarehouseInstance implements Closeable {
     return dump(dumpCommand);
   }
 
+  Tuple dump(String replPolicy, String oldReplPolicy, String lastReplicationId, List<String> withClauseOptions)
+          throws Throwable {
+    String dumpCommand =
+            "REPL DUMP " + replPolicy
+                    + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy)
+                    + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+    if (!withClauseOptions.isEmpty()) {
+      dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return dump(dumpCommand);
+  }
+
   Tuple dump(String dumpCommand) throws Throwable {
     advanceDumpDir();
     run(dumpCommand);
@@ -303,8 +315,6 @@ public class WarehouseInstance implements Closeable {
     if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
-    run("EXPLAIN " + replLoadCmd);
-    printOutput();
     return run(replLoadCmd);
   }
 

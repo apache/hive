@@ -40,12 +40,9 @@ import org.apache.hadoop.io.IOUtils;
 /**
  * Operation process showing the table status.
  */
-public class ShowTableStatusOperation extends DDLOperation {
-  private final ShowTableStatusDesc desc;
-
+public class ShowTableStatusOperation extends DDLOperation<ShowTableStatusDesc> {
   public ShowTableStatusOperation(DDLOperationContext context, ShowTableStatusDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

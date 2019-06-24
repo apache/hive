@@ -15,4 +15,4 @@ POSTHOOK: Input: default@hmsserdetable
 name                	string              	                    
 PREHOOK: query: ALTER TABLE hmsserdetable UPDATE COLUMNS
 PREHOOK: type: ALTERTABLE_UPDATECOLUMNS
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. hmsserdetable has serde org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe for which schema is already handled by HMS.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. hmsserdetable has serde org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe for which schema is already handled by HMS.

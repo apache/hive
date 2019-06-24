@@ -65,7 +65,11 @@ import org.slf4j.LoggerFactory;
 public class SessionManager extends CompositeService {
 
   private static final String INACTIVE_ERROR_MESSAGE =
-      "Cannot open sessions on an inactive HS2 instance; use service discovery to connect";
+          "Cannot open sessions on an inactive HS2 instance, " +
+                  "or the HS2 server leader is not ready; please use service discovery to " +
+                  "connect the server leader again";
+  private static final String FAIL_CLOSE_ERROR_MESSAGE="Cannot close the session opened " +
+          "during the HA state change time";
   public static final String HIVERCFILE = ".hiverc";
   private static final Logger LOG = LoggerFactory.getLogger(CompositeService.class);
   private HiveConf hiveConf;
@@ -478,7 +482,7 @@ public class SessionManager extends CompositeService {
       } catch (Exception e) {
         LOG.warn("Failed to close the session opened during an HA state change; ignoring", e);
       }
-      throw new HiveSQLException(INACTIVE_ERROR_MESSAGE);
+      throw new HiveSQLException(FAIL_CLOSE_ERROR_MESSAGE);
     }
     LOG.info("Session opened, " + session.getSessionHandle()
         + ", current sessions:" + getOpenSessionCount());

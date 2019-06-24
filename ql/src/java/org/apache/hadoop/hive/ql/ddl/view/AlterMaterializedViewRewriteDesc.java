@@ -18,8 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.view;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -29,10 +28,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Alter Materialized View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterMaterializedViewRewriteDesc extends AlterMaterializedViewDesc implements DDLDescWithWriteId {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterMaterializedViewRewriteDesc.class, AlterMaterializedViewRewriteOperation.class);
-  }
 
   private final String fqMaterializedViewName;
   private final boolean rewriteEnable;

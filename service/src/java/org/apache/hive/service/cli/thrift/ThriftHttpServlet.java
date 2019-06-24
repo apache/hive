@@ -150,16 +150,36 @@ public class ThriftHttpServlet extends TServlet {
           LOG.info("Could not validate cookie sent, will try to generate a new cookie");
         }
       }
+
+      // Set the thread local ip address
+      SessionManager.setIpAddress(clientIpAddress);
+
+      // get forwarded hosts address
+      String forwarded_for = request.getHeader(X_FORWARDED_FOR);
+      if (forwarded_for != null) {
+        LOG.debug("{}:{}", X_FORWARDED_FOR, forwarded_for);
+        List<String> forwardedAddresses = Arrays.asList(forwarded_for.split(","));
+        SessionManager.setForwardedAddresses(forwardedAddresses);
+      } else {
+        SessionManager.setForwardedAddresses(Collections.<String>emptyList());
+      }
+
       // If the cookie based authentication is not enabled or the request does not have a valid
       // cookie, use authentication depending on the server setup.
       if (clientUserName == null) {
         String trustedDomain = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN).trim();
-
+        final boolean useXff = HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN_USE_XFF_HEADER);
+        if (useXff && !trustedDomain.isEmpty() &&
+          SessionManager.getForwardedAddresses() != null && !SessionManager.getForwardedAddresses().isEmpty()) {
+          // general format of XFF header is 'X-Forwarded-For: client, proxy1, proxy2' where left most being the client
+          clientIpAddress = SessionManager.getForwardedAddresses().get(0);
+          LOG.info("Trusted domain authN is enabled. clientIp from X-Forwarded-For header: {}", clientIpAddress);
+        }
         // Skip authentication if the connection is from the trusted domain, if specified.
         // getRemoteHost may or may not return the FQDN of the remote host depending upon the
         // HTTP server configuration. So, force a reverse DNS lookup.
         String remoteHostName =
-                InetAddress.getByName(request.getRemoteHost()).getCanonicalHostName();
+                InetAddress.getByName(clientIpAddress).getCanonicalHostName();
         if (!trustedDomain.isEmpty() &&
                 PlainSaslHelper.isHostFromTrustedDomain(remoteHostName, trustedDomain)) {
           LOG.info("No authentication performed because the connecting host " + remoteHostName +
@@ -197,18 +217,6 @@ public class ThriftHttpServlet extends TServlet {
         SessionManager.setProxyUserName(doAsQueryParam);
       }
 
-      // Set the thread local ip address
-      SessionManager.setIpAddress(clientIpAddress);
-
-      // get forwarded hosts address
-      String forwarded_for = request.getHeader(X_FORWARDED_FOR);
-      if (forwarded_for != null) {
-        LOG.debug("{}:{}", X_FORWARDED_FOR, forwarded_for);
-        List<String> forwardedAddresses = Arrays.asList(forwarded_for.split(","));
-        SessionManager.setForwardedAddresses(forwardedAddresses);
-      } else {
-        SessionManager.setForwardedAddresses(Collections.<String>emptyList());
-      }
 
       // Generate new cookie and add it to the response
       if (requireNewCookie &&

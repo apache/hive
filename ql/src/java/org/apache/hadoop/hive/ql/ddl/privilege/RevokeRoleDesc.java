@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.privilege;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -30,10 +29,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @Explain(displayName="Revoke roles", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class RevokeRoleDesc implements DDLDesc {
-
-  static {
-    DDLTask2.registerOperation(RevokeRoleDesc.class, RevokeRoleOperation.class);
-  }
 
   private final List<String> roles;
   private final List<PrincipalDesc> principals;

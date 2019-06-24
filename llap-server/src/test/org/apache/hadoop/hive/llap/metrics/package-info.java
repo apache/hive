@@ -16,20 +16,8 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
-
-import java.io.Serializable;
-
 /**
- * DDLDesc.
- *
+ * Test classes for metrics package.
  */
-public abstract class DDLDesc implements Serializable {
-  private static final long serialVersionUID = 1L;
 
-  public static interface DDLDescWithWriteId {
-    void setWriteId(long writeId);
-    String getFullTableName();
-    boolean mayNeedWriteId();
-  }
-}
+package org.apache.hadoop.hive.llap.metrics;

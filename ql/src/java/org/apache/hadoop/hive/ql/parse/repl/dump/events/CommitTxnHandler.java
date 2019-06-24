@@ -113,12 +113,21 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
             : new ArrayList<>(Collections2.filter(writeEventInfoList,
               writeEventInfo -> {
                 assert(writeEventInfo != null);
-                return withinContext.replScope.tableIncludedInReplScope(writeEventInfo.getTable());
+                // If replication policy is replaced with new included/excluded tables list, then events
+                // corresponding to tables which are included in both old and new policies should be dumped.
+                // If table is included in new policy but not in old policy, then it should be skipped.
+                // Those tables would be bootstrapped along with the current incremental
+                // replication dump.
+                return (ReplUtils.tableIncludedInReplScope(withinContext.replScope, writeEventInfo.getTable())
+                        && ReplUtils.tableIncludedInReplScope(withinContext.oldReplScope, writeEventInfo.getTable()));
               })));
   }
 
   @Override
   public void handle(Context withinContext) throws Exception {
+    if (!ReplUtils.includeAcidTableInDump(withinContext.hiveConf)) {
+      return;
+    }
     LOG.info("Processing#{} COMMIT_TXN message : {}", fromEventId(), eventMessageAsJSON);
     String payload = eventMessageAsJSON;
 

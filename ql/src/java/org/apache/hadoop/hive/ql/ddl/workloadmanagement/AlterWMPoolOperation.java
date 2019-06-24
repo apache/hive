@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of altering a workload management pool.
  */
-public class AlterWMPoolOperation extends DDLOperation {
-  private final AlterWMPoolDesc desc;
-
+public class AlterWMPoolOperation extends DDLOperation<AlterWMPoolDesc> {
   public AlterWMPoolOperation(DDLOperationContext context, AlterWMPoolDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

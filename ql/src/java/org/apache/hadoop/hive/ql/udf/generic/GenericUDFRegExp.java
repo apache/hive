@@ -23,6 +23,9 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -36,7 +39,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
-
 /**
  * UDF to extract a specific group identified by a java regex. Note that if a
  * regexp has a backslash ('\'), then need to specify '\\' For example,
@@ -54,11 +56,28 @@ public class GenericUDFRegExp extends GenericUDF {
   private final BooleanWritable output = new BooleanWritable();
   private transient boolean isRegexConst;
   private transient String regexConst;
-  private transient Pattern patternConst;
   private transient boolean warned;
+  private transient java.util.regex.Pattern patternConst;
+  private transient com.google.re2j.Pattern patternConstR2j;
+  private boolean useGoogleRegexEngine=false;
+
+  @Override
+  public void configure(MapredContext context) {
+    if (context != null) {
+      if(context.getJobConf().get("hive.use.googleregex.engine").equals("true")){
+        this.useGoogleRegexEngine=true;
+      }
+    }
+
+  }
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+    SessionState ss = SessionState.get();
+    if (ss != null) {
+      this.useGoogleRegexEngine = ss.getConf().getBoolVar(HiveConf.ConfVars.HIVEUSEGOOGLEREGEXENGINE);
+    }
+
     checkArgsSize(arguments, 2, 2);
 
     checkArgPrimitive(arguments, 0);
@@ -73,7 +92,12 @@ public class GenericUDFRegExp extends GenericUDF {
     if (arguments[1] instanceof ConstantObjectInspector) {
       regexConst = getConstantStringValue(arguments, 1);
       if (regexConst != null) {
-        patternConst = Pattern.compile(regexConst);
+        if(!useGoogleRegexEngine){
+          //if(!HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVEUSEGOOGLEREGEXENGINE)){
+          patternConst = Pattern.compile(regexConst);
+        }else{
+          patternConstR2j = com.google.re2j.Pattern.compile(regexConst);
+        }
       }
       isRegexConst = true;
     }
@@ -109,16 +133,29 @@ public class GenericUDFRegExp extends GenericUDF {
       return output;
     }
 
-    Pattern p;
-    if (isRegexConst) {
-      p = patternConst;
-    } else {
-      p = Pattern.compile(regex);
-    }
+    if(!useGoogleRegexEngine){
+      Pattern p;
+      if (isRegexConst) {
+        p = patternConst;
+      } else {
+        p = Pattern.compile(regex);
+      }
 
-    Matcher m = p.matcher(s);
-    output.set(m.find(0));
-    return output;
+      Matcher m = p.matcher(s);
+      output.set(m.find(0));
+      return output;
+    }else{
+      com.google.re2j.Pattern patternR2j;
+      if (isRegexConst) {
+        patternR2j = patternConstR2j;
+      } else {
+        patternR2j = com.google.re2j.Pattern.compile(regex);
+      }
+
+      com.google.re2j.Matcher m = patternR2j.matcher(s);
+      output.set(m.find(0));
+      return output;
+    }
   }
 
   @Override

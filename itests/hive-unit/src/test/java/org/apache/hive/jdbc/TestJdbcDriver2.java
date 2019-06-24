@@ -1096,7 +1096,7 @@ public class TestJdbcDriver2 {
     // codes and messages. This should be fixed.
     doTestErrorCase(
         "create table " + tableName + " (key int, value string)",
-        "FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2",
+        "FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask",
         "08S01", 1);
   }
 

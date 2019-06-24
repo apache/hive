@@ -21,7 +21,6 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +30,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Alter Mapping", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterWMMappingDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = -442968568922083053L;
-
-  static {
-    DDLTask2.registerOperation(AlterWMMappingDesc.class, AlterWMMappingOperation.class);
-  }
 
   private final WMMapping mapping;
 

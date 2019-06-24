@@ -20,8 +20,11 @@ package org.apache.hadoop.hive.ql.ddl;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -30,18 +33,31 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.reflections.Reflections;
 
 /**
  * DDLTask implementation.
 **/
-public final class DDLTask2 extends Task<DDLWork2> implements Serializable {
+@SuppressWarnings("rawtypes")
+public final class DDLTask extends Task<DDLWork> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private static final Map<Class<? extends DDLDesc>, Class<? extends DDLOperation>> DESC_TO_OPARATION =
       new HashMap<>();
-  public static void registerOperation(Class<? extends DDLDesc> descClass,
-      Class<? extends DDLOperation> operationClass) {
-    DESC_TO_OPARATION.put(descClass, operationClass);
+
+  static {
+    Set<Class<? extends DDLOperation>> operationClasses =
+        new Reflections("org.apache.hadoop.hive.ql.ddl").getSubTypesOf(DDLOperation.class);
+    for (Class<? extends DDLOperation> operationClass : operationClasses) {
+      if (Modifier.isAbstract(operationClass.getModifiers())) {
+        continue;
+      }
+
+      ParameterizedType parameterizedType = (ParameterizedType) operationClass.getGenericSuperclass();
+      @SuppressWarnings("unchecked")
+      Class<? extends DDLDesc> descClass = (Class<? extends DDLDesc>) parameterizedType.getActualTypeArguments()[0];
+      DESC_TO_OPARATION.put(descClass, operationClass);
+    }
   }
 
   @Override
@@ -65,7 +81,7 @@ public final class DDLTask2 extends Task<DDLWork2> implements Serializable {
       DDLDesc ddlDesc = work.getDDLDesc();
 
       if (DESC_TO_OPARATION.containsKey(ddlDesc.getClass())) {
-        DDLOperationContext context = new DDLOperationContext(conf, driverContext, this, (DDLWork2)work, queryState,
+        DDLOperationContext context = new DDLOperationContext(conf, driverContext, this, (DDLWork)work, queryState,
             queryPlan, console);
         Class<? extends DDLOperation> ddlOpertaionClass = DESC_TO_OPARATION.get(ddlDesc.getClass());
         Constructor<? extends DDLOperation> constructor =

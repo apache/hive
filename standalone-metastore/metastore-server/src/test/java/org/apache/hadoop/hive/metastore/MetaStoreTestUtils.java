@@ -29,6 +29,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -65,7 +69,7 @@ public class MetaStoreTestUtils {
    * @throws Exception
    */
   public static void startMetaStore(final int port,
-      final HadoopThriftAuthBridge bridge, Configuration conf)
+      final HadoopThriftAuthBridge bridge, Configuration conf, boolean withHouseKeepingThreads)
       throws Exception{
     if (conf == null) {
       conf = MetastoreConf.newMetastoreConf();
@@ -75,7 +79,16 @@ public class MetaStoreTestUtils {
       @Override
       public void run() {
         try {
-          HiveMetaStore.startMetaStore(port, bridge, finalConf);
+          Lock startLock = null;
+          Condition startCondition = null;
+          AtomicBoolean startedServing = null;
+          if (withHouseKeepingThreads) {
+            startLock = new ReentrantLock();
+            startCondition = startLock.newCondition();
+            startedServing = new AtomicBoolean();
+          }
+          HiveMetaStore.startMetaStore(port, bridge, finalConf, startLock, startCondition,
+                                       startedServing);
         } catch (Throwable e) {
           LOG.error("Metastore Thrift Server threw an exception...", e);
         }
@@ -111,7 +124,7 @@ public class MetaStoreTestUtils {
                                             boolean keepWarehousePath)
       throws Exception {
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf,
-        keepJdbcUri, keepWarehousePath);
+        keepJdbcUri, keepWarehousePath, false);
   }
 
   public static int startMetaStoreWithRetry() throws Exception {
@@ -121,7 +134,13 @@ public class MetaStoreTestUtils {
 
   public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
                                             Configuration conf) throws Exception {
-    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false, false);
+    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false, false, false);
+  }
+
+  public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
+                                            Configuration conf, boolean withHouseKeepingThreads)
+          throws Exception {
+    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false, false, withHouseKeepingThreads);
   }
 
   /**
@@ -133,11 +152,14 @@ public class MetaStoreTestUtils {
    * @param conf The configuration to use
    * @param keepJdbcUri If set to true, then the JDBC url is not changed
    * @param keepWarehousePath If set to true, then the Warehouse directory is not changed
+   * @param withHouseKeepingThreads
    * @return The port on which the MetaStore finally started
    * @throws Exception
    */
   public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
-      Configuration conf, boolean keepJdbcUri, boolean keepWarehousePath) throws Exception {
+                                            Configuration conf, boolean keepJdbcUri,
+                                            boolean keepWarehousePath,
+                                            boolean withHouseKeepingThreads) throws Exception {
     Exception metaStoreException = null;
     String warehouseDir = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
 
@@ -164,7 +186,8 @@ public class MetaStoreTestUtils {
         if (MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE).trim().isEmpty()) {
           MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + metaStorePort);
         }
-        MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf);
+
+        MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf, withHouseKeepingThreads);
 
         // Creating warehouse dir, if not exists
         Warehouse wh = new Warehouse(conf);

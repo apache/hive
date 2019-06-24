@@ -20,4 +20,4 @@ POSTHOOK: query: set role public
 POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: set role nosuchroleexists
 PREHOOK: type: SHOW_ROLES
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. user2 doesn't belong to role nosuchroleexists
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. user2 doesn't belong to role nosuchroleexists

@@ -30,6 +30,7 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <powermock.version>1.6.6</powermock.version>
+    <reflections.version>0.9.10</reflections.version>
   </properties>
 
   <dependencies>
@@ -227,7 +228,7 @@
             <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
-   </dependency>
+    </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
@@ -756,6 +757,22 @@
       <version>${guava.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.re2j</groupId>
+      <artifactId>re2j</artifactId>
+      <version>${re2j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>${reflections.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>annotations</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -978,6 +995,7 @@
                   <include>org.apache.orc:orc-shims</include>
                   <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
+                  <include>com.google.re2j:re2j</include>
                 </includes>
               </artifactSet>
               <relocations>

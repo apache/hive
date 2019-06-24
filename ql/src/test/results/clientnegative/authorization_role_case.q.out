@@ -31,4 +31,4 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: grant UPDATE  on table t1 to role mixcaserole2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@t1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. org.apache.hadoop.hive.ql.metadata.HiveException: MetaException(message:Got exception: org.apache.hadoop.hive.metastore.api.NoSuchObjectException Role mixcaserole2 does not exist)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: MetaException(message:Got exception: org.apache.hadoop.hive.metastore.api.NoSuchObjectException Role mixcaserole2 does not exist)

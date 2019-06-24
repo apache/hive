@@ -31,12 +31,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of clustering a table by some column.
  */
-public class AlterTableClusteredByOperation extends AbstractAlterTableOperation {
-  private final AlterTableClusteredByDesc desc;
-
+public class AlterTableClusteredByOperation extends AbstractAlterTableOperation<AlterTableClusteredByDesc> {
   public AlterTableClusteredByOperation(DDLOperationContext context, AlterTableClusteredByDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

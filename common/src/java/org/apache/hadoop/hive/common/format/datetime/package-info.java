@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,26 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
-
-import org.apache.hadoop.hive.ql.metadata.Table;
-
-@Explain(displayName = "Commit-Insert-Hook", explainLevels = { Explain.Level.USER,
-    Explain.Level.DEFAULT, Explain.Level.EXTENDED })
-public class InsertCommitHookDesc extends DDLDesc {
-  private final Table table;
-  private final boolean overwrite;
-
-  public InsertCommitHookDesc(Table table, boolean overwrite) {
-    this.table = table;
-    this.overwrite = overwrite;
-  }
-
-  public Table getTable() {
-    return table;
-  }
-
-  public boolean isOverwrite() {
-    return overwrite;
-  }
-}
+/**
+ * Deals with formatting and parsing of datetime objects.
+ */
+package org.apache.hadoop.hive.common.format.datetime;

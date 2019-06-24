@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +30,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Drop Resource plans", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DropResourcePlanDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1258596919510047766L;
-
-  static {
-    DDLTask2.registerOperation(DropResourcePlanDesc.class, DropResourcePlanOperation.class);
-  }
 
   private final String planName;
   private final boolean ifExists;

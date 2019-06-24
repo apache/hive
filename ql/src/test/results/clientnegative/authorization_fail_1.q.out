@@ -15,4 +15,4 @@ POSTHOOK: Output: default@authorization_fail_1
 PREHOOK: query: grant Create on table authorization_fail_1 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@authorization_fail_1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. org.apache.hadoop.hive.ql.metadata.HiveException: MetaException(message:Got exception: org.apache.hadoop.hive.metastore.api.InvalidObjectException CREATE is already granted on table [default,authorization_fail_1] by hive_test_user)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: MetaException(message:Got exception: org.apache.hadoop.hive.metastore.api.InvalidObjectException CREATE is already granted on table [default,authorization_fail_1] by hive_test_user)

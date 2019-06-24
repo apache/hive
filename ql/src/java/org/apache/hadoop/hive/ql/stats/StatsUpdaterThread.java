@@ -67,6 +67,7 @@ import com.google.common.collect.Lists;
 
 public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   public static final String SKIP_STATS_AUTOUPDATE_PROPERTY = "skip.stats.autoupdate";
+  public static final String WORKER_NAME_PREFIX = "Stats updater worker ";
   private static final Logger LOG = LoggerFactory.getLogger(StatsUpdaterThread.class);
 
   protected Configuration conf;
@@ -144,12 +145,13 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     for (int i = 0; i < workers.length; ++i) {
       workers[i] = new Thread(new WorkerRunnable(conf, user));
       workers[i].setDaemon(true);
-      workers[i].setName("Stats updater worker " + i);
+      workers[i].setName(WORKER_NAME_PREFIX + i);
     }
   }
 
   @Override
   public void run() {
+    LOG.info("Stats updater thread started");
     startWorkers();
     while (!stop.get()) {
       boolean hadUpdates = runOneIteration();
@@ -167,6 +169,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   @VisibleForTesting
   void startWorkers() {
     for (int i = 0; i < workers.length; ++i) {
+      LOG.info("Stats updater worker thread " + workers[i].getName() + " started");
       workers[i].start();
     }
   }

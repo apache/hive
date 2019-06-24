@@ -31,4 +31,4 @@ POSTHOOK: type: LOCKTABLE
 PREHOOK: query: LOCK TABLE tstsrc EXCLUSIVE
 PREHOOK: type: LOCKTABLE
 Unable to acquire EXPLICIT, EXCLUSIVE lock default@tstsrc after 1 attempts.
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask

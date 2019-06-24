@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -59,18 +60,20 @@ public class Utils {
     IDLE, ACTIVE
   }
 
-  public static void writeOutput(List<String> values, Path outputFile, HiveConf hiveConf)
+  public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf)
       throws SemanticException {
     DataOutputStream outStream = null;
     try {
       FileSystem fs = outputFile.getFileSystem(hiveConf);
       outStream = fs.create(outputFile);
-      outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
-      for (int i = 1; i < values.size(); i++) {
-        outStream.write(Utilities.tabCode);
-        outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
+      for (List<String> values : listValues) {
+        outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
+        for (int i = 1; i < values.size(); i++) {
+          outStream.write(Utilities.tabCode);
+          outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
+        }
+        outStream.write(Utilities.newLineCode);
       }
-      outStream.write(Utilities.newLineCode);
     } catch (IOException e) {
       throw new SemanticException(e);
     } finally {
@@ -174,8 +177,8 @@ public class Utils {
    * validates if a table can be exported, similar to EximUtil.shouldExport with few replication
    * specific checks.
    */
-  public static boolean shouldReplicate(ReplicationSpec replicationSpec, Table tableHandle,
-                                        boolean isEventDump, HiveConf hiveConf) {
+  public static boolean shouldReplicate(ReplicationSpec replicationSpec, Table tableHandle, boolean isEventDump,
+                                        Set<String> bootstrapTableList, ReplScope oldReplScope, HiveConf hiveConf) {
     if (replicationSpec == null) {
       replicationSpec = new ReplicationSpec();
     }
@@ -199,8 +202,10 @@ public class Utils {
                 || replicationSpec.isMetadataOnly();
         if (isEventDump) {
           // Skip dumping of events related to external tables if bootstrap is enabled on it.
+          // Also, skip if current table is included only in new policy but not in old policy.
           shouldReplicateExternalTables = shouldReplicateExternalTables
-                  && !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES);
+                  && !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES)
+                  && ReplUtils.tableIncludedInReplScope(oldReplScope, tableHandle.getTableName());
         }
         return shouldReplicateExternalTables;
       }
@@ -210,17 +215,36 @@ public class Utils {
           return false;
         }
 
-        // Skip dumping events related to ACID tables if bootstrap is enabled on it
-        if (isEventDump) {
-          return !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
+        // Skip dumping events related to ACID tables if bootstrap is enabled for ACID tables.
+        if (isEventDump && hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
+          return false;
         }
+      }
+
+      // Tables which are selected for bootstrap should be skipped. Those tables would be bootstrapped
+      // along with the current incremental replication dump and thus no need to dump events for them.
+      // Note: If any event (other than alter table with table level replication) dump reaches here, it means, table is
+      // included in new replication policy.
+      if (isEventDump) {
+        // If replication policy is replaced with new included/excluded tables list, then events
+        // corresponding to tables which are not included in old policy but included in new policy
+        // should be skipped.
+        if (!ReplUtils.tableIncludedInReplScope(oldReplScope, tableHandle.getTableName())) {
+          return false;
+        }
+
+        // Tables in the list of tables to be bootstrapped should be skipped.
+        return (bootstrapTableList == null || !bootstrapTableList.contains(tableHandle.getTableName()));
       }
     }
     return true;
   }
 
   public static boolean shouldReplicate(NotificationEvent tableForEvent,
-      ReplicationSpec replicationSpec, Hive db, boolean isEventDump, HiveConf hiveConf) {
+                                        ReplicationSpec replicationSpec, Hive db,
+                                        boolean isEventDump, Set<String> bootstrapTableList,
+                                        ReplScope oldReplScope,
+                                        HiveConf hiveConf) {
     Table table;
     try {
       table = db.getTable(tableForEvent.getDbName(), tableForEvent.getTableName());
@@ -230,7 +254,7 @@ public class Utils {
               .getTableName(), e);
       return false;
     }
-    return shouldReplicate(replicationSpec, table, isEventDump, hiveConf);
+    return shouldReplicate(replicationSpec, table, isEventDump, bootstrapTableList, oldReplScope, hiveConf);
   }
 
   static List<Path> getDataPathList(Path fromPath, ReplicationSpec replicationSpec, HiveConf conf)

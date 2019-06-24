@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 
 import java.io.Serializable;
 
@@ -195,7 +195,7 @@ public class WriteEntity extends Entity implements Serializable {
    * @param op Operation type from the alter table description
    * @return the write type this should use.
    */
-  public static WriteType determineAlterTableWriteType(AlterTableDesc.AlterTableTypes op) {
+  public static WriteType determineAlterTableWriteType(AlterTableType op) {
     switch (op) {
     case RENAME_COLUMN:
     case CLUSTERED_BY:
@@ -207,14 +207,14 @@ public class WriteEntity extends Entity implements Serializable {
     case REPLACE_COLUMNS:
     case ARCHIVE:
     case UNARCHIVE:
-    case SET_LOCATION:
+    case ALTERLOCATION:
     case DROPPARTITION:
     case RENAMEPARTITION:
     case SKEWED_BY:
     case SET_SKEWED_LOCATION:
     case INTO_BUCKETS:
     case ALTERPARTITION:
-    case ADD_COLUMNS:
+    case ADDCOLS:
     case RENAME:
     case TRUNCATE:
     case MERGEFILES:

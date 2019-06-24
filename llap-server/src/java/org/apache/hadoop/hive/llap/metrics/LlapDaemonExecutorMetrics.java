@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.AverageQueueTime;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.AverageResponseTime;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorAvailableFreeSlots;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorAvailableFreeSlotsPercent;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorCacheMemoryPerInstance;
@@ -27,8 +29,10 @@ import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.Executo
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxPreemptionTimeToKill;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMemoryPerInstance;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumExecutorsAvailable;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumExecutorsAvailableAverage;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumPreemptableRequests;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumQueuedRequests;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumQueuedRequestsAverage;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorThreadCPUTime;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumExecutorsPerInstance;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorThreadUserTime;
@@ -54,10 +58,14 @@ import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 import org.apache.hadoop.hive.common.JvmMetrics;
 import org.apache.hadoop.hive.llap.daemon.impl.ContainerRunnerImpl;
 import org.apache.hadoop.metrics2.MetricsCollector;
@@ -94,7 +102,13 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   private long fallOffMaxFailedTimeLostLong = 0L;
   private long fallOffMaxKilledTimeLostLong = 0L;
 
+  private TimedAverageMetrics executorNumQueuedRequestsAverage;
+  private TimedAverageMetrics numExecutorsAvailableAverage;
+
   private final Map<String, Integer> executorNames;
+
+  private final DescriptiveStatistics queueTime;
+  private final DescriptiveStatistics runningTime;
 
   final MutableGaugeLong[] executorThreadCpuTime;
   final MutableGaugeLong[] executorThreadUserTime;
@@ -155,7 +169,8 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
 
 
   private LlapDaemonExecutorMetrics(String displayName, JvmMetrics jm, String sessionId,
-      int numExecutors, final int[] intervals) {
+      int numExecutors, final int[] intervals, int timedWindowAverageDataPoints,
+      long timedWindowAverageWindowLength, int simpleAverageWindowDataSize) {
     this.name = displayName;
     this.jvmMetrics = jm;
     this.sessionId = sessionId;
@@ -195,14 +210,30 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
       this.executorThreadUserTime[i] = registry.newGauge(miu, 0L);
       this.executorNames.put(ContainerRunnerImpl.THREAD_NAME_FORMAT_PREFIX + i, i);
     }
+
+    if (timedWindowAverageDataPoints > 0) {
+      this.executorNumQueuedRequestsAverage = new TimedAverageMetrics(timedWindowAverageDataPoints,
+          timedWindowAverageWindowLength);
+      this.numExecutorsAvailableAverage = new TimedAverageMetrics(timedWindowAverageDataPoints,
+          timedWindowAverageWindowLength);
+    }
+    if (simpleAverageWindowDataSize > 0) {
+      this.queueTime = new SynchronizedDescriptiveStatistics(simpleAverageWindowDataSize);
+      this.runningTime = new SynchronizedDescriptiveStatistics(simpleAverageWindowDataSize);
+    } else {
+      this.queueTime = null;
+      this.runningTime = null;
+    }
   }
 
   public static LlapDaemonExecutorMetrics create(String displayName, String sessionId,
-      int numExecutors, final int[] intervals) {
+      int numExecutors, final int[] intervals, int timedWindowAverageDataPoints,
+      long timedWindowAverageWindowLength, int simpleAverageWindowDataSize) {
     MetricsSystem ms = LlapMetricsSystem.instance();
     JvmMetrics jm = JvmMetrics.create(MetricsUtils.METRICS_PROCESS_NAME, sessionId, ms);
     return ms.register(displayName, "LlapDaemon Executor Metrics",
-        new LlapDaemonExecutorMetrics(displayName, jm, sessionId, numExecutors, intervals));
+        new LlapDaemonExecutorMetrics(displayName, jm, sessionId, numExecutors, intervals,
+            timedWindowAverageDataPoints, timedWindowAverageWindowLength, simpleAverageWindowDataSize));
   }
 
   @Override
@@ -220,6 +251,9 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
 
   public void setExecutorNumQueuedRequests(int value) {
     executorNumQueuedRequests.set(value);
+    if (executorNumQueuedRequestsAverage != null) {
+      executorNumQueuedRequestsAverage.add(value);
+    }
   }
 
   public void setExecutorNumPreemptableRequests(int value) {
@@ -228,6 +262,9 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
 
   public void setNumExecutorsAvailable(int value) {
     numExecutorsAvailable.set(value);
+    if (numExecutorsAvailableAverage != null) {
+      numExecutorsAvailableAverage.add(value);
+    }
   }
 
   public void incrTotalEvictedFromWaitQueue() {
@@ -303,6 +340,18 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     executorTotalIKilled.incr();
   }
 
+  public void addMetricsQueueTime(long queueTime) {
+    if (this.queueTime != null) {
+      this.queueTime.addValue(queueTime);
+    }
+  }
+
+  public void addMetricsRunningTime(long runningTime) {
+    if (this.runningTime != null) {
+      this.runningTime.addValue(runningTime);
+    }
+  }
+
   public void setCacheMemoryPerInstance(long value) {
     cacheMemoryPerInstance.set(value);
   }
@@ -355,6 +404,19 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
         .addCounter(ExecutorFallOffKilledTimeLost, fallOffKilledTimeLost.value())
         .addGauge(ExecutorFallOffKilledMaxTimeLost, fallOffMaxKilledTimeLost.value())
         .addCounter(ExecutorFallOffNumCompletedFragments, fallOffNumCompletedFragments.value());
+    if (numExecutorsAvailableAverage != null) {
+      rb.addGauge(ExecutorNumExecutorsAvailableAverage, numExecutorsAvailableAverage.value());
+    }
+    if (executorNumQueuedRequestsAverage != null) {
+      rb.addGauge(ExecutorNumQueuedRequestsAverage, executorNumQueuedRequestsAverage.value());
+    }
+
+    if (queueTime != null) {
+      rb.addGauge(AverageQueueTime, queueTime.getSum() / queueTime.getN());
+    }
+    if (runningTime != null) {
+      rb.addGauge(AverageResponseTime, runningTime.getSum() / runningTime.getN());
+    }
 
     for (MutableQuantiles q : percentileTimeToKill) {
       q.snapshot(rb, true);
@@ -396,5 +458,113 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
 
   public String getName() {
     return name;
+  }
+
+  public int getNumExecutorsAvailable() {
+    return numExecutorsAvailable.value();
+  }
+
+  public int getWaitQueueSize() {
+    return waitQueueSize.value();
+  }
+
+  /**
+   * Generate time aware average for data points.
+   * For example if we have 3s when the queue size is 1, and 1s when the queue size is 2 then the
+   * calculated average should be (3*1+1*2)/4 = 1.25.
+   */
+  @VisibleForTesting
+  static class TimedAverageMetrics {
+    private final int windowDataSize;
+    private final long windowTimeSize;
+    private final Data[] data;
+    private int nextPos = 0;
+
+    /**
+     * Creates and initializes the metrics object.
+     * @param windowDataSize The maximum number of samples stored
+     * @param windowTimeSize The time window used to generate the average in nanoseconds
+     */
+    TimedAverageMetrics(int windowDataSize, long windowTimeSize) {
+      this(windowDataSize, windowTimeSize, System.nanoTime() - windowTimeSize - 1);
+    }
+
+    @VisibleForTesting
+    TimedAverageMetrics(int windowDataSize, long windowTimeSize,
+        long defaultTime) {
+      assert(windowDataSize > 0);
+      this.windowDataSize = windowDataSize;
+      this.windowTimeSize = windowTimeSize;
+      this.data = new Data[windowDataSize];
+      Arrays.setAll(data, i -> new Data(defaultTime, 0L));
+    }
+
+    /**
+     * Adds a new sample value to the metrics.
+     * @param value The new sample value
+     */
+    public synchronized void add(long value) {
+      add(System.nanoTime(), value);
+    }
+
+    /**
+     * Calculates the average for the last windowTimeSize window.
+     * @return The average
+     */
+    public synchronized long value() {
+      return value(System.nanoTime());
+    }
+
+    @VisibleForTesting
+    void add(long time, long value) {
+      data[nextPos].nanoTime = time;
+      data[nextPos].value = value;
+      nextPos++;
+      if (nextPos == windowDataSize) {
+        nextPos = 0;
+      }
+    }
+
+    @VisibleForTesting
+    long value(long time) {
+      // We expect that the data time positions are strictly increasing and the time is greater than
+      // any of the data position time. This is ensured by using System.nanoTime().
+      long sum = 0L;
+      long lastTime = time;
+      long minTime = lastTime - windowTimeSize;
+      int pos = nextPos - 1;
+      do {
+        // Loop the window
+        if (pos < 0) {
+          pos = windowDataSize - 1;
+        }
+        // If we are at the end of the window
+        if (data[pos].nanoTime < minTime) {
+          sum += (lastTime - minTime) * data[pos].value;
+          break;
+        }
+        sum += (lastTime - data[pos].nanoTime) * data[pos].value;
+        lastTime = data[pos].nanoTime;
+        pos--;
+      } while (pos != nextPos - 1);
+      // If we exited the loop and we did not have enough data point estimate the data with the last
+      // known point
+      if (pos == nextPos - 1 && data[nextPos].nanoTime > minTime) {
+        sum += (lastTime - minTime) * data[nextPos].value;
+      }
+      return Math.round((double)sum / (double)windowTimeSize);
+    }
+  }
+
+  /**
+   * Single sample data.
+   */
+  private static class Data {
+    private long nanoTime;
+    private long value;
+    Data(long nanoTime, long value) {
+      this.nanoTime = nanoTime;
+      this.value = value;
+    }
   }
 }

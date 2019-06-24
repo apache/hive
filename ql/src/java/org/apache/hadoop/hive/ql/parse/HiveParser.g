@@ -890,20 +890,28 @@ importStatement
     ;
 
 replDumpStatement
-@init { pushMsg("replication dump statement", state); }
+@init { pushMsg("Replication dump statement", state); }
 @after { popMsg(state); }
       : KW_REPL KW_DUMP
-        (dbName=identifier) (DOT tablePolicy=replTableLevelPolicy)?
+        (dbPolicy=replDbPolicy)
+        (KW_REPLACE oldDbPolicy=replDbPolicy)?
         (KW_FROM (eventId=Number)
           (KW_TO (rangeEnd=Number))?
           (KW_LIMIT (batchSize=Number))?
         )?
         (KW_WITH replConf=replConfigs)?
-    -> ^(TOK_REPL_DUMP $dbName $tablePolicy? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_LIMIT $batchSize)?)? $replConf?)
+    -> ^(TOK_REPL_DUMP $dbPolicy ^(TOK_REPLACE $oldDbPolicy)? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_LIMIT $batchSize)?)? $replConf?)
+    ;
+
+replDbPolicy
+@init { pushMsg("Repl dump DB replication policy", state); }
+@after { popMsg(state); }
+    :
+      (dbName=identifier) (DOT tablePolicy=replTableLevelPolicy)? -> $dbName $tablePolicy?
     ;
 
 replLoadStatement
-@init { pushMsg("replication load statement", state); }
+@init { pushMsg("Replication load statement", state); }
 @after { popMsg(state); }
       : KW_REPL KW_LOAD
         (dbName=identifier)?
@@ -913,21 +921,21 @@ replLoadStatement
       ;
 
 replConfigs
-@init { pushMsg("repl configurations", state); }
+@init { pushMsg("Repl configurations", state); }
 @after { popMsg(state); }
     :
       LPAREN replConfigsList RPAREN -> ^(TOK_REPL_CONFIG replConfigsList)
     ;
 
 replConfigsList
-@init { pushMsg("repl configurations list", state); }
+@init { pushMsg("Repl configurations list", state); }
 @after { popMsg(state); }
     :
       keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_REPL_CONFIG_LIST keyValueProperty+)
     ;
 
 replTableLevelPolicy
-@init { pushMsg("replication table level policy definition", state); }
+@init { pushMsg("Replication table level policy definition", state); }
 @after { popMsg(state); }
     :
       ((replTablesIncludeList=replTablesList) (DOT replTablesExcludeList=replTablesList)?)

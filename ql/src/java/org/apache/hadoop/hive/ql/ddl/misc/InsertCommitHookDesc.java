@@ -16,39 +16,37 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
+package org.apache.hadoop.hive.ql.ddl.misc;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 /**
- * ReplRemoveFirstIncLoadPendFlagDesc. -- Remove the flag from db/table property if its already present.
- *
+ * DDL task description for Inserting Commit Hooks.
  */
-@Explain(displayName = "Set First Incr Load Pend Flag", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ReplRemoveFirstIncLoadPendFlagDesc extends DDLDesc implements Serializable {
-
+@Explain(displayName = "Commit Insert Hook", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class InsertCommitHookDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  String databaseName;
-  String tableName;
 
-  /**
-   * For serialization only.
-   */
-  public ReplRemoveFirstIncLoadPendFlagDesc() {
+  private final Table table;
+  private final boolean overwrite;
+
+  public InsertCommitHookDesc(Table table, boolean overwrite) {
+    this.table = table;
+    this.overwrite = overwrite;
   }
 
-  public ReplRemoveFirstIncLoadPendFlagDesc(String databaseName) {
-    super();
-    this.databaseName = databaseName;
+  public Table getTable() {
+    return table;
   }
 
-  @Explain(displayName="db_name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getDatabaseName() {
-    return databaseName;
-  }
-
-  public void setDatabaseName(String databaseName) {
-    this.databaseName = databaseName;
+  @Explain(displayName = "is overwrite", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean isOverwrite() {
+    return overwrite;
   }
 }

@@ -33,12 +33,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of showing compactions.
  */
-public class ShowCompactionsOperation extends DDLOperation {
-  private final ShowCompactionsDesc desc;
-
+public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> {
   public ShowCompactionsOperation(DDLOperationContext context, ShowCompactionsDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

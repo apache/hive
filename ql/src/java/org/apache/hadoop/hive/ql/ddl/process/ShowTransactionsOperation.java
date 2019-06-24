@@ -34,12 +34,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of showing transactions.
  */
-public class ShowTransactionsOperation extends DDLOperation {
-  private final ShowTransactionsDesc desc;
-
+public class ShowTransactionsOperation extends DDLOperation<ShowTransactionsDesc> {
   public ShowTransactionsOperation(DDLOperationContext context, ShowTransactionsDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override
