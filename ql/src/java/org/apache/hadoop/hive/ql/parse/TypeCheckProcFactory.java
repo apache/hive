@@ -767,6 +767,7 @@ public class TypeCheckProcFactory {
     ExprNodeConstantDesc constantExpr =
         new ExprNodeConstantDesc(colInfo.getType(), poi.getPrimitiveJavaObject(constant));
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    constantExpr.setFoldedFromTab(colInfo.getTabAlias());
     return constantExpr;
   }
 
@@ -781,6 +782,7 @@ public class TypeCheckProcFactory {
 
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    constantExpr.setFoldedFromTab(colInfo.getTabAlias());
     return constantExpr;
   }
 
@@ -796,6 +798,7 @@ public class TypeCheckProcFactory {
 
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    constantExpr.setFoldedFromTab(colInfo.getTabAlias());
     return constantExpr;
   }
 
@@ -811,6 +814,7 @@ public class TypeCheckProcFactory {
 
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    constantExpr.setFoldedFromTab(colInfo.getTabAlias());
     return constantExpr;
   }
 
