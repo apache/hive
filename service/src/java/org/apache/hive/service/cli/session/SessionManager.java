@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
@@ -66,7 +65,11 @@ import org.slf4j.LoggerFactory;
 public class SessionManager extends CompositeService {
 
   private static final String INACTIVE_ERROR_MESSAGE =
-      "Cannot open sessions on an inactive HS2 instance; use service discovery to connect";
+          "Cannot open sessions on an inactive HS2 instance, " +
+                  "or the HS2 server leader is not ready; please use service discovery to " +
+                  "connect the server leader again";
+  private static final String FAIL_CLOSE_ERROR_MESSAGE="Cannot close the session opened " +
+          "during the HA state change time";
   public static final String HIVERCFILE = ".hiverc";
   private static final Logger LOG = LoggerFactory.getLogger(CompositeService.class);
   private HiveConf hiveConf;
@@ -116,7 +119,6 @@ public class SessionManager extends CompositeService {
     if(metrics != null){
       registerOpenSesssionMetrics(metrics);
       registerActiveSesssionMetrics(metrics);
-      registerTezSessionMetrics(metrics);
     }
 
     userLimit = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER);
@@ -179,26 +181,6 @@ public class SessionManager extends CompositeService {
     };
     metrics.addGauge(MetricsConstant.HS2_ACTIVE_SESSIONS, activeSessionCnt);
     metrics.addRatio(MetricsConstant.HS2_AVG_ACTIVE_SESSION_TIME, activeSessionTime, activeSessionCnt);
-  }
-
-  private void registerTezSessionMetrics(Metrics metrics) {
-    MetricsVariable<Integer> waitingTezSessionCnt = new MetricsVariable<Integer>() {
-      @Override
-      public Integer getValue() {
-        Iterable<HiveSession> filtered = Iterables.filter(getSessions(), new Predicate<HiveSession>() {
-          @Override
-          public boolean apply(HiveSession hiveSession) {
-            SessionState ss = hiveSession.getSessionState();
-            if (ss != null) {
-              return ss.getWaitingTezSession() != 0;
-            }
-            return false;
-          }
-        });
-        return Iterables.size(filtered);
-      }
-    };
-    metrics.addGauge(MetricsConstant.WAITING_TEZ_SESSION, waitingTezSessionCnt);
   }
 
   private void initSessionImplClassName() {
@@ -500,7 +482,7 @@ public class SessionManager extends CompositeService {
       } catch (Exception e) {
         LOG.warn("Failed to close the session opened during an HA state change; ignoring", e);
       }
-      throw new HiveSQLException(INACTIVE_ERROR_MESSAGE);
+      throw new HiveSQLException(FAIL_CLOSE_ERROR_MESSAGE);
     }
     LOG.info("Session opened, " + session.getSessionHandle()
         + ", current sessions:" + getOpenSessionCount());
