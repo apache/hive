@@ -223,6 +223,14 @@ message GetDaemonMetricsResponseProto {
   repeated MapEntry metrics = 1;
 }
 
+message SetCapacityRequestProto {
+  optional int32 executorNum = 1;
+  optional int32 queueSize = 2;
+}
+
+message SetCapacityResponseProto {
+}
+
 service LlapDaemonProtocol {
   rpc registerDag(RegisterDagRequestProto) returns (RegisterDagResponseProto);
   rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
@@ -236,4 +244,5 @@ service LlapManagementProtocol {
   rpc getDelegationToken(GetTokenRequestProto) returns (GetTokenResponseProto);
   rpc purgeCache(PurgeCacheRequestProto) returns (PurgeCacheResponseProto);
   rpc getDaemonMetrics(GetDaemonMetricsRequestProto) returns (GetDaemonMetricsResponseProto);
+  rpc setCapacity(SetCapacityRequestProto) returns (SetCapacityResponseProto);
 }

@@ -110,8 +110,12 @@ public class TaskExecutorService extends AbstractService
   final BlockingQueue<TaskWrapper> preemptionQueue;
   private final boolean enablePreemption;
   private final ThreadPoolExecutor threadPoolExecutor;
-  private final AtomicInteger numSlotsAvailable;
-  private final int maxParallelExecutors;
+  @VisibleForTesting
+  AtomicInteger numSlotsAvailable;
+  @VisibleForTesting
+  int maxParallelExecutors;
+  private final int configuredMaxExecutors;
+  private final int configuredWaitingQueueSize;
   private final Clock clock;
 
   // Tracks running fragments, and completing fragments.
@@ -145,7 +149,8 @@ public class TaskExecutorService extends AbstractService
 
     final LlapQueueComparatorBase waitQueueComparator = createComparator(
         waitQueueComparatorClassName);
-    this.maxParallelExecutors = numExecutors;
+    this.maxParallelExecutors = this.configuredMaxExecutors = numExecutors;
+    this.configuredWaitingQueueSize = waitQueueSize;
     this.waitQueue = new EvictingPriorityBlockingQueue<>(waitQueueComparator, waitQueueSize);
     this.clock = clock == null ? new MonotonicClock() : clock;
     this.threadPoolExecutor = new ThreadPoolExecutor(numExecutors, // core pool size
@@ -174,6 +179,31 @@ public class TaskExecutorService extends AbstractService
         executionCompletionExecutorServiceRaw);
     ListenableFuture<?> future = waitQueueExecutorService.submit(new WaitQueueWorker());
     Futures.addCallback(future, new WaitQueueWorkerCallback());
+  }
+
+  /**
+   * Sets the TaskExecutorService capacity to the new values. Both the number of executors and the
+   * queue size should be smaller than that original values, so we do not mess up with the other
+   * settings. Setting smaller capacity will not cancel or reject already executing or queued tasks
+   * in itself.
+   * @param newNumExecutors The new number of executors
+   * @param newWaitQueueSize The new number of wait queue size
+   */
+  @Override
+  public synchronized void setCapacity(int newNumExecutors, int newWaitQueueSize) {
+    if (newNumExecutors > configuredMaxExecutors) {
+      throw new IllegalArgumentException("Requested newNumExecutors=" + newNumExecutors
+          + " is greater than the configured maximum=" + configuredMaxExecutors);
+    }
+    if (newWaitQueueSize > configuredWaitingQueueSize) {
+      throw new IllegalArgumentException("Requested newWaitQueueSize=" + newWaitQueueSize
+          + " is greater than the configured maximum=" + configuredWaitingQueueSize);
+    }
+    numSlotsAvailable.addAndGet(newNumExecutors - maxParallelExecutors);
+    maxParallelExecutors = newNumExecutors;
+    waitQueue.setWaitQueueSize(newWaitQueueSize);
+    LOG.info("TaskExecutorService is setting capacity to: numExecutors=" + newNumExecutors
+        + ", waitQueueSize=" + newWaitQueueSize);
   }
 
   private LlapQueueComparatorBase createComparator(
