@@ -397,15 +397,15 @@ public class TestTaskExecutorService {
         new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true);
 
     // Fourth is lower priority as a result of canFinish being set to false.
-    MockRequest r1 = createMockRequest(1, 1, 100, 200, true, 20000l, true);
-    MockRequest r2 = createMockRequest(1, 1, 100, 200, true, 20000l, true);
-    MockRequest r3 = createMockRequest(1, 1, 100, 200, true, 20000l, true);
-    MockRequest r4 = createMockRequest(1, 1, 100, 200, true, 20000l, false);
-    MockRequest r5 = createMockRequest(1, 1, 100, 200, true, 20000l, false);
-    MockRequest r6 = createMockRequest(1, 1, 100, 200, true, 20000l, false);
-    MockRequest r7 = createMockRequest(1, 1, 100, 200, true, 20000l, false);
-    MockRequest r8 = createMockRequest(1, 1, 100, 200, true, 20000l, false);
-    MockRequest r9 = createMockRequest(1, 1, 100, 200, true, 20000l, false);
+    MockRequest r1 = createMockRequest(1, 1, 1, 100, 200, true, 20000L, true);
+    MockRequest r2 = createMockRequest(2, 1, 2, 100, 200, true, 20000L, true);
+    MockRequest r3 = createMockRequest(3, 1, 3, 100, 200, true, 20000L, true);
+    MockRequest r4 = createMockRequest(4, 1, 4, 100, 200, true, 20000L, false);
+    MockRequest r5 = createMockRequest(5, 1, 5, 100, 200, true, 20000L, false);
+    MockRequest r6 = createMockRequest(6, 1, 6, 100, 200, true, 20000L, false);
+    MockRequest r7 = createMockRequest(7, 1, 7, 100, 200, true, 20000L, false);
+    MockRequest r8 = createMockRequest(8, 1, 8, 100, 200, true, 20000L, false);
+    MockRequest r9 = createMockRequest(9, 1, 9, 100, 200, true, 20000L, false);
 
     taskExecutorService.init(new Configuration());
     taskExecutorService.start();
@@ -530,6 +530,21 @@ public class TestTaskExecutorService {
         new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true);
     taskExecutorService.setCapacity(2, 5);
   }
+
+  @Test(timeout = 1000, expected = IllegalArgumentException.class)
+  public void testSetCapacityNegativeExecutors() {
+    TaskExecutorServiceForTest taskExecutorService =
+        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true);
+    taskExecutorService.setCapacity(-3, 3);
+  }
+
+  @Test(timeout = 1000, expected = IllegalArgumentException.class)
+  public void testSetCapacityNegativeQueueSize() {
+    TaskExecutorServiceForTest taskExecutorService =
+        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true);
+    taskExecutorService.setCapacity(2, -5);
+  }
+
 
   private void runPreemptionGraceTest(
       MockRequest victim1, MockRequest victim2, int time) throws InterruptedException {

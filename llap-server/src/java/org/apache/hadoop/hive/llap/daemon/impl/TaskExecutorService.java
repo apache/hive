@@ -149,7 +149,8 @@ public class TaskExecutorService extends AbstractService
 
     final LlapQueueComparatorBase waitQueueComparator = createComparator(
         waitQueueComparatorClassName);
-    this.maxParallelExecutors = this.configuredMaxExecutors = numExecutors;
+    this.maxParallelExecutors = numExecutors;
+    this.configuredMaxExecutors = numExecutors;
     this.configuredWaitingQueueSize = waitQueueSize;
     this.waitQueue = new EvictingPriorityBlockingQueue<>(waitQueueComparator, waitQueueSize);
     this.clock = clock == null ? new MonotonicClock() : clock;
@@ -184,8 +185,10 @@ public class TaskExecutorService extends AbstractService
   /**
    * Sets the TaskExecutorService capacity to the new values. Both the number of executors and the
    * queue size should be smaller than that original values, so we do not mess up with the other
-   * settings. Setting smaller capacity will not cancel or reject already executing or queued tasks
-   * in itself.
+   * settings. (For example: We do not allow higher executor number which could cause memory
+   * oversubscription since the container memory sizes are calculated based on the maximum memory
+   * and the maximum number of executors)
+   * Setting smaller capacity will not cancel or reject already executing or queued tasks in itself.
    * @param newNumExecutors The new number of executors
    * @param newWaitQueueSize The new number of wait queue size
    */
@@ -198,6 +201,14 @@ public class TaskExecutorService extends AbstractService
     if (newWaitQueueSize > configuredWaitingQueueSize) {
       throw new IllegalArgumentException("Requested newWaitQueueSize=" + newWaitQueueSize
           + " is greater than the configured maximum=" + configuredWaitingQueueSize);
+    }
+    if (newNumExecutors < 0) {
+      throw new IllegalArgumentException("Negative numExecutors is not allowed. Requested "
+          + "newNumExecutors=" + newNumExecutors);
+    }
+    if (newWaitQueueSize < 0) {
+      throw new IllegalArgumentException("Negative waitQueueSize is not allowed. Requested "
+          + "newWaitQueueSize=" + newWaitQueueSize);
     }
     numSlotsAvailable.addAndGet(newNumExecutors - maxParallelExecutors);
     maxParallelExecutors = newNumExecutors;

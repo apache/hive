@@ -100,7 +100,7 @@ public class TestEvictingPriorityBlockingQueue {
     EvictingPriorityBlockingQueue<Element> queue = new EvictingPriorityBlockingQueue<>(new ElementComparator(), 5);
 
     Element[] elements = new Element[10];
-    for (int i = 0 ; i < elements.length ; i++) {
+    for (int i = 0; i < elements.length; i++) {
       elements[i] = new Element(i);
     }
 
