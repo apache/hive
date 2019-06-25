@@ -25,15 +25,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Preconditions;
@@ -44,6 +54,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.http.HtmlQuoting;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
@@ -100,6 +111,20 @@ public class HttpServer {
 
   public static final String CONF_CONTEXT_ATTRIBUTE = "hive.conf";
   public static final String ADMINS_ACL = "admins.acl";
+  private XFrameOption xFrameOption;
+  private boolean xFrameOptionIsEnabled;
+  public static final String HTTP_HEADER_PREFIX = "hadoop.http.header.";
+  private static final String X_FRAME_OPTIONS = "X-FRAME-OPTIONS";
+  static final String X_XSS_PROTECTION  =
+          "X-XSS-Protection:1; mode=block";
+  static final String X_CONTENT_TYPE_OPTIONS =
+          "X-Content-Type-Options:nosniff";
+  private static final String HTTP_HEADER_REGEX =
+          "hadoop\\.http\\.header\\.([a-zA-Z\\-_]+)";
+  private static final Pattern PATTERN_HTTP_HEADER_REGEX =
+          Pattern.compile(HTTP_HEADER_REGEX);
+
+
 
   private final String name;
   private String appDir;
@@ -111,7 +136,8 @@ public class HttpServer {
    */
   private HttpServer(final Builder b) throws IOException {
     this.name = b.name;
-
+    this.xFrameOptionIsEnabled = b.xFrameEnabled;
+    this.xFrameOption = b.xFrameOption;
     createWebServer(b);
   }
 
@@ -135,6 +161,8 @@ public class HttpServer {
     private String allowedHeaders;
     private PamAuthenticator pamAuthenticator;
     private String contextRootRewriteTarget = "/index.html";
+    private boolean xFrameEnabled;
+    private XFrameOption xFrameOption = XFrameOption.SAMEORIGIN;
     private final List<Pair<String, Class<? extends HttpServlet>>> servlets =
         new LinkedList<Pair<String, Class<? extends HttpServlet>>>();
 
@@ -251,6 +279,27 @@ public class HttpServer {
       servlets.add(new Pair<String, Class<? extends HttpServlet>>(endpoint, servlet));
       return this;
     }
+    /**
+     * Adds the ability to control X_FRAME_OPTIONS on HttpServer2.
+     * @param xFrameEnabled - True enables X_FRAME_OPTIONS false disables it.
+     * @return Builder.
+     */
+    public Builder configureXFrame(boolean xFrameEnabled) {
+      this.xFrameEnabled = xFrameEnabled;
+      return this;
+    }
+
+    /**
+     * Sets a valid X-Frame-option that can be used by HttpServer2.
+     * @param option - String DENY, SAMEORIGIN or ALLOW-FROM are the only valid
+     *               options. Any other value will throw IllegalArgument
+     *               Exception.
+     * @return  Builder.
+     */
+    public Builder setXFrameOption(String option) {
+      this.xFrameOption = XFrameOption.getEnum(option);
+      return this;
+    }
   }
 
   public void start() throws Exception {
@@ -285,8 +334,8 @@ public class HttpServer {
    */
   @InterfaceAudience.LimitedPrivate("hive")
   public static boolean isInstrumentationAccessAllowed(
-    ServletContext servletContext, HttpServletRequest request,
-    HttpServletResponse response) throws IOException {
+          ServletContext servletContext, HttpServletRequest request,
+          HttpServletResponse response) throws IOException {
     Configuration conf =
       (Configuration) servletContext.getAttribute(CONF_CONTEXT_ATTRIBUTE);
 
@@ -523,6 +572,11 @@ public class HttpServer {
       setupCORSFilter(b);
     }
 
+    Map<String, String> xFrameParams = setHeaders();
+    if(b.xFrameEnabled){
+      setupXframeFilter(b,xFrameParams);
+    }
+
     initializeWebServer(b, threadPool.getMaxThreads());
   }
 
@@ -551,6 +605,7 @@ public class HttpServer {
     ContextHandlerCollection contexts = new ContextHandlerCollection();
     contexts.addHandler(rwHandler);
     webServer.setHandler(contexts);
+
 
     if(b.usePAM){
       setupPam(b, contexts);
@@ -597,6 +652,37 @@ public class HttpServer {
       logCtx.setResourceBase(logDir);
       logCtx.setDisplayName("logs");
     }
+  }
+
+  private Map<String, String> setHeaders() {
+    Map<String, String> xFrameParams = new HashMap<>();
+    xFrameParams.putAll(getDefaultHeaders());
+    if(this.xFrameOptionIsEnabled) {
+      xFrameParams.put(HTTP_HEADER_PREFIX+X_FRAME_OPTIONS,
+              this.xFrameOption.toString());
+    }
+    return xFrameParams;
+  }
+
+  private Map<String, String> getDefaultHeaders() {
+    Map<String, String> headers = new HashMap<>();
+    String[] splitVal = X_CONTENT_TYPE_OPTIONS.split(":");
+    headers.put(HTTP_HEADER_PREFIX + splitVal[0],
+            splitVal[1]);
+    splitVal = X_XSS_PROTECTION.split(":");
+    headers.put(HTTP_HEADER_PREFIX + splitVal[0],
+            splitVal[1]);
+    return headers;
+  }
+
+  private void setupXframeFilter(Builder b, Map<String, String> params) {
+    FilterHolder holder = new FilterHolder();
+    holder.setClassName(QuotingInputFilter.class.getName());
+    holder.setInitParameters(params);
+
+    ServletHandler handler = webAppContext.getServletHandler();
+    handler.addFilterWithMapping(holder, "/*", FilterMapping.ALL);
+
   }
 
   String getLogDir(Configuration conf) {
@@ -651,4 +737,201 @@ public class HttpServer {
     }
     webAppContext.addServlet(holder, pathSpec);
   }
+
+  /**
+   * The X-FRAME-OPTIONS header in HTTP response to mitigate clickjacking
+   * attack.
+   */
+  public enum XFrameOption {
+    DENY("DENY"), SAMEORIGIN("SAMEORIGIN"), ALLOWFROM("ALLOW-FROM");
+
+    XFrameOption(String name) {
+      this.name = name;
+    }
+
+    private final String name;
+
+    @Override
+    public String toString() {
+      return this.name;
+    }
+
+    /**
+     * We cannot use valueOf since the AllowFrom enum differs from its value
+     * Allow-From. This is a helper method that does exactly what valueof does,
+     * but allows us to handle the AllowFrom issue gracefully.
+     *
+     * @param value - String must be DENY, SAMEORIGIN or ALLOW-FROM.
+     * @return XFrameOption or throws IllegalException.
+     */
+    private static XFrameOption getEnum(String value) {
+      Preconditions.checkState(value != null && !value.isEmpty());
+      for (XFrameOption xoption : values()) {
+        if (value.equals(xoption.toString())) {
+          return xoption;
+        }
+      }
+      throw new IllegalArgumentException("Unexpected value in xFrameOption.");
+    }
+  }
+  /**
+   * A Servlet input filter that quotes all HTML active characters in the
+   * parameter names and values. The goal is to quote the characters to make
+   * all of the servlets resistant to cross-site scripting attacks. It also
+   * sets X-FRAME-OPTIONS in the header to mitigate clickjacking attacks.
+   */
+  public static class QuotingInputFilter implements Filter {
+
+    private FilterConfig config;
+    private Map<String, String> headerMap;
+
+    public static class RequestQuoter extends HttpServletRequestWrapper {
+      private final HttpServletRequest rawRequest;
+
+      public RequestQuoter(HttpServletRequest rawRequest) {
+        super(rawRequest);
+        this.rawRequest = rawRequest;
+      }
+
+      /**
+       * Return the set of parameter names, quoting each name.
+       */
+      @SuppressWarnings("unchecked")
+      @Override
+      public Enumeration<String> getParameterNames() {
+        return new Enumeration<String>() {
+          private Enumeration<String> rawIterator =
+                  rawRequest.getParameterNames();
+          @Override
+          public boolean hasMoreElements() {
+            return rawIterator.hasMoreElements();
+          }
+
+          @Override
+          public String nextElement() {
+            return HtmlQuoting.quoteHtmlChars(rawIterator.nextElement());
+          }
+        };
+      }
+
+      /**
+       * Unquote the name and quote the value.
+       */
+      @Override
+      public String getParameter(String name) {
+        return HtmlQuoting.quoteHtmlChars(rawRequest.getParameter
+                (HtmlQuoting.unquoteHtmlChars(name)));
+      }
+
+      @Override
+      public String[] getParameterValues(String name) {
+        String unquoteName = HtmlQuoting.unquoteHtmlChars(name);
+        String[] unquoteValue = rawRequest.getParameterValues(unquoteName);
+        if (unquoteValue == null) {
+          return null;
+        }
+        String[] result = new String[unquoteValue.length];
+        for(int i=0; i < result.length; ++i) {
+          result[i] = HtmlQuoting.quoteHtmlChars(unquoteValue[i]);
+        }
+        return result;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public Map<String, String[]> getParameterMap() {
+        Map<String, String[]> result = new HashMap<>();
+        Map<String, String[]> raw = rawRequest.getParameterMap();
+        for (Map.Entry<String,String[]> item: raw.entrySet()) {
+          String[] rawValue = item.getValue();
+          String[] cookedValue = new String[rawValue.length];
+          for(int i=0; i< rawValue.length; ++i) {
+            cookedValue[i] = HtmlQuoting.quoteHtmlChars(rawValue[i]);
+          }
+          result.put(HtmlQuoting.quoteHtmlChars(item.getKey()), cookedValue);
+        }
+        return result;
+      }
+
+      /**
+       * Quote the url so that users specifying the HOST HTTP header
+       * can't inject attacks.
+       */
+      @Override
+      public StringBuffer getRequestURL(){
+        String url = rawRequest.getRequestURL().toString();
+        return new StringBuffer(HtmlQuoting.quoteHtmlChars(url));
+      }
+
+      /**
+       * Quote the server name so that users specifying the HOST HTTP header
+       * can't inject attacks.
+       */
+      @Override
+      public String getServerName() {
+        return HtmlQuoting.quoteHtmlChars(rawRequest.getServerName());
+      }
+    }
+
+    @Override
+    public void init(FilterConfig config) throws ServletException {
+      this.config = config;
+      initHttpHeaderMap();
+    }
+
+    @Override
+    public void destroy() {
+    }
+
+    @Override
+    public void doFilter(ServletRequest request,
+                         ServletResponse response,
+                         FilterChain chain
+    ) throws IOException, ServletException {
+      HttpServletRequestWrapper quoted =
+              new RequestQuoter((HttpServletRequest) request);
+      HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+      String mime = inferMimeType(request);
+      if (mime == null) {
+        httpResponse.setContentType("text/plain; charset=utf-8");
+      } else if (mime.startsWith("text/html")) {
+        // HTML with unspecified encoding, we want to
+        // force HTML with utf-8 encoding
+        // This is to avoid the following security issue:
+        // http://openmya.hacker.jp/hasegawa/security/utf7cs.html
+        httpResponse.setContentType("text/html; charset=utf-8");
+      } else if (mime.startsWith("application/xml")) {
+        httpResponse.setContentType("text/xml; charset=utf-8");
+      }
+      headerMap.forEach((k, v) -> httpResponse.addHeader(k, v));
+      chain.doFilter(quoted, httpResponse);
+    }
+
+    /**
+     * Infer the mime type for the response based on the extension of the request
+     * URI. Returns null if unknown.
+     */
+    private String inferMimeType(ServletRequest request) {
+      String path = ((HttpServletRequest)request).getRequestURI();
+      ServletContextHandler.Context sContext =
+              (ServletContextHandler.Context)config.getServletContext();
+      String mime = sContext.getMimeType(path);
+      return (mime == null) ? null : mime;
+    }
+
+    private void initHttpHeaderMap() {
+      Enumeration<String> params = this.config.getInitParameterNames();
+      headerMap = new HashMap<>();
+      while (params.hasMoreElements()) {
+        String key = params.nextElement();
+        Matcher m = PATTERN_HTTP_HEADER_REGEX.matcher(key);
+        if (m.matches()) {
+          String headerKey = m.group(1);
+          headerMap.put(headerKey, config.getInitParameter(key));
+        }
+      }
+    }
+  }
+
 }
