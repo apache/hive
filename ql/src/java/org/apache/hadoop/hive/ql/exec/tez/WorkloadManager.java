@@ -115,7 +115,7 @@ public class WorkloadManager extends AbstractTriggerValidator
   private final int amRegistryTimeoutMs;
   private final boolean allowAnyPool;
   private final MetricsSystem metricsSystem;
-  private final TezExternalSessionsRegistryClient externalSessions;
+  private final ExternalSessionsRegistry externalSessions;
 
   // Note: it's not clear that we need to track this - unlike PoolManager we don't have non-pool
   //       sessions, so the pool itself could internally track the ses  sions it gave out, since
@@ -239,7 +239,7 @@ public class WorkloadManager extends AbstractTriggerValidator
     }
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS)) {
-      externalSessions = TezExternalSessionsRegistryClient.getClient(conf);
+      externalSessions = ExternalSessionsRegistry.getClient(conf);
     } else {
       externalSessions = null;
     }

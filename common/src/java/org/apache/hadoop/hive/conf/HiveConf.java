@@ -3282,6 +3282,9 @@ public class HiveConf extends Configuration {
       new StringSet("BIN_PACK", "ROUND_ROBIN", "RANDOM"),
       "When there are external sessions from multiple compute clusters, session selection will be based\n" +
       "on this strategy."),
+    HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REGISTRY_CLASS("hive.server2.tez.external.sessions.registry.class",
+      "org.apache.hadoop.hive.ql.exec.tez.DummyExternalSessionsRegistry", "Tez external sessions\n" +
+      "registry implementation to use"),
 
     // Operation log configuration
     HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,

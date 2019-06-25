@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
+import org.apache.hadoop.hive.ql.exec.tez.ExternalSessionsRegistry;
 import org.apache.hadoop.hive.ql.exec.tez.TezExternalSessionState;
 import org.apache.hadoop.hive.ql.exec.tez.TezExternalSessionsRegistryClient;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
@@ -298,7 +299,7 @@ public class SessionState {
    */
   private final Map<String, FunctionInfo> currentFunctionsInUse = new HashMap<>();
 
-  private static TezExternalSessionsRegistryClient externalSessions = null;
+  private static ExternalSessionsRegistry externalSessions = null;
 
   /**
    * CURRENT_TIMESTAMP value for query
@@ -665,7 +666,11 @@ public class SessionState {
     }
 
     if (HiveConf.getBoolVar(startSs.getConf(), ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS)) {
-      externalSessions = TezExternalSessionsRegistryClient.getClient(startSs.getConf());
+      try {
+        externalSessions = ExternalSessionsRegistry.getClient(startSs.getConf());
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
+      }
     } else {
       externalSessions = null;
     }

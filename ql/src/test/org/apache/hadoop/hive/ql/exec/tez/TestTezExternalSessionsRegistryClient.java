@@ -18,10 +18,13 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.PriorityQueue;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.tez.client.registry.AMRecord;
 import org.junit.Test;
@@ -164,5 +167,26 @@ public class TestTezExternalSessionsRegistryClient {
       got.add(amRecords.poll());
     }
     assertEquals(expected, got);
+  }
+
+  @Test
+  public void testDummyExternalSessionsRegistry() throws MetaException {
+    HiveConf conf = new HiveConf();
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REGISTRY_CLASS,
+      DummyExternalSessionsRegistry.class.getName());
+    conf.set("tez.am.registry.namespace", "dummy");
+    ExternalSessionsRegistry externalSessionsRegistry = ExternalSessionsRegistry.getClient(conf);
+    assertTrue(externalSessionsRegistry instanceof DummyExternalSessionsRegistry);
+  }
+
+  @Test
+  public void testTezExternalSessionsRegistry() throws MetaException {
+    HiveConf conf = new HiveConf();
+    conf.set("tez.am.zookeeper.quorum", "test-quorum");
+    conf.set("tez.am.registry.namespace", "tez");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REGISTRY_CLASS,
+      TezExternalSessionsRegistryClient.class.getName());
+    ExternalSessionsRegistry externalSessionsRegistry = ExternalSessionsRegistry.getClient(conf);
+    assertTrue(externalSessionsRegistry instanceof TezExternalSessionsRegistryClient);
   }
 }

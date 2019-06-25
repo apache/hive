@@ -48,16 +48,16 @@ public class TezExternalSessionState extends TezSessionState {
   private static final Logger LOG = LoggerFactory.getLogger(TezExternalSessionState.class.getName());
   private String externalAppId;
   private boolean isDestroying = false;
-  private final TezExternalSessionsRegistryClient registry;
+  private final ExternalSessionsRegistry registry;
 
   public TezExternalSessionState(
-      DagUtils utils, HiveConf conf, TezExternalSessionsRegistryClient registry) {
+      DagUtils utils, HiveConf conf, ExternalSessionsRegistry registry) {
     super(utils, conf);
     this.registry = registry;
   }
 
   public TezExternalSessionState(String sessionId, HiveConf conf,
-      TezExternalSessionsRegistryClient registry) {
+    ExternalSessionsRegistry registry) {
     super(sessionId, conf);
     this.registry = registry;
   }

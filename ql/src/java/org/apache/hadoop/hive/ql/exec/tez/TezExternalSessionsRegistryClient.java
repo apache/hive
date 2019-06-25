@@ -29,13 +29,12 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.tez.client.registry.AMRecord;
 import org.apache.tez.client.registry.AMRegistryClientListener;
 import org.apache.tez.client.registry.zookeeper.ZkAMRegistryClient;
-import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
-public class TezExternalSessionsRegistryClient {
+public class TezExternalSessionsRegistryClient implements ExternalSessionsRegistry {
   private static final Logger LOG = LoggerFactory.getLogger(TezExternalSessionsRegistryClient.class);
   private static int DEFAULT_QUEUE_CAPACITY = 16;
   private Map<String, AMRecord> appIdAmRecordMap = new HashMap<>();
@@ -51,25 +50,7 @@ public class TezExternalSessionsRegistryClient {
     RANDOM
   }
 
-  private static Map<String, TezExternalSessionsRegistryClient> INSTANCES = new HashMap<>();
-
-  public static synchronized TezExternalSessionsRegistryClient getClient(final Configuration conf) {
-    String namespace = conf.get(TezConfiguration.TEZ_AM_REGISTRY_NAMESPACE);
-    // HS2 would need to know about all coordinators running on all compute groups for a given compute (namespace)
-    // Setting this config to false in client, will make registry client listen on paths under @compute instead of
-    // @compute/compute-group
-    conf.setBoolean(TezConfiguration.TEZ_AM_REGISTRY_ENABLE_COMPUTE_GROUPS, false);
-    TezExternalSessionsRegistryClient registry = INSTANCES.get(namespace);
-    if (registry == null) {
-      registry = new TezExternalSessionsRegistryClient(conf);
-      INSTANCES.put(namespace, registry);
-    }
-    LOG.info("Returning tez external AM registry ({}) for namespace '{}'", System.identityHashCode(registry),
-      namespace);
-    return registry;
-  }
-
-  private TezExternalSessionsRegistryClient(final Configuration conf) {
+  public TezExternalSessionsRegistryClient(final Configuration conf) {
     this.maxAttempts = HiveConf.getIntVar(conf, ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_WAIT_MAX_ATTEMPTS);
     String ss = HiveConf.getVar(conf, ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_ASSIGNMENT_STRATEGY);
     this.selectionStrategy = SelectionStrategy.valueOf(ss.toUpperCase());

@@ -92,7 +92,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
   private TriggerValidatorRunnable triggerValidatorRunnable;
   private YarnQueueHelper yarnQueueChecker;
 
-  private TezExternalSessionsRegistryClient externalSessions = null;
+  private ExternalSessionsRegistry externalSessions = null;
 
   /** Note: this is not thread-safe. */
   public static TezSessionPoolManager getInstance() {
@@ -200,7 +200,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
     }
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS)) {
-      externalSessions = TezExternalSessionsRegistryClient.getClient(conf);
+      externalSessions = ExternalSessionsRegistry.getClient(conf);
     }
 
     restrictedConfig = new RestrictedConfigChecker(conf);
