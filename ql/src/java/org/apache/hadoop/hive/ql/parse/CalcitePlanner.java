@@ -139,21 +139,8 @@ import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.*;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptMaterializationValidator;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -595,7 +582,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
               this.ctx.setCboInfo("Plan not optimized by CBO.");
             }
           }
-          if( e instanceof CalciteSubquerySemanticException) {
+          if( e instanceof CalciteSubquerySemanticException
+                || e instanceof CalciteSubqueryRuntimeException) {
             // non-cbo path retries to execute subqueries and throws completely different exception/error
             // to eclipse the original error message
             // so avoid executing subqueries on non-cbo
