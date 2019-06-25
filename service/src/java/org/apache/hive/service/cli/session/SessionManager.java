@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.function.Supplier;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -46,6 +47,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
@@ -92,6 +94,7 @@ public class SessionManager extends CompositeService {
   private long checkInterval;
   private long sessionTimeout;
   private boolean checkOperation;
+  private TezSessionMetricsHelper tezSessionMetricsHelper = new TezSessionMetricsHelper();
 
   private volatile boolean shutdown;
   // The HiveServer2 instance running this service
@@ -119,6 +122,7 @@ public class SessionManager extends CompositeService {
     if(metrics != null){
       registerOpenSesssionMetrics(metrics);
       registerActiveSesssionMetrics(metrics);
+      registerTezSessionMetrics(metrics);
     }
 
     userLimit = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER);
@@ -181,6 +185,36 @@ public class SessionManager extends CompositeService {
     };
     metrics.addGauge(MetricsConstant.HS2_ACTIVE_SESSIONS, activeSessionCnt);
     metrics.addRatio(MetricsConstant.HS2_AVG_ACTIVE_SESSION_TIME, activeSessionTime, activeSessionCnt);
+  }
+
+  private static final Integer[] PERCENTILE_SET = {
+      50, 60, 70, 80, 90, 95, 96, 97, 98, 99
+  };
+
+  private void registerTezSessionMetrics(Metrics metrics) {
+    // How many queries are queued waiting for to receive a Tez session.
+    MetricsVariable<Integer> waitingTezSessionCnt = new MetricsVariable<Integer>() {
+      @Override
+      public Integer getValue() {
+        tezSessionMetricsHelper.checkRefresh(() -> getSessions());
+        return tezSessionMetricsHelper.getWaitingTezSessionCount();
+      }
+    };
+
+    // Set up percentile metrics for how long the queries have been waiting for a Tez session.
+    for (Integer percentileVal : PERCENTILE_SET) {
+      String percentileMetricName = "waiting_tez_session_time_pctile_" + percentileVal.toString();
+      MetricsVariable<Double> percentileMetric = new MetricsVariable<Double>() {
+        @Override
+        public Double getValue() {
+          tezSessionMetricsHelper.checkRefresh(() -> getSessions());
+          return tezSessionMetricsHelper.getPercentile(percentileVal);
+        }
+      };
+      metrics.addGauge(percentileMetricName, percentileMetric);
+    }
+
+    metrics.addGauge(MetricsConstant.WAITING_TEZ_SESSION, waitingTezSessionCnt);
   }
 
   private void initSessionImplClassName() {
@@ -727,6 +761,65 @@ public class SessionManager extends CompositeService {
   public void allowSessions(boolean b) {
     synchronized (sessionAddLock) {
       this.allowSessions = b;
+    }
+  }
+
+  private static class TezSessionMetricsHelper {
+    // Take a snaphot of the wait times for queries waiting for Tez session.
+    // and re-use when generating metrics, for up to this duration.
+    private static final long CALC_REUSE_DURATION_MSEC = 2000;
+
+    private volatile long lastRefreshTime;
+    private ArrayList<Double> vals = new ArrayList<Double>();
+
+    private boolean shouldRefresh() {
+      return (System.currentTimeMillis() - lastRefreshTime) > CALC_REUSE_DURATION_MSEC;
+    }
+
+    public void checkRefresh(Supplier<Collection<HiveSession>> sessionsFunc) {
+      if (shouldRefresh()) {
+        refresh(sessionsFunc.get());
+      }
+    }
+
+    public int getWaitingTezSessionCount() {
+      return vals.size();
+    }
+
+    public Double getPercentile(Integer percentile) {
+      return getPercentile(vals, percentile);
+    }
+
+    private static Double getPercentile(ArrayList<Double> vals, double percentile) {
+      // Assumes vals list is in sorted order.
+      int size = vals.size();
+      if (size == 0) {
+        return Double.valueOf(0);
+      }
+
+      int index = (int) ((percentile / 100.0) * (double) vals.size());
+      index = Math.min(index, vals.size() - 1);
+      return vals.get(index);
+    }
+
+    // Retrieve and sort the list of wait times for queries waiting on Tez sessions.
+    private synchronized void refresh(Collection<HiveSession> sessions) {
+      if (!shouldRefresh()) {
+        // Looks like this may have been updated since this caller was told to refresh.
+        return;
+      }
+
+      vals.clear();
+      long currentTime = System.currentTimeMillis();
+      for (HiveSession session : sessions) {
+        long waitingSince = session.getSessionState().getWaitingTezSession();
+        if (waitingSince != 0) {
+          vals.add((double) (currentTime - waitingSince));
+        }
+      }
+
+      Collections.sort(vals);
+      lastRefreshTime = System.currentTimeMillis();
     }
   }
 }
