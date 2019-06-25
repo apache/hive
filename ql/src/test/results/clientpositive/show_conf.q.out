@@ -26,4 +26,4 @@ PREHOOK: query: show conf "hive.zookeeper.session.timeout"
 PREHOOK: type: SHOWCONF
 POSTHOOK: query: show conf "hive.zookeeper.session.timeout"
 POSTHOOK: type: SHOWCONF
-1200000ms	STRING(TIME)	Expects a time value with unit (d/day, h/hour, m/min, s/sec, ms/msec, us/usec, ns/nsec), which is msec if not specified. ZooKeeper client's session timeout (in milliseconds). The client is disconnected, and as a result, all locks released, if a heartbeat is not sent in the timeout.
+120000ms	STRING(TIME)	Expects a time value with unit (d/day, h/hour, m/min, s/sec, ms/msec, us/usec, ns/nsec), which is msec if not specified. ZooKeeper client's session timeout (in milliseconds). The client is disconnected, and as a result, all locks released, if a heartbeat is not sent in the timeout.
