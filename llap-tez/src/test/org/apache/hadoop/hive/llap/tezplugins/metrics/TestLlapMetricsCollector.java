@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap.tezplugins.metrics;
 
+import com.google.common.collect.Lists;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
@@ -21,10 +22,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.impl.LlapManagementProtocolClientImpl;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +37,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,7 +69,6 @@ public class TestLlapMetricsCollector {
 
   @Before
   public void setUp() throws ServiceException {
-    // HiveConf.setBoolVar();
     initMocks(this);
 
     when(mockConf.get(HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS.varname,
@@ -180,5 +184,40 @@ public class TestLlapMetricsCollector {
 
     // Then
     verify(mockExecutor, times(1)).shutdownNow();
+  }
+
+  @Test(timeout = DEFAULT_TIMEOUT)
+  public void testConsumeInitialInstances() throws IOException {
+    // Given
+    LlapServiceInstance mockService = mock(LlapServiceInstance.class);
+    LlapServiceInstanceSet serviceInstances = mock(LlapServiceInstanceSet.class);
+    LlapRegistryService mockRegistryService = mock(LlapRegistryService.class);
+
+    when(mockService.getWorkerIdentity()).thenReturn(TEST_IDENTITY_1);
+    when(serviceInstances.getAll()).thenReturn(Lists.newArrayList(mockService));
+    when(mockRegistryService.getInstances()).thenReturn(serviceInstances);
+
+    // When
+    collector.consumeInitialInstances(mockRegistryService);
+    collector.collectMetrics();
+
+    // Then
+    assertEquals(1, collector.getMetrics().size());
+  }
+
+  @Test(timeout = DEFAULT_TIMEOUT)
+  public void testStartWontStartSchedulingIfTheConfigValueIsZeroMs() {
+    // Given
+    when(mockConf.get(HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS.varname,
+            HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS.defaultStrVal)).thenReturn("0ms");
+    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory);
+
+    // When
+    collector.start();
+
+    // Then
+    verify(mockExecutor, never())
+            .scheduleAtFixedRate(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class));
+
   }
 }

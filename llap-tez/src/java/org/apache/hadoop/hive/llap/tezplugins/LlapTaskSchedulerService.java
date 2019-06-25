@@ -403,6 +403,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             .build());
 
     this.llapMetricsCollector = new LlapMetricsCollector(conf);
+    this.registry.registerServiceListener(llapMetricsCollector);
 
     String instanceId = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
 
@@ -794,8 +795,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         }
       }, 0, 10000L, TimeUnit.MILLISECONDS);
 
-      llapMetricsCollector.start();
-
       nodeEnablerFuture = nodeEnabledExecutor.submit(nodeEnablerCallable);
       Futures.addCallback(nodeEnablerFuture, new LoggingFutureCallback("NodeEnablerThread", LOG));
 
@@ -809,7 +808,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
       registry.start();
       registry.registerStateChangeListener(new NodeStateChangeListener());
-      registry.registerStateChangeListener(llapMetricsCollector);
       activeInstances = registry.getInstances();
       for (LlapServiceInstance inst : activeInstances.getAll()) {
         registerAndAddNode(new NodeInfo(inst, nodeBlacklistConf, clock,
@@ -910,7 +908,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     try {
       if (!this.isStopped.getAndSet(true)) {
         scheduledLoggingExecutor.shutdownNow();
-        llapMetricsCollector.shutdown();
 
         nodeEnablerCallable.shutdown();
         if (nodeEnablerFuture != null) {

@@ -22,14 +22,19 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.impl.LlapManagementProtocolClientImpl;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.service.Service;
+import org.apache.hadoop.service.ServiceStateChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.SocketFactory;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,13 +46,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * Collect metrics from the llap daemons in every given milliseconds.
  */
-public class LlapMetricsCollector implements ServiceInstanceStateChangeListener<LlapServiceInstance> {
+public class LlapMetricsCollector implements ServiceStateChangeListener,
+        ServiceInstanceStateChangeListener<LlapServiceInstance> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapMetricsCollector.class);
   private static final String THREAD_NAME = "LlapTaskSchedulerMetricsCollectorThread";
   private static final long INITIAL_DELAY_MSEC = 60000L;
 
-  private final Configuration conf;
   private final ScheduledExecutorService scheduledMetricsExecutor;
   private final LlapManagementProtocolClientImplFactory clientFactory;
   private final Map<String, LlapManagementProtocolClientImpl> llapClients;
@@ -67,7 +72,6 @@ public class LlapMetricsCollector implements ServiceInstanceStateChangeListener<
   @VisibleForTesting
   LlapMetricsCollector(Configuration conf, ScheduledExecutorService scheduledMetricsExecutor,
                        LlapManagementProtocolClientImplFactory clientFactory) {
-    this.conf = conf;
     this.scheduledMetricsExecutor = scheduledMetricsExecutor;
     this.clientFactory = clientFactory;
     this.llapClients = new HashMap<>();
@@ -94,20 +98,51 @@ public class LlapMetricsCollector implements ServiceInstanceStateChangeListener<
 
   @VisibleForTesting
   void collectMetrics() {
-    if (enabled()) {
-      for (Map.Entry<String, LlapManagementProtocolClientImpl> entry : llapClients.entrySet()) {
-        String identity = entry.getKey();
-        LlapManagementProtocolClientImpl client = entry.getValue();
-        try {
-          LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto metrics =
-                  client.getDaemonMetrics(null,
-                          LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto.newBuilder().build());
-          instanceStatisticsMap.put(identity, new LlapMetrics(metrics));
+    for (Map.Entry<String, LlapManagementProtocolClientImpl> entry : llapClients.entrySet()) {
+      String identity = entry.getKey();
+      LlapManagementProtocolClientImpl client = entry.getValue();
+      try {
+        LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto metrics =
+                client.getDaemonMetrics(null,
+                        LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto.newBuilder().build());
+        instanceStatisticsMap.put(identity, new LlapMetrics(metrics));
 
-        } catch (ServiceException ex) {
-          LOG.error(ex.getMessage(), ex);
-        }
+      } catch (ServiceException ex) {
+        LOG.error(ex.getMessage(), ex);
+        instanceStatisticsMap.remove(identity);
       }
+    }
+  }
+
+  @Override
+  public void stateChanged(Service service) {
+    if (enabled()) {
+      if (service.getServiceState() == Service.STATE.STARTED) {
+        if (service instanceof LlapRegistryService) {
+          setupLlapRegistryService((LlapRegistryService) service);
+        }
+        start();
+      } else if (service.getServiceState() == Service.STATE.STOPPED) {
+        shutdown();
+      }
+    }
+  }
+
+  private void setupLlapRegistryService(LlapRegistryService service) {
+    try {
+      consumeInitialInstances(service);
+      service.registerStateChangeListener(this);
+    } catch (IOException ex) {
+      LOG.error(ex.getMessage(), ex);
+    }
+  }
+
+  @VisibleForTesting
+  void consumeInitialInstances(LlapRegistryService service) throws IOException {
+    LlapServiceInstanceSet serviceInstances = service.getInstances();
+    for (LlapServiceInstance serviceInstance :
+            serviceInstances.getAll()) {
+      onCreate(serviceInstance, -1);
     }
   }
 
