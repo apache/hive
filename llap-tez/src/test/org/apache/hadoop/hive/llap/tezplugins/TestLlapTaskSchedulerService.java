@@ -947,6 +947,161 @@ public class TestLlapTaskSchedulerService {
   }
 
   @Test(timeout = 10000)
+  public void testMultipleLocalityRequest() throws Exception {
+    Priority priority1 = Priority.newInstance(1);
+
+    String[] hostsKnown = new String[]{HOST1, HOST2, HOST3};
+    String[] hostsTarget = new String[]{HOST1, HOST2};
+
+    TestTaskSchedulerServiceWrapper tsWrapper =
+        new TestTaskSchedulerServiceWrapper(200000L, hostsKnown, 1, 0, 10000L, true);
+    LlapTaskSchedulerServiceForTestControlled.DelayedTaskSchedulerCallableControlled
+        delayedTaskSchedulerCallableControlled =
+        (LlapTaskSchedulerServiceForTestControlled.DelayedTaskSchedulerCallableControlled) tsWrapper.ts.delayedTaskSchedulerCallable;
+    ControlledClock clock = tsWrapper.getClock();
+    clock.setTime(clock.getTime());
+
+    try {
+      TezTaskAttemptID task1 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
+      Object clientCookie1 = "cookie1";
+
+      TezTaskAttemptID task2 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
+      Object clientCookie2 = "cookie2";
+
+      TezTaskAttemptID task3 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
+      Object clientCookie3 = "cookie3";
+
+      TezTaskAttemptID task4 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
+      Object clientCookie4 = "cookie4";
+
+      TezTaskAttemptID task5 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
+      Object clientCookie5 = "cookie5";
+
+      tsWrapper.controlScheduler(true);
+
+      // Get requested host
+      tsWrapper.allocateTask(task1, hostsTarget, priority1, clientCookie1);
+      // Get second requested host immediately because host1 is full
+      tsWrapper.allocateTask(task2, hostsTarget, priority1, clientCookie2);
+
+      tsWrapper.awaitTotalTaskAllocations(2);
+
+      ArgumentCaptor<Object> argumentCaptor = ArgumentCaptor.forClass(Object.class);
+      ArgumentCaptor<Container> argumentCaptor2 = ArgumentCaptor.forClass(Container.class);
+      verify(tsWrapper.mockAppCallback, times(2))
+          .taskAllocated(argumentCaptor.capture(), any(Object.class), argumentCaptor2.capture());
+      assertEquals(2, argumentCaptor.getAllValues().size());
+      assertEquals(task1, argumentCaptor.getAllValues().get(0));
+      assertEquals(task2, argumentCaptor.getAllValues().get(1));
+      // 1st task requested host1, got host1
+      assertEquals(HOST1, argumentCaptor2.getAllValues().get(0).getNodeId().getHost());
+      // 2nd task requested host1, got host1
+      assertEquals(HOST2, argumentCaptor2.getAllValues().get(1).getNodeId().getHost());
+      reset(tsWrapper.mockAppCallback);
+
+      // Get random (only one remaining) host after locality delay because requested hosts are full
+      tsWrapper.allocateTask(task3, hostsTarget, priority1, clientCookie3);
+
+      // Still only 2 allocations, but wait at least 1 scheduling run
+      tsWrapper.awaitTotalTaskAllocations(2);
+
+      clock.setTime(clock.getTime() + 2000L); // Before the timeout.
+
+      delayedTaskSchedulerCallableControlled.triggerGetNextTask();
+      delayedTaskSchedulerCallableControlled.awaitGetNextTaskProcessing();
+
+      // Verify that an attempt was made to schedule the task, but the decision was to skip scheduling
+      assertEquals(
+          LlapTaskSchedulerServiceForTestControlled.DelayedTaskSchedulerCallableControlled.STATE_TIMEOUT_NOT_EXPIRED,
+          delayedTaskSchedulerCallableControlled.lastState);
+      assertFalse(delayedTaskSchedulerCallableControlled.shouldScheduleTaskTriggered);
+
+      // Move the clock forward 10000ms, and check the delayed queue
+      clock.setTime(clock.getTime() + 10000L); // Past the timeout.
+
+      delayedTaskSchedulerCallableControlled.triggerGetNextTask();
+      delayedTaskSchedulerCallableControlled.awaitGetNextTaskProcessing();
+
+      // 3rd task allocation should happen
+      tsWrapper.awaitTotalTaskAllocations(3);
+
+      // 3rd task requested host1 or host2, but got host3 after locality timeout
+      argumentCaptor = ArgumentCaptor.forClass(Object.class);
+      argumentCaptor2 = ArgumentCaptor.forClass(Container.class);
+      verify(tsWrapper.mockAppCallback, times(1))
+          .taskAllocated(argumentCaptor.capture(), any(Object.class), argumentCaptor2.capture());
+      assertEquals(1, argumentCaptor.getAllValues().size());
+      assertEquals(task3, argumentCaptor.getAllValues().get(0));
+      // 1st task requested host1, got host1
+      assertEquals(HOST3, argumentCaptor2.getAllValues().get(0).getNodeId().getHost());
+      reset(tsWrapper.mockAppCallback);
+
+      // Finish 2nd and 3rd tasks
+      tsWrapper.deallocateTask(task2, true, null);
+      tsWrapper.deallocateTask(task3, true, null);
+
+      // Reject from host1 and get second requested host immediately because host1 refuses
+      tsWrapper.rejectExecution(task1);
+      tsWrapper.allocateTask(task4, hostsTarget, priority1, clientCookie4);
+
+      tsWrapper.awaitTotalTaskAllocations(4);
+
+      argumentCaptor = ArgumentCaptor.forClass(Object.class);
+      argumentCaptor2 = ArgumentCaptor.forClass(Container.class);
+      verify(tsWrapper.mockAppCallback, times(1))
+          .taskAllocated(argumentCaptor.capture(), any(Object.class), argumentCaptor2.capture());
+      assertEquals(1, argumentCaptor.getAllValues().size());
+      assertEquals(task4, argumentCaptor.getAllValues().get(0));
+      // 4th task requested host1, got host1
+      assertEquals(HOST2, argumentCaptor2.getAllValues().get(0).getNodeId().getHost());
+      reset(tsWrapper.mockAppCallback);
+
+      // Reset stuff related to locality tests
+      clock.setTime(Time.monotonicNow());
+      delayedTaskSchedulerCallableControlled.resetShouldScheduleInformation();
+
+      // Reject from host2 too and get random host after locality delay because both requested hosts refuses
+      tsWrapper.rejectExecution(task4);
+      tsWrapper.allocateTask(task5, hostsTarget, priority1, clientCookie5);
+
+      // Still only 4 allocations, but wait at least 1 scheduling run
+      tsWrapper.awaitTotalTaskAllocations(4);
+
+      clock.setTime(clock.getTime() + 2000L); // Before the timeout.
+
+      delayedTaskSchedulerCallableControlled.triggerGetNextTask();
+      delayedTaskSchedulerCallableControlled.awaitGetNextTaskProcessing();
+
+      // Verify that an attempt was made to schedule the task, but the decision was to skip scheduling
+      assertEquals(
+          LlapTaskSchedulerServiceForTestControlled.DelayedTaskSchedulerCallableControlled.STATE_TIMEOUT_NOT_EXPIRED,
+          delayedTaskSchedulerCallableControlled.lastState);
+      assertFalse(delayedTaskSchedulerCallableControlled.shouldScheduleTaskTriggered);
+
+      // Move the clock forward 10000ms, and check the delayed queue
+      clock.setTime(clock.getTime() + 10000L); // Past the timeout.
+
+      delayedTaskSchedulerCallableControlled.triggerGetNextTask();
+      delayedTaskSchedulerCallableControlled.awaitGetNextTaskProcessing();
+
+      tsWrapper.awaitTotalTaskAllocations(5);
+
+      // 5th task requested host1 or host2, but got host3 after locality timeout
+      argumentCaptor = ArgumentCaptor.forClass(Object.class);
+      argumentCaptor2 = ArgumentCaptor.forClass(Container.class);
+      verify(tsWrapper.mockAppCallback, times(1))
+          .taskAllocated(argumentCaptor.capture(), any(Object.class), argumentCaptor2.capture());
+      assertEquals(1, argumentCaptor.getAllValues().size());
+      assertEquals(task5, argumentCaptor.getAllValues().get(0));
+      // 1st task requested host1, got host1
+      assertEquals(HOST3, argumentCaptor2.getAllValues().get(0).getNodeId().getHost());
+
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+  @Test(timeout = 10000)
   public void testHostPreferenceUnknownAndNotSpecified() throws IOException, InterruptedException {
     Priority priority1 = Priority.newInstance(1);
 
@@ -2255,7 +2410,7 @@ public class TestLlapTaskSchedulerService {
 
     @Override
     protected void schedulePendingTasks() throws InterruptedException {
-      LOG.info("Attempted schedulPendingTasks");
+      LOG.info("Attempted schedulePendingTasks");
       testLock.lock();
       try {
         if (controlScheduling.get()) {
@@ -2286,6 +2441,7 @@ public class TestLlapTaskSchedulerService {
       testLock.lock();
       try {
         schedulingTriggered = true;
+        schedulingComplete = false;
         triggerSchedulingCondition.signal();
       } finally {
         testLock.unlock();

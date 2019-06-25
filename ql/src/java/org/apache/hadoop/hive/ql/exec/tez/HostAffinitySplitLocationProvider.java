@@ -52,13 +52,19 @@ public class HostAffinitySplitLocationProvider implements SplitLocationProvider 
 
   private final List<String> locations;
   private final Set<String> locationSet;
+  private final int numberOfLocations;
 
-  public HostAffinitySplitLocationProvider(List<String> knownLocations) {
+  public HostAffinitySplitLocationProvider(List<String> knownLocations, int numberOfLocations) {
     Preconditions.checkState(knownLocations != null && !knownLocations.isEmpty(),
         HostAffinitySplitLocationProvider.class.getName() +
             " needs at least 1 location to function");
+    Preconditions.checkArgument(numberOfLocations >= 0,
+        HostAffinitySplitLocationProvider.class.getName() +
+            " needs numberOfLocations at least set to 0. It is set to [" +
+            numberOfLocations + "] now.");
     this.locations = knownLocations;
     this.locationSet = new HashSet<String>(knownLocations);
+    this.numberOfLocations = numberOfLocations;
   }
 
   @Override
@@ -72,11 +78,17 @@ public class HostAffinitySplitLocationProvider implements SplitLocationProvider 
     FileSplit fsplit = (FileSplit) split;
     String splitDesc = "Split at " + fsplit.getPath() + " with offset= " + fsplit.getStart()
         + ", length=" + fsplit.getLength();
-    List<String> preferredLocations = preferLocations(fsplit);
-    String location =
-        preferredLocations.get(determineLocation(preferredLocations, fsplit.getPath().toString(),
-            fsplit.getStart(), splitDesc));
-    return (location != null) ? new String[] { location } : null;
+    List<String> preferredLocations = new ArrayList<>(preferLocations(fsplit));
+    List<String> finalLocations = new ArrayList<>(numberOfLocations);
+    // Generate new preferred locations until we need more, or we do not have any preferred
+    // location left
+    while (finalLocations.size() < numberOfLocations && preferredLocations.size() > 0) {
+      String nextLocation = preferredLocations.get(determineLocation(preferredLocations,
+          fsplit.getPath().toString(), fsplit.getStart(), splitDesc));
+      finalLocations.add(nextLocation);
+      preferredLocations.remove(nextLocation);
+    }
+    return finalLocations.toArray(new String[0]);
   }
 
   private List<String> preferLocations(FileSplit fsplit) throws IOException {

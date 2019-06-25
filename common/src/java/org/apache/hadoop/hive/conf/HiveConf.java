@@ -4440,6 +4440,12 @@ public class HiveConf extends Configuration {
         "preferring one of the locations provided by the split itself. If there is no llap daemon " +
         "running on any of those locations (or on the cloud), fall back to a cache affinity to" +
         " an LLAP node. This is effective only if hive.execution.mode is llap."),
+    LLAP_CLIENT_CONSISTENT_SPLITS_NUMBER("hive.llap.client.consistent.splits.number", 1,
+        "The number of the preferred locations to generate if hive.llap.client.consistent.splits\n" +
+        "is set. If multiple locations are generated and the first node is unavailable then the\n" +
+        "scheduler will not wait hive.llap.task.scheduler.locality.delay before assigning the\n" +
+        "task to the next preferred LLAP node.\n" +
+        "This is effective only if hive.execution.mode is llap."),
     LLAP_VALIDATE_ACLS("hive.llap.validate.acls", true,
         "Whether LLAP should reject permissive ACLs in some cases (e.g. its own management\n" +
         "protocol or ZK paths), similar to how ssh refuses a key with bad access permissions."),

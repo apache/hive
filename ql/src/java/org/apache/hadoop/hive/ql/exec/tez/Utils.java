@@ -49,6 +49,8 @@ public class Utils {
     SplitLocationProvider splitLocationProvider;
     LOG.info("SplitGenerator using llap affinitized locations: " + useCustomLocations);
     if (useCustomLocations) {
+      int numberOfLocations =
+          HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS_NUMBER);
       LlapRegistryService serviceRegistry = LlapRegistryService.getClient(conf);
       LOG.info("Using LLAP instance " + serviceRegistry.getApplicationId());
 
@@ -64,7 +66,7 @@ public class Utils {
         }
         locations.add(serviceInstance.getHost());
       }
-      splitLocationProvider = new HostAffinitySplitLocationProvider(locations);
+      splitLocationProvider = new HostAffinitySplitLocationProvider(locations, numberOfLocations);
     } else {
       splitLocationProvider = new SplitLocationProvider() {
         @Override
