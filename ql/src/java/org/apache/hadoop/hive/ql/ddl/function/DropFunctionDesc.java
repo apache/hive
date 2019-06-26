@@ -16,53 +16,41 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.function;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
 /**
- * DropFunctionDesc.
- *
+ * DDL task description for DROP [TEMPORARY] FUNCTION commands.
  */
 @Explain(displayName = "Drop Function", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class DropFunctionDesc implements Serializable {
+public class DropFunctionDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String functionName;
-  private boolean isTemp;
-  private ReplicationSpec replicationSpec;
+  private final String name;
+  private final boolean isTemporary;
+  private final ReplicationSpec replicationSpec;
 
-  /**
-   * For serialization only.
-   */
-  public DropFunctionDesc() {
-  }
-  
-  public DropFunctionDesc(String functionName, boolean isTemp, ReplicationSpec replicationSpec) {
-    this.functionName = functionName;
-    this.isTemp = isTemp;
-    this.replicationSpec = replicationSpec;
+  public DropFunctionDesc(String name, boolean isTemporary, ReplicationSpec replicationSpec) {
+    this.name = name;
+    this.isTemporary = isTemporary;
+    this.replicationSpec = replicationSpec == null ? new ReplicationSpec() : replicationSpec;
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getFunctionName() {
-    return functionName;
+  public String getName() {
+    return name;
   }
 
-  public void setFunctionName(String functionName) {
-    this.functionName = functionName;
-  }
-
-  public boolean isTemp() {
-    return isTemp;
-  }
-
-  public void setTemp(boolean isTemp) {
-    this.isTemp = isTemp;
+  @Explain(displayName = "temporary", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean isTemporary() {
+    return isTemporary;
   }
 
   /**
@@ -70,9 +58,6 @@ public class DropFunctionDesc implements Serializable {
    * This can result in a "DROP IF NEWER THAN" kind of semantic
    */
   public ReplicationSpec getReplicationSpec() {
-    if (replicationSpec == null) {
-      this.replicationSpec = new ReplicationSpec();
-    }
     return this.replicationSpec;
   }
 }

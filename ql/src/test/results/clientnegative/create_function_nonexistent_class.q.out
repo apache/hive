@@ -3,4 +3,10 @@ PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: database:default
 PREHOOK: Output: default.badfunc
 Failed to register default.badfunc using class my.nonexistent.class
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask
+FAILED: AssertionError java.lang.AssertionError: Client Execution succeeded but contained differences (error code = 1) after executing create_function_nonexistent_class.q 
+6c6
+< FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask
+---
+> FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask
+

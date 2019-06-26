@@ -275,6 +275,7 @@ CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
 POSTHOOK: type: CREATEMACRO
 POSTHOOK: Output: database:default
 Stage-0
+  Create Macro{"body:":"GenericUDFOPDivide(Const decimal(1,0) 1, GenericUDFOPPlus(Const decimal(1,0) 1, GenericUDFBridge ==> exp (GenericUDFOPNegative(Column[x]))))","column names:":["x"],"column types:":["double"],"name:":"SIGMOID"}
 
 PREHOOK: query: CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
 PREHOOK: type: CREATEMACRO
@@ -308,6 +309,7 @@ POSTHOOK: query: explain DROP TEMPORARY MACRO SIGMOID
 POSTHOOK: type: DROPMACRO
 POSTHOOK: Output: database:default
 Stage-0
+  Drop Macro{"name:":"SIGMOID"}
 
 PREHOOK: query: DROP TEMPORARY MACRO SIGMOID
 PREHOOK: type: DROPMACRO

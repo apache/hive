@@ -25,6 +25,7 @@ import junit.framework.Assert;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -57,6 +58,8 @@ public class TestMacroSemanticAnalyzer {
     List<Task<? extends Serializable>> rootTasks = analyzer.getRootTasks();
     Assert.assertEquals(1, rootTasks.size());
     for(Task<? extends Serializable> task : rootTasks) {
+      task.setDriverContext(new DriverContext(context));
+      task.setConf(conf);
       Assert.assertEquals(0, task.executeTask(null));
     }
   }
