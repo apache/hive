@@ -5,7 +5,6 @@ set hive.compute.query.using.stats=false;
 
 set hive.create.as.insert.only=true;
 set hive.default.fileformat.managed=ORC;
-set hive.strict.managed.tables=true;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
