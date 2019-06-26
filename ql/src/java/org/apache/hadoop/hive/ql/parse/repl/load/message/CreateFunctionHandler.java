@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.function.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -36,9 +38,7 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
-import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
-import org.apache.hadoop.hive.ql.plan.FunctionWork;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -64,10 +64,10 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       this.functionName = builder.metadata.function.getFunctionName();
 
       context.log.debug("Loading function desc : {}", descToLoad.toString());
-      Task<FunctionWork> createTask = TaskFactory.get(
-          new FunctionWork(descToLoad), context.hiveConf);
+      Task<DDLWork> createTask = TaskFactory.get(
+          new DDLWork(readEntitySet, writeEntitySet, descToLoad), context.hiveConf);
       context.log.debug("Added create function task : {}:{},{}", createTask.getId(),
-          descToLoad.getFunctionName(), descToLoad.getClassName());
+          descToLoad.getName(), descToLoad.getClassName());
       // This null check is specifically done as the same class is used to handle both incremental and
       // bootstrap replication scenarios for create function. When doing bootstrap we do not have
       // event id for this event but rather when bootstrap started and hence we pass in null dmd for
@@ -140,7 +140,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       // Only for incremental load, need to validate if event is newer than the database.
       ReplicationSpec replSpec = (context.dmd == null) ? null : context.eventOnlyReplicationSpec();
       return new CreateFunctionDesc(
-              fullQualifiedFunctionName, false, metadata.function.getClassName(),
+              fullQualifiedFunctionName, metadata.function.getClassName(), false,
               transformedUris, replSpec
       );
     }

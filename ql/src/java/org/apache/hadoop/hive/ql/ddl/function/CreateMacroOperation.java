@@ -15,23 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.ql.ddl.function.DropMacroDesc;
-import org.junit.Assert;
+package org.apache.hadoop.hive.ql.ddl.function;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-public class TestDropMacroDesc {
-  private String name;
-  @Before
-  public void setup() throws Exception {
-    name = "fixed_number";
+/**
+ * Operation process of creating a macro.
+ */
+public class CreateMacroOperation extends DDLOperation<CreateMacroDesc> {
+  public CreateMacroOperation(DDLOperationContext context, CreateMacroDesc desc) {
+    super(context, desc);
   }
-  @Test
-  public void testCreateMacroDesc() throws Exception {
-    DropMacroDesc desc = new DropMacroDesc(name);
-    Assert.assertEquals(name, desc.getName());
+
+  @Override
+  public int execute() throws HiveException {
+    FunctionRegistry.registerTemporaryMacro(desc.getName(), desc.getBody(), desc.getColumnNames(),
+        desc.getColumnTypes());
+    return 0;
   }
 }

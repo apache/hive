@@ -11,6 +11,10 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
+    Create Function
+      class: org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString
+      name: test_udf_get_java_string
+      temporary: true
 
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_udf_get_java_string AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString'
 PREHOOK: type: CREATEFUNCTION

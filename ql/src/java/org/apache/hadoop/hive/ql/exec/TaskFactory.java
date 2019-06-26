@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.plan.ExplainSQRewriteWork;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.ExportWork;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
-import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -92,8 +91,6 @@ public final class TaskFactory {
     taskvec.add(new TaskTuple<MaterializedViewDesc>(
         MaterializedViewDesc.class,
         MaterializedViewTask.class));
-    taskvec.add(new TaskTuple<FunctionWork>(FunctionWork.class,
-        FunctionTask.class));
     taskvec
         .add(new TaskTuple<ExplainWork>(ExplainWork.class, ExplainTask.class));
     taskvec

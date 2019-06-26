@@ -247,7 +247,7 @@ TOK_STRINGLITERALSEQUENCE;
 TOK_CHARSETLITERAL;
 TOK_CREATEFUNCTION;
 TOK_DROPFUNCTION;
-TOK_RELOADFUNCTION;
+TOK_RELOADFUNCTIONS;
 TOK_CREATEMACRO;
 TOK_DROPMACRO;
 TOK_TEMPORARY;
@@ -569,6 +569,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_REGEXP", "REGEXP");
     xlateMap.put("KW_TEMPORARY", "TEMPORARY");
     xlateMap.put("KW_FUNCTION", "FUNCTION");
+    xlateMap.put("KW_FUNCTIONS", "FUNCTIONS");
     xlateMap.put("KW_EXPLAIN", "EXPLAIN");
     xlateMap.put("KW_EXTENDED", "EXTENDED");
     xlateMap.put("KW_DEBUG", "DEBUG");
@@ -987,7 +988,7 @@ ddlStatement
     | createFunctionStatement
     | createMacroStatement
     | dropFunctionStatement
-    | reloadFunctionStatement
+    | reloadFunctionsStatement
     | dropMacroStatement
     | analyzeStatement
     | lockStatement
@@ -1944,10 +1945,10 @@ dropFunctionStatement
     ->                  ^(TOK_DROPFUNCTION functionIdentifier ifExists?)
     ;
 
-reloadFunctionStatement
-@init { pushMsg("reload function statement", state); }
+reloadFunctionsStatement
+@init { pushMsg("reload functions statement", state); }
 @after { popMsg(state); }
-    : KW_RELOAD KW_FUNCTION -> ^(TOK_RELOADFUNCTION);
+    : KW_RELOAD (KW_FUNCTIONS|KW_FUNCTION) -> ^(TOK_RELOADFUNCTIONS);
 
 createMacroStatement
 @init { pushMsg("create macro statement", state); }
