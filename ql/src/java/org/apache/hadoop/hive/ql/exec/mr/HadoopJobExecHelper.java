@@ -297,8 +297,11 @@ public class HadoopJobExecHelper {
             }
             logReducer = "number of reducers: " + numReduce;
           }
-          int vcores = Integer.parseInt(jc.getConf().get("yarn.scheduler.minimum-allocation-vcores"));
-          max_needed_vcores = (1 + numReduce + numReduce) * vcores;
+          int yarn_vcores = Integer.parseInt(jc.getConf().get("yarn.scheduler.minimum-allocation-vcores"));
+          int map_vcores = Integer.parseInt(jc.getConf().get("mapreduce.map.cpu.vcores"));
+          int reduce_vcores = Integer.parseInt(jc.getConf().get("mapreduce.reduce.cpu.vcores"));
+          int app_vcores = Integer.parseInt(jc.getConf().get("yarn.app.mapreduce.am.resource.cpu-vcores"));
+          max_needed_vcores = Math.max(app_vcores, yarn_vcores) + numMap * Math.max(map_vcores, yarn_vcores) + numReduce * Math.max(reduce_vcores, yarn_vcores);
 
           console
               .printInfo("Hadoop job information for " + getId() + ": " + logMapper + logReducer );
@@ -343,8 +346,7 @@ public class HadoopJobExecHelper {
       errMsg.setLength(0);
 
       updateCounters(ctrs, rj);
-      double tmp_mem = (double)(ctrs.findCounter(TaskCounter.PHYSICAL_MEMORY_BYTES).getCounter())/(1024*1024*1024);
-      max_needed_mem = Math.max(max_needed_mem, tmp_mem);
+      max_needed_mem = (double)(ctrs.findCounter(TaskCounter.PHYSICAL_MEMORY_BYTES).getCounter())/(1024*1024*1024);
 
       // Prepare data for Client Stat Publishers (if any present) and execute them
       if (clientStatPublishers.size() > 0 && ctrs != null) {
