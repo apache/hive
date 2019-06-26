@@ -51,7 +51,7 @@ public class LlapMetricsCollector implements ServiceStateChangeListener,
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapMetricsCollector.class);
   private static final String THREAD_NAME = "LlapTaskSchedulerMetricsCollectorThread";
-  private static final long INITIAL_DELAY_MSEC = 60000L;
+  private static final long INITIAL_DELAY_MSEC = 10000L;
 
   private final ScheduledExecutorService scheduledMetricsExecutor;
   private final LlapManagementProtocolClientImplFactory clientFactory;
@@ -81,15 +81,11 @@ public class LlapMetricsCollector implements ServiceStateChangeListener,
   }
 
   public void start() {
-    if (enabled()) {
+    if (metricsCollectionMs > 0) {
       scheduledMetricsExecutor.scheduleAtFixedRate(() -> {
         collectMetrics();
       }, INITIAL_DELAY_MSEC, metricsCollectionMs, TimeUnit.MILLISECONDS);
     }
-  }
-
-  private boolean enabled() {
-    return metricsCollectionMs > 0;
   }
 
   public void shutdown() {
@@ -116,15 +112,13 @@ public class LlapMetricsCollector implements ServiceStateChangeListener,
 
   @Override
   public void stateChanged(Service service) {
-    if (enabled()) {
-      if (service.getServiceState() == Service.STATE.STARTED) {
-        if (service instanceof LlapRegistryService) {
-          setupLlapRegistryService((LlapRegistryService) service);
-        }
-        start();
-      } else if (service.getServiceState() == Service.STATE.STOPPED) {
-        shutdown();
+    if (service.getServiceState() == Service.STATE.STARTED) {
+      if (service instanceof LlapRegistryService) {
+        setupLlapRegistryService((LlapRegistryService) service);
       }
+      start();
+    } else if (service.getServiceState() == Service.STATE.STOPPED) {
+      shutdown();
     }
   }
 
@@ -148,10 +142,9 @@ public class LlapMetricsCollector implements ServiceStateChangeListener,
 
   @Override
   public void onCreate(LlapServiceInstance serviceInstance, int ephSeqVersion) {
-    if (enabled()) {
-      LlapManagementProtocolClientImpl client = clientFactory.create(serviceInstance);
-      llapClients.put(serviceInstance.getWorkerIdentity(), client);
-    }
+    LlapManagementProtocolClientImpl client = clientFactory.create(serviceInstance);
+    llapClients.put(serviceInstance.getWorkerIdentity(), client);
+
   }
 
   @Override
@@ -161,11 +154,9 @@ public class LlapMetricsCollector implements ServiceStateChangeListener,
 
   @Override
   public void onRemove(LlapServiceInstance serviceInstance, int ephSeqVersion) {
-    if (enabled()) {
-      String workerIdentity = serviceInstance.getWorkerIdentity();
-      llapClients.remove(workerIdentity);
-      instanceStatisticsMap.remove(workerIdentity);
-    }
+    String workerIdentity = serviceInstance.getWorkerIdentity();
+    llapClients.remove(workerIdentity);
+    instanceStatisticsMap.remove(workerIdentity);
   }
 
   public LlapMetrics getMetrics(String workerIdentity) {

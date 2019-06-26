@@ -293,7 +293,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final LlapTaskSchedulerMetrics metrics;
   private final JvmPauseMonitor pauseMonitor;
   private final Random random = new Random();
-  private final LlapMetricsCollector llapMetricsCollector;
 
   private int totalGuaranteed = 0, unusedGuaranteed = 0;
 
@@ -315,6 +314,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final Object outputsLock = new Object();
   private TezDAGID depsDagId = null;
   private Map<Integer, Set<Integer>> transitiveOutputs;
+  private LlapMetricsCollector llapMetricsCollector;
 
   public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext) {
     this(taskSchedulerContext, new MonotonicClock(), true);
@@ -402,8 +402,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LlapTaskSchedulerTimedLogThread")
             .build());
 
-    this.llapMetricsCollector = new LlapMetricsCollector(conf);
-    this.registry.registerServiceListener(llapMetricsCollector);
+    if (HiveConf.getTimeVar(conf,
+            HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS, TimeUnit.MILLISECONDS) > 0) {
+      this.llapMetricsCollector = new LlapMetricsCollector(conf);
+      this.registry.registerServiceListener(llapMetricsCollector);
+    }
 
     String instanceId = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
 
