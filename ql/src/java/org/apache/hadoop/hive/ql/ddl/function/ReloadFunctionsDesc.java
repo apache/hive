@@ -15,23 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.ql.ddl.function.DropMacroDesc;
-import org.junit.Assert;
+package org.apache.hadoop.hive.ql.ddl.function;
 
-import org.junit.Before;
-import org.junit.Test;
+import java.io.Serializable;
 
-public class TestDropMacroDesc {
-  private String name;
-  @Before
-  public void setup() throws Exception {
-    name = "fixed_number";
-  }
-  @Test
-  public void testCreateMacroDesc() throws Exception {
-    DropMacroDesc desc = new DropMacroDesc(name);
-    Assert.assertEquals(name, desc.getName());
-  }
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
+
+/**
+ * DDL task description for RELOAD FUNCTIONS commands.
+ * Due to backward compatibility reasons we also accept the RELOAD FUNCTION command.
+ */
+@Explain(displayName = "Reload Functions")
+public class ReloadFunctionsDesc implements DDLDesc, Serializable {
+  private static final long serialVersionUID = 1L;
 }

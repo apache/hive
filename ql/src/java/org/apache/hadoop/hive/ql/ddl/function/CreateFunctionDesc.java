@@ -16,76 +16,57 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.function;
 
 import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * CreateFunctionDesc.
- *
+ * DDL task description for CREATE [TEMPORARY] FUNCTION commands.
  */
 @Explain(displayName = "Create Function", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateFunctionDesc implements Serializable {
+public class CreateFunctionDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String functionName;
-  private String className;
-  private boolean isTemp;
-  private List<ResourceUri> resources;
-  private ReplicationSpec replicationSpec;
+  private final String name;
+  private final String className;
+  private final boolean isTemporary;
+  private final List<ResourceUri> resources;
+  private final ReplicationSpec replicationSpec;
 
-  /**
-   * For serialization only.
-   */
-  public CreateFunctionDesc() {
-  }
-  
-  public CreateFunctionDesc(String functionName, boolean isTemp, String className,
-      List<ResourceUri> resources, ReplicationSpec replicationSpec) {
-    this.functionName = functionName;
-    this.isTemp = isTemp;
+  public CreateFunctionDesc(String name, String className, boolean isTemporary, List<ResourceUri> resources,
+      ReplicationSpec replicationSpec) {
+    this.name = name;
     this.className = className;
+    this.isTemporary = isTemporary;
     this.resources = resources;
-    this.replicationSpec = replicationSpec;
+    this.replicationSpec = replicationSpec == null ? new ReplicationSpec() : replicationSpec;
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getFunctionName() {
-    return functionName;
+  public String getName() {
+    return name;
   }
 
-  public void setFunctionName(String functionName) {
-    this.functionName = functionName;
-  }
-
-  @Explain(displayName = "class")
+  @Explain(displayName = "class", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getClassName() {
     return className;
   }
 
-  public void setClassName(String className) {
-    this.className = className;
-  }
-
+  @Explain(displayName = "temporary", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isTemp() {
-    return isTemp;
-  }
-
-  public void setTemp(boolean isTemp) {
-    this.isTemp = isTemp;
+    return isTemporary;
   }
 
   public List<ResourceUri> getResources() {
     return resources;
-  }
-
-  public void setResources(List<ResourceUri> resources) {
-    this.resources = resources;
   }
 
   /**
@@ -93,9 +74,6 @@ public class CreateFunctionDesc implements Serializable {
    * This can result in a "CREATE IF NEWER THAN" kind of semantic
    */
   public ReplicationSpec getReplicationSpec() {
-    if (replicationSpec == null) {
-      this.replicationSpec = new ReplicationSpec();
-    }
-    return this.replicationSpec;
+    return replicationSpec;
   }
 }

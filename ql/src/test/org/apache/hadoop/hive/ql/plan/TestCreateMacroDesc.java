@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
-
+import org.apache.hadoop.hive.ql.ddl.function.CreateMacroDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Before;
@@ -46,9 +46,9 @@ public class TestCreateMacroDesc {
   @Test
   public void testCreateMacroDesc() throws Exception {
     CreateMacroDesc desc = new CreateMacroDesc(name, colNames, colTypes, bodyDesc);
-    Assert.assertEquals(name, desc.getMacroName());
+    Assert.assertEquals(name, desc.getName());
     Assert.assertEquals(bodyDesc, desc.getBody());
-    Assert.assertEquals(colNames, desc.getColNames());
-    Assert.assertEquals(colTypes, desc.getColTypes());
+    Assert.assertEquals(colNames, desc.getColumnNames());
+    Assert.assertEquals(colTypes, desc.getColumnTypes());
   }
 }

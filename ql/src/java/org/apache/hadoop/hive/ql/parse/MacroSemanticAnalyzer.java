@@ -37,6 +37,9 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.function.CreateMacroDesc;
+import org.apache.hadoop.hive.ql.ddl.function.DropMacroDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
@@ -45,10 +48,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
-import org.apache.hadoop.hive.ql.plan.CreateMacroDesc;
-import org.apache.hadoop.hive.ql.plan.DropMacroDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
@@ -76,7 +76,6 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private void analyzeCreateMacro(ASTNode ast) throws SemanticException {
     String functionName = ast.getChild(0).getText();
 
@@ -140,12 +139,11 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
         body = sa.genExprNodeDesc((ASTNode)ast.getChild(2), rowResolver);
     }
     CreateMacroDesc desc = new CreateMacroDesc(functionName, macroColNames, macroColTypes, body);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     addEntities();
   }
 
-  @SuppressWarnings("unchecked")
   private void analyzeDropMacro(ASTNode ast) throws SemanticException {
     String functionName = ast.getChild(0).getText();
     boolean ifExists = (ast.getFirstChildWithType(TOK_IFEXISTS) != null);
@@ -164,7 +162,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     DropMacroDesc desc = new DropMacroDesc(functionName);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     addEntities();
   }

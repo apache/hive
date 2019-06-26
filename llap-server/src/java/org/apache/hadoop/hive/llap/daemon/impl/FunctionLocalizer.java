@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.FunctionTask;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.UDFClassLoader;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -269,7 +269,7 @@ public class FunctionLocalizer implements GenericUDFBridge.UdfWhitelistChecker {
     }
     for (ResourceUri resource : resources) {
       URI srcUri = ResourceDownloader.createURI(resource.getUri());
-      ResourceType rt = FunctionTask.getResourceType(resource.getResourceType());
+      ResourceType rt = FunctionUtils.getResourceType(resource.getResourceType());
       localizeOneResource(fqfn, srcUri, rt, result);
     }
     recentlyLocalizedClasses.add(className);
