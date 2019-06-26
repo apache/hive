@@ -36,7 +36,6 @@ public class ShowFunctionsDesc implements DDLDesc, Serializable {
 
   private final String resFile;
   private final String pattern;
-  private final boolean isLikePattern;
 
   public ShowFunctionsDesc(Path resFile) {
     this(resFile, null, false);
@@ -49,7 +48,6 @@ public class ShowFunctionsDesc implements DDLDesc, Serializable {
   public ShowFunctionsDesc(Path resFile, String pattern, boolean isLikePattern) {
     this.resFile = resFile.toString();
     this.pattern = pattern;
-    this.isLikePattern = isLikePattern;
   }
 
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
@@ -60,9 +58,5 @@ public class ShowFunctionsDesc implements DDLDesc, Serializable {
   @Explain(displayName = "pattern")
   public String getPattern() {
     return pattern;
-  }
-
-  public boolean getIsLikePattern() {
-    return isLikePattern;
   }
 }

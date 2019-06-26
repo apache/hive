@@ -8,7 +8,7 @@ describe function extended qtest_get_java_boolean;
 create database mydb;
 create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper';
 
-show functions mydb.func1;
+show functions like mydb.func1;
 
 describe function extended mydb.func1;
 
@@ -18,7 +18,7 @@ select mydb.func1('abc') from src limit 1;
 drop function mydb.func1;
 
 -- function should now be gone
-show functions mydb.func1;
+show functions like mydb.func1;
 
 -- To test function name resolution
 create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper';
