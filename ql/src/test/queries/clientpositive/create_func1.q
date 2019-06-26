@@ -8,7 +8,7 @@ create database mydb;
 explain create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper';
 create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper';
 
-show functions mydb.func1;
+show functions like mydb.func1;
 
 describe function extended mydb.func1;
 
@@ -19,7 +19,7 @@ explain drop function mydb.func1;
 drop function mydb.func1;
 
 -- function should now be gone
-show functions mydb.func1;
+show functions like mydb.func1;
 
 explain create temporary function temp_func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper';
 create temporary function temp_func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper';

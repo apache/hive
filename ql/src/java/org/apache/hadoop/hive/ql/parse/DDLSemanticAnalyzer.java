@@ -2770,13 +2770,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void analyzeShowFunctions(ASTNode ast) throws SemanticException {
     ShowFunctionsDesc showFuncsDesc;
-    if (ast.getChildCount() == 1) {
-      String funcNames = stripQuotes(ast.getChild(0).getText());
-      showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile(), funcNames);
-    } else if (ast.getChildCount() == 2) {
+    if (ast.getChildCount() > 0) {
+      assert (ast.getChildCount() == 2);
       assert (ast.getChild(0).getType() == HiveParser.KW_LIKE);
       String funcNames = stripQuotes(ast.getChild(1).getText());
-      showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile(), funcNames, true);
+      showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile(), funcNames);
     } else {
       showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile());
     }
