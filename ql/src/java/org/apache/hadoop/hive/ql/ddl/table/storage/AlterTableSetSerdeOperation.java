@@ -60,10 +60,7 @@ public class AlterTableSetSerdeOperation extends AbstractAlterTableOperation<Alt
       sd.getSerdeInfo().getParameters().putAll(desc.getProps());
     }
 
-    if (partition != null) {
-      // TODO: wtf? This doesn't do anything.
-      partition.getTPartition().getSd().setCols(partition.getTPartition().getSd().getCols());
-    } else {
+    if (partition == null) {
       if (Table.shouldStoreFieldsInMetastore(context.getConf(), serdeName, table.getParameters())
           && !Table.hasMetastoreBasedSchema(context.getConf(), oldSerdeName)) {
         // If new SerDe needs to store fields in metastore, but the old serde doesn't, save

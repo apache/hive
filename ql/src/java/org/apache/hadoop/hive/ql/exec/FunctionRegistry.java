@@ -637,7 +637,7 @@ public final class FunctionRegistry {
     Set<String> allFuncs = getFunctionNames();
     String[] subpatterns = funcPatternStr.trim().split("\\|");
     for (String subpattern : subpatterns) {
-      subpattern = "(?i)" + subpattern.replaceAll("\\*", ".*");
+      subpattern = "(?i)" + UDFLike.likePatternToRegExp(subpattern);
       try {
         Pattern patternObj = Pattern.compile(subpattern);
         for (String funcName : allFuncs) {
