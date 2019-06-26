@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -45,7 +44,6 @@ import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.ClientStatsPublisher;
-import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.Counters.Counter;
@@ -79,7 +77,6 @@ public class HadoopJobExecHelper {
 
   protected transient int mapProgress = -1;
   protected transient int reduceProgress = -1;
-
 
   protected transient int lastMapProgress;
   protected transient int lastReduceProgress;
@@ -373,7 +370,7 @@ public class HadoopJobExecHelper {
 
       report.append(' ').append(getId());
       report.append(" map = ").append(mapProgress).append("%, ");
-      report.append(" reduce = ").append(reduceProgress).append("%, ");
+      report.append(" reduce = ").append(reduceProgress).append("%");
 
 
       // find out CPU msecs
