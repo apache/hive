@@ -791,52 +791,37 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
   public void testRenameTableScenariosWithReplaceExternalTable() throws Throwable {
     List<String> loadWithClause = ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);
     List<String> dumpWithClause = Arrays.asList(
-            "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='false'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES.varname + "'='false'",
-            "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='false'"
+            "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'"
     );
-    String replPolicy = primaryDbName + ".['in[0-9]+'].['in100', 'in200', 'in1400']";
+    String replPolicy = primaryDbName + ".['in[0-9]+', 'out4', 'out5', 'out1500']";
     String lastReplId = replicateAndVerify(replPolicy, null, null, dumpWithClause,
             loadWithClause, new String[] {}, new String[] {});
 
-    String[] originalFullAcidTables = new String[] {"in1", "in2", "out3", "out4", "out5", "in100", "in200", "in300"};
-    String[] originalExternalTables = new String[] {"in400", "out500"};
-    String[] originalNonAcidTables = new String[] {"in1400", "out1500", "out1600"};
-    createTables(originalNonAcidTables, CreateTableType.NON_ACID);
-    createTables(originalFullAcidTables, CreateTableType.FULL_ACID);
+    String[] originalExternalTables = new String[] {"in1", "in2", "out3", "out4", "out10", "out11", "out1500"};
     createTables(originalExternalTables, CreateTableType.EXTERNAL);
-
-    // Replicate and verify, no table should be there.
-    String[] replicatedTables = new String[] {};
-    String[] bootstrapTables = new String[] {};
-    lastReplId = replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause,
-            loadWithClause, bootstrapTables, replicatedTables);
 
     // Rename the tables to satisfy the condition also replace the policy.
     primary.run("use " + primaryDbName)
-            .run("alter table out1600 rename to in1600")
-            .run("alter table in1400 rename to out1400")
-            .run("alter table in1 rename to out7")
-            .run("alter table out3 rename to in8")
-            .run("alter table out4 rename to in9")
-            .run("drop table in9")
-            .run("alter table out5 rename to in10")
-            .run("alter table in10 rename to out11")
-            .run("alter table out500 rename to in500")
-            .run("alter table in400 rename to out400");
+            .run("alter table out4 rename to in5") // Old name matching old, new name matching both
+            .run("alter table out3 rename to in6") // Old name not matching old and new name matching both
+            .run("alter table in1 rename to out5") // Old name matching old, new name matching only old.
+            .run("alter table in2 rename to in7") // Old name matching old, only new name not matching new.
+            .run("alter table out1500 rename to out1501") // Old name matching old, only old name not matching new.
+            .run("alter table out10 rename to in10") // Old name not matching old and new name matching both
+            .run("drop table in10")
+            .run("alter table out11 rename to out12") // Old name not matching old and new name not matching both
+            .run("alter table out12 rename to in12"); // Old name not matching old and new name matching both
 
     String newPolicy = primaryDbName + ".['in[0-9]+', 'out1500'].['in2']";
     dumpWithClause = Arrays.asList(
             "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES.varname + "'='true'",
-            "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'"
+            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='false'"
     );
 
     // in2 should be dropped.
-    replicatedTables = new String[] {"in8", "in100", "in200", "in300", "in500", "in1600", "out1500"};
-    bootstrapTables = new String[] {"in8", "in100", "in200", "in300", "in500", "in1600", "out1500"};
+    String[] replicatedTables = new String[] {"in5", "in6", "in7", "in12"};
+    String[] bootstrapTables = new String[] {"in5", "in6", "in7", "in12"};
     replicateAndVerify(newPolicy, replPolicy, lastReplId, dumpWithClause,
             loadWithClause, bootstrapTables, replicatedTables);
   }
@@ -848,7 +833,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             null, new String[] {}, new String[] {});
 
     String[] originalFullAcidTables = new String[] {"in1", "in2", "out3", "out4", "out5",
-            "in100", "in200", "in300", "out3000", "out4000", "out4001"};
+        "in100", "in200", "in300", "out3000", "out4000", "out4001"};
     String[] originalNonAcidTables = new String[] {"in400", "out500"};
     createTables(originalFullAcidTables, CreateTableType.FULL_ACID);
     createTables(originalNonAcidTables, CreateTableType.NON_ACID);
@@ -910,8 +895,9 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .run("insert into in400 values(2, 100)")
             .run("drop table out3");   // table will be removed from bootstrap list.
 
-    replicatedTables = new String[] {"in12", "in400", "in1", "in300", "out12", "in500", "in3000", "in2", "in5000", "out5002"};
-    bootstrapTables = new String[] {"out12", "in2", "in400", "in1", "in300", "in12",    "out5002"};
+    replicatedTables = new String[] {"in12", "in400", "in1", "in300", "out12", "in500", "in3000", "in2",
+        "in5000", "out5002"};
+    bootstrapTables = new String[] {"out12", "in2", "in400", "in1", "in300", "in12", "out5002"};
     replicateAndVerify(newPolicy, replPolicy, lastReplId, null,
             null, bootstrapTables, replicatedTables, new String[] {"1", "2"});
   }

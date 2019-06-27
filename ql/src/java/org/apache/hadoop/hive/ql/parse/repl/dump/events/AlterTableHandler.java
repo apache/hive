@@ -178,7 +178,8 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
     Set<String> bootstrapTableList;
     ReplScope oldReplScope;
     if (Scenario.RENAME == scenario) {
-      // Handling for table level replication is done in handleForTableLevelReplication method.
+      // Handling for table level replication is not done in shouldReplicate method for rename events. Its done in
+      // handleRenameForReplacePolicy and handleRenameForTableLevelReplication method.
       bootstrapTableList = null;
       oldReplScope = null;
     } else {
@@ -205,19 +206,17 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
       }
     }
 
-    // Handle renames for table level replication.
-    if ((Scenario.RENAME == scenario)
-            && (!withinContext.replScope.includeAllTables() || withinContext.oldReplScope != null)) {
+    if (Scenario.RENAME == scenario) {
       String oldName = before.getTableName();
       String newName = after.getTableName();
-      boolean needDump;
-      if (withinContext.oldReplScope == null) {
-        needDump = handleRenameForTableLevelReplication(withinContext, oldName, newName);
-      } else {
+      boolean needDump = true;
+      if (withinContext.oldReplScope != null) {
         needDump = handleRenameForReplacePolicy(withinContext, oldName, newName);
+      } else if (!withinContext.replScope.includeAllTables()) {
+        needDump = handleRenameForTableLevelReplication(withinContext, oldName, newName);
       }
       if (!needDump) {
-        LOG.info("Rename event for table " + oldName + " is skipped from dumping");
+        LOG.info("Rename event for table " + oldName + " to " + newName + " is skipped from dumping");
         return;
       }
     }
