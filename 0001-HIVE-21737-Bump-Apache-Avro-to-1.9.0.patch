@@ -1,0 +1,162 @@
+From 7aff024e111a86687f5a120fb8bf3a6b5a114eb8 Mon Sep 17 00:00:00 2001
+From: Fokko Driesprong <fokko@apache.org>
+Date: Sat, 15 Jun 2019 21:59:25 +0200
+Subject: [PATCH] HIVE-21737: Bump Apache Avro to 1.9.0
+
+---
+ .../hadoop/hive/llap/metrics/ReadWriteLockMetrics.java    | 3 +--
+ pom.xml                                                   | 3 +--
+ ql/pom.xml                                                | 1 -
+ .../hive/ql/optimizer/signature/RelTreeSignature.java     | 6 +-----
+ .../apache/hadoop/hive/serde2/avro/AvroDeserializer.java  | 7 +++----
+ .../apache/hadoop/hive/serde2/avro/SchemaToTypeInfo.java  | 8 ++++----
+ 6 files changed, 10 insertions(+), 18 deletions(-)
+
+diff --git a/llap-common/src/java/org/apache/hadoop/hive/llap/metrics/ReadWriteLockMetrics.java b/llap-common/src/java/org/apache/hadoop/hive/llap/metrics/ReadWriteLockMetrics.java
+index 7d52a15c35..189c684d28 100644
+--- a/llap-common/src/java/org/apache/hadoop/hive/llap/metrics/ReadWriteLockMetrics.java
++++ b/llap-common/src/java/org/apache/hadoop/hive/llap/metrics/ReadWriteLockMetrics.java
+@@ -18,8 +18,7 @@
+ 
+ package org.apache.hadoop.hive.llap.metrics;
+ 
+-import avro.shaded.com.google.common.annotations.VisibleForTesting;
+-
++import com.google.common.annotations.VisibleForTesting;
+ import com.google.common.base.Preconditions;
+ 
+ import java.io.Serializable;
+diff --git a/pom.xml b/pom.xml
+index 330522dd45..3788599e93 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -125,7 +125,7 @@
+     <!-- Include arrow for LlapOutputFormatService -->
+     <arrow.version>0.10.0</arrow.version>
+     <avatica.version>1.12.0</avatica.version>
+-    <avro.version>1.8.2</avro.version>
++    <avro.version>1.9.0</avro.version>
+     <bonecp.version>0.8.0.RELEASE</bonecp.version>
+     <calcite.version>1.19.0</calcite.version>
+     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
+@@ -465,7 +465,6 @@
+       <dependency>
+         <groupId>org.apache.avro</groupId>
+         <artifactId>avro-mapred</artifactId>
+-        <classifier>hadoop2</classifier>
+         <version>${avro.version}</version>
+      </dependency>
+       <dependency>
+diff --git a/ql/pom.xml b/ql/pom.xml
+index 7c4d26f512..d029680c0e 100644
+--- a/ql/pom.xml
++++ b/ql/pom.xml
+@@ -156,7 +156,6 @@
+     <dependency>
+       <groupId>org.apache.avro</groupId>
+       <artifactId>avro-mapred</artifactId>
+-      <classifier>hadoop2</classifier>
+       <version>${avro.version}</version>
+     </dependency>
+     <dependency>
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/optimizer/signature/RelTreeSignature.java b/ql/src/java/org/apache/hadoop/hive/ql/optimizer/signature/RelTreeSignature.java
+index 40e93f02a3..989745271b 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/optimizer/signature/RelTreeSignature.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/optimizer/signature/RelTreeSignature.java
+@@ -23,20 +23,16 @@
+ import java.util.ArrayList;
+ import java.util.List;
+ 
++import com.google.common.base.Objects;
+ import org.apache.calcite.rel.RelNode;
+ import org.apache.calcite.rel.RelWriter;
+-import org.apache.calcite.rel.externalize.RelWriterImpl;
+ import org.apache.calcite.sql.SqlExplainLevel;
+-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelJsonImpl;
+-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+ import org.apache.hadoop.hive.ql.optimizer.calcite.RelWriterImplCopy;
+ 
+ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+ import com.fasterxml.jackson.annotation.JsonProperty;
+ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+ 
+-import avro.shaded.com.google.common.base.Objects;
+-
+ /**
+  * Operator tree signature.
+  */
+diff --git a/serde/src/java/org/apache/hadoop/hive/serde2/avro/AvroDeserializer.java b/serde/src/java/org/apache/hadoop/hive/serde2/avro/AvroDeserializer.java
+index db8db1c922..d50028bb26 100644
+--- a/serde/src/java/org/apache/hadoop/hive/serde2/avro/AvroDeserializer.java
++++ b/serde/src/java/org/apache/hadoop/hive/serde2/avro/AvroDeserializer.java
+@@ -42,7 +42,6 @@
+ import org.apache.avro.io.BinaryEncoder;
+ import org.apache.avro.io.DecoderFactory;
+ import org.apache.avro.io.EncoderFactory;
+-import org.apache.avro.UnresolvedUnionException;
+ import org.apache.hadoop.conf.Configuration;
+ import org.apache.hadoop.hive.common.type.Date;
+ import org.apache.hadoop.hive.common.type.Timestamp;
+@@ -272,7 +271,7 @@ private Object deserializePrimitive(Object datum, Schema fileSchema, Schema reco
+ 
+       int scale = 0;
+       try {
+-        scale = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_SCALE).asInt();
++        scale = (Integer) fileSchema.getObjectProp(AvroSerDe.AVRO_PROP_SCALE);
+       } catch(Exception ex) {
+         throw new AvroSerdeException("Failed to obtain scale value from file schema: " + fileSchema, ex);
+       }
+@@ -288,7 +287,7 @@ private Object deserializePrimitive(Object datum, Schema fileSchema, Schema reco
+ 
+       int maxLength = 0;
+       try {
+-        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
++        maxLength = (Integer) fileSchema.getObjectProp(AvroSerDe.AVRO_PROP_MAX_LENGTH);
+       } catch (Exception ex) {
+         throw new AvroSerdeException("Failed to obtain maxLength value for char field from file schema: " + fileSchema, ex);
+       }
+@@ -303,7 +302,7 @@ private Object deserializePrimitive(Object datum, Schema fileSchema, Schema reco
+ 
+       maxLength = 0;
+       try {
+-        maxLength = fileSchema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
++        maxLength = (Integer) fileSchema.getObjectProp(AvroSerDe.AVRO_PROP_MAX_LENGTH);
+       } catch (Exception ex) {
+         throw new AvroSerdeException("Failed to obtain maxLength value for varchar field from file schema: " + fileSchema, ex);
+       }
+diff --git a/serde/src/java/org/apache/hadoop/hive/serde2/avro/SchemaToTypeInfo.java b/serde/src/java/org/apache/hadoop/hive/serde2/avro/SchemaToTypeInfo.java
+index 35d83bdb1a..decc2a1686 100644
+--- a/serde/src/java/org/apache/hadoop/hive/serde2/avro/SchemaToTypeInfo.java
++++ b/serde/src/java/org/apache/hadoop/hive/serde2/avro/SchemaToTypeInfo.java
+@@ -136,8 +136,8 @@ public static TypeInfo generateTypeInfo(Schema schema,
+       int precision = 0;
+       int scale = 0;
+       try {
+-        precision = schema.getJsonProp(AvroSerDe.AVRO_PROP_PRECISION).getIntValue();
+-        scale = schema.getJsonProp(AvroSerDe.AVRO_PROP_SCALE).getIntValue();
++        precision = (Integer) schema.getObjectProp(AvroSerDe.AVRO_PROP_PRECISION);
++        scale = (Integer) schema.getObjectProp(AvroSerDe.AVRO_PROP_SCALE);
+       } catch (Exception ex) {
+         throw new AvroSerdeException("Failed to obtain scale value from file schema: " + schema, ex);
+       }
+@@ -155,7 +155,7 @@ public static TypeInfo generateTypeInfo(Schema schema,
+       AvroSerDe.CHAR_TYPE_NAME.equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+       int maxLength = 0;
+       try {
+-        maxLength = schema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
++        maxLength = (Integer) schema.getObjectProp(AvroSerDe.AVRO_PROP_MAX_LENGTH);
+       } catch (Exception ex) {
+         throw new AvroSerdeException("Failed to obtain maxLength value from file schema: " + schema, ex);
+       }
+@@ -166,7 +166,7 @@ public static TypeInfo generateTypeInfo(Schema schema,
+       .equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+       int maxLength = 0;
+       try {
+-        maxLength = schema.getJsonProp(AvroSerDe.AVRO_PROP_MAX_LENGTH).getValueAsInt();
++        maxLength = (Integer) schema.getObjectProp(AvroSerDe.AVRO_PROP_MAX_LENGTH);
+       } catch (Exception ex) {
+         throw new AvroSerdeException("Failed to obtain maxLength value from file schema: " + schema, ex);
+       }
+-- 
+2.22.0
+

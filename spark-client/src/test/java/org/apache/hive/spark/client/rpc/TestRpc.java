@@ -183,22 +183,22 @@ public class TestRpc {
     int expectedPort = 65535;
     config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort));
     RpcServer server2 = new RpcServer(config);
-    assertTrue("Port should match configured one: " + server2.getPort(), server2.getPort() == expectedPort);
+    assertEquals("Port should match configured one: " + server2.getPort(), expectedPort, server2.getPort());
     IOUtils.closeQuietly(server2);
 
     config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, "49552-49222,49223,49224-49333");
     try {
       autoClose(new RpcServer(config));
-      assertTrue("Invalid port range should throw an exception", false); // Should not reach here
+      fail("Invalid port range should throw an exception"); // Should not reach here
     } catch(IOException e) {
       assertEquals("Incorrect RPC server port configuration for HiveServer2", e.getMessage());
     }
 
     // Retry logic
-    expectedPort = 65535;
-    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort) + ",21-23");
+    expectedPort = 22;
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, expectedPort + ",21-23");
     RpcServer server3 = new RpcServer(config);
-    assertTrue("Port should match configured one:" + server3.getPort(), server3.getPort() == expectedPort);
+    assertEquals("Port should match configured one:" + server3.getPort(), expectedPort, server3.getPort());
     IOUtils.closeQuietly(server3);
   }
 
