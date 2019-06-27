@@ -328,6 +328,15 @@ public class LlapProtocolServerImpl extends AbstractService
     return responseProtoBuilder.build();
   }
 
+  @Override
+  public LlapDaemonProtocolProtos.SetCapacityResponseProto setCapacity(final RpcController controller,
+      final LlapDaemonProtocolProtos.SetCapacityRequestProto request) throws ServiceException {
+    LlapDaemonProtocolProtos.SetCapacityResponseProto.Builder responseProtoBuilder =
+        LlapDaemonProtocolProtos.SetCapacityResponseProto.newBuilder();
+    containerRunner.setCapacity(request);
+    return responseProtoBuilder.build();
+  }
+
   private boolean determineIfSigningIsRequired(UserGroupInformation callingUser) {
     switch (isSigningRequiredConfig) {
     case FALSE: return false;

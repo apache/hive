@@ -39,6 +39,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityResponseProto;
 import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
 import org.junit.Test;
 
@@ -145,4 +147,34 @@ public class TestLlapDaemonProtocolServerImpl {
     }
   }
 
+  @Test(timeout = 10000)
+  public void testSetCapacity() throws ServiceException, IOException {
+    LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
+    int numHandlers = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_NUM_HANDLERS);
+    ContainerRunner containerRunnerMock = mock(ContainerRunner.class);
+    when(containerRunnerMock.setCapacity(any(SetCapacityRequestProto.class))).thenReturn(
+        SetCapacityResponseProto
+            .newBuilder()
+            .build());
+    LlapDaemonExecutorMetrics executorMetrics =
+        LlapDaemonExecutorMetrics.create("LLAP", "SessionId", numHandlers, new int[] {30, 60, 300}, 0, 0L, 0);
+    LlapProtocolServerImpl server =
+        new LlapProtocolServerImpl(null, numHandlers, containerRunnerMock,
+            new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
+            0, 0, null, executorMetrics);
+
+    try {
+      server.init(new Configuration());
+      server.start();
+      InetSocketAddress serverAddr = server.getManagementBindAddress();
+
+      LlapManagementProtocolPB client =
+          new LlapManagementProtocolClientImpl(new Configuration(), serverAddr.getHostName(),
+              serverAddr.getPort(), null, null);
+      client.setCapacity(null,
+          SetCapacityRequestProto.newBuilder().setExecutorNum(1).setQueueSize(1).build());
+    } finally {
+      server.stop();
+    }
+  }
 }

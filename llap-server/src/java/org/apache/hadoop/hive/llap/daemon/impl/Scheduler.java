@@ -50,4 +50,11 @@ public interface Scheduler<T> {
   QueryIdentifier findQueryByFragment(String fragmentId);
 
   boolean updateFragment(String fragmentId, boolean isGuaranteed);
+
+  /**
+   * Sets the scheduler executor and queue size.
+   * @param newExecutors New number of executors
+   * @param newWaitQueueSize New size of the queue
+   */
+  void setCapacity(int newExecutors, int newWaitQueueSize);
 }
