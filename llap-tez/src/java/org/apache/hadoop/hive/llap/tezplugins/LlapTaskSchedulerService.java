@@ -404,7 +404,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     if (HiveConf.getTimeVar(conf,
             HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS, TimeUnit.MILLISECONDS) > 0) {
-      this.llapMetricsCollector = new LlapMetricsCollector(conf);
+      this.llapMetricsCollector = new LlapMetricsCollector(conf, registry);
       this.registry.registerServiceListener(llapMetricsCollector);
     }
 

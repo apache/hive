@@ -29,11 +29,15 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
@@ -73,11 +77,13 @@ public class TestLlapMetricsCollector {
 
     when(mockConf.get(HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS.varname,
             HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS.defaultStrVal)).thenReturn("30000ms");
+    when(mockConf.get(HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER.varname,
+        HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER.defaultStrVal)).thenReturn(MockListener.class.getName());
     when(mockClientFactory.create(any(LlapServiceInstance.class))).thenReturn(mockClient);
     when(mockClient.getDaemonMetrics(
             any(RpcController.class),
             any(LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto.class))).thenReturn(TEST_RESPONSE);
-    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory);
+    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory, null);
   }
 
   @Test(timeout = DEFAULT_TIMEOUT)
@@ -210,7 +216,7 @@ public class TestLlapMetricsCollector {
     // Given
     when(mockConf.get(HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS.varname,
             HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS.defaultStrVal)).thenReturn("0ms");
-    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory);
+    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory, null);
 
     // When
     collector.start();
@@ -219,5 +225,82 @@ public class TestLlapMetricsCollector {
     verify(mockExecutor, never())
             .scheduleAtFixedRate(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class));
 
+  }
+
+  /**
+   * Check that the listener is created and called. The default config contains the mock listener.
+   */
+  @Test(timeout = DEFAULT_TIMEOUT)
+  public void testListener() {
+    // Given
+    LlapServiceInstance mockService1 = mock(LlapServiceInstance.class);
+    when(mockService1.getWorkerIdentity()).thenReturn(TEST_IDENTITY_1);
+    LlapServiceInstance mockService2 = mock(LlapServiceInstance.class);
+    when(mockService2.getWorkerIdentity()).thenReturn(TEST_IDENTITY_2);
+
+    // When
+    collector.onCreate(mockService1, TEST_SEQ_VERSION);
+    collector.onCreate(mockService2, TEST_SEQ_VERSION);
+    collector.collectMetrics();
+    collector.collectMetrics();
+    collector.collectMetrics();
+
+    // Then
+    assertNotNull(collector.listener);
+    assertEquals(1, ((MockListener)collector.listener).initCount);
+    assertEquals(3, ((MockListener)collector.listener).fullMetricsCount);
+    assertEquals(6, ((MockListener)collector.listener).daemonMetricsCount);
+  }
+
+  /**
+   * Check that the collector is working without the listener too.
+   */
+  @Test(timeout = DEFAULT_TIMEOUT)
+  public void testWithoutListener() {
+    // Given
+    when(mockConf.get(HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER.varname,
+        HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER.defaultStrVal)).thenReturn("");
+    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory, null);
+
+    LlapServiceInstance mockService1 = mock(LlapServiceInstance.class);
+    when(mockService1.getWorkerIdentity()).thenReturn(TEST_IDENTITY_1);
+    LlapServiceInstance mockService2 = mock(LlapServiceInstance.class);
+    when(mockService2.getWorkerIdentity()).thenReturn(TEST_IDENTITY_2);
+
+    // Check that there is no exception with start / create / remove / collect
+    collector.start();
+    collector.onCreate(mockService1, TEST_SEQ_VERSION);
+    collector.onCreate(mockService2, TEST_SEQ_VERSION);
+    collector.onRemove(mockService2, TEST_SEQ_VERSION);
+    collector.collectMetrics();
+
+    // Then
+    assertNull(collector.listener);
+  }
+
+  /**
+   * Just count the calls.
+   */
+  static class MockListener implements LlapMetricsListener {
+    int initCount = 0;
+    int daemonMetricsCount = 0;
+    int fullMetricsCount = 0;
+
+    @Override
+    public void init(Configuration configuration, LlapRegistryService registry) {
+      initCount++;
+    }
+
+    @Override
+    public void newDaemonMetrics(String workerIdentity, LlapMetricsCollector.LlapMetrics newMetrics) {
+      assertTrue("Init should be called first", initCount > 0);
+      daemonMetricsCount++;
+    }
+
+    @Override
+    public void newClusterMetrics(Map<String, LlapMetricsCollector.LlapMetrics> newMetrics) {
+      assertTrue("Init should be called first", initCount > 0);
+      fullMetricsCount++;
+    }
   }
 }

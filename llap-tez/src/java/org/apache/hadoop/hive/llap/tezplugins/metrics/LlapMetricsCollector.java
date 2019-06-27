@@ -30,13 +30,16 @@ import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.service.Service;
 import org.apache.hadoop.service.ServiceStateChangeListener;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.SocketFactory;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -58,26 +61,44 @@ public class LlapMetricsCollector implements ServiceStateChangeListener,
   private final Map<String, LlapManagementProtocolClientImpl> llapClients;
   private final Map<String, LlapMetrics> instanceStatisticsMap;
   private final long metricsCollectionMs;
+  @VisibleForTesting
+  final LlapMetricsListener listener;
 
 
-  public LlapMetricsCollector(Configuration conf) {
+  public LlapMetricsCollector(Configuration conf, LlapRegistryService registry) {
     this(
             conf,
             Executors.newSingleThreadScheduledExecutor(
                     new ThreadFactoryBuilder().setDaemon(true).setNameFormat(THREAD_NAME)
                             .build()),
-            LlapManagementProtocolClientImplFactory.basicInstance(conf));
+            LlapManagementProtocolClientImplFactory.basicInstance(conf),
+            registry);
   }
 
   @VisibleForTesting
   LlapMetricsCollector(Configuration conf, ScheduledExecutorService scheduledMetricsExecutor,
-                       LlapManagementProtocolClientImplFactory clientFactory) {
+                       LlapManagementProtocolClientImplFactory clientFactory,
+                       LlapRegistryService registry) {
     this.scheduledMetricsExecutor = scheduledMetricsExecutor;
     this.clientFactory = clientFactory;
     this.llapClients = new HashMap<>();
     this.instanceStatisticsMap = new ConcurrentHashMap<>();
     this.metricsCollectionMs = HiveConf.getTimeVar(conf,
             HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS, TimeUnit.MILLISECONDS);
+    String listenerClass = HiveConf.getVar(conf,
+        HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER);
+    if (Strings.isBlank(listenerClass)) {
+      listener = null;
+    } else {
+      try {
+        listener = (LlapMetricsListener)Class.forName(listenerClass.trim()).newInstance();
+        listener.init(conf, registry);
+      } catch (Exception e) {
+        throw new IllegalArgumentException("Wrong configuration for "
+            + HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER
+            + " " + listenerClass, e);
+      }
+    }
   }
 
   public void start() {
@@ -101,11 +122,25 @@ public class LlapMetricsCollector implements ServiceStateChangeListener,
         LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto metrics =
                 client.getDaemonMetrics(null,
                         LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto.newBuilder().build());
-        instanceStatisticsMap.put(identity, new LlapMetrics(metrics));
-
+        LlapMetrics newMetrics = new LlapMetrics(metrics);
+        instanceStatisticsMap.put(identity, newMetrics);
+        if (listener != null) {
+          try {
+            listener.newDaemonMetrics(identity, newMetrics);
+          } catch (Throwable t) {
+            LOG.warn("LlapMetricsListener thrown an unexpected exception", t);
+          }
+        }
       } catch (ServiceException ex) {
         LOG.error(ex.getMessage(), ex);
         instanceStatisticsMap.remove(identity);
+      }
+    }
+    if (listener != null) {
+      try {
+        listener.newClusterMetrics(getMetrics());
+      } catch (Throwable t) {
+        LOG.warn("LlapMetricsListener thrown an unexpected exception", t);
       }
     }
   }
