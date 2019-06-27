@@ -57,6 +57,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.Terminate
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityResponseProto;
 import org.apache.hadoop.hive.llap.daemon.services.impl.LlapWebServices;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
@@ -631,6 +633,12 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   public UpdateFragmentResponseProto updateFragment(
       UpdateFragmentRequestProto request) throws IOException {
     return containerRunner.updateFragment(request);
+  }
+
+  @Override
+  public SetCapacityResponseProto setCapacity(
+      SetCapacityRequestProto request) {
+    return containerRunner.setCapacity(request);
   }
 
   @VisibleForTesting
