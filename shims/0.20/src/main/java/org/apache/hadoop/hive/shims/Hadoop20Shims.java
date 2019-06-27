@@ -66,19 +66,12 @@ import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.DirectoryListing;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
-import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
-import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.ipc.CallerContext;
-import org.apache.hadoop.mapred.ClusterStatus;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.MiniMRCluster;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.WebHCatJTShim23;
+import org.apache.hadoop.mapred.*;
+import org.apache.hadoop.mapred.WebHCatJTShim20;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.hadoop.mapreduce.FileSystemCounter;
 import org.apache.hadoop.mapreduce.Job;
@@ -108,12 +101,12 @@ import org.apache.tez.test.MiniTezCluster;
 /**
  * Implemention of shims against Hadoop 0.23.0.
  */
-public class Hadoop23Shims extends HadoopShimsSecure {
+public class Hadoop20Shims extends HadoopShimsSecure {
 
   HadoopShims.MiniDFSShim cluster = null;
   final boolean storagePolicy;
 
-  public Hadoop23Shims() {
+  public Hadoop20Shims() {
     // in-memory HDFS
     boolean storage = false;
     try {
@@ -345,7 +338,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return new MiniTezLocalShim(conf, usingLlap);
   }
 
-  public class MiniTezLocalShim extends Hadoop23Shims.MiniMrShim {
+  public class MiniTezLocalShim extends Hadoop20Shims.MiniMrShim {
     private final Configuration conf;
     private final boolean isLlap;
 
@@ -397,7 +390,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   /**
    * Shim for MiniTezCluster
    */
-  public class MiniTezShim extends Hadoop23Shims.MiniMrShim {
+  public class MiniTezShim extends Hadoop20Shims.MiniMrShim {
 
     private final MiniTezCluster mr;
     private final Configuration conf;
@@ -500,14 +493,14 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   /**
    * Shim for MiniSparkOnYARNCluster
    */
-  public class MiniSparkShim extends Hadoop23Shims.MiniMrShim {
+  public class MiniSparkShim extends Hadoop20Shims.MiniMrShim {
 
-    private final MiniSparkOnYARNCluster mr;
+    private final MiniSparkOnYARNCluster20 mr;
     private final Configuration conf;
 
     public MiniSparkShim(Configuration conf, int numberOfTaskTrackers,
       String nameNode, int numDir) throws IOException {
-      mr = new MiniSparkOnYARNCluster("sparkOnYarn");
+      mr = new MiniSparkOnYARNCluster20("sparkOnYarn");
       conf.set("fs.defaultFS", nameNode);
       conf.set("yarn.resourcemanager.scheduler.class", "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler");
       // disable resource monitoring, although it should be off by default
@@ -640,11 +633,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public HCatHadoopShims getHCatShim() {
     if(hcatShimInstance == null) {
-      hcatShimInstance = new HCatHadoopShims23();
+      hcatShimInstance = new HCatHadoopShims20();
     }
     return hcatShimInstance;
   }
-  private final class HCatHadoopShims23 implements HCatHadoopShims {
+  private final class HCatHadoopShims20 implements HCatHadoopShims {
     @Override
     public TaskID createTaskID() {
       return new TaskID("", 0, TaskType.MAP, 0);
@@ -738,12 +731,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
   @Override
   public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException {
-    return new WebHCatJTShim23(conf, ugi);//this has state, so can't be cached
+    return new WebHCatJTShim20(conf, ugi);//this has state, so can't be cached
   }
 
   private static final class HdfsFileStatusWithIdImpl implements HdfsFileStatusWithId {
     private final LocatedFileStatus lfs;
     private final long fileId;
+    public static final long GRANDFATHER_INODE_ID = 0L;
 
     public HdfsFileStatusWithIdImpl(LocatedFileStatus lfs, long fileId) {
       this.lfs = lfs;
@@ -757,7 +751,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     @Override
     public Long getFileId() {
-      if (fileId == HdfsConstants.GRANDFATHER_INODE_ID) {
+      if (fileId == GRANDFATHER_INODE_ID) {
         return null;
       }
       return fileId;
@@ -1158,12 +1152,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
-    DistCpOptions options = new DistCpOptions.Builder(srcPaths, dst)
-            .withSyncFolder(true)
-            .withDeleteMissing(true)
-            .preserve(FileAttribute.BLOCKSIZE)
-            .preserve(FileAttribute.XATTR)
-            .build();
+    DistCpOptions options = new DistCpOptions(srcPaths, dst);
+    options.setSyncFolder(true);
+    options.setSkipCRC(true);
+    options.preserve(FileAttribute.BLOCKSIZE);
+    options.setDeleteMissing(true);
+    options.preserve(FileAttribute.XATTR);
 
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
@@ -1188,7 +1182,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public List<String> getGroups(org.apache.hadoop.security.UserGroupInformation user) {
-    return user.getGroups();
+    return new ArrayList<>();
   }
 
   private static Boolean hdfsEncryptionSupport;
@@ -1277,7 +1271,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     @Override
     public boolean arePathsOnSameEncryptionZone(Path path1, Path path2,
                                                 HadoopShims.HdfsEncryptionShim encryptionShim2) throws IOException {
-      if (!(encryptionShim2 instanceof Hadoop23Shims.HdfsEncryptionShim)) {
+      if (!(encryptionShim2 instanceof Hadoop20Shims.HdfsEncryptionShim)) {
         LOG.warn("EncryptionShim for path2 (" + path2 + ") is of unexpected type: " + encryptionShim2.getClass()
             + ". Assuming path2 is on the same EncryptionZone as path1(" + path1 + ").");
         return true;
@@ -1548,7 +1542,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean isErasureCoded(FileStatus file) {
-    return file.isErasureCoded();
+    return false;
   }
 
   /**
@@ -1575,13 +1569,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public List<HdfsFileErasureCodingPolicy> getAllErasureCodingPolicies() throws IOException {
-      ErasureCodingPolicyInfo[] erasureCodingPolicies = hdfsAdmin.getErasureCodingPolicies();
-      List<HdfsFileErasureCodingPolicy> policies = new ArrayList<>(erasureCodingPolicies.length);
-      for (ErasureCodingPolicyInfo erasureCodingPolicy : erasureCodingPolicies) {
-        policies.add(new HdfsFileErasureCodingPolicyImpl(erasureCodingPolicy.getPolicy().getName(),
-            erasureCodingPolicy.getState().toString()));
-      }
-      return policies;
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
 
@@ -1591,7 +1579,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public void enableErasureCodingPolicy(String ecPolicyName)  throws IOException {
-      hdfsAdmin.enableErasureCodingPolicy(ecPolicyName);
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**
@@ -1601,7 +1589,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public void setErasureCodingPolicy(Path path, String ecPolicyName) throws IOException {
-      hdfsAdmin.setErasureCodingPolicy(path, ecPolicyName);
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**
@@ -1611,11 +1599,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public HdfsFileErasureCodingPolicy getErasureCodingPolicy(Path path) throws IOException {
-      ErasureCodingPolicy erasureCodingPolicy = hdfsAdmin.getErasureCodingPolicy(path);
-      if (erasureCodingPolicy == null) {
-        return null;
-      }
-      return new HdfsFileErasureCodingPolicyImpl(erasureCodingPolicy.getName());
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**
@@ -1624,7 +1608,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public void unsetErasureCodingPolicy(Path path) throws IOException {
-      hdfsAdmin.unsetErasureCodingPolicy(path);
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**
@@ -1633,7 +1617,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public void removeErasureCodingPolicy(String ecPolicyName) throws IOException {
-      hdfsAdmin.removeErasureCodingPolicy(ecPolicyName);
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**
@@ -1642,7 +1626,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public void disableErasureCodingPolicy(String ecPolicyName) throws IOException {
-      hdfsAdmin.disableErasureCodingPolicy(ecPolicyName);
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**

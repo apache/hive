@@ -162,6 +162,12 @@
                       </includes>
                     </filter>
                     <filter>
+                      <artifact>org.apache.hive.shims:hive-shims-0.20</artifact>
+                      <includes>
+                        <include>**</include>
+                      </includes>
+                    </filter>
+                    <filter>
                       <artifact>org.apache.parquet:parquet-hadoop-bundle</artifact>
                       <excludes>
                         <exclude>shaded/parquet/org/codehaus/jackson/**</exclude>

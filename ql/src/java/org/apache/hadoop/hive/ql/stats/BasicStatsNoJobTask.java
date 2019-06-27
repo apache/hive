@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -200,7 +201,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
                   numRows += statsRR.getStats().getRowCount();
                   fileSize += file.getLen();
                   numFiles += 1;
-                  if (file.isErasureCoded()) {
+                  if (ShimLoader.getHadoopShims().isErasureCoded(file)) {
                     numErasureCodedFiles++;
                   }
                 } else {
