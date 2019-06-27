@@ -13,6 +13,9 @@
  */
 package org.apache.hadoop.hive.llap.registry.impl;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.curator.framework.recipes.atomic.AtomicValue;
+import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 
 import com.google.common.collect.Sets;
@@ -67,12 +70,16 @@ public class LlapZookeeperRegistryImpl
   private final static String NAMESPACE_PREFIX = "llap-";
   private static final String SLOT_PREFIX = "slot-";
   private static final String SASL_LOGIN_CONTEXT_NAME = "LlapZooKeeperClient";
+  private static final String CONFIG_CHANGE_PATH = "config-change";
+  private static final String CONFIG_CHANGE_NODE = "next-change";
 
 
   private SlotZnode slotZnode;
 
   // to be used by clients of ServiceRegistry TODO: this is unnecessary
   private DynamicServiceInstanceSet instances;
+
+  private DistributedAtomicLong nextChangeTime;
 
   public LlapZookeeperRegistryImpl(String instanceName, Configuration conf) {
     super(instanceName, conf,
@@ -415,5 +422,66 @@ public class LlapZookeeperRegistryImpl
     // External LLAP clients would need to set LLAP_ZK_REGISTRY_USER to the LLAP daemon user (hive),
     // rather than relying on RegistryUtils.currentUser().
     return HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, RegistryUtils.currentUser());
+  }
+
+  /**
+   * Locks the Llap Cluster for configuration change by setting the next possible configuration
+   * change time. Until this time is reached the configuration should not be changed.
+   * @param nextMinConfigChangeTime The next time when the cluster can be reconfigured
+   * @return The result of the change (success if the lock is succeeded, and the next possible
+   * configuration change time
+   */
+  public ConfigChangeLockResult lockForConfigChange(long nextMinConfigChangeTime) {
+    try {
+      if (nextChangeTime == null) {
+        // Create the node with the /llap-sasl/hiveuser/hostname/config-change/next-change path without retry
+        nextChangeTime = new DistributedAtomicLong(zooKeeperClient,
+            String.join("/", workersPath.substring(0, workersPath.lastIndexOf('/')), CONFIG_CHANGE_PATH,
+                CONFIG_CHANGE_NODE), (i, j, sleeper) -> false);
+        nextChangeTime.initialize(0L);
+      }
+      AtomicValue<Long> current = nextChangeTime.get();
+      if (!current.succeeded()) {
+        LOG.debug("Can not get the current configuration lock time");
+        return new ConfigChangeLockResult(false, -1L);
+      }
+      if (current.postValue() >= nextMinConfigChangeTime) {
+        LOG.debug("Can not set {}. Current value is {}.", nextMinConfigChangeTime, current.postValue());
+        return new ConfigChangeLockResult(false, current.postValue());
+      }
+      current = nextChangeTime.compareAndSet(current.postValue(), nextMinConfigChangeTime);
+      if (!current.succeeded()) {
+        LOG.debug("Can not set {}. Current value is changed to {}.", nextMinConfigChangeTime, current.postValue());
+        return new ConfigChangeLockResult(false, current.postValue());
+      }
+      return new ConfigChangeLockResult(true, current.postValue());
+    } catch (Throwable t) {
+      LOG.info("Can not reserve configuration change lock", t);
+      return new ConfigChangeLockResult(false, -1L);
+    }
+  }
+
+  public static class ConfigChangeLockResult {
+    boolean success;
+    long nextConfigChangeTime;
+
+    @VisibleForTesting
+    public ConfigChangeLockResult(boolean success, long nextConfigChangeTime) {
+      this.success = success;
+      this.nextConfigChangeTime = nextConfigChangeTime;
+    }
+
+    public boolean isSuccess() {
+      return success;
+    }
+
+    public long getNextConfigChangeTime() {
+      return nextConfigChangeTime;
+    }
+
+    @Override
+    public String toString() {
+      return "ConfigChangeLockResult [" + success + "," + nextConfigChangeTime + "]";
+    }
   }
 }

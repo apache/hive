@@ -4358,6 +4358,40 @@ public class HiveConf extends Configuration {
       "The listener which is called when new Llap Daemon statistics is received on AM side.\n" +
       "The listener should implement the " +
       "org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsListener interface."),
+    LLAP_TASK_SCHEDULER_BLACKLISTING_METRICS_LISTENER_MIN_SERVED_TASKS(
+      "hive.llap.task.scheduler.blacklisting.metrics.listener.min.served.tasks", 2000,
+      "If the number of tasks served by a node is below this number then we will ignore the node\n" +
+      "when calculating the status of the cluster.\n" +
+      "Only used if hive.llap.task.scheduler.am.collect.daemon.metrics.listener is set to\n" +
+      "org.apache.hadoop.hive.llap.tezplugins.metrics.BlacklistingLlapMetricsListener"),
+    LLAP_TASK_SCHEDULER_BLACKLISTING_METRICS_LISTENER_MIN_CHANGE_DELAY(
+      "hive.llap.task.scheduler.blacklisting.metrics.listener.min.change.delay", "300s",
+      new TimeValidator(TimeUnit.SECONDS),
+      "The minimum time which should elapse between blacklisting nodes, in seconds.\n" +
+      "Only used if hive.llap.task.scheduler.am.collect.daemon.metrics.listener is set to\n" +
+      "org.apache.hadoop.hive.llap.tezplugins.metrics.BlacklistingLlapMetricsListener"),
+    LLAP_TASK_SCHEDULER_BLACKLISTING_METRICS_LISTENER_TIME_THRESHOLD(
+      "hive.llap.task.scheduler.blacklisting.metrics.listener.time.threshold", 1.5f,
+      "If the average response time of this node divided by the average response time of all the other nodes\n" +
+      "is greater than this threshold and the other conditions are satisfied too,\n" +
+      "then this node should be blacklisted.\n" +
+      "Only used if hive.llap.task.scheduler.am.collect.daemon.metrics.listener is set to\n" +
+      "org.apache.hadoop.hive.llap.tezplugins.metrics.BlacklistingLlapMetricsListener"),
+    LLAP_TASK_SCHEDULER_BLACKLISTING_METRICS_LISTENER_EMPTY_EXECUTORS(
+      "hive.llap.task.scheduler.blacklisting.metrics.listener.empty.executors.threshold", 2.0f,
+      "If a node is slow (hive.llap.task.scheduler.blacklisting.metrics.listener.time.threshold)\n" +
+      "and the other nodes have\n" +
+      "hive.llap.task.scheduler.blacklisting.metrics.listener.empty.executors.threshold times more free executors\n" +
+      "than the configured executors of the slow node and the other conditions are satisfied too,\n" +
+      "then the node should be blacklisted\n" +
+      "Only used if hive.llap.task.scheduler.am.collect.daemon.metrics.listener is set to\n" +
+      "org.apache.hadoop.hive.llap.tezplugins.metrics.BlacklistingLlapMetricsListener"),
+    LLAP_TASK_SCHEDULER_BLACKLISTING_METRICS_LISTENER_MAX_LISTED_NODES(
+      "hive.llap.task.scheduler.blacklisting.metrics.listener.max.listed.nodes", 1,
+      "The maximum number of blacklisted nodes. If there are at least this number of blacklisted nodes\n" +
+      "the listener will not blacklist further nodes even if all the conditions are met.\n" +
+      "Only used if hive.llap.task.scheduler.am.collect.daemon.metrics.listener is set to\n" +
+      "org.apache.hadoop.hive.llap.tezplugins.metrics.BlacklistingLlapMetricsListener"),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME("hive.llap.task.scheduler.am.registry", "llap",
       "AM registry name for LLAP task scheduler plugin to register with."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_PRINCIPAL("hive.llap.task.scheduler.am.registry.principal", "",

@@ -19,12 +19,13 @@ import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
-import org.apache.hadoop.hive.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.impl.LlapZookeeperRegistryImpl.ConfigChangeLockResult;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.service.AbstractService;
@@ -129,6 +130,18 @@ public class LlapRegistryService extends AbstractService {
   private void unregisterWorker() throws IOException {
     if (this.registry != null) {
       this.registry.unregister();
+    }
+  }
+
+  public ConfigChangeLockResult lockForConfigChange(long nextMinConfigChangeTime) {
+    if (this.registry == null) {
+      throw new IllegalStateException("Not allowed to call lockForConfigChange before serviceInit");
+    }
+    if (isDynamic) {
+      LlapZookeeperRegistryImpl zkRegisty = (LlapZookeeperRegistryImpl)registry;
+      return zkRegisty.lockForConfigChange(nextMinConfigChangeTime);
+    } else {
+      throw new UnsupportedOperationException("Acquiring config lock is only allowed for dynamic registries");
     }
   }
 
