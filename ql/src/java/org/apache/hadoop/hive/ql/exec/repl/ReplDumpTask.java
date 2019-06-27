@@ -486,6 +486,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, long lastReplId,
       Hive hiveDb, HiveWrapper.Tuple<Table> tuple) throws Exception {
+    LOG.info("Bootstrap Dump for table " + tblName);
     TableSpec tableSpec = new TableSpec(tuple.object);
     TableExport.Paths exportPaths =
         new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, tblName, conf, true);

@@ -260,9 +260,9 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     createTables(originalTables, CreateTableType.NON_ACID);
 
     // Invalid repl policy where abrubtly placed DOT which causes ParseException during REPL dump.
-    String[] replicatedTables = new String[]{};
+    String[] replicatedTables = new String[] {};
     boolean failed;
-    String[] invalidReplPolicies = new String[]{
+    String[] invalidReplPolicies = new String[] {
         primaryDbName + ".t1.t2", // Two explicit table names not allowed.
         primaryDbName + ".['t1'].t2", // Table name and include list not allowed.
         primaryDbName + ".t1.['t2']", // Table name and exclude list not allowed.
@@ -329,11 +329,11 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
   @Test
   public void testFullDbBootstrapReplicationWithDifferentReplPolicyFormats() throws Throwable {
-    String[] originalTables = new String[]{"t1", "t200", "t3333"};
+    String[] originalTables = new String[] {"t1", "t200", "t3333"};
     createTables(originalTables, CreateTableType.NON_ACID);
 
     // List of repl policy formats that leads to Full DB replication.
-    String[] fullDbReplPolicies = new String[]{
+    String[] fullDbReplPolicies = new String[] {
         primaryDbName + ".['.*?']",
         primaryDbName + ".['.*?'].[]"
     };
@@ -491,7 +491,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     oldReplPolicy = replPolicy;
     replPolicy = primaryDbName + ".['.*?'].['t[3-5]+']";
     replicatedTables = new String[] {"t1", "t2", "t6"};
-    bootstrappedTables = new String[]{};
+    bootstrappedTables = new String[] {};
     replicateAndVerify(replPolicy, oldReplPolicy, lastReplId,
             null, null, bootstrappedTables, replicatedTables);
   }
@@ -610,14 +610,14 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
   public void testRenameTableScenariosBasic() throws Throwable {
     String replPolicy = primaryDbName + ".['in[0-9]+'].['out[0-9]+']";
     String lastReplId = replicateAndVerify(replPolicy, null, null, null,
-            null, new String[]{}, new String[]{});
+            null, new String[] {}, new String[] {});
 
-    String[] originalNonAcidTables = new String[]{"in1", "in2", "out3", "out4", "out5", "out6"};
+    String[] originalNonAcidTables = new String[] {"in1", "in2", "out3", "out4", "out5", "out6"};
     createTables(originalNonAcidTables, CreateTableType.NON_ACID);
 
     // Replicate and verify if only 2 tables are replicated to target.
-    String[] replicatedTables = new String[]{"in1", "in2"};
-    String[] bootstrapTables = new String[]{};
+    String[] replicatedTables = new String[] {"in1", "in2"};
+    String[] bootstrapTables = new String[] {};
     lastReplId = replicateAndVerify(replPolicy, null, lastReplId, null,
             null, bootstrapTables, replicatedTables);
 
@@ -627,8 +627,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .run("alter table out4 rename to in4")
             .run("alter table out5 rename to in5");
 
-    replicatedTables = new String[]{"in1", "in2", "in3", "in4", "in5"};
-    bootstrapTables = new String[]{"in3", "in4", "in5"};
+    replicatedTables = new String[] {"in1", "in2", "in3", "in4", "in5"};
+    bootstrapTables = new String[] {"in3", "in4", "in5"};
     lastReplId = replicateAndVerify(replPolicy, null, lastReplId, null,
             null, bootstrapTables, replicatedTables);
 
@@ -639,8 +639,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .run("alter table in5 rename to out10") // Rename from satisfying name to not satisfying name.
             .run("alter table out10 rename to in11"); // from non satisfying to satisfying, should be bootstrapped
 
-    replicatedTables = new String[]{"in1", "in2", "in8", "in11"};
-    bootstrapTables = new String[]{"in11"};
+    replicatedTables = new String[] {"in1", "in2", "in8", "in11"};
+    bootstrapTables = new String[] {"in11"};
     lastReplId = replicateAndVerify(replPolicy, null, lastReplId, null,
             null, bootstrapTables, replicatedTables);
 
@@ -654,8 +654,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .run("alter table out100 rename to in100") // this will add the bootstrap
             .run("drop table in100");  // table in100 is dropped, so no bootstrap should happen.
 
-    replicatedTables = new String[]{"in200", "in12", "in12", "in14"};
-    bootstrapTables = new String[]{"in14", "in200"};
+    replicatedTables = new String[] {"in200", "in12", "in12", "in14"};
+    bootstrapTables = new String[] {"in14", "in200"};
     replicateAndVerify(replPolicy, null, lastReplId, null,
             null, bootstrapTables, replicatedTables);
   }
@@ -664,16 +664,16 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
   public void testRenameTableScenariosWithDmlOperations() throws Throwable {
     String replPolicy = primaryDbName + ".['in[0-9]+'].['out[0-9]+']";
     String lastReplId = replicateAndVerify(replPolicy, null, null, null,
-            null, new String[]{}, new String[]{});
+            null, new String[] {}, new String[] {});
 
-    String[] originalFullAcidTables = new String[]{"in1"};
-    String[] originalNonAcidTables = new String[]{"in100"};
+    String[] originalFullAcidTables = new String[] {"in1"};
+    String[] originalNonAcidTables = new String[] {"in100"};
     createTables(originalFullAcidTables, CreateTableType.FULL_ACID);
     createTables(originalNonAcidTables, CreateTableType.NON_ACID);
 
     // Replicate and verify if only 2 tables are replicated to target.
-    String[] replicatedTables = new String[]{"in1", "in100"};
-    String[] bootstrapTables = new String[]{};
+    String[] replicatedTables = new String[] {"in1", "in100"};
+    String[] bootstrapTables = new String[] {};
     lastReplId = replicateAndVerify(replPolicy, null, lastReplId, null,
             null, bootstrapTables, replicatedTables);
 
@@ -686,8 +686,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .run("insert into out100 values(2, 100)")
             .run("alter table out100 rename to in400");
 
-    replicatedTables = new String[]{"in4", "in400"};
-    bootstrapTables = new String[]{"in4", "in400"};
+    replicatedTables = new String[] {"in4", "in400"};
+    bootstrapTables = new String[] {"in4", "in400"};
     replicateAndVerify(replPolicy, null, lastReplId, null,
             null, bootstrapTables, replicatedTables, new String[] {"1", "2"});
   }
@@ -700,18 +700,18 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='false'"
     );
     String lastReplId = replicateAndVerify(replPolicy, null, null, dumpWithClause,
-            null, new String[]{}, new String[]{});
+            null, new String[] {}, new String[] {});
 
-    String[] originalNonAcidTables = new String[]{"in1", "out4"};
-    String[] originalFullAcidTables = new String[]{"in2", "out5"};
-    String[] originalMMAcidTables = new String[]{"out3", "out6"};
+    String[] originalNonAcidTables = new String[] {"in1", "out4"};
+    String[] originalFullAcidTables = new String[] {"in2", "out5"};
+    String[] originalMMAcidTables = new String[] {"out3", "out6"};
     createTables(originalNonAcidTables, CreateTableType.NON_ACID);
     createTables(originalFullAcidTables, CreateTableType.FULL_ACID);
     createTables(originalMMAcidTables, CreateTableType.MM_ACID);
 
     // Replicate and verify if only 1 tables are replicated to target. Acid tables are not dumped.
-    String[] replicatedTables = new String[]{"in1"};
-    String[] bootstrapTables = new String[]{};
+    String[] replicatedTables = new String[] {"in1"};
+    String[] bootstrapTables = new String[] {};
     lastReplId = replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause,
             null, bootstrapTables, replicatedTables);
 
@@ -723,8 +723,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES.varname + "'='true'",
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'");
-    replicatedTables = new String[]{"in1", "in2", "in3", "in4", "in5"};
-    bootstrapTables = new String[]{"in2", "in3", "in4", "in5"};
+    replicatedTables = new String[] {"in1", "in2", "in3", "in4", "in5"};
+    bootstrapTables = new String[] {"in2", "in3", "in4", "in5"};
     replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause,
             null, bootstrapTables, replicatedTables);
   }
@@ -740,18 +740,18 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='false'"
     );
     String lastReplId = replicateAndVerify(replPolicy, null, null, dumpWithClause,
-            loadWithClause, new String[]{}, new String[]{});
+            loadWithClause, new String[] {}, new String[] {});
 
-    String[] originalNonAcidTables = new String[]{"in1", "out4"};
-    String[] originalExternalTables = new String[]{"in2", "out5"};
-    String[] originalMMAcidTables = new String[]{"in3", "out6"};
+    String[] originalNonAcidTables = new String[] {"in1", "out4"};
+    String[] originalExternalTables = new String[] {"in2", "out5"};
+    String[] originalMMAcidTables = new String[] {"in3", "out6"};
     createTables(originalNonAcidTables, CreateTableType.NON_ACID);
     createTables(originalExternalTables, CreateTableType.EXTERNAL);
     createTables(originalMMAcidTables, CreateTableType.MM_ACID);
 
     // Replicate and verify if only 1 tables are replicated to target. Acid and external tables are not dumped.
-    String[] replicatedTables = new String[]{"in1"};
-    String[] bootstrapTables = new String[]{};
+    String[] replicatedTables = new String[] {"in1"};
+    String[] bootstrapTables = new String[] {};
     lastReplId = replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause,
             loadWithClause, bootstrapTables, replicatedTables);
 
@@ -766,8 +766,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES.varname + "'='true'",
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'"
     );
-    replicatedTables = new String[]{"in1", "in2", "in3", "in4", "in5"};
-    bootstrapTables = new String[]{"in2", "in3", "in4", "in5"};
+    replicatedTables = new String[] {"in1", "in2", "in3", "in4", "in5"};
+    bootstrapTables = new String[] {"in2", "in3", "in4", "in5"};
     lastReplId = replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause,
             loadWithClause, null, replicatedTables);
 
@@ -781,8 +781,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .run("alter table in1 rename to out10") // in1 should be deleted.
             .run("alter table out10 rename to in11"); // normal table bootstrapped
 
-    replicatedTables = new String[]{"in2", "in3", "in4", "in11", "in6", "in7"};
-    bootstrapTables = new String[]{"in11", "in6", "in7"};
+    replicatedTables = new String[] {"in2", "in3", "in4", "in11", "in6", "in7"};
+    bootstrapTables = new String[] {"in11", "in6", "in7"};
     replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause,
             loadWithClause, bootstrapTables, replicatedTables);
   }
@@ -798,18 +798,18 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     );
     String replPolicy = primaryDbName + ".['in[0-9]+'].['in100', 'in200', 'in1400']";
     String lastReplId = replicateAndVerify(replPolicy, null, null, dumpWithClause,
-            loadWithClause, new String[]{}, new String[]{});
+            loadWithClause, new String[] {}, new String[] {});
 
-    String[] originalFullAcidTables = new String[]{"in1", "in2", "out3", "out4", "out5", "in100", "in200", "in300"};
-    String[] originalExternalTables = new String[]{"in400", "out500"};
-    String[] originalNonAcidTables = new String[]{"in1400", "out1500", "out1600"};
+    String[] originalFullAcidTables = new String[] {"in1", "in2", "out3", "out4", "out5", "in100", "in200", "in300"};
+    String[] originalExternalTables = new String[] {"in400", "out500"};
+    String[] originalNonAcidTables = new String[] {"in1400", "out1500", "out1600"};
     createTables(originalNonAcidTables, CreateTableType.NON_ACID);
     createTables(originalFullAcidTables, CreateTableType.FULL_ACID);
     createTables(originalExternalTables, CreateTableType.EXTERNAL);
 
     // Replicate and verify, no table should be there.
-    String[] replicatedTables = new String[]{};
-    String[] bootstrapTables = new String[]{};
+    String[] replicatedTables = new String[] {};
+    String[] bootstrapTables = new String[] {};
     lastReplId = replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause,
             loadWithClause, bootstrapTables, replicatedTables);
 
@@ -835,27 +835,27 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     );
 
     // in2 should be dropped.
-    replicatedTables = new String[]{"in8", "in100", "in200", "in300", "in500", "in1600", "out1500"};
-    bootstrapTables = new String[]{"in8", "in100", "in200", "in300", "in500", "in1600", "out1500"};
+    replicatedTables = new String[] {"in8", "in100", "in200", "in300", "in500", "in1600", "out1500"};
+    bootstrapTables = new String[] {"in8", "in100", "in200", "in300", "in500", "in1600", "out1500"};
     replicateAndVerify(newPolicy, replPolicy, lastReplId, dumpWithClause,
             loadWithClause, bootstrapTables, replicatedTables);
   }
 
   @Test
   public void testRenameTableScenariosWithReplacePolicyDMLOperattion() throws Throwable {
-    String replPolicy = primaryDbName + ".['in[0-9]+'].['in100', 'in200', 'in305']";
+    String replPolicy = primaryDbName + ".['in[0-9]+', 'out5000', 'out5001'].['in100', 'in200', 'in305']";
     String lastReplId = replicateAndVerify(replPolicy, null, null, null,
-            null, new String[]{}, new String[]{});
+            null, new String[] {}, new String[] {});
 
-    String[] originalFullAcidTables = new String[]{"in1", "in2", "out3", "out4", "out5",
-            "in100", "in200", "in300", "out3000"};
-    String[] originalNonAcidTables = new String[]{"in400", "out500"};
+    String[] originalFullAcidTables = new String[] {"in1", "in2", "out3", "out4", "out5",
+            "in100", "in200", "in300", "out3000", "out4000", "out4001"};
+    String[] originalNonAcidTables = new String[] {"in400", "out500"};
     createTables(originalFullAcidTables, CreateTableType.FULL_ACID);
     createTables(originalNonAcidTables, CreateTableType.NON_ACID);
 
     // Replicate and verify if only 4 tables are replicated to target.
-    String[] replicatedTables = new String[]{"in1", "in2", "in300", "in400"};
-    String[] bootstrapTables = new String[]{};
+    String[] replicatedTables = new String[] {"in1", "in2", "in300", "in400"};
+    String[] bootstrapTables = new String[] {};
     lastReplId = replicateAndVerify(replPolicy, null, lastReplId, null,
             null, bootstrapTables, replicatedTables);
 
@@ -880,11 +880,17 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .run("insert into in305 values(2, 100)")
             .run("insert into in3000 values (2, 100)")
             .run("insert into in2000 values (2, 100)")
-            .run("insert into in500 values(2, 100)");
+            .run("insert into in500 values(2, 100)")
+            .run("alter table out4000 rename to out5000")
+            .run("alter table out5000 rename to in5000")
+            .run("insert into in5000 values (2, 100)")
+            .run("alter table out4001 rename to out5001")
+            .run("alter table out5001 rename to out5002")
+            .run("insert into out5002 values (2, 100)");
 
     // in2 should be dropped.
-    replicatedTables = new String[]{"in100", "in2000", "in8", "in305", "in500", "in3000"};
-    bootstrapTables = new String[]{"in500", "in8", "in100", "in2000", "in305", "in3000"};
+    replicatedTables = new String[] {"in100", "in2000", "in8", "in305", "in500", "in3000", "in5000"};
+    bootstrapTables = new String[] {"in500", "in8", "in5000", "in305", "in3000", "in2000", "in100"};
     lastReplId = replicateAndVerify(newPolicy, replPolicy, lastReplId, null,
             null, bootstrapTables, replicatedTables, new String[] {"1", "2"});
 
@@ -892,20 +898,20 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     replPolicy = newPolicy;
     newPolicy = primaryDbName;
     primary.run("use " + primaryDbName)
-            .run("alter table in100 rename to in12") // just rename no bootstrap
+            .run("alter table in100 rename to in12") // should be just rename, but for replace its always bootstrap
             .run("alter table in2000 rename to out12") // bootstrap by replace policy handler
             .run("alter table out400 rename to in400") // bootstrap by rename
             .run("alter table out7 rename to in1")    // bootstrap by rename
-            .run("alter table in305 rename to in301")  // just rename
-            .run("alter table in301 rename to in300") // just rename
-            .run("alter table in8 rename to out3") // just rename
+            .run("alter table in305 rename to in301")  // should be just rename, but for replace its always bootstrap
+            .run("alter table in301 rename to in300") // should be just rename, but for replace its always bootstrap
+            .run("alter table in8 rename to out3") // should be just rename, but for replace its always bootstrap
             .run("insert into in2 values(2, 100)")
             .run("insert into in1 values(2, 100)")
             .run("insert into in400 values(2, 100)")
-            .run("drop table out3");   // table not present in get all table list
+            .run("drop table out3");   // table will be removed from bootstrap list.
 
-    replicatedTables = new String[]{"in12", "in400", "in1", "in300", "out12", "in500", "in3000", "in2"};
-    bootstrapTables = new String[]{"out12", "in2", "in400", "in1"};
+    replicatedTables = new String[] {"in12", "in400", "in1", "in300", "out12", "in500", "in3000", "in2", "in5000", "out5002"};
+    bootstrapTables = new String[] {"out12", "in2", "in400", "in1", "in300", "in12",    "out5002"};
     replicateAndVerify(newPolicy, replPolicy, lastReplId, null,
             null, bootstrapTables, replicatedTables, new String[] {"1", "2"});
   }

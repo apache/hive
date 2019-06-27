@@ -93,42 +93,45 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
     }
   }
 
-  private boolean isSetForBootstrapByReplaceHandler(Context withinContext, String tblName) {
-    return (withinContext.oldReplScope != null)
-            && !(ReplUtils.tableIncludedInReplScope(withinContext.oldReplScope, tblName))
-            && (ReplUtils.tableIncludedInReplScope(withinContext.replScope, tblName));
-  }
-
   // Return true, if event needs to be dumped, else return false.
-  private boolean handleForTableLevelReplication(Context withinContext, String tblName) {
-    // For alter, if the table does not satisfy the new policy then ignore the event. In case of replace
-    // policy, if the table does not satisfy the old policy, then ignore the event. As, if the table satisfy the new
-    // policy, then the table will be bootstrapped by replace handler anb if the table does not satisfy the new policy,
-    // then anyways the table should be ignored. The event should be ignored if the table is already in the list of
-    // tables to be bootstrapped.
-    if (!ReplUtils.tableIncludedInReplScope(withinContext.replScope, tblName)) {
-      // In case of replace, it will be dropped during load. In normal case just ignore the alter event.
-      LOG.debug("Table " + tblName + " does not satisfy the policy");
-      return false;
-    } else if ((withinContext.getTablesForBootstrap().contains(tblName.toLowerCase()))
-            || (!ReplUtils.tableIncludedInReplScope(withinContext.oldReplScope, tblName))) {
-      LOG.debug("Table " + tblName + " is set for bootstrap");
-      return false;
-    } else {
-      // Table satisfies both old (if its there) and current policy, dump the alter event.
-      return true;
-    }
-  }
-
-  // Return true, if event needs to be dumped, else return false.
-  private boolean renameHandlerForTableLevelReplication(Context withinContext, String oldName, String newName) {
+  private boolean handleRenameForReplacePolicy(Context withinContext, String oldName, String newName) {
     // If the table is renamed after being added to the list of tables to be bootstrapped, then remove it from the
     // list of tables to be bootstrapped.
     boolean oldTableInBootstrapList = withinContext.removeFromListOfTablesForBootstrap(oldName);
 
-    ReplScope oldPolicy = withinContext.oldReplScope == null ? withinContext.replScope : withinContext.oldReplScope;
-    if (ReplUtils.tableIncludedInReplScope(oldPolicy, oldName)) {
-      // If old table satisfies the filter, but the new table does not, then the old table should be dropped.
+    // If the new table satisfies the new policy, then add it to the list of table to be bootstrapped.
+    if (ReplUtils.tableIncludedInReplScope(withinContext.replScope, newName)) {
+      LOG.info("Table " + newName + " is added for bootstrap " + " during rename from " + oldName);
+      withinContext.addToListOfTablesForBootstrap(newName);
+    }
+
+    if (ReplUtils.tableIncludedInReplScope(withinContext.oldReplScope, oldName)) {
+      // If the old table was in the list of tables to be bootstrapped which is a multi rename case, the old table
+      // is removed from the list of tables, else drop event is dumped for the old table. This is done even if the
+      // table is not present at target. This makes the logic simple and has no side effect as drop is idempotent.
+      if (oldTableInBootstrapList) {
+        return false;
+      }
+
+      // To keep the logic simple, rename with replace policy is always drop and create.
+      scenario = Scenario.DROP;
+      LOG.info("Table " + oldName + " will be dropped as the table is renamed to " + newName);
+      return true;
+    }
+
+    // If the old table does not satisfy the old policy then event can be skipped. in case the new table satisfies the
+    // new policy, it is already added to the list of tables to be bootstrapped.
+    return false;
+  }
+
+  // return true, if event needs to be dumped, else return false.
+  private boolean handleRenameForTableLevelReplication(Context withinContext, String oldName, String newName) {
+    if (ReplUtils.tableIncludedInReplScope(withinContext.replScope, oldName)) {
+      // If the table is renamed after being added to the list of tables to be bootstrapped, then remove it from the
+      // list of tables to be bootstrapped.
+      boolean oldTableInBootstrapList = withinContext.removeFromListOfTablesForBootstrap(oldName);
+
+      // If old table satisfies the policy, but the new table does not, then the old table should be dropped.
       // This should be done, only if the old table is not in the list of tables to be bootstrapped which is a multi
       // rename case. In case of multi rename, only the first rename should do the drop.
       if (!ReplUtils.tableIncludedInReplScope(withinContext.replScope, newName)) {
@@ -149,28 +152,11 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
         return false;
       }
 
-      // All the subsequent events on this table newName are going to be skipped as the table is going to be
-      // bootstrapped by replace handler, so the rename is also skipped.
-      if (isSetForBootstrapByReplaceHandler(withinContext, newName)) {
-        // This addition is not actually required. But is added just to be in safer side.
-        withinContext.addToListOfTablesForBootstrap(newName);
-
-        // If the old table satisfies the new policy and is not in the list of tables to be bootstrapped
-        // (as per previous check based on oldTableIsPresent), then drop it.
-        if (ReplUtils.tableIncludedInReplScope(withinContext.replScope, oldName)) {
-          scenario = Scenario.DROP;
-          LOG.info("Table " + oldName + " will be dropped as the table " + newName + " will be bootstrapped.");
-          return true;
-        }
-        LOG.info("Table " + newName + " is set to be bootstrapped by replace policy handler.");
-        return false;
-      }
-
-      // If both old and new table satisfies the filter and old table is present at target, then dump the rename event.
-      LOG.info("Both old " + oldName + " and new table " + newName + " satisfies the filter");
+      // If both old and new table satisfies the policy and old table is present at target, then dump the rename event.
+      LOG.info("both old and new table satisfies the policy");
       return true;
     } else  {
-      // if the old table does not satisfies the filter, but the new one satisfies, then the new table should be
+      // if the old table does not satisfies the policy, but the new one satisfies, then the new table should be
       // added to the list of tables to be bootstrapped and don't dump the event.
       if (ReplUtils.tableIncludedInReplScope(withinContext.replScope, newName)) {
         LOG.info("Table " + newName + " is added for bootstrap " + " during rename from " + oldName);
@@ -178,15 +164,8 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
         return false;
       }
 
-      // In case of replace policy, even if the old table matches the new policy, none of the events including create
-      // table will be replayed as the old table is set of bootstrap by replace handler. So rename event can be skipped.
-      if (ReplUtils.tableIncludedInReplScope(withinContext.replScope, oldName)) {
-        LOG.info("Table " + oldName + " is set for bootstrap. So all events are skipped for the table.");
-        return false;
-      }
-
-      // if both old and new table does not satisfies the filter, then don't dump the event.
-      LOG.info("Both old and new table does not satisfies the filter");
+      // if both old and new table does not satisfies the policy, then don't dump the event.
+      LOG.info("both old and new table does not satisfies the policy");
       return false;
     }
   }
@@ -203,6 +182,11 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
       bootstrapTableList = null;
       oldReplScope = null;
     } else {
+      // This check was ignored for alter table event during event filter.
+      if (!ReplUtils.tableIncludedInReplScope(withinContext.replScope, before.getTableName())) {
+        LOG.debug("Table " + before.getTableName() + " does not satisfy the policy");
+        return;
+      }
       bootstrapTableList = withinContext.getTablesForBootstrap();
       oldReplScope = withinContext.oldReplScope;
     }
@@ -221,18 +205,19 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
       }
     }
 
-    // Handle alter and renames for table level replication.
-    if (!withinContext.replScope.includeAllTables() || withinContext.oldReplScope != null) {
+    // Handle renames for table level replication.
+    if ((Scenario.RENAME == scenario)
+            && (!withinContext.replScope.includeAllTables() || withinContext.oldReplScope != null)) {
       String oldName = before.getTableName();
       String newName = after.getTableName();
       boolean needDump;
-      if (Scenario.RENAME == scenario) {
-        needDump = renameHandlerForTableLevelReplication(withinContext, oldName, newName);
+      if (withinContext.oldReplScope == null) {
+        needDump = handleRenameForTableLevelReplication(withinContext, oldName, newName);
       } else {
-        needDump = handleForTableLevelReplication(withinContext, oldName);
+        needDump = handleRenameForReplacePolicy(withinContext, oldName, newName);
       }
       if (!needDump) {
-        LOG.info("Alter event for table " + oldName + " is skipped from dumping");
+        LOG.info("Rename event for table " + oldName + " is skipped from dumping");
         return;
       }
     }
