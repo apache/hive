@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.llap.tezplugins;
 
 import com.google.common.io.ByteArrayDataOutput;
 
+import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsCollector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 
@@ -297,6 +298,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final Object outputsLock = new Object();
   private TezDAGID depsDagId = null;
   private Map<Integer, Set<Integer>> transitiveOutputs;
+  private LlapMetricsCollector llapMetricsCollector;
 
   public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext) {
     this(taskSchedulerContext, new MonotonicClock(), true);
@@ -379,6 +381,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     this.scheduledLoggingExecutor = Executors.newSingleThreadScheduledExecutor(
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LlapTaskSchedulerTimedLogThread")
             .build());
+
+    if (HiveConf.getTimeVar(conf,
+            HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS, TimeUnit.MILLISECONDS) > 0) {
+      this.llapMetricsCollector = new LlapMetricsCollector(conf);
+      this.registry.registerServiceListener(llapMetricsCollector);
+    }
 
     String instanceId = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
 
