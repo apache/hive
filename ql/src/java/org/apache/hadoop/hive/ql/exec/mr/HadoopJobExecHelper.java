@@ -68,7 +68,6 @@ public class HadoopJobExecHelper {
   static final private org.slf4j.Logger LOG = LoggerFactory.getLogger(HadoopJobExecHelper.class.getName());
   private static final String YARN_JOB_INFO="YARN_JOB_INFO";
   private static final String USER="USER";
-  private static final String MIN_ALLOCATION_MB="MIN_ALLOCATION_MB";
   private static final String QUEUE="QUEUE";
 
   private int yarnVCores = -1;
@@ -89,7 +88,7 @@ public class HadoopJobExecHelper {
   protected transient String yarnId;
   protected transient String user;
   protected transient double maxNeededMem = 0;
-  protected transient int maxNeededVCores = -1;
+  protected transient int maxNeededVCores = 0;
 
   public transient JobID jobId;
   private final LogHelper console;
@@ -314,7 +313,6 @@ public class HadoopJobExecHelper {
           console
               .printInfo("Hadoop job information for " + getId() + ": " + logMapper + logReducer );
 
-          th.getContext().getConf().set(MIN_ALLOCATION_MB, jc.getConf().get("yarn.scheduler.minimum-allocation-mb"));
 
           JobStatus jobStatus = rj.getJobStatus();
           yarnId = jobStatus.getJobID().toString();
