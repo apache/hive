@@ -99,4 +99,14 @@ public class LlapManagementProtocolClientImpl implements LlapManagementProtocolP
       throw new ServiceException(e);
     }
   }
+
+  @Override
+  public LlapDaemonProtocolProtos.SetCapacityResponseProto setCapacity(final RpcController controller,
+      final LlapDaemonProtocolProtos.SetCapacityRequestProto request) throws ServiceException {
+    try {
+      return getProxy().setCapacity(null, request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
 }

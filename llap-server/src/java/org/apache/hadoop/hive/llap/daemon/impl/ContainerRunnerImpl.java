@@ -59,6 +59,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.Terminate
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.security.LlapSignerImpl;
@@ -460,6 +462,13 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     }
     return UpdateFragmentResponseProto.newBuilder()
         .setResult(result).setIsGuaranteed(isGuaranteed).build();
+  }
+
+  @Override
+  public SetCapacityResponseProto setCapacity(
+      SetCapacityRequestProto request) {
+    executorService.setCapacity(request.getExecutorNum(), request.getQueueSize());
+    return SetCapacityResponseProto.newBuilder().build();
   }
 
   private String stringifySourceStateUpdateRequest(SourceStateUpdatedRequestProto request) {
