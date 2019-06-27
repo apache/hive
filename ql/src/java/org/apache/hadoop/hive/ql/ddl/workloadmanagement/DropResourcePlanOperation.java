@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of dropping a resource plan.
  */
-public class DropResourcePlanOperation extends DDLOperation {
-  private final DropResourcePlanDesc desc;
-
+public class DropResourcePlanOperation extends DDLOperation<DropResourcePlanDesc> {
   public DropResourcePlanOperation(DDLOperationContext context, DropResourcePlanDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

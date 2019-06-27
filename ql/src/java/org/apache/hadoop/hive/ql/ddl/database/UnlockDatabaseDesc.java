@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.database;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +30,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Unlock Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class UnlockDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(UnlockDatabaseDesc.class, UnlockDatabaseOperation.class);
-  }
 
   private final String databaseName;
 

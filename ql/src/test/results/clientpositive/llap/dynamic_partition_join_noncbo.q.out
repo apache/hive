@@ -2614,7 +2614,7 @@ STAGE PLANS:
                   filterExpr: (col5679 is not null and col23455 is not null and col7890 is not null) (type: boolean)
                   Statistics: Num rows: 16065311 Data size: 133252823710 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (col23455 is not null and col5679 is not null and col7890 is not null) (type: boolean)
+                    predicate: (col5679 is not null and col23455 is not null and col7890 is not null) (type: boolean)
                     Statistics: Num rows: 13655516 Data size: 113264913839 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:

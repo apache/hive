@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.privilege;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +30,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Set Role", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class SetRoleDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(SetRoleDesc.class, SetRoleOperation.class);
-  }
 
   private final String name;
 

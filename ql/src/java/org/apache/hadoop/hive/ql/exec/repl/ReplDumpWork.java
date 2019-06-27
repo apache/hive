@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.common.primitives.Ints;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,9 @@ import java.io.Serializable;
     Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
 public class ReplDumpWork implements Serializable {
-  final String dbNameOrPattern, tableNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
+  final ReplScope replScope;
+  final ReplScope oldReplScope;
+  final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
   final Long eventFrom;
   Long eventTo;
   private Integer maxEventLimit;
@@ -38,11 +41,12 @@ public class ReplDumpWork implements Serializable {
     testInjectDumpDir = dumpDir;
   }
 
-  public ReplDumpWork(String dbNameOrPattern, String tableNameOrPattern,
+  public ReplDumpWork(ReplScope replScope, ReplScope oldReplScope,
                       Long eventFrom, Long eventTo, String astRepresentationForErrorMsg, Integer maxEventLimit,
                       String resultTempPath) {
-    this.dbNameOrPattern = dbNameOrPattern;
-    this.tableNameOrPattern = tableNameOrPattern;
+    this.replScope = replScope;
+    this.oldReplScope = oldReplScope;
+    this.dbNameOrPattern = replScope.getDbName();
     this.eventFrom = eventFrom;
     this.eventTo = eventTo;
     this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;

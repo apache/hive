@@ -373,7 +373,7 @@ STAGE PLANS:
                   filterExpr: (cr_returned_date_sk is not null and cr_catalog_page_sk is not null) (type: boolean)
                   Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cr_catalog_page_sk is not null and cr_returned_date_sk is not null) (type: boolean)
+                    predicate: (cr_returned_date_sk is not null and cr_catalog_page_sk is not null) (type: boolean)
                     Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cr_catalog_page_sk (type: int), cr_returned_date_sk (type: int), 0 (type: decimal(7,2)), 0 (type: decimal(7,2)), cr_return_amount (type: decimal(7,2)), cr_net_loss (type: decimal(7,2))
@@ -390,10 +390,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-08-18 00:00:00' and d_date_sk is not null) (type: boolean)
+                  filterExpr: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-08-18 00:00:00') (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-08-18 00:00:00' and d_date_sk is not null) (type: boolean)
+                    predicate: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-08-18 00:00:00') (type: boolean)
                     Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -472,7 +472,7 @@ STAGE PLANS:
                   filterExpr: (wr_returned_date_sk is not null and wr_item_sk is not null and wr_order_number is not null) (type: boolean)
                   Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (wr_item_sk is not null and wr_order_number is not null and wr_returned_date_sk is not null) (type: boolean)
+                    predicate: (wr_returned_date_sk is not null and wr_item_sk is not null and wr_order_number is not null) (type: boolean)
                     Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: wr_returned_date_sk (type: int), wr_item_sk (type: int), wr_order_number (type: int), wr_return_amt (type: decimal(7,2)), wr_net_loss (type: decimal(7,2))
@@ -489,10 +489,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-08-18 00:00:00' and d_date_sk is not null) (type: boolean)
+                  filterExpr: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-08-18 00:00:00') (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-08-18 00:00:00' and d_date_sk is not null) (type: boolean)
+                    predicate: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-08-18 00:00:00') (type: boolean)
                     Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -531,7 +531,7 @@ STAGE PLANS:
                   filterExpr: (cs_sold_date_sk is not null and cs_catalog_page_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cs_catalog_page_sk is not null and cs_sold_date_sk is not null) (type: boolean)
+                    predicate: (cs_sold_date_sk is not null and cs_catalog_page_sk is not null) (type: boolean)
                     Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cs_catalog_page_sk (type: int), cs_sold_date_sk (type: int), cs_ext_sales_price (type: decimal(7,2)), cs_net_profit (type: decimal(7,2)), 0 (type: decimal(7,2)), 0 (type: decimal(7,2))

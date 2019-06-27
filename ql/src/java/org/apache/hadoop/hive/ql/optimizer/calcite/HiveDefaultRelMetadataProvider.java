@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdParallelism;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdPredicates;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdRowCount;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdRuntimeRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSelectivity;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdUniqueKeys;
@@ -81,7 +82,7 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdDistinctRowCount.SOURCE,
                   new HiveRelMdCost(HiveDefaultCostModel.getCostModel()).getMetadataProvider(),
                   HiveRelMdSelectivity.SOURCE,
-                  HiveRelMdRowCount.SOURCE,
+                  HiveRelMdRuntimeRowCount.SOURCE,
                   HiveRelMdUniqueKeys.SOURCE,
                   HiveRelMdColumnUniqueness.SOURCE,
                   HiveRelMdSize.SOURCE,

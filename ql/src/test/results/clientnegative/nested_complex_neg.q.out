@@ -7,4 +7,4 @@ simple_string string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nestedcomplex
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException Number of levels of nesting supported for LazySimpleSerde is 7 Unable to work with level 23. Use hive.serialization.extend.nesting.levels serde property for tables using LazySimpleSerde.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException Number of levels of nesting supported for LazySimpleSerde is 7 Unable to work with level 23. Use hive.serialization.extend.nesting.levels serde property for tables using LazySimpleSerde.)

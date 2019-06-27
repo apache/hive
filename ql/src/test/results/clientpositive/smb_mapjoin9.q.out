@@ -47,7 +47,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((ds = '2010-10-15') and key is not null) (type: boolean)
+              predicate: (key is not null and (ds = '2010-10-15')) (type: boolean)
               Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: PARTIAL
               Sorted Merge Bucket Map Join Operator
                 condition map:
@@ -138,7 +138,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((ds = '2010-10-15') and key is not null) (type: boolean)
+              predicate: (key is not null and (ds = '2010-10-15')) (type: boolean)
               Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: PARTIAL
               Sorted Merge Bucket Map Join Operator
                 condition map:

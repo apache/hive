@@ -71,7 +71,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: (((UDFToDouble(ctimestamp1) <= 10.0D) and (UDFToDouble(ctimestamp2) <> 16.0D) and cstring2 is not null) or (cfloat < -6432.0) or ((cdouble = 988888.0D) and cboolean1 is not null)) (type: boolean)
+                  filterExpr: ((cfloat < -6432.0) or ((UDFToDouble(ctimestamp1) <= 10.0D) and (UDFToDouble(ctimestamp2) <> 16.0D) and cstring2 is not null) or ((cdouble = 988888.0D) and cboolean1 is not null)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -79,8 +79,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val 10.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 14:double, val 16.0)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), SelectColumnIsNotNull(col 7:string)), FilterDoubleColLessDoubleScalar(col 4:float, val -6432.0), FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 988888.0), SelectColumnIsNotNull(col 10:boolean)))
-                    predicate: (((UDFToDouble(ctimestamp1) <= 10.0D) and (UDFToDouble(ctimestamp2) <> 16.0D) and cstring2 is not null) or ((cdouble = 988888.0D) and cboolean1 is not null) or (cfloat < -6432.0)) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterDoubleColLessDoubleScalar(col 4:float, val -6432.0), FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val 10.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 14:double, val 16.0)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), SelectColumnIsNotNull(col 7:string)), FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 988888.0), SelectColumnIsNotNull(col 10:boolean)))
+                    predicate: ((cfloat < -6432.0) or ((UDFToDouble(ctimestamp1) <= 10.0D) and (UDFToDouble(ctimestamp2) <> 16.0D) and cstring2 is not null) or ((cdouble = 988888.0D) and cboolean1 is not null)) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctimestamp1 (type: timestamp), cdouble (type: double), cboolean1 (type: boolean), cstring1 (type: string), cfloat (type: float), (- cdouble) (type: double), (-5638.15D - cdouble) (type: double), (cdouble * -257.0D) (type: double), (UDFToFloat(cint) + cfloat) (type: float), ((- cdouble) + UDFToDouble(cbigint)) (type: double), (- cdouble) (type: double), (-1.389 - cfloat) (type: float), (- cfloat) (type: float), ((-5638.15D - cdouble) + UDFToDouble((UDFToFloat(cint) + cfloat))) (type: double)
@@ -295,7 +295,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: (((UDFToDouble(ctimestamp1) <= 12.503D) and (UDFToDouble(ctimestamp2) <> 11.998D) and cstring2 is not null) or (cfloat < -6432.0) or ((cdouble = 988888.0D) and cboolean1 is not null)) (type: boolean)
+                  filterExpr: ((cfloat < -6432.0) or ((UDFToDouble(ctimestamp1) <= 12.503D) and (UDFToDouble(ctimestamp2) <> 11.998D) and cstring2 is not null) or ((cdouble = 988888.0D) and cboolean1 is not null)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -303,8 +303,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val 12.503)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 14:double, val 11.998)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), SelectColumnIsNotNull(col 7:string)), FilterDoubleColLessDoubleScalar(col 4:float, val -6432.0), FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 988888.0), SelectColumnIsNotNull(col 10:boolean)))
-                    predicate: (((UDFToDouble(ctimestamp1) <= 12.503D) and (UDFToDouble(ctimestamp2) <> 11.998D) and cstring2 is not null) or ((cdouble = 988888.0D) and cboolean1 is not null) or (cfloat < -6432.0)) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterDoubleColLessDoubleScalar(col 4:float, val -6432.0), FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val 12.503)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 14:double, val 11.998)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), SelectColumnIsNotNull(col 7:string)), FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 988888.0), SelectColumnIsNotNull(col 10:boolean)))
+                    predicate: ((cfloat < -6432.0) or ((UDFToDouble(ctimestamp1) <= 12.503D) and (UDFToDouble(ctimestamp2) <> 11.998D) and cstring2 is not null) or ((cdouble = 988888.0D) and cboolean1 is not null)) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctimestamp1 (type: timestamp), cdouble (type: double), cboolean1 (type: boolean), cstring1 (type: string), cfloat (type: float), (- cdouble) (type: double), (-5638.15D - cdouble) (type: double), (cdouble * -257.0D) (type: double), (UDFToFloat(cint) + cfloat) (type: float), ((- cdouble) + UDFToDouble(cbigint)) (type: double), (- cdouble) (type: double), (-1.389 - cfloat) (type: float), (- cfloat) (type: float), ((-5638.15D - cdouble) + UDFToDouble((UDFToFloat(cint) + cfloat))) (type: double)

@@ -92,10 +92,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                     Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)

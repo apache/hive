@@ -129,10 +129,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
-                  filterExpr: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
+                  filterExpr: (ss_hdemo_sk is null and (ss_store_sk = 410)) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
+                    predicate: (ss_hdemo_sk is null and (ss_store_sk = 410)) (type: boolean)
                     Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
@@ -152,10 +152,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
-                  filterExpr: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
+                  filterExpr: (ss_hdemo_sk is null and (ss_store_sk = 410)) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
+                    predicate: (ss_hdemo_sk is null and (ss_store_sk = 410)) (type: boolean)
                     Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_net_profit (type: decimal(7,2))

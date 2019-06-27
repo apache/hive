@@ -33,8 +33,8 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.view.AlterMaterializedViewRewriteDesc;
 import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
@@ -360,12 +360,12 @@ public abstract class TaskCompiler {
       // generate a DDL task and make it a dependent task of the leaf
       CreateTableDesc crtTblDesc = pCtx.getCreateTable();
       crtTblDesc.validate(conf);
-      Task<? extends Serializable> crtTblTask = TaskFactory.get(new DDLWork2(inputs, outputs, crtTblDesc));
+      Task<? extends Serializable> crtTblTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
       patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtTblTask, CollectionUtils.isEmpty(crtTblDesc.getPartColNames()));
     } else if (pCtx.getQueryProperties().isMaterializedView()) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateViewDesc viewDesc = pCtx.getCreateViewDesc();
-      Task<? extends Serializable> crtViewTask = TaskFactory.get(new DDLWork2(
+      Task<? extends Serializable> crtViewTask = TaskFactory.get(new DDLWork(
           inputs, outputs, viewDesc));
       patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtViewTask, CollectionUtils.isEmpty(viewDesc.getPartColNames()));
     } else if (pCtx.getMaterializedViewUpdateDesc() != null) {
@@ -545,9 +545,9 @@ public abstract class TaskCompiler {
     }
 
     // Add task to insert / delete materialized view from registry if needed
-    if (createTask instanceof DDLTask2) {
-      DDLTask2 ddlTask = (DDLTask2)createTask;
-      DDLWork2 work = ddlTask.getWork();
+    if (createTask instanceof DDLTask) {
+      DDLTask ddlTask = (DDLTask)createTask;
+      DDLWork work = ddlTask.getWork();
       DDLDesc desc = work.getDDLDesc();
       if (desc instanceof CreateViewDesc) {
         CreateViewDesc createViewDesc = (CreateViewDesc)desc;

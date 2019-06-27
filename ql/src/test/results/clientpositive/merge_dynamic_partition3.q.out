@@ -159,27 +159,27 @@ STAGE PLANS:
           TableScan
             alias: srcpart_merge_dp_n2
             filterExpr: (ds >= '2008-04-08') (type: boolean)
-            Statistics: Num rows: 594 Data size: 775180 Basic stats: PARTIAL Column stats: PARTIAL
+            Statistics: Num rows: 594 Data size: 405536 Basic stats: PARTIAL Column stats: PARTIAL
             Select Operator
               expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 594 Data size: 775180 Basic stats: PARTIAL Column stats: PARTIAL
+              Statistics: Num rows: 594 Data size: 405536 Basic stats: PARTIAL Column stats: PARTIAL
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                 outputColumnNames: key, value, ds, hr
-                Statistics: Num rows: 594 Data size: 775180 Basic stats: PARTIAL Column stats: PARTIAL
+                Statistics: Num rows: 594 Data size: 405536 Basic stats: PARTIAL Column stats: PARTIAL
                 Group By Operator
                   aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                   keys: ds (type: string), hr (type: string)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 594 Data size: 949600 Basic stats: PARTIAL Column stats: PARTIAL
+                  Statistics: Num rows: 594 Data size: 928256 Basic stats: PARTIAL Column stats: PARTIAL
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 594 Data size: 949600 Basic stats: PARTIAL Column stats: PARTIAL
+                    Statistics: Num rows: 594 Data size: 928256 Basic stats: PARTIAL Column stats: PARTIAL
                     value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
               File Output Operator
                 compressed: false
@@ -193,14 +193,14 @@ STAGE PLANS:
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 297 Data size: 469648 Basic stats: PARTIAL Column stats: PARTIAL
+          Statistics: Num rows: 297 Data size: 448304 Basic stats: PARTIAL Column stats: PARTIAL
           Select Operator
             expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 297 Data size: 469648 Basic stats: PARTIAL Column stats: PARTIAL
+            Statistics: Num rows: 297 Data size: 448304 Basic stats: PARTIAL Column stats: PARTIAL
             File Output Operator
               compressed: false
-              Statistics: Num rows: 297 Data size: 469648 Basic stats: PARTIAL Column stats: PARTIAL
+              Statistics: Num rows: 297 Data size: 448304 Basic stats: PARTIAL Column stats: PARTIAL
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -222,7 +222,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             Dp Sort State: PARTITION_SORTED
-            Statistics: Num rows: 594 Data size: 775180 Basic stats: PARTIAL Column stats: PARTIAL
+            Statistics: Num rows: 594 Data size: 405536 Basic stats: PARTIAL Column stats: PARTIAL
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

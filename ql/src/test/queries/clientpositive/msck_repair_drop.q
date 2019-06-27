@@ -37,7 +37,9 @@ dfs -touchz ${system:test.warehouse.dir}/repairtable_n1/p1=2/p2=29/p3=291/datafi
 dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable_n1/p1=2/p2=210/p3=2101;
 dfs -touchz ${system:test.warehouse.dir}/repairtable_n1/p1=2/p2=210/p3=2101/datafile;
 
+EXPLAIN MSCK TABLE default.repairtable_n1;
 MSCK TABLE default.repairtable_n1;
+EXPLAIN MSCK REPAIR TABLE default.repairtable_n1;
 MSCK REPAIR TABLE default.repairtable_n1;
 
 -- Now all 12 partitions are in
@@ -48,7 +50,9 @@ dfs -rmr ${system:test.warehouse.dir}/repairtable_n1/p1=2;
 
 -- test 1: each partition is dropped individually
 set hive.msck.repair.batch.size=1;
+EXPLAIN MSCK TABLE default.repairtable_n1 DROP PARTITIONS;
 MSCK TABLE default.repairtable_n1 DROP PARTITIONS;
+EXPLAIN MSCK REPAIR TABLE default.repairtable_n1 DROP PARTITIONS;
 MSCK REPAIR TABLE default.repairtable_n1 DROP PARTITIONS;
 show partitions default.repairtable_n1;
 
@@ -148,7 +152,9 @@ dfs -rmr ${system:test.warehouse.dir}/repairtable_n1/p1=3;
 -- Status: p1=3 dropped from filesystem, but exists in metastore
 --         p1=4 exists in filesystem but not in metastore
 -- test add partition: only brings in p1=4 and doesn't remove p1=3
+EXPLAIN MSCK TABLE default.repairtable_n1 ADD PARTITIONS;
 MSCK TABLE default.repairtable_n1 ADD PARTITIONS;
+EXPLAIN MSCK REPAIR TABLE default.repairtable_n1 ADD PARTITIONS;
 MSCK REPAIR TABLE default.repairtable_n1 ADD PARTITIONS;
 show partitions default.repairtable_n1;
 -- test add partition keyword: end
@@ -174,7 +180,9 @@ dfs -rmr ${system:test.warehouse.dir}/repairtable_n1/p1=4;
 -- Status: p1=4 dropped from filesystem, but exists in metastore
 --         p1=5 exists in filesystem but not in metastore (as part of drop test)
 -- test sync partition: removes p1=4 from metastore and updates metadata for p1=5
+EXPLAIN MSCK TABLE default.repairtable_n1 SYNC PARTITIONS;
 MSCK TABLE default.repairtable_n1 SYNC PARTITIONS;
+EXPLAIN MSCK REPAIR TABLE default.repairtable_n1 SYNC PARTITIONS;
 MSCK REPAIR TABLE default.repairtable_n1 SYNC PARTITIONS;
 show partitions default.repairtable_n1;
 -- test sync partition keyword: end

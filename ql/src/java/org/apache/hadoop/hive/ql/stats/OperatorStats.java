@@ -28,6 +28,10 @@ public final class OperatorStats {
   public static class IncorrectRuntimeStatsMarker {
   }
 
+  /** Marker class to help with plan elements which will collect invalid statistics */
+  public static class MayNotUseForRelNodes {
+  }
+
   private String operatorId;
   private long outputRecords;
 

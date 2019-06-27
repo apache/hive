@@ -285,7 +285,7 @@ STAGE PLANS:
             filterExpr: (key >= '90') (type: boolean)
             Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) = UDFToDouble(UDFToInteger(value))) and (value like '%9%')) (type: boolean)
+              predicate: ((value like '%9%') and (UDFToDouble(key) = UDFToDouble(UDFToInteger(value)))) (type: boolean)
               Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -459,7 +459,7 @@ STAGE PLANS:
             alias: hbase_pushdown
             Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key <= '80') or (value like '%90%')) (type: boolean)
+              predicate: ((value like '%90%') or (key <= '80')) (type: boolean)
               Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

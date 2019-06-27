@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 2.0.0 to 2.1.0' AS ' ';
+SELECT 'Upgrading MetaStore schema from 2.0.0 to 2.1.0' AS MESSAGE;
 
 --SOURCE 034-HIVE-13076.mysql.sql;
 CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
@@ -38,5 +38,5 @@ ALTER TABLE COMPACTION_QUEUE ADD CQ_TBLPROPERTIES varchar(2048);
 ALTER TABLE COMPLETED_COMPACTIONS ADD CC_TBLPROPERTIES varchar(2048);
 
 UPDATE VERSION SET SCHEMA_VERSION='2.1.0', VERSION_COMMENT='Hive release version 2.1.0' where VER_ID=1;
-SELECT 'Finished upgrading MetaStore schema from 2.0.0 to 2.1.0' AS ' ';
+SELECT 'Finished upgrading MetaStore schema from 2.0.0 to 2.1.0' AS MESSAGE;
 

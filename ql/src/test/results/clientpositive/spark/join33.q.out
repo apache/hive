@@ -34,7 +34,7 @@ FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`
 INNER JOIN ((SELECT `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t2`
+WHERE `value` IS NOT NULL AND `ds` = '2008-04-08' AND `hr` = 11) AS `t2`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t4` ON `t2`.`value` = `t4`.`value`) ON `t0`.`key` = `t4`.`key`
@@ -210,7 +210,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: z
-                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
+                  filterExpr: (value is not null and (ds = '2008-04-08') and (11.0D = 11.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

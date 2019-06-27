@@ -111,22 +111,14 @@ public class FilterDesc extends AbstractOperatorDesc {
   }
 
   @Signature
+  @Explain(displayName = "predicate")
   public String getPredicateString() {
     return PlanUtils.getExprListString(Arrays.asList(predicate));
   }
 
+  @Explain(displayName = "predicate", explainLevels = { Level.USER })
   public String getUserLevelExplainPredicateString() {
     return PlanUtils.getExprListString(Arrays.asList(predicate), true);
-  }
-
-  @Explain(displayName = "predicate", postProcess = true)
-  public String getPredicateString(boolean postProcess) {
-    return PlanUtils.getExprListString(Arrays.asList(predicate), false, postProcess);
-  }
-
-  @Explain(displayName = "predicate", explainLevels = { Level.USER }, postProcess = true)
-  public String getUserLevelExplainPredicateString(boolean postProcess) {
-    return PlanUtils.getExprListString(Arrays.asList(predicate), true, postProcess);
   }
 
   public org.apache.hadoop.hive.ql.plan.ExprNodeDesc getPredicate() {

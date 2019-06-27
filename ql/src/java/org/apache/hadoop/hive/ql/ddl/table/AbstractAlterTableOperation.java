@@ -42,18 +42,14 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Operation process of running some alter table command that requires write id.
  */
-public abstract class AbstractAlterTableOperation extends DDLOperation {
-  private final AbstractAlterTableDesc desc;
-
-  public AbstractAlterTableOperation(DDLOperationContext context, AbstractAlterTableDesc desc) {
-    super(context);
-    this.desc = desc;
+public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDesc> extends DDLOperation<T> {
+  public AbstractAlterTableOperation(DDLOperationContext context, T desc) {
+    super(context, desc);
   }
 
   protected EnvironmentContext environmentContext;
@@ -74,7 +70,7 @@ public abstract class AbstractAlterTableOperation extends DDLOperation {
     // Don't change the table object returned by the metastore, as we'll mess with it's caches.
     Table table = oldTable.copy();
 
-    environmentContext = initializeEnvironmentContext(null);
+    environmentContext = initializeEnvironmentContext(desc.getEnvironmentContext());
 
     if (partitions == null) {
       doAlteration(table, null);
@@ -157,7 +153,7 @@ public abstract class AbstractAlterTableOperation extends DDLOperation {
         // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
         //       For any other updates, we don't want to do txn check on partitions when altering table.
         boolean isTxn = false;
-        if (alterTable.getPartitionSpec() != null && alterTable.getType() == AlterTableTypes.ADDPROPS) {
+        if (alterTable.getPartitionSpec() != null && alterTable.getType() == AlterTableType.ADDPROPS) {
           // ADDPROPS is used to add replication properties like repl.last.id, which isn't
           // transactional change. In case of replication check for transactional properties
           // explicitly.

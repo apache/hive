@@ -382,7 +382,7 @@ STAGE PLANS:
           alias: default.partition_mv_1
           filterExpr: ((UDFToDouble(key) > 210.0D) and (UDFToDouble(key) < 230.0D)) (type: boolean)
           Filter Operator
-            predicate: ((UDFToDouble(key) < 230.0D) and (UDFToDouble(key) > 210.0D)) (type: boolean)
+            predicate: ((UDFToDouble(key) > 210.0D) and (UDFToDouble(key) < 230.0D)) (type: boolean)
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
@@ -546,7 +546,7 @@ STAGE PLANS:
           alias: default.partition_mv_4
           filterExpr: ((UDFToDouble(key) > 224.0D) and (UDFToDouble(key) < 226.0D)) (type: boolean)
           Filter Operator
-            predicate: ((UDFToDouble(key) < 226.0D) and (UDFToDouble(key) > 224.0D)) (type: boolean)
+            predicate: ((UDFToDouble(key) > 224.0D) and (UDFToDouble(key) < 226.0D)) (type: boolean)
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1

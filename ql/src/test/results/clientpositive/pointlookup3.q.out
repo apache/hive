@@ -253,7 +253,7 @@ POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
 FROM (SELECT `key`, `value`, `ds1`
 FROM `default`.`pcr_t1_n1`
-WHERE `ds2` = '2001-04-08' AND (`ds1` = '2000-04-08' AND `key` = 1 OR `ds1` = '2000-04-09' AND `key` = 2)
+WHERE (`ds1` = '2000-04-08' AND `key` = 1 OR `ds1` = '2000-04-09' AND `key` = 2) AND `ds2` = '2001-04-08'
 ORDER BY `key`, `value`, `ds1`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -265,7 +265,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1_n1
-            filterExpr: ((ds2 = '2001-04-08') and (((ds1 = '2000-04-08') and (key = 1)) or ((ds1 = '2000-04-09') and (key = 2)))) (type: boolean)
+            filterExpr: ((((ds1 = '2000-04-08') and (key = 1)) or ((ds1 = '2000-04-09') and (key = 2))) and (ds2 = '2001-04-08')) (type: boolean)
             Statistics: Num rows: 20 Data size: 5560 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator

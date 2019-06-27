@@ -29,12 +29,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of dropping a trigger to pool mapping.
  */
-public class AlterPoolDropTriggerOperation extends DDLOperation {
-  private final AlterPoolDropTriggerDesc desc;
-
+public class AlterPoolDropTriggerOperation extends DDLOperation<AlterPoolDropTriggerDesc> {
   public AlterPoolDropTriggerOperation(DDLOperationContext context, AlterPoolDropTriggerDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

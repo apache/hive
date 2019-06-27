@@ -15,17 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.ddl.table.column;
 
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -36,15 +36,11 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterTableAddColumnsDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  static {
-    DDLTask2.registerOperation(AlterTableAddColumnsDesc.class, AlterTableAddColumnsOperation.class);
-  }
-
   private final List<FieldSchema> newColumns;
 
   public AlterTableAddColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade,
       List<FieldSchema> newColumns) throws SemanticException {
-    super(AlterTableTypes.ADD_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
+    super(AlterTableType.ADDCOLS, tableName, partitionSpec, null, isCascade, false, null);
     this.newColumns = newColumns;
   }
 

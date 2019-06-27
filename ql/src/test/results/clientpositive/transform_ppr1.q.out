@@ -61,7 +61,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   isSamplingPred: false
-                  predicate: ((_col0 = '2008-04-08') and (_col1 < 100)) (type: boolean)
+                  predicate: ((_col1 < 100) and (_col0 = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 333 Data size: 120546 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: string)

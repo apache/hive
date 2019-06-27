@@ -116,7 +116,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int), _col2 (type: int)
           TableScan
             alias: lineitem
-            filterExpr: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
+            filterExpr: ((l_linenumber = 1) and (l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
             Statistics: Num rows: 100 Data size: 9600 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((l_linenumber = 1) and (l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)

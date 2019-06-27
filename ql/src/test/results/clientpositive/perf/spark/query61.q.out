@@ -151,7 +151,7 @@ STAGE PLANS:
                   filterExpr: (c_customer_sk is not null and c_current_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (c_current_addr_sk is not null and c_customer_sk is not null) (type: boolean)
+                    predicate: (c_customer_sk is not null and c_current_addr_sk is not null) (type: boolean)
                     Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_customer_sk (type: int), c_current_addr_sk (type: int)
@@ -190,7 +190,7 @@ STAGE PLANS:
                   filterExpr: (ss_store_sk is not null and ss_sold_date_sk is not null and ss_customer_sk is not null and ss_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_customer_sk is not null and ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
+                    predicate: (ss_store_sk is not null and ss_sold_date_sk is not null and ss_customer_sk is not null and ss_item_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_customer_sk (type: int), ss_store_sk (type: int), ss_ext_sales_price (type: decimal(7,2))
@@ -210,7 +210,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and (d_moy = 11) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_moy = 11) and (d_year = 1999) and d_date_sk is not null) (type: boolean)
+                    predicate: ((d_year = 1999) and (d_moy = 11) and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -226,10 +226,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
-                  filterExpr: ((i_category = 'Electronics') and i_item_sk is not null) (type: boolean)
+                  filterExpr: (i_item_sk is not null and (i_category = 'Electronics')) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((i_category = 'Electronics') and i_item_sk is not null) (type: boolean)
+                    predicate: (i_item_sk is not null and (i_category = 'Electronics')) (type: boolean)
                     Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int)
@@ -347,10 +347,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: promotion
-                  filterExpr: (((p_channel_dmail = 'Y') or (p_channel_email = 'Y') or (p_channel_tv = 'Y')) and p_promo_sk is not null) (type: boolean)
+                  filterExpr: (p_promo_sk is not null and ((p_channel_dmail = 'Y') or (p_channel_email = 'Y') or (p_channel_tv = 'Y'))) (type: boolean)
                   Statistics: Num rows: 2300 Data size: 2713420 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((p_channel_dmail = 'Y') or (p_channel_email = 'Y') or (p_channel_tv = 'Y')) and p_promo_sk is not null) (type: boolean)
+                    predicate: (p_promo_sk is not null and ((p_channel_dmail = 'Y') or (p_channel_email = 'Y') or (p_channel_tv = 'Y'))) (type: boolean)
                     Statistics: Num rows: 2300 Data size: 2713420 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: p_promo_sk (type: int)
@@ -401,7 +401,7 @@ STAGE PLANS:
                   filterExpr: (c_customer_sk is not null and c_current_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (c_current_addr_sk is not null and c_customer_sk is not null) (type: boolean)
+                    predicate: (c_customer_sk is not null and c_current_addr_sk is not null) (type: boolean)
                     Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_customer_sk (type: int), c_current_addr_sk (type: int)
@@ -418,10 +418,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
-                  filterExpr: ((i_category = 'Electronics') and i_item_sk is not null) (type: boolean)
+                  filterExpr: (i_item_sk is not null and (i_category = 'Electronics')) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((i_category = 'Electronics') and i_item_sk is not null) (type: boolean)
+                    predicate: (i_item_sk is not null and (i_category = 'Electronics')) (type: boolean)
                     Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int)
@@ -459,7 +459,7 @@ STAGE PLANS:
                   filterExpr: (ss_store_sk is not null and ss_promo_sk is not null and ss_sold_date_sk is not null and ss_customer_sk is not null and ss_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_customer_sk is not null and ss_item_sk is not null and ss_promo_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
+                    predicate: (ss_store_sk is not null and ss_promo_sk is not null and ss_sold_date_sk is not null and ss_customer_sk is not null and ss_item_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_customer_sk (type: int), ss_store_sk (type: int), ss_promo_sk (type: int), ss_ext_sales_price (type: decimal(7,2))
@@ -479,7 +479,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and (d_moy = 11) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_moy = 11) and (d_year = 1999) and d_date_sk is not null) (type: boolean)
+                    predicate: ((d_year = 1999) and (d_moy = 11) and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)

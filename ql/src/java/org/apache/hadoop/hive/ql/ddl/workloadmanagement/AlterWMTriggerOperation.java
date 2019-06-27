@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of altering a workload management trigger.
  */
-public class AlterWMTriggerOperation extends DDLOperation {
-  private final AlterWMTriggerDesc desc;
-
+public class AlterWMTriggerOperation extends DDLOperation<AlterWMTriggerDesc> {
   public AlterWMTriggerOperation(DDLOperationContext context, AlterWMTriggerDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

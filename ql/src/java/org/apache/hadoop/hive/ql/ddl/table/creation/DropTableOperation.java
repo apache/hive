@@ -36,12 +36,9 @@ import com.google.common.collect.Iterables;
 /**
  * Operation process of dropping a table.
  */
-public class DropTableOperation extends DDLOperation {
-  private final DropTableDesc desc;
-
+public class DropTableOperation extends DDLOperation<DropTableDesc> {
   public DropTableOperation(DDLOperationContext context, DropTableDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

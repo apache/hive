@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -37,6 +38,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
@@ -122,5 +124,14 @@ public class HdfsUtils {
     if (port == -1) return true; // No port, assume default.
     // Note - this makes assumptions that are DFS-specific; DFS::getDefaultPort is not visible.
     return (defaultPort == -1) ? (port == NameNode.DEFAULT_PORT) : (port == defaultPort);
+  }
+
+  public static boolean pathExists(Path p, Configuration conf) throws HiveException {
+    try {
+      FileSystem fs = p.getFileSystem(conf);
+      return fs.exists(p);
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
   }
 }

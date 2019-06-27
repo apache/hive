@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
@@ -423,7 +424,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                   resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
                   tbd.isInsertOverwrite());
           if (work.getOutputs() != null) {
-            DDLTask.addIfAbsentByName(new WriteEntity(table,
+            DDLUtils.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
           }
         } else {
@@ -535,7 +536,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     DataContainer dc = new DataContainer(table.getTTable(), partn.getTPartition());
     // add this partition to post-execution hook
     if (work.getOutputs() != null) {
-      DDLTask.addIfAbsentByName(new WriteEntity(partn,
+      DDLUtils.addIfAbsentByName(new WriteEntity(partn,
         getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
     }
     return dc;
@@ -602,7 +603,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       WriteEntity enty = new WriteEntity(partn,
         getWriteType(tbd, work.getLoadTableWork().getWriteType()));
       if (work.getOutputs() != null) {
-        DDLTask.addIfAbsentByName(enty, work.getOutputs());
+        DDLUtils.addIfAbsentByName(enty, work.getOutputs());
       }
       // Need to update the queryPlan's output as well so that post-exec hook get executed.
       // This is only needed for dynamic partitioning since for SP the the WriteEntity is

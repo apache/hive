@@ -22,10 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -36,15 +35,11 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterTableSetSkewedLocationDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  static {
-    DDLTask2.registerOperation(AlterTableSetSkewedLocationDesc.class, AlterTableSetSkewedLocationOperation.class);
-  }
-
   private final Map<List<String>, String> skewedLocations;
 
   public AlterTableSetSkewedLocationDesc(String tableName, Map<String, String> partitionSpec,
       Map<List<String>, String> skewedLocations) throws SemanticException {
-    super(AlterTableTypes.SET_SKEWED_LOCATION, tableName, partitionSpec, null, false, false, null);
+    super(AlterTableType.SET_SKEWED_LOCATION, tableName, partitionSpec, null, false, false, null);
     this.skewedLocations = skewedLocations;
   }
 

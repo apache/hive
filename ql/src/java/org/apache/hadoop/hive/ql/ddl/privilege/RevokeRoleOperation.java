@@ -32,12 +32,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 /**
  * Operation process of revoking a role.
  */
-public class RevokeRoleOperation extends DDLOperation {
-  private final RevokeRoleDesc desc;
-
+public class RevokeRoleOperation extends DDLOperation<RevokeRoleDesc> {
   public RevokeRoleOperation(DDLOperationContext context, RevokeRoleDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

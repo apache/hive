@@ -33,12 +33,9 @@ import org.apache.hive.common.util.HiveStringUtils;
 /**
  * Operation process showing the creation of a database.
  */
-public class ShowCreateDatabaseOperation extends DDLOperation {
-  private final ShowCreateDatabaseDesc desc;
-
+public class ShowCreateDatabaseOperation extends DDLOperation<ShowCreateDatabaseDesc> {
   public ShowCreateDatabaseOperation(DDLOperationContext context, ShowCreateDatabaseDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

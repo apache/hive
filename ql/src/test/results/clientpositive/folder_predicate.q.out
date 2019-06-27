@@ -39,7 +39,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
-            filterExpr: (value is null or (value <> 3)) (type: boolean)
+            filterExpr: ((value <> 3) or value is null) (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((value <> 3) or value is null) (type: boolean)
@@ -99,7 +99,7 @@ STAGE PLANS:
             filterExpr: (value is null or (value < 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((value < 3) or value is null) (type: boolean)
+              predicate: (value is null or (value < 3)) (type: boolean)
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
@@ -154,7 +154,7 @@ STAGE PLANS:
             filterExpr: (value is null or (value > 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((value > 3) or value is null) (type: boolean)
+              predicate: (value is null or (value > 3)) (type: boolean)
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
@@ -209,7 +209,7 @@ STAGE PLANS:
             filterExpr: (value is null or (value <= 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((value <= 3) or value is null) (type: boolean)
+              predicate: (value is null or (value <= 3)) (type: boolean)
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
@@ -265,7 +265,7 @@ STAGE PLANS:
             filterExpr: (value is null or (value >= 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((value >= 3) or value is null) (type: boolean)
+              predicate: (value is null or (value >= 3)) (type: boolean)
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
@@ -321,7 +321,7 @@ STAGE PLANS:
             filterExpr: (value is null or (value = 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((value = 3) or value is null) (type: boolean)
+              predicate: (value is null or (value = 3)) (type: boolean)
               Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)
@@ -375,7 +375,7 @@ STAGE PLANS:
             filterExpr: (value is null or (value <= 1) or (value > 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((value <= 1) or (value > 3) or value is null) (type: boolean)
+              predicate: (value is null or (value <= 1) or (value > 3)) (type: boolean)
               Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: int)

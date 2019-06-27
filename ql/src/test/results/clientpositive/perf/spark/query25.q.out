@@ -157,7 +157,7 @@ STAGE PLANS:
                   filterExpr: (ss_customer_sk is not null and ss_item_sk is not null and ss_ticket_number is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_customer_sk is not null and ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null and ss_ticket_number is not null) (type: boolean)
+                    predicate: (ss_customer_sk is not null and ss_item_sk is not null and ss_ticket_number is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_customer_sk (type: int), ss_store_sk (type: int), ss_ticket_number (type: int), ss_net_profit (type: decimal(7,2))
@@ -174,10 +174,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d3
-                  filterExpr: (d_moy BETWEEN 4 AND 10 and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                  filterExpr: ((d_year = 2000) and d_moy BETWEEN 4 AND 10 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_year = 2000) and d_date_sk is not null and d_moy BETWEEN 4 AND 10) (type: boolean)
+                    predicate: ((d_year = 2000) and d_moy BETWEEN 4 AND 10 and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -196,7 +196,7 @@ STAGE PLANS:
                   filterExpr: (sr_customer_sk is not null and sr_item_sk is not null and sr_ticket_number is not null and sr_returned_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (sr_customer_sk is not null and sr_item_sk is not null and sr_returned_date_sk is not null and sr_ticket_number is not null) (type: boolean)
+                    predicate: (sr_customer_sk is not null and sr_item_sk is not null and sr_ticket_number is not null and sr_returned_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: sr_returned_date_sk (type: int), sr_item_sk (type: int), sr_customer_sk (type: int), sr_ticket_number (type: int), sr_net_loss (type: decimal(7,2))
@@ -213,10 +213,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
-                  filterExpr: (d_moy BETWEEN 4 AND 10 and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                  filterExpr: ((d_year = 2000) and d_moy BETWEEN 4 AND 10 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_year = 2000) and d_date_sk is not null and d_moy BETWEEN 4 AND 10) (type: boolean)
+                    predicate: ((d_year = 2000) and d_moy BETWEEN 4 AND 10 and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)

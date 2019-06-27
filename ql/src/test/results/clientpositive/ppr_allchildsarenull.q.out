@@ -26,7 +26,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(`key` AS INTEGER) AS `user_id`, `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND (`value` LIKE 'aaa%' OR `value` LIKE 'vvv%')
+WHERE (`value` LIKE 'aaa%' OR `value` LIKE 'vvv%') AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -37,7 +37,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
-            filterExpr: ((ds = '2008-04-08') and ((value like 'aaa%') or (value like 'vvv%'))) (type: boolean)
+            filterExpr: (((value like 'aaa%') or (value like 'vvv%')) and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
@@ -238,7 +238,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(`key` AS INTEGER) AS `user_id`, `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND (`value` LIKE 'aaa%' OR `value` LIKE 'vvv%')
+WHERE (`value` LIKE 'aaa%' OR `value` LIKE 'vvv%') AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

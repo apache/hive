@@ -6,4 +6,4 @@ PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@druid_table_1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. MetaException(message:LOCATION may not be specified for Druid)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:LOCATION may not be specified for Druid)

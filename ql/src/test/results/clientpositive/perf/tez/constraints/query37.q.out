@@ -85,7 +85,7 @@ Stage-0
                               Select Operator [SEL_80] (rows=297 width=400)
                                 Output:["_col0","_col1","_col2","_col3"]
                                 Filter Operator [FIL_79] (rows=297 width=404)
-                                  predicate:((i_manufact_id) IN (678, 964, 918, 849) and i_current_price BETWEEN 22 AND 52)
+                                  predicate:(i_current_price BETWEEN 22 AND 52 and (i_manufact_id) IN (678, 964, 918, 849))
                                   TableScan [TS_2] (rows=462000 width=403)
                                     default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_item_id","i_item_desc","i_current_price","i_manufact_id"]
                           <-Map 1 [SIMPLE_EDGE] vectorized

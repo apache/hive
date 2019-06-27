@@ -30,10 +30,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test
-            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
+            filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89488 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
               Statistics: Num rows: 250 Data size: 44744 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: reverse(value) (type: string)
@@ -127,10 +127,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test
-            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
+            filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89488 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
               Statistics: Num rows: 250 Data size: 44744 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), reverse(value) (type: string)
@@ -182,10 +182,10 @@ STAGE PLANS:
               value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
           TableScan
             alias: masking_test
-            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
+            filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89488 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
               Statistics: Num rows: 250 Data size: 44744 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), reverse(value) (type: string)

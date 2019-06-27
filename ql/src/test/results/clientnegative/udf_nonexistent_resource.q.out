@@ -5,4 +5,4 @@ PREHOOK: Output: default.lookup
 #### A masked pattern was here ####
 nonexistent_file.txt does not exist
 Failed to register default.lookup using class org.apache.hadoop.hive.ql.udf.UDFFileLookup
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask

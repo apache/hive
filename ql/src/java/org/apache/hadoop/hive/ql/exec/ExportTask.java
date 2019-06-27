@@ -44,7 +44,7 @@ public class ExportTask extends Task<ExportWork> implements Serializable {
   }
 
   @Override
-  protected int execute(DriverContext driverContext) {
+  public int execute(DriverContext driverContext) {
     try {
       // Also creates the root directory
       TableExport.Paths exportPaths = new TableExport.Paths(

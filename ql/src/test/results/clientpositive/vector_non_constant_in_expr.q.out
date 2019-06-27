@@ -23,7 +23,7 @@ STAGE PLANS:
             filterExpr: ((cint = UDFToInteger(ctinyint)) or (UDFToLong(cint) = cbigint)) (type: boolean)
             Statistics: Num rows: 12288 Data size: 3093170 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToLong(cint) = cbigint) or (cint = UDFToInteger(ctinyint))) (type: boolean)
+              predicate: ((cint = UDFToInteger(ctinyint)) or (UDFToLong(cint) = cbigint)) (type: boolean)
               Statistics: Num rows: 12288 Data size: 3093170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)

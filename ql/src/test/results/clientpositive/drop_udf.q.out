@@ -17,6 +17,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
+    Drop Function
+      name: test_translate
+      temporary: true
 
 PREHOOK: query: DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION

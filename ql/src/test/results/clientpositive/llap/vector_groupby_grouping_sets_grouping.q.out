@@ -657,7 +657,7 @@ STAGE PLANS:
                       className: VectorFilterOperator
                       native: true
                       predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 3:bigint, val 1)(children: GroupingColumn(col 2, mask 2) -> 3:bigint), FilterLongColEqualLongScalar(col 4:bigint, val 1)(children: GroupingColumn(col 2, mask 1) -> 4:bigint))
-                  predicate: ((grouping(_col2, 0L) = 1L) or (grouping(_col2, 1L) = 1L)) (type: boolean)
+                  predicate: ((grouping(_col2, 1L) = 1L) or (grouping(_col2, 0L) = 1L)) (type: boolean)
                   Statistics: Num rows: 12 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int), (grouping(_col2, 1L) + grouping(_col2, 0L)) (type: bigint), CASE WHEN (((grouping(_col2, 1L) + grouping(_col2, 0L)) = 1L)) THEN (_col0) ELSE (null) END (type: int)
@@ -1315,7 +1315,7 @@ STAGE PLANS:
                             className: VectorFilterOperator
                             native: true
                             predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 3:bigint, val 1)(children: GroupingColumn(col 2, mask 2) -> 3:bigint), FilterLongColEqualLongScalar(col 4:bigint, val 1)(children: GroupingColumn(col 2, mask 1) -> 4:bigint))
-                        predicate: ((grouping(_col2, 0L) = 1) or (grouping(_col2, 1L) = 1)) (type: boolean)
+                        predicate: ((grouping(_col2, 1L) = 1) or (grouping(_col2, 0L) = 1)) (type: boolean)
                         Statistics: Num rows: 12 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)

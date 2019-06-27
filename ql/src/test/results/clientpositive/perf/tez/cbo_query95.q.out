@@ -106,7 +106,7 @@ HiveAggregate(group=[{}], agg#0=[count(DISTINCT $6)], agg#1=[sum($7)], agg#2=[su
               HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
           HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveProject(ws_ship_date_sk=[$2], ws_ship_addr_sk=[$11], ws_web_site_sk=[$13], ws_order_number=[$17], ws_ext_ship_cost=[$28], ws_net_profit=[$33])
-              HiveFilter(condition=[AND(IS NOT NULL($17), IS NOT NULL($2), IS NOT NULL($11), IS NOT NULL($13))])
+              HiveFilter(condition=[AND(IS NOT NULL($13), IS NOT NULL($11), IS NOT NULL($2), IS NOT NULL($17))])
                 HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
             HiveProject(d_date_sk=[$0], d_date=[$2])
               HiveFilter(condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1999-05-01 00:00:00:TIMESTAMP(9), 1999-06-30 00:00:00:TIMESTAMP(9)), IS NOT NULL($0))])

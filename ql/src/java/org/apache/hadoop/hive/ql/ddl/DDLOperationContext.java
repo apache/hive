@@ -36,13 +36,13 @@ public class DDLOperationContext {
   private final HiveConf conf;
   private final DriverContext driverContext;
   private final MetaDataFormatter formatter;
-  private final DDLTask2 task;
-  private final DDLWork2 work;
+  private final DDLTask task;
+  private final DDLWork work;
   private final QueryState queryState;
   private final QueryPlan queryPlan;
   private final LogHelper console;
 
-  public DDLOperationContext(HiveConf conf, DriverContext driverContext, DDLTask2 task, DDLWork2 work,
+  public DDLOperationContext(HiveConf conf, DriverContext driverContext, DDLTask task, DDLWork work,
       QueryState queryState, QueryPlan queryPlan, LogHelper console) throws HiveException {
     this.db = Hive.get(conf);
     this.conf = conf;
@@ -71,11 +71,11 @@ public class DDLOperationContext {
     return formatter;
   }
 
-  public DDLTask2 getTask() {
+  public DDLTask getTask() {
     return task;
   }
 
-  public DDLWork2 getWork() {
+  public DDLWork getWork() {
     return work;
   }
 

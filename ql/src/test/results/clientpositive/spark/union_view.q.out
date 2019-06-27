@@ -155,7 +155,7 @@ STAGE PLANS:
                   filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((ds = '1') and (key = 86)) (type: boolean)
+                    predicate: ((key = 86) and (ds = '1')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -180,7 +180,7 @@ STAGE PLANS:
                   filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((ds = '1') and (key = 86)) (type: boolean)
+                    predicate: ((key = 86) and (ds = '1')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -221,7 +221,7 @@ STAGE PLANS:
                   filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((ds = '2') and (key = 86)) (type: boolean)
+                    predicate: ((key = 86) and (ds = '2')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -271,7 +271,7 @@ STAGE PLANS:
                   filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((ds = '2') and (key = 86)) (type: boolean)
+                    predicate: ((key = 86) and (ds = '2')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -312,7 +312,7 @@ STAGE PLANS:
                   filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((ds = '3') and (key = 86)) (type: boolean)
+                    predicate: ((key = 86) and (ds = '3')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -337,7 +337,7 @@ STAGE PLANS:
                   filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((ds = '3') and (key = 86)) (type: boolean)
+                    predicate: ((key = 86) and (ds = '3')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -483,11 +483,11 @@ STAGE PLANS:
 86	val_86	2
 86	val_86	3
 86	val_86	3
+86	val_86	3
+86	val_86	3
+86	val_86	2
+86	val_86	2
 86	val_86	1
-86	val_86	2
-86	val_86	2
-86	val_86	3
-86	val_86	3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -813,7 +813,7 @@ STAGE PLANS:
                   filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((ds = '4') and (key = 86)) (type: boolean)
+                    predicate: ((key = 86) and (ds = '4')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -838,7 +838,7 @@ STAGE PLANS:
                   filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((ds = '4') and (key = 86)) (type: boolean)
+                    predicate: ((key = 86) and (ds = '4')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: value (type: string)

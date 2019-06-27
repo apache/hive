@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -38,7 +38,7 @@ public class DropDatabaseHandler extends AbstractMessageHandler {
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
     DropDatabaseDesc desc = new DropDatabaseDesc(actualDbName, true, context.eventOnlyReplicationSpec());
     Task<? extends Serializable> dropDBTask =
-        TaskFactory.get(new DDLWork2(new HashSet<>(), new HashSet<>(), desc), context.hiveConf);
+        TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), desc), context.hiveConf);
     context.log.info(
         "Added drop database task : {}:{}", dropDBTask.getId(), desc.getDatabaseName());
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, null, null);

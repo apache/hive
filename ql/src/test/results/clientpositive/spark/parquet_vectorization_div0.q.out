@@ -218,7 +218,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val 0), FilterLongColLessLongScalar(col 3:bigint, val 100000000))
-                    predicate: ((cbigint < 100000000L) and (cbigint > 0L)) (type: boolean)
+                    predicate: ((cbigint > 0L) and (cbigint < 100000000L)) (type: boolean)
                     Statistics: Num rows: 1365 Data size: 65956 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (cbigint - 988888L) (type: bigint), (cdouble / UDFToDouble((cbigint - 988888L))) (type: double), (1.2 / CAST( (cbigint - 988888L) AS decimal(19,0))) (type: decimal(22,21))
@@ -439,7 +439,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -500.0), FilterDoubleColLessDoubleScalar(col 5:double, val -199.0))
-                    predicate: ((cdouble < -199.0D) and (cdouble >= -500.0D)) (type: boolean)
+                    predicate: ((cdouble >= -500.0D) and (cdouble < -199.0D)) (type: boolean)
                     Statistics: Num rows: 1365 Data size: 65956 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (cdouble + 200.0D) (type: double), (UDFToDouble(cbigint) / (cdouble + 200.0D)) (type: double), ((cdouble + 200.0D) / (cdouble + 200.0D)) (type: double), (3.0D / (cdouble + 200.0D)) (type: double), (1.2D / (cdouble + 200.0D)) (type: double)

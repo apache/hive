@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.constaint.AlterTableAddConstraintDesc;
 import org.apache.hadoop.hive.ql.ddl.table.constaint.Constraints;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -37,7 +37,7 @@ public class AddUniqueConstraintHandler extends AbstractMessageHandler {
       throws SemanticException {
     AddUniqueConstraintMessage msg = deserializer.getAddUniqueConstraintMessage(context.dmd.getPayload());
 
-    List<SQLUniqueConstraint> uks = null;
+    List<SQLUniqueConstraint> uks;
     try {
       uks = msg.getUniqueConstraints();
     } catch (Exception e) {
@@ -54,7 +54,7 @@ public class AddUniqueConstraintHandler extends AbstractMessageHandler {
     }
 
     String actualDbName = context.isDbNameEmpty() ? uks.get(0).getTable_db() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? uks.get(0).getTable_name() : context.tableName;
+    String actualTblName = uks.get(0).getTable_name();
 
     for (SQLUniqueConstraint uk : uks) {
       uk.setTable_db(actualDbName);
@@ -64,8 +64,8 @@ public class AddUniqueConstraintHandler extends AbstractMessageHandler {
     Constraints constraints = new Constraints(null, null, null, uks, null, null);
     AlterTableAddConstraintDesc addConstraintsDesc = new AlterTableAddConstraintDesc(actualDbName + "." + actualTblName,
         context.eventOnlyReplicationSpec(), constraints);
-    Task<DDLWork2> addConstraintsTask = TaskFactory.get(
-            new DDLWork2(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);
+    Task<DDLWork> addConstraintsTask = TaskFactory.get(
+            new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);
     tasks.add(addConstraintsTask);
     context.log.debug("Added add constrains task : {}:{}", addConstraintsTask.getId(), actualTblName);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);

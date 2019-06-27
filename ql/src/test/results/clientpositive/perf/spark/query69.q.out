@@ -174,7 +174,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and d_moy BETWEEN 1 AND 3 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_year = 1999) and d_date_sk is not null and d_moy BETWEEN 1 AND 3) (type: boolean)
+                    predicate: ((d_year = 1999) and d_moy BETWEEN 1 AND 3 and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -213,7 +213,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and d_moy BETWEEN 1 AND 3 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_year = 1999) and d_date_sk is not null and d_moy BETWEEN 1 AND 3) (type: boolean)
+                    predicate: ((d_year = 1999) and d_moy BETWEEN 1 AND 3 and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -252,7 +252,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and d_moy BETWEEN 1 AND 3 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_year = 1999) and d_date_sk is not null and d_moy BETWEEN 1 AND 3) (type: boolean)
+                    predicate: ((d_year = 1999) and d_moy BETWEEN 1 AND 3 and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -268,10 +268,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ca
-                  filterExpr: ((ca_state) IN ('CO', 'IL', 'MN') and ca_address_sk is not null) (type: boolean)
+                  filterExpr: (ca_address_sk is not null and (ca_state) IN ('CO', 'IL', 'MN')) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ca_state) IN ('CO', 'IL', 'MN') and ca_address_sk is not null) (type: boolean)
+                    predicate: (ca_address_sk is not null and (ca_state) IN ('CO', 'IL', 'MN')) (type: boolean)
                     Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ca_address_sk (type: int)

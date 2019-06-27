@@ -49,6 +49,16 @@ public class WmFragmentCounters {
     changeState(State.RUNNING, getRunningCounter(isGuaranteed));
   }
 
+  public long getQueueTime() {
+    return fixedCounters.get(LlapWmCounters.GUARANTEED_QUEUED_NS.ordinal())
+        + fixedCounters.get(LlapWmCounters.SPECULATIVE_QUEUED_NS.ordinal());
+  }
+
+  public long getRunningTime() {
+    return fixedCounters.get(LlapWmCounters.GUARANTEED_RUNNING_NS.ordinal())
+        + fixedCounters.get(LlapWmCounters.SPECULATIVE_RUNNING_NS.ordinal());
+  }
+
   private static LlapWmCounters getQueuedCounter(boolean isGuaranteed) {
     return isGuaranteed
         ? LlapWmCounters.GUARANTEED_QUEUED_NS : LlapWmCounters.SPECULATIVE_QUEUED_NS;

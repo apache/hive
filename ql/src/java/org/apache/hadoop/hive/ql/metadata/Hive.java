@@ -116,7 +116,6 @@ import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableDropPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -262,7 +261,7 @@ public class Hive {
         LOG.info("Registering function " + functionName + " " + function.getClassName());
         String qualFunc = FunctionUtils.qualifyFunctionName(functionName, function.getDbName());
         FunctionRegistry.registerPermanentFunction(qualFunc, function.getClassName(), false,
-                    FunctionTask.toFunctionResource(function.getResourceUris()));
+                    FunctionUtils.toFunctionResource(function.getResourceUris()));
         registryFunctions.remove(qualFunc);
       } catch (Exception e) {
         LOG.warn("Failed to register persistent function " +
@@ -2189,7 +2188,7 @@ public class Hive {
 
       // column stats will be inaccurate
       if (resetStatistics) {
-        StatsSetupConst.clearColumnStatsState(newTPart.getParameters());
+        StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
       }
 
       // recreate the partition if it existed before

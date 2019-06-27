@@ -222,7 +222,7 @@ STAGE PLANS:
             filterExpr: ((p_size) IN (22, 14, 27, 49, 21, 33, 35, 28) and (p_brand <> 'Brand#34') and p_partkey is not null and (not (p_type like 'ECONOMY BRUSHED%'))) (type: boolean)
             Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((not (p_type like 'ECONOMY BRUSHED%')) and (p_brand <> 'Brand#34') and (p_size) IN (22, 14, 27, 49, 21, 33, 35, 28) and p_partkey is not null) (type: boolean)
+              predicate: ((p_size) IN (22, 14, 27, 49, 21, 33, 35, 28) and (p_brand <> 'Brand#34') and p_partkey is not null and (not (p_type like 'ECONOMY BRUSHED%'))) (type: boolean)
               Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int)
@@ -284,7 +284,7 @@ STAGE PLANS:
             outputColumnNames: _col1, _col3, _col4, _col5, _col6, _col7, _col9
             Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((_col7 >= _col6) or (_col6 = 0L) or _col9 is not null or _col1 is null) and (_col1 is not null or (_col6 = 0L) or _col9 is not null) and (_col9 is null or (_col6 = 0L))) (type: boolean)
+              predicate: ((_col9 is null or (_col6 = 0L)) and (_col1 is not null or (_col6 = 0L) or _col9 is not null) and ((_col7 >= _col6) or (_col6 = 0L) or _col9 is not null or _col1 is null)) (type: boolean)
               Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: _col1 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int)

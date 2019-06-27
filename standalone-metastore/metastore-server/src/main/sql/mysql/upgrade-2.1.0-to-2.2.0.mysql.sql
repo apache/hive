@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 2.1.0 to 2.2.0' AS ' ';
+SELECT 'Upgrading MetaStore schema from 2.1.0 to 2.2.0' AS MESSAGE;
 
 --SOURCE 037-HIVE-14496.mysql.sql;
 -- Step 1: Add the column allowing null
@@ -39,5 +39,5 @@ ALTER TABLE TAB_COL_STATS MODIFY COLUMN_NAME varchar(767) CHARACTER SET latin1 C
 ALTER TABLE PART_COL_STATS MODIFY COLUMN_NAME varchar(767) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL;
 
 UPDATE VERSION SET SCHEMA_VERSION='2.2.0', VERSION_COMMENT='Hive release version 2.2.0' where VER_ID=1;
-SELECT 'Finished upgrading MetaStore schema from 2.1.0 to 2.2.0' AS ' ';
+SELECT 'Finished upgrading MetaStore schema from 2.1.0 to 2.2.0' AS MESSAGE;
 

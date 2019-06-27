@@ -150,7 +150,7 @@ STAGE PLANS:
             filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and reverse(value) is not null and (UDFToInteger(key) > 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and reverse(value) is not null) (type: boolean)
+              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and reverse(value) is not null and (UDFToInteger(key) > 0)) (type: boolean)
               Statistics: Num rows: 27 Data size: 4806 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), reverse(value) (type: string)
@@ -242,7 +242,7 @@ STAGE PLANS:
             filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and UDFToDouble(reverse(value)) is not null and (UDFToInteger(key) > 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and UDFToDouble(reverse(value)) is not null) (type: boolean)
+              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and UDFToDouble(reverse(value)) is not null and (UDFToInteger(key) > 0)) (type: boolean)
               Statistics: Num rows: 27 Data size: 4806 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), reverse(value) (type: string)

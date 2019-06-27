@@ -165,7 +165,7 @@ STAGE PLANS:
             filterExpr: (ss_store_sk is not null and ss_hdemo_sk is not null) (type: boolean)
             Statistics: Num rows: 6075 Data size: 72744 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (ss_hdemo_sk is not null and ss_store_sk is not null) (type: boolean)
+              predicate: (ss_store_sk is not null and ss_hdemo_sk is not null) (type: boolean)
               Statistics: Num rows: 6075 Data size: 72744 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int), ss_hdemo_sk (type: int), ss_net_profit (type: double)

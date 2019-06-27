@@ -101,7 +101,7 @@ STAGE PLANS:
                   filterExpr: (ws_web_page_sk is null and ws_item_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ws_item_sk is not null and ws_sold_date_sk is not null and ws_web_page_sk is null) (type: boolean)
+                    predicate: (ws_web_page_sk is null and ws_item_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 72001334 Data size: 9790099106 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ws_sold_date_sk (type: int), ws_item_sk (type: int), ws_ext_sales_price (type: decimal(7,2))
@@ -161,7 +161,7 @@ STAGE PLANS:
                   filterExpr: (cs_warehouse_sk is null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_warehouse_sk is null) (type: boolean)
+                    predicate: (cs_warehouse_sk is null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 143994918 Data size: 19499804476 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cs_sold_date_sk (type: int), cs_item_sk (type: int), cs_ext_sales_price (type: decimal(7,2))

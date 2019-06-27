@@ -88,7 +88,7 @@ POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `$f0`
 FROM `default`.`fact_daily`
-WHERE `ds` = '1' AND `hr` = '4' AND `key` = '484' AND `value` = 'val_484'
+WHERE `key` = '484' AND `value` = 'val_484' AND `ds` = '1' AND `hr` = '4'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -217,7 +217,7 @@ POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('238' AS STRING) AS `$f0`, CAST('val_238' AS STRING) AS `$f1`
 FROM `default`.`fact_daily`
-WHERE `ds` = '1' AND `hr` = '4' AND `key` = '238' AND `value` = 'val_238'
+WHERE `key` = '238' AND `value` = 'val_238' AND `ds` = '1' AND `hr` = '4'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -347,7 +347,7 @@ POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`
 FROM `default`.`fact_daily`
-WHERE `ds` = '1' AND `hr` = '4' AND `value` = '3'
+WHERE `value` = '3' AND `ds` = '1' AND `hr` = '4'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -358,7 +358,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily
-            filterExpr: ((ds = '1') and (hr = '4') and (value = '3')) (type: boolean)
+            filterExpr: ((value = '3') and (ds = '1') and (hr = '4')) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
@@ -475,7 +475,7 @@ POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('495' AS STRING) AS `key`, `value`
 FROM `default`.`fact_daily`
-WHERE `ds` = '1' AND `hr` = '4' AND `key` = '495'
+WHERE `key` = '495' AND `ds` = '1' AND `hr` = '4'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -486,7 +486,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily
-            filterExpr: ((ds = '1') and (hr = '4') and (key = '495')) (type: boolean)
+            filterExpr: ((key = '495') and (ds = '1') and (hr = '4')) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator

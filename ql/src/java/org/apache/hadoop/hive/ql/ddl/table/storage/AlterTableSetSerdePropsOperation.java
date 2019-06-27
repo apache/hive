@@ -28,12 +28,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of setting serde properties.
  */
-public class AlterTableSetSerdePropsOperation extends AbstractAlterTableOperation {
-  private final AlterTableSetSerdePropsDesc desc;
-
+public class AlterTableSetSerdePropsOperation extends AbstractAlterTableOperation<AlterTableSetSerdePropsDesc> {
   public AlterTableSetSerdePropsOperation(DDLOperationContext context, AlterTableSetSerdePropsDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

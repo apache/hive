@@ -388,7 +388,7 @@ STAGE PLANS:
                   filterExpr: ((d = 3) and (a = 3)) (type: boolean)
                   Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((a = 3) and (d = 3)) (type: boolean)
+                    predicate: ((d = 3) and (a = 3)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: double)
@@ -471,12 +471,10 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Alter Table Operator:
-        Alter Table
-          type: drop props
-          old name: default.cmv_mat_view2_n0
-          properties:
-            COLUMN_STATS_ACCURATE 
+    Unset Properties
+      properties:
+        COLUMN_STATS_ACCURATE 
+      table name: default.cmv_mat_view2_n0
 
   Stage: Stage-4
     Materialized View Work
@@ -497,10 +495,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n2
-                  filterExpr: ((ROW__ID.writeid > 1L) and (a = 3)) (type: boolean)
+                  filterExpr: ((a = 3) and (ROW__ID.writeid > 1L)) (type: boolean)
                   Statistics: Num rows: 7 Data size: 1652 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 1L) and (a = 3)) (type: boolean)
+                    predicate: ((a = 3) and (ROW__ID.writeid > 1L)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 236 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: CAST( t AS timestamp with local time zone) (type: timestamp with local time zone), 3 (type: int), b (type: varchar(256)), c (type: double), userid (type: varchar(256))
@@ -559,8 +557,8 @@ STAGE PLANS:
             Vertex: Union 2
 
   Stage: Stage-5
-      Insert operator:
-        Commit-Insert-Hook
+    Commit Insert Hook
+      is overwrite: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
 PREHOOK: type: QUERY

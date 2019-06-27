@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -35,13 +34,8 @@ public class ShowFunctionsDesc implements DDLDesc, Serializable {
 
   public static final String SCHEMA = "tab_name#string";
 
-  static {
-    DDLTask2.registerOperation(ShowFunctionsDesc.class, ShowFunctionsOperation.class);
-  }
-
   private final String resFile;
   private final String pattern;
-  private final boolean isLikePattern;
 
   public ShowFunctionsDesc(Path resFile) {
     this(resFile, null, false);
@@ -54,7 +48,6 @@ public class ShowFunctionsDesc implements DDLDesc, Serializable {
   public ShowFunctionsDesc(Path resFile, String pattern, boolean isLikePattern) {
     this.resFile = resFile.toString();
     this.pattern = pattern;
-    this.isLikePattern = isLikePattern;
   }
 
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
@@ -65,9 +58,5 @@ public class ShowFunctionsDesc implements DDLDesc, Serializable {
   @Explain(displayName = "pattern")
   public String getPattern() {
     return pattern;
-  }
-
-  public boolean getIsLikePattern() {
-    return isLikePattern;
   }
 }

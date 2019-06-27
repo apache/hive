@@ -30,12 +30,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 /**
  * Operation process of showing the current role.
  */
-public class ShowCurrentRoleOperation extends DDLOperation {
-  private final ShowCurrentRoleDesc desc;
-
+public class ShowCurrentRoleOperation extends DDLOperation<ShowCurrentRoleDesc> {
   public ShowCurrentRoleOperation(DDLOperationContext context, ShowCurrentRoleDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

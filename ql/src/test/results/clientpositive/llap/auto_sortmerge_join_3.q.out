@@ -1,8 +1,10 @@
 PREHOOK: query: CREATE TABLE bucket_small_n9 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_small_n9
 POSTHOOK: query: CREATE TABLE bucket_small_n9 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_small_n9
@@ -41,10 +43,12 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small_n9@ds=2008-04-09
 PREHOOK: query: CREATE TABLE bucket_big_n9 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_big_n9
 POSTHOOK: query: CREATE TABLE bucket_big_n9 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_big_n9
@@ -121,16 +125,16 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -167,7 +171,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -216,7 +220,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -239,16 +243,16 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 120 Data size: 79280 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 120 Data size: 19688 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -256,7 +260,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 1
-                        Statistics: Num rows: 125 Data size: 82847 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 116 Data size: 19130 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           minReductionHashAggr: 0.99
@@ -307,7 +311,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -420,16 +424,16 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -466,7 +470,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -515,7 +519,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -538,16 +542,16 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 120 Data size: 79280 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 120 Data size: 19688 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -555,7 +559,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 0
-                        Statistics: Num rows: 125 Data size: 82847 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 116 Data size: 19130 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           minReductionHashAggr: 0.99
@@ -606,7 +610,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -719,16 +723,16 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -765,7 +769,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -814,7 +818,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -837,16 +841,16 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 120 Data size: 79280 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 120 Data size: 19688 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -854,7 +858,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 0
-                        Statistics: Num rows: 125 Data size: 82847 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 116 Data size: 19130 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           minReductionHashAggr: 0.99
@@ -905,7 +909,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 

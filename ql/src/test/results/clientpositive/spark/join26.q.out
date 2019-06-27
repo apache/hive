@@ -31,7 +31,7 @@ POSTHOOK: Output: default@dest_j1_n10
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `key` IS NOT NULL) AS `t0`
+WHERE `key` IS NOT NULL AND `ds` = '2008-04-08' AND `hr` = 11) AS `t0`
 INNER JOIN ((SELECT `key`, `value`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t2`
@@ -130,7 +130,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: z
-                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and key is not null) (type: boolean)
+                  filterExpr: (key is not null and (ds = '2008-04-08') and (11.0D = 11.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

@@ -313,10 +313,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acct
-            filterExpr: (aid is not null and brn is not null) (type: boolean)
+            filterExpr: (brn is not null and aid is not null) (type: boolean)
             Statistics: Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (aid is not null and brn is not null) (type: boolean)
+              predicate: (brn is not null and aid is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: aid (type: int), acc_n (type: int), brn (type: int)

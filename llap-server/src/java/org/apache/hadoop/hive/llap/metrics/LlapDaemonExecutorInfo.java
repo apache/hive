@@ -30,6 +30,7 @@ public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorMaxFreeSlots("Sum of wait queue size and number of executors"),
   ExecutorNumExecutorsPerInstance("Total number of executor threads per node"),
   ExecutorNumExecutorsAvailable("Total number of executor threads per node that are free"),
+  ExecutorNumExecutorsAvailableAverage("Total number of executor threads per node that are free averaged over time"),
   ExecutorAvailableFreeSlots("Number of free slots available"),
   ExecutorAvailableFreeSlotsPercent("Percent of free slots available"),
   ExecutorThreadCPUTime("Cpu time in nanoseconds"),
@@ -40,6 +41,7 @@ public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorThreadUserTime("User time in nanoseconds"),
   ExecutorTotalRequestsHandled("Total number of requests handled by the container"),
   ExecutorNumQueuedRequests("Number of requests queued by the container for processing"),
+  ExecutorNumQueuedRequestsAverage("Number of requests queued by the container for processing averaged over time"),
   ExecutorNumPreemptableRequests("Number of queued requests that are pre-emptable"),
   ExecutorTotalRejectedRequests("Total number of requests rejected as wait queue being full"),
   ExecutorTotalSuccess("Total number of requests handled by the container that succeeded"),
@@ -60,6 +62,8 @@ public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorFallOffKilledTimeLost("Total time lost in an executor completing after informing the AM - killed fragments"),
   ExecutorFallOffKilledMaxTimeLost("Max value of time lost in an executor completing after informing the AM - killed fragments"),
   ExecutorFallOffNumCompletedFragments("Number of completed fragments w.r.t falloff values"),
+  AverageQueueTime("Average queue time for tasks"),
+  AverageResponseTime("Average response time for successful tasks"),
   ;
 
   private final String desc;

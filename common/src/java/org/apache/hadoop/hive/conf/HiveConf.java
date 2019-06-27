@@ -2348,6 +2348,9 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_CONSTRAINTS_JOIN("hive.optimize.constraints.join", true, "Whether to use referential constraints\n" +
         "to optimize (remove or transform) join operators"),
 
+    HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS("hive.optimize.filter.preds.sort", true, "Whether to sort conditions in filters\n" +
+        "based on estimated selectivity and compute cost"),
+
     HIVE_OPTIMIZE_REDUCE_WITH_STATS("hive.optimize.filter.stats.reduction", false, "Whether to simplify comparison\n" +
         "expressions in filter operators using column stats"),
 
@@ -2584,7 +2587,7 @@ public class HiveConf extends Configuration {
         "The port of ZooKeeper servers to talk to.\n" +
         "If the list of Zookeeper servers specified in hive.zookeeper.quorum\n" +
         "does not contain port numbers, this value is used."),
-    HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", "1200000ms",
+    HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", "120000ms",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "ZooKeeper client's session timeout (in milliseconds). The client is disconnected, and as a result, all locks released, \n" +
         "if a heartbeat is not sent in the timeout."),
@@ -3280,6 +3283,10 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_WEBUI_CORS_ALLOWED_HEADERS("hive.server2.webui.cors.allowed.headers",
       "X-Requested-With,Content-Type,Accept,Origin",
       "Comma separated list of http headers that are allowed when CORS is enabled.\n"),
+    HIVE_SERVER2_WEBUI_XFRAME_ENABLED("hive.server2.webui.xframe.enabled", true,
+            "Whether to enable xframe\n"),
+    HIVE_SERVER2_WEBUI_XFRAME_VALUE("hive.server2.webui.xframe.value", "SAMEORIGIN",
+            "Configuration to allow the user to set the x_frame-options value\n"),
 
 
     // Tez session settings
@@ -3478,6 +3485,21 @@ public class HiveConf extends Configuration {
         "          (Use with property hive.server2.custom.authentication.class)\n" +
         "  PAM: Pluggable authentication module\n" +
         "  NOSASL:  Raw transport"),
+    HIVE_SERVER2_TRUSTED_DOMAIN("hive.server2.trusted.domain", "",
+        "Specifies the host or a domain to trust connections from. Authentication is skipped " +
+        "for any connection coming from a host whose hostname ends with the value of this" +
+        " property. If authentication is expected to be skipped for connections from " +
+        "only a given host, fully qualified hostname of that host should be specified. By default" +
+        " it is empty, which means that all the connections to HiveServer2 are authenticated. " +
+        "When it is non-empty, the client has to provide a Hive user name. Any password, if " +
+        "provided, will not be used when authentication is skipped."),
+    HIVE_SERVER2_TRUSTED_DOMAIN_USE_XFF_HEADER("hive.server2.trusted.domain.use.xff.header", false,
+      "When trusted domain authentication is enabled, the clients connecting to the HS2 could pass" +
+        "through many layers of proxy. Some proxies append its own ip address to 'X-Forwarded-For' header" +
+        "before passing on the request to another proxy or HS2. Some proxies also connect on behalf of client" +
+        "and may create a separate connection to HS2 without binding using client IP. For such environments, instead" +
+        "of looking at client IP from the request, if this config is set and if 'X-Forwarded-For' is present," +
+        "trusted domain authentication will use left most ip address from X-Forwarded-For header."),
     HIVE_SERVER2_ALLOW_USER_SUBSTITUTION("hive.server2.allow.user.substitution", true,
         "Allow alternate user to be specified as part of HiveServer2 open connection request."),
     HIVE_SERVER2_KERBEROS_KEYTAB("hive.server2.authentication.kerberos.keytab", "",
@@ -3880,6 +3902,7 @@ public class HiveConf extends Configuration {
          "Time to wait to finish prewarming spark executors"),
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none", new StringSet("none", "idonly", "traverse", "execution"), ""),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false, ""),
+    HIVEUSEGOOGLEREGEXENGINE("hive.use.googleregex.engine",false,"whether to use google regex engine or not, default regex engine is java.util.regex"),
 
     HIVECOUNTERGROUP("hive.counters.group.name", "HIVE",
         "The name of counter group for internal Hive variables (CREATED_FILE, FATAL_ERROR, etc.)"),
@@ -4384,6 +4407,21 @@ public class HiveConf extends Configuration {
       "Whether non-finishable running tasks (e.g. a reducer waiting for inputs) should be\n" +
       "preempted by finishable tasks inside LLAP scheduler.",
       "llap.daemon.task.scheduler.enable.preemption"),
+    LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_DATA_POINTS(
+      "hive.llap.daemon.metrics.timed.window.average.data.points", 0,
+      "The number of data points stored for calculating executor metrics timed averages.\n" +
+      "Currently used for ExecutorNumExecutorsAvailableAverage and ExecutorNumQueuedRequestsAverage\n" +
+      "0 means that average calculation is turned off"),
+    LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_WINDOW_LENGTH(
+      "hive.llap.daemon.metrics.timed.window.average.window.length", "1m",
+      new TimeValidator(TimeUnit.NANOSECONDS),
+      "The length of the time window used for calculating executor metrics timed averages.\n" +
+      "Currently used for ExecutorNumExecutorsAvailableAverage and ExecutorNumQueuedRequestsAverage\n"),
+    LLAP_DAEMON_METRICS_SIMPLE_AVERAGE_DATA_POINTS(
+      "hive.llap.daemon.metrics.simple.average.data.points", 0,
+      "The number of data points stored for calculating executor metrics simple averages.\n" +
+      "Currently used for AverageQueueTime and AverageResponseTime\n" +
+      "0 means that average calculation is turned off"),
     LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MS(
       "hive.llap.task.communicator.connection.timeout.ms", "16000ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
@@ -4651,7 +4689,7 @@ public class HiveConf extends Configuration {
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure"),
-    HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "query",
+    HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
             + "  query: runtime statistics are only used during re-execution\n"
@@ -4667,6 +4705,8 @@ public class HiveConf extends Configuration {
         "If runtime stats are stored in metastore; the maximal batch size per round during load."),
     HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE("hive.query.reexecution.stats.cache.size", 100_000,
         "Size of the runtime statistics cache. Unit is: OperatorStat entry; a query plan consist ~100."),
+    HIVE_QUERY_PLANMAPPER_LINK_RELNODES("hive.query.planmapper.link.relnodes", true,
+        "Wether to link Calcite nodes to runtime statistics."),
 
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
@@ -5723,6 +5763,8 @@ public class HiveConf extends Configuration {
     "hive\\.strict\\..*",
     "hive\\.tez\\..*",
     "hive\\.vectorized\\..*",
+    "hive\\.query\\.reexecution\\..*",
+    "reexec\\.overlay\\..*",
     "fs\\.defaultFS",
     "ssl\\.client\\.truststore\\.location",
     "distcp\\.atomic",

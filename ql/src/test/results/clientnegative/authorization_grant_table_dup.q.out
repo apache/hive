@@ -22,4 +22,4 @@ default	tauth_gdup			user1	USER	UPDATE	true	-1	user1
 PREHOOK: query: GRANT INSERT ON tauth_gdup TO USER user1
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@tauth_gdup
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Error granting privileges: Got exception: org.apache.hadoop.hive.metastore.api.InvalidObjectException INSERT is already granted on table [default,tauth_gdup] by user1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Error granting privileges: Got exception: org.apache.hadoop.hive.metastore.api.InvalidObjectException INSERT is already granted on table [default,tauth_gdup] by user1

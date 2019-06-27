@@ -20,7 +20,7 @@ package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.ShowDatabasesDesc;
@@ -274,7 +274,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
   }
 
   @Override
-  protected void authorizeDDLWork2(HiveSemanticAnalyzerHookContext cntxt, Hive hive, DDLWork2 work)
+  protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext cntxt, Hive hive, DDLWork work)
       throws HiveException {
     DDLDesc ddlDesc = work.getDDLDesc();
     if (ddlDesc instanceof ShowDatabasesDesc) {

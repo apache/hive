@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 3.1.0 to 3.2.0' AS ' ';
+SELECT 'Upgrading MetaStore schema from 3.1.0 to 3.2.0' AS MESSAGE;
 
 -- HIVE-19267
 CREATE TABLE TXN_WRITE_NOTIFICATION_LOG (
@@ -25,5 +25,5 @@ ALTER TABLE `CTLGS` ADD `CREATE_TIME` INT(11);
 
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.2.0', VERSION_COMMENT='Hive release version 3.2.0' where VER_ID=1;
-SELECT 'Finished upgrading MetaStore schema from 3.1.0 to 3.2.0' AS ' ';
+SELECT 'Finished upgrading MetaStore schema from 3.1.0 to 3.2.0' AS MESSAGE;
 

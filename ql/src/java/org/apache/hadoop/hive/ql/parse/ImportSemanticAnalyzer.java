@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.creation.DropTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
@@ -550,7 +550,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                                        ReplicationSpec replicationSpec) {
     DropTableDesc dropTblDesc = new DropTableDesc(table.getTableName(), table.getTableType(),
             true, false, replicationSpec);
-    return TaskFactory.get(new DDLWork2(x.getInputs(), x.getOutputs(), dropTblDesc), x.getConf());
+    return TaskFactory.get(new DDLWork(x.getInputs(), x.getOutputs(), dropTblDesc), x.getConf());
   }
 
   private static Task<? extends Serializable> alterTableTask(ImportTableDesc tableDesc,
@@ -577,7 +577,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (!externalTablePartition(tblDesc, replicationSpec)) {
       partSpec.setLocation(ptn.getLocation()); // use existing location
     }
-    return TaskFactory.get(new DDLWork2(x.getInputs(), x.getOutputs(), addPartitionDesc), x.getConf());
+    return TaskFactory.get(new DDLWork(x.getInputs(), x.getOutputs(), addPartitionDesc), x.getConf());
   }
 
   private static Task<?> addSinglePartition(ImportTableDesc tblDesc,
@@ -597,7 +597,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       // addPartitionDesc already has the right partition location
       @SuppressWarnings("unchecked")
       Task<?> addPartTask = TaskFactory.get(
-              new DDLWork2(x.getInputs(), x.getOutputs(), addPartitionDesc), x.getConf());
+              new DDLWork(x.getInputs(), x.getOutputs(), addPartitionDesc), x.getConf());
       return addPartTask;
     } else {
       String srcLocation = partSpec.getLocation();
@@ -657,7 +657,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         // the partition/s to be already added or altered by previous events. So no need to
         // create add partition event again.
         addPartTask = TaskFactory.get(
-                new DDLWork2(x.getInputs(), x.getOutputs(), addPartitionDesc), x.getConf());
+                new DDLWork(x.getInputs(), x.getOutputs(), addPartitionDesc), x.getConf());
       }
 
       MoveWork moveWork = new MoveWork(x.getInputs(), x.getOutputs(),

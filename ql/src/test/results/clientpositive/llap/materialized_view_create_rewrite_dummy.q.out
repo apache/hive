@@ -200,7 +200,7 @@ STAGE PLANS:
                   filterExpr: ((d = 3) and (a = 3)) (type: boolean)
                   Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((a = 3) and (d = 3)) (type: boolean)
+                    predicate: ((d = 3) and (a = 3)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: decimal(10,2))
@@ -465,7 +465,7 @@ STAGE PLANS:
                   filterExpr: ((d = 3) and (a = 3)) (type: boolean)
                   Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((a = 3) and (d = 3)) (type: boolean)
+                    predicate: ((d = 3) and (a = 3)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: decimal(10,2))

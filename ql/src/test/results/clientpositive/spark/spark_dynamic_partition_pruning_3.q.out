@@ -1005,7 +1005,7 @@ STAGE PLANS:
                   filterExpr: (col2 BETWEEN 1 AND 3 and col1 is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (col1 is not null and col2 BETWEEN 1 AND 3) (type: boolean)
+                    predicate: (col2 BETWEEN 1 AND 3 and col1 is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: col1 (type: int)

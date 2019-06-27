@@ -126,11 +126,11 @@ STAGE PLANS:
           TableScan
             alias: p
             filterExpr: (c = 1) (type: boolean)
-            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: int)
               outputColumnNames: a
-              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: max(a)
                 minReductionHashAggr: 0.99
@@ -272,11 +272,11 @@ STAGE PLANS:
           TableScan
             alias: p
             filterExpr: (c = 4) (type: boolean)
-            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: int)
               outputColumnNames: a
-              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: max(a)
                 minReductionHashAggr: 0.99

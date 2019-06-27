@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 /**
  * Operation process of adding some new columns.
  */
-public class AlterTableUpdateColumnsOperation extends AbstractAlterTableOperation {
+public class AlterTableUpdateColumnsOperation extends AbstractAlterTableOperation<AlterTableUpdateColumnsDesc> {
   public AlterTableUpdateColumnsOperation(DDLOperationContext context, AlterTableUpdateColumnsDesc desc) {
     super(context, desc);
   }

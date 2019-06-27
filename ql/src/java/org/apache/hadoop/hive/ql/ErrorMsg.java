@@ -23,9 +23,9 @@ import org.apache.hadoop.hdfs.protocol.DSQuotaExceededException;
 import org.apache.hadoop.hdfs.protocol.NSQuotaExceededException;
 import org.apache.hadoop.hdfs.protocol.UnresolvedPathException;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.security.AccessControlException;
 
 import java.io.FileNotFoundException;
@@ -214,7 +214,8 @@ public enum ErrorMsg {
   ALTER_COMMAND_FOR_VIEWS(10131, "To alter a view you need to use the ALTER VIEW command."),
   ALTER_COMMAND_FOR_TABLES(10132, "To alter a base table you need to use the ALTER TABLE command."),
   ALTER_VIEW_DISALLOWED_OP(10133, "Cannot use this form of ALTER on a view"),
-  ALTER_TABLE_NON_NATIVE(10134, "ALTER TABLE can only be used for " + AlterTableTypes.nonNativeTableAllowedTypes + " to a non-native table "),
+  ALTER_TABLE_NON_NATIVE(10134, "ALTER TABLE can only be used for " + AlterTableType.NON_NATIVE_TABLE_ALLOWED +
+      " to a non-native table "),
   SORTMERGE_MAPJOIN_FAILED(10135,
       "Sort merge bucketed join could not be performed. " +
       "If you really want to perform the operation, either set " +
@@ -514,6 +515,9 @@ public enum ErrorMsg {
   REPL_LOAD_PATH_NOT_FOUND(20019, "Load path does not exist."),
   REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20020,
           "Source of replication (repl.source.for) is not set in the database properties."),
+  REPL_INVALID_DB_OR_TABLE_PATTERN(20021,
+          "Invalid pattern for the DB or table name in the replication policy. "
+                  + "It should be a valid regex enclosed within single or double quotes."),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),

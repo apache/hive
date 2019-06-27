@@ -52,6 +52,7 @@ import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
+import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.SessionManager;
@@ -137,6 +138,9 @@ public class ThriftHttpServlet extends TServlet {
           return;
         }
       }
+
+      clientIpAddress = request.getRemoteAddr();
+      LOG.debug("Client IP Address: " + clientIpAddress);
       // If the cookie based authentication is already enabled, parse the
       // request and validate the request cookies.
       if (isCookieAuthEnabled) {
@@ -146,38 +150,7 @@ public class ThriftHttpServlet extends TServlet {
           LOG.info("Could not validate cookie sent, will try to generate a new cookie");
         }
       }
-      // If the cookie based authentication is not enabled or the request does
-      // not have a valid cookie, use the kerberos or password based authentication
-      // depending on the server setup.
-      if (clientUserName == null) {
-        // For a kerberos setup
-        if (isKerberosAuthMode(authType)) {
-          String delegationToken = request.getHeader(HIVE_DELEGATION_TOKEN_HEADER);
-          // Each http request must have an Authorization header
-          if ((delegationToken != null) && (!delegationToken.isEmpty())) {
-            clientUserName = doTokenAuth(request, response);
-          } else {
-            clientUserName = doKerberosAuth(request);
-          }
-        }
-        // For password based authentication
-        else {
-          clientUserName = doPasswdAuth(request, authType);
-        }
-      }
-      LOG.debug("Client username: " + clientUserName);
 
-      // Set the thread local username to be used for doAs if true
-      SessionManager.setUserName(clientUserName);
-
-      // find proxy user if any from query param
-      String doAsQueryParam = getDoAsQueryParam(request.getQueryString());
-      if (doAsQueryParam != null) {
-        SessionManager.setProxyUserName(doAsQueryParam);
-      }
-
-      clientIpAddress = request.getRemoteAddr();
-      LOG.debug("Client IP Address: " + clientIpAddress);
       // Set the thread local ip address
       SessionManager.setIpAddress(clientIpAddress);
 
@@ -190,6 +163,60 @@ public class ThriftHttpServlet extends TServlet {
       } else {
         SessionManager.setForwardedAddresses(Collections.<String>emptyList());
       }
+
+      // If the cookie based authentication is not enabled or the request does not have a valid
+      // cookie, use authentication depending on the server setup.
+      if (clientUserName == null) {
+        String trustedDomain = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN).trim();
+        final boolean useXff = HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN_USE_XFF_HEADER);
+        if (useXff && !trustedDomain.isEmpty() &&
+          SessionManager.getForwardedAddresses() != null && !SessionManager.getForwardedAddresses().isEmpty()) {
+          // general format of XFF header is 'X-Forwarded-For: client, proxy1, proxy2' where left most being the client
+          clientIpAddress = SessionManager.getForwardedAddresses().get(0);
+          LOG.info("Trusted domain authN is enabled. clientIp from X-Forwarded-For header: {}", clientIpAddress);
+        }
+        // Skip authentication if the connection is from the trusted domain, if specified.
+        // getRemoteHost may or may not return the FQDN of the remote host depending upon the
+        // HTTP server configuration. So, force a reverse DNS lookup.
+        String remoteHostName =
+                InetAddress.getByName(clientIpAddress).getCanonicalHostName();
+        if (!trustedDomain.isEmpty() &&
+                PlainSaslHelper.isHostFromTrustedDomain(remoteHostName, trustedDomain)) {
+          LOG.info("No authentication performed because the connecting host " + remoteHostName +
+                  " is from the trusted domain " + trustedDomain);
+          // In order to skip authentication, we use auth type NOSASL to be consistent with the
+          // HiveAuthFactory defaults. In HTTP mode, it will also get us the user name from the
+          // HTTP request header.
+          clientUserName = doPasswdAuth(request, HiveAuthConstants.AuthTypes.NOSASL.getAuthName());
+        } else {
+          // For a kerberos setup
+          if (isKerberosAuthMode(authType)) {
+            String delegationToken = request.getHeader(HIVE_DELEGATION_TOKEN_HEADER);
+            // Each http request must have an Authorization header
+            if ((delegationToken != null) && (!delegationToken.isEmpty())) {
+              clientUserName = doTokenAuth(request, response);
+            } else {
+              clientUserName = doKerberosAuth(request);
+            }
+          }
+          // For password based authentication
+          else {
+            clientUserName = doPasswdAuth(request, authType);
+          }
+        }
+      }
+      assert (clientUserName != null);
+      LOG.debug("Client username: " + clientUserName);
+
+      // Set the thread local username to be used for doAs if true
+      SessionManager.setUserName(clientUserName);
+
+      // find proxy user if any from query param
+      String doAsQueryParam = getDoAsQueryParam(request.getQueryString());
+      if (doAsQueryParam != null) {
+        SessionManager.setProxyUserName(doAsQueryParam);
+      }
+
 
       // Generate new cookie and add it to the response
       if (requireNewCookie &&

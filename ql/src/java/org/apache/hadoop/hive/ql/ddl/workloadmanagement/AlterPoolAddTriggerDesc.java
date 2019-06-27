@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -30,10 +29,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Create Trigger to pool mappings", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterPoolAddTriggerDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 383046258694558029L;
-
-  static {
-    DDLTask2.registerOperation(AlterPoolAddTriggerDesc.class, AlterPoolAddTriggerOperation.class);
-  }
 
   private final String planName;
   private final String triggerName;

@@ -9,4 +9,4 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: grant ALL on t1 to role nosuchrole
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@t1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Error granting privileges: Got exception: org.apache.hadoop.hive.metastore.api.NoSuchObjectException Role nosuchrole does not exist
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Error granting privileges: Got exception: org.apache.hadoop.hive.metastore.api.NoSuchObjectException Role nosuchrole does not exist

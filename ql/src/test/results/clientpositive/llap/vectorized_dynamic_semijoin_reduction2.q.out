@@ -122,7 +122,7 @@ STAGE PLANS:
                   filterExpr: (partkey_bigint is not null and (partkey_bigint BETWEEN DynamicValue(RS_7_b_partkey_bigint_min) AND DynamicValue(RS_7_b_partkey_bigint_max) and in_bloom_filter(partkey_bigint, DynamicValue(RS_7_b_partkey_bigint_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((partkey_bigint BETWEEN DynamicValue(RS_7_b_partkey_bigint_min) AND DynamicValue(RS_7_b_partkey_bigint_max) and in_bloom_filter(partkey_bigint, DynamicValue(RS_7_b_partkey_bigint_bloom_filter))) and partkey_bigint is not null) (type: boolean)
+                    predicate: (partkey_bigint is not null and (partkey_bigint BETWEEN DynamicValue(RS_7_b_partkey_bigint_min) AND DynamicValue(RS_7_b_partkey_bigint_max) and in_bloom_filter(partkey_bigint, DynamicValue(RS_7_b_partkey_bigint_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: partkey_bigint (type: bigint)
@@ -277,7 +277,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:decimal(10,1)/DECIMAL_64), FilterExprAndExpr(children: FilterDecimalColumnBetweenDynamicValue(col 9:decimal(10,1), left 0, right 0)(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 9:decimal(10,1)), VectorInBloomFilterColDynamicValue(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 10:decimal(10,1))))
-                    predicate: ((partkey_decimal BETWEEN DynamicValue(RS_7_b_partkey_decimal_min) AND DynamicValue(RS_7_b_partkey_decimal_max) and in_bloom_filter(partkey_decimal, DynamicValue(RS_7_b_partkey_decimal_bloom_filter))) and partkey_decimal is not null) (type: boolean)
+                    predicate: (partkey_decimal is not null and (partkey_decimal BETWEEN DynamicValue(RS_7_b_partkey_decimal_min) AND DynamicValue(RS_7_b_partkey_decimal_max) and in_bloom_filter(partkey_decimal, DynamicValue(RS_7_b_partkey_decimal_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 100 Data size: 11200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: partkey_decimal (type: decimal(10,1))
@@ -543,7 +543,7 @@ STAGE PLANS:
                   filterExpr: (partkey_double is not null and (partkey_double BETWEEN DynamicValue(RS_7_b_partkey_double_min) AND DynamicValue(RS_7_b_partkey_double_max) and in_bloom_filter(partkey_double, DynamicValue(RS_7_b_partkey_double_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((partkey_double BETWEEN DynamicValue(RS_7_b_partkey_double_min) AND DynamicValue(RS_7_b_partkey_double_max) and in_bloom_filter(partkey_double, DynamicValue(RS_7_b_partkey_double_bloom_filter))) and partkey_double is not null) (type: boolean)
+                    predicate: (partkey_double is not null and (partkey_double BETWEEN DynamicValue(RS_7_b_partkey_double_min) AND DynamicValue(RS_7_b_partkey_double_max) and in_bloom_filter(partkey_double, DynamicValue(RS_7_b_partkey_double_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: partkey_double (type: double)
@@ -687,7 +687,7 @@ STAGE PLANS:
                   filterExpr: (shipdate_date is not null and (shipdate_date BETWEEN DynamicValue(RS_7_b_shipdate_date_min) AND DynamicValue(RS_7_b_shipdate_date_max) and in_bloom_filter(shipdate_date, DynamicValue(RS_7_b_shipdate_date_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((shipdate_date BETWEEN DynamicValue(RS_7_b_shipdate_date_min) AND DynamicValue(RS_7_b_shipdate_date_max) and in_bloom_filter(shipdate_date, DynamicValue(RS_7_b_shipdate_date_bloom_filter))) and shipdate_date is not null) (type: boolean)
+                    predicate: (shipdate_date is not null and (shipdate_date BETWEEN DynamicValue(RS_7_b_shipdate_date_min) AND DynamicValue(RS_7_b_shipdate_date_max) and in_bloom_filter(shipdate_date, DynamicValue(RS_7_b_shipdate_date_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: shipdate_date (type: date)
@@ -831,7 +831,7 @@ STAGE PLANS:
                   filterExpr: (shipdate_ts is not null and (shipdate_ts BETWEEN DynamicValue(RS_7_b_shipdate_ts_min) AND DynamicValue(RS_7_b_shipdate_ts_max) and in_bloom_filter(shipdate_ts, DynamicValue(RS_7_b_shipdate_ts_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 100 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((shipdate_ts BETWEEN DynamicValue(RS_7_b_shipdate_ts_min) AND DynamicValue(RS_7_b_shipdate_ts_max) and in_bloom_filter(shipdate_ts, DynamicValue(RS_7_b_shipdate_ts_bloom_filter))) and shipdate_ts is not null) (type: boolean)
+                    predicate: (shipdate_ts is not null and (shipdate_ts BETWEEN DynamicValue(RS_7_b_shipdate_ts_min) AND DynamicValue(RS_7_b_shipdate_ts_max) and in_bloom_filter(shipdate_ts, DynamicValue(RS_7_b_shipdate_ts_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 100 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: shipdate_ts (type: timestamp)
@@ -975,7 +975,7 @@ STAGE PLANS:
                   filterExpr: (shipdate_string is not null and (shipdate_string BETWEEN DynamicValue(RS_7_b_shipdate_string_min) AND DynamicValue(RS_7_b_shipdate_string_max) and in_bloom_filter(shipdate_string, DynamicValue(RS_7_b_shipdate_string_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((shipdate_string BETWEEN DynamicValue(RS_7_b_shipdate_string_min) AND DynamicValue(RS_7_b_shipdate_string_max) and in_bloom_filter(shipdate_string, DynamicValue(RS_7_b_shipdate_string_bloom_filter))) and shipdate_string is not null) (type: boolean)
+                    predicate: (shipdate_string is not null and (shipdate_string BETWEEN DynamicValue(RS_7_b_shipdate_string_min) AND DynamicValue(RS_7_b_shipdate_string_max) and in_bloom_filter(shipdate_string, DynamicValue(RS_7_b_shipdate_string_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: shipdate_string (type: string)
@@ -1119,7 +1119,7 @@ STAGE PLANS:
                   filterExpr: (shipdate_char is not null and (shipdate_char BETWEEN DynamicValue(RS_7_b_shipdate_char_min) AND DynamicValue(RS_7_b_shipdate_char_max) and in_bloom_filter(shipdate_char, DynamicValue(RS_7_b_shipdate_char_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((shipdate_char BETWEEN DynamicValue(RS_7_b_shipdate_char_min) AND DynamicValue(RS_7_b_shipdate_char_max) and in_bloom_filter(shipdate_char, DynamicValue(RS_7_b_shipdate_char_bloom_filter))) and shipdate_char is not null) (type: boolean)
+                    predicate: (shipdate_char is not null and (shipdate_char BETWEEN DynamicValue(RS_7_b_shipdate_char_min) AND DynamicValue(RS_7_b_shipdate_char_max) and in_bloom_filter(shipdate_char, DynamicValue(RS_7_b_shipdate_char_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: shipdate_char (type: char(10))
@@ -1263,7 +1263,7 @@ STAGE PLANS:
                   filterExpr: (shipdate_varchar is not null and (shipdate_varchar BETWEEN DynamicValue(RS_7_b_shipdate_varchar_min) AND DynamicValue(RS_7_b_shipdate_varchar_max) and in_bloom_filter(shipdate_varchar, DynamicValue(RS_7_b_shipdate_varchar_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((shipdate_varchar BETWEEN DynamicValue(RS_7_b_shipdate_varchar_min) AND DynamicValue(RS_7_b_shipdate_varchar_max) and in_bloom_filter(shipdate_varchar, DynamicValue(RS_7_b_shipdate_varchar_bloom_filter))) and shipdate_varchar is not null) (type: boolean)
+                    predicate: (shipdate_varchar is not null and (shipdate_varchar BETWEEN DynamicValue(RS_7_b_shipdate_varchar_min) AND DynamicValue(RS_7_b_shipdate_varchar_max) and in_bloom_filter(shipdate_varchar, DynamicValue(RS_7_b_shipdate_varchar_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: shipdate_varchar (type: varchar(10))

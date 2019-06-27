@@ -28,12 +28,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of dropping a new constraint.
  */
-public class AlterTableDropConstraintOperation extends DDLOperation {
-  private final AlterTableDropConstraintDesc desc;
-
+public class AlterTableDropConstraintOperation extends DDLOperation<AlterTableDropConstraintDesc> {
   public AlterTableDropConstraintOperation(DDLOperationContext context, AlterTableDropConstraintDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

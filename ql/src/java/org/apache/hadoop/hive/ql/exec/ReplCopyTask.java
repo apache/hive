@@ -133,7 +133,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   }
 
   @Override
-  protected int execute(DriverContext driverContext) {
+  public int execute(DriverContext driverContext) {
     LOG.debug("ReplCopyTask.execute()");
     FileSystem dstFs = null;
     Path toPath = null;

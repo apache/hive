@@ -2847,15 +2847,13 @@ class ReplLastIdInfo
   TABLE = 3
   CATALOG = 4
   PARTITIONLIST = 5
-  NEEDUPDATEDBREPLID = 6
 
   FIELDS = {
     DATABASE => {:type => ::Thrift::Types::STRING, :name => 'database'},
     LASTREPLID => {:type => ::Thrift::Types::I64, :name => 'lastReplId'},
     TABLE => {:type => ::Thrift::Types::STRING, :name => 'table', :optional => true},
     CATALOG => {:type => ::Thrift::Types::STRING, :name => 'catalog', :optional => true},
-    PARTITIONLIST => {:type => ::Thrift::Types::LIST, :name => 'partitionList', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    NEEDUPDATEDBREPLID => {:type => ::Thrift::Types::BOOL, :name => 'needUpdateDBReplId', :optional => true}
+    PARTITIONLIST => {:type => ::Thrift::Types::LIST, :name => 'partitionList', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

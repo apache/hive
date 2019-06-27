@@ -129,7 +129,7 @@ Stage-0
                                       Select Operator [SEL_150] (rows=50 width=4)
                                         Output:["_col0"]
                                         Filter Operator [FIL_148] (rows=50 width=12)
-                                          predicate:((d_moy = 5) and (d_year = 1999))
+                                          predicate:((d_year = 1999) and (d_moy = 5))
                                           TableScan [TS_2] (rows=73049 width=12)
                                             default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year","d_moy"]
               <-Reducer 9 [ONE_TO_ONE_EDGE] vectorized
@@ -169,7 +169,7 @@ Stage-0
                                       Select Operator [SEL_151] (rows=50 width=4)
                                         Output:["_col0"]
                                         Filter Operator [FIL_149] (rows=50 width=12)
-                                          predicate:((d_moy = 4) and (d_year = 1999))
+                                          predicate:((d_year = 1999) and (d_moy = 4))
                                            Please refer to the previous TableScan [TS_2]
 
 PREHOOK: query: with inv as

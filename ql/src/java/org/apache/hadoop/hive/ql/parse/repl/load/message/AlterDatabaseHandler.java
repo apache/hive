@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -44,12 +44,6 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
-
-    if (!context.isTableNameEmpty()) {
-      throw new SemanticException(
-              "Alter Database are not supported for table-level replication");
-    }
-
     AlterDatabaseMessage msg = deserializer.getAlterDatabaseMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
 
@@ -82,8 +76,8 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
                 context.eventOnlyReplicationSpec());
       }
 
-      Task<DDLWork2> alterDbTask = TaskFactory.get(
-          new DDLWork2(readEntitySet, writeEntitySet, alterDbDesc), context.hiveConf);
+      Task<DDLWork> alterDbTask = TaskFactory.get(
+          new DDLWork(readEntitySet, writeEntitySet, alterDbDesc), context.hiveConf);
       context.log.debug("Added alter database task : {}:{}",
               alterDbTask.getId(), actualDbName);
 

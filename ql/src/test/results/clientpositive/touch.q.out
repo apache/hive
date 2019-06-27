@@ -44,6 +44,22 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: tc@tstsrcpart@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN ALTER TABLE tc.tstsrc TOUCH
+PREHOOK: type: ALTERTABLE_TOUCH
+PREHOOK: Input: tc@tstsrc
+PREHOOK: Output: tc@tstsrc
+POSTHOOK: query: EXPLAIN ALTER TABLE tc.tstsrc TOUCH
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: tc@tstsrc
+POSTHOOK: Output: tc@tstsrc
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Touch
+      table name: tc.tstsrc
+
 PREHOOK: query: ALTER TABLE tc.tstsrc TOUCH
 PREHOOK: type: ALTERTABLE_TOUCH
 PREHOOK: Input: tc@tstsrc
@@ -60,6 +76,25 @@ POSTHOOK: query: ALTER TABLE tc.tstsrcpart TOUCH
 POSTHOOK: type: ALTERTABLE_TOUCH
 POSTHOOK: Input: tc@tstsrcpart
 POSTHOOK: Output: tc@tstsrcpart
+PREHOOK: query: EXPLAIN ALTER TABLE tc.tstsrcpart TOUCH PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_TOUCH
+PREHOOK: Input: tc@tstsrcpart
+PREHOOK: Output: tc@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: EXPLAIN ALTER TABLE tc.tstsrcpart TOUCH PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: tc@tstsrcpart
+POSTHOOK: Output: tc@tstsrcpart@ds=2008-04-08/hr=12
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Touch
+      partition spec:
+        ds 2008-04-08
+        hr 12
+      table name: tc.tstsrcpart
+
 PREHOOK: query: ALTER TABLE tc.tstsrcpart TOUCH PARTITION (ds='2008-04-08', hr='12')
 PREHOOK: type: ALTERTABLE_TOUCH
 PREHOOK: Input: tc@tstsrcpart

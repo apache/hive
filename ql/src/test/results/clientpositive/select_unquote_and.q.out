@@ -64,7 +64,7 @@ STAGE PLANS:
             filterExpr: ((UDFToDouble(ds) > 1970.0D) and (UDFToDouble(ds) < 1985.0D)) (type: boolean)
             Statistics: Num rows: 498 Data size: 180276 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(ds) < 1985.0D) and (UDFToDouble(ds) > 1970.0D)) (type: boolean)
+              predicate: ((UDFToDouble(ds) > 1970.0D) and (UDFToDouble(ds) < 1985.0D)) (type: boolean)
               Statistics: Num rows: 55 Data size: 19910 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string)

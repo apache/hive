@@ -53,7 +53,7 @@ import org.stringtemplate.v4.ST;
 /**
  * Operation process showing the creation of a table.
  */
-public class ShowCreateTableOperation extends DDLOperation {
+public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> {
   private static final String EXTERNAL = "external";
   private static final String TEMPORARY = "temporary";
   private static final String LIST_COLUMNS = "columns";
@@ -65,11 +65,8 @@ public class ShowCreateTableOperation extends DDLOperation {
   private static final String TBL_LOCATION = "tbl_location";
   private static final String TBL_PROPERTIES = "tbl_properties";
 
-  private final ShowCreateTableDesc desc;
-
   public ShowCreateTableOperation(DDLOperationContext context, ShowCreateTableDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

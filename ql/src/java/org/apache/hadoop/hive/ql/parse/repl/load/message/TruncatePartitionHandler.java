@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.misc.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -37,7 +37,7 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
   public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
     AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
+    String actualTblName = msg.getTable();
 
     Map<String, String> partSpec = new LinkedHashMap<>();
     org.apache.hadoop.hive.metastore.api.Table tblObj;
@@ -59,8 +59,8 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
             actualDbName + "." + actualTblName, partSpec,
             context.eventOnlyReplicationSpec());
     truncateTableDesc.setWriteId(msg.getWriteId());
-    Task<DDLWork2> truncatePtnTask = TaskFactory.get(
-        new DDLWork2(readEntitySet, writeEntitySet, truncateTableDesc), context.hiveConf);
+    Task<DDLWork> truncatePtnTask = TaskFactory.get(
+        new DDLWork(readEntitySet, writeEntitySet, truncateTableDesc), context.hiveConf);
     context.log.debug("Added truncate ptn task : {}:{}:{}", truncatePtnTask.getId(),
         truncateTableDesc.getTableName(), truncateTableDesc.getWriteId());
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, partSpec);

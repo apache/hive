@@ -253,7 +253,7 @@ STAGE PLANS:
                   filterExpr: ((c > 10) and (ROW__ID.writeid > 1L) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 1L) and (c > 10) and a is not null) (type: boolean)
+                    predicate: ((c > 10) and (ROW__ID.writeid > 1L) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2))
@@ -979,7 +979,7 @@ STAGE PLANS:
                   filterExpr: ((c > 10) and (ROW__ID.writeid > 4L) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 4L) and (c > 10) and a is not null) (type: boolean)
+                    predicate: ((c > 10) and (ROW__ID.writeid > 4L) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2))

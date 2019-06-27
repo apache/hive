@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 /**
  * Operation process of setting a role.
  */
-public class SetRoleOperation extends DDLOperation {
-  private final SetRoleDesc desc;
-
+public class SetRoleOperation extends DDLOperation<SetRoleDesc> {
   public SetRoleOperation(DDLOperationContext context, SetRoleDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

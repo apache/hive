@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +30,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName="Drop WM Trigger", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DropWMTriggerDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 963803766313787632L;
-
-  static {
-    DDLTask2.registerOperation(DropWMTriggerDesc.class, DropWMTriggerOperation.class);
-  }
 
   private final String planName;
   private final String triggerName;

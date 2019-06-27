@@ -20,10 +20,9 @@ package org.apache.hadoop.hive.ql.ddl.table.storage;
 
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -34,15 +33,11 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterTableIntoBucketsDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  static {
-    DDLTask2.registerOperation(AlterTableIntoBucketsDesc.class, AlterTableIntoBucketsOperation.class);
-  }
-
   private final int numberOfBuckets;
 
   public AlterTableIntoBucketsDesc(String tableName, Map<String, String> partitionSpec, int numberOfBuckets)
       throws SemanticException {
-    super(AlterTableTypes.INTO_BUCKETS, tableName, partitionSpec, null, false, false, null);
+    super(AlterTableType.INTO_BUCKETS, tableName, partitionSpec, null, false, false, null);
     this.numberOfBuckets = numberOfBuckets;
   }
 

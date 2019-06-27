@@ -15,13 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.ddl.table.column;
 
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +31,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Show Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ShowColumnsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(ShowColumnsDesc.class, ShowColumnsOperation.class);
-  }
 
   public static final String SCHEMA = "Field#string";
 

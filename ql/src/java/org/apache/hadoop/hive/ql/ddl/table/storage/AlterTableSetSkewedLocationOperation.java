@@ -34,12 +34,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of setting the skewed location.
  */
-public class AlterTableSetSkewedLocationOperation extends AbstractAlterTableOperation {
-  private final AlterTableSetSkewedLocationDesc desc;
-
+public class AlterTableSetSkewedLocationOperation extends AbstractAlterTableOperation<AlterTableSetSkewedLocationDesc> {
   public AlterTableSetSkewedLocationOperation(DDLOperationContext context, AlterTableSetSkewedLocationDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

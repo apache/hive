@@ -31,4 +31,4 @@ POSTHOOK: query: set role role_noadmin
 POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: grant  src_role_wadmin to user user3
 PREHOOK: type: GRANT_ROLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Current user : user2 is not allowed to grant role. User has to belong to ADMIN role and have it as current role, for this action. Otherwise, grantor need to have ADMIN OPTION on role being granted and have it as a current role for this action.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Current user : user2 is not allowed to grant role. User has to belong to ADMIN role and have it as current role, for this action. Otherwise, grantor need to have ADMIN OPTION on role being granted and have it as a current role for this action.

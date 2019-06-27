@@ -195,7 +195,7 @@ Stage-0
                                                     Select Operator [SEL_203] (rows=525327388 width=7)
                                                       Output:["_col0","_col1"]
                                                       Filter Operator [FIL_202] (rows=525327388 width=7)
-                                                        predicate:((ss_sold_date_sk BETWEEN DynamicValue(RS_15_date_dim_d_date_sk_min) AND DynamicValue(RS_15_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_15_date_dim_d_date_sk_bloom_filter))) and ss_customer_sk is not null and ss_sold_date_sk is not null)
+                                                        predicate:(ss_sold_date_sk is not null and ss_customer_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_15_date_dim_d_date_sk_min) AND DynamicValue(RS_15_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_15_date_dim_d_date_sk_bloom_filter))))
                                                         TableScan [TS_8] (rows=575995635 width=7)
                                                           default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_customer_sk"]
                                                         <-Reducer 16 [BROADCAST_EDGE] vectorized
@@ -232,7 +232,7 @@ Stage-0
                                                     Select Operator [SEL_185] (rows=77201384 width=11)
                                                       Output:["_col0","_col1","_col2"]
                                                       Filter Operator [FIL_184] (rows=77201384 width=11)
-                                                        predicate:(c_current_addr_sk is not null and c_current_cdemo_sk is not null)
+                                                        predicate:(c_current_cdemo_sk is not null and c_current_addr_sk is not null)
                                                         TableScan [TS_0] (rows=80000000 width=11)
                                                           default@customer,c,Tbl:COMPLETE,Col:COMPLETE,Output:["c_customer_sk","c_current_cdemo_sk","c_current_addr_sk"]
                                                 <-Map 11 [SIMPLE_EDGE] vectorized
@@ -268,7 +268,7 @@ Stage-0
                                                     Select Operator [SEL_208] (rows=143930993 width=7)
                                                       Output:["_col0","_col1"]
                                                       Filter Operator [FIL_207] (rows=143930993 width=7)
-                                                        predicate:((ws_bill_customer_sk BETWEEN DynamicValue(RS_43_c_c_customer_sk_min) AND DynamicValue(RS_43_c_c_customer_sk_max) and in_bloom_filter(ws_bill_customer_sk, DynamicValue(RS_43_c_c_customer_sk_bloom_filter))) and ws_bill_customer_sk is not null and ws_sold_date_sk is not null)
+                                                        predicate:(ws_bill_customer_sk is not null and ws_sold_date_sk is not null and (ws_bill_customer_sk BETWEEN DynamicValue(RS_43_c_c_customer_sk_min) AND DynamicValue(RS_43_c_c_customer_sk_max) and in_bloom_filter(ws_bill_customer_sk, DynamicValue(RS_43_c_c_customer_sk_bloom_filter))))
                                                         TableScan [TS_18] (rows=144002668 width=7)
                                                           default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_sold_date_sk","ws_bill_customer_sk"]
                                                         <-Reducer 10 [BROADCAST_EDGE] vectorized
@@ -306,7 +306,7 @@ Stage-0
                                             Select Operator [SEL_216] (rows=285115246 width=7)
                                               Output:["_col0","_col1"]
                                               Filter Operator [FIL_215] (rows=285115246 width=7)
-                                                predicate:((cs_ship_customer_sk BETWEEN DynamicValue(RS_62_c_c_customer_sk_min) AND DynamicValue(RS_62_c_c_customer_sk_max) and in_bloom_filter(cs_ship_customer_sk, DynamicValue(RS_62_c_c_customer_sk_bloom_filter))) and cs_ship_customer_sk is not null and cs_sold_date_sk is not null)
+                                                predicate:(cs_ship_customer_sk is not null and cs_sold_date_sk is not null and (cs_ship_customer_sk BETWEEN DynamicValue(RS_62_c_c_customer_sk_min) AND DynamicValue(RS_62_c_c_customer_sk_max) and in_bloom_filter(cs_ship_customer_sk, DynamicValue(RS_62_c_c_customer_sk_bloom_filter))))
                                                 TableScan [TS_48] (rows=287989836 width=7)
                                                   default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_ship_customer_sk"]
                                                 <-Reducer 9 [BROADCAST_EDGE] vectorized

@@ -116,7 +116,7 @@ FROM `default`.`srcbucket_mapjoin_part_n6`
 WHERE `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_part_2_n5`
-WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` IS NOT NULL AND `ds` = '2008-04-08') AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -211,7 +211,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+                  filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 78 Data size: 30620 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -501,7 +501,7 @@ FROM `default`.`srcbucket_mapjoin_part_n6`
 WHERE `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_part_2_n5`
-WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` IS NOT NULL AND `ds` = '2008-04-08') AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -596,7 +596,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+                  filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 78 Data size: 30620 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator

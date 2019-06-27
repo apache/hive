@@ -42,12 +42,9 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Operation process of replacing two columns.
  */
-public class AlterTableReplaceColumnsOperation extends AbstractAlterTableOperation {
-  private final AlterTableReplaceColumnsDesc desc;
-
+public class AlterTableReplaceColumnsOperation extends AbstractAlterTableOperation<AlterTableReplaceColumnsDesc> {
   public AlterTableReplaceColumnsOperation(DDLOperationContext context, AlterTableReplaceColumnsDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   private static final Set<String> VALID_SERIALIZATION_LIBS = ImmutableSet.of(

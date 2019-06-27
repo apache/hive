@@ -44,12 +44,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n5
-            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
+            filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
               Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), reverse(value) (type: string)
@@ -239,7 +239,7 @@ STAGE PLANS:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
+              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
@@ -354,12 +354,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n5
-            filterExpr: (((key % 2) = 0) and (key < 10) and (key > 6)) (type: boolean)
+            filterExpr: ((key < 10) and (key > 6) and ((key % 2) = 0)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10) and (key > 6)) (type: boolean)
+              predicate: ((key < 10) and (key > 6) and ((key % 2) = 0)) (type: boolean)
               Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger((UDFToDouble(key) / 2.0D)) (type: int)
@@ -417,12 +417,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n5
-            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
+            filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
               Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), reverse(value) (type: string)
@@ -436,12 +436,12 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: masking_test_n5
-            filterExpr: (((key % 2) = 0) and (key < 10) and (key > 6) and ((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10)) (type: boolean)
+            filterExpr: ((key < 10) and (key > 6) and ((key % 2) = 0) and ((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and ((key % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10) and (key < 10) and (key > 6)) (type: boolean)
+              predicate: ((key < 10) and (key > 6) and ((key % 2) = 0) and ((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10)) (type: boolean)
               Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger((UDFToDouble(key) / 2.0D)) (type: int)
@@ -460,14 +460,14 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col1
-          Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 4 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 4 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 4 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

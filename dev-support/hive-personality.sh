@@ -41,6 +41,8 @@ function personality_globals
   WHITESPACE_EOL_IGNORE_LIST=('.*.q.out' '.*/gen/thrift/gen-javabean/.*')
   #shellcheck disable=SC2034
   WHITESPACE_TABS_IGNORE_LIST=('.*.q.out' '.*/gen/thrift/gen-javabean/.*')
+  #shellcheck disable=SC2034
+  AUTHOR_IGNORE_LIST=('.*.q.out')
 }
 
 ## @description  Queue up modules for this personality

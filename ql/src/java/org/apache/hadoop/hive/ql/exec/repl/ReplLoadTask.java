@@ -17,10 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import com.google.common.collect.Collections2;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
@@ -53,6 +55,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
@@ -91,7 +94,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   }
 
   @Override
-  protected int execute(DriverContext driverContext) {
+  public int execute(DriverContext driverContext) {
     Task<? extends Serializable> rootTask = work.getRootTask();
     if (rootTask != null) {
       rootTask.setChildTasks(null);
@@ -149,9 +152,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         switch (next.eventType()) {
         case Database:
           DatabaseEvent dbEvent = (DatabaseEvent) next;
-          dbTracker =
-              new LoadDatabase(context, dbEvent, work.dbNameToLoadIn, work.tableNameToLoadIn, loadTaskTracker)
-                  .tasks();
+          dbTracker = new LoadDatabase(context, dbEvent, work.dbNameToLoadIn, loadTaskTracker).tasks();
           loadTaskTracker.update(dbTracker);
           if (work.hasDbState()) {
             loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, context, scope));
@@ -174,8 +175,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
               listing before providing the lower level listing. This is also required such that
               the dbTracker /  tableTracker are setup correctly always.
            */
-          TableContext tableContext =
-              new TableContext(dbTracker, work.dbNameToLoadIn, work.tableNameToLoadIn);
+          TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn);
           TableEvent tableEvent = (TableEvent) next;
           LoadTable loadTable = new LoadTable(tableEvent, context, iterator.replLogger(),
                                               tableContext, loadTaskTracker);
@@ -215,8 +215,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
               hence we know here that the table should exist and there should be a lastPartitionName
           */
           PartitionEvent event = (PartitionEvent) next;
-          TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn,
-              work.tableNameToLoadIn);
+          TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn);
           LoadPartitions loadPartitions =
               new LoadPartitions(context, iterator.replLogger(), tableContext, loadTaskTracker,
                       event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated());
@@ -368,6 +367,35 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
   }
 
+  /**
+   * If replication policy is changed between previous and current load, then the excluded tables in
+   * the new replication policy will be dropped.
+   * @throws HiveException Failed to get/drop the tables.
+   */
+  private void dropTablesExcludedInReplScope(ReplScope replScope) throws HiveException {
+    // If all tables are included in replication scope, then nothing to be dropped.
+    if ((replScope == null) || replScope.includeAllTables()) {
+      return;
+    }
+
+    Hive db = getHive();
+    String dbName = replScope.getDbName();
+
+    // List all the tables that are excluded in the current repl scope.
+    Iterable<String> tableNames = Collections2.filter(db.getAllTables(dbName),
+        tableName -> {
+          assert(tableName != null);
+          return !tableName.toLowerCase().startsWith(
+                  SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase())
+                  && !replScope.tableIncludedInReplScope(tableName);
+        });
+    for (String table : tableNames) {
+      db.dropTable(dbName + "." + table, true);
+    }
+    LOG.info("Tables in the Database: {} that are excluded in the replication scope are dropped.",
+            dbName);
+  }
+
   private void createEndReplLogTask(Context context, Scope scope,
                                     ReplLogger replLogger) throws SemanticException {
     Map<String, String> dbProps;
@@ -461,13 +489,14 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         work.needCleanTablesFromBootstrap = false;
       }
 
+      // If replication policy is changed between previous and current repl load, then drop the tables
+      // that are excluded in the new replication policy.
+      dropTablesExcludedInReplScope(work.currentReplScope);
+
       IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
 
       // If incremental events are already applied, then check and perform if need to bootstrap any tables.
       if (!builder.hasMoreWork() && !work.getPathsToCopyIterator().hasNext()) {
-        // No need to set incremental load pending flag for external tables as the files will be copied to the same path
-        // for external table unlike migrated txn tables. Currently bootstrap during incremental is done only for
-        // external tables.
         if (work.hasBootstrapLoadTasks()) {
           LOG.debug("Current incremental dump have tables to be bootstrapped. Switching to bootstrap "
                   + "mode after applying all events.");

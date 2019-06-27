@@ -292,10 +292,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer
-                  filterExpr: ((c_preferred_cust_flag = 'Y') and c_current_addr_sk is not null) (type: boolean)
+                  filterExpr: (c_current_addr_sk is not null and (c_preferred_cust_flag = 'Y')) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((c_preferred_cust_flag = 'Y') and c_current_addr_sk is not null) (type: boolean)
+                    predicate: (c_current_addr_sk is not null and (c_preferred_cust_flag = 'Y')) (type: boolean)
                     Statistics: Num rows: 40000000 Data size: 34400807926 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_current_addr_sk (type: int)

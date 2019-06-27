@@ -184,10 +184,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
-                  filterExpr: (((ss_sales_price >= 100) or (ss_sales_price <= 150) or (ss_sales_price >= 50) or (ss_sales_price <= 100) or (ss_sales_price >= 150) or (ss_sales_price <= 200)) and ((ss_net_profit >= 0) or (ss_net_profit <= 2000) or (ss_net_profit >= 150) or (ss_net_profit <= 3000) or (ss_net_profit >= 50) or (ss_net_profit <= 25000)) and (ss_sales_price BETWEEN 100 AND 150 or ss_sales_price BETWEEN 50 AND 100 or ss_sales_price BETWEEN 150 AND 200) and ss_store_sk is not null and ss_cdemo_sk is not null and ss_addr_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+                  filterExpr: ((ss_sales_price BETWEEN 100 AND 150 or ss_sales_price BETWEEN 50 AND 100 or ss_sales_price BETWEEN 150 AND 200) and ss_store_sk is not null and ss_cdemo_sk is not null and ss_addr_sk is not null and ss_sold_date_sk is not null and ((ss_sales_price >= 100) or (ss_sales_price <= 150) or (ss_sales_price >= 50) or (ss_sales_price <= 100) or (ss_sales_price >= 150) or (ss_sales_price <= 200)) and ((ss_net_profit >= 0) or (ss_net_profit <= 2000) or (ss_net_profit >= 150) or (ss_net_profit <= 3000) or (ss_net_profit >= 50) or (ss_net_profit <= 25000))) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((ss_net_profit >= 0) or (ss_net_profit <= 2000) or (ss_net_profit >= 150) or (ss_net_profit <= 3000) or (ss_net_profit >= 50) or (ss_net_profit <= 25000)) and ((ss_sales_price >= 100) or (ss_sales_price <= 150) or (ss_sales_price >= 50) or (ss_sales_price <= 100) or (ss_sales_price >= 150) or (ss_sales_price <= 200)) and (ss_sales_price BETWEEN 100 AND 150 or ss_sales_price BETWEEN 50 AND 100 or ss_sales_price BETWEEN 150 AND 200) and ss_addr_sk is not null and ss_cdemo_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
+                    predicate: ((ss_sales_price BETWEEN 100 AND 150 or ss_sales_price BETWEEN 50 AND 100 or ss_sales_price BETWEEN 150 AND 200) and ss_store_sk is not null and ss_cdemo_sk is not null and ss_addr_sk is not null and ss_sold_date_sk is not null and ((ss_sales_price >= 100) or (ss_sales_price <= 150) or (ss_sales_price >= 50) or (ss_sales_price <= 100) or (ss_sales_price >= 150) or (ss_sales_price <= 200)) and ((ss_net_profit >= 0) or (ss_net_profit <= 2000) or (ss_net_profit >= 150) or (ss_net_profit <= 3000) or (ss_net_profit >= 50) or (ss_net_profit <= 25000))) (type: boolean)
                     Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_cdemo_sk (type: int), ss_addr_sk (type: int), ss_store_sk (type: int), ss_quantity (type: int), ss_net_profit BETWEEN 0 AND 2000 (type: boolean), ss_net_profit BETWEEN 150 AND 3000 (type: boolean), ss_net_profit BETWEEN 50 AND 25000 (type: boolean)
@@ -204,10 +204,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_demographics
-                  filterExpr: ((cd_marital_status = 'M') and (cd_education_status = '4 yr Degree') and cd_demo_sk is not null) (type: boolean)
+                  filterExpr: (cd_demo_sk is not null and (cd_marital_status = 'M') and (cd_education_status = '4 yr Degree')) (type: boolean)
                   Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((cd_education_status = '4 yr Degree') and (cd_marital_status = 'M') and cd_demo_sk is not null) (type: boolean)
+                    predicate: (cd_demo_sk is not null and (cd_marital_status = 'M') and (cd_education_status = '4 yr Degree')) (type: boolean)
                     Statistics: Num rows: 465450 Data size: 179296539 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cd_demo_sk (type: int)
@@ -242,10 +242,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
-                  filterExpr: ((ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV') and (ca_country = 'United States') and ca_address_sk is not null) (type: boolean)
+                  filterExpr: (ca_address_sk is not null and (ca_country = 'United States') and (ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV')) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ca_country = 'United States') and (ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV') and ca_address_sk is not null) (type: boolean)
+                    predicate: (ca_address_sk is not null and (ca_country = 'United States') and (ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV')) (type: boolean)
                     Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ca_address_sk (type: int), (ca_state) IN ('KY', 'GA', 'NM') (type: boolean), (ca_state) IN ('MT', 'OR', 'IN') (type: boolean), (ca_state) IN ('WI', 'MO', 'WV') (type: boolean)

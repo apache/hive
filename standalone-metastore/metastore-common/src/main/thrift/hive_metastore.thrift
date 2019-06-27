@@ -967,7 +967,6 @@ struct ReplLastIdInfo {
     3: optional string table,
     4: optional string catalog,
     5: optional list<string> partitionList,
-    6: optional bool needUpdateDBReplId,
 }
 
 struct CommitTxnRequest {

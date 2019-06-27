@@ -67,7 +67,8 @@ class AddPartitionHandler extends AbstractEventHandler {
     }
 
     final Table qlMdTable = new Table(tobj);
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true, withinContext.hiveConf)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true,
+            withinContext.getTablesForBootstrap(), withinContext.oldReplScope,  withinContext.hiveConf)) {
       return;
     }
 

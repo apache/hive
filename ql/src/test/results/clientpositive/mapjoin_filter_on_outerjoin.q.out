@@ -76,7 +76,7 @@ STAGE PLANS:
             filterExpr: ((key < 300) and (key < 10)) (type: boolean)
             Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key < 10) and (key < 300)) (type: boolean)
+              predicate: ((key < 300) and (key < 10)) (type: boolean)
               Statistics: Num rows: 2 Data size: 350 Basic stats: COMPLETE Column stats: COMPLETE
               HashTable Sink Operator
                 filter predicates:
@@ -238,7 +238,7 @@ STAGE PLANS:
             filterExpr: ((key < 300) and (key < 10)) (type: boolean)
             Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key < 10) and (key < 300)) (type: boolean)
+              predicate: ((key < 300) and (key < 10)) (type: boolean)
               Statistics: Num rows: 2 Data size: 350 Basic stats: COMPLETE Column stats: COMPLETE
               HashTable Sink Operator
                 filter predicates:

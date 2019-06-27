@@ -1,10 +1,12 @@
 PREHOOK: query: CREATE TABLE bucket_small_n15 (key string, value string) partitioned by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_small_n15
 POSTHOOK: query: CREATE TABLE bucket_small_n15 (key string, value string) partitioned by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_small_n15
@@ -26,10 +28,12 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small_n15@ds=2008-04-08
 PREHOOK: query: CREATE TABLE bucket_big_n15 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_big_n15
 POSTHOOK: query: CREATE TABLE bucket_big_n15 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_big_n15
@@ -101,11 +105,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket_big_n15@ds=2008-04-09
 PREHOOK: query: CREATE TABLE bucket_medium (key string, value string) partitioned by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 3 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_medium
 POSTHOOK: query: CREATE TABLE bucket_medium (key string, value string) partitioned by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 3 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_medium
@@ -235,7 +241,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -314,7 +320,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -364,7 +370,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -444,7 +450,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -523,7 +529,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
-                      bucketing_version 2
+                      bucketing_version 1
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 

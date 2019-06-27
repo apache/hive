@@ -639,11 +639,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: stats_part
-            Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key2 (type: int)
               outputColumnNames: key2
-              Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(key2)
                 minReductionHashAggr: 0.99
