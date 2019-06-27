@@ -106,7 +106,7 @@ public class TestHiveCredentialProviders {
     Assert.assertEquals(HIVE_JOB_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
         jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
-    Assert.assertTrue(jobConf.getStringCollection("mapreduce.job.redacted-properties")
+    Assert.assertTrue(jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
         .containsAll(REDACTED_PROPERTIES));
   }
 
@@ -133,7 +133,7 @@ public class TestHiveCredentialProviders {
     Assert.assertEquals(HADOOP_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
         jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
-    Assert.assertTrue(jobConf.getStringCollection("mapreduce.job.redacted-properties")
+    Assert.assertTrue(jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
         .containsAll(REDACTED_PROPERTIES));
   }
 
@@ -157,7 +157,7 @@ public class TestHiveCredentialProviders {
         HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
     REDACTED_PROPERTIES.forEach(property -> Assert.assertFalse(
-        jobConf.getStringCollection("mapreduce.job.redacted-properties")
+        jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
             .contains(property)));
   }
 
@@ -182,7 +182,7 @@ public class TestHiveCredentialProviders {
     Assert.assertEquals(HADOOP_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
         jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
-    Assert.assertTrue(jobConf.getStringCollection("mapreduce.job.redacted-properties")
+    Assert.assertTrue(jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
         .containsAll(REDACTED_PROPERTIES));
   }
 
@@ -202,7 +202,7 @@ public class TestHiveCredentialProviders {
     Assert.assertNull(jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV));
 
     REDACTED_PROPERTIES.forEach(property -> Assert.assertFalse(
-        jobConf.getStringCollection("mapreduce.job.redacted-properties")
+        jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
             .contains(property)));
 
     resetConfig();
@@ -216,7 +216,7 @@ public class TestHiveCredentialProviders {
     Assert.assertNull(jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV));
 
     REDACTED_PROPERTIES.forEach(property -> Assert.assertFalse(
-        jobConf.getStringCollection("mapreduce.job.redacted-properties")
+        jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
             .contains(property)));
   }
 
@@ -241,7 +241,7 @@ public class TestHiveCredentialProviders {
     Assert.assertEquals(HADOOP_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
         jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
-    Assert.assertTrue(jobConf.getStringCollection("mapreduce.job.redacted-properties")
+    Assert.assertTrue(jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
         .containsAll(REDACTED_PROPERTIES));
   }
 
@@ -265,7 +265,7 @@ public class TestHiveCredentialProviders {
         HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
     REDACTED_PROPERTIES.forEach(property -> Assert.assertFalse(
-        jobConf.getStringCollection("mapreduce.job.redacted-properties")
+        jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
             .contains(property)));
   }
 

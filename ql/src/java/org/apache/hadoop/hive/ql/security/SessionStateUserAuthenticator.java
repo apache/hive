@@ -23,8 +23,6 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 
 /**
@@ -39,9 +37,9 @@ public class SessionStateUserAuthenticator implements HiveAuthenticationProvider
 
   @Override
   public List<String> getGroupNames() {
-    // In case of embedded hs2, sessionState.getUserName()=null
+       // In case of embedded hs2, sessionState.getUserName()=null
     if (groups == null && sessionState.getUserName() != null) {
-      groups = ShimLoader.getHadoopShims().getGroups(UserGroupInformation.createRemoteUser(sessionState.getUserName()));
+      groups = UserGroupInformation.createRemoteUser(sessionState.getUserName()).getGroups();
     }
     return groups;
   }

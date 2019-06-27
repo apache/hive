@@ -1333,12 +1333,6 @@
 
   <profiles>
     <profile>
-      <id>hadoop-2.7</id>
-      <properties>
-        <hadoop.version>2.7.3.2.6.5.0-SNAPSHOT</hadoop.version>
-      </properties>
-    </profile>
-    <profile>
       <id>thriftif</id>
       <build>
         <plugins>
