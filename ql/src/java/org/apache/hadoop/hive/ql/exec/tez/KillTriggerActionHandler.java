@@ -40,6 +40,9 @@ public class KillTriggerActionHandler implements TriggerActionHandler<TezSession
         case KILL_QUERY:
           TezSession sessionState = entry.getKey();
           try {
+            SessionState ss = new SessionState(new HiveConf());
+            ss.setIsHiveServerQuery(true);
+            SessionState.start(ss);
             // then session might have been released to pool or closed already
             boolean wasKilled =  sessionState.killQuery(entry.getValue().getViolationMsg());
             if (!wasKilled) {
