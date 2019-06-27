@@ -10001,25 +10001,24 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void lockNotificationSequenceForUpdate() throws MetaException {
-    final String lockingQuery;
-    if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY) {
+    if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY && directSql != null) {
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
       // only one row in the table, this shouldn't cause any performance degradation. Also we not
       // suggest Derby to be used in production so that's fine.
-      lockingQuery = "lock table \"NOTIFICATION_SEQUENCE\" in exclusive mode";
+      directSql.lockDbTable("NOTIFICATION_SEQUENCE");
     } else {
       String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
-      lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
+      String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
+      new RetryingExecutor(conf, () -> {
+        prepareQuotes();
+        Query query = pm.newQuery("javax.jdo.query.SQL", lockingQuery);
+        query.setUnique(true);
+        // only need to execute it to get db Lock
+        query.execute();
+        query.closeAll();
+      }).run();
     }
-    new RetryingExecutor(conf, () -> {
-      prepareQuotes();
-      Query query = pm.newQuery("javax.jdo.query.SQL", lockingQuery);
-      query.setUnique(true);
-      // only need to execute it to get db Lock
-      query.execute();
-      query.closeAll();
-    }).run();
   }
 
   static class RetryingExecutor {
