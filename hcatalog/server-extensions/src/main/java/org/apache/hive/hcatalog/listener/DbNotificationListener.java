@@ -448,7 +448,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     public String next() {
       String result;
       try {
-        result = ReplChangeManager.encodeFileUri(files.get(i), chksums != null ? chksums.get(i) : null,
+        result = ReplChangeManager.encodeFileUri(files.get(i), (chksums != null && !chksums.isEmpty()) ? chksums.get(i) : null,
                 subDirs != null ? subDirs.get(i) : null);
       } catch (IOException e) {
         // File operations failed
