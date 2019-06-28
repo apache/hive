@@ -63,7 +63,7 @@ public class TestHostAffinitySplitLocationProvider {
   @Test (timeout = 5000)
   public void testNonFileSplits() throws IOException {
 
-    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(executorLocations, 1);
+    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(executorLocations, true,1);
 
     InputSplit inputSplit1 = createMockInputSplit(new String[] {locations.get(0), locations.get(1)});
     InputSplit inputSplit2 = createMockInputSplit(new String[] {locations.get(2), locations.get(3)});
@@ -74,7 +74,7 @@ public class TestHostAffinitySplitLocationProvider {
 
   @Test (timeout = 5000)
   public void testOrcSplitsBasic() throws IOException {
-    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(executorLocations, 1);
+    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(executorLocations, true, 1);
 
     InputSplit os1 = createMockFileSplit(true, "path1", 0, 1000, new String[] {locations.get(0), locations.get(1)});
     InputSplit os2 = createMockFileSplit(true, "path2", 0, 2000, new String[] {locations.get(2), locations.get(3)});
@@ -110,7 +110,7 @@ public class TestHostAffinitySplitLocationProvider {
         movedRatioWorst = 0, newRatioWorst = Double.MAX_VALUE;
     for (int locs = MIN_LOC_COUNT; locs <= locations.size(); ++locs) {
       List<String> partLoc = locations.subList(0, locs);
-      HostAffinitySplitLocationProvider lp = new HostAffinitySplitLocationProvider(partLoc, 1);
+      HostAffinitySplitLocationProvider lp = new HostAffinitySplitLocationProvider(partLoc, true, 1);
       int moved = 0, newLoc = 0;
       String newNode = partLoc.get(locs - 1);
       for (int splitIx = 0; splitIx < splits.length; ++splitIx) {
@@ -209,14 +209,14 @@ public class TestHostAffinitySplitLocationProvider {
     Mockito.when(partLocs.get(Mockito.anyInt())).thenAnswer(new Answer<String>() {
       @Override
       public String answer(InvocationOnMock invocation) throws Throwable {
-        return (state.getAndIncrement() == missCount) ? "not-null" : null;
+        return (state.getAndIncrement() == missCount) ? invocation.getArguments()[0].toString() : null;
       }
     });
     int[] hitCounts = new int[locs];
     for (int splitIx = 0; splitIx < splits.length; ++splitIx) {
       state.set(0);
-      int index = HostAffinitySplitLocationProvider.determineLocation(partLocs,
-          splits[splitIx].getPath().toString(), splits[splitIx].getStart(), null);
+      int index = Integer.valueOf(HostAffinitySplitLocationProvider.determineLocation(partLocs, 1,
+          splits[splitIx].getPath().toString(), splits[splitIx].getStart(), null)[0]);
       ++hitCounts[index];
     }
     SummaryStatistics ss = new SummaryStatistics();
@@ -257,7 +257,7 @@ public class TestHostAffinitySplitLocationProvider {
 
   @Test (timeout = 5000)
   public void testOrcSplitsLocationAffinity() throws IOException {
-    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(executorLocations, 1);
+    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(executorLocations, true, 1);
 
     // Same file, offset, different lengths
     InputSplit os11 = createMockFileSplit(true, "path1", 0, 15000, new String[] {locations.get(0), locations.get(1)});
@@ -302,7 +302,7 @@ public class TestHostAffinitySplitLocationProvider {
   @Test (timeout = 90000000)
   public void testDFSLocalityAwareAffinity() throws IOException {
     List<String> someLocations = locations.subList(0, 2); // 0,1 locations
-    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(someLocations, 1);
+    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(someLocations, true, 1);
 
     // Different base localities
     InputSplit os1 = createMockFileSplit(true, "path1", 0, 15000, new String[] {locations.get(0), locations.get(1)}); // 0 or 1
@@ -340,18 +340,25 @@ public class TestHostAffinitySplitLocationProvider {
     assertArrayEquals(retLoc4, againLoc4);
   }
 
-  @Test (timeout = 100000000)
+  @Test (timeout = 10000)
   public void testMultipleHostAffinity() throws IOException {
     List<String> someLocations = locations.subList(0, 3); // 0,1,2 locations
-    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(someLocations, 2);
+    HostAffinitySplitLocationProvider locationProvider =
+        new HostAffinitySplitLocationProvider(someLocations, true, 2);
 
     // Different base localities
-    InputSplit os1 = createMockFileSplit(true, "path1", 10, 20, new String[] {locations.get(0), locations.get(1), locations.get(2)});
-    InputSplit os2 = createMockFileSplit(true, "path1", 10, 20, new String[] {locations.get(0), locations.get(1), locations.get(3)});
-    InputSplit os3 = createMockFileSplit(true, "path1", 20, 30, new String[] {locations.get(0), locations.get(1)});
-    InputSplit os4 = createMockFileSplit(true, "path1", 30, 40, new String[] {locations.get(0), locations.get(2)});
-    InputSplit os5 = createMockFileSplit(true, "path1", 40, 50, new String[] {locations.get(1), locations.get(3)});
-    InputSplit os6 = createMockFileSplit(true, "path1", 50, 60, new String[] {locations.get(3)});
+    InputSplit os1 = createMockFileSplit(true, "path1", 10, 20,
+        new String[] {locations.get(0), locations.get(1), locations.get(2)});
+    InputSplit os2 = createMockFileSplit(true, "path1", 10, 20,
+        new String[] {locations.get(0), locations.get(1), locations.get(3)});
+    InputSplit os3 = createMockFileSplit(true, "path1", 20, 30,
+        new String[] {locations.get(0), locations.get(1)});
+    InputSplit os4 = createMockFileSplit(true, "path1", 30, 40,
+        new String[] {locations.get(0), locations.get(2)});
+    InputSplit os5 = createMockFileSplit(true, "path1", 40, 50,
+        new String[] {locations.get(1), locations.get(3)});
+    InputSplit os6 = createMockFileSplit(true, "path1", 50, 60,
+        new String[] {locations.get(3)});
 
     String[] retLoc1 = locationProvider.getLocations(os1);
     String[] retLoc2 = locationProvider.getLocations(os2);
@@ -398,7 +405,44 @@ public class TestHostAffinitySplitLocationProvider {
     assertArrayEquals(retLoc6, againLoc6);
   }
 
-  private InputSplit createMockInputSplit(String[] locations) throws IOException {
+  @Test (timeout = 10000)
+  public void testLocalityFalse() throws IOException {
+    List<String> someLocations = locations.subList(0, 2); // 0,1 locations
+    HostAffinitySplitLocationProvider locationProvider =
+        new HostAffinitySplitLocationProvider(someLocations, false, 1);
+
+    // Different base localities
+    InputSplit os1 = createMockFileSplit(true, "path1", 10, 20, new String[]{locations.get(0)});
+    InputSplit os2 = createMockFileSplit(true, "path1", 10, 20, new String[]{locations.get(1)});
+    InputSplit os3 = createMockFileSplit(true, "path1", 20, 30, new String[]{locations.get(2)});
+
+    String[] retLoc1 = locationProvider.getLocations(os1);
+    String[] retLoc2 = locationProvider.getLocations(os2);
+    String[] retLoc3 = locationProvider.getLocations(os3);
+
+    assertEquals(1, retLoc1.length);
+    assertTrue(someLocations.contains(retLoc1[0]));
+
+    assertEquals(1, retLoc2.length);
+    assertTrue(someLocations.contains(retLoc2[0]));
+
+    assertEquals(1, retLoc3.length);
+    assertTrue(someLocations.contains(retLoc3[0]));
+
+    // All of the locations should be the same
+    assertTrue(retLoc1[0].equals(retLoc2[0]));
+    assertTrue(retLoc1[0].equals(retLoc3[0]));
+
+    String[] againLoc1 = locationProvider.getLocations(os1);
+    String[] againLoc2 = locationProvider.getLocations(os2);
+    String[] againLoc3 = locationProvider.getLocations(os3);
+
+    assertArrayEquals(retLoc1, againLoc1);
+    assertArrayEquals(retLoc2, againLoc2);
+    assertArrayEquals(retLoc3, againLoc3);
+  }
+
+    private InputSplit createMockInputSplit(String[] locations) throws IOException {
     InputSplit inputSplit = mock(InputSplit.class);
     doReturn(locations).when(inputSplit).getLocations();
     return inputSplit;

@@ -4440,9 +4440,14 @@ public class HiveConf extends Configuration {
         "preferring one of the locations provided by the split itself. If there is no llap daemon " +
         "running on any of those locations (or on the cloud), fall back to a cache affinity to" +
         " an LLAP node. This is effective only if hive.execution.mode is llap."),
+    LLAP_CLIENT_CONSISTENT_SPLITS_PREFER_LOCALITY("hive.llap.client.consistent.splits.prefer.locality", true,
+        "If this option is set to true then the HDFS locality will be considered when generating\n" +
+        "split targets. This could mean faster execution when cache miss on the other hand can\n" +
+        "cause imbalance in LlapDaemon usage if the data locality is skewed.\n" +
+        "This is effective only if hive.execution.mode is llap and hive.llap.client.consistent.splits is true."),
     LLAP_CLIENT_CONSISTENT_SPLITS_NUMBER("hive.llap.client.consistent.splits.number", 1,
-        "The number of the preferred locations to generate if hive.llap.client.consistent.splits\n" +
-        "is set. If multiple locations are generated and the first node is unavailable then the\n" +
+        "The number of the locations to generate if hive.llap.client.consistent.splits is set.\b" +
+        "If multiple locations are generated and the first node is unavailable then the\n" +
         "scheduler will not wait hive.llap.task.scheduler.locality.delay before assigning the\n" +
         "task to the next preferred LLAP node.\n" +
         "This is effective only if hive.execution.mode is llap."),

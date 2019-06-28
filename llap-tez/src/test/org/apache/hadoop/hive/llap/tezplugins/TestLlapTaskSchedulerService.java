@@ -957,23 +957,20 @@ public class TestLlapTaskSchedulerService {
         new TestTaskSchedulerServiceWrapper(200000L, hostsKnown, 1, 0, 10000L, true);
     LlapTaskSchedulerServiceForTestControlled.DelayedTaskSchedulerCallableControlled
         delayedTaskSchedulerCallableControlled =
-        (LlapTaskSchedulerServiceForTestControlled.DelayedTaskSchedulerCallableControlled) tsWrapper.ts.delayedTaskSchedulerCallable;
+        (LlapTaskSchedulerServiceForTestControlled.DelayedTaskSchedulerCallableControlled)
+            tsWrapper.ts.delayedTaskSchedulerCallable;
     ControlledClock clock = tsWrapper.getClock();
     clock.setTime(clock.getTime());
 
     try {
       TezTaskAttemptID task1 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
       Object clientCookie1 = "cookie1";
-
       TezTaskAttemptID task2 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
       Object clientCookie2 = "cookie2";
-
       TezTaskAttemptID task3 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
       Object clientCookie3 = "cookie3";
-
       TezTaskAttemptID task4 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
       Object clientCookie4 = "cookie4";
-
       TezTaskAttemptID task5 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
       Object clientCookie5 = "cookie5";
 
@@ -1095,7 +1092,6 @@ public class TestLlapTaskSchedulerService {
       assertEquals(task5, argumentCaptor.getAllValues().get(0));
       // 1st task requested host1, got host1
       assertEquals(HOST3, argumentCaptor2.getAllValues().get(0).getNodeId().getHost());
-
     } finally {
       tsWrapper.shutdown();
     }

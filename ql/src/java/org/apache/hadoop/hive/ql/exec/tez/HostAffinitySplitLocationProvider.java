@@ -52,18 +52,21 @@ public class HostAffinitySplitLocationProvider implements SplitLocationProvider 
 
   private final List<String> locations;
   private final Set<String> locationSet;
+  private final boolean useLocality;
   private final int numberOfLocations;
 
-  public HostAffinitySplitLocationProvider(List<String> knownLocations, int numberOfLocations) {
+  public HostAffinitySplitLocationProvider(List<String> knownLocations, boolean useLocality,
+      int numberOfLocations) {
     Preconditions.checkState(knownLocations != null && !knownLocations.isEmpty(),
         HostAffinitySplitLocationProvider.class.getName() +
             " needs at least 1 location to function");
-    Preconditions.checkArgument(numberOfLocations >= 0,
+    Preconditions.checkArgument(numberOfLocations > 0,
         HostAffinitySplitLocationProvider.class.getName() +
-            " needs numberOfLocations at least set to 0. It is set to [" +
+            " needs numberOfLocations greater than 0. It is set to [" +
             numberOfLocations + "] now.");
     this.locations = knownLocations;
     this.locationSet = new HashSet<String>(knownLocations);
+    this.useLocality = useLocality;
     this.numberOfLocations = numberOfLocations;
   }
 
@@ -78,17 +81,9 @@ public class HostAffinitySplitLocationProvider implements SplitLocationProvider 
     FileSplit fsplit = (FileSplit) split;
     String splitDesc = "Split at " + fsplit.getPath() + " with offset= " + fsplit.getStart()
         + ", length=" + fsplit.getLength();
-    List<String> preferredLocations = new ArrayList<>(preferLocations(fsplit));
-    List<String> finalLocations = new ArrayList<>(numberOfLocations);
-    // Generate new preferred locations until we need more, or we do not have any preferred
-    // location left
-    while (finalLocations.size() < numberOfLocations && preferredLocations.size() > 0) {
-      String nextLocation = preferredLocations.get(determineLocation(preferredLocations,
-          fsplit.getPath().toString(), fsplit.getStart(), splitDesc));
-      finalLocations.add(nextLocation);
-      preferredLocations.remove(nextLocation);
-    }
-    return finalLocations.toArray(new String[0]);
+    List<String> locationsToCheck = (useLocality ? preferLocations(fsplit) : locations);
+    return determineLocation(locationsToCheck, numberOfLocations, fsplit.getPath().toString(),
+        fsplit.getStart(), splitDesc);
   }
 
   private List<String> preferLocations(FileSplit fsplit) throws IOException {
@@ -111,35 +106,42 @@ public class HostAffinitySplitLocationProvider implements SplitLocationProvider 
   }
 
   @VisibleForTesting
-  public static int determineLocation(
-      List<String> locations, String path, long start, String desc) {
-    if (locations.size() == 1) {
+  public static String[] determineLocation(List<String> locations, int numberOfLocations,
+      String path, long start, String desc) {
+    if (locations.size() <= numberOfLocations) {
       // skip everything, this is simple
-      return 0;
+      return locations.toArray(new String[0]);
     }
+    List<String> foundLocations = new ArrayList<>(numberOfLocations);
     byte[] bytes = getHashInputForSplit(path, start);
     long hash1 = hash1(bytes);
     int index = Hashing.consistentHash(hash1, locations.size());
     String location = locations.get(index);
+    if (location != null) {
+      foundLocations.add(location);
+    }
     if (LOG.isDebugEnabled()) {
       LOG.debug(desc + " mapped to index=" + index + ", location=" + location);
     }
     int iter = 1;
     long hash2 = 0;
     // Since our probing method is totally bogus, give up after some time.
-    while (location == null && iter < locations.size() * 2) {
+    while (foundLocations.size() < numberOfLocations && iter < locations.size() * 2) {
       if (iter == 1) {
         hash2 = hash2(bytes);
       }
       // Note that this is not real double hashing since we have consistent hash on top.
       index = Hashing.consistentHash(hash1 + iter * hash2, locations.size());
       location = locations.get(index);
+      if (location != null && !foundLocations.contains(location)) {
+        foundLocations.add(location);
+      }
       if (LOG.isDebugEnabled()) {
         LOG.debug(desc + " remapped to index=" + index + ", location=" + location);
       }
       ++iter;
     }
-    return index;
+    return foundLocations.toArray(new String[0]);
   }
 
   private static byte[] getHashInputForSplit(String path, long start) {
