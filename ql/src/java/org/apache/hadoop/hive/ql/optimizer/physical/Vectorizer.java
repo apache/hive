@@ -3614,7 +3614,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     // For now, we don't support joins on or using DECIMAL_64.
     VectorExpression[] allBigTableValueExpressions =
-        vContext.getVectorExpressionsUpConvertDecimal64(bigTableExprs);
+        vContext.getVectorExpressions(bigTableExprs);
 
     boolean isFastHashTableEnabled =
         HiveConf.getBoolVar(hiveConf,
