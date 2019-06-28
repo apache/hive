@@ -75,7 +75,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-fi
         HiveProject(s_store_sk=[$0], s_store_name=[$5])
           HiveFilter(condition=[IS NOT NULL($0)])
             HiveTableScan(table=[[default, store]], table:alias=[store])
-        HiveJoin(condition=[AND(=($3, $0), <=($2, *(0.1, $4)))], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[AND(=($3, $0), <=($2, *(0.1:DECIMAL(2, 1), $4)))], joinType=[inner], algorithm=[none], cost=[not available])
           HiveProject(ss_store_sk=[$0], ss_item_sk=[$1], $f2=[$2])
             HiveFilter(condition=[IS NOT NULL($2)])
               HiveProject(ss_store_sk=[$1], ss_item_sk=[$0], $f2=[$2])

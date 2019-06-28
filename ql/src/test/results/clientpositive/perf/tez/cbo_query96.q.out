@@ -55,7 +55,7 @@ HiveProject(_o__c0=[$0])
             HiveProject(hd_demo_sk=[$0], hd_dep_count=[CAST(5):INTEGER])
               HiveFilter(condition=[AND(=($3, 5), IS NOT NULL($0))])
                 HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
-          HiveProject(s_store_sk=[$0], s_store_name=[CAST(_UTF-16LE'ese'):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" COLLATE "ISO-8859-1$en_US$primary"])
+          HiveProject(s_store_sk=[$0], s_store_name=[CAST(_UTF-16LE'ese':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
             HiveFilter(condition=[AND(=($5, _UTF-16LE'ese'), IS NOT NULL($0))])
               HiveTableScan(table=[[default, store]], table:alias=[store])
 

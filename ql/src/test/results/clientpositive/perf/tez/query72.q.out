@@ -164,7 +164,7 @@ Stage-0
                                               Select Operator [SEL_168] (rows=73049 width=98)
                                                 Output:["_col0","_col1"]
                                                 Filter Operator [FIL_167] (rows=73049 width=98)
-                                                  predicate:(d_date is not null and d_date_sk is not null)
+                                                  predicate:(UDFToDouble(d_date) is not null and d_date_sk is not null)
                                                   TableScan [TS_24] (rows=73049 width=98)
                                                     default@date_dim,d3,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_date"]
                                           <-Reducer 14 [SIMPLE_EDGE]
@@ -234,7 +234,7 @@ Stage-0
                                                                   Select Operator [SEL_153] (rows=652 width=106)
                                                                     Output:["_col0","_col1","_col2"]
                                                                     Filter Operator [FIL_152] (rows=652 width=106)
-                                                                      predicate:((d_year = 2001) and d_date is not null and d_date_sk is not null and d_week_seq is not null)
+                                                                      predicate:((d_year = 2001) and UDFToDouble(d_date) is not null and d_date_sk is not null and d_week_seq is not null)
                                                                       TableScan [TS_9] (rows=73049 width=106)
                                                                         default@date_dim,d1,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_date","d_week_seq","d_year"]
                                                               <-Map 9 [SIMPLE_EDGE] vectorized
