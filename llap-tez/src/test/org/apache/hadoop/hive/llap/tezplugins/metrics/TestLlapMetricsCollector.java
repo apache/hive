@@ -78,7 +78,8 @@ public class TestLlapMetricsCollector {
     when(mockConf.get(HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS.varname,
             HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS.defaultStrVal)).thenReturn("30000ms");
     when(mockConf.get(HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER.varname,
-        HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER.defaultStrVal)).thenReturn(MockListener.class.getName());
+        HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER.defaultStrVal))
+          .thenReturn(MockListener.class.getName());
     when(mockClientFactory.create(any(LlapServiceInstance.class))).thenReturn(mockClient);
     when(mockClient.getDaemonMetrics(
             any(RpcController.class),
