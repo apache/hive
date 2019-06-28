@@ -985,6 +985,7 @@ WITH SERDEPROPERTIES (
   'hbase.columns.mapping'='cf:string', 
   'serialization.format'='1')
 TBLPROPERTIES (
+  'bucketing_version'='2', 
   'hbase.table.name'='hbase_table_0', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE IF EXISTS hbase_table_9

@@ -413,6 +413,7 @@ OUTPUTFORMAT
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_ext5 select * from src where key < 5
 PREHOOK: type: QUERY
@@ -495,6 +496,7 @@ OUTPUTFORMAT
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_db.wre1_ext6 select * from src where key < 5
 PREHOOK: type: QUERY
