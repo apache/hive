@@ -117,9 +117,11 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
                 // corresponding to tables which are included in both old and new policies should be dumped.
                 // If table is included in new policy but not in old policy, then it should be skipped.
                 // Those tables would be bootstrapped along with the current incremental
-                // replication dump.
+                // replication dump. If the table is in the list of tables to be bootstrapped, then
+                // it should be skipped.
                 return (ReplUtils.tableIncludedInReplScope(withinContext.replScope, writeEventInfo.getTable())
-                        && ReplUtils.tableIncludedInReplScope(withinContext.oldReplScope, writeEventInfo.getTable()));
+                        && ReplUtils.tableIncludedInReplScope(withinContext.oldReplScope, writeEventInfo.getTable())
+                        && !withinContext.getTablesForBootstrap().contains(writeEventInfo.getTable().toLowerCase()));
               })));
   }
 
