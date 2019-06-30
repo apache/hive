@@ -234,7 +234,7 @@ public class Utils {
         }
 
         // Tables in the list of tables to be bootstrapped should be skipped.
-        return (bootstrapTableList == null || !bootstrapTableList.contains(tableHandle.getTableName()));
+        return (bootstrapTableList == null || !bootstrapTableList.contains(tableHandle.getTableName().toLowerCase()));
       }
     }
     return true;
