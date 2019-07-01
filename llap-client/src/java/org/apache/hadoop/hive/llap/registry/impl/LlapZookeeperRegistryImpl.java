@@ -70,6 +70,7 @@ public class LlapZookeeperRegistryImpl
 
 
   private SlotZnode slotZnode;
+  private ServiceRecord srv;
 
   // to be used by clients of ServiceRegistry TODO: this is unnecessary
   private DynamicServiceInstanceSet instances;
@@ -124,7 +125,7 @@ public class LlapZookeeperRegistryImpl
 
   @Override
   public String register() throws IOException {
-    ServiceRecord srv = new ServiceRecord();
+    srv = new ServiceRecord();
     Endpoint rpcEndpoint = getRpcEndpoint();
     srv.addInternalEndpoint(rpcEndpoint);
     srv.addInternalEndpoint(getMngEndpoint());
@@ -132,13 +133,13 @@ public class LlapZookeeperRegistryImpl
     srv.addExternalEndpoint(getServicesEndpoint());
     srv.addInternalEndpoint(getOutputFormatEndpoint());
 
-    for (Map.Entry<String, String> kv : this.conf) {
-      if (kv.getKey().startsWith(HiveConf.PREFIX_LLAP)
-          || kv.getKey().startsWith(HiveConf.PREFIX_HIVE_LLAP)) {
-        // TODO: read this somewhere useful, like the task scheduler
-        srv.set(kv.getKey(), kv.getValue());
-      }
-    }
+    populateConfigValues(this.conf);
+    Map<String, String> capacityValues = new HashMap<>(2);
+    capacityValues.put(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS,
+            HiveConf.getVarWithoutType(conf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS));
+    capacityValues.put(LlapRegistryService.LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE,
+            HiveConf.getVarWithoutType(conf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE));
+    populateConfigValues(capacityValues.entrySet());
 
     String uniqueId = registerServiceRecord(srv);
     long znodeCreationTimeout = 120;
@@ -162,6 +163,22 @@ public class LlapZookeeperRegistryImpl
             "shuffle: {}, webui: {}, mgmt: {}, znodePath: {}", rpcEndpoint, getShuffleEndpoint(),
             getServicesEndpoint(), getMngEndpoint(), getRegistrationZnodePath());
     return uniqueId;
+  }
+
+  private void populateConfigValues(Iterable<Map.Entry<String, String>> attributes) {
+    for (Map.Entry<String, String> kv : attributes) {
+      if (kv.getKey().startsWith(HiveConf.PREFIX_LLAP)
+          || kv.getKey().startsWith(HiveConf.PREFIX_HIVE_LLAP)) {
+        // TODO: read this somewhere useful, like the task scheduler
+        srv.set(kv.getKey(), kv.getValue());
+      }
+    }
+  }
+
+  @Override
+  public void updateRegistration(Iterable<Map.Entry<String, String>> attributes) throws IOException {
+    populateConfigValues(attributes);
+    updateServiceRecord(this.srv, doCheckAcls, true);
   }
 
   @Override
@@ -197,7 +214,7 @@ public class LlapZookeeperRegistryImpl
       this.serviceAddress =
           RegistryTypeUtils.getAddressField(services.addresses.get(0), AddressTypes.ADDRESS_URI);
       String memStr = srv.get(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, "");
-      String coreStr = srv.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, "");
+      String coreStr = srv.get(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS, "");
       try {
         this.resource = Resource.newInstance(Integer.parseInt(memStr), Integer.parseInt(coreStr));
       } catch (NumberFormatException ex) {

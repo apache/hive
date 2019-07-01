@@ -112,6 +112,11 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     // nothing to unregister
   }
 
+  @Override
+  public void updateRegistration(Iterable attributes) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
   public static String getWorkerIdentity(String host) {
     // trigger clean errors for anyone who mixes up identity with hosts
     return "host-" + host;
