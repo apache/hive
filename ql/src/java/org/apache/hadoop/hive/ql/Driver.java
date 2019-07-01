@@ -1088,6 +1088,15 @@ public class Driver implements IDriver {
         additionalInputs.add(new ReadEntity(e.getTable()));
       }
     }
+    // skipping the auth check for the "CREATE DATABASE" operation if database already exists
+    // we know that if the database already exists then "CREATE DATABASE" operation will fail.
+    if(op.equals(HiveOperation.CREATEDATABASE)){
+      for (WriteEntity e : sem.getOutputs()) {
+        if(e.getType() == Entity.Type.DATABASE && db.databaseExists(e.getName().split(":")[1])){
+          return;
+        }
+      }
+    }
 
     Set<WriteEntity> additionalOutputs = new HashSet<WriteEntity>();
     for (WriteEntity e : sem.getOutputs()) {
