@@ -1989,7 +1989,7 @@ public class HiveConf extends Configuration {
         "Maximum fraction of heap that can be used by Parquet file writers in one task.\n" +
         "It is for avoiding OutOfMemory error in tasks. Work with Parquet 1.6.0 and above.\n" +
         "This config parameter is defined in Parquet, so that it does not start with 'hive.'."),
-    HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", false,
+    HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", true,
       "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
       "on reading parquet files from other tools"),
     HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION("hive.avro.timestamp.skip.conversion", false,
@@ -4349,6 +4349,10 @@ public class HiveConf extends Configuration {
         "Number of threads to use in LLAP task plugin client."),
     LLAP_DAEMON_DOWNLOAD_PERMANENT_FNS("hive.llap.daemon.download.permanent.fns", false,
         "Whether LLAP daemon should localize the resources for permanent UDFs."),
+    LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS("hive.llap.task.scheduler.am.collect.daemon.metrics.ms", "0ms",
+      new TimeValidator(TimeUnit.MILLISECONDS), "Collect llap daemon metrics in the AM every given milliseconds,\n" +
+      "so that the AM can use this information, to make better scheduling decisions.\n" +
+      "If it's set to 0, then the feature is disabled."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME("hive.llap.task.scheduler.am.registry", "llap",
       "AM registry name for LLAP task scheduler plugin to register with."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_PRINCIPAL("hive.llap.task.scheduler.am.registry.principal", "",

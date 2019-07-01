@@ -453,6 +453,7 @@ public class HttpServer {
   WebAppContext createWebAppContext(Builder b) {
     WebAppContext ctx = new WebAppContext();
     setContextAttributes(ctx.getServletContext(), b.contextAttrs);
+    ctx.getServletContext().getSessionCookieConfig().setHttpOnly(true);
     ctx.setDisplayName(b.name);
     ctx.setContextPath("/");
     ctx.setWar(appDir + "/" + b.name);
