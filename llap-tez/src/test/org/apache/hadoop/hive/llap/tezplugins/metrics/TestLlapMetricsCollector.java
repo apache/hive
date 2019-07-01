@@ -84,7 +84,7 @@ public class TestLlapMetricsCollector {
     when(mockClient.getDaemonMetrics(
             any(RpcController.class),
             any(LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto.class))).thenReturn(TEST_RESPONSE);
-    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory, null);
+    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory);
   }
 
   @Test(timeout = DEFAULT_TIMEOUT)
@@ -217,7 +217,7 @@ public class TestLlapMetricsCollector {
     // Given
     when(mockConf.get(HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS.varname,
             HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS.defaultStrVal)).thenReturn("0ms");
-    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory, null);
+    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory);
 
     // When
     collector.start();
@@ -261,7 +261,7 @@ public class TestLlapMetricsCollector {
     // Given
     when(mockConf.get(HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER.varname,
         HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER.defaultStrVal)).thenReturn("");
-    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory, null);
+    collector = new LlapMetricsCollector(mockConf, mockExecutor, mockClientFactory);
 
     LlapServiceInstance mockService1 = mock(LlapServiceInstance.class);
     when(mockService1.getWorkerIdentity()).thenReturn(TEST_IDENTITY_1);

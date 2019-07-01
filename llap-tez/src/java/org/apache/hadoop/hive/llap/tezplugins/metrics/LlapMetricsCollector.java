@@ -79,6 +79,12 @@ public class LlapMetricsCollector implements ServiceStateChangeListener,
 
   @VisibleForTesting
   LlapMetricsCollector(Configuration conf, ScheduledExecutorService scheduledMetricsExecutor,
+                       LlapManagementProtocolClientImplFactory clientFactory) {
+    this(conf, scheduledMetricsExecutor, clientFactory, null);
+  }
+
+  @VisibleForTesting
+  LlapMetricsCollector(Configuration conf, ScheduledExecutorService scheduledMetricsExecutor,
                        LlapManagementProtocolClientImplFactory clientFactory,
                        LlapRegistryService registry) {
     this.scheduledMetricsExecutor = scheduledMetricsExecutor;
