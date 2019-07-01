@@ -63,7 +63,8 @@ public class TestHostAffinitySplitLocationProvider {
   @Test (timeout = 5000)
   public void testNonFileSplits() throws IOException {
 
-    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(executorLocations, true,1);
+    HostAffinitySplitLocationProvider locationProvider =
+        new HostAffinitySplitLocationProvider(executorLocations, true, 1);
 
     InputSplit inputSplit1 = createMockInputSplit(new String[] {locations.get(0), locations.get(1)});
     InputSplit inputSplit2 = createMockInputSplit(new String[] {locations.get(2), locations.get(3)});
@@ -74,7 +75,8 @@ public class TestHostAffinitySplitLocationProvider {
 
   @Test (timeout = 5000)
   public void testOrcSplitsBasic() throws IOException {
-    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(executorLocations, true, 1);
+    HostAffinitySplitLocationProvider locationProvider =
+        new HostAffinitySplitLocationProvider(executorLocations, true, 1);
 
     InputSplit os1 = createMockFileSplit(true, "path1", 0, 1000, new String[] {locations.get(0), locations.get(1)});
     InputSplit os2 = createMockFileSplit(true, "path2", 0, 2000, new String[] {locations.get(2), locations.get(3)});
@@ -257,7 +259,8 @@ public class TestHostAffinitySplitLocationProvider {
 
   @Test (timeout = 5000)
   public void testOrcSplitsLocationAffinity() throws IOException {
-    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(executorLocations, true, 1);
+    HostAffinitySplitLocationProvider locationProvider =
+        new HostAffinitySplitLocationProvider(executorLocations, true, 1);
 
     // Same file, offset, different lengths
     InputSplit os11 = createMockFileSplit(true, "path1", 0, 15000, new String[] {locations.get(0), locations.get(1)});
@@ -442,7 +445,7 @@ public class TestHostAffinitySplitLocationProvider {
     assertArrayEquals(retLoc3, againLoc3);
   }
 
-    private InputSplit createMockInputSplit(String[] locations) throws IOException {
+  private InputSplit createMockInputSplit(String[] locations) throws IOException {
     InputSplit inputSplit = mock(InputSplit.class);
     doReturn(locations).when(inputSplit).getLocations();
     return inputSplit;
