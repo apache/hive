@@ -43,6 +43,10 @@ public final class CommandAuthorizer {
   /** @param command Passed so that authorization interface can provide more useful information in logs. */
   public static void doAuthorization(HiveOperation op, BaseSemanticAnalyzer sem, String command)
       throws HiveException, AuthorizationException {
+    if (skip(op, sem)) {
+      return;
+    }
+
     SessionState ss = SessionState.get();
 
     Set<ReadEntity> inputs = getInputs(sem);
@@ -53,6 +57,20 @@ public final class CommandAuthorizer {
     } else {
       CommandAuthorizerV2.doAuthorization(op, sem, ss, inputs, outputs, command);
     }
+  }
+
+  private static boolean skip(HiveOperation op, BaseSemanticAnalyzer sem) throws HiveException {
+    // skipping the auth check for the "CREATE DATABASE" operation if database already exists
+    // we know that if the database already exists then "CREATE DATABASE" operation will fail.
+    if (op == HiveOperation.CREATEDATABASE) {
+      for (WriteEntity e : sem.getOutputs()) {
+        if(e.getType() == Entity.Type.DATABASE && sem.getDb().databaseExists(e.getName().split(":")[1])){
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   private static Set<ReadEntity> getInputs(BaseSemanticAnalyzer sem) {
