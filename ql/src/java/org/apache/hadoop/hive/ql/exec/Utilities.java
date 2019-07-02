@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
 import java.beans.Expression;
@@ -218,6 +219,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 @SuppressWarnings({ "nls", "deprecation" })
 public final class Utilities {
+
+  /**
+   * Mapper to use to serialize/deserialize JSON objects ().
+   */
+  public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
   /**
    * A logger mostly used to trace-log the details of Hive table file operations. Filtering the
    * logs for FileOperations (with trace logs present) allows one to debug what Hive has done with
@@ -4447,6 +4454,22 @@ public final class Utilities {
     } else {
       logger.info("{} class path = unavailable for {}", prefix,
           loader == null ? "null" : loader.getClass().getSimpleName());
+    }
+  }
+
+  public static String encodeColumnNames(List<String> colNames) throws SemanticException {
+    try {
+      return JSON_MAPPER.writeValueAsString(colNames);
+    } catch (IOException e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static List<String> decodeColumnNames(String colNamesStr) throws SemanticException {
+    try {
+      return JSON_MAPPER.readValue(colNamesStr, List.class);
+    } catch (IOException e) {
+      throw new SemanticException(e);
     }
   }
 }

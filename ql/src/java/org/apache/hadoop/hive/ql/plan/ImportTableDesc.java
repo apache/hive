@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -101,6 +102,8 @@ public class ImportTableDesc {
                   null, // comment passed as table params
                   table.getParameters(),
                   table.getPartColNames(),
+                  null, // sort columns passed as table params (if present)
+                  null, // distribute columns passed as table params (if present)
                   false,false,false,false,
                   table.getSd().getInputFormat(),
                   table.getSd().getOutputFormat(),
