@@ -1,0 +1,2605 @@
+PREHOOK: query: CREATE TABLE src_txn stored as orc TBLPROPERTIES ('transactional' = 'true')
+AS SELECT * FROM src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_txn
+POSTHOOK: query: CREATE TABLE src_txn stored as orc TBLPROPERTIES ('transactional' = 'true')
+AS SELECT * FROM src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_txn
+POSTHOOK: Lineage: src_txn.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_txn.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN
+CREATE MATERIALIZED VIEW cluster_mv_1 PARTITIONED ON (partkey) CLUSTERED ON (key) AS
+SELECT value, key, key + 100 as partkey FROM src_txn where key > 200 and key < 250
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cluster_mv_1
+PREHOOK: Output: default@cluster_mv_1
+POSTHOOK: query: EXPLAIN
+CREATE MATERIALIZED VIEW cluster_mv_1 PARTITIONED ON (partkey) CLUSTERED ON (key) AS
+SELECT value, key, key + 100 as partkey FROM src_txn where key > 200 and key < 250
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cluster_mv_1
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-0, Stage-4
+  Stage-5 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_txn
+                  filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: value (type: string), key (type: string), (UDFToDouble(key) + 100.0D) (type: double)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 55 Data size: 10230 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 55 Data size: 10230 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string), _col2 (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY._col1 (type: string), VALUE._col2 (type: double)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 55 Data size: 10230 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 55 Data size: 10230 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.cluster_mv_1
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
+                  outputColumnNames: col1, col2, col3
+                  Statistics: Num rows: 55 Data size: 10230 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
+                    keys: col3 (type: double)
+                    minReductionHashAggr: 0.5090909
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 27 Data size: 23976 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: double)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: double)
+                      Statistics: Num rows: 27 Data size: 23976 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                keys: KEY._col0 (type: double)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 27 Data size: 23976 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 27 Data size: 23976 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 27 Data size: 23976 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create View
+      distribute columns: key string
+      partition columns: partkey double
+      columns: value string, key string
+      sort columns: key string
+      expanded text: SELECT `value`, `key`, `partkey` FROM (SELECT `src_txn`.`value`, `src_txn`.`key`, `src_txn`.`key` + 100 as `partkey` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `cluster_mv_1`
+      name: default.cluster_mv_1
+      original text: SELECT value, key, key + 100 as partkey FROM src_txn where key > 200 and key < 250
+      rewrite enabled: true
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            partkey 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.cluster_mv_1
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: value, key
+          Column Types: string, string
+          Table: default.cluster_mv_1
+
+  Stage: Stage-5
+    Materialized View Update
+      name: default.cluster_mv_1
+      retrieveAndInclude: true
+
+PREHOOK: query: CREATE MATERIALIZED VIEW cluster_mv_1 PARTITIONED ON (partkey) CLUSTERED ON (key) AS
+SELECT value, key, key + 100 as partkey FROM src_txn where key > 200 and key < 250
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cluster_mv_1
+PREHOOK: Output: default@cluster_mv_1
+POSTHOOK: query: CREATE MATERIALIZED VIEW cluster_mv_1 PARTITIONED ON (partkey) CLUSTERED ON (key) AS
+SELECT value, key, key + 100 as partkey FROM src_txn where key > 200 and key < 250
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cluster_mv_1
+POSTHOOK: Output: default@cluster_mv_1@partkey=301.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=302.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=303.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=305.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=307.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=308.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=309.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=313.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=314.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=316.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=317.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=318.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=319.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=321.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=322.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=323.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=324.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=326.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=328.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=329.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=330.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=333.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=335.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=337.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=338.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=339.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=341.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=342.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=344.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=347.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=348.0
+POSTHOOK: Output: default@cluster_mv_1@partkey=349.0
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=301.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=301.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=302.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=302.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=303.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=303.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=305.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=305.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=307.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=307.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=308.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=308.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=309.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=309.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=313.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=313.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=314.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=314.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=316.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=316.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=317.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=317.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=318.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=318.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=319.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=319.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=321.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=321.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=322.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=322.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=323.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=323.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=324.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=324.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=326.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=326.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=328.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=328.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=329.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=329.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=330.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=330.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=333.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=333.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=335.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=335.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=337.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=337.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=338.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=338.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=339.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=339.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=341.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=341.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=342.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=342.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=344.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=344.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=347.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=347.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=348.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=348.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=349.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=349.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: DESCRIBE FORMATTED cluster_mv_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cluster_mv_1
+POSTHOOK: query: DESCRIBE FORMATTED cluster_mv_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cluster_mv_1
+# col_name            	data_type           	comment             
+value               	string              	                    
+key                 	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+partkey             	double              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	materializedview.distribute.columns	[\"key\"]           
+	materializedview.sort.columns	[\"key\"]           
+	numFiles            	32                  
+	numPartitions       	32                  
+	numRows             	55                  
+	rawDataSize         	9790                
+	totalSize           	10806               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT value, key, key + 100 as partkey FROM src_txn where key > 200 and key < 250	 
+Expanded Query:     	SELECT `value`, `key`, `partkey` FROM (SELECT `src_txn`.`value`, `src_txn`.`key`, `src_txn`.`key` + 100 as `partkey` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `cluster_mv_1`	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+Found 32 items
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN
+SELECT * FROM cluster_mv_1 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cluster_mv_1
+PREHOOK: Input: default@cluster_mv_1@partkey=301.0
+PREHOOK: Input: default@cluster_mv_1@partkey=302.0
+PREHOOK: Input: default@cluster_mv_1@partkey=303.0
+PREHOOK: Input: default@cluster_mv_1@partkey=305.0
+PREHOOK: Input: default@cluster_mv_1@partkey=307.0
+PREHOOK: Input: default@cluster_mv_1@partkey=308.0
+PREHOOK: Input: default@cluster_mv_1@partkey=309.0
+PREHOOK: Input: default@cluster_mv_1@partkey=313.0
+PREHOOK: Input: default@cluster_mv_1@partkey=314.0
+PREHOOK: Input: default@cluster_mv_1@partkey=316.0
+PREHOOK: Input: default@cluster_mv_1@partkey=317.0
+PREHOOK: Input: default@cluster_mv_1@partkey=318.0
+PREHOOK: Input: default@cluster_mv_1@partkey=319.0
+PREHOOK: Input: default@cluster_mv_1@partkey=321.0
+PREHOOK: Input: default@cluster_mv_1@partkey=322.0
+PREHOOK: Input: default@cluster_mv_1@partkey=323.0
+PREHOOK: Input: default@cluster_mv_1@partkey=324.0
+PREHOOK: Input: default@cluster_mv_1@partkey=326.0
+PREHOOK: Input: default@cluster_mv_1@partkey=328.0
+PREHOOK: Input: default@cluster_mv_1@partkey=329.0
+PREHOOK: Input: default@cluster_mv_1@partkey=330.0
+PREHOOK: Input: default@cluster_mv_1@partkey=333.0
+PREHOOK: Input: default@cluster_mv_1@partkey=335.0
+PREHOOK: Input: default@cluster_mv_1@partkey=337.0
+PREHOOK: Input: default@cluster_mv_1@partkey=338.0
+PREHOOK: Input: default@cluster_mv_1@partkey=339.0
+PREHOOK: Input: default@cluster_mv_1@partkey=341.0
+PREHOOK: Input: default@cluster_mv_1@partkey=342.0
+PREHOOK: Input: default@cluster_mv_1@partkey=344.0
+PREHOOK: Input: default@cluster_mv_1@partkey=347.0
+PREHOOK: Input: default@cluster_mv_1@partkey=348.0
+PREHOOK: Input: default@cluster_mv_1@partkey=349.0
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT * FROM cluster_mv_1 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cluster_mv_1
+POSTHOOK: Input: default@cluster_mv_1@partkey=301.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=302.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=303.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=305.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=307.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=308.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=309.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=313.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=314.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=316.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=317.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=318.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=319.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=321.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=322.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=323.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=324.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=326.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=328.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=329.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=330.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=333.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=335.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=337.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=338.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=339.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=341.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=342.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=344.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=347.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=348.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=349.0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: cluster_mv_1
+          filterExpr: (UDFToDouble(key) = 238.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(key) = 238.0D) (type: boolean)
+            Select Operator
+              expressions: value (type: string), key (type: string), partkey (type: double)
+              outputColumnNames: _col0, _col1, _col2
+              ListSink
+
+PREHOOK: query: SELECT * FROM cluster_mv_1 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cluster_mv_1
+PREHOOK: Input: default@cluster_mv_1@partkey=301.0
+PREHOOK: Input: default@cluster_mv_1@partkey=302.0
+PREHOOK: Input: default@cluster_mv_1@partkey=303.0
+PREHOOK: Input: default@cluster_mv_1@partkey=305.0
+PREHOOK: Input: default@cluster_mv_1@partkey=307.0
+PREHOOK: Input: default@cluster_mv_1@partkey=308.0
+PREHOOK: Input: default@cluster_mv_1@partkey=309.0
+PREHOOK: Input: default@cluster_mv_1@partkey=313.0
+PREHOOK: Input: default@cluster_mv_1@partkey=314.0
+PREHOOK: Input: default@cluster_mv_1@partkey=316.0
+PREHOOK: Input: default@cluster_mv_1@partkey=317.0
+PREHOOK: Input: default@cluster_mv_1@partkey=318.0
+PREHOOK: Input: default@cluster_mv_1@partkey=319.0
+PREHOOK: Input: default@cluster_mv_1@partkey=321.0
+PREHOOK: Input: default@cluster_mv_1@partkey=322.0
+PREHOOK: Input: default@cluster_mv_1@partkey=323.0
+PREHOOK: Input: default@cluster_mv_1@partkey=324.0
+PREHOOK: Input: default@cluster_mv_1@partkey=326.0
+PREHOOK: Input: default@cluster_mv_1@partkey=328.0
+PREHOOK: Input: default@cluster_mv_1@partkey=329.0
+PREHOOK: Input: default@cluster_mv_1@partkey=330.0
+PREHOOK: Input: default@cluster_mv_1@partkey=333.0
+PREHOOK: Input: default@cluster_mv_1@partkey=335.0
+PREHOOK: Input: default@cluster_mv_1@partkey=337.0
+PREHOOK: Input: default@cluster_mv_1@partkey=338.0
+PREHOOK: Input: default@cluster_mv_1@partkey=339.0
+PREHOOK: Input: default@cluster_mv_1@partkey=341.0
+PREHOOK: Input: default@cluster_mv_1@partkey=342.0
+PREHOOK: Input: default@cluster_mv_1@partkey=344.0
+PREHOOK: Input: default@cluster_mv_1@partkey=347.0
+PREHOOK: Input: default@cluster_mv_1@partkey=348.0
+PREHOOK: Input: default@cluster_mv_1@partkey=349.0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM cluster_mv_1 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cluster_mv_1
+POSTHOOK: Input: default@cluster_mv_1@partkey=301.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=302.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=303.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=305.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=307.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=308.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=309.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=313.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=314.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=316.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=317.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=318.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=319.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=321.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=322.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=323.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=324.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=326.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=328.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=329.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=330.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=333.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=335.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=337.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=338.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=339.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=341.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=342.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=344.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=347.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=348.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=349.0
+#### A masked pattern was here ####
+val_238	238	338.0
+val_238	238	338.0
+PREHOOK: query: CREATE MATERIALIZED VIEW cluster_mv_2 PARTITIONED ON (partkey) CLUSTERED ON (value) AS
+SELECT key, value, key + 100 as partkey FROM src_txn where key > 200 and key < 250
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cluster_mv_2
+PREHOOK: Output: default@cluster_mv_2
+POSTHOOK: query: CREATE MATERIALIZED VIEW cluster_mv_2 PARTITIONED ON (partkey) CLUSTERED ON (value) AS
+SELECT key, value, key + 100 as partkey FROM src_txn where key > 200 and key < 250
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cluster_mv_2
+POSTHOOK: Output: default@cluster_mv_2@partkey=301.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=302.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=303.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=305.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=307.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=308.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=309.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=313.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=314.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=316.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=317.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=318.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=319.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=321.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=322.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=323.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=324.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=326.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=328.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=329.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=330.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=333.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=335.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=337.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=338.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=339.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=341.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=342.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=344.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=347.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=348.0
+POSTHOOK: Output: default@cluster_mv_2@partkey=349.0
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=301.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=301.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=302.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=302.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=303.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=303.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=305.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=305.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=307.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=307.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=308.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=308.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=309.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=309.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=313.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=313.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=314.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=314.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=316.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=316.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=317.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=317.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=318.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=318.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=319.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=319.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=321.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=321.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=322.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=322.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=323.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=323.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=324.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=324.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=326.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=326.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=328.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=328.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=329.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=329.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=330.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=330.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=333.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=333.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=335.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=335.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=337.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=337.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=338.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=338.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=339.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=339.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=341.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=341.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=342.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=342.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=344.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=344.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=347.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=347.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=348.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=348.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=349.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_2 PARTITION(partkey=349.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+Found 32 items
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN
+SELECT * FROM cluster_mv_2 where value = 'val_238'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cluster_mv_2
+PREHOOK: Input: default@cluster_mv_2@partkey=301.0
+PREHOOK: Input: default@cluster_mv_2@partkey=302.0
+PREHOOK: Input: default@cluster_mv_2@partkey=303.0
+PREHOOK: Input: default@cluster_mv_2@partkey=305.0
+PREHOOK: Input: default@cluster_mv_2@partkey=307.0
+PREHOOK: Input: default@cluster_mv_2@partkey=308.0
+PREHOOK: Input: default@cluster_mv_2@partkey=309.0
+PREHOOK: Input: default@cluster_mv_2@partkey=313.0
+PREHOOK: Input: default@cluster_mv_2@partkey=314.0
+PREHOOK: Input: default@cluster_mv_2@partkey=316.0
+PREHOOK: Input: default@cluster_mv_2@partkey=317.0
+PREHOOK: Input: default@cluster_mv_2@partkey=318.0
+PREHOOK: Input: default@cluster_mv_2@partkey=319.0
+PREHOOK: Input: default@cluster_mv_2@partkey=321.0
+PREHOOK: Input: default@cluster_mv_2@partkey=322.0
+PREHOOK: Input: default@cluster_mv_2@partkey=323.0
+PREHOOK: Input: default@cluster_mv_2@partkey=324.0
+PREHOOK: Input: default@cluster_mv_2@partkey=326.0
+PREHOOK: Input: default@cluster_mv_2@partkey=328.0
+PREHOOK: Input: default@cluster_mv_2@partkey=329.0
+PREHOOK: Input: default@cluster_mv_2@partkey=330.0
+PREHOOK: Input: default@cluster_mv_2@partkey=333.0
+PREHOOK: Input: default@cluster_mv_2@partkey=335.0
+PREHOOK: Input: default@cluster_mv_2@partkey=337.0
+PREHOOK: Input: default@cluster_mv_2@partkey=338.0
+PREHOOK: Input: default@cluster_mv_2@partkey=339.0
+PREHOOK: Input: default@cluster_mv_2@partkey=341.0
+PREHOOK: Input: default@cluster_mv_2@partkey=342.0
+PREHOOK: Input: default@cluster_mv_2@partkey=344.0
+PREHOOK: Input: default@cluster_mv_2@partkey=347.0
+PREHOOK: Input: default@cluster_mv_2@partkey=348.0
+PREHOOK: Input: default@cluster_mv_2@partkey=349.0
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT * FROM cluster_mv_2 where value = 'val_238'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cluster_mv_2
+POSTHOOK: Input: default@cluster_mv_2@partkey=301.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=302.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=303.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=305.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=307.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=308.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=309.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=313.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=314.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=316.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=317.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=318.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=319.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=321.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=322.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=323.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=324.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=326.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=328.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=329.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=330.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=333.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=335.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=337.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=338.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=339.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=341.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=342.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=344.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=347.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=348.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=349.0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: cluster_mv_2
+          filterExpr: (value = 'val_238') (type: boolean)
+          Filter Operator
+            predicate: (value = 'val_238') (type: boolean)
+            Select Operator
+              expressions: key (type: string), 'val_238' (type: string), partkey (type: double)
+              outputColumnNames: _col0, _col1, _col2
+              ListSink
+
+PREHOOK: query: SELECT * FROM cluster_mv_2 where value = 'val_238'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cluster_mv_2
+PREHOOK: Input: default@cluster_mv_2@partkey=301.0
+PREHOOK: Input: default@cluster_mv_2@partkey=302.0
+PREHOOK: Input: default@cluster_mv_2@partkey=303.0
+PREHOOK: Input: default@cluster_mv_2@partkey=305.0
+PREHOOK: Input: default@cluster_mv_2@partkey=307.0
+PREHOOK: Input: default@cluster_mv_2@partkey=308.0
+PREHOOK: Input: default@cluster_mv_2@partkey=309.0
+PREHOOK: Input: default@cluster_mv_2@partkey=313.0
+PREHOOK: Input: default@cluster_mv_2@partkey=314.0
+PREHOOK: Input: default@cluster_mv_2@partkey=316.0
+PREHOOK: Input: default@cluster_mv_2@partkey=317.0
+PREHOOK: Input: default@cluster_mv_2@partkey=318.0
+PREHOOK: Input: default@cluster_mv_2@partkey=319.0
+PREHOOK: Input: default@cluster_mv_2@partkey=321.0
+PREHOOK: Input: default@cluster_mv_2@partkey=322.0
+PREHOOK: Input: default@cluster_mv_2@partkey=323.0
+PREHOOK: Input: default@cluster_mv_2@partkey=324.0
+PREHOOK: Input: default@cluster_mv_2@partkey=326.0
+PREHOOK: Input: default@cluster_mv_2@partkey=328.0
+PREHOOK: Input: default@cluster_mv_2@partkey=329.0
+PREHOOK: Input: default@cluster_mv_2@partkey=330.0
+PREHOOK: Input: default@cluster_mv_2@partkey=333.0
+PREHOOK: Input: default@cluster_mv_2@partkey=335.0
+PREHOOK: Input: default@cluster_mv_2@partkey=337.0
+PREHOOK: Input: default@cluster_mv_2@partkey=338.0
+PREHOOK: Input: default@cluster_mv_2@partkey=339.0
+PREHOOK: Input: default@cluster_mv_2@partkey=341.0
+PREHOOK: Input: default@cluster_mv_2@partkey=342.0
+PREHOOK: Input: default@cluster_mv_2@partkey=344.0
+PREHOOK: Input: default@cluster_mv_2@partkey=347.0
+PREHOOK: Input: default@cluster_mv_2@partkey=348.0
+PREHOOK: Input: default@cluster_mv_2@partkey=349.0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM cluster_mv_2 where value = 'val_238'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cluster_mv_2
+POSTHOOK: Input: default@cluster_mv_2@partkey=301.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=302.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=303.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=305.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=307.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=308.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=309.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=313.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=314.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=316.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=317.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=318.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=319.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=321.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=322.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=323.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=324.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=326.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=328.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=329.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=330.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=333.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=335.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=337.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=338.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=339.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=341.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=342.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=344.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=347.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=348.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=349.0
+#### A masked pattern was here ####
+238	val_238	338.0
+238	val_238	338.0
+PREHOOK: query: EXPLAIN
+SELECT value FROM cluster_mv_2 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cluster_mv_2
+PREHOOK: Input: default@cluster_mv_2@partkey=301.0
+PREHOOK: Input: default@cluster_mv_2@partkey=302.0
+PREHOOK: Input: default@cluster_mv_2@partkey=303.0
+PREHOOK: Input: default@cluster_mv_2@partkey=305.0
+PREHOOK: Input: default@cluster_mv_2@partkey=307.0
+PREHOOK: Input: default@cluster_mv_2@partkey=308.0
+PREHOOK: Input: default@cluster_mv_2@partkey=309.0
+PREHOOK: Input: default@cluster_mv_2@partkey=313.0
+PREHOOK: Input: default@cluster_mv_2@partkey=314.0
+PREHOOK: Input: default@cluster_mv_2@partkey=316.0
+PREHOOK: Input: default@cluster_mv_2@partkey=317.0
+PREHOOK: Input: default@cluster_mv_2@partkey=318.0
+PREHOOK: Input: default@cluster_mv_2@partkey=319.0
+PREHOOK: Input: default@cluster_mv_2@partkey=321.0
+PREHOOK: Input: default@cluster_mv_2@partkey=322.0
+PREHOOK: Input: default@cluster_mv_2@partkey=323.0
+PREHOOK: Input: default@cluster_mv_2@partkey=324.0
+PREHOOK: Input: default@cluster_mv_2@partkey=326.0
+PREHOOK: Input: default@cluster_mv_2@partkey=328.0
+PREHOOK: Input: default@cluster_mv_2@partkey=329.0
+PREHOOK: Input: default@cluster_mv_2@partkey=330.0
+PREHOOK: Input: default@cluster_mv_2@partkey=333.0
+PREHOOK: Input: default@cluster_mv_2@partkey=335.0
+PREHOOK: Input: default@cluster_mv_2@partkey=337.0
+PREHOOK: Input: default@cluster_mv_2@partkey=338.0
+PREHOOK: Input: default@cluster_mv_2@partkey=339.0
+PREHOOK: Input: default@cluster_mv_2@partkey=341.0
+PREHOOK: Input: default@cluster_mv_2@partkey=342.0
+PREHOOK: Input: default@cluster_mv_2@partkey=344.0
+PREHOOK: Input: default@cluster_mv_2@partkey=347.0
+PREHOOK: Input: default@cluster_mv_2@partkey=348.0
+PREHOOK: Input: default@cluster_mv_2@partkey=349.0
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT value FROM cluster_mv_2 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cluster_mv_2
+POSTHOOK: Input: default@cluster_mv_2@partkey=301.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=302.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=303.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=305.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=307.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=308.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=309.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=313.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=314.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=316.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=317.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=318.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=319.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=321.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=322.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=323.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=324.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=326.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=328.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=329.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=330.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=333.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=335.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=337.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=338.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=339.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=341.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=342.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=344.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=347.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=348.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=349.0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: cluster_mv_2
+          filterExpr: (UDFToDouble(key) = 238.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(key) = 238.0D) (type: boolean)
+            Select Operator
+              expressions: value (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: SELECT value FROM cluster_mv_2 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cluster_mv_2
+PREHOOK: Input: default@cluster_mv_2@partkey=301.0
+PREHOOK: Input: default@cluster_mv_2@partkey=302.0
+PREHOOK: Input: default@cluster_mv_2@partkey=303.0
+PREHOOK: Input: default@cluster_mv_2@partkey=305.0
+PREHOOK: Input: default@cluster_mv_2@partkey=307.0
+PREHOOK: Input: default@cluster_mv_2@partkey=308.0
+PREHOOK: Input: default@cluster_mv_2@partkey=309.0
+PREHOOK: Input: default@cluster_mv_2@partkey=313.0
+PREHOOK: Input: default@cluster_mv_2@partkey=314.0
+PREHOOK: Input: default@cluster_mv_2@partkey=316.0
+PREHOOK: Input: default@cluster_mv_2@partkey=317.0
+PREHOOK: Input: default@cluster_mv_2@partkey=318.0
+PREHOOK: Input: default@cluster_mv_2@partkey=319.0
+PREHOOK: Input: default@cluster_mv_2@partkey=321.0
+PREHOOK: Input: default@cluster_mv_2@partkey=322.0
+PREHOOK: Input: default@cluster_mv_2@partkey=323.0
+PREHOOK: Input: default@cluster_mv_2@partkey=324.0
+PREHOOK: Input: default@cluster_mv_2@partkey=326.0
+PREHOOK: Input: default@cluster_mv_2@partkey=328.0
+PREHOOK: Input: default@cluster_mv_2@partkey=329.0
+PREHOOK: Input: default@cluster_mv_2@partkey=330.0
+PREHOOK: Input: default@cluster_mv_2@partkey=333.0
+PREHOOK: Input: default@cluster_mv_2@partkey=335.0
+PREHOOK: Input: default@cluster_mv_2@partkey=337.0
+PREHOOK: Input: default@cluster_mv_2@partkey=338.0
+PREHOOK: Input: default@cluster_mv_2@partkey=339.0
+PREHOOK: Input: default@cluster_mv_2@partkey=341.0
+PREHOOK: Input: default@cluster_mv_2@partkey=342.0
+PREHOOK: Input: default@cluster_mv_2@partkey=344.0
+PREHOOK: Input: default@cluster_mv_2@partkey=347.0
+PREHOOK: Input: default@cluster_mv_2@partkey=348.0
+PREHOOK: Input: default@cluster_mv_2@partkey=349.0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value FROM cluster_mv_2 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cluster_mv_2
+POSTHOOK: Input: default@cluster_mv_2@partkey=301.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=302.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=303.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=305.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=307.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=308.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=309.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=313.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=314.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=316.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=317.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=318.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=319.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=321.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=322.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=323.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=324.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=326.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=328.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=329.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=330.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=333.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=335.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=337.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=338.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=339.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=341.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=342.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=344.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=347.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=348.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=349.0
+#### A masked pattern was here ####
+val_238
+val_238
+PREHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src_txn
+POSTHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src_txn
+POSTHOOK: Lineage: src_txn.key SCRIPT []
+POSTHOOK: Lineage: src_txn.value SCRIPT []
+PREHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: default@cluster_mv_1
+POSTHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_txn
+                  filterExpr: ((ROW__ID.writeid > 1L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  Statistics: Num rows: 501 Data size: 90180 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((ROW__ID.writeid > 1L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: value (type: string), key (type: string), (UDFToDouble(key) + 100.0D) (type: double)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 18 Data size: 3384 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 18 Data size: 3384 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                            name: default.cluster_mv_1
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
+                        outputColumnNames: value, key, partkey
+                        Statistics: Num rows: 18 Data size: 3384 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: compute_stats(value, 'hll'), compute_stats(key, 'hll')
+                          keys: partkey (type: double)
+                          minReductionHashAggr: 0.5
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 9 Data size: 7992 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: double)
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: double)
+                            Statistics: Num rows: 9 Data size: 7992 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                keys: KEY._col0 (type: double)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 9 Data size: 7992 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 9 Data size: 7992 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 9 Data size: 7992 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            partkey 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.cluster_mv_1
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: value, key
+          Column Types: string, string
+          Table: default.cluster_mv_1
+
+  Stage: Stage-4
+    Materialized View Update
+      name: default.cluster_mv_1
+      updateCreationMetadata: true
+
+PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: default@cluster_mv_1
+POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: default@cluster_mv_1@partkey=338.0
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=338.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_1 PARTITION(partkey=338.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM cluster_mv_1 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cluster_mv_1
+PREHOOK: Input: default@cluster_mv_1@partkey=301.0
+PREHOOK: Input: default@cluster_mv_1@partkey=302.0
+PREHOOK: Input: default@cluster_mv_1@partkey=303.0
+PREHOOK: Input: default@cluster_mv_1@partkey=305.0
+PREHOOK: Input: default@cluster_mv_1@partkey=307.0
+PREHOOK: Input: default@cluster_mv_1@partkey=308.0
+PREHOOK: Input: default@cluster_mv_1@partkey=309.0
+PREHOOK: Input: default@cluster_mv_1@partkey=313.0
+PREHOOK: Input: default@cluster_mv_1@partkey=314.0
+PREHOOK: Input: default@cluster_mv_1@partkey=316.0
+PREHOOK: Input: default@cluster_mv_1@partkey=317.0
+PREHOOK: Input: default@cluster_mv_1@partkey=318.0
+PREHOOK: Input: default@cluster_mv_1@partkey=319.0
+PREHOOK: Input: default@cluster_mv_1@partkey=321.0
+PREHOOK: Input: default@cluster_mv_1@partkey=322.0
+PREHOOK: Input: default@cluster_mv_1@partkey=323.0
+PREHOOK: Input: default@cluster_mv_1@partkey=324.0
+PREHOOK: Input: default@cluster_mv_1@partkey=326.0
+PREHOOK: Input: default@cluster_mv_1@partkey=328.0
+PREHOOK: Input: default@cluster_mv_1@partkey=329.0
+PREHOOK: Input: default@cluster_mv_1@partkey=330.0
+PREHOOK: Input: default@cluster_mv_1@partkey=333.0
+PREHOOK: Input: default@cluster_mv_1@partkey=335.0
+PREHOOK: Input: default@cluster_mv_1@partkey=337.0
+PREHOOK: Input: default@cluster_mv_1@partkey=338.0
+PREHOOK: Input: default@cluster_mv_1@partkey=339.0
+PREHOOK: Input: default@cluster_mv_1@partkey=341.0
+PREHOOK: Input: default@cluster_mv_1@partkey=342.0
+PREHOOK: Input: default@cluster_mv_1@partkey=344.0
+PREHOOK: Input: default@cluster_mv_1@partkey=347.0
+PREHOOK: Input: default@cluster_mv_1@partkey=348.0
+PREHOOK: Input: default@cluster_mv_1@partkey=349.0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM cluster_mv_1 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cluster_mv_1
+POSTHOOK: Input: default@cluster_mv_1@partkey=301.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=302.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=303.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=305.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=307.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=308.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=309.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=313.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=314.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=316.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=317.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=318.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=319.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=321.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=322.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=323.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=324.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=326.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=328.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=329.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=330.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=333.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=335.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=337.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=338.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=339.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=341.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=342.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=344.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=347.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=348.0
+POSTHOOK: Input: default@cluster_mv_1@partkey=349.0
+#### A masked pattern was here ####
+val_238	238	338.0
+val_238	238	338.0
+val_238_n	238	338.0
+PREHOOK: query: SELECT * FROM cluster_mv_2 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cluster_mv_2
+PREHOOK: Input: default@cluster_mv_2@partkey=301.0
+PREHOOK: Input: default@cluster_mv_2@partkey=302.0
+PREHOOK: Input: default@cluster_mv_2@partkey=303.0
+PREHOOK: Input: default@cluster_mv_2@partkey=305.0
+PREHOOK: Input: default@cluster_mv_2@partkey=307.0
+PREHOOK: Input: default@cluster_mv_2@partkey=308.0
+PREHOOK: Input: default@cluster_mv_2@partkey=309.0
+PREHOOK: Input: default@cluster_mv_2@partkey=313.0
+PREHOOK: Input: default@cluster_mv_2@partkey=314.0
+PREHOOK: Input: default@cluster_mv_2@partkey=316.0
+PREHOOK: Input: default@cluster_mv_2@partkey=317.0
+PREHOOK: Input: default@cluster_mv_2@partkey=318.0
+PREHOOK: Input: default@cluster_mv_2@partkey=319.0
+PREHOOK: Input: default@cluster_mv_2@partkey=321.0
+PREHOOK: Input: default@cluster_mv_2@partkey=322.0
+PREHOOK: Input: default@cluster_mv_2@partkey=323.0
+PREHOOK: Input: default@cluster_mv_2@partkey=324.0
+PREHOOK: Input: default@cluster_mv_2@partkey=326.0
+PREHOOK: Input: default@cluster_mv_2@partkey=328.0
+PREHOOK: Input: default@cluster_mv_2@partkey=329.0
+PREHOOK: Input: default@cluster_mv_2@partkey=330.0
+PREHOOK: Input: default@cluster_mv_2@partkey=333.0
+PREHOOK: Input: default@cluster_mv_2@partkey=335.0
+PREHOOK: Input: default@cluster_mv_2@partkey=337.0
+PREHOOK: Input: default@cluster_mv_2@partkey=338.0
+PREHOOK: Input: default@cluster_mv_2@partkey=339.0
+PREHOOK: Input: default@cluster_mv_2@partkey=341.0
+PREHOOK: Input: default@cluster_mv_2@partkey=342.0
+PREHOOK: Input: default@cluster_mv_2@partkey=344.0
+PREHOOK: Input: default@cluster_mv_2@partkey=347.0
+PREHOOK: Input: default@cluster_mv_2@partkey=348.0
+PREHOOK: Input: default@cluster_mv_2@partkey=349.0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM cluster_mv_2 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cluster_mv_2
+POSTHOOK: Input: default@cluster_mv_2@partkey=301.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=302.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=303.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=305.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=307.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=308.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=309.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=313.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=314.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=316.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=317.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=318.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=319.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=321.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=322.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=323.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=324.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=326.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=328.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=329.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=330.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=333.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=335.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=337.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=338.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=339.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=341.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=342.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=344.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=347.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=348.0
+POSTHOOK: Input: default@cluster_mv_2@partkey=349.0
+#### A masked pattern was here ####
+238	val_238	338.0
+238	val_238	338.0
+PREHOOK: query: CREATE TABLE src_txn_2 stored as orc TBLPROPERTIES ('transactional' = 'true')
+AS SELECT * FROM src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_txn_2
+POSTHOOK: query: CREATE TABLE src_txn_2 stored as orc TBLPROPERTIES ('transactional' = 'true')
+AS SELECT * FROM src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_txn_2
+POSTHOOK: Lineage: src_txn_2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_txn_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE MATERIALIZED VIEW cluster_mv_3 PARTITIONED ON (partkey) CLUSTERED ON (key) AS
+SELECT src_txn.key + 100 as partkey, src_txn.value, src_txn.key FROM src_txn, src_txn_2
+WHERE src_txn.key = src_txn_2.key
+  AND src_txn.key > 200 AND src_txn.key < 250
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@src_txn
+PREHOOK: Input: default@src_txn_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cluster_mv_3
+PREHOOK: Output: default@cluster_mv_3
+POSTHOOK: query: CREATE MATERIALIZED VIEW cluster_mv_3 PARTITIONED ON (partkey) CLUSTERED ON (key) AS
+SELECT src_txn.key + 100 as partkey, src_txn.value, src_txn.key FROM src_txn, src_txn_2
+WHERE src_txn.key = src_txn_2.key
+  AND src_txn.key > 200 AND src_txn.key < 250
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cluster_mv_3
+POSTHOOK: Output: default@cluster_mv_3@partkey=301.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=302.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=303.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=305.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=307.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=308.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=309.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=313.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=314.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=316.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=317.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=318.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=319.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=321.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=322.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=323.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=324.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=326.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=328.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=329.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=330.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=333.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=335.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=337.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=338.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=339.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=341.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=342.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=344.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=347.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=348.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=349.0
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=301.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=301.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=302.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=302.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=303.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=303.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=305.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=305.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=307.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=307.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=308.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=308.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=309.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=309.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=313.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=313.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=314.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=314.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=316.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=316.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=317.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=317.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=318.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=318.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=319.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=319.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=321.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=321.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=322.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=322.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=323.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=323.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=324.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=324.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=326.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=326.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=328.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=328.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=329.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=329.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=330.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=330.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=333.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=333.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=335.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=335.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=337.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=337.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=338.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=338.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=339.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=339.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=341.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=341.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=342.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=342.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=344.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=344.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=347.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=347.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=348.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=348.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=349.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=349.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+Found 32 items
+#### A masked pattern was here ####
+PREHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src_txn
+POSTHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src_txn
+POSTHOOK: Lineage: src_txn.key SCRIPT []
+POSTHOOK: Lineage: src_txn.value SCRIPT []
+PREHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Input: default@src_txn_2
+PREHOOK: Output: default@cluster_mv_3
+POSTHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Input: default@src_txn_2
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_txn
+                  filterExpr: ((ROW__ID.writeid > 2L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  Statistics: Num rows: 502 Data size: 90862 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((ROW__ID.writeid > 2L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string), (UDFToDouble(key) + 100.0D) (type: double)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 18 Data size: 3402 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 18 Data size: 3402 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string), _col2 (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src_txn_2
+                  filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 18 Data size: 3402 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: string), _col0 (type: string), _col2 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 18 Data size: 3402 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 18 Data size: 3402 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                        name: default.cluster_mv_3
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
+                    outputColumnNames: value, key, partkey
+                    Statistics: Num rows: 18 Data size: 3402 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(value, 'hll'), compute_stats(key, 'hll')
+                      keys: partkey (type: double)
+                      minReductionHashAggr: 0.5
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 9 Data size: 7992 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 9 Data size: 7992 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                keys: KEY._col0 (type: double)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 9 Data size: 7992 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 9 Data size: 7992 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 9 Data size: 7992 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            partkey 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.cluster_mv_3
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: value, key
+          Column Types: string, string
+          Table: default.cluster_mv_3
+
+  Stage: Stage-4
+    Materialized View Update
+      name: default.cluster_mv_3
+      updateCreationMetadata: true
+
+PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Input: default@src_txn_2
+PREHOOK: Output: default@cluster_mv_3
+POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: default@cluster_mv_3@partkey=338.0
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=338.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=338.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM cluster_mv_3 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cluster_mv_3
+PREHOOK: Input: default@cluster_mv_3@partkey=301.0
+PREHOOK: Input: default@cluster_mv_3@partkey=302.0
+PREHOOK: Input: default@cluster_mv_3@partkey=303.0
+PREHOOK: Input: default@cluster_mv_3@partkey=305.0
+PREHOOK: Input: default@cluster_mv_3@partkey=307.0
+PREHOOK: Input: default@cluster_mv_3@partkey=308.0
+PREHOOK: Input: default@cluster_mv_3@partkey=309.0
+PREHOOK: Input: default@cluster_mv_3@partkey=313.0
+PREHOOK: Input: default@cluster_mv_3@partkey=314.0
+PREHOOK: Input: default@cluster_mv_3@partkey=316.0
+PREHOOK: Input: default@cluster_mv_3@partkey=317.0
+PREHOOK: Input: default@cluster_mv_3@partkey=318.0
+PREHOOK: Input: default@cluster_mv_3@partkey=319.0
+PREHOOK: Input: default@cluster_mv_3@partkey=321.0
+PREHOOK: Input: default@cluster_mv_3@partkey=322.0
+PREHOOK: Input: default@cluster_mv_3@partkey=323.0
+PREHOOK: Input: default@cluster_mv_3@partkey=324.0
+PREHOOK: Input: default@cluster_mv_3@partkey=326.0
+PREHOOK: Input: default@cluster_mv_3@partkey=328.0
+PREHOOK: Input: default@cluster_mv_3@partkey=329.0
+PREHOOK: Input: default@cluster_mv_3@partkey=330.0
+PREHOOK: Input: default@cluster_mv_3@partkey=333.0
+PREHOOK: Input: default@cluster_mv_3@partkey=335.0
+PREHOOK: Input: default@cluster_mv_3@partkey=337.0
+PREHOOK: Input: default@cluster_mv_3@partkey=338.0
+PREHOOK: Input: default@cluster_mv_3@partkey=339.0
+PREHOOK: Input: default@cluster_mv_3@partkey=341.0
+PREHOOK: Input: default@cluster_mv_3@partkey=342.0
+PREHOOK: Input: default@cluster_mv_3@partkey=344.0
+PREHOOK: Input: default@cluster_mv_3@partkey=347.0
+PREHOOK: Input: default@cluster_mv_3@partkey=348.0
+PREHOOK: Input: default@cluster_mv_3@partkey=349.0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM cluster_mv_3 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cluster_mv_3
+POSTHOOK: Input: default@cluster_mv_3@partkey=301.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=302.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=303.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=305.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=307.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=308.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=309.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=313.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=314.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=316.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=317.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=318.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=319.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=321.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=322.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=323.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=324.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=326.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=328.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=329.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=330.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=333.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=335.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=337.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=338.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=339.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=341.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=342.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=344.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=347.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=348.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=349.0
+#### A masked pattern was here ####
+val_238	238	338.0
+val_238	238	338.0
+val_238	238	338.0
+val_238	238	338.0
+val_238_n	238	338.0
+val_238_n	238	338.0
+val_238_n2	238	338.0
+val_238_n2	238	338.0
+PREHOOK: query: CREATE MATERIALIZED VIEW cluster_mv_4 PARTITIONED ON (partkey) CLUSTERED ON (key,`tes"t`,`te*#"s"t`) AS
+SELECT src_txn.key + 100 as partkey, value, key, key+1 as `tes"t`, key+2 as `te*#"s"t` FROM src_txn where key > 200 and key < 250
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cluster_mv_4
+PREHOOK: Output: default@cluster_mv_4
+POSTHOOK: query: CREATE MATERIALIZED VIEW cluster_mv_4 PARTITIONED ON (partkey) CLUSTERED ON (key,`tes"t`,`te*#"s"t`) AS
+SELECT src_txn.key + 100 as partkey, value, key, key+1 as `tes"t`, key+2 as `te*#"s"t` FROM src_txn where key > 200 and key < 250
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cluster_mv_4
+POSTHOOK: Output: default@cluster_mv_4@partkey=301.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=302.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=303.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=305.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=307.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=308.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=309.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=313.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=314.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=316.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=317.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=318.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=319.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=321.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=322.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=323.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=324.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=326.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=328.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=329.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=330.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=333.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=335.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=337.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=338.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=339.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=341.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=342.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=344.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=347.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=348.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=349.0
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=301.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=301.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=301.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=301.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=302.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=302.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=302.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=302.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=303.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=303.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=303.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=303.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=305.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=305.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=305.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=305.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=307.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=307.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=307.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=307.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=308.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=308.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=308.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=308.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=309.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=309.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=309.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=309.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=313.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=313.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=313.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=313.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=314.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=314.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=314.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=314.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=316.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=316.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=316.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=316.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=317.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=317.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=317.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=317.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=318.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=318.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=318.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=318.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=319.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=319.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=319.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=319.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=321.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=321.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=321.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=321.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=322.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=322.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=322.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=322.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=323.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=323.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=323.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=323.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=324.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=324.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=324.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=324.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=326.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=326.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=326.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=326.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=328.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=328.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=328.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=328.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=329.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=329.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=329.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=329.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=330.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=330.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=330.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=330.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=333.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=333.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=333.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=333.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=335.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=335.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=335.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=335.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=337.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=337.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=337.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=337.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=338.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=338.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=338.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=338.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=339.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=339.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=339.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=339.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=341.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=341.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=341.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=341.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=342.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=342.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=342.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=342.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=344.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=344.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=344.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=344.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=347.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=347.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=347.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=347.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=348.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=348.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=348.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=348.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=349.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=349.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=349.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=349.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: DESCRIBE FORMATTED cluster_mv_4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cluster_mv_4
+POSTHOOK: query: DESCRIBE FORMATTED cluster_mv_4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cluster_mv_4
+# col_name            	data_type           	comment             
+value               	string              	                    
+key                 	string              	                    
+tes"t               	double              	                    
+te*#"s"t            	double              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+partkey             	double              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	materializedview.distribute.columns	[\"key\",\"tes\\\"t\",\"te*#\\\"s\\\"t\"]
+	materializedview.sort.columns	[\"key\",\"tes\\\"t\",\"te*#\\\"s\\\"t\"]
+	numFiles            	32                  
+	numPartitions       	32                  
+	numRows             	57                  
+	rawDataSize         	11062               
+	totalSize           	17102               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT src_txn.key + 100 as partkey, value, key, key+1 as tes"t, key+2 as te*#"s"t FROM src_txn where key > 200 and key < 250	 
+Expanded Query:     	SELECT `value`, `key`, `tes"t`, `te*#"s"t`, `partkey` FROM (SELECT `src_txn`.`key` + 100 as `partkey`, `src_txn`.`value`, `src_txn`.`key`, `src_txn`.`key`+1 as `tes"t`, `src_txn`.`key`+2 as `te*#"s"t` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `cluster_mv_4`	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+PREHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src_txn
+POSTHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src_txn
+POSTHOOK: Lineage: src_txn.key SCRIPT []
+POSTHOOK: Lineage: src_txn.value SCRIPT []
+PREHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Input: default@src_txn_2
+PREHOOK: Output: default@cluster_mv_3
+POSTHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Input: default@src_txn_2
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_txn
+                  filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  Statistics: Num rows: 503 Data size: 91043 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9955 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string), (UDFToDouble(key) + 100.0D) (type: double)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 55 Data size: 10395 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 55 Data size: 10395 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string), _col2 (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src_txn_2
+                  filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 55 Data size: 10395 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: string), _col0 (type: string), _col2 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 55 Data size: 10395 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 55 Data size: 10395 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: string), _col2 (type: double)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY._col1 (type: string), VALUE._col2 (type: double)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 55 Data size: 10395 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 55 Data size: 10395 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.cluster_mv_3
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
+                  outputColumnNames: value, key, partkey
+                  Statistics: Num rows: 55 Data size: 10395 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: compute_stats(value, 'hll'), compute_stats(key, 'hll')
+                    keys: partkey (type: double)
+                    minReductionHashAggr: 0.5090909
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 27 Data size: 23976 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: double)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: double)
+                      Statistics: Num rows: 27 Data size: 23976 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                keys: KEY._col0 (type: double)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 27 Data size: 23976 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 27 Data size: 23976 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 27 Data size: 23976 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            partkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.cluster_mv_3
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: value, key
+          Column Types: string, string
+          Table: default.cluster_mv_3
+
+  Stage: Stage-4
+    Materialized View Update
+      name: default.cluster_mv_3
+      updateCreationMetadata: true
+
+PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Input: default@src_txn_2
+PREHOOK: Output: default@cluster_mv_3
+POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: default@cluster_mv_3@partkey=301.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=302.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=303.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=305.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=307.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=308.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=309.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=313.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=314.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=316.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=317.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=318.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=319.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=321.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=322.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=323.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=324.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=326.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=328.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=329.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=330.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=333.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=335.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=337.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=338.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=339.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=341.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=342.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=344.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=347.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=348.0
+POSTHOOK: Output: default@cluster_mv_3@partkey=349.0
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=301.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=301.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=302.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=302.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=303.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=303.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=305.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=305.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=307.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=307.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=308.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=308.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=309.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=309.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=313.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=313.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=314.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=314.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=316.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=316.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=317.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=317.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=318.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=318.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=319.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=319.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=321.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=321.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=322.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=322.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=323.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=323.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=324.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=324.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=326.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=326.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=328.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=328.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=329.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=329.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=330.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=330.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=333.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=333.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=335.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=335.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=337.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=337.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=338.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=338.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=339.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=339.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=341.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=341.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=342.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=342.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=344.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=344.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=347.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=347.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=348.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=348.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=349.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_3 PARTITION(partkey=349.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM cluster_mv_3 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cluster_mv_3
+PREHOOK: Input: default@cluster_mv_3@partkey=301.0
+PREHOOK: Input: default@cluster_mv_3@partkey=302.0
+PREHOOK: Input: default@cluster_mv_3@partkey=303.0
+PREHOOK: Input: default@cluster_mv_3@partkey=305.0
+PREHOOK: Input: default@cluster_mv_3@partkey=307.0
+PREHOOK: Input: default@cluster_mv_3@partkey=308.0
+PREHOOK: Input: default@cluster_mv_3@partkey=309.0
+PREHOOK: Input: default@cluster_mv_3@partkey=313.0
+PREHOOK: Input: default@cluster_mv_3@partkey=314.0
+PREHOOK: Input: default@cluster_mv_3@partkey=316.0
+PREHOOK: Input: default@cluster_mv_3@partkey=317.0
+PREHOOK: Input: default@cluster_mv_3@partkey=318.0
+PREHOOK: Input: default@cluster_mv_3@partkey=319.0
+PREHOOK: Input: default@cluster_mv_3@partkey=321.0
+PREHOOK: Input: default@cluster_mv_3@partkey=322.0
+PREHOOK: Input: default@cluster_mv_3@partkey=323.0
+PREHOOK: Input: default@cluster_mv_3@partkey=324.0
+PREHOOK: Input: default@cluster_mv_3@partkey=326.0
+PREHOOK: Input: default@cluster_mv_3@partkey=328.0
+PREHOOK: Input: default@cluster_mv_3@partkey=329.0
+PREHOOK: Input: default@cluster_mv_3@partkey=330.0
+PREHOOK: Input: default@cluster_mv_3@partkey=333.0
+PREHOOK: Input: default@cluster_mv_3@partkey=335.0
+PREHOOK: Input: default@cluster_mv_3@partkey=337.0
+PREHOOK: Input: default@cluster_mv_3@partkey=338.0
+PREHOOK: Input: default@cluster_mv_3@partkey=339.0
+PREHOOK: Input: default@cluster_mv_3@partkey=341.0
+PREHOOK: Input: default@cluster_mv_3@partkey=342.0
+PREHOOK: Input: default@cluster_mv_3@partkey=344.0
+PREHOOK: Input: default@cluster_mv_3@partkey=347.0
+PREHOOK: Input: default@cluster_mv_3@partkey=348.0
+PREHOOK: Input: default@cluster_mv_3@partkey=349.0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM cluster_mv_3 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cluster_mv_3
+POSTHOOK: Input: default@cluster_mv_3@partkey=301.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=302.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=303.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=305.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=307.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=308.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=309.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=313.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=314.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=316.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=317.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=318.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=319.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=321.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=322.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=323.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=324.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=326.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=328.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=329.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=330.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=333.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=335.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=337.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=338.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=339.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=341.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=342.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=344.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=347.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=348.0
+POSTHOOK: Input: default@cluster_mv_3@partkey=349.0
+#### A masked pattern was here ####
+val_238	238	338.0
+val_238	238	338.0
+val_238	238	338.0
+val_238	238	338.0
+val_238_n	238	338.0
+val_238_n	238	338.0
+val_238_n2	238	338.0
+val_238_n2	238	338.0
+val_238_n2	238	338.0
+val_238_n2	238	338.0
+PREHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: default@cluster_mv_4
+POSTHOOK: query: EXPLAIN
+ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_txn
+                  filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  Statistics: Num rows: 503 Data size: 91043 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9955 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: value (type: string), key (type: string), (UDFToDouble(key) + 1.0D) (type: double), (UDFToDouble(key) + 2.0D) (type: double), (UDFToDouble(key) + 100.0D) (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 55 Data size: 11275 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string), _col2 (type: double), _col3 (type: double)
+                        sort order: +++
+                        Map-reduce partition columns: _col1 (type: string), _col2 (type: double), _col3 (type: double)
+                        Statistics: Num rows: 55 Data size: 11275 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string), _col4 (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: double), KEY._col3 (type: double), VALUE._col4 (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 55 Data size: 11275 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 55 Data size: 11275 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.cluster_mv_4
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), _col3 (type: double), _col4 (type: double)
+                  outputColumnNames: value, key, tes"t, te*#"s"t, partkey
+                  Statistics: Num rows: 55 Data size: 11275 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: compute_stats(value, 'hll'), compute_stats(key, 'hll'), compute_stats(tes"t, 'hll'), compute_stats(te*#"s"t, 'hll')
+                    keys: partkey (type: double)
+                    minReductionHashAggr: 0.5090909
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 27 Data size: 46872 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: double)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: double)
+                      Statistics: Num rows: 27 Data size: 46872 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
+                keys: KEY._col0 (type: double)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 27 Data size: 47736 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col4 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  Statistics: Num rows: 27 Data size: 47736 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 27 Data size: 47736 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            partkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.cluster_mv_4
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: value, key, tes"t, te*#"s"t
+          Column Types: string, string, double, double
+          Table: default.cluster_mv_4
+
+  Stage: Stage-4
+    Materialized View Update
+      name: default.cluster_mv_4
+      updateCreationMetadata: true
+
+PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: default@cluster_mv_4
+POSTHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: default@cluster_mv_4@partkey=301.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=302.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=303.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=305.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=307.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=308.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=309.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=313.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=314.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=316.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=317.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=318.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=319.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=321.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=322.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=323.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=324.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=326.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=328.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=329.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=330.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=333.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=335.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=337.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=338.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=339.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=341.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=342.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=344.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=347.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=348.0
+POSTHOOK: Output: default@cluster_mv_4@partkey=349.0
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=301.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=301.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=301.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=301.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=302.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=302.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=302.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=302.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=303.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=303.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=303.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=303.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=305.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=305.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=305.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=305.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=307.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=307.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=307.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=307.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=308.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=308.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=308.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=308.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=309.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=309.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=309.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=309.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=313.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=313.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=313.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=313.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=314.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=314.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=314.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=314.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=316.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=316.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=316.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=316.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=317.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=317.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=317.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=317.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=318.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=318.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=318.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=318.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=319.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=319.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=319.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=319.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=321.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=321.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=321.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=321.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=322.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=322.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=322.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=322.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=323.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=323.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=323.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=323.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=324.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=324.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=324.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=324.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=326.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=326.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=326.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=326.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=328.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=328.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=328.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=328.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=329.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=329.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=329.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=329.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=330.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=330.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=330.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=330.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=333.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=333.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=333.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=333.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=335.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=335.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=335.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=335.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=337.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=337.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=337.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=337.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=338.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=338.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=338.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=338.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=339.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=339.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=339.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=339.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=341.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=341.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=341.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=341.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=342.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=342.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=342.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=342.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=344.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=344.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=344.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=344.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=347.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=347.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=347.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=347.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=348.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=348.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=348.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=348.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=349.0).key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=349.0).te*#"s"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=349.0).tes"t EXPRESSION [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cluster_mv_4 PARTITION(partkey=349.0).value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM cluster_mv_4 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cluster_mv_4
+PREHOOK: Input: default@cluster_mv_4@partkey=301.0
+PREHOOK: Input: default@cluster_mv_4@partkey=302.0
+PREHOOK: Input: default@cluster_mv_4@partkey=303.0
+PREHOOK: Input: default@cluster_mv_4@partkey=305.0
+PREHOOK: Input: default@cluster_mv_4@partkey=307.0
+PREHOOK: Input: default@cluster_mv_4@partkey=308.0
+PREHOOK: Input: default@cluster_mv_4@partkey=309.0
+PREHOOK: Input: default@cluster_mv_4@partkey=313.0
+PREHOOK: Input: default@cluster_mv_4@partkey=314.0
+PREHOOK: Input: default@cluster_mv_4@partkey=316.0
+PREHOOK: Input: default@cluster_mv_4@partkey=317.0
+PREHOOK: Input: default@cluster_mv_4@partkey=318.0
+PREHOOK: Input: default@cluster_mv_4@partkey=319.0
+PREHOOK: Input: default@cluster_mv_4@partkey=321.0
+PREHOOK: Input: default@cluster_mv_4@partkey=322.0
+PREHOOK: Input: default@cluster_mv_4@partkey=323.0
+PREHOOK: Input: default@cluster_mv_4@partkey=324.0
+PREHOOK: Input: default@cluster_mv_4@partkey=326.0
+PREHOOK: Input: default@cluster_mv_4@partkey=328.0
+PREHOOK: Input: default@cluster_mv_4@partkey=329.0
+PREHOOK: Input: default@cluster_mv_4@partkey=330.0
+PREHOOK: Input: default@cluster_mv_4@partkey=333.0
+PREHOOK: Input: default@cluster_mv_4@partkey=335.0
+PREHOOK: Input: default@cluster_mv_4@partkey=337.0
+PREHOOK: Input: default@cluster_mv_4@partkey=338.0
+PREHOOK: Input: default@cluster_mv_4@partkey=339.0
+PREHOOK: Input: default@cluster_mv_4@partkey=341.0
+PREHOOK: Input: default@cluster_mv_4@partkey=342.0
+PREHOOK: Input: default@cluster_mv_4@partkey=344.0
+PREHOOK: Input: default@cluster_mv_4@partkey=347.0
+PREHOOK: Input: default@cluster_mv_4@partkey=348.0
+PREHOOK: Input: default@cluster_mv_4@partkey=349.0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM cluster_mv_4 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cluster_mv_4
+POSTHOOK: Input: default@cluster_mv_4@partkey=301.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=302.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=303.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=305.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=307.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=308.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=309.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=313.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=314.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=316.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=317.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=318.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=319.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=321.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=322.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=323.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=324.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=326.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=328.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=329.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=330.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=333.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=335.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=337.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=338.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=339.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=341.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=342.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=344.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=347.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=348.0
+POSTHOOK: Input: default@cluster_mv_4@partkey=349.0
+#### A masked pattern was here ####
+val_238	238	239.0	240.0	338.0
+val_238	238	239.0	240.0	338.0
+val_238_n	238	239.0	240.0	338.0
+val_238_n2	238	239.0	240.0	338.0
+val_238_n2	238	239.0	240.0	338.0
+PREHOOK: query: DESCRIBE FORMATTED cluster_mv_4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cluster_mv_4
+POSTHOOK: query: DESCRIBE FORMATTED cluster_mv_4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cluster_mv_4
+# col_name            	data_type           	comment             
+value               	string              	                    
+key                 	string              	                    
+tes"t               	double              	                    
+te*#"s"t            	double              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+partkey             	double              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	materializedview.distribute.columns	[\"key\",\"tes\\\"t\",\"te*#\\\"s\\\"t\"]
+	materializedview.sort.columns	[\"key\",\"tes\\\"t\",\"te*#\\\"s\\\"t\"]
+	numFiles            	32                  
+	numPartitions       	32                  
+	numRows             	58                  
+	rawDataSize         	11257               
+	totalSize           	17105               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT src_txn.key + 100 as partkey, value, key, key+1 as tes"t, key+2 as te*#"s"t FROM src_txn where key > 200 and key < 250	 
+Expanded Query:     	SELECT `value`, `key`, `tes"t`, `te*#"s"t`, `partkey` FROM (SELECT `src_txn`.`key` + 100 as `partkey`, `src_txn`.`value`, `src_txn`.`key`, `src_txn`.`key`+1 as `tes"t`, `src_txn`.`key`+2 as `te*#"s"t` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `cluster_mv_4`	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
