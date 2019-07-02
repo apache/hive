@@ -216,7 +216,7 @@ Stage-0
                     PartitionCols:_col0
                     Group By Operator [GBY_49] (rows=288 width=353)
                       Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["sum(_col4)","count(_col4)","sum(_col28)","count(_col28)","sum(_col27)","count(_col27)"],keys:_col37
-                      Merge Join Operator [MERGEJOIN_203] (rows=2912400 width=313)
+                      Merge Join Operator [MERGEJOIN_203] (rows=2996823 width=313)
                         Conds:RS_45._col2=RS_231._col0(Inner),Output:["_col4","_col27","_col28","_col37"]
                       <-Map 17 [SIMPLE_EDGE] vectorized
                         SHUFFLE [RS_231]
@@ -230,16 +230,16 @@ Stage-0
                       <-Reducer 3 [SIMPLE_EDGE]
                         SHUFFLE [RS_45]
                           PartitionCols:_col2
-                          Filter Operator [FIL_43] (rows=2912400 width=377)
+                          Filter Operator [FIL_43] (rows=2996823 width=377)
                             predicate:(((_col30 and _col5) or (_col31 and _col6) or (_col32 and _col7)) and ((_col15 and _col16 and _col8) or (_col17 and _col18 and _col9) or (_col19 and _col20 and _col10)))
-                            Merge Join Operator [MERGEJOIN_202] (rows=10355208 width=377)
+                            Merge Join Operator [MERGEJOIN_202] (rows=10655376 width=377)
                               Conds:RS_40._col1, _col3=RS_41._col9, _col14(Inner),Output:["_col2","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col15","_col16","_col17","_col18","_col19","_col20","_col27","_col28","_col30","_col31","_col32","_col37"]
                             <-Reducer 13 [SIMPLE_EDGE]
                               SHUFFLE [RS_41]
                                 PartitionCols:_col9, _col14
-                                Select Operator [SEL_33] (rows=1056644 width=250)
+                                Select Operator [SEL_33] (rows=1086733 width=253)
                                   Output:["_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col14","_col15","_col16","_col18","_col19","_col20","_col25"]
-                                  Merge Join Operator [MERGEJOIN_201] (rows=1056644 width=250)
+                                  Merge Join Operator [MERGEJOIN_201] (rows=1086733 width=253)
                                     Conds:RS_30._col4=RS_228._col0(Inner),Output:["_col0","_col5","_col6","_col7","_col9","_col10","_col11","_col18","_col19","_col20","_col21","_col22","_col23","_col25"]
                                   <-Map 16 [SIMPLE_EDGE] vectorized
                                     SHUFFLE [RS_228]
@@ -253,7 +253,7 @@ Stage-0
                                   <-Reducer 12 [SIMPLE_EDGE]
                                     SHUFFLE [RS_30]
                                       PartitionCols:_col4
-                                      Merge Join Operator [MERGEJOIN_200] (rows=1056644 width=155)
+                                      Merge Join Operator [MERGEJOIN_200] (rows=1086733 width=158)
                                         Conds:RS_27._col1, _col13, _col14=RS_224._col0, _col1, _col2(Inner),Output:["_col0","_col4","_col5","_col6","_col7","_col9","_col10","_col11","_col18","_col19","_col20","_col21","_col22","_col23"]
                                       <-Map 15 [SIMPLE_EDGE] vectorized
                                         SHUFFLE [RS_224]
@@ -267,7 +267,7 @@ Stage-0
                                       <-Reducer 11 [SIMPLE_EDGE]
                                         SHUFFLE [RS_27]
                                           PartitionCols:_col1, _col13, _col14
-                                          Merge Join Operator [MERGEJOIN_199] (rows=1056644 width=312)
+                                          Merge Join Operator [MERGEJOIN_199] (rows=1071583 width=314)
                                             Conds:RS_24._col3=RS_225._col0(Inner),Output:["_col0","_col1","_col4","_col5","_col6","_col7","_col9","_col10","_col11","_col13","_col14"]
                                           <-Map 15 [SIMPLE_EDGE] vectorized
                                             SHUFFLE [RS_225]

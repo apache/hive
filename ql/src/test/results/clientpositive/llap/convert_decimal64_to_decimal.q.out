@@ -196,7 +196,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 894 Data size: 3224 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 958 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count(_col1)
                           Group By Vectorization:
@@ -412,7 +412,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 894 Data size: 3224 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 958 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count(_col1)
                           Group By Vectorization:

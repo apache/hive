@@ -215,7 +215,8 @@ Plan optimized by CBO.
 Vertex dependency in root stage
 Map 1 <- Reducer 3 (BROADCAST_EDGE)
 Map 4 <- Map 1 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE)
-Map 7 <- Reducer 9 (BROADCAST_EDGE)
+Map 7 <- Reducer 10 (BROADCAST_EDGE), Reducer 9 (BROADCAST_EDGE)
+Reducer 10 <- Reducer 9 (CUSTOM_SIMPLE_EDGE)
 Reducer 3 <- Map 2 (SIMPLE_EDGE)
 Reducer 5 <- Map 4 (SIMPLE_EDGE)
 Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
@@ -226,38 +227,38 @@ Stage-0
     limit:100
     Stage-1
       Reducer 6 vectorized, llap
-      File Output Operator [FS_143]
-        Limit [LIM_142] (rows=2 width=8)
+      File Output Operator [FS_148]
+        Limit [LIM_147] (rows=1 width=8)
           Number of rows:100
-          Select Operator [SEL_141] (rows=2 width=8)
+          Select Operator [SEL_146] (rows=1 width=8)
             Output:["_col0"]
           <-Reducer 5 [SIMPLE_EDGE] vectorized, llap
-            SHUFFLE [RS_140]
-              Select Operator [SEL_139] (rows=2 width=8)
+            SHUFFLE [RS_145]
+              Select Operator [SEL_144] (rows=1 width=8)
                 Output:["_col0"]
-                Group By Operator [GBY_138] (rows=2 width=12)
+                Group By Operator [GBY_143] (rows=1 width=12)
                   Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                 <-Map 4 [SIMPLE_EDGE] vectorized, llap
-                  SHUFFLE [RS_137]
+                  SHUFFLE [RS_142]
                     PartitionCols:_col0
-                    Group By Operator [GBY_136] (rows=2 width=12)
+                    Group By Operator [GBY_141] (rows=1 width=12)
                       Output:["_col0","_col1"],aggregations:["count()"],keys:_col8
-                      Map Join Operator [MAPJOIN_135] (rows=5185194 width=4)
-                        Conds:MAPJOIN_134._col6=RS_128._col0(Inner),Output:["_col8"]
+                      Map Join Operator [MAPJOIN_140] (rows=2592597 width=4)
+                        Conds:MAPJOIN_139._col6=RS_133._col0(Inner),Output:["_col8"]
                       <-Map 7 [BROADCAST_EDGE] vectorized, llap
-                        BROADCAST [RS_128]
+                        BROADCAST [RS_133]
                           PartitionCols:_col0
-                          Map Join Operator [MAPJOIN_127] (rows=28 width=8)
-                            Conds:SEL_126._col1=RS_124._col0(Inner),Output:["_col0","_col1"]
+                          Map Join Operator [MAPJOIN_132] (rows=14 width=8)
+                            Conds:SEL_131._col1=RS_124._col0(Inner),Output:["_col0","_col1"]
                           <-Reducer 9 [BROADCAST_EDGE] vectorized, llap
-                            BROADCAST [RS_124]
+                            PARTITION_ONLY_SHUFFLE [RS_124]
                               PartitionCols:_col0
-                              Group By Operator [GBY_123] (rows=2 width=4)
+                              Group By Operator [GBY_123] (rows=1 width=4)
                                 Output:["_col0"],keys:KEY._col0
                               <-Map 8 [SIMPLE_EDGE] vectorized, llap
                                 SHUFFLE [RS_122]
                                   PartitionCols:_col0
-                                  Group By Operator [GBY_121] (rows=2 width=4)
+                                  Group By Operator [GBY_121] (rows=1 width=4)
                                     Output:["_col0"],keys:d_month_seq
                                     Select Operator [SEL_120] (rows=4 width=12)
                                       Output:["d_month_seq"]
@@ -265,20 +266,24 @@ Stage-0
                                         predicate:((d_year = 2000) and ((d_year * d_moy) > 200000) and (d_moy = 2) and d_month_seq is not null)
                                         TableScan [TS_17] (rows=28 width=12)
                                           default@x1_date_dim,x1_date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_month_seq","d_year","d_moy"]
-                          <-Select Operator [SEL_126] (rows=28 width=8)
+                          <-Select Operator [SEL_131] (rows=28 width=8)
                               Output:["_col0","_col1"]
-                              Filter Operator [FIL_125] (rows=28 width=8)
-                                predicate:(d_date_sk is not null and d_month_seq is not null)
+                              Filter Operator [FIL_130] (rows=28 width=8)
+                                predicate:(d_date_sk is not null and d_month_seq is not null and d_month_seq BETWEEN DynamicValue(RS_25_x1_date_dim_d_month_seq_min) AND DynamicValue(RS_25_x1_date_dim_d_month_seq_max) and in_bloom_filter(d_month_seq, DynamicValue(RS_25_x1_date_dim_d_month_seq_bloom_filter)))
                                 TableScan [TS_14] (rows=28 width=8)
                                   default@x1_date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_month_seq"]
-                        Dynamic Partitioning Event Operator [EVENT_131] (rows=1 width=4)
-                          Group By Operator [GBY_130] (rows=1 width=4)
+                                <-Reducer 10 [BROADCAST_EDGE] vectorized, llap
+                                  BROADCAST [RS_129]
+                                    Group By Operator [GBY_128] (rows=1 width=12)
+                                      Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                        Dynamic Partitioning Event Operator [EVENT_136] (rows=1 width=4)
+                          Group By Operator [GBY_135] (rows=1 width=4)
                             Output:["_col0"],keys:_col0
-                            Select Operator [SEL_129] (rows=28 width=8)
+                            Select Operator [SEL_134] (rows=14 width=8)
                               Output:["_col0"]
-                               Please refer to the previous Map Join Operator [MAPJOIN_127]
-                      <-Map Join Operator [MAPJOIN_134] (rows=370371 width=4)
-                          Conds:RS_31._col0=SEL_133._col0(Inner),Output:["_col6"]
+                               Please refer to the previous Map Join Operator [MAPJOIN_132]
+                      <-Map Join Operator [MAPJOIN_139] (rows=370371 width=4)
+                          Conds:RS_31._col0=SEL_138._col0(Inner),Output:["_col6"]
                         <-Map 1 [BROADCAST_EDGE] llap
                           BROADCAST [RS_31]
                             PartitionCols:_col0
@@ -308,9 +313,9 @@ Stage-0
                                   predicate:(i_item_sk is not null and i_category is not null and i_current_price is not null)
                                   TableScan [TS_0] (rows=18 width=201)
                                     default@x1_item,i,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_category","i_current_price"]
-                        <-Select Operator [SEL_133] (rows=123457 width=8)
+                        <-Select Operator [SEL_138] (rows=123457 width=8)
                             Output:["_col0","_col1"]
-                            Filter Operator [FIL_132] (rows=123457 width=8)
+                            Filter Operator [FIL_137] (rows=123457 width=8)
                               predicate:ss_item_sk is not null
                               TableScan [TS_11] (rows=123457 width=8)
                                 default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_item_sk"]
