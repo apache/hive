@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -220,6 +221,12 @@ import java.util.concurrent.Executors;
  */
 @SuppressWarnings({ "nls", "deprecation" })
 public final class Utilities {
+
+  /**
+   * Mapper to use to serialize/deserialize JSON objects ().
+   */
+  public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
   /**
    * A logger mostly used to trace-log the details of Hive table file operations. Filtering the
    * logs for FileOperations (with trace logs present) allows one to debug what Hive has done with
@@ -4609,5 +4616,21 @@ public final class Utilities {
   public static SupplierWithCheckedException<FileSystem, IOException> getFsSupplier(final Path path,
     final Configuration conf) {
     return () -> path.getFileSystem(conf);
+  }
+
+  public static String encodeColumnNames(List<String> colNames) throws SemanticException {
+    try {
+      return JSON_MAPPER.writeValueAsString(colNames);
+    } catch (IOException e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static List<String> decodeColumnNames(String colNamesStr) throws SemanticException {
+    try {
+      return JSON_MAPPER.readValue(colNamesStr, List.class);
+    } catch (IOException e) {
+      throw new SemanticException(e);
+    }
   }
 }
