@@ -518,7 +518,9 @@ public enum ErrorMsg {
   REPL_INVALID_DB_OR_TABLE_PATTERN(20021,
           "Invalid pattern for the DB or table name in the replication policy. "
                   + "It should be a valid regex enclosed within single or double quotes."),
-  REPL_EVENTS_WITH_DUPLICATE_ID_IN_METASTORE(20026, "Notification events with duplicate " +
+  //if the error message is changed for REPL_EVENTS_WITH_DUPLICATE_ID_IN_METASTORE, then need
+  //modification in getNextNotification method in HiveMetaStoreClient
+  REPL_EVENTS_WITH_DUPLICATE_ID_IN_METASTORE(20022, "Notification events with duplicate " +
           "event ids in the meta store."),
 
   // An exception from runtime that will show the full stack to client

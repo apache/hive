@@ -10004,9 +10004,10 @@ public class ObjectStore implements RawStore, Configurable {
     if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY && directSql != null) {
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
-      // only one row in the table, this shouldn't cause any performance degradation. Also we not
-      // suggest Derby to be used in production so that's fine.
-      directSql.lockDbTable("NOTIFICATION_SEQUENCE");
+      // only one row in the table, this shouldn't cause any performance degradation.
+      new RetryingExecutor(conf, () -> {
+        directSql.lockDbTable("NOTIFICATION_SEQUENCE");
+      }).run();
     } else {
       String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
       String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);

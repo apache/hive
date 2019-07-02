@@ -1000,8 +1000,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
-      // only one row in the table, this shouldn't cause any performance degradation. Also we not
-      // suggest Derby to be used in production so that's fine.
+      // only one row in the table, this shouldn't cause any performance degradation.
       if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY) {
         String lockingQuery = "lock table \"NOTIFICATION_SEQUENCE\" in exclusive mode";
         LOG.info("Going to execute query <" + lockingQuery + ">");
