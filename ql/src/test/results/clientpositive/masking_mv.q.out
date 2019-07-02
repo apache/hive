@@ -117,7 +117,9 @@ STAGE PLANS:
           Table: default.masking_test_view_n_mv
 
   Stage: Stage-9
-    Materialized View Work
+    Materialized View Update
+      name: default.masking_test_view_n_mv
+      retrieveAndInclude: true
 
   Stage: Stage-3
     Merge File Operator
@@ -789,7 +791,9 @@ STAGE PLANS:
           Table: default.masking_test_view_n_mv_2
 
   Stage: Stage-9
-    Materialized View Work
+    Materialized View Update
+      name: default.masking_test_view_n_mv_2
+      retrieveAndInclude: true
 
   Stage: Stage-3
     Merge File Operator

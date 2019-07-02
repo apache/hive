@@ -228,7 +228,8 @@ STAGE PLANS:
           Table: default.cmv_mat_view_n3
 
   Stage: Stage-5
-    Materialized View Work
+    Materialized View Update
+      name: default.cmv_mat_view_n3
 
   Stage: Stage-0
     Move Operator
@@ -469,9 +470,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    Alter Materialized View
+    Alter Materialized View Rewrite
       name: default.cmv_mat_view_n3
-      operation: UPDATE_REWRITE_FLAG
+      enable: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n3 ENABLE REWRITE
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
@@ -792,7 +793,9 @@ STAGE PLANS:
           Table: default.cmv_mat_view_n3
 
   Stage: Stage-4
-    Materialized View Work
+    Materialized View Update
+      name: default.cmv_mat_view_n3
+      updateCreationMetadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n3 REBUILD
 PREHOOK: type: QUERY

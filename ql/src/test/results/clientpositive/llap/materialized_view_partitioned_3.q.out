@@ -150,5 +150,7 @@ STAGE PLANS:
           Table: default.partition_mv_sdp
 
   Stage: Stage-5
-    Materialized View Work
+    Materialized View Update
+      name: default.partition_mv_sdp
+      retrieveAndInclude: true
 

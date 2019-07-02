@@ -107,6 +107,7 @@ import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableUnsetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -120,7 +121,6 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
-import org.apache.hadoop.hive.ql.exec.MaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
@@ -338,7 +338,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   Map<String, PrunedPartitionList> prunedPartitions;
   protected List<FieldSchema> resultSchema;
   protected CreateViewDesc createVwDesc;
-  protected MaterializedViewDesc materializedViewUpdateDesc;
+  protected MaterializedViewUpdateDesc materializedViewUpdateDesc;
   protected ArrayList<String> viewsExpanded;
   protected ASTNode viewSelect;
   protected final UnparseTranslator unparseTranslator;
@@ -7362,7 +7362,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (destinationTable.isMaterializedView()) {
-        materializedViewUpdateDesc = new MaterializedViewDesc(
+        materializedViewUpdateDesc = new MaterializedViewUpdateDesc(
             destinationTable.getFullyQualifiedName(), false, false, true);
       }
 

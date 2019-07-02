@@ -227,7 +227,9 @@ STAGE PLANS:
           Table: default.cmv_mat_view_n1
 
   Stage: Stage-5
-    Materialized View Work
+    Materialized View Update
+      name: default.cmv_mat_view_n1
+      retrieveAndInclude: true
 
   Stage: Stage-0
     Move Operator
@@ -673,7 +675,9 @@ STAGE PLANS:
           Table: default.cmv_mat_view_n1
 
   Stage: Stage-4
-    Materialized View Work
+    Materialized View Update
+      name: default.cmv_mat_view_n1
+      updateCreationMetadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n1 REBUILD
 PREHOOK: type: QUERY
