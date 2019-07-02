@@ -344,7 +344,9 @@ STAGE PLANS:
           Table: default.cmv_mat_view_n6
 
   Stage: Stage-4
-    Materialized View Work
+    Materialized View Update
+      name: default.cmv_mat_view_n6
+      updateCreationMetadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 PREHOOK: type: QUERY
@@ -614,7 +616,9 @@ STAGE PLANS:
           Table: default.cmv_mat_view_n6
 
   Stage: Stage-4
-    Materialized View Work
+    Materialized View Update
+      name: default.cmv_mat_view_n6
+      updateCreationMetadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 PREHOOK: type: QUERY
@@ -840,7 +844,9 @@ STAGE PLANS:
           Table: default.cmv_mat_view_n6
 
   Stage: Stage-4
-    Materialized View Work
+    Materialized View Update
+      name: default.cmv_mat_view_n6
+      updateCreationMetadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 PREHOOK: type: QUERY
@@ -1070,7 +1076,9 @@ STAGE PLANS:
           Table: default.cmv_mat_view_n6
 
   Stage: Stage-4
-    Materialized View Work
+    Materialized View Update
+      name: default.cmv_mat_view_n6
+      updateCreationMetadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 PREHOOK: type: QUERY
