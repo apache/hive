@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
@@ -134,6 +135,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -1685,8 +1687,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       case HiveParser.TOK_DISTRIBUTEBY:
         // Get the distribute by aliases - these are aliased to the entries in
-        // the
-        // select list
+        // the select list
         queryProperties.setHasDistributeBy(true);
         qbp.setDistributeByExprForClause(ctx_1.dest, ast);
         if (qbp.getClusterByForClause(ctx_1.dest) != null) {
@@ -4787,6 +4788,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     col_list.addAll(new_col_list);
     return newOutputRR;
   }
+
   String recommendName(ExprNodeDesc exp, String colAlias) {
     if (!colAlias.startsWith(autogenColAliasPrfxLbl)) {
       return null;
@@ -6957,7 +6959,135 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  @SuppressWarnings("unchecked")
+  private Operator genMaterializedViewDataOrgPlan(Table destinationTable, String sortColsStr, String distributeColsStr,
+      RowResolver inputRR, Operator input) throws SemanticException {
+    Map<String, Integer> colNameToIdx = new HashMap<>();
+    for (int i = 0; i < destinationTable.getCols().size(); i++) {
+      colNameToIdx.put(destinationTable.getCols().get(i).getName(), i);
+    }
+    List<ColumnInfo> colInfos = inputRR.getColumnInfos();
+    List<ColumnInfo> sortColInfos = new ArrayList<>();
+    if (sortColsStr != null) {
+      Utilities.decodeColumnNames(sortColsStr)
+          .forEach(s -> sortColInfos.add(colInfos.get(colNameToIdx.get(s))));
+    }
+    List<ColumnInfo> distributeColInfos = new ArrayList<>();
+    if (distributeColsStr != null) {
+      Utilities.decodeColumnNames(distributeColsStr)
+          .forEach(s -> distributeColInfos.add(colInfos.get(colNameToIdx.get(s))));
+    }
+    return genMaterializedViewDataOrgPlan(sortColInfos, distributeColInfos, inputRR, input);
+  }
+
+  private Operator genMaterializedViewDataOrgPlan(List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos,
+      RowResolver inputRR, Operator input) {
+    // In this case, we will introduce a RS and immediately after a SEL that restores
+    // the row schema to what follow-up operations are expecting
+    Set<String> keys = sortColInfos.stream()
+        .map(ColumnInfo::getInternalName)
+        .collect(Collectors.toSet());
+    Set<String> distributeKeys = distributeColInfos.stream()
+        .map(ColumnInfo::getInternalName)
+        .collect(Collectors.toSet());
+    ArrayList<ExprNodeDesc> keyCols = new ArrayList<>();
+    ArrayList<String> keyColNames = new ArrayList<>();
+    StringBuilder order = new StringBuilder();
+    StringBuilder nullOrder = new StringBuilder();
+    ArrayList<ExprNodeDesc> valCols = new ArrayList<>();
+    ArrayList<String> valColNames = new ArrayList<>();
+    ArrayList<ExprNodeDesc> partCols = new ArrayList<>();
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
+    Map<String, String> nameMapping = new HashMap<>();
+    // map _col0 to KEY._col0, etc
+    for (ColumnInfo ci : inputRR.getRowSchema().getSignature()) {
+      ExprNodeColumnDesc e = new ExprNodeColumnDesc(ci);
+      String columnName = ci.getInternalName();
+      if (keys.contains(columnName)) {
+        // key (sort column)
+        keyColNames.add(columnName);
+        keyCols.add(e);
+        colExprMap.put(Utilities.ReduceField.KEY + "." + columnName, e);
+        nameMapping.put(columnName, Utilities.ReduceField.KEY + "." + columnName);
+        order.append("+");
+        nullOrder.append("a");
+      } else {
+        // value
+        valColNames.add(columnName);
+        valCols.add(e);
+        colExprMap.put(Utilities.ReduceField.VALUE + "." + columnName, e);
+        nameMapping.put(columnName, Utilities.ReduceField.VALUE + "." + columnName);
+      }
+      if (distributeKeys.contains(columnName)) {
+        // distribute column
+        partCols.add(e.clone());
+      }
+    }
+    // Create Key/Value TableDesc. When the operator plan is split into MR tasks,
+    // the reduce operator will initialize Extract operator with information
+    // from Key and Value TableDesc
+    List<FieldSchema> fields = PlanUtils.getFieldSchemasFromColumnList(keyCols,
+        keyColNames, 0, "");
+    TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(fields, order.toString(), nullOrder.toString());
+    List<FieldSchema> valFields = PlanUtils.getFieldSchemasFromColumnList(valCols,
+        valColNames, 0, "");
+    TableDesc valueTable = PlanUtils.getReduceValueTableDesc(valFields);
+    List<List<Integer>> distinctColumnIndices = new ArrayList<>();
+    // Number of reducers is set to default (-1)
+    ReduceSinkDesc rsConf = new ReduceSinkDesc(keyCols, keyCols.size(), valCols,
+        keyColNames, distinctColumnIndices, valColNames, -1, partCols, -1, keyTable,
+        valueTable, Operation.NOT_ACID);
+    RowResolver rsRR = new RowResolver();
+    ArrayList<ColumnInfo> rsSignature = new ArrayList<>();
+    for (int index = 0; index < input.getSchema().getSignature().size(); index++) {
+      ColumnInfo colInfo = new ColumnInfo(input.getSchema().getSignature().get(index));
+      String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
+      String[] nm2 = inputRR.getAlternateMappings(colInfo.getInternalName());
+      colInfo.setInternalName(nameMapping.get(colInfo.getInternalName()));
+      rsSignature.add(colInfo);
+      rsRR.put(nm[0], nm[1], colInfo);
+      if (nm2 != null) {
+        rsRR.addMappingOnly(nm2[0], nm2[1], colInfo);
+      }
+    }
+    Operator<?> result = putOpInsertMap(OperatorFactory.getAndMakeChild(
+        rsConf, new RowSchema(rsSignature), input), rsRR);
+    result.setColumnExprMap(colExprMap);
+
+    // Create SEL operator
+    RowResolver selRR = new RowResolver();
+    ArrayList<ColumnInfo> selSignature = new ArrayList<>();
+    List<ExprNodeDesc> columnExprs = new ArrayList<>();
+    List<String> colNames = new ArrayList<>();
+    Map<String, ExprNodeDesc> selColExprMap = new HashMap<>();
+    for (int index = 0; index < input.getSchema().getSignature().size(); index++) {
+      ColumnInfo colInfo = new ColumnInfo(input.getSchema().getSignature().get(index));
+      String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
+      String[] nm2 = inputRR.getAlternateMappings(colInfo.getInternalName());
+      selSignature.add(colInfo);
+      selRR.put(nm[0], nm[1], colInfo);
+      if (nm2 != null) {
+        selRR.addMappingOnly(nm2[0], nm2[1], colInfo);
+      }
+      String colName = colInfo.getInternalName();
+      ExprNodeDesc exprNodeDesc;
+      if (keys.contains(colName)) {
+        exprNodeDesc = new ExprNodeColumnDesc(colInfo.getType(), ReduceField.KEY.toString() + "." + colName, null, false);
+        columnExprs.add(exprNodeDesc);
+      } else {
+        exprNodeDesc = new ExprNodeColumnDesc(colInfo.getType(), ReduceField.VALUE.toString() + "." + colName, null, false);
+        columnExprs.add(exprNodeDesc);
+      }
+      colNames.add(colName);
+      selColExprMap.put(colName, exprNodeDesc);
+    }
+    SelectDesc selConf = new SelectDesc(columnExprs, colNames);
+    result = putOpInsertMap(OperatorFactory.getAndMakeChild(
+        selConf, new RowSchema(selSignature), result), selRR);
+    result.setColumnExprMap(selColExprMap);
+
+    return result;
+  }
+
   private void setStatsForNonNativeTable(String dbName, String tableName) throws SemanticException {
     String qTableName = DDLSemanticAnalyzer.getDotName(new String[] { dbName,
         tableName });
@@ -7297,8 +7427,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Add NOT NULL constraint check
       input = genConstraintsPlan(dest, qb, input);
 
-      // Add sorting/bucketing if needed
-      input = genBucketingSortingDest(dest, input, qb, tableDescriptor, destinationTable, rsCtx);
+      if (destinationTable.isMaterializedView() &&
+          mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
+        // Data organization (DISTRIBUTED, SORTED, CLUSTERED) for materialized view
+        // TODO: We only do this for a full rebuild
+        String sortColsStr = destinationTable.getProperty(Constants.MATERIALIZED_VIEW_SORT_COLUMNS);
+        String distributeColsStr = destinationTable.getProperty(Constants.MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS);
+        if (sortColsStr != null || distributeColsStr != null) {
+          input = genMaterializedViewDataOrgPlan(destinationTable, sortColsStr, distributeColsStr, inputRR, input);
+        }
+      } else {
+        // Add sorting/bucketing if needed
+        input = genBucketingSortingDest(dest, input, qb, tableDescriptor, destinationTable, rsCtx);
+      }
 
       idToTableNameMap.put(String.valueOf(destTableId), destinationTable.getTableName());
       currentTableId = destTableId;
@@ -7414,8 +7555,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Add NOT NULL constraint check
       input = genConstraintsPlan(dest, qb, input);
 
-      // Add sorting/bucketing if needed
-      input = genBucketingSortingDest(dest, input, qb, tableDescriptor, destinationTable, rsCtx);
+      if (destinationTable.isMaterializedView() &&
+          mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
+        // Data organization (DISTRIBUTED, SORTED, CLUSTERED) for materialized view
+        // TODO: We only do this for a full rebuild
+        String sortColsStr = destinationTable.getProperty(Constants.MATERIALIZED_VIEW_SORT_COLUMNS);
+        String distributeColsStr = destinationTable.getProperty(Constants.MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS);
+        if (sortColsStr != null || distributeColsStr != null) {
+          input = genMaterializedViewDataOrgPlan(destinationTable, sortColsStr, distributeColsStr, inputRR, input);
+        }
+      } else {
+        // Add sorting/bucketing if needed
+        input = genBucketingSortingDest(dest, input, qb, tableDescriptor, destinationTable, rsCtx);
+      }
 
       idToTableNameMap.put(String.valueOf(destTableId), destinationTable.getTableName());
       currentTableId = destTableId;
@@ -7479,7 +7631,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<FieldSchema> fieldSchemas = null;
       List<FieldSchema> partitionColumns = null;
       List<String> partitionColumnNames = null;
+      List<FieldSchema> sortColumns = null;
+      List<String> sortColumnNames = null;
+      List<FieldSchema> distributeColumns = null;
+      List<String> distributeColumnNames = null;
       List<ColumnInfo> fileSinkColInfos = null;
+      List<ColumnInfo> sortColInfos = null;
+      List<ColumnInfo> distributeColInfos = null;
       CreateTableDesc tblDesc = qb.getTableDesc();
       CreateViewDesc viewDesc = qb.getViewDesc();
       if (tblDesc != null) {
@@ -7518,7 +7676,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         fieldSchemas = new ArrayList<>();
         partitionColumns = new ArrayList<>();
         partitionColumnNames = viewDesc.getPartColNames();
+        sortColumns = new ArrayList<>();
+        sortColumnNames = viewDesc.getSortColNames();
+        distributeColumns = new ArrayList<>();
+        distributeColumnNames = viewDesc.getDistributeColNames();
         fileSinkColInfos = new ArrayList<>();
+        sortColInfos = new ArrayList<>();
+        distributeColInfos = new ArrayList<>();
         destTableIsTemporary = false;
         destTableIsMaterialization = false;
       }
@@ -7552,8 +7716,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       if (!CollectionUtils.isEmpty(partitionColumnNames)) {
         ColsAndTypes ct = deriveFileSinkColTypes(
-            inputRR, partitionColumnNames, fieldSchemas, partitionColumns,
-            fileSinkColInfos);
+            inputRR, partitionColumnNames, sortColumnNames, distributeColumnNames, fieldSchemas, partitionColumns,
+            sortColumns, distributeColumns, fileSinkColInfos, sortColInfos, distributeColInfos);
         cols = ct.cols;
         colTypes = ct.colTypes;
         dpCtx = new DynamicPartitionCtx(partitionColumnNames,
@@ -7564,7 +7728,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         dpCtx.setRootPath(queryTmpdir);
         isPartitioned = true;
       } else {
-        ColsAndTypes ct = deriveFileSinkColTypes(inputRR, fieldSchemas);
+        ColsAndTypes ct = deriveFileSinkColTypes(
+            inputRR, sortColumnNames, distributeColumnNames, fieldSchemas, sortColumns, distributeColumns,
+            sortColInfos, distributeColInfos);
         cols = ct.cols;
         colTypes = ct.colTypes;
         isPartitioned = false;
@@ -7577,6 +7743,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (viewDesc != null) {
         viewDesc.setSchema(new ArrayList<>(fieldSchemas));
         viewDesc.setPartCols(new ArrayList<>(partitionColumns));
+        if (viewDesc.isOrganized()) {
+          viewDesc.setSortCols(new ArrayList<>(sortColumns));
+          viewDesc.setDistributeCols(new ArrayList<>(distributeColumns));
+        }
       }
 
       boolean isDestTempFile = true;
@@ -7633,6 +7803,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       destTableIsFullAcid = AcidUtils.isFullAcidTable(destinationTable);
 
+      // Data organization (DISTRIBUTED, SORTED, CLUSTERED) for materialized view
+      if (viewDesc != null && viewDesc.isOrganized()) {
+        input = genMaterializedViewDataOrgPlan(sortColInfos, distributeColInfos, inputRR, input);
+      }
+
       if (isPartitioned) {
         // Create a SELECT that may reorder the columns if needed
         RowResolver rowResolver = new RowResolver();
@@ -7654,7 +7829,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         input.setColumnExprMap(colExprMap);
 
         // If this is a partitioned CTAS or MV statement, we are going to create a LoadTableDesc
-        // object. Although the table does not exist in metastore, we will swamp the CreateTableTask
+        // object. Although the table does not exist in metastore, we will swap the CreateTableTask
         // and MoveTask resulting from this LoadTable so in this specific case, first we create
         // the metastore table, then we move and commit the partitions. At least for the time being,
         // this order needs to be enforced because metastore expects a table to exist before we can
@@ -7817,20 +7992,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     serdeClassName.equalsIgnoreCase(ArrowColumnarBatchSerDe.class.getName());
   }
 
-  private ColsAndTypes deriveFileSinkColTypes(RowResolver inputRR, List<FieldSchema> field_schemas)
-      throws SemanticException {
-    return deriveFileSinkColTypes(inputRR, new ArrayList<>(), field_schemas, new ArrayList<>(), new ArrayList<>());
+  private ColsAndTypes deriveFileSinkColTypes(RowResolver inputRR, List<String> sortColumnNames, List<String> distributeColumnNames,
+      List<FieldSchema> fieldSchemas, List<FieldSchema> sortColumns, List<FieldSchema> distributeColumns,
+      List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos) throws SemanticException {
+    return deriveFileSinkColTypes(inputRR, new ArrayList<>(), sortColumnNames, distributeColumnNames,
+        fieldSchemas, new ArrayList<>(), sortColumns, distributeColumns, new ArrayList<>(),
+        sortColInfos, distributeColInfos);
   }
 
   private ColsAndTypes deriveFileSinkColTypes(
-      RowResolver inputRR, List<String> partitionColumnNames,
-      List<FieldSchema> columns, List<FieldSchema> partitionColumns,
-      List<ColumnInfo> fileSinkColInfos) throws SemanticException {
+      RowResolver inputRR, List<String> partitionColumnNames, List<String> sortColumnNames, List<String> distributeColumnNames,
+      List<FieldSchema> columns, List<FieldSchema> partitionColumns, List<FieldSchema> sortColumns, List<FieldSchema> distributeColumns,
+      List<ColumnInfo> fileSinkColInfos, List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos) throws SemanticException {
     ColsAndTypes result = new ColsAndTypes("", "");
     List<String> allColumns = new ArrayList<>();
     List<ColumnInfo> colInfos = inputRR.getColumnInfos();
     List<ColumnInfo> nonPartColInfos = new ArrayList<>();
     SortedMap<Integer, Pair<FieldSchema, ColumnInfo>> partColInfos = new TreeMap<>();
+    SortedMap<Integer, Pair<FieldSchema, ColumnInfo>> sColInfos = new TreeMap<>();
+    SortedMap<Integer, Pair<FieldSchema, ColumnInfo>> dColInfos = new TreeMap<>();
     boolean first = true;
     int numNonPartitionedCols = colInfos.size() - partitionColumnNames.size();
     if (numNonPartitionedCols <= 0) {
@@ -7865,6 +8045,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           partColInfos.put(idx, Pair.of(col, colInfo));
           isPartitionCol = true;
         } else {
+          if (sortColumnNames != null) {
+            idx = sortColumnNames.indexOf(colName);
+            if (idx >= 0) {
+              sColInfos.put(idx, Pair.of(col, colInfo));
+            }
+          }
+          if (distributeColumnNames != null) {
+            idx = distributeColumnNames.indexOf(colName);
+            if (idx >= 0) {
+              dColInfos.put(idx, Pair.of(col, colInfo));
+            }
+          }
           columns.add(col);
           nonPartColInfos.add(colInfo);
         }
@@ -7907,10 +8099,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         "Partition columns: " + partitionColumnNames);
     }
 
+    if (sortColumnNames != null && sColInfos.size() != sortColumnNames.size()) {
+      throw new SemanticException("Table declaration contains cluster/sort columns that are not present " +
+          "in query result schema. " +
+          "Query columns: " + allColumns + ". " +
+          "Organization columns: " + sortColumnNames);
+    }
+
+    if (distributeColumnNames != null && dColInfos.size() != distributeColumnNames.size()) {
+      throw new SemanticException("Table declaration contains cluster/distribute columns that are not present " +
+          "in query result schema. " +
+          "Query columns: " + allColumns + ". " +
+          "Organization columns: " + distributeColumnNames);
+    }
+
     // FileSinkColInfos comprise nonPartCols followed by partCols
     fileSinkColInfos.addAll(nonPartColInfos);
     partitionColumns.addAll(partColInfos.values().stream().map(Pair::getLeft).collect(Collectors.toList()));
     fileSinkColInfos.addAll(partColInfos.values().stream().map(Pair::getRight).collect(Collectors.toList()));
+    // data org columns
+    if (sortColumnNames != null) {
+      sortColumns.addAll(sColInfos.values().stream().map(Pair::getLeft).collect(Collectors.toList()));
+      sortColInfos.addAll(sColInfos.values().stream().map(Pair::getRight).collect(Collectors.toList()));
+    }
+    if (distributeColumnNames != null) {
+      distributeColumns.addAll(dColInfos.values().stream().map(Pair::getLeft).collect(Collectors.toList()));
+      distributeColInfos.addAll(dColInfos.values().stream().map(Pair::getRight).collect(Collectors.toList()));
+    }
 
     return result;
   }
@@ -13717,6 +13932,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode selectStmt = null;
     Map<String, String> tblProps = null;
     List<String> partColNames = null;
+    List<String> sortColNames = null;
+    List<String> distributeColNames = null;
     boolean isMaterialized = ast.getToken().getType() == HiveParser.TOK_CREATE_MATERIALIZED_VIEW;
     boolean isRebuild = false;
     String location = null;
@@ -13760,6 +13977,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_VIEWPARTCOLS:
         partColNames = getColumnNames((ASTNode) child.getChild(0));
         break;
+      case HiveParser.TOK_VIEWCLUSTERCOLS:
+        assert distributeColNames == null && sortColNames == null;
+        distributeColNames = getColumnNames((ASTNode) child.getChild(0));
+        sortColNames = new ArrayList<>(distributeColNames);
+        break;
+      case HiveParser.TOK_VIEWDISTRIBUTECOLS:
+        assert distributeColNames == null;
+        distributeColNames = getColumnNames((ASTNode) child.getChild(0));
+        break;
+      case HiveParser.TOK_VIEWSORTCOLS:
+        assert sortColNames == null;
+        sortColNames = getColumnNames((ASTNode) child.getChild(0));
+        break;
       case HiveParser.TOK_TABLEROWFORMAT:
         rowFormatParams.analyzeRowFormat(child);
         break;
@@ -13787,16 +14017,38 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Can't combine IF NOT EXISTS and OR REPLACE.");
     }
 
-    if (isMaterialized && !ifNotExists) {
-      // Verify that the table does not already exist
-      // dumpTable is only used to check the conflict for non-temporary tables
-      try {
-        Table dumpTable = db.newTable(dbDotTable);
-        if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false) && !ctx.isExplainSkipExecution()) {
-          throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(dbDotTable));
+    if (isMaterialized) {
+      if (!ifNotExists) {
+        // Verify that the table does not already exist
+        // dumpTable is only used to check the conflict for non-temporary tables
+        try {
+          Table dumpTable = db.newTable(dbDotTable);
+          if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false) && !ctx.isExplainSkipExecution()) {
+            throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(dbDotTable));
+          }
+        } catch (HiveException e) {
+          throw new SemanticException(e);
         }
-      } catch (HiveException e) {
-        throw new SemanticException(e);
+      }
+      if (partColNames != null && (distributeColNames != null || sortColNames != null)) {
+        // Verify that partition columns and data organization columns are not overlapping
+        Set<String> partColNamesSet = new HashSet<>(partColNames);
+        if (distributeColNames != null) {
+          for (String colName : distributeColNames) {
+            if (partColNamesSet.contains(colName)) {
+              throw new SemanticException("Same column cannot be present in partition and cluster/distribute clause. "
+                  + "Column name: " + colName);
+            }
+          }
+        }
+        if (sortColNames != null) {
+          for (String colName : sortColNames) {
+            if (partColNamesSet.contains(colName)) {
+              throw new SemanticException("Same column cannot be present in partition and cluster/sort clause. "
+                  + "Column name: " + colName);
+            }
+          }
+        }
       }
     }
 
@@ -13810,7 +14062,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (isMaterialized) {
       createVwDesc = new CreateViewDesc(
-          dbDotTable, cols, comment, tblProps, partColNames,
+          dbDotTable, cols, comment, tblProps, partColNames, sortColNames, distributeColNames,
           ifNotExists, isRebuild, rewriteEnabled, isAlterViewAs,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
           location, storageFormat.getSerde(), storageFormat.getStorageHandler(),

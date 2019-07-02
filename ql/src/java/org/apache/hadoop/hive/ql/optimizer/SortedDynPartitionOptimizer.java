@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -153,6 +154,14 @@ public class SortedDynPartitionOptimizer extends Transform {
       Table destTable = fsOp.getConf().getTable();
       if (destTable == null) {
         LOG.debug("Bailing out of sort dynamic partition optimization as destination table is null");
+        return null;
+      }
+
+      if (destTable.isMaterializedView() &&
+          (destTable.getProperty(Constants.MATERIALIZED_VIEW_SORT_COLUMNS) != null ||
+          destTable.getProperty(Constants.MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS) != null)) {
+        LOG.debug("Bailing out of sort dynamic partition optimization as destination is a materialized view"
+            + "with CLUSTER/SORT/DISTRIBUTE spec");
         return null;
       }
 

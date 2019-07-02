@@ -267,6 +267,9 @@ TOK_ALTER_MATERIALIZED_VIEW_REBUILD;
 TOK_REWRITE_ENABLED;
 TOK_REWRITE_DISABLED;
 TOK_VIEWPARTCOLS;
+TOK_VIEWCLUSTERCOLS;
+TOK_VIEWDISTRIBUTECOLS;
+TOK_VIEWSORTCOLS;
 TOK_EXPLAIN;
 TOK_EXPLAIN_SQ_REWRITE;
 TOK_TABLESERIALIZER;
@@ -1976,6 +1979,40 @@ viewPartition
     -> ^(TOK_VIEWPARTCOLS columnNameList)
     ;
 
+viewOrganization
+@init { pushMsg("view organization specification", state); }
+@after { popMsg(state); }
+    : viewClusterSpec
+    | viewComplexSpec
+    ;
+
+viewClusterSpec
+@init { pushMsg("view cluster specification", state); }
+@after { popMsg(state); }
+    : KW_CLUSTERED KW_ON LPAREN columnNameList RPAREN
+    -> ^(TOK_VIEWCLUSTERCOLS columnNameList)
+    ;
+
+viewComplexSpec
+@init { pushMsg("view complex specification", state); }
+@after { popMsg(state); }
+    : viewDistSpec viewSortSpec
+    ;
+
+viewDistSpec
+@init { pushMsg("view distribute specification", state); }
+@after { popMsg(state); }
+    : KW_DISTRIBUTED KW_ON LPAREN colList=columnNameList RPAREN
+    -> ^(TOK_VIEWDISTRIBUTECOLS $colList)
+    ;
+
+viewSortSpec
+@init { pushMsg("view sort specification", state); }
+@after { popMsg(state); }
+    : KW_SORTED KW_ON LPAREN colList=columnNameList RPAREN
+    -> ^(TOK_VIEWSORTCOLS $colList)
+    ;
+
 dropViewStatement
 @init { pushMsg("drop view statement", state); }
 @after { popMsg(state); }
@@ -1988,7 +2025,8 @@ createMaterializedViewStatement
 }
 @after { popMsg(state); }
     : KW_CREATE KW_MATERIALIZED KW_VIEW (ifNotExists)? name=tableName
-        rewriteDisabled? tableComment? viewPartition? tableRowFormat? tableFileFormat? tableLocation?
+        rewriteDisabled? tableComment? viewPartition? viewOrganization?
+        tableRowFormat? tableFileFormat? tableLocation?
         tablePropertiesPrefixed? KW_AS selectStatementWithCTE
     -> ^(TOK_CREATE_MATERIALIZED_VIEW $name
          ifNotExists?
@@ -1998,6 +2036,7 @@ createMaterializedViewStatement
          tableFileFormat?
          tableLocation?
          viewPartition?
+         viewOrganization?
          tablePropertiesPrefixed?
          selectStatementWithCTE
         )
