@@ -64,6 +64,8 @@ public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorFallOffNumCompletedFragments("Number of completed fragments w.r.t falloff values"),
   AverageQueueTime("Average queue time for tasks"),
   AverageResponseTime("Average response time for successful tasks"),
+  NumExecutorsEnabled("The number of executor threads enabled"),
+  WaitQueueSizeEnabled("Size of wait queue enabled"),
   ;
 
   private final String desc;

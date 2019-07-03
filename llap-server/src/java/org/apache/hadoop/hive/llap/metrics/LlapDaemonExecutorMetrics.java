@@ -52,6 +52,8 @@ import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.Executo
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorFallOffFailedMaxTimeLost;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorFallOffKilledTimeLost;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorFallOffKilledMaxTimeLost;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.NumExecutorsEnabled;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.WaitQueueSizeEnabled;
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
@@ -165,7 +167,10 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   MutableGaugeLong fallOffMaxFailedTimeLost;
   @Metric
   MutableGaugeLong fallOffMaxKilledTimeLost;
-
+  @Metric
+  MutableGaugeInt numExecutorsEnabled;
+  @Metric
+  MutableGaugeInt waitQueueSizeEnabled;
 
 
   private LlapDaemonExecutorMetrics(String displayName, JvmMetrics jm, String sessionId,
@@ -368,6 +373,15 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     waitQueueSize.set(size);
   }
 
+  public void setWaitQueueSizeEnabled(int size) {
+    waitQueueSizeEnabled.set(size);
+  }
+
+  public void setNumExecutorsEnabled(int size) {
+    numExecutorsEnabled.set(size);
+  }
+
+
   private void getExecutorStats(MetricsRecordBuilder rb) {
     updateThreadMetrics(rb);
     final int totalSlots = waitQueueSize.value() + numExecutors;
@@ -403,7 +417,9 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
         .addGauge(ExecutorFallOffFailedMaxTimeLost, fallOffMaxFailedTimeLost.value())
         .addCounter(ExecutorFallOffKilledTimeLost, fallOffKilledTimeLost.value())
         .addGauge(ExecutorFallOffKilledMaxTimeLost, fallOffMaxKilledTimeLost.value())
-        .addCounter(ExecutorFallOffNumCompletedFragments, fallOffNumCompletedFragments.value());
+        .addCounter(ExecutorFallOffNumCompletedFragments, fallOffNumCompletedFragments.value())
+        .addGauge(NumExecutorsEnabled, numExecutorsEnabled.value())
+        .addGauge(WaitQueueSizeEnabled, waitQueueSizeEnabled.value());
     if (numExecutorsAvailableAverage != null) {
       rb.addGauge(ExecutorNumExecutorsAvailableAverage, numExecutorsAvailableAverage.value());
     }

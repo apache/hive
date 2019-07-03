@@ -21,7 +21,11 @@ import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.cr
 import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createSubmitWorkRequestProto;
 import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createTaskWrapper;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.yarn.util.SystemClock;
 
 import org.apache.hadoop.hive.llap.testhelpers.ControlledClock;
@@ -545,6 +549,29 @@ public class TestTaskExecutorService {
     taskExecutorService.setCapacity(2, -5);
   }
 
+  @Test(timeout = 1000)
+  public void testCapacityMetricsInitial() {
+    LlapDaemonExecutorMetrics mockMetrics = mock(LlapDaemonExecutorMetrics.class);
+
+    TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(2, 10,
+        ShortestJobFirstComparator.class.getName(), true, mockMetrics, null);
+
+    verify(mockMetrics).setNumExecutorsEnabled(2);
+    verify(mockMetrics).setWaitQueueSizeEnabled(10);
+  }
+
+  @Test(timeout = 1000)
+  public void testCapacityMetricsModification() {
+    LlapDaemonExecutorMetrics mockMetrics = mock(LlapDaemonExecutorMetrics.class);
+
+    TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(2, 10,
+        ShortestJobFirstComparator.class.getName(), true, mockMetrics, null);
+    reset(mockMetrics);
+    taskExecutorService.setCapacity(1, 5);
+
+    verify(mockMetrics).setNumExecutorsEnabled(1);
+    verify(mockMetrics).setWaitQueueSizeEnabled(5);
+  }
 
   private void runPreemptionGraceTest(
       MockRequest victim1, MockRequest victim2, int time) throws InterruptedException {
@@ -601,13 +628,18 @@ public class TestTaskExecutorService {
 
     public TaskExecutorServiceForTest(int numExecutors, int waitQueueSize,
         String waitQueueComparatorClassName, boolean enablePreemption) {
-      this(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption, null);
+      this(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption, null,null);
     }
 
     public TaskExecutorServiceForTest(int numExecutors, int waitQueueSize,
         String waitQueueComparatorClassName, boolean enablePreemption, Clock clock) {
+      this(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption, null, clock);
+    }
+
+    public TaskExecutorServiceForTest(int numExecutors, int waitQueueSize,
+        String waitQueueComparatorClassName, boolean enablePreemption, LlapDaemonExecutorMetrics metrics, Clock clock) {
       super(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption,
-          Thread.currentThread().getContextClassLoader(), null, clock);
+              Thread.currentThread().getContextClassLoader(), metrics, clock);
     }
 
     private ConcurrentMap<String, InternalCompletionListenerForTest> completionListeners =

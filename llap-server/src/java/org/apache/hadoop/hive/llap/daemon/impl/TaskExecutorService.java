@@ -166,6 +166,8 @@ public class TaskExecutorService extends AbstractService
     this.metrics = metrics;
     if (metrics != null) {
       metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
+      metrics.setNumExecutorsEnabled(numExecutors);
+      metrics.setWaitQueueSizeEnabled(waitQueueSize);
     }
 
     // single threaded scheduler for tasks from wait queue to executor threads
@@ -213,6 +215,10 @@ public class TaskExecutorService extends AbstractService
     numSlotsAvailable.addAndGet(newNumExecutors - maxParallelExecutors);
     maxParallelExecutors = newNumExecutors;
     waitQueue.setWaitQueueSize(newWaitQueueSize);
+    if (metrics != null) {
+      metrics.setNumExecutorsEnabled(newNumExecutors);
+      metrics.setWaitQueueSizeEnabled(newWaitQueueSize);
+    }
     LOG.info("TaskExecutorService is setting capacity to: numExecutors=" + newNumExecutors
         + ", waitQueueSize=" + newWaitQueueSize);
   }
