@@ -69,7 +69,7 @@ POSTHOOK: Input: default@customer_address
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveProject(c_customer_id=[$0], c_salutation=[$1], c_first_name=[$2], c_last_name=[$3], ca_street_number=[$4], ca_street_name=[$5], ca_street_type=[$6], ca_suite_number=[$7], ca_city=[$8], ca_county=[$9], ca_state=[CAST(_UTF-16LE'IL'):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" COLLATE "ISO-8859-1$en_US$primary"], ca_zip=[$10], ca_country=[$11], ca_gmt_offset=[$12], ca_location_type=[$13], ctr_total_return=[$14])
+HiveProject(c_customer_id=[$0], c_salutation=[$1], c_first_name=[$2], c_last_name=[$3], ca_street_number=[$4], ca_street_name=[$5], ca_street_type=[$6], ca_suite_number=[$7], ca_city=[$8], ca_county=[$9], ca_state=[CAST(_UTF-16LE'IL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], ca_zip=[$10], ca_country=[$11], ca_gmt_offset=[$12], ca_location_type=[$13], ctr_total_return=[$14])
   HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], sort10=[$10], sort11=[$11], sort12=[$12], sort13=[$13], sort14=[$14], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], dir2=[ASC-nulls-first], dir3=[ASC-nulls-first], dir4=[ASC-nulls-first], dir5=[ASC-nulls-first], dir6=[ASC-nulls-first], dir7=[ASC-nulls-first], dir8=[ASC-nulls-first], dir9=[ASC-nulls-first], dir10=[ASC-nulls-first], dir11=[ASC-nulls-first], dir12=[ASC-nulls-first], dir13=[ASC-nulls-first], dir14=[ASC-nulls-first], fetch=[100])
     HiveProject(c_customer_id=[$1], c_salutation=[$3], c_first_name=[$4], c_last_name=[$5], ca_street_number=[$7], ca_street_name=[$8], ca_street_type=[$9], ca_suite_number=[$10], ca_city=[$11], ca_county=[$12], ca_zip=[$13], ca_country=[$14], ca_gmt_offset=[$15], ca_location_type=[$16], ctr_total_return=[$19])
       HiveJoin(condition=[=($17, $0)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -97,7 +97,7 @@ HiveProject(c_customer_id=[$0], c_salutation=[$1], c_first_name=[$2], c_last_nam
                         HiveProject(d_date_sk=[$0])
                           HiveFilter(condition=[=($6, 1998)])
                             HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-            HiveProject(_o__c0=[*(/($1, $2), 1.2)], ctr_state=[$0])
+            HiveProject(_o__c0=[*(/($1, $2), 1.2:DECIMAL(2, 1))], ctr_state=[$0])
               HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($2))])
                 HiveAggregate(group=[{0}], agg#0=[sum($2)], agg#1=[count($2)])
                   HiveProject(ca_state=[$0], cr_returning_customer_sk=[$1], $f2=[$2])

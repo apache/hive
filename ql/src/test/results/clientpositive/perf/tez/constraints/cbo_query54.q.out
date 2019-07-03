@@ -134,7 +134,7 @@ CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], fetch=[100])
   HiveProject(segment=[$0], num_customers=[$1], segment_base=[*($0, 50)])
     HiveAggregate(group=[{0}], agg#0=[count()])
-      HiveProject(segment=[CAST(/($1, CAST(50):DECIMAL(10, 0))):INTEGER])
+      HiveProject(segment=[CAST(/($1, 50:DECIMAL(10, 0))):INTEGER])
         HiveAggregate(group=[{0}], agg#0=[sum($1)])
           HiveFilter(condition=[BETWEEN(false, $2, $3, $4)])
             HiveProject(c_customer_sk=[$0], ss_ext_sales_price=[$4], d_month_seq=[$11], _o__c0=[$13], $f0=[$14])

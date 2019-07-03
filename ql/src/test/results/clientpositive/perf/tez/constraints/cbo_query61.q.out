@@ -103,7 +103,7 @@ POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], fetch=[100])
-  HiveProject(promotions=[$0], total=[$1], _o__c2=[*(/(CAST($0):DECIMAL(15, 4), CAST($1):DECIMAL(15, 4)), CAST(100):DECIMAL(10, 0))])
+  HiveProject(promotions=[$0], total=[$1], _o__c2=[*(/(CAST($0):DECIMAL(15, 4), CAST($1):DECIMAL(15, 4)), 100:DECIMAL(10, 0))])
     HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject($f0=[$0])
         HiveAggregate(group=[{}], agg#0=[sum($8)])
@@ -113,7 +113,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-fi
                 HiveFilter(condition=[IS NOT NULL($4)])
                   HiveTableScan(table=[[default, customer]], table:alias=[customer])
               HiveProject(ca_address_sk=[$0])
-                HiveFilter(condition=[=($11, -7)])
+                HiveFilter(condition=[=($11, -7:DECIMAL(1, 0))])
                   HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
             HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_customer_sk=[$2], ss_store_sk=[$3], ss_promo_sk=[$4], ss_ext_sales_price=[$5], d_date_sk=[$6], i_item_sk=[$7], s_store_sk=[$8], p_promo_sk=[$9])
               HiveJoin(condition=[=($4, $9)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -130,7 +130,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-fi
                       HiveFilter(condition=[=($12, _UTF-16LE'Electronics')])
                         HiveTableScan(table=[[default, item]], table:alias=[item])
                   HiveProject(s_store_sk=[$0])
-                    HiveFilter(condition=[=($27, -7)])
+                    HiveFilter(condition=[=($27, -7:DECIMAL(1, 0))])
                       HiveTableScan(table=[[default, store]], table:alias=[store])
                 HiveProject(p_promo_sk=[$0])
                   HiveFilter(condition=[OR(=($8, _UTF-16LE'Y'), =($9, _UTF-16LE'Y'), =($11, _UTF-16LE'Y'))])
@@ -143,7 +143,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-fi
                 HiveFilter(condition=[IS NOT NULL($4)])
                   HiveTableScan(table=[[default, customer]], table:alias=[customer])
               HiveProject(ca_address_sk=[$0])
-                HiveFilter(condition=[=($11, -7)])
+                HiveFilter(condition=[=($11, -7:DECIMAL(1, 0))])
                   HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
             HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_customer_sk=[$2], ss_store_sk=[$3], ss_ext_sales_price=[$4], d_date_sk=[$5], i_item_sk=[$6], s_store_sk=[$7])
               HiveJoin(condition=[=($3, $7)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -159,6 +159,6 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-fi
                     HiveFilter(condition=[=($12, _UTF-16LE'Electronics')])
                       HiveTableScan(table=[[default, item]], table:alias=[item])
                 HiveProject(s_store_sk=[$0])
-                  HiveFilter(condition=[=($27, -7)])
+                  HiveFilter(condition=[=($27, -7:DECIMAL(1, 0))])
                     HiveTableScan(table=[[default, store]], table:alias=[store])
 
