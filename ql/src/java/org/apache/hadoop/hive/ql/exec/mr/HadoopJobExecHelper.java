@@ -302,10 +302,10 @@ public class HadoopJobExecHelper {
             logReducer = "number of reducers: " + numReduce;
           }
           if(yarnVCores == -1){
-            yarnVCores = Integer.parseInt(jc.getConf().get("yarn.scheduler.minimum-allocation-vcores"));
-            mapVCores = Integer.parseInt(jc.getConf().get("mapreduce.map.cpu.vcores"));
-            reduceVCores = Integer.parseInt(jc.getConf().get("mapreduce.reduce.cpu.vcores"));
-            appVCores = Integer.parseInt(jc.getConf().get("yarn.app.mapreduce.am.resource.cpu-vcores"));
+            yarnVCores = Integer.parseInt(jc.getConf().get("yarn.scheduler.minimum-allocation-vcores", "0"));
+            mapVCores = Integer.parseInt(jc.getConf().get("mapreduce.map.cpu.vcores", "0"));
+            reduceVCores = Integer.parseInt(jc.getConf().get("mapreduce.reduce.cpu.vcores", "0"));
+            appVCores = Integer.parseInt(jc.getConf().get("yarn.app.mapreduce.am.resource.cpu-vcores", "0"));
           }
 
           maxNeededVCores = Math.max(appVCores, yarnVCores) + numMap * Math.max(mapVCores, yarnVCores) + numReduce * Math.max(reduceVCores, yarnVCores);
@@ -314,13 +314,23 @@ public class HadoopJobExecHelper {
               .printInfo("Hadoop job information for " + getId() + ": " + logMapper + logReducer );
 
 
+          String queue = "";
           JobStatus jobStatus = rj.getJobStatus();
-          yarnId = jobStatus.getJobID().toString();
-          user = jobStatus.getUsername();
-          String queue = jobStatus.getQueue();
+          if(jobStatus != null){
+            JobID id = jobStatus.getJobID();
+            if(id != null)
+              yarnId = id.toString();
+            user = jobStatus.getUsername();
+            queue = jobStatus.getQueue();
+          }
+          if(yarnId == null)
+              yarnId = "";
           if(queue == null)
-            queue = "";
+              queue = "";
+          if(user == null)
+              user = "";
           th.getContext().getConf().set(QUEUE, queue);
+
 
           initOutputPrinted = true;
         }
@@ -355,6 +365,9 @@ public class HadoopJobExecHelper {
 
       updateCounters(ctrs, rj);
       maxNeededMem = (double)(ctrs.findCounter(TaskCounter.PHYSICAL_MEMORY_BYTES).getCounter())/(1024*1024*1024);
+      if(Double.valueOf(maxNeededMem) == null)
+          maxNeededMem = 0;
+
 
       // Prepare data for Client Stat Publishers (if any present) and execute them
       if (clientStatPublishers.size() > 0 && ctrs != null) {
@@ -423,8 +436,6 @@ public class HadoopJobExecHelper {
     yarnJobInfo += yarnId + ":" + numMap + ":" + numReduce + ":" + maxNeededMem + ":" + maxNeededVCores;
 
     th.getContext().getConf().set(YARN_JOB_INFO, yarnJobInfo);
-    if(user == null)
-      user = "";
     th.getContext().getConf().set(USER, user);
 
     Counters ctrs = th.getCounters();
