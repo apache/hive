@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -95,6 +96,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    */
   abstract Table resolveTable(CompactionInfo ci) throws MetaException;
 
+  abstract boolean replIsCompactionDisabledForDatabase(String dbName) throws TException;
   /**
    * Get list of partitions by name.
    * @param ci compaction info.
@@ -225,16 +227,5 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected boolean replIsCompactionDisabledForTable(Table tbl) {
     // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
     return ReplUtils.isFirstIncPending(tbl.getParameters());
-  }
-
-  protected boolean replIsCompactionDisabledForDatabase(String dbName) {
-    try {
-      Database database = rs.getDatabase(getDefaultCatalog(conf), dbName);
-      // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
-      return ReplUtils.isFirstIncPending(database.getParameters());
-    } catch (NoSuchObjectException e) {
-      LOG.info("Unable to find database " + dbName);
-      return true;
-    }
   }
 }
