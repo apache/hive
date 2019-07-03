@@ -85,8 +85,8 @@ public class HadoopJobExecHelper {
   protected transient int lastMapProgress;
   protected transient int lastReduceProgress;
 
-  protected transient String yarnId;
-  protected transient String user;
+  protected transient String yarnId = "";
+  protected transient String user = "";
   protected transient double maxNeededMem = 0;
   protected transient int maxNeededVCores = 0;
 
@@ -330,7 +330,7 @@ public class HadoopJobExecHelper {
           if(user == null)
               user = "";
           th.getContext().getConf().set(QUEUE, queue);
-
+          th.getContext().getConf().set(USER, user);
 
           initOutputPrinted = true;
         }
@@ -436,7 +436,7 @@ public class HadoopJobExecHelper {
     yarnJobInfo += yarnId + ":" + numMap + ":" + numReduce + ":" + maxNeededMem + ":" + maxNeededVCores;
 
     th.getContext().getConf().set(YARN_JOB_INFO, yarnJobInfo);
-    th.getContext().getConf().set(USER, user);
+
 
     Counters ctrs = th.getCounters();
 
