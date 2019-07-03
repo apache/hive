@@ -318,6 +318,8 @@ public class HadoopJobExecHelper {
           yarnId = jobStatus.getJobID().toString();
           user = jobStatus.getUsername();
           String queue = jobStatus.getQueue();
+          if(queue == null)
+            queue = "";
           th.getContext().getConf().set(QUEUE, queue);
 
           initOutputPrinted = true;
@@ -419,7 +421,11 @@ public class HadoopJobExecHelper {
     if(!yarnJobInfo.equals("") )
       yarnJobInfo += ",";
     yarnJobInfo += yarnId + ":" + numMap + ":" + numReduce + ":" + maxNeededMem + ":" + maxNeededVCores;
+    if(yarnJobInfo == null)
+      yarnJobInfo = "";
     th.getContext().getConf().set(YARN_JOB_INFO, yarnJobInfo);
+    if(user == null)
+      user = "";
     th.getContext().getConf().set(USER, user);
 
     Counters ctrs = th.getCounters();
