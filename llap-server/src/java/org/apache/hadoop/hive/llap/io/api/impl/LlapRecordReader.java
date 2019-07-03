@@ -501,7 +501,7 @@ class LlapRecordReader
 
   @Override
   public long getPos() throws IOException {
-    return -1; // Position doesn't make sense for async reader, chunk order is arbitrary.
+    return isFirst ? 0 : -1; // Position doesn't make sense for async reader, chunk order is arbitrary.
   }
 
   @Override

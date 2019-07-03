@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.Utilities.RecordReaderStatus;
 import org.apache.hadoop.hive.ql.exec.FooterBuffer;
 import org.apache.hadoop.hive.ql.io.IOContext.Comparison;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -68,6 +69,7 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
   private String genericUDFClassName = null;
   private final List<Comparison> stopComparisons = new ArrayList<Comparison>();
   private Map<Path, PartitionDesc> pathToPartitionInfo;
+  private RecordReaderStatus rrStatus = RecordReaderStatus.NEXT;
 
   protected RecordReader<K, V> recordReader;
   protected JobConf jobConf;
@@ -346,19 +348,25 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
         }
 
         // If input contains header, skip header.
-        if (!Utilities.skipHeader(recordReader, headerCount, key, value)) {
+        rrStatus = Utilities.skipHeader(recordReader, headerCount, key, value);
+        if (rrStatus == RecordReaderStatus.EOF) {
           return false;
         }
         if (footerCount > 0) {
           footerBuffer = new FooterBuffer();
-          if (!footerBuffer.initializeBuffer(jobConf, recordReader, footerCount, key, value)) {
+          if (!footerBuffer.initializeBuffer(jobConf, recordReader, rrStatus, footerCount, key, value)) {
             return false;
           }
+          rrStatus = RecordReaderStatus.NEXT;
         }
       }
       if (footerBuffer == null) {
-
         // Table files don't have footer rows.
+        if (rrStatus == RecordReaderStatus.CURRENT) {
+          // If status is current means, already key/value fetched and yet to utilize by caller.
+          rrStatus = RecordReaderStatus.NEXT;
+          return true;
+        }
         return recordReader.next(key,  value);
       } else {
         return footerBuffer.updateBuffer(jobConf, recordReader, key, value);

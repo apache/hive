@@ -8,6 +8,15 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@header_footer_table_1
+PREHOOK: query: SELECT COUNT(*) FROM header_footer_table_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*) FROM header_footer_table_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11
 PREHOOK: query: SELECT * FROM header_footer_table_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_1
@@ -27,6 +36,15 @@ xifa2	phd	13
 chuan2	hadoop	14
 shanyu2	senior	15
 david3	oozie	22
+PREHOOK: query: SELECT COUNT(*) FROM header_footer_table_1 WHERE id < 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*) FROM header_footer_table_1 WHERE id < 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11
 PREHOOK: query: SELECT * FROM header_footer_table_1 WHERE id < 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_1
@@ -81,6 +99,21 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: default@header_footer_table_2
 POSTHOOK: Output: default@header_footer_table_2@year=2012/month=1/day=3
+PREHOOK: query: SELECT COUNT(*) FROM header_footer_table_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_2
+PREHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=1
+PREHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=2
+PREHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*) FROM header_footer_table_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_2
+POSTHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=1
+POSTHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=2
+POSTHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11
 PREHOOK: query: SELECT * FROM header_footer_table_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_2
@@ -106,6 +139,21 @@ xifa2	phd	13	2012	1	2
 chuan2	hadoop	14	2012	1	2
 shanyu2	senior	15	2012	1	2
 david3	oozie	22	2012	1	3
+PREHOOK: query: SELECT COUNT(*) FROM header_footer_table_2 WHERE id < 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_2
+PREHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=1
+PREHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=2
+PREHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*) FROM header_footer_table_2 WHERE id < 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_2
+POSTHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=1
+POSTHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=2
+POSTHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11
 PREHOOK: query: SELECT * FROM header_footer_table_2 WHERE id < 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_2
@@ -141,6 +189,15 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emptytable
+PREHOOK: query: SELECT COUNT(*) FROM emptytable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emptytable
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*) FROM emptytable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emptytable
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
 PREHOOK: query: SELECT * FROM emptytable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emptytable
@@ -149,6 +206,15 @@ POSTHOOK: query: SELECT * FROM emptytable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emptytable
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: SELECT COUNT(*) FROM emptytable WHERE id < 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emptytable
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*) FROM emptytable WHERE id < 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emptytable
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
 PREHOOK: query: SELECT * FROM emptytable WHERE id < 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emptytable

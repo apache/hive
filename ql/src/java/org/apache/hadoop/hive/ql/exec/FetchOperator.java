@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities.RecordReaderStatus;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveContextAwareRecordReader;
@@ -557,6 +558,7 @@ public class FetchOperator implements Serializable {
         if (context != null) {
           context.resetRow();
         }
+        RecordReaderStatus rrStatus = RecordReaderStatus.NEXT;
         if (currRecReader == null) {
           currRecReader = getRecordReader();
           if (currRecReader == null) {
@@ -573,21 +575,24 @@ public class FetchOperator implements Serializable {
           footerCount = Utilities.getFooterCount(currDesc.getTableDesc(), job);
 
           // Skip header lines.
-          opNotEOF = Utilities.skipHeader(currRecReader, headerCount, key, value);
+          rrStatus = Utilities.skipHeader(currRecReader, headerCount, key, value);
+          opNotEOF = (rrStatus != RecordReaderStatus.EOF);
 
           // Initialize footer buffer.
           if (opNotEOF && footerCount > 0) {
             footerBuffer = new FooterBuffer();
-            opNotEOF = footerBuffer.initializeBuffer(job, currRecReader, footerCount, key, value);
+            opNotEOF = footerBuffer.initializeBuffer(job, currRecReader, rrStatus, footerCount, key, value);
           }
         }
 
         if (opNotEOF && footerBuffer == null) {
-          /**
-           * When file doesn't end after skipping header line
-           * and there is no footer lines, read normally.
-           */
-          opNotEOF = currRecReader.next(key, value);
+          if (rrStatus == RecordReaderStatus.NEXT) {
+            /**
+             * When file doesn't end after skipping header line
+             * and there is no footer lines, read normally.
+             */
+            opNotEOF = currRecReader.next(key, value);
+          }
         }
         if (opNotEOF && footerBuffer != null) {
           opNotEOF = footerBuffer.updateBuffer(job, currRecReader, key, value);

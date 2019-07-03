@@ -120,6 +120,7 @@ import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
@@ -3805,6 +3806,14 @@ public final class Utilities {
   }
 
   /**
+   * RecordReaderStatus.
+   *
+   */
+  public static enum RecordReaderStatus {
+    CURRENT, NEXT, EOF
+  }
+
+  /**
    * Skip header lines in the table file when reading the record.
    *
    * @param currRecReader
@@ -3819,18 +3828,52 @@ public final class Utilities {
    * @param value
    *          Value of current reading record.
    *
-   * @return Return true if there are 0 or more records left in the file
-   *         after skipping all headers, otherwise return false.
+   * @return RecordReaderStatus.CURRENT -> if the current key/value pair after skipping headers
+   *         are ready to be utilized.
+   *         RecordReaderStatus.NEXT -> if 0 or more records left in the file
+   *         after skipping all headers but the current key/value pair is already utilized.
+   *         RecordReaderStatus.EOF -> if no more row to be fetched.
    */
-  public static <K, V> boolean skipHeader(RecordReader<K, V> currRecReader, int headerCount, K key, V value)
-      throws IOException {
-    while (headerCount > 0) {
-      if (!currRecReader.next(key, value)) {
-        return false;
-      }
-      headerCount--;
+  public static <K, V> RecordReaderStatus skipHeader(RecordReader<K, V> currRecReader, int headerCount, K key, V value)
+          throws IOException {
+    if (headerCount <= 0) {
+      LOG.debug("[skipHeader] Noop as headerCount={}", headerCount);
+      return RecordReaderStatus.NEXT;
     }
-    return true;
+    LOG.debug("[skipHeader] HeaderCount: {}", headerCount);
+    if (value instanceof VectorizedRowBatch) {
+      VectorizedRowBatch vrb = (VectorizedRowBatch)value;
+      int size = 0;
+      while (size < headerCount) {
+        headerCount -= size;
+        if (!currRecReader.next(key, value)) {
+          return RecordReaderStatus.EOF;
+        }
+        size = vrb.size;
+        LOG.debug("[skipHeader] VectorizedRowBatch: {}, size={}, headerCount={}", vrb, size, headerCount);
+      }
+      if (headerCount > 0) {
+        size -= headerCount;
+        vrb.selectedInUse = true;
+        vrb.selected = new int[size];
+        int startIdx = headerCount;
+        for (int i = 0; i < size; i++, startIdx++) {
+          vrb.selected[i] = startIdx;
+        }
+        vrb.size = size;
+        LOG.debug("[skipHeader] Trimmed VectorizedRowBatch: {}, size={}, headerCount={}", vrb, size, headerCount);
+      }
+      return RecordReaderStatus.CURRENT;
+    } else {
+      LOG.debug("[skipHeader] Non-VectorizedRowBatch flow: {}", value);
+      while (headerCount > 0) {
+        if (!currRecReader.next(key, value)) {
+          return RecordReaderStatus.EOF;
+        }
+        headerCount--;
+      }
+      return RecordReaderStatus.NEXT;
+    }
   }
 
   /**
