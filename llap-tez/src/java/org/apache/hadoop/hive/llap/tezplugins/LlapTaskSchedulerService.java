@@ -2502,7 +2502,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     // Indicates whether a node is disabled - for whatever reason - commFailure, busy, etc.
     private boolean disabled = false;
 
-    private int numPreemptedTasks = 0;
     private int numScheduledTasks = 0;
     private int numSchedulableTasks;
     private final LlapTaskSchedulerMetrics metrics;
@@ -2646,7 +2645,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         metrics.incrSchedulableTasksCount();
       }
       if (wasPreempted) {
-        numPreemptedTasks++;
         if (metrics != null) {
           metrics.incrPreemptedTasksCount();
         }

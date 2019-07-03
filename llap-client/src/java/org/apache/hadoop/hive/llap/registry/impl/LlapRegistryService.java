@@ -34,9 +34,9 @@ import org.slf4j.LoggerFactory;
 public class LlapRegistryService extends AbstractService {
 
   public static final String LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE =
-    "hive.llap.daemon.task.scheduler.enabled.wait.queue.size";
+      "hive.llap.daemon.task.scheduler.enabled.wait.queue.size";
   public static final String LLAP_DAEMON_NUM_ENABLED_EXECUTORS =
-    "hive.llap.daemon.num.enabled.executors";
+      "hive.llap.daemon.num.enabled.executors";
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapRegistryService.class);
 

@@ -70,7 +70,7 @@ public class LlapZookeeperRegistryImpl
 
 
   private SlotZnode slotZnode;
-  private ServiceRecord srv;
+  private ServiceRecord daemonZkRecord;
 
   // to be used by clients of ServiceRegistry TODO: this is unnecessary
   private DynamicServiceInstanceSet instances;
@@ -125,13 +125,13 @@ public class LlapZookeeperRegistryImpl
 
   @Override
   public String register() throws IOException {
-    srv = new ServiceRecord();
+    daemonZkRecord = new ServiceRecord();
     Endpoint rpcEndpoint = getRpcEndpoint();
-    srv.addInternalEndpoint(rpcEndpoint);
-    srv.addInternalEndpoint(getMngEndpoint());
-    srv.addInternalEndpoint(getShuffleEndpoint());
-    srv.addExternalEndpoint(getServicesEndpoint());
-    srv.addInternalEndpoint(getOutputFormatEndpoint());
+    daemonZkRecord.addInternalEndpoint(rpcEndpoint);
+    daemonZkRecord.addInternalEndpoint(getMngEndpoint());
+    daemonZkRecord.addInternalEndpoint(getShuffleEndpoint());
+    daemonZkRecord.addExternalEndpoint(getServicesEndpoint());
+    daemonZkRecord.addInternalEndpoint(getOutputFormatEndpoint());
 
     populateConfigValues(this.conf);
     Map<String, String> capacityValues = new HashMap<>(2);
@@ -141,7 +141,7 @@ public class LlapZookeeperRegistryImpl
             HiveConf.getVarWithoutType(conf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE));
     populateConfigValues(capacityValues.entrySet());
 
-    String uniqueId = registerServiceRecord(srv);
+    String uniqueId = registerServiceRecord(daemonZkRecord);
     long znodeCreationTimeout = 120;
 
     // Create a znode under the rootNamespace parent for this instance of the server
@@ -170,7 +170,7 @@ public class LlapZookeeperRegistryImpl
       if (kv.getKey().startsWith(HiveConf.PREFIX_LLAP)
           || kv.getKey().startsWith(HiveConf.PREFIX_HIVE_LLAP)) {
         // TODO: read this somewhere useful, like the task scheduler
-        srv.set(kv.getKey(), kv.getValue());
+        daemonZkRecord.set(kv.getKey(), kv.getValue());
       }
     }
   }
@@ -178,7 +178,7 @@ public class LlapZookeeperRegistryImpl
   @Override
   public void updateRegistration(Iterable<Map.Entry<String, String>> attributes) throws IOException {
     populateConfigValues(attributes);
-    updateServiceRecord(this.srv, doCheckAcls, true);
+    updateServiceRecord(this.daemonZkRecord, doCheckAcls, true);
   }
 
   @Override

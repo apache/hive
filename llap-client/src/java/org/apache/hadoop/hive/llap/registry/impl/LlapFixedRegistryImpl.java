@@ -45,7 +45,7 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LlapFixedRegistryImpl implements ServiceRegistry {
+public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstance> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapFixedRegistryImpl.class);
 
@@ -113,7 +113,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
   }
 
   @Override
-  public void updateRegistration(Iterable attributes) throws IOException {
+  public void updateRegistration(Iterable<Map.Entry<String, String>> attributes) throws IOException {
     throw new UnsupportedOperationException();
   }
 
