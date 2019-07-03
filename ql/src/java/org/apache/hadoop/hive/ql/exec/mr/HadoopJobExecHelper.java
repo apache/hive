@@ -421,8 +421,7 @@ public class HadoopJobExecHelper {
     if(!yarnJobInfo.equals("") )
       yarnJobInfo += ",";
     yarnJobInfo += yarnId + ":" + numMap + ":" + numReduce + ":" + maxNeededMem + ":" + maxNeededVCores;
-    if(yarnJobInfo == null)
-      yarnJobInfo = "";
+
     th.getContext().getConf().set(YARN_JOB_INFO, yarnJobInfo);
     if(user == null)
       user = "";
