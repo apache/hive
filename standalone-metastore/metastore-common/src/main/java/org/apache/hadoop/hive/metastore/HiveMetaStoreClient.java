@@ -147,6 +147,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   //copied from ErrorMsg.java
   private static final String REPL_EVENTS_MISSING_IN_METASTORE = "Notification events are missing in the meta store.";
+
   private static final String REPL_EVENTS_WITH_DUPLICATE_ID_IN_METASTORE =
           "Notification events with duplicate event ids in the meta store.";
 
