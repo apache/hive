@@ -89,6 +89,7 @@ public class HadoopJobExecHelper {
   protected transient String user = "";
   protected transient double maxNeededMem = 0;
   protected transient int maxNeededVCores = 0;
+  protected transient long numFiles = 0;
 
   public transient JobID jobId;
   private final LogHelper console;
@@ -356,6 +357,10 @@ public class HadoopJobExecHelper {
 
       Counters ctrs = th.getCounters();
 
+      Counters.Counter cntr = ctrs.findCounter(HiveConf.getVar(job, ConfVars.HIVECOUNTERGROUP),
+              Operator.HIVECOUNTERCREATEDFILES);
+      numFiles = cntr != null ? cntr.getValue() : 0;
+
       if (fatal = checkFatalErrors(ctrs, errMsg)) {
         console.printError("[Fatal Error] " + errMsg.toString() + ". Killing the job.");
         rj.killJob();
@@ -433,7 +438,7 @@ public class HadoopJobExecHelper {
     String yarnJobInfo = th.getContext().getConf().get(YARN_JOB_INFO,"");
     if(!yarnJobInfo.equals("") )
       yarnJobInfo += ",";
-    yarnJobInfo += yarnId + ":" + numMap + ":" + numReduce + ":" + maxNeededMem + ":" + maxNeededVCores;
+    yarnJobInfo += yarnId + ":" + numMap + ":" + numReduce + ":" + maxNeededMem + ":" + maxNeededVCores + ":" + numFiles;
 
     th.getContext().getConf().set(YARN_JOB_INFO, yarnJobInfo);
 
