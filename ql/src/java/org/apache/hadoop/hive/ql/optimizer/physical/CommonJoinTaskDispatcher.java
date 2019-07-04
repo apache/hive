@@ -241,7 +241,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     String childMRAlias = childMRAliases.get(0);
 
     // Sanity check to make sure there is no alias conflict after merge.
-    for (Entry<Path, ArrayList<String>> entry : childMapWork.getPathToAliases().entrySet()) {
+    for (Entry<Path, List<String>> entry : childMapWork.getPathToAliases().entrySet()) {
       Path path = entry.getKey();
       List<String> aliases = entry.getValue();
 
@@ -392,7 +392,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     // Must be deterministic order map for consistent q-test output across Java versions
     HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
         new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
-    HashMap<Path, ArrayList<String>> pathToAliases = currWork.getPathToAliases();
+    Map<Path, List<String>> pathToAliases = currWork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork = currWork.getAliasToWork();
 
     // start to generate multiple map join tasks

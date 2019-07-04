@@ -133,14 +133,14 @@ public class TestTezTask {
 
     op = mock(Operator.class);
 
-    LinkedHashMap<String, Operator<? extends OperatorDesc>> map
+    Map<String, Operator<? extends OperatorDesc>> map
       = new LinkedHashMap<String,Operator<? extends OperatorDesc>>();
     map.put("foo", op);
     mws[0].setAliasToWork(map);
     mws[1].setAliasToWork(map);
 
-    LinkedHashMap<Path, ArrayList<String>> pathMap = new LinkedHashMap<>();
-    ArrayList<String> aliasList = new ArrayList<String>();
+    Map<Path, List<String>> pathMap = new LinkedHashMap<>();
+    List<String> aliasList = new ArrayList<String>();
     aliasList.add("foo");
     pathMap.put(new Path("foo"), aliasList);
 

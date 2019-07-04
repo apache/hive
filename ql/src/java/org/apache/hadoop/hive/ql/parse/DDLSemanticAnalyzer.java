@@ -1992,10 +1992,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterTablePartMergeFiles(ASTNode ast,
       String tableName, HashMap<String, String> partSpec)
       throws SemanticException {
-    AlterTableConcatenateDesc mergeDesc = new AlterTableConcatenateDesc(
-        tableName, partSpec);
 
-    List<Path> inputDir = new ArrayList<Path>();
     Path oldTblPartLoc = null;
     Path newTblPartLoc = null;
     Table tblObj = null;
@@ -2016,7 +2013,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
         return;
       }
-      mergeDesc.setTableDesc(Utilities.getTableDesc(tblObj));
 
       List<String> bucketCols = null;
       Class<? extends InputFormat> inputFormatClass = null;
@@ -2061,11 +2057,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // throw a HiveException for other than rcfile and orcfile.
-      if (!((inputFormatClass.equals(RCFileInputFormat.class) ||
-          (inputFormatClass.equals(OrcInputFormat.class))))) {
+      if (!(inputFormatClass.equals(RCFileInputFormat.class) || inputFormatClass.equals(OrcInputFormat.class))) {
         throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_FILE_FORMAT.getMsg());
       }
-      mergeDesc.setInputFormatClass(inputFormatClass);
 
       // throw a HiveException if the table/partition is bucketized
       if (bucketCols != null && bucketCols.size() > 0) {
@@ -2087,19 +2081,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
       }
 
-      inputDir.add(oldTblPartLoc);
-
-      mergeDesc.setInputDir(inputDir);
-
-      mergeDesc.setLbCtx(lbCtx);
-
       addInputsOutputsAlterTable(tableName, partSpec, null, AlterTableType.MERGEFILES, false);
+      TableDesc tblDesc = Utilities.getTableDesc(tblObj);
+      Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
+      AlterTableConcatenateDesc mergeDesc = new AlterTableConcatenateDesc(tableName, partSpec, lbCtx, oldTblPartLoc,
+          queryTmpdir, inputFormatClass, Utilities.getTableDesc(tblObj));
       DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), mergeDesc);
       ddlWork.setNeedLock(true);
       Task<?> mergeTask = TaskFactory.get(ddlWork);
-      TableDesc tblDesc = Utilities.getTableDesc(tblObj);
-      Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
-      mergeDesc.setOutputDir(queryTmpdir);
       // No need to handle MM tables - unsupported path.
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<>() : partSpec);
