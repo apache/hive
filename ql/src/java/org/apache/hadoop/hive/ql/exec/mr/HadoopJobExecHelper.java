@@ -75,7 +75,6 @@ public class HadoopJobExecHelper {
   private int reduceVCores = -1;
   private int appVCores = -1;
 
-
   protected transient JobConf job;
   protected Task<? extends Serializable> task;
 
