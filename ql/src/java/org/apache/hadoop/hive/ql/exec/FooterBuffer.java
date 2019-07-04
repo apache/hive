@@ -98,7 +98,8 @@ public class FooterBuffer {
         tem.setSecond(copyVrb(vrb, (VectorizedRowBatch)recordreader.createValue()));
         bufferRowCount += vrb.size;
 
-        LOG.debug("[initializeBuffer] Added Batch-{}: Size={}, BufferRowCount={}", buffer.size(), vrb.size, bufferRowCount);
+        LOG.debug("[initializeBuffer] Added Batch-{}: Size={}, BufferRowCount={}",
+                buffer.size(), vrb.size, bufferRowCount);
       } else {
         tem.setSecond(ReflectionUtils.copy(job, value, tem.getSecond()));
         bufferRowCount++;
@@ -133,7 +134,7 @@ public class FooterBuffer {
       return false;
     }
 
-    key = ReflectionUtils.copy(job, (WritableComparable)buffer.get(cur).getFirst(), key);
+    key = ReflectionUtils.copy(job, buffer.get(cur).getFirst(), key);
     boolean notEOF = true;
     if (value instanceof VectorizedRowBatch) {
       value = copyVrb((VectorizedRowBatch)buffer.get(cur).getSecond(), (VectorizedRowBatch)value);
@@ -142,8 +143,8 @@ public class FooterBuffer {
 
       LOG.debug("[updateBuffer] Fetched Batch-{}: Size={}, BufferRowCount={}", cur, vrb.size, bufferRowCount);
       ObjectPair<WritableComparable, Writable> kvPair = buffer.remove(cur);
-      WritableComparable nextKey = (WritableComparable)kvPair.getFirst();
-      Writable nextValue = (Writable)kvPair.getSecond();
+      WritableComparable nextKey = kvPair.getFirst();
+      Writable nextValue = kvPair.getSecond();
       while (bufferRowCount < footerRowCount) {
         notEOF = recordreader.next(nextKey, nextValue);
         if (!notEOF) {
@@ -155,7 +156,8 @@ public class FooterBuffer {
         tem.setSecond(copyVrb(nextVrb, (VectorizedRowBatch)recordreader.createValue()));
         buffer.add(tem);
         bufferRowCount += nextVrb.size;
-        LOG.debug("[updateBuffer] Added Batch-{}: Size={}, BufferRowCount={}", buffer.size(), nextVrb.size, bufferRowCount);
+        LOG.debug("[updateBuffer] Added Batch-{}: Size={}, BufferRowCount={}",
+                buffer.size(), nextVrb.size, bufferRowCount);
       }
       if (!notEOF) {
         int balanceFooterCnt = footerRowCount - bufferRowCount;
@@ -178,7 +180,7 @@ public class FooterBuffer {
       }
     } else {
       LOG.debug("[updateBuffer] Non-VectorizedRowBatch flow.");
-      value = ReflectionUtils.copy(job, (Writable)buffer.get(cur).getSecond(), value);
+      value = ReflectionUtils.copy(job, buffer.get(cur).getSecond(), value);
       notEOF = recordreader.next(buffer.get(cur).getFirst(), buffer.get(cur).getSecond());
       if (notEOF) {
         cur = (++cur) % buffer.size();

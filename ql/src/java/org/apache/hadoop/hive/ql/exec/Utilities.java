@@ -3809,7 +3809,7 @@ public final class Utilities {
    * RecordReaderStatus.
    *
    */
-  public static enum RecordReaderStatus {
+  public enum RecordReaderStatus {
     CURRENT, NEXT, EOF
   }
 

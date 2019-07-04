@@ -29,6 +29,8 @@ SELECT * FROM header_footer_table_2;
 SELECT COUNT(*) FROM header_footer_table_2 WHERE id < 50;
 SELECT * FROM header_footer_table_2 WHERE id < 50;
 
+SELECT * FROM header_footer_table_2 LIMIT 4;
+
 CREATE EXTERNAL TABLE emptytable (name string, message string, id int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LOCATION 'hdfs:///tmp/test/header_footer_table_3' tblproperties ("skip.header.line.count"="1", "skip.footer.line.count"="2");
 
 SELECT COUNT(*) FROM emptytable;

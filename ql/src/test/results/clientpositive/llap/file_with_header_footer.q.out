@@ -179,6 +179,24 @@ xifa2	phd	13	2012	1	2
 chuan2	hadoop	14	2012	1	2
 shanyu2	senior	15	2012	1	2
 david3	oozie	22	2012	1	3
+PREHOOK: query: SELECT * FROM header_footer_table_2 LIMIT 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_2
+PREHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=1
+PREHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=2
+PREHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_2 LIMIT 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_2
+POSTHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=1
+POSTHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=2
+POSTHOOK: Input: default@header_footer_table_2@year=2012/month=1/day=3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+steven	hive	1	2012	1	1
+dave	oozie	2	2012	1	1
+xifa	phd	3	2012	1	1
+chuan	hadoop	4	2012	1	1
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
