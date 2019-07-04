@@ -1,7 +1,11 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -72,8 +76,10 @@ public class BlacklistingLlapMetricsListener implements LlapMetricsListener {
         "The time threshold should be greater than 1");
     Preconditions.checkArgument(maxBlacklistedNodes > 0,
         "The maximum number of blacklisted node should be greater than 1");
+    Preconditions.checkNotNull(registry, "Registry should not be null");
+    Preconditions.checkNotNull(clientFactory, "ClientFactory should not be null");
 
-    LOG.debug("BlacklistingLlapMetricsListener initialized with " +
+    LOG.info("BlacklistingLlapMetricsListener initialized with " +
                   "minServedTasksNumber={}, " +
                   "minConfigChangeDelayMs={}, " +
                   "timeThreshold={}, " +
@@ -120,15 +126,18 @@ public class BlacklistingLlapMetricsListener implements LlapMetricsListener {
       if (maxExecutors == 0) {
         blacklistedNodes++;
         if (blacklistedNodes >= this.maxBlacklistedNodes) {
-          LOG.debug("Already too many blacklisted nodes. Skipping.");
+          LOG.info("Already enough blacklisted nodes {}. Skipping.", blacklistedNodes);
           return;
+        } else {
+          // We do not interested in the data for the blacklisted nodes
+          continue;
         }
       }
 
       if (requestHandled > this.minServedTasksNumber) {
         workerNum++;
         sumAverageTime += averageTime;
-        if ( averageTime > maxAverageTime) {
+        if (averageTime > maxAverageTime) {
           maxAverageTime = averageTime;
           maxAverageTimeEmptyExecutors = emptyExecutor;
           maxAverageTimeMaxExecutors = maxExecutors;
@@ -155,7 +164,7 @@ public class BlacklistingLlapMetricsListener implements LlapMetricsListener {
         sumAverageTime, sumEmptyExecutors, maxAverageTime, maxAverageTimeEmptyExecutors,
         maxAverageTimeMaxExecutors, workerNum, maxAverageTimeIdentity, blacklistedNodes);
     // Check if the slowest node is at least timeThreshold times slower than the average
-    long averageTimeWithoutSlowest = (sumAverageTime - maxAverageTime) / (workerNum - 1);
+    double averageTimeWithoutSlowest = (double)(sumAverageTime - maxAverageTime) / (workerNum - 1);
     if (averageTimeWithoutSlowest * this.timeThreshold < maxAverageTime) {
       // We have a candidate, let's see if we have enough empty executors.
       long emptyExecutorsWithoutSlowest = sumEmptyExecutors - maxAverageTimeEmptyExecutors;
@@ -176,7 +185,7 @@ public class BlacklistingLlapMetricsListener implements LlapMetricsListener {
     long currentTime = System.currentTimeMillis();
     if (currentTime > nextCheckTime) {
       LlapZookeeperRegistryImpl.ConfigChangeLockResult lockResult =
-          registry.lockForConfigChange(currentTime + this.minConfigChangeDelayMs);
+          registry.lockForConfigChange(currentTime, currentTime + this.minConfigChangeDelayMs);
 
       LOG.debug("Got result for lock check: {}", lockResult);
       if (lockResult.isSuccess()) {

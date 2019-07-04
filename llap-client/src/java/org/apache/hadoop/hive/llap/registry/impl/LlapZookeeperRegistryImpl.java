@@ -1,16 +1,21 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.hadoop.hive.llap.registry.impl;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -71,7 +76,7 @@ public class LlapZookeeperRegistryImpl
   private static final String SLOT_PREFIX = "slot-";
   private static final String SASL_LOGIN_CONTEXT_NAME = "LlapZooKeeperClient";
   private static final String CONFIG_CHANGE_PATH = "config-change";
-  private static final String CONFIG_CHANGE_NODE = "next-change";
+  private static final String CONFIG_CHANGE_NODE = "window-end";
 
 
   private SlotZnode slotZnode;
@@ -79,7 +84,7 @@ public class LlapZookeeperRegistryImpl
   // to be used by clients of ServiceRegistry TODO: this is unnecessary
   private DynamicServiceInstanceSet instances;
 
-  private DistributedAtomicLong nextChangeTime;
+  private DistributedAtomicLong lockWindowEnd;
 
   public LlapZookeeperRegistryImpl(String instanceName, Configuration conf) {
     super(instanceName, conf,
@@ -425,33 +430,38 @@ public class LlapZookeeperRegistryImpl
   }
 
   /**
-   * Locks the Llap Cluster for configuration change by setting the next possible configuration
-   * change time. Until this time is reached the configuration should not be changed.
-   * @param nextMinConfigChangeTime The next time when the cluster can be reconfigured
+   * Locks the Llap Cluster for configuration change for the given time window.
+   * @param windowStart The beginning of the time window when no other configuration change is allowed.
+   * @param windowEnd The end of the time window when no other configuration change is allowed.
    * @return The result of the change (success if the lock is succeeded, and the next possible
    * configuration change time
    */
-  public ConfigChangeLockResult lockForConfigChange(long nextMinConfigChangeTime) {
+  public ConfigChangeLockResult lockForConfigChange(long windowStart, long windowEnd) {
+    if (windowEnd < windowStart) {
+      throw new IllegalArgumentException(
+          "WindowStart=" + windowStart + " can not be smaller than WindowEnd=" + windowEnd);
+    }
     try {
-      if (nextChangeTime == null) {
+      if (lockWindowEnd == null) {
         // Create the node with the /llap-sasl/hiveuser/hostname/config-change/next-change path without retry
-        nextChangeTime = new DistributedAtomicLong(zooKeeperClient,
+        lockWindowEnd = new DistributedAtomicLong(zooKeeperClient,
             String.join("/", workersPath.substring(0, workersPath.lastIndexOf('/')), CONFIG_CHANGE_PATH,
                 CONFIG_CHANGE_NODE), (i, j, sleeper) -> false);
-        nextChangeTime.initialize(0L);
+        lockWindowEnd.initialize(0L);
       }
-      AtomicValue<Long> current = nextChangeTime.get();
+      AtomicValue<Long> current = lockWindowEnd.get();
       if (!current.succeeded()) {
         LOG.debug("Can not get the current configuration lock time");
         return new ConfigChangeLockResult(false, -1L);
       }
-      if (current.postValue() >= nextMinConfigChangeTime) {
-        LOG.debug("Can not set {}. Current value is {}.", nextMinConfigChangeTime, current.postValue());
+      if (current.postValue() > windowStart) {
+        LOG.debug("Can not lock window {}-{}. Current value is {}.", windowStart, windowEnd, current.postValue());
         return new ConfigChangeLockResult(false, current.postValue());
       }
-      current = nextChangeTime.compareAndSet(current.postValue(), nextMinConfigChangeTime);
+      current = lockWindowEnd.compareAndSet(current.postValue(), windowEnd);
       if (!current.succeeded()) {
-        LOG.debug("Can not set {}. Current value is changed to {}.", nextMinConfigChangeTime, current.postValue());
+        LOG.debug("Can not lock window {}-{}. Current value is changed to {}.", windowStart, windowEnd,
+            current.postValue());
         return new ConfigChangeLockResult(false, current.postValue());
       }
       return new ConfigChangeLockResult(true, current.postValue());
@@ -462,8 +472,8 @@ public class LlapZookeeperRegistryImpl
   }
 
   public static class ConfigChangeLockResult {
-    boolean success;
-    long nextConfigChangeTime;
+    private final boolean success;
+    private final long nextConfigChangeTime;
 
     @VisibleForTesting
     public ConfigChangeLockResult(boolean success, long nextConfigChangeTime) {

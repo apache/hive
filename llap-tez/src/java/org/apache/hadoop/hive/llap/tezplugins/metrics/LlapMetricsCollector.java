@@ -229,6 +229,11 @@ public class LlapMetricsCollector implements ServiceStateChangeListener,
       return timestamp;
     }
 
+    /**
+     * The metric values in the map. The keys are the enum names (See: LlapDaemonExecutorInfo), and
+     * the values are the actual values.
+     * @return
+     */
     public Map<String, Long> getMetrics() {
       return metrics;
     }

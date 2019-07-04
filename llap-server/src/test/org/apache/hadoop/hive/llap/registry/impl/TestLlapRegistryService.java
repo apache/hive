@@ -50,29 +50,64 @@ public class TestLlapRegistryService {
   }
 
   @Test
-  public void testLockForConfigChange() {
-    LlapRegistryService client1 = new LlapRegistryService(false);
-    client1.init(conf);
-    client1.start();
+  public void testLockForConfigChange() throws IOException {
+    LlapRegistryService client1 = null;
+    LlapRegistryService client2 = null;
+    ConfigChangeLockResult result;
 
-    LlapRegistryService client2 = new LlapRegistryService(false);
-    client2.init(conf);
-    client2.start();
-    ConfigChangeLockResult result = null;
+    try {
+      client1 = new LlapRegistryService(false);
+      client1.init(conf);
+      client1.start();
 
-    assertTrue(client1.lockForConfigChange(10000).success);
-    assertTrue(client2.lockForConfigChange(30000).success);
-    // Can not set to before
-    result = client1.lockForConfigChange(20000);
-    assertFalse(result.success);
-    assertEquals(result.nextConfigChangeTime, 30000);
-    // Can not set to the same timestamp
-    result = client1.lockForConfigChange(30000);
-    assertFalse(result.success);
-    assertEquals(result.nextConfigChangeTime, 30000);
-    // Check return value in case of success
-    result = client1.lockForConfigChange(40000);
-    assertTrue(result.success);
-    assertEquals(result.nextConfigChangeTime, 40000);
+      client2 = new LlapRegistryService(false);
+      client2.init(conf);
+      client2.start();
+
+      assertTrue(client1.lockForConfigChange(10000, 20000).isSuccess());
+      assertTrue(client2.lockForConfigChange(30000, 40000).isSuccess());
+
+      // Can not set to before
+      result = client1.lockForConfigChange(20000, 30000);
+      assertFalse(result.isSuccess());
+      assertEquals(result.getNextConfigChangeTime(), 40000);
+
+      result = client1.lockForConfigChange(30000, 40000);
+      assertFalse(result.isSuccess());
+      assertEquals(result.getNextConfigChangeTime(), 40000);
+
+      result = client1.lockForConfigChange(35000, 45000);
+      assertFalse(result.isSuccess());
+      assertEquals(result.getNextConfigChangeTime(), 40000);
+
+      // Can start from the previous end timestamp
+      result = client1.lockForConfigChange(40000, 50000);
+      assertTrue(result.isSuccess());
+      assertEquals(result.getNextConfigChangeTime(), 50000);
+    } finally {
+      if (client1 != null) {
+        client1.close();
+      }
+      if (client2 != null) {
+        client2.close();
+      }
+    }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testLockForConfigChangeInvalid() throws IOException{
+    LlapRegistryService client = null;
+
+    try {
+      client = new LlapRegistryService(false);
+      client.init(conf);
+      client.start();
+
+      client.lockForConfigChange(20000, 10000);
+    } finally {
+      if (client != null) {
+        client.close();
+      }
+    }
   }
 }

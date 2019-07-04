@@ -1,7 +1,11 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -11,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.llap.tezplugins.metrics;
 
 import com.google.protobuf.RpcController;
@@ -44,6 +49,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+/**
+ * Test class to test BlacklistingLlapMetricsListener object.
+ */
 public class TestBlacklistingLlapMetricsListener {
   private static final SetCapacityResponseProto TEST_RESPONSE =
       SetCapacityResponseProto.getDefaultInstance();
@@ -70,7 +78,8 @@ public class TestBlacklistingLlapMetricsListener {
 
     conf = new HiveConf();
     when(mockRegistry.getInstances()).thenReturn(mockInstanceSet);
-    when(mockRegistry.lockForConfigChange(anyLong())).thenReturn(new ConfigChangeLockResult(true, Long.MIN_VALUE));
+    when(mockRegistry.lockForConfigChange(anyLong(), anyLong())).thenReturn(
+        new ConfigChangeLockResult(true, Long.MIN_VALUE));
     when(mockClientFactory.create(any(LlapServiceInstance.class))).thenReturn(mockClient);
     when(mockClient.setCapacity(
         any(RpcController.class),
@@ -126,7 +135,8 @@ public class TestBlacklistingLlapMetricsListener {
 
     // Return that we can not yet blacklist a node
     long targetTime = System.currentTimeMillis() + 10000;
-    when(mockRegistry.lockForConfigChange(anyLong())).thenReturn(new ConfigChangeLockResult(false, targetTime));
+    when(mockRegistry.lockForConfigChange(anyLong(), anyLong())).thenReturn(
+        new ConfigChangeLockResult(false, targetTime));
     listener.newClusterMetrics(data);
 
     verify(mockClient, never()).setCapacity(any(RpcController.class), any(SetCapacityRequestProto.class));
@@ -138,12 +148,13 @@ public class TestBlacklistingLlapMetricsListener {
 
     // We will not try to set the capacity, or even lock until the time is reached
     listener.newClusterMetrics(data);
-    verify(mockRegistry, never()).lockForConfigChange(anyLong());
+    verify(mockRegistry, never()).lockForConfigChange(anyLong(), anyLong());
     verify(mockClient, never()).setCapacity(any(RpcController.class), any(SetCapacityRequestProto.class));
 
     // If the time is reached, then we lock and blacklist
     listener.nextCheckTime = System.currentTimeMillis() - 1;
-    when(mockRegistry.lockForConfigChange(anyLong())).thenReturn(new ConfigChangeLockResult(true, targetTime));
+    when(mockRegistry.lockForConfigChange(anyLong(), anyLong())).thenReturn(
+        new ConfigChangeLockResult(true, targetTime));
     listener.newClusterMetrics(data);
 
     ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
