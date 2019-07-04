@@ -284,13 +284,12 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         }
       }
     }
-    this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors,
+    this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors, waitQueueSize,
         Ints.toArray(intervalList), timedWindowAverageDataPoints, timedWindowAverageWindowLength,
         simpleAverageWindowDataSize);
     this.metrics.setMemoryPerInstance(executorMemoryPerInstance);
     this.metrics.setCacheMemoryPerInstance(ioMemoryBytes);
     this.metrics.setJvmMaxMemory(maxJvmMemory);
-    this.metrics.setWaitQueueSize(waitQueueSize);
     this.metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
     this.llapDaemonInfoBean = MBeans.register("LlapDaemon", "LlapDaemonInfo", this);
     LOG.info("Started LlapMetricsSystem with displayName: " + displayName +

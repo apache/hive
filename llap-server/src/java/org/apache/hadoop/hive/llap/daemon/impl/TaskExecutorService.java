@@ -172,8 +172,8 @@ public class TaskExecutorService extends AbstractService
     this.numSlotsAvailable = new AtomicInteger(numExecutors);
     this.metrics = metrics;
     metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
-    metrics.setNumExecutorsEnabled(numExecutors);
-    metrics.setWaitQueueSizeEnabled(waitQueueSize);
+    this.metrics.setNumExecutors(numExecutors);
+    this.metrics.setWaitQueueSize(waitQueueSize);
 
     // single threaded scheduler for tasks from wait queue to executor threads
     ExecutorService wes = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
@@ -220,8 +220,8 @@ public class TaskExecutorService extends AbstractService
     numSlotsAvailable.addAndGet(newNumExecutors - maxParallelExecutors);
     maxParallelExecutors = newNumExecutors;
     waitQueue.setWaitQueueSize(newWaitQueueSize);
-    metrics.setNumExecutorsEnabled(newNumExecutors);
-    metrics.setWaitQueueSizeEnabled(newWaitQueueSize);
+    metrics.setNumExecutors(newNumExecutors);
+    metrics.setWaitQueueSize(newWaitQueueSize);
     LOG.info("TaskExecutorService is setting capacity to: numExecutors=" + newNumExecutors
         + ", waitQueueSize=" + newWaitQueueSize);
   }
@@ -1029,13 +1029,13 @@ public class TaskExecutorService extends AbstractService
         long timeTaken = now - fragmentCompletion.completingTime;
         switch (fragmentCompletion.state) {
           case SUCCESS:
-            metrics.addMetricsFallOffSuccessTimeLost(timeTaken);
+          metrics.addMetricsFallOffSuccessTimeLost(timeTaken);
             break;
           case FAILED:
-            metrics.addMetricsFallOffFailedTimeLost(timeTaken);
+          metrics.addMetricsFallOffFailedTimeLost(timeTaken);
             break;
           case KILLED:
-            metrics.addMetricsFallOffKilledTimeLost(timeTaken);
+          metrics.addMetricsFallOffKilledTimeLost(timeTaken);
             break;
         }
       }

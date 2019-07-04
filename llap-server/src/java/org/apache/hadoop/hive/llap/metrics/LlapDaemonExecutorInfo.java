@@ -28,7 +28,9 @@ import com.google.common.base.Objects;
 public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorMetrics("Llap daemon cache related metrics"),
   ExecutorMaxFreeSlots("Sum of wait queue size and number of executors"),
-  ExecutorNumExecutorsPerInstance("Total number of executor threads per node"),
+  ExecutorNumExecutors("Total number of executor threads"),
+  ExecutorMaxConfiguredFreeSlots("Sum of the configured wait queue size and the configured number of executors"),
+  ExecutorNumExecutorsConfigured("Total number of executor threads per node"),
   ExecutorNumExecutorsAvailable("Total number of executor threads per node that are free"),
   ExecutorNumExecutorsAvailableAverage("Total number of executor threads per node that are free averaged over time"),
   ExecutorAvailableFreeSlots("Number of free slots available"),
@@ -37,7 +39,8 @@ public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorMemoryPerInstance("Total memory for executors per node in bytes"),
   ExecutorCacheMemoryPerInstance("Total Cache memory per node in bytes"),
   ExecutorJvmMaxMemory("Max memory available for JVM in bytes"),
-  ExecutorWaitQueueSize("Size of wait queue per node"),
+  ExecutorWaitQueueSize("Size of wait queue"),
+  ExecutorWaitQueueSizeConfigured("Size of wait queue configured per node"),
   ExecutorThreadUserTime("User time in nanoseconds"),
   ExecutorTotalRequestsHandled("Total number of requests handled by the container"),
   ExecutorNumQueuedRequests("Number of requests queued by the container for processing"),
@@ -64,8 +67,6 @@ public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorFallOffNumCompletedFragments("Number of completed fragments w.r.t falloff values"),
   AverageQueueTime("Average queue time for tasks"),
   AverageResponseTime("Average response time for successful tasks"),
-  NumExecutorsEnabled("The number of executor threads enabled"),
-  WaitQueueSizeEnabled("Size of wait queue enabled"),
   ;
 
   private final String desc;

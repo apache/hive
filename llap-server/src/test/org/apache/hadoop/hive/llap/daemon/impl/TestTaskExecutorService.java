@@ -564,8 +564,8 @@ public class TestTaskExecutorService {
     TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(2, 10,
         ShortestJobFirstComparator.class.getName(), true, mockMetrics);
 
-    verify(mockMetrics).setNumExecutorsEnabled(2);
-    verify(mockMetrics).setWaitQueueSizeEnabled(10);
+    verify(mockMetrics).setNumExecutors(2);
+    verify(mockMetrics).setWaitQueueSize(10);
   }
 
   @Test(timeout = 1000)
@@ -575,8 +575,8 @@ public class TestTaskExecutorService {
     reset(mockMetrics);
     taskExecutorService.setCapacity(1, 5);
 
-    verify(mockMetrics).setNumExecutorsEnabled(1);
-    verify(mockMetrics).setWaitQueueSizeEnabled(5);
+    verify(mockMetrics).setNumExecutors(1);
+    verify(mockMetrics).setWaitQueueSize(5);
   }
 
   private void runPreemptionGraceTest(
