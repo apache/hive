@@ -46,12 +46,25 @@
         <!-- Plugin versions -->
         <ant.contrib.version>1.0b3</ant.contrib.version>
         <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
-        <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
+        <checkstyle.conf.dir>${basedir}/${hive.path.to.root}/checkstyle</checkstyle.conf.dir>
         <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
         <maven.surefire.version>2.20.1</maven.surefire.version>
     </properties>
     <modules>
         <module>pre-upgrade</module>
     </modules>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
+                    <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
