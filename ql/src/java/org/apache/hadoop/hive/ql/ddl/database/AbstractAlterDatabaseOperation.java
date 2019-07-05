@@ -18,11 +18,8 @@
 
 package org.apache.hadoop.hive.ql.ddl.database;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -32,8 +29,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of altering a database.
  */
-public class AlterDatabaseOperation extends DDLOperation<AlterDatabaseDesc> {
-  public AlterDatabaseOperation(DDLOperationContext context, AlterDatabaseDesc desc) {
+public abstract class AbstractAlterDatabaseOperation<T extends AbstractAlterDatabaseDesc> extends DDLOperation<T> {
+  public AbstractAlterDatabaseOperation(DDLOperationContext context, T desc) {
     super(context, desc);
   }
 
@@ -52,60 +49,11 @@ public class AlterDatabaseOperation extends DDLOperation<AlterDatabaseDesc> {
       return 0; // no replacement, the existing database state is newer than our update.
     }
 
-    switch (desc.getAlterType()) {
-    case ALTER_PROPERTY:
-      alterProperties(database, params);
-      break;
-
-    case ALTER_OWNER:
-      alterOwner(database);
-      break;
-
-    case ALTER_LOCATION:
-      alterLocation(database);
-      break;
-
-    default:
-      throw new AssertionError("Unsupported alter database type! : " + desc.getAlterType());
-    }
+    doAlteration(database, params);
 
     context.getDb().alterDatabase(database.getName(), database);
     return 0;
   }
 
-  private void alterProperties(Database database, Map<String, String> params) {
-    Map<String, String> newParams = desc.getDatabaseProperties();
-
-    // if both old and new params are not null, merge them
-    if (params != null && newParams != null) {
-      params.putAll(newParams);
-      database.setParameters(params);
-    } else {
-      // if one of them is null, replace the old params with the new one
-      database.setParameters(newParams);
-    }
-  }
-
-  private void alterOwner(Database database) {
-    database.setOwnerName(desc.getOwnerPrincipal().getName());
-    database.setOwnerType(desc.getOwnerPrincipal().getType());
-  }
-
-  private void alterLocation(Database database) throws HiveException {
-    try {
-      String newLocation = desc.getLocation();
-      URI locationURI = new URI(newLocation);
-      if (!locationURI.isAbsolute() || StringUtils.isBlank(locationURI.getScheme())) {
-        throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
-      }
-
-      if (newLocation.equals(database.getLocationUri())) {
-        LOG.info("AlterDatabase skipped. No change in location.");
-      } else {
-        database.setLocationUri(newLocation);
-      }
-    } catch (URISyntaxException e) {
-      throw new HiveException(e);
-    }
-  }
+  protected abstract void doAlteration(Database database, Map<String, String> params) throws HiveException;
 }
