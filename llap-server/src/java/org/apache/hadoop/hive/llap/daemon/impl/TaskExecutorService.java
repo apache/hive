@@ -171,7 +171,7 @@ public class TaskExecutorService extends AbstractService
     this.enablePreemption = enablePreemption;
     this.numSlotsAvailable = new AtomicInteger(numExecutors);
     this.metrics = metrics;
-    metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
+    this.metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
     this.metrics.setNumExecutors(numExecutors);
     this.metrics.setWaitQueueSize(waitQueueSize);
 

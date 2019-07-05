@@ -24,7 +24,7 @@ import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.Executo
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorCacheMemoryPerInstance;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorFallOffNumCompletedFragments;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorJvmMaxMemory;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxConfiguredFreeSlots;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxFreeSlotsConfigured;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxFreeSlots;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxPreemptionTimeLost;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxPreemptionTimeToKill;
@@ -396,7 +396,7 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
         .addGauge(ExecutorMemoryPerInstance, memoryPerInstance.value())
         .addGauge(ExecutorCacheMemoryPerInstance, cacheMemoryPerInstance.value())
         .addGauge(ExecutorJvmMaxMemory, jvmMaxMemory.value())
-        .addGauge(ExecutorMaxConfiguredFreeSlots, totalConfiguredSlots)
+        .addGauge(ExecutorMaxFreeSlotsConfigured, totalConfiguredSlots)
         .addGauge(ExecutorMaxFreeSlots, totalSlots)
         .addGauge(ExecutorNumExecutors, numExecutors.value())
         .addGauge(ExecutorNumExecutorsConfigured, numExecutorsConfigured)

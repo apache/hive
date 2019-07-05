@@ -29,7 +29,7 @@ public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorMetrics("Llap daemon cache related metrics"),
   ExecutorMaxFreeSlots("Sum of wait queue size and number of executors"),
   ExecutorNumExecutors("Total number of executor threads"),
-  ExecutorMaxConfiguredFreeSlots("Sum of the configured wait queue size and the configured number of executors"),
+  ExecutorMaxFreeSlotsConfigured("Sum of the configured wait queue size and the configured number of executors"),
   ExecutorNumExecutorsConfigured("Total number of executor threads per node"),
   ExecutorNumExecutorsAvailable("Total number of executor threads per node that are free"),
   ExecutorNumExecutorsAvailableAverage("Total number of executor threads per node that are free averaged over time"),

@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.llap.daemon.impl.DumpingMetricsCollector;
 import org.junit.Test;
 
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorAvailableFreeSlots;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxConfiguredFreeSlots;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxFreeSlotsConfigured;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxFreeSlots;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumExecutors;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumExecutorsAvailable;
@@ -183,7 +183,7 @@ public class TestLlapDaemonExecutorMetrics {
     assertTrue(numExecutorsAvailable == data.get(ExecutorNumExecutorsAvailable.name()));
 
     // Derived values
-    assertTrue((waitQueueSizeConfigured + numExecutorsConfigured) == data.get(ExecutorMaxConfiguredFreeSlots.name()));
+    assertTrue((waitQueueSizeConfigured + numExecutorsConfigured) == data.get(ExecutorMaxFreeSlotsConfigured.name()));
     assertTrue((waitQueueSize + numExecutors) == data.get(ExecutorMaxFreeSlots.name()));
     assertTrue((waitQueueSize + numExecutorsAvailable - queuedRequests) == data.get(ExecutorAvailableFreeSlots.name()));
   }
