@@ -689,6 +689,9 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   @Override
   public void processOp(Object row, int tag) throws HiveException {
     firstRow = false;
+    if (tag > inputObjInspectors.length -1){
+      tag = 0;
+    }
     ObjectInspector rowInspector = inputObjInspectors[tag];
     // Total number of input rows is needed for hash aggregation only
     if (hashAggr && !groupKeyIsNotReduceKey) {
