@@ -17,6 +17,23 @@ PREHOOK: Output: database:db_alter_onr
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERDATABASE_OWNER
 POSTHOOK: Output: database:db_alter_onr
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+#### A masked pattern was here ####
+      name: db_alter_onr
+#### A masked pattern was here ####
+        Principal
+          name: user1
+
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_OWNER
+PREHOOK: Output: database:db_alter_onr
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_OWNER
+POSTHOOK: Output: database:db_alter_onr
 PREHOOK: query: describe database db_alter_onr
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:db_alter_onr

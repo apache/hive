@@ -75,7 +75,10 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AbstractAlterDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetLocationDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetOwnerDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.DropDatabaseDesc;
@@ -818,11 +821,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
       }
     }
-    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, dbProps, null);
+    AlterDatabaseSetPropertiesDesc alterDesc = new AlterDatabaseSetPropertiesDesc(dbName, dbProps, null);
     addAlterDbDesc(alterDesc);
   }
 
-  private void addAlterDbDesc(AlterDatabaseDesc alterDesc) throws SemanticException {
+  private void addAlterDbDesc(AbstractAlterDatabaseDesc alterDesc) throws SemanticException {
     Database database = getDatabase(alterDesc.getDatabaseName());
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterDesc)));
@@ -842,7 +845,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Owner type " + nullCmdMsg);
     }
 
-    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, principalDesc, null);
+    AlterDatabaseSetOwnerDesc alterDesc = new AlterDatabaseSetOwnerDesc(dbName, principalDesc, null);
     addAlterDbDesc(alterDesc);
   }
 
@@ -850,7 +853,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbName = getUnescapedName((ASTNode) ast.getChild(0));
     String newLocation = unescapeSQLString(ast.getChild(1).getText());
     addLocationToOutputs(newLocation);
-    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, newLocation);
+    AlterDatabaseSetLocationDesc alterDesc = new AlterDatabaseSetLocationDesc(dbName, newLocation);
     addAlterDbDesc(alterDesc);
   }
 

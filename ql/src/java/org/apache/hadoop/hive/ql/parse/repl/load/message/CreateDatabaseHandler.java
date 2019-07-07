@@ -24,7 +24,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetOwnerDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -61,14 +62,14 @@ public class CreateDatabaseHandler extends AbstractMessageHandler {
     Task<DDLWork> createDBTask = TaskFactory.get(
         new DDLWork(new HashSet<>(), new HashSet<>(), createDatabaseDesc), context.hiveConf);
     if (!db.getParameters().isEmpty()) {
-      AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(destinationDBName, db.getParameters(),
-          context.eventOnlyReplicationSpec());
+      AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(destinationDBName,
+          db.getParameters(), context.eventOnlyReplicationSpec());
       Task<DDLWork> alterDbProperties = TaskFactory
           .get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc), context.hiveConf);
       createDBTask.addDependentTask(alterDbProperties);
     }
     if (StringUtils.isNotEmpty(db.getOwnerName())) {
-      AlterDatabaseDesc alterDbOwner = new AlterDatabaseDesc(destinationDBName,
+      AlterDatabaseSetOwnerDesc alterDbOwner = new AlterDatabaseSetOwnerDesc(destinationDBName,
           new PrincipalDesc(db.getOwnerName(), db.getOwnerType()),
           context.eventOnlyReplicationSpec());
       Task<DDLWork> alterDbTask = TaskFactory
