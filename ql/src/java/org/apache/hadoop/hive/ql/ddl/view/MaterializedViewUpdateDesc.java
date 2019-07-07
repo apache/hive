@@ -15,42 +15,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.ddl.view;
 
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
 
-@Explain(displayName = "Materialized View Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class MaterializedViewDesc implements Serializable {
+/**
+ * DDL task description of updating a materialized view.
+ */
+@Explain(displayName = "Materialized View Update", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class MaterializedViewUpdateDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  private final String viewName;
+
+  private final String name;
   private final boolean retrieveAndInclude;
   private final boolean disableRewrite;
   private final boolean updateCreationMetadata;
 
-  public MaterializedViewDesc(String viewName, boolean retrieveAndInclude, boolean disableRewrite,
+  public MaterializedViewUpdateDesc(String name, boolean retrieveAndInclude, boolean disableRewrite,
       boolean updateCreationMetadata) {
-    this.viewName = viewName;
+    this.name = name;
     this.retrieveAndInclude = retrieveAndInclude;
     this.disableRewrite = disableRewrite;
     this.updateCreationMetadata = updateCreationMetadata;
   }
 
-  public String getViewName() {
-    return viewName;
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getName() {
+    return name;
   }
 
+  @Explain(displayName = "retrieveAndInclude", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isRetrieveAndInclude() {
     return retrieveAndInclude;
   }
 
+  @Explain(displayName = "disableRewrite", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isDisableRewrite() {
     return disableRewrite;
   }
 
+  @Explain(displayName = "updateCreationMetadata", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isUpdateCreationMetadata() {
     return updateCreationMetadata;
   }
