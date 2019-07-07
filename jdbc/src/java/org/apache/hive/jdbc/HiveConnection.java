@@ -298,10 +298,15 @@ public class HiveConnection implements java.sql.Connection {
       executeInitSql();
     } else {
       int maxRetries = 1;
+      long retryInterval = 1000L;
       try {
         String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);
         if (StringUtils.isNotBlank(strRetries)) {
           maxRetries = Integer.parseInt(strRetries);
+        }
+        String strRetryInterval = sessConfMap.get(JdbcConnectionParams.RETRY_INTERVAL);
+        if(StringUtils.isNotBlank(strRetryInterval)){
+          retryInterval = Long.parseLong(strRetryInterval);
         }
       } catch(NumberFormatException e) { // Ignore the exception
       }
@@ -343,7 +348,12 @@ public class HiveConnection implements java.sql.Connection {
           if (numRetries >= maxRetries) {
             throw new SQLException(errMsg + e.getMessage(), " 08S01", e);
           } else {
-            LOG.warn(warnMsg + e.getMessage() + " Retrying " + numRetries + " of " + maxRetries);
+            LOG.warn(warnMsg + e.getMessage() + " Retrying " + numRetries + " of " + maxRetries+" with retry interval "+retryInterval+"ms");
+            try {
+              Thread.sleep(retryInterval);
+            } catch (InterruptedException ex) {
+              //Ignore
+            }
           }
         }
       }
