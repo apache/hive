@@ -21,7 +21,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetOwnerDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -131,8 +132,8 @@ public class LoadDatabase {
   }
 
   private Task<? extends Serializable> setOwnerInfoTask(Database dbObj) {
-    AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbObj.getName(), new PrincipalDesc(dbObj.getOwnerName(),
-        dbObj.getOwnerType()), null);
+    AlterDatabaseSetOwnerDesc alterDbDesc = new AlterDatabaseSetOwnerDesc(dbObj.getName(),
+        new PrincipalDesc(dbObj.getOwnerName(), dbObj.getOwnerType()), null);
     DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);
     return TaskFactory.get(work, context.hiveConf);
   }
@@ -161,7 +162,7 @@ public class LoadDatabase {
 
   private static Task<? extends Serializable> alterDbTask(String dbName, Map<String, String> props,
                                                           HiveConf hiveConf) {
-    AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbName, props, null);
+    AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(dbName, props, null);
     DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);
     return TaskFactory.get(work, hiveConf);
   }

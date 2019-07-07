@@ -4353,6 +4353,11 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.MILLISECONDS), "Collect llap daemon metrics in the AM every given milliseconds,\n" +
       "so that the AM can use this information, to make better scheduling decisions.\n" +
       "If it's set to 0, then the feature is disabled."),
+    LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER(
+      "hive.llap.task.scheduler.am.collect.daemon.metrics.listener", "",
+      "The listener which is called when new Llap Daemon statistics is received on AM side.\n" +
+      "The listener should implement the " +
+      "org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsListener interface."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME("hive.llap.task.scheduler.am.registry", "llap",
       "AM registry name for LLAP task scheduler plugin to register with."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_PRINCIPAL("hive.llap.task.scheduler.am.registry.principal", "",
@@ -4448,9 +4453,9 @@ public class HiveConf extends Configuration {
       "Whether LLAP daemon web UI should use SSL.", "llap.daemon.service.ssl"),
     LLAP_CLIENT_CONSISTENT_SPLITS("hive.llap.client.consistent.splits", true,
         "Whether to setup split locations to match nodes on which llap daemons are running, " +
-        "preferring one of the locations provided by the split itself. If there is no llap daemon " +
-        "running on any of those locations (or on the cloud), fall back to a cache affinity to" +
-        " an LLAP node. This is effective only if hive.execution.mode is llap."),
+        "instead of using the locations provided by the split itself. If there is no llap daemon " +
+        "running, fall back to locations provided by the split. This is effective only if " +
+        "hive.execution.mode is llap"),
     LLAP_VALIDATE_ACLS("hive.llap.validate.acls", true,
         "Whether LLAP should reject permissive ACLs in some cases (e.g. its own management\n" +
         "protocol or ZK paths), similar to how ssh refuses a key with bad access permissions."),

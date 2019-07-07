@@ -35,6 +35,9 @@ select a, c from cmv_basetable_n0 where a = 3;
 
 select a, c from cmv_basetable_n0 where a = 3;
 
+explain
+alter materialized view cmv_mat_view2 disable rewrite;
+
 alter materialized view cmv_mat_view2 disable rewrite;
 
 explain

@@ -477,7 +477,9 @@ STAGE PLANS:
       table name: default.cmv_mat_view2_n0
 
   Stage: Stage-4
-    Materialized View Work
+    Materialized View Update
+      name: default.cmv_mat_view2_n0
+      updateCreationMetadata: true
 
   Stage: Stage-1
     Pre-Insert task

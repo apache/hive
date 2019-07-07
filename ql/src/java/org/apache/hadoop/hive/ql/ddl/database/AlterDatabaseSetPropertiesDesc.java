@@ -16,36 +16,31 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.view;
+package org.apache.hadoop.hive.ql.ddl.database;
 
-import java.io.Serializable;
+import java.util.Map;
 
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for all the ALTER MATERIALIZED VIEW commands.
+ * DDL task description for ALTER DATABASE ... SET PROPERTIES ... commands.
  */
-@Explain(displayName = "Alter Materialized View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-abstract class AlterMaterializedViewDesc implements DDLDesc, Serializable {
+@Explain(displayName = "Set Database Properties", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterDatabaseSetPropertiesDesc extends AbstractAlterDatabaseDesc {
   private static final long serialVersionUID = 1L;
 
-  /**
-   * Alter Materialized View Types.
-   */
-  enum AlterMaterializedViewTypes {
-    UPDATE_REWRITE_FLAG
-  };
+  private final Map<String, String> dbProperties;
 
-  private AlterMaterializedViewTypes op;
-
-  AlterMaterializedViewDesc(AlterMaterializedViewTypes type) {
-    this.op = type;
+  public AlterDatabaseSetPropertiesDesc(String databaseName, Map<String, String> dbProperties,
+      ReplicationSpec replicationSpec) {
+    super(databaseName, replicationSpec);
+    this.dbProperties = dbProperties;
   }
 
-  @Explain(displayName = "operation", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getOpString() {
-    return op.toString();
+  @Explain(displayName="properties")
+  public Map<String, String> getDatabaseProperties() {
+    return dbProperties;
   }
 }

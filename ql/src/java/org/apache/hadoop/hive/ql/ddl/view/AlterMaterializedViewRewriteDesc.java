@@ -23,17 +23,14 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for the ALTER MATERIALIZED VIEW commands.
+ * DDL task description for the ALTER MATERIALIZED VIEW (ENABLE|DISABLE) REWRITE commands.
  */
-@Explain(displayName = "Alter Materialized View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterMaterializedViewRewriteDesc extends AlterMaterializedViewDesc implements DDLDescWithWriteId {
-  private static final long serialVersionUID = 1L;
-
+@Explain(displayName = "Alter Materialized View Rewrite", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterMaterializedViewRewriteDesc implements DDLDescWithWriteId {
   private final String fqMaterializedViewName;
   private final boolean rewriteEnable;
 
   public AlterMaterializedViewRewriteDesc(String fqMaterializedViewName, boolean rewriteEnable) {
-    super(AlterMaterializedViewTypes.UPDATE_REWRITE_FLAG);
     this.fqMaterializedViewName = fqMaterializedViewName;
     this.rewriteEnable = rewriteEnable;
   }
@@ -43,8 +40,17 @@ public class AlterMaterializedViewRewriteDesc extends AlterMaterializedViewDesc 
     return fqMaterializedViewName;
   }
 
+  @Explain(displayName = "enable", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isRewriteEnable() {
     return rewriteEnable;
+  }
+
+  /** Only for explaining. */
+  @Explain(displayName = "disable", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean isRewriteDisable() {
+    return !rewriteEnable;
   }
 
   @Override

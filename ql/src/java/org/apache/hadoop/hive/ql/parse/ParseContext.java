@@ -25,13 +25,13 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.MaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
@@ -122,7 +122,7 @@ public class ParseContext {
   private AnalyzeRewriteContext analyzeRewrite;
   private CreateTableDesc createTableDesc;
   private CreateViewDesc createViewDesc;
-  private MaterializedViewDesc materializedViewUpdateDesc;
+  private MaterializedViewUpdateDesc materializedViewUpdateDesc;
   private boolean reduceSinkAddedBySortedDynPartition;
 
   private Map<SelectOperator, Table> viewProjectToViewSchema;
@@ -199,7 +199,8 @@ public class ParseContext {
       Map<String, ReadEntity> viewAliasToInput,
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
       AnalyzeRewriteContext analyzeRewrite, CreateTableDesc createTableDesc,
-      CreateViewDesc createViewDesc, MaterializedViewDesc materializedViewUpdateDesc, QueryProperties queryProperties,
+      CreateViewDesc createViewDesc, MaterializedViewUpdateDesc materializedViewUpdateDesc,
+      QueryProperties queryProperties,
       Map<SelectOperator, Table> viewProjectToTableSchema, Set<FileSinkDesc> acidFileSinks) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
@@ -611,7 +612,7 @@ public class ParseContext {
     return createViewDesc;
   }
 
-  public MaterializedViewDesc getMaterializedViewUpdateDesc() {
+  public MaterializedViewUpdateDesc getMaterializedViewUpdateDesc() {
     return materializedViewUpdateDesc;
   }
 

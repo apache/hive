@@ -38,9 +38,9 @@ import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.view.AlterMaterializedViewRewriteDesc;
 import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.MaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -361,20 +361,23 @@ public abstract class TaskCompiler {
       CreateTableDesc crtTblDesc = pCtx.getCreateTable();
       crtTblDesc.validate(conf);
       Task<? extends Serializable> crtTblTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
-      patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtTblTask, CollectionUtils.isEmpty(crtTblDesc.getPartColNames()));
+      patchUpAfterCTASorMaterializedView(rootTasks, inputs, outputs, crtTblTask,
+          CollectionUtils.isEmpty(crtTblDesc.getPartColNames()));
     } else if (pCtx.getQueryProperties().isMaterializedView()) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateViewDesc viewDesc = pCtx.getCreateViewDesc();
       Task<? extends Serializable> crtViewTask = TaskFactory.get(new DDLWork(
           inputs, outputs, viewDesc));
-      patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtViewTask, CollectionUtils.isEmpty(viewDesc.getPartColNames()));
+      patchUpAfterCTASorMaterializedView(rootTasks, inputs, outputs, crtViewTask,
+          CollectionUtils.isEmpty(viewDesc.getPartColNames()));
     } else if (pCtx.getMaterializedViewUpdateDesc() != null) {
       // If there is a materialized view update desc, we create introduce it at the end
       // of the tree.
-      MaterializedViewDesc materializedViewDesc = pCtx.getMaterializedViewUpdateDesc();
+      MaterializedViewUpdateDesc materializedViewDesc = pCtx.getMaterializedViewUpdateDesc();
+      DDLWork ddlWork = new DDLWork(inputs, outputs, materializedViewDesc);
       Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
       getLeafTasks(rootTasks, leafTasks);
-      Task<? extends Serializable> materializedViewTask = TaskFactory.get(materializedViewDesc, conf);
+      Task<? extends Serializable> materializedViewTask = TaskFactory.get(ddlWork, conf);
       for (Task<? extends Serializable> task : leafTasks) {
         task.addDependentTask(materializedViewTask);
       }
@@ -491,10 +494,9 @@ public abstract class TaskCompiler {
     }
   }
 
-  private void patchUpAfterCTASorMaterializedView(final List<Task<? extends Serializable>> rootTasks,
-                                                  final HashSet<WriteEntity> outputs,
-                                                  Task<? extends Serializable> createTask,
-                                                  boolean createTaskAfterMoveTask) {
+  private void patchUpAfterCTASorMaterializedView(List<Task<? extends Serializable>> rootTasks,
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs, Task<? extends Serializable> createTask,
+      boolean createTaskAfterMoveTask) {
     // clear the mapredWork output file from outputs for CTAS
     // DDLWork at the tail of the chain will have the output
     Iterator<WriteEntity> outIter = outputs.iterator();
@@ -510,7 +512,7 @@ public abstract class TaskCompiler {
     }
 
     // find all leaf tasks and make the DDLTask as a dependent task on all of them
-    HashSet<Task<? extends Serializable>> leaves = new LinkedHashSet<>();
+    Set<Task<? extends Serializable>> leaves = new LinkedHashSet<>();
     getLeafTasks(rootTasks, leaves);
     assert (leaves.size() > 0);
     // Target task is supposed to be the last task
@@ -554,16 +556,20 @@ public abstract class TaskCompiler {
         if (createViewDesc.isMaterialized()) {
           String tableName = createViewDesc.getViewName();
           boolean retrieveAndInclude = createViewDesc.isRewriteEnabled();
-          targetTask.addDependentTask(TaskFactory.get(
-              new MaterializedViewDesc(tableName, retrieveAndInclude, false, false), conf));
+          MaterializedViewUpdateDesc materializedViewUpdateDesc =
+              new MaterializedViewUpdateDesc(tableName, retrieveAndInclude, false, false);
+          DDLWork ddlWork = new DDLWork(inputs, outputs, materializedViewUpdateDesc);
+          targetTask.addDependentTask(TaskFactory.get(ddlWork, conf));
         }
       } else if (desc instanceof AlterMaterializedViewRewriteDesc) {
         AlterMaterializedViewRewriteDesc alterMVRewriteDesc = (AlterMaterializedViewRewriteDesc)desc;
         String tableName = alterMVRewriteDesc.getMaterializedViewName();
         boolean retrieveAndInclude = alterMVRewriteDesc.isRewriteEnable();
         boolean disableRewrite = !alterMVRewriteDesc.isRewriteEnable();
-        targetTask.addDependentTask(
-            TaskFactory.get(new MaterializedViewDesc(tableName, retrieveAndInclude, disableRewrite, false), conf));
+        MaterializedViewUpdateDesc materializedViewUpdateDesc =
+            new MaterializedViewUpdateDesc(tableName, retrieveAndInclude, disableRewrite, false);
+        DDLWork ddlWork = new DDLWork(inputs, outputs, materializedViewUpdateDesc);
+        targetTask.addDependentTask(TaskFactory.get(ddlWork, conf));
       }
     }
   }
