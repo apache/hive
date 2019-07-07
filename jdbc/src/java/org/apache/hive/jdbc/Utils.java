@@ -81,6 +81,7 @@ public class Utils {
 
     // Retry setting
     static final String RETRIES = "retries";
+    public static final String RETRY_INTERVAL = "retryInterval";
 
     public static final String AUTH_TYPE = "auth";
     // We're deprecating this variable's name.
