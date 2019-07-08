@@ -134,162 +134,140 @@ public class Operation2Privilege {
     adminPrivOps = new ArrayList<HiveOperationType>();
     op2Priv = new HashMap<HiveOperationType, List<PrivRequirement>>();
 
-    op2Priv.put(HiveOperationType.EXPLAIN, PrivRequirement.newIOPrivRequirement
-(SEL_NOGRANT_AR,
-        SEL_NOGRANT_AR)); //??
+    op2Priv.put(HiveOperationType.EXPLAIN, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, SEL_NOGRANT_AR)); //??
 
     op2Priv.put(HiveOperationType.CREATEDATABASE, PrivRequirement.newPrivRequirementList(
         new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.DFS_URI),
         new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.LOCAL_URI)));
 
-    op2Priv.put(HiveOperationType.DROPDATABASE, PrivRequirement.newIOPrivRequirement
-(null, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROPDATABASE, PrivRequirement.newIOPrivRequirement(null, OWNER_PRIV_AR));
     // this should be database usage privilege once it is supported
-    op2Priv.put(HiveOperationType.SWITCHDATABASE, PrivRequirement.newIOPrivRequirement
-(null, null));
+    op2Priv.put(HiveOperationType.SWITCHDATABASE, PrivRequirement.newIOPrivRequirement(null, null));
 
     // lock operations not controlled for now
-    op2Priv.put(HiveOperationType.LOCKDB, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.UNLOCKDB, PrivRequirement.newIOPrivRequirement
-(null, null));
+    op2Priv.put(HiveOperationType.LOCKDB, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.UNLOCKDB, PrivRequirement.newIOPrivRequirement(null, null));
 
-    op2Priv.put(HiveOperationType.DROPTABLE, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, null));
-    op2Priv.put(HiveOperationType.DESCTABLE, PrivRequirement.newIOPrivRequirement
-(SEL_NOGRANT_AR, null));
-    op2Priv.put(HiveOperationType.SHOWPARTITIONS, PrivRequirement.newIOPrivRequirement
-(SEL_NOGRANT_AR, null));
-    op2Priv.put(HiveOperationType.DESCFUNCTION, PrivRequirement.newIOPrivRequirement
-(null, null));
+    op2Priv.put(HiveOperationType.DROPTABLE, PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, null));
+    op2Priv.put(HiveOperationType.DESCTABLE, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
+    op2Priv.put(HiveOperationType.SHOWPARTITIONS, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
+    op2Priv.put(HiveOperationType.DESCFUNCTION, PrivRequirement.newIOPrivRequirement(null, null));
 
     // meta store check command - equivalent to add partition command
     // no input objects are passed to it currently, but keeping admin priv
     // requirement on inputs just in case some input object like file
     // uri is added later
-    op2Priv.put(HiveOperationType.MSCK, PrivRequirement.newIOPrivRequirement
-(ADMIN_PRIV_AR, INS_NOGRANT_AR));
+    op2Priv.put(HiveOperationType.MSCK, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, INS_NOGRANT_AR));
 
 
     //alter table commands require table ownership
     // There should not be output object, but just in case the table is incorrectly added
     // to output instead of input, adding owner requirement on output will catch that as well
-    op2Priv.put(HiveOperationType.ALTERTABLE_ADDCOLS, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_REPLACECOLS, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_RENAMECOL, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_RENAMEPART, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_RENAME, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_UPDATETABLESTATS, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_UPDATEPARTSTATS, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_TOUCH, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_ARCHIVE, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_UNARCHIVE, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_PROPERTIES, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_OWNER, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_SERIALIZER, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_PARTCOLTYPE, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERPARTITION_SERIALIZER, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_SERDEPROPERTIES, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERPARTITION_SERDEPROPERTIES, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_CLUSTER_SORT, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_BUCKETNUM, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERPARTITION_BUCKETNUM, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_PROTECTMODE, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERPARTITION_PROTECTMODE, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_FILEFORMAT, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERPARTITION_FILEFORMAT, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_LOCATION, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, INS_SEL_DEL_NOGRANT_AR));
-    op2Priv.put(HiveOperationType.ALTERPARTITION_LOCATION, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, INS_SEL_DEL_NOGRANT_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_MERGEFILES, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERPARTITION_MERGEFILES, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_SKEWED, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTBLPART_SKEWED_LOCATION, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, INS_SEL_DEL_NOGRANT_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_COMPACT, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR,  OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_UPDATECOLUMNS, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR,  OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.TRUNCATETABLE, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_DROPCONSTRAINT, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_ADDCONSTRAINT, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-
-    //table ownership for create/drop/alter index
-    op2Priv.put(HiveOperationType.CREATEINDEX, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, INS_SEL_DEL_NOGRANT_AR));
-    op2Priv.put(HiveOperationType.DROPINDEX, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERINDEX_REBUILD, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERINDEX_PROPS, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_ADDCOLS,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_REPLACECOLS,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_RENAMECOL,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_RENAMEPART,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_RENAME,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_UPDATETABLESTATS,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_UPDATEPARTSTATS,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_TOUCH,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_ARCHIVE,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_UNARCHIVE,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_PROPERTIES,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_OWNER,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_SERIALIZER,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_PARTCOLTYPE,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERPARTITION_SERIALIZER,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_SERDEPROPERTIES,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERPARTITION_SERDEPROPERTIES,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_CLUSTER_SORT,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_BUCKETNUM,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERPARTITION_BUCKETNUM,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_PROTECTMODE,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERPARTITION_PROTECTMODE,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_FILEFORMAT,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERPARTITION_FILEFORMAT,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_LOCATION,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, INS_SEL_DEL_NOGRANT_AR));
+    op2Priv.put(HiveOperationType.ALTERPARTITION_LOCATION,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, INS_SEL_DEL_NOGRANT_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_MERGEFILES,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERPARTITION_MERGEFILES,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_SKEWED,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTBLPART_SKEWED_LOCATION,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, INS_SEL_DEL_NOGRANT_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_COMPACT,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR,  OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_UPDATECOLUMNS,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR,  OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.TRUNCATETABLE,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_DROPCONSTRAINT,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_ADDCONSTRAINT,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
 
     // require view ownership for alter/drop view
-    op2Priv.put(HiveOperationType.ALTERVIEW_PROPERTIES, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.DROPVIEW_PROPERTIES, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERVIEW_RENAME, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERVIEW_AS, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.DROPVIEW, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTER_MATERIALIZED_VIEW_REWRITE, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.DROP_MATERIALIZED_VIEW, PrivRequirement.newIOPrivRequirement
-(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERVIEW_PROPERTIES,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROPVIEW_PROPERTIES,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERVIEW_RENAME,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERVIEW_AS,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROPVIEW,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTER_MATERIALIZED_VIEW_REWRITE,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROP_MATERIALIZED_VIEW,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
 
-    op2Priv.put(HiveOperationType.ANALYZE_TABLE, PrivRequirement.newIOPrivRequirement
-(arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.INSERT_NOGRANT), null));
-    op2Priv.put(HiveOperationType.CACHE_METADATA, PrivRequirement.newIOPrivRequirement
-(arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.INSERT_NOGRANT), null));
-    op2Priv.put(HiveOperationType.SHOWDATABASES, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.SHOWTABLES, PrivRequirement.newIOPrivRequirement
-(null, null));
+    op2Priv.put(HiveOperationType.ANALYZE_TABLE,
+        PrivRequirement.newIOPrivRequirement(arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.INSERT_NOGRANT),
+            null));
+    op2Priv.put(HiveOperationType.CACHE_METADATA,
+        PrivRequirement.newIOPrivRequirement(arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.INSERT_NOGRANT),
+            null));
+    op2Priv.put(HiveOperationType.SHOWDATABASES, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOWTABLES, PrivRequirement.newIOPrivRequirement(null, null));
 
     // operations that require insert/delete privileges
-    op2Priv.put(HiveOperationType.ALTERTABLE_DROPPARTS, PrivRequirement.newIOPrivRequirement
-(DEL_NOGRANT_AR, null));
+    op2Priv.put(HiveOperationType.ALTERTABLE_DROPPARTS, PrivRequirement.newIOPrivRequirement(DEL_NOGRANT_AR, null));
     // in alter-table-add-partition, the table is output, and location is input
-    op2Priv.put(HiveOperationType.ALTERTABLE_ADDPARTS, PrivRequirement.newIOPrivRequirement
-(INS_SEL_DEL_NOGRANT_AR, INS_NOGRANT_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_ADDPARTS,
+        PrivRequirement.newIOPrivRequirement(INS_SEL_DEL_NOGRANT_AR, INS_NOGRANT_AR));
 
     // select with grant for exporting contents
-    op2Priv.put(HiveOperationType.EXPORT, PrivRequirement.newIOPrivRequirement
-(SEL_GRANT_AR, INS_SEL_DEL_NOGRANT_AR));
+    op2Priv.put(HiveOperationType.EXPORT,
+        PrivRequirement.newIOPrivRequirement(SEL_GRANT_AR, INS_SEL_DEL_NOGRANT_AR));
     // For import statement, require uri rwx+owner privileges on input uri, and
     // necessary privileges on the output table and database
     // NOTE : privileges are only checked if the object of that type is marked as part of ReadEntity or WriteEntity
@@ -307,12 +285,9 @@ public class Operation2Privilege {
     // for a broad privilege such as this is the best route forward. REPL STATUS
     // should use privileges similar to DESCRIBE DB/TABLE, and so, it asks for no
     // output privileges, and asks for select-no-grant on input.
-    op2Priv.put(HiveOperationType.REPLDUMP, PrivRequirement.newIOPrivRequirement(
-        ADMIN_PRIV_AR, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.REPLLOAD, PrivRequirement.newIOPrivRequirement(
-        ADMIN_PRIV_AR, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.REPLSTATUS, PrivRequirement.newIOPrivRequirement(
-        SEL_NOGRANT_AR, null));
+    op2Priv.put(HiveOperationType.REPLDUMP, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.REPLLOAD, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.REPLSTATUS, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
     adminPrivOps.add(HiveOperationType.REPLDUMP);
     adminPrivOps.add(HiveOperationType.REPLLOAD);
     adminPrivOps.add(HiveOperationType.KILL_QUERY);
@@ -333,12 +308,9 @@ public class Operation2Privilege {
     adminPrivOps.add(HiveOperationType.DROPFUNCTION);
 
     // operations require select priv
-    op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement
-(SEL_NOGRANT_AR, null));
-    op2Priv.put(HiveOperationType.SHOW_TABLESTATUS, PrivRequirement.newIOPrivRequirement
-(SEL_NOGRANT_AR, null));
-    op2Priv.put(HiveOperationType.SHOW_TBLPROPERTIES, PrivRequirement.newIOPrivRequirement
-(SEL_NOGRANT_AR, null));
+    op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
+    op2Priv.put(HiveOperationType.SHOW_TABLESTATUS, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
+    op2Priv.put(HiveOperationType.SHOW_TBLPROPERTIES, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
     op2Priv.put(HiveOperationType.CREATETABLE_AS_SELECT, PrivRequirement.newPrivRequirementList(
         new PrivRequirement(SEL_NOGRANT_AR, IOType.INPUT),
         new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.DFS_URI),
@@ -360,16 +332,13 @@ public class Operation2Privilege {
             )
         );
 
-    op2Priv.put(HiveOperationType.LOAD, PrivRequirement.newIOPrivRequirement
-(INS_SEL_DEL_NOGRANT_AR,
+    op2Priv.put(HiveOperationType.LOAD, PrivRequirement.newIOPrivRequirement(INS_SEL_DEL_NOGRANT_AR,
         arr(SQLPrivTypeGrant.INSERT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT)));
 
     // show create table is more sensitive information, includes table properties etc
     // for now require select WITH GRANT
-    op2Priv.put(HiveOperationType.SHOW_CREATETABLE, PrivRequirement.newIOPrivRequirement
-(SEL_GRANT_AR, null));
-    op2Priv.put(HiveOperationType.SHOW_CREATEDATABASE, PrivRequirement.newIOPrivRequirement
-(SEL_GRANT_AR, null));
+    op2Priv.put(HiveOperationType.SHOW_CREATETABLE, PrivRequirement.newIOPrivRequirement(SEL_GRANT_AR, null));
+    op2Priv.put(HiveOperationType.SHOW_CREATEDATABASE, PrivRequirement.newIOPrivRequirement(SEL_GRANT_AR, null));
 
     // for now allow only create-view with 'select with grant'
     // the owner will also have select with grant privileges on new view
@@ -381,112 +350,68 @@ public class Operation2Privilege {
         new PrivRequirement(SEL_GRANT_AR, IOType.INPUT),
         new PrivRequirement(OWNER_PRIV_AR, HivePrivilegeObjectType.DATABASE)));
 
-    op2Priv.put(HiveOperationType.SHOWFUNCTIONS, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.SHOWINDEXES, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.SHOWLOCKS, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.CREATEFUNCTION, PrivRequirement.newIOPrivRequirement
-(null, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.DROPFUNCTION, PrivRequirement.newIOPrivRequirement
-(null, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.RELOADFUNCTION, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.CREATEMACRO, PrivRequirement.newIOPrivRequirement
-(null, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.DROPMACRO, PrivRequirement.newIOPrivRequirement
-(null, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.SHOW_COMPACTIONS, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.SHOW_TRANSACTIONS, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.SHOWCONF, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.SHOWVIEWS, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.SHOWMATERIALIZEDVIEWS, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.LOCKTABLE, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.UNLOCKTABLE, PrivRequirement.newIOPrivRequirement
-(null, null));
+    op2Priv.put(HiveOperationType.SHOWFUNCTIONS, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOWLOCKS, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.CREATEFUNCTION, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROPFUNCTION, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.RELOADFUNCTION, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.CREATEMACRO, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROPMACRO, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.SHOW_COMPACTIONS, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOW_TRANSACTIONS, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOWCONF, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOWVIEWS, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOWMATERIALIZEDVIEWS, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.LOCKTABLE, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.UNLOCKTABLE, PrivRequirement.newIOPrivRequirement(null, null));
 
     // require db ownership, if there is a file require SELECT , INSERT, and DELETE
     op2Priv.put(HiveOperationType.CREATETABLE, PrivRequirement.newPrivRequirementList(
         new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, IOType.INPUT),
         new PrivRequirement(OWNER_PRIV_AR, HivePrivilegeObjectType.DATABASE)));
 
-    op2Priv.put(HiveOperationType.ALTERDATABASE, PrivRequirement.newIOPrivRequirement
-(null, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERDATABASE_OWNER, PrivRequirement.newIOPrivRequirement
-(null, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERDATABASE_LOCATION, PrivRequirement.newIOPrivRequirement
-(null, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.DESCDATABASE, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.DFS, PrivRequirement.newIOPrivRequirement
-(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.RESET, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.COMPILE, PrivRequirement.newIOPrivRequirement
-(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.ADD, PrivRequirement.newIOPrivRequirement
-(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.DELETE, PrivRequirement.newIOPrivRequirement
-(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERDATABASE, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERDATABASE_OWNER, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERDATABASE_LOCATION, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.DESCDATABASE, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.DFS, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.RESET, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.COMPILE, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ADD, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.DELETE, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
     // set command is currently not authorized through the API
-    op2Priv.put(HiveOperationType.SET, PrivRequirement.newIOPrivRequirement
-(null, null));
+    op2Priv.put(HiveOperationType.SET, PrivRequirement.newIOPrivRequirement(null, null));
 
     // The following actions are authorized through SQLStdHiveAccessController,
     // and it is not using this privilege mapping, but it might make sense to move it here
-    op2Priv.put(HiveOperationType.CREATEROLE, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.DROPROLE, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.GRANT_PRIVILEGE, PrivRequirement.newIOPrivRequirement
-(null,
-        null));
-    op2Priv.put(HiveOperationType.REVOKE_PRIVILEGE, PrivRequirement.newIOPrivRequirement
-(null,
-        null));
-    op2Priv.put(HiveOperationType.SHOW_GRANT, PrivRequirement.newIOPrivRequirement
-(null, null));
-      op2Priv.put(HiveOperationType.GRANT_ROLE, PrivRequirement.newIOPrivRequirement
-  (null, null));
-    op2Priv.put(HiveOperationType.REVOKE_ROLE, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.SHOW_ROLES, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.SHOW_ROLE_GRANT, PrivRequirement.newIOPrivRequirement
-(null, null));
-    op2Priv.put(HiveOperationType.SHOW_ROLE_PRINCIPALS,
-        PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.CREATEROLE, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.DROPROLE, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.GRANT_PRIVILEGE, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.REVOKE_PRIVILEGE, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOW_GRANT, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.GRANT_ROLE, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.REVOKE_ROLE, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOW_ROLES, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOW_ROLE_GRANT, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOW_ROLE_PRINCIPALS, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.GET_CATALOGS, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.GET_SCHEMAS, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.GET_TABLES, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.GET_FUNCTIONS, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.GET_TABLETYPES, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.GET_TYPEINFO, PrivRequirement.newIOPrivRequirement(null, null));
-    op2Priv.put(HiveOperationType.GET_COLUMNS,
-        PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
+    op2Priv.put(HiveOperationType.GET_COLUMNS, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
 
-    op2Priv.put(HiveOperationType.START_TRANSACTION, PrivRequirement.newIOPrivRequirement
-      (null, null));
-    op2Priv.put(HiveOperationType.COMMIT, PrivRequirement.newIOPrivRequirement
-      (null, null));
-    op2Priv.put(HiveOperationType.ROLLBACK, PrivRequirement.newIOPrivRequirement
-      (null, null));
-    op2Priv.put(HiveOperationType.SET_AUTOCOMMIT, PrivRequirement.newIOPrivRequirement
-      (null, null));
+    op2Priv.put(HiveOperationType.START_TRANSACTION, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.COMMIT, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.ROLLBACK, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SET_AUTOCOMMIT, PrivRequirement.newIOPrivRequirement(null, null));
     // For alter table exchange partition, we need select & delete on input & insert on output
     op2Priv.put(
         HiveOperationType.ALTERTABLE_EXCHANGEPARTITION,
         PrivRequirement.newIOPrivRequirement(
             arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT), INS_NOGRANT_AR));
-    op2Priv.put(HiveOperationType.ABORT_TRANSACTIONS, PrivRequirement.newIOPrivRequirement
-      (null, null));
+    op2Priv.put(HiveOperationType.ABORT_TRANSACTIONS, PrivRequirement.newIOPrivRequirement(null, null));
 
     // Handled via adminPrivOps (see above).
     op2Priv.put(HiveOperationType.KILL_QUERY, PrivRequirement.newIOPrivRequirement(null, null));
