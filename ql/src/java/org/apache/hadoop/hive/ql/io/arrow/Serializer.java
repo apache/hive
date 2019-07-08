@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MultiValuedColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
@@ -369,49 +370,50 @@ public class Serializer {
     }
   }
 
-    // selected[] points to the valid/filtered/selected records at row level.
-    // for MultiValuedColumnVector such as ListColumnVector one record of vector points to multiple nested records.
-    // In child vectors we get these records in exploded manner i.e. the number of records in child vectors can have size more
-    // than actual the VectorizedRowBatch, consequently selected[] also needs to be readjusted.
-    // This method creates a shallow copy of VectorizedRowBatch with corrected size and selected[]
+  // selected[] points to the valid/filtered/selected records at row level.
+  // for MultiValuedColumnVector such as ListColumnVector one record of vector points to multiple nested records.
+  // In child vectors we get these records in exploded manner i.e. the number of records in child vectors can have size more
+  // than actual the VectorizedRowBatch, consequently selected[] also needs to be readjusted.
+  // This method creates a shallow copy of VectorizedRowBatch with corrected size and selected[]
 
-    private static VectorizedRowBatch correctSelectedAndSize(VectorizedRowBatch sourceVrb,
-                                                             ListColumnVector listColumnVector) {
+  private static VectorizedRowBatch correctSelectedAndSize(VectorizedRowBatch sourceVrb,
+                                                           MultiValuedColumnVector multiValuedColumnVector) {
 
-        VectorizedRowBatch vrb = new VectorizedRowBatch(sourceVrb.numCols, sourceVrb.size);
-        vrb.cols = sourceVrb.cols;
-        vrb.endOfFile = sourceVrb.endOfFile;
-        vrb.projectedColumns = sourceVrb.projectedColumns;
-        vrb.projectionSize = sourceVrb.projectionSize;
-        vrb.selectedInUse = sourceVrb.selectedInUse;
+    VectorizedRowBatch vrb = new VectorizedRowBatch(sourceVrb.numCols, sourceVrb.size);
+    vrb.cols = sourceVrb.cols;
+    vrb.endOfFile = sourceVrb.endOfFile;
+    vrb.projectedColumns = sourceVrb.projectedColumns;
+    vrb.projectionSize = sourceVrb.projectionSize;
+    vrb.selectedInUse = sourceVrb.selectedInUse;
+    vrb.setPartitionInfo(sourceVrb.getDataColumnCount(), sourceVrb.getPartitionColumnCount());
 
-        int correctedSize = 0;
-        final int[] srcVrbSelected = sourceVrb.selected;
-        for (int i = 0; i < sourceVrb.size; i++) {
-            correctedSize +=  listColumnVector.lengths[srcVrbSelected[i]];
-        }
-
-        int newIndex = 0;
-        final int[] selectedOffsetsCorrected = new int[correctedSize];
-        for (int i = 0; i < sourceVrb.size; i++) {
-            long elementIndex = listColumnVector.offsets[srcVrbSelected[i]];
-            long elementSize = listColumnVector.lengths[srcVrbSelected[i]];
-            for (int j = 0; j < elementSize; j++) {
-                selectedOffsetsCorrected[newIndex++] = (int) (elementIndex + j);
-            }
-        }
-        vrb.selected = selectedOffsetsCorrected;
-        vrb.size = correctedSize;
-        return vrb;
+    int correctedSize = 0;
+    final int[] srcVrbSelected = sourceVrb.selected;
+    for (int i = 0; i < sourceVrb.size; i++) {
+      correctedSize += multiValuedColumnVector.lengths[srcVrbSelected[i]];
     }
 
-    private void writeList(ListVector arrowVector, ListColumnVector hiveVector, ListTypeInfo typeInfo, int size,
-      VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
+    int newIndex = 0;
+    final int[] selectedOffsetsCorrected = new int[correctedSize];
+    for (int i = 0; i < sourceVrb.size; i++) {
+      long elementIndex = multiValuedColumnVector.offsets[srcVrbSelected[i]];
+      long elementSize = multiValuedColumnVector.lengths[srcVrbSelected[i]];
+      for (int j = 0; j < elementSize; j++) {
+        selectedOffsetsCorrected[newIndex++] = (int) (elementIndex + j);
+      }
+    }
+    vrb.selected = selectedOffsetsCorrected;
+    vrb.size = correctedSize;
+    return vrb;
+  }
+
+  private void writeList(ListVector arrowVector, ListColumnVector hiveVector, ListTypeInfo typeInfo, int size,
+                         VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     final int OFFSET_WIDTH = 4;
     final TypeInfo elementTypeInfo = typeInfo.getListElementTypeInfo();
     final ColumnVector hiveElementVector = hiveVector.child;
     final FieldVector arrowElementVector =
-        (FieldVector) arrowVector.addOrGetVector(toFieldType(elementTypeInfo)).getVector();
+            (FieldVector) arrowVector.addOrGetVector(toFieldType(elementTypeInfo)).getVector();
 
     VectorizedRowBatch correctedVrb = vectorizedRowBatch;
     int correctedSize = hiveVector.childCount;
