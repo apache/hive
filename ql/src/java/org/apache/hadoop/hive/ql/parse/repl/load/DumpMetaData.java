@@ -89,21 +89,20 @@ public class DumpMetaData {
     for (int idx = 0; idx < lineContents.length; idx++) {
       String value = lineContents[idx];
       switch (idx) {
-        case 0:
-          LOG.info("Read ReplScope: Set Db Name: {}.", value);
-          replScope.setDbName(value);
-          break;
-        case 1:
-          LOG.info("Read ReplScope: Include table name list: {}.", value);
-          replScope.setIncludedTablePatterns(value);
-          break;
-        case 2:
-          LOG.info("Read ReplScope: Exclude table name list: {}.", value);
-          replScope.setExcludedTablePatterns(value);
-          break;
-        default:
-          LOG.warn("Found invalid info " + value + " in the repl dump file while reading ReplScope");
-          break;
+      case 0:
+        LOG.info("Read ReplScope: Set Db Name: {}.", value);
+        replScope.setDbName(value);
+        break;
+      case 1:
+        LOG.info("Read ReplScope: Include table name list: {}.", value);
+        replScope.setIncludedTablePatterns(value);
+        break;
+      case 2:
+        LOG.info("Read ReplScope: Exclude table name list: {}.", value);
+        replScope.setExcludedTablePatterns(value);
+        break;
+      default:
+        throw new IOException("Invalid repl tables list data in dump metadata file");
       }
     }
   }

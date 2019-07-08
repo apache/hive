@@ -31,8 +31,8 @@ public class ReplScope implements Serializable {
   // Include and exclude table names/patterns exist only for REPL DUMP.
   private String includedTableNames;
   private String excludedTableNames;
-  private Pattern includedTableNamePatterns;
-  private Pattern excludedTableNamePatterns;
+  private Pattern includedTableNamePattern;
+  private Pattern excludedTableNamePattern;
 
   public ReplScope() {
   }
@@ -53,7 +53,7 @@ public class ReplScope implements Serializable {
 
   public void setIncludedTablePatterns(String includedTableNames) {
     this.includedTableNames = includedTableNames;
-    this.includedTableNamePatterns = compilePatterns(includedTableNames);
+    this.includedTableNamePattern = compilePattern(includedTableNames);
   }
 
   public String getIncludedTableNames() {
@@ -62,7 +62,7 @@ public class ReplScope implements Serializable {
 
   public void setExcludedTablePatterns(String excludedTableNames) {
     this.excludedTableNames = excludedTableNames;
-    this.excludedTableNamePatterns = compilePatterns(excludedTableNames);
+    this.excludedTableNamePattern = compilePattern(excludedTableNames);
   }
 
   public String getExcludedTableNames() {
@@ -70,8 +70,8 @@ public class ReplScope implements Serializable {
   }
 
   public boolean includeAllTables() {
-    return ((includedTableNamePatterns == null)
-            && (excludedTableNamePatterns == null));
+    return ((includedTableNamePattern == null)
+            && (excludedTableNamePattern == null));
   }
 
   public boolean includedInReplScope(final String dbName, final String tableName) {
@@ -91,7 +91,7 @@ public class ReplScope implements Serializable {
     return (inTableIncludedList(tableName) && !inTableExcludedList(tableName));
   }
 
-  private Pattern compilePatterns(String pattern) {
+  private Pattern compilePattern(String pattern) {
     if (pattern == null) {
       return null;
     }
@@ -101,19 +101,19 @@ public class ReplScope implements Serializable {
   }
 
   private boolean inTableIncludedList(final String tableName) {
-    if (includedTableNamePatterns == null) {
+    if (includedTableNamePattern == null) {
       // If included list is empty, repl policy should be full db replication.
       // So, all tables must be included.
       return true;
     }
-    return includedTableNamePatterns.matcher(tableName).matches();
+    return includedTableNamePattern.matcher(tableName).matches();
   }
 
   private boolean inTableExcludedList(final String tableName) {
-    if (excludedTableNamePatterns == null) {
+    if (excludedTableNamePattern == null) {
       // If excluded tables list is empty means, all tables in included list must be accepted.
       return false;
     }
-    return excludedTableNamePatterns.matcher(tableName).matches();
+    return excludedTableNamePattern.matcher(tableName).matches();
   }
 }

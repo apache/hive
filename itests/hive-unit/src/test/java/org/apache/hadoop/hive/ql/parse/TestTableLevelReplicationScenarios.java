@@ -268,7 +268,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
         primaryDbName + ".t1.'t2'", // Table name and exclude list not allowed.
         primaryDbName + ".'t1+'.", // Abrubtly ended dot.
         primaryDbName +  ".['t1+'].['t11']", // With square brackets
-        primaryDbName + "..''" // Multiple dots
+        primaryDbName + "..''", // Two dots with empty list
+        primaryDbName + "...''" // Multiple dots
     };
     for (String replPolicy : invalidReplPolicies) {
       failed = false;
@@ -313,18 +314,23 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     }
     Assert.assertTrue(failed);
 
-    // Invalid pattern where where table list is empty.
-    replPolicy = primaryDbName + ".''.'t2'";
-    failed = false;
-    try {
-      replicateAndVerify(replPolicy, null, null, null, replicatedTables);
-    } catch (Exception ex) {
-      LOG.info("Got exception: {}", ex.getMessage());
-      Assert.assertTrue(ex instanceof SemanticException);
-      Assert.assertTrue(ex.getMessage().equals(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getMsg()));
-      failed = true;
+    // Invalid pattern, include/exclude table list is empty.
+    invalidReplPolicies = new String[] {
+            primaryDbName + ".''.'t2'", // Include list is empty.
+            primaryDbName + ".'t1'.''" // Exclude list is empty.
+    };
+    for (String invalidReplPolicy : invalidReplPolicies) {
+      failed = false;
+      try {
+        replicateAndVerify(invalidReplPolicy, null, null, null, replicatedTables);
+      } catch (Exception ex) {
+        LOG.info("Got exception: {}", ex.getMessage());
+        Assert.assertTrue(ex instanceof SemanticException);
+        Assert.assertTrue(ex.getMessage().equals(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getMsg()));
+        failed = true;
+      }
+      Assert.assertTrue(failed);
     }
-    Assert.assertTrue(failed);
   }
 
   @Test
