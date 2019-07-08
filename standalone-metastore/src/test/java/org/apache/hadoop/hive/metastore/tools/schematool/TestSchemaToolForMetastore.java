@@ -337,13 +337,13 @@ public class TestSchemaToolForMetastore {
 
     // Generate dummy pre-upgrade script with errors
     String invalidPreUpgradeScript = writeDummyPreUpgradeScript(
-        0, "upgrade-2.3.0-to-3.0.0.derby.sql", "foo bar;");
+        0, "upgrade-2.0.0-to-2.1.0.derby.sql", "foo bar;");
     // Generate dummy pre-upgrade scripts with valid SQL
     String validPreUpgradeScript0 = writeDummyPreUpgradeScript(
-        1, "upgrade-2.3.0-to-3.0.0.derby.sql",
+        1, "upgrade-2.0.0-to-2.1.0.derby.sql",
         "CREATE TABLE schema_test0 (id integer);");
     String validPreUpgradeScript1 = writeDummyPreUpgradeScript(
-        2, "upgrade-2.3.0-to-3.0.0.derby.sql",
+        2, "upgrade-2.0.0-to-2.1.0.derby.sql",
         "CREATE TABLE schema_test1 (id integer);");
 
     // Capture system out and err
