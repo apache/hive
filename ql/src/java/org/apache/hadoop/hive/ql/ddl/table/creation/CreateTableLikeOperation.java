@@ -56,12 +56,12 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
   @Override
   public int execute() throws HiveException {
     // Get the existing table
-    Table oldtbl = context.getDb().getTable(desc.getLikeTableName());
+    Table oldTable = context.getDb().getTable(desc.getLikeTableName());
     Table tbl;
-    if (oldtbl.getTableType() == TableType.VIRTUAL_VIEW || oldtbl.getTableType() == TableType.MATERIALIZED_VIEW) {
-      tbl = createViewLikeTable(oldtbl);
+    if (oldTable.getTableType() == TableType.VIRTUAL_VIEW || oldTable.getTableType() == TableType.MATERIALIZED_VIEW) {
+      tbl = createViewLikeTable(oldTable);
     } else {
-      tbl = createTableLikeTable(oldtbl);
+      tbl = createTableLikeTable(oldTable);
     }
 
     // If location is specified - ensure that it is a full qualified name
@@ -81,82 +81,75 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     return 0;
   }
 
-  private Table createViewLikeTable(Table oldtbl) throws HiveException {
-    Table tbl;
-    String targetTableName = desc.getTableName();
-    tbl = context.getDb().newTable(targetTableName);
+  private Table createViewLikeTable(Table oldTable) throws HiveException {
+    Table table = context.getDb().newTable(desc.getTableName());
 
     if (desc.getTblProps() != null) {
-      tbl.getTTable().getParameters().putAll(desc.getTblProps());
+      table.getTTable().getParameters().putAll(desc.getTblProps());
     }
 
-    tbl.setTableType(TableType.MANAGED_TABLE);
+    table.setTableType(TableType.MANAGED_TABLE);
 
     if (desc.isExternal()) {
-      tbl.setProperty("EXTERNAL", "TRUE");
-      tbl.setTableType(TableType.EXTERNAL_TABLE);
-      // if the partition discovery tablproperty is already defined don't change it
-      if (tbl.isPartitioned() && tbl.getProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY) == null) {
-        // partition discovery is on by default if it already doesn't exist
-        tbl.setProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
-      }
+      setExternalProperties(table);
     }
 
-    tbl.setFields(oldtbl.getCols());
-    tbl.setPartCols(oldtbl.getPartCols());
-
-    if (desc.getDefaultSerName() == null) {
-      LOG.info("Default to LazySimpleSerDe for table {}", targetTableName);
-      tbl.setSerializationLib(LazySimpleSerDe.class.getName());
-    } else {
-      // let's validate that the serde exists
-      DDLUtils.validateSerDe(desc.getDefaultSerName(), context);
-      tbl.setSerializationLib(desc.getDefaultSerName());
-    }
+    table.setFields(oldTable.getCols());
+    table.setPartCols(oldTable.getPartCols());
 
     if (desc.getDefaultSerdeProps() != null) {
       for (Map.Entry<String, String> e : desc.getDefaultSerdeProps().entrySet()) {
-        tbl.setSerdeParam(e.getKey(), e.getValue());
+        table.setSerdeParam(e.getKey(), e.getValue());
       }
     }
 
-    tbl.setInputFormatClass(desc.getDefaultInputFormat());
-    tbl.setOutputFormatClass(desc.getDefaultOutputFormat());
-    tbl.getTTable().getSd().setInputFormat(tbl.getInputFormatClass().getName());
-    tbl.getTTable().getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
+    setStorage(table);
 
-    return tbl;
+    return table;
   }
 
-  private Table createTableLikeTable(Table oldtbl) throws SemanticException, HiveException {
-    Table tbl = oldtbl;
-
-    // find out database name and table name of target table
-    String targetTableName = desc.getTableName();
-    String[] names = Utilities.getDbTableName(targetTableName);
-
-    tbl.setDbName(names[0]);
-    tbl.setTableName(names[1]);
-
-    // using old table object, hence reset the owner to current user for new table.
-    tbl.setOwner(SessionState.getUserFromAuthenticator());
+  private Table createTableLikeTable(Table table) throws SemanticException, HiveException {
+    String[] names = Utilities.getDbTableName(desc.getTableName());
+    table.setDbName(names[0]);
+    table.setTableName(names[1]);
+    table.setOwner(SessionState.getUserFromAuthenticator());
 
     if (desc.getLocation() != null) {
-      tbl.setDataLocation(new Path(desc.getLocation()));
+      table.setDataLocation(new Path(desc.getLocation()));
     } else {
-      tbl.unsetDataLocation();
+      table.unsetDataLocation();
     }
+
+    setTableParameters(table);
+
+    if (desc.isUserStorageFormat()) {
+      setStorage(table);
+    }
+
+    table.getTTable().setTemporary(desc.isTemporary());
+    table.getTTable().unsetId();
+
+    if (desc.isExternal()) {
+      setExternalProperties(table);
+    } else {
+      table.getParameters().remove("EXTERNAL");
+    }
+
+    return table;
+  }
+
+  private void setTableParameters(Table tbl) throws HiveException {
+    Set<String> retainer = new HashSet<String>();
 
     Class<? extends Deserializer> serdeClass;
     try {
-      serdeClass = oldtbl.getDeserializerClass();
+      serdeClass = tbl.getDeserializerClass();
     } catch (Exception e) {
       throw new HiveException(e);
     }
     // We should copy only those table parameters that are specified in the config.
     SerDeSpec spec = AnnotationUtils.getAnnotation(serdeClass, SerDeSpec.class);
 
-    Set<String> retainer = new HashSet<String>();
     // for non-native table, property storage_handler should be retained
     retainer.add(META_TABLE_STORAGE);
     if (spec != null && spec.schemaProps() != null) {
@@ -178,37 +171,31 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     if (desc.getTblProps() != null) {
       params.putAll(desc.getTblProps());
     }
+  }
 
-    if (desc.isUserStorageFormat()) {
-      tbl.setInputFormatClass(desc.getDefaultInputFormat());
-      tbl.setOutputFormatClass(desc.getDefaultOutputFormat());
-      tbl.getTTable().getSd().setInputFormat(tbl.getInputFormatClass().getName());
-      tbl.getTTable().getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
-      if (desc.getDefaultSerName() == null) {
-        LOG.info("Default to LazySimpleSerDe for like table {}", targetTableName);
-        tbl.setSerializationLib(LazySimpleSerDe.class.getName());
-      } else {
-        // let's validate that the serde exists
-        DDLUtils.validateSerDe(desc.getDefaultSerName(), context);
-        tbl.setSerializationLib(desc.getDefaultSerName());
-      }
-    }
+  private void setStorage(Table table) throws HiveException {
+    table.setInputFormatClass(desc.getDefaultInputFormat());
+    table.setOutputFormatClass(desc.getDefaultOutputFormat());
+    table.getTTable().getSd().setInputFormat(table.getInputFormatClass().getName());
+    table.getTTable().getSd().setOutputFormat(table.getOutputFormatClass().getName());
 
-    tbl.getTTable().setTemporary(desc.isTemporary());
-    tbl.getTTable().unsetId();
-
-    if (desc.isExternal()) {
-      tbl.setProperty("EXTERNAL", "TRUE");
-      tbl.setTableType(TableType.EXTERNAL_TABLE);
-      // if the partition discovery tablproperty is already defined don't change it
-      if (tbl.isPartitioned() && tbl.getProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY) == null) {
-        // partition discovery is on by default if it already doesn't exist
-        tbl.setProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
-      }
+    if (desc.getDefaultSerName() == null) {
+      LOG.info("Default to LazySimpleSerDe for table {}", desc.getTableName());
+      table.setSerializationLib(LazySimpleSerDe.class.getName());
     } else {
-      tbl.getParameters().remove("EXTERNAL");
+      // let's validate that the serde exists
+      DDLUtils.validateSerDe(desc.getDefaultSerName(), context);
+      table.setSerializationLib(desc.getDefaultSerName());
     }
+  }
 
-    return tbl;
+  private void setExternalProperties(Table tbl) {
+    tbl.setProperty("EXTERNAL", "TRUE");
+    tbl.setTableType(TableType.EXTERNAL_TABLE);
+    // if the partition discovery table property is already defined don't change it
+    if (tbl.isPartitioned() && tbl.getProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY) == null) {
+      // partition discovery is on by default if it already doesn't exist
+      tbl.setProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
+    }
   }
 }
