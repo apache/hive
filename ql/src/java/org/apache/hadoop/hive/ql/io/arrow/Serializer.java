@@ -314,7 +314,11 @@ public class Serializer {
 
     final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
-      if (hiveVector.isNull[rowIndex]) {
+      int selectedIndex = rowIndex;
+      if (vectorizedRowBatch.selectedInUse) {
+        selectedIndex = vectorizedRowBatch.selected[rowIndex];
+      }
+      if (hiveVector.isNull[selectedIndex]) {
         BitVectorHelper.setValidityBit(validityBuffer, rowIndex, 0);
       } else {
         BitVectorHelper.setValidityBitToOne(validityBuffer, rowIndex);
@@ -365,27 +369,74 @@ public class Serializer {
     }
   }
 
-  private void writeList(ListVector arrowVector, ListColumnVector hiveVector, ListTypeInfo typeInfo, int size,
+    // selected[] points to the valid/filtered/selected records at row level.
+    // for MultiValuedColumnVector such as ListColumnVector one record of vector points to multiple nested records.
+    // In child vectors we get these records in exploded manner i.e. the number of records in child vectors can have size more
+    // than actual the VectorizedRowBatch, consequently selected[] also needs to be readjusted.
+    // This method creates a shallow copy of VectorizedRowBatch with corrected size and selected[]
+
+    private static VectorizedRowBatch correctSelectedAndSize(VectorizedRowBatch sourceVrb,
+                                                             ListColumnVector listColumnVector) {
+
+        VectorizedRowBatch vrb = new VectorizedRowBatch(sourceVrb.numCols, sourceVrb.size);
+        vrb.cols = sourceVrb.cols;
+        vrb.endOfFile = sourceVrb.endOfFile;
+        vrb.projectedColumns = sourceVrb.projectedColumns;
+        vrb.projectionSize = sourceVrb.projectionSize;
+        vrb.selectedInUse = sourceVrb.selectedInUse;
+
+        int correctedSize = 0;
+        final int[] srcVrbSelected = sourceVrb.selected;
+        for (int i = 0; i < sourceVrb.size; i++) {
+            correctedSize +=  listColumnVector.lengths[srcVrbSelected[i]];
+        }
+
+        int newIndex = 0;
+        final int[] selectedOffsetsCorrected = new int[correctedSize];
+        for (int i = 0; i < sourceVrb.size; i++) {
+            long elementIndex = listColumnVector.offsets[srcVrbSelected[i]];
+            long elementSize = listColumnVector.lengths[srcVrbSelected[i]];
+            for (int j = 0; j < elementSize; j++) {
+                selectedOffsetsCorrected[newIndex++] = (int) (elementIndex + j);
+            }
+        }
+        vrb.selected = selectedOffsetsCorrected;
+        vrb.size = correctedSize;
+        return vrb;
+    }
+
+    private void writeList(ListVector arrowVector, ListColumnVector hiveVector, ListTypeInfo typeInfo, int size,
       VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     final int OFFSET_WIDTH = 4;
     final TypeInfo elementTypeInfo = typeInfo.getListElementTypeInfo();
     final ColumnVector hiveElementVector = hiveVector.child;
     final FieldVector arrowElementVector =
         (FieldVector) arrowVector.addOrGetVector(toFieldType(elementTypeInfo)).getVector();
-    arrowElementVector.setInitialCapacity(hiveVector.childCount);
+
+    VectorizedRowBatch correctedVrb = vectorizedRowBatch;
+    int correctedSize = hiveVector.childCount;
+    if (vectorizedRowBatch.selectedInUse) {
+      correctedVrb = correctSelectedAndSize(vectorizedRowBatch, hiveVector);
+      correctedSize = correctedVrb.size;
+    }
+    arrowElementVector.setInitialCapacity(correctedSize);
     arrowElementVector.allocateNew();
 
-    write(arrowElementVector, hiveElementVector, elementTypeInfo, hiveVector.childCount, vectorizedRowBatch, isNative);
+    write(arrowElementVector, hiveElementVector, elementTypeInfo, correctedSize, correctedVrb, isNative);
 
     final ArrowBuf offsetBuffer = arrowVector.getOffsetBuffer();
     int nextOffset = 0;
 
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
-      if (hiveVector.isNull[rowIndex]) {
+      int selectedIndex = rowIndex;
+      if (vectorizedRowBatch.selectedInUse) {
+        selectedIndex = vectorizedRowBatch.selected[rowIndex];
+      }
+      if (hiveVector.isNull[selectedIndex]) {
         offsetBuffer.setInt(rowIndex * OFFSET_WIDTH, nextOffset);
       } else {
         offsetBuffer.setInt(rowIndex * OFFSET_WIDTH, nextOffset);
-        nextOffset += (int) hiveVector.lengths[rowIndex];
+        nextOffset += (int) hiveVector.lengths[selectedIndex];
         arrowVector.setNotNull(rowIndex);
       }
     }
