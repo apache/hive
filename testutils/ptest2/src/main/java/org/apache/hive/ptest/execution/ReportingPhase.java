@@ -38,6 +38,6 @@ public class ReportingPhase extends Phase {
   public void execute() throws Exception {
     execLocally("mkdir $logDir/test-results");
     execLocally("find $logDir/{failed,succeeded} -maxdepth 2 -name 'TEST*.xml' -exec cp {} $logDir/test-results \\; 2>/dev/null");
-    execLocally("cd $logDir/ && tar -zvcf test-results.tar.gz test-results/");
+    execLocally("cd $logDir/ && tar -zcf test-results.tar.gz test-results/");
   }
 }
