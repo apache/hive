@@ -70,13 +70,13 @@ Stage-0
       File Output Operator [FS_141]
         Limit [LIM_140] (rows=100 width=384)
           Number of rows:100
-          Select Operator [SEL_139] (rows=255285 width=384)
+          Select Operator [SEL_139] (rows=264534 width=384)
             Output:["_col0","_col1"]
           <-Reducer 3 [SIMPLE_EDGE]
             SHUFFLE [RS_36]
-              Select Operator [SEL_35] (rows=255285 width=384)
+              Select Operator [SEL_35] (rows=264534 width=384)
                 Output:["_col1","_col2"]
-                Merge Join Operator [MERGEJOIN_120] (rows=255285 width=284)
+                Merge Join Operator [MERGEJOIN_120] (rows=264534 width=284)
                   Conds:RS_32._col1=RS_33._col1(Inner),Output:["_col2","_col6"]
                 <-Reducer 2 [ONE_TO_ONE_EDGE]
                   FORWARD [RS_32]

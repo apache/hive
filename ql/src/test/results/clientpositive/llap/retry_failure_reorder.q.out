@@ -144,9 +144,9 @@ Stage-0
             PARTITION_ONLY_SHUFFLE [RS_18]
               Group By Operator [GBY_17] (rows=1 width=8)
                 Output:["_col0"],aggregations:["sum(_col0)"]
-                Select Operator [SEL_15] (rows=80 width=12)
+                Select Operator [SEL_15] (rows=114 width=12)
                   Output:["_col0"]
-                  Merge Join Operator [MERGEJOIN_51] (rows=80 width=12)
+                  Merge Join Operator [MERGEJOIN_51] (rows=114 width=12)
                     Conds:RS_12._col1=RS_60._col0(Inner),Output:["_col2","_col4","_col6"]
                   <-Map 6 [SIMPLE_EDGE] vectorized, llap
                     SHUFFLE [RS_60]
@@ -276,9 +276,9 @@ Stage-0
             PARTITION_ONLY_SHUFFLE [RS_18]
               Group By Operator [GBY_17] (rows=1 width=8)
                 Output:["_col0"],aggregations:["sum(_col0)"]
-                Select Operator [SEL_15] (rows=62 width=12)
+                Select Operator [SEL_15] (rows=105 width=12)
                   Output:["_col0"]
-                  Merge Join Operator [MERGEJOIN_51] (rows=62 width=12)
+                  Merge Join Operator [MERGEJOIN_51] (rows=105 width=12)
                     Conds:RS_12._col0=RS_60._col0(Inner),Output:["_col2","_col4","_col6"]
                   <-Map 6 [SIMPLE_EDGE] vectorized, llap
                     SHUFFLE [RS_60]
@@ -292,7 +292,7 @@ Stage-0
                   <-Reducer 2 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_12]
                       PartitionCols:_col0
-                      Merge Join Operator [MERGEJOIN_50] (rows=15 width=12)
+                      Merge Join Operator [MERGEJOIN_50] (rows=21 width=12)
                         Conds:RS_54._col1=RS_57._col0(Inner),Output:["_col0","_col2","_col4"]
                       <-Map 1 [SIMPLE_EDGE] vectorized, llap
                         SHUFFLE [RS_54]
@@ -429,9 +429,9 @@ Stage-0
             PARTITION_ONLY_SHUFFLE [RS_18]
               Group By Operator [GBY_17] (rows=1 width=8)
                 Output:["_col0"],aggregations:["sum(_col0)"]
-                Select Operator [SEL_15] (rows=80 width=12)
+                Select Operator [SEL_15] (rows=114 width=12)
                   Output:["_col0"]
-                  Merge Join Operator [MERGEJOIN_51] (rows=80 width=12)
+                  Merge Join Operator [MERGEJOIN_51] (rows=114 width=12)
                     Conds:RS_12._col1=RS_60._col0(Inner),Output:["_col2","_col4","_col6"]
                   <-Map 6 [SIMPLE_EDGE] vectorized, llap
                     SHUFFLE [RS_60]
