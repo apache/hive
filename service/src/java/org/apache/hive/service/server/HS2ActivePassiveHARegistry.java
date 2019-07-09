@@ -140,6 +140,11 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     unregisterInternal();
   }
 
+  @Override
+  public void updateRegistration(Iterable<Map.Entry<String, String>> attributes) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
   private void populateCache() throws IOException {
     PathChildrenCache pcc = ensureInstancesCache(0);
     populateCache(pcc, false);

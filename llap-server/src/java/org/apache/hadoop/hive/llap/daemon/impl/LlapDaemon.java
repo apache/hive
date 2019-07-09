@@ -24,7 +24,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -637,7 +639,14 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   @Override
   public SetCapacityResponseProto setCapacity(
-      SetCapacityRequestProto request) {
+      SetCapacityRequestProto request) throws IOException {
+
+    Map<String, String> capacityValues = new HashMap<>(2);
+    capacityValues.put(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS,
+            Integer.toString(request.getExecutorNum()));
+    capacityValues.put(LlapRegistryService.LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE,
+            Integer.toString(request.getQueueSize()));
+    registry.updateRegistration(capacityValues.entrySet());
     return containerRunner.setCapacity(request);
   }
 
