@@ -101,10 +101,6 @@ public class TestUtilities {
         getFileExtension(jc, false, new HiveIgnoreKeyTextOutputFormat()));
     assertEquals("Deflate for uncompressed text format", ".deflate",
         getFileExtension(jc, true, new HiveIgnoreKeyTextOutputFormat()));
-    assertEquals("No extension for uncompressed default format", "",
-        getFileExtension(jc, false));
-    assertEquals("Deflate for uncompressed default format", ".deflate",
-        getFileExtension(jc, true));
 
     String extension = ".myext";
     jc.set("hive.output.file.extension", extension);
@@ -349,7 +345,7 @@ public class TestUtilities {
       String testPartitionName = "p=" + i;
       testPartitionsPaths[i] = new Path(testTablePath, "p=" + i);
       mapWork.getPathToAliases().put(testPartitionsPaths[i], Lists.newArrayList(testPartitionName));
-      mapWork.getAliasToWork().put(testPartitionName, (Operator<?>) mock(Operator.class));
+      mapWork.getAliasToWork().put(testPartitionName, mock(Operator.class));
       mapWork.getPathToPartitionInfo().put(testPartitionsPaths[i], mockPartitionDesc);
 
     }
@@ -501,7 +497,7 @@ public class TestUtilities {
 
       pathToAliasTable.put(testPartitionsPaths[i], Lists.newArrayList(testPartitionName));
 
-      mapWork.getAliasToWork().put(testPartitionName, (Operator<?>) mock(Operator.class));
+      mapWork.getAliasToWork().put(testPartitionName, mock(Operator.class));
     }
 
     mapWork.setPathToAliases(pathToAliasTable);
@@ -638,6 +634,7 @@ public class TestUtilities {
       super.addDependentTask(wrappedDep);
     }
 
+    @Override
     public boolean addDependentTask(Task<? extends Serializable> dependent) {
       return wrappedDep.addDependentTask(dependent);
     }
