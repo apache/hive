@@ -422,7 +422,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Concatenate
-      partition desc:
+      partition spec:
         hour 24
         year 2000
       table name: default.orc_merge5a_n1

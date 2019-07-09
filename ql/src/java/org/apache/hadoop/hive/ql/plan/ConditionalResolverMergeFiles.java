@@ -248,10 +248,10 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     work.removePathToPartitionInfo(path); // the root path is not useful anymore
 
     // cleanup pathToAliases
-    LinkedHashMap<Path, ArrayList<String>> pta = work.getPathToAliases();
+    Map<Path, List<String>> pta = work.getPathToAliases();
     assert pta.size() == 1;
     path = pta.keySet().iterator().next();
-    ArrayList<String> aliases = pta.get(path);
+    List<String> aliases = pta.get(path);
     work.removePathToAlias(path); // the root path is not useful anymore
 
     // populate pathToPartitionInfo and pathToAliases w/ DP paths
