@@ -269,7 +269,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
         primaryDbName + ".'t1+'.", // Abrubtly ended dot.
         primaryDbName +  ".['t1+'].['t11']", // With square brackets
         primaryDbName + "..''", // Two dots with empty list
-        primaryDbName + "...''" // Multiple dots
+        primaryDbName + ".'t1'.'tt2'.'t3'" // More than two list
     };
     for (String replPolicy : invalidReplPolicies) {
       failed = false;
@@ -316,8 +316,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     // Invalid pattern, include/exclude table list is empty.
     invalidReplPolicies = new String[] {
-            primaryDbName + ".''.'t2'", // Include list is empty.
-            primaryDbName + ".'t1'.''" // Exclude list is empty.
+        primaryDbName + ".''.'t2'", // Include list is empty.
+        primaryDbName + ".'t1'.''" // Exclude list is empty.
     };
     for (String invalidReplPolicy : invalidReplPolicies) {
       failed = false;
