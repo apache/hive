@@ -347,7 +347,8 @@ public final class HiveFileFormatUtils {
         .inspector(inspector)
         .recordIdColumn(rowIdColNum)
         .statementId(conf.getStatementId())
-        .finalDestination(conf.getDestPath()));
+        .finalDestination(conf.getDestPath())
+        .temporary(conf.isTemporary()));
   }
 
   public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,

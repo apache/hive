@@ -73,6 +73,8 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
      * todo: link to AcidUtils?
      */
     private long visibilityTxnId = 0;
+    private boolean temporary = false;
+
     /**
      * Create the options object.
      * @param conf Use the given configuration
@@ -333,6 +335,15 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     }
     public long getVisibilityTxnId() {
       return visibilityTxnId;
+    }
+
+    public Options temporary(boolean temporary) {
+      this.temporary = temporary;
+      return this;
+    }
+
+    public boolean isTemporary() {
+      return temporary;
     }
   }
 
