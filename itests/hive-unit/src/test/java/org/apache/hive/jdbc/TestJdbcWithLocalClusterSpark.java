@@ -43,11 +43,13 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * This class is cloned from TestJdbcWithMiniMR, except use Spark as the execution engine.
  */
+@Ignore
 public class TestJdbcWithLocalClusterSpark {
   public static final String TEST_TAG = "miniHS2.localClusterSpark.tag";
   public static final String TEST_TAG_VALUE = "miniHS2.localClusterSpark.value";
