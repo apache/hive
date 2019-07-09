@@ -318,7 +318,11 @@ public class GenTezUtils {
         FileSinkOperator fileSink = (FileSinkOperator)current;
 
         // remember it for additional processing later
-        context.fileSinkSet.add(fileSink);
+        if (context.fileSinkSet.contains(fileSink)) {
+          continue;
+        } else {
+          context.fileSinkSet.add(fileSink);
+        }
 
         FileSinkDesc desc = fileSink.getConf();
         Path path = desc.getDirName();
