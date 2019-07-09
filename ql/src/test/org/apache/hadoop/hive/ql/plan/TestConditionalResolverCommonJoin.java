@@ -32,6 +32,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class TestConditionalResolverCommonJoin {
@@ -40,7 +42,7 @@ public class TestConditionalResolverCommonJoin {
   public void testResolvingDriverAlias() throws Exception {
     ConditionalResolverCommonJoin resolver = new ConditionalResolverCommonJoin();
 
-    HashMap<Path, ArrayList<String>> pathToAliases = new HashMap<>();
+    Map<Path, List<String>> pathToAliases = new HashMap<>();
     pathToAliases.put(new Path("path1"), new ArrayList<String>(Arrays.asList("alias1", "alias2")));
     pathToAliases.put(new Path("path2"), new ArrayList<String>(Arrays.asList("alias3")));
 

@@ -2512,7 +2512,7 @@ public final class Utilities {
         final Configuration myConf = conf;
         final JobConf myJobConf = jobConf;
         final Map<String, Operator<?>> aliasToWork = work.getAliasToWork();
-        final Map<Path, ArrayList<String>> pathToAlias = work.getPathToAliases();
+        final Map<Path, List<String>> pathToAlias = work.getPathToAliases();
         final PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
         Runnable r = new Runnable() {
           @Override
@@ -3348,8 +3348,7 @@ public final class Utilities {
       LOG.info("Processing alias {}", alias);
 
       // The alias may not have any path
-      Collection<Map.Entry<Path, ArrayList<String>>> pathToAliases =
-          work.getPathToAliases().entrySet();
+      Collection<Map.Entry<Path, List<String>>> pathToAliases = work.getPathToAliases().entrySet();
       if (!skipDummy) {
         // ConcurrentModification otherwise if adding dummy.
         pathToAliases = new ArrayList<>(pathToAliases);
@@ -3357,7 +3356,7 @@ public final class Utilities {
       boolean isEmptyTable = true;
       boolean hasLogged = false;
 
-      for (Map.Entry<Path, ArrayList<String>> e : pathToAliases) {
+      for (Map.Entry<Path, List<String>> e : pathToAliases) {
         if (lDrvStat != null && lDrvStat.isAborted()) {
           throw new IOException("Operation is Canceled.");
         }
@@ -3576,8 +3575,8 @@ public final class Utilities {
 
     // update the work
 
-    LinkedHashMap<Path, ArrayList<String>> pathToAliases = work.getPathToAliases();
-    ArrayList<String> newList = new ArrayList<String>(1);
+    Map<Path, List<String>> pathToAliases = work.getPathToAliases();
+    List<String> newList = new ArrayList<String>(1);
     newList.add(alias);
     pathToAliases.put(newPath, newList);
 
@@ -3639,7 +3638,7 @@ public final class Utilities {
   public static void createTmpDirs(Configuration conf, MapWork mWork)
       throws IOException {
 
-    Map<Path, ArrayList<String>> pa = mWork.getPathToAliases();
+    Map<Path, List<String>> pa = mWork.getPathToAliases();
     if (MapUtils.isNotEmpty(pa)) {
       // common case: 1 table scan per map-work
       // rare case: smb joins

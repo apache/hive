@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
@@ -77,7 +76,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     Map<String, PartitionDesc> aliasToPartitionInfo = currWork.getAliasToPartnInfo();
     List<Path> removePaths = new ArrayList<>();
 
-    for (Map.Entry<Path, ArrayList<String>> entry : currWork.getPathToAliases().entrySet()) {
+    for (Map.Entry<Path, List<String>> entry : currWork.getPathToAliases().entrySet()) {
       boolean keepPath = false;
       for (String alias : entry.getValue()) {
         if (aliasToPartitionInfo.containsKey(alias)) {
@@ -260,7 +259,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
         new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
     // Note that pathToAlias will behave as if the original plan was a join plan
-    HashMap<Path, ArrayList<String>> pathToAliases = currJoinWork.getMapWork().getPathToAliases();
+    Map<Path, List<String>> pathToAliases = currJoinWork.getMapWork().getPathToAliases();
 
     // generate a map join task for the big table
     SMBJoinDesc originalSMBJoinDesc = originalSMBJoinOp.getConf();
