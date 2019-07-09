@@ -67,6 +67,8 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Task executor service provides method for scheduling tasks. Tasks submitted to executor service
  * are submitted to wait queue for scheduling. Wait queue tasks are ordered based on the priority
@@ -141,6 +143,11 @@ public class TaskExecutorService extends AbstractService
       String waitQueueComparatorClassName, boolean enablePreemption,
       ClassLoader classLoader, final LlapDaemonExecutorMetrics metrics, Clock clock) {
     super(TaskExecutorService.class.getSimpleName());
+
+    checkNotNull(waitQueueComparatorClassName, "required argument 'waitQueueComparatorClassName' is null");
+    checkNotNull(classLoader, "required argument 'classLoader' is null");
+    checkNotNull(metrics, "required argument 'metrics' is null");
+
     LOG.info("TaskExecutorService is being setup with parameters: "
         + "numExecutors=" + numExecutors
         + ", waitQueueSize=" + waitQueueSize
@@ -164,9 +171,9 @@ public class TaskExecutorService extends AbstractService
     this.enablePreemption = enablePreemption;
     this.numSlotsAvailable = new AtomicInteger(numExecutors);
     this.metrics = metrics;
-    if (metrics != null) {
-      metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
-    }
+    this.metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
+    this.metrics.setNumExecutors(numExecutors);
+    this.metrics.setWaitQueueSize(waitQueueSize);
 
     // single threaded scheduler for tasks from wait queue to executor threads
     ExecutorService wes = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
@@ -213,6 +220,8 @@ public class TaskExecutorService extends AbstractService
     numSlotsAvailable.addAndGet(newNumExecutors - maxParallelExecutors);
     maxParallelExecutors = newNumExecutors;
     waitQueue.setWaitQueueSize(newWaitQueueSize);
+    metrics.setNumExecutors(newNumExecutors);
+    metrics.setWaitQueueSize(newWaitQueueSize);
     LOG.info("TaskExecutorService is setting capacity to: numExecutors=" + newNumExecutors
         + ", waitQueueSize=" + newWaitQueueSize);
   }
@@ -409,9 +418,7 @@ public class TaskExecutorService extends AbstractService
               // Wait queue could have been re-ordered in the mean time because of concurrent task
               // submission. So remove the specific task instead of the head task.
               if (waitQueue.remove(task)) {
-                if (metrics != null) {
-                  metrics.setExecutorNumQueuedRequests(waitQueue.size());
-                }
+                metrics.setExecutorNumQueuedRequests(waitQueue.size());
               }
               lastKillTimeMs = null; // We have filled the spot we may have killed for (if any).
             } catch (RejectedExecutionException e) {
@@ -531,9 +538,7 @@ public class TaskExecutorService extends AbstractService
         if (LOG.isDebugEnabled()) {
           LOG.debug("{} is {} as wait queue is full", taskWrapper.getRequestId(), result);
         }
-        if (metrics != null) {
-          metrics.incrTotalRejectedRequests();
-        }
+        metrics.incrTotalRejectedRequests();
         return result;
       }
 
@@ -575,17 +580,13 @@ public class TaskExecutorService extends AbstractService
         // to go out before the previous submissions has completed. Handled in the AM
         evictedTask.getTaskRunnerCallable().killTask();
       }
-      if (metrics != null) {
-        metrics.incrTotalEvictedFromWaitQueue();
-      }
+      metrics.incrTotalEvictedFromWaitQueue();
     }
     synchronized (lock) {
       lock.notifyAll();
     }
+    metrics.setExecutorNumQueuedRequests(waitQueue.size());
 
-    if (metrics != null) {
-      metrics.setExecutorNumQueuedRequests(waitQueue.size());
-    }
     return result;
   }
 
@@ -656,9 +657,7 @@ public class TaskExecutorService extends AbstractService
           taskWrapper.setIsInWaitQueue(false);
           taskWrapper.getTaskRunnerCallable().setWmCountersDone();
           if (waitQueue.remove(taskWrapper)) {
-            if (metrics != null) {
-              metrics.setExecutorNumQueuedRequests(waitQueue.size());
-            }
+            metrics.setExecutorNumQueuedRequests(waitQueue.size());
           }
         }
         if (taskWrapper.isInPreemptionQueue()) {
@@ -748,9 +747,7 @@ public class TaskExecutorService extends AbstractService
       }
     }
     numSlotsAvailable.decrementAndGet();
-    if (metrics != null) {
-      metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
-    }
+    metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
   }
 
   private boolean handleScheduleAttemptedRejection(TaskWrapper rejected) {
@@ -863,9 +860,7 @@ public class TaskExecutorService extends AbstractService
     synchronized (lock) {
       insertIntoPreemptionQueueOrFailUnlocked(taskWrapper);
       taskWrapper.setIsInPreemptableQueue(true);
-      if (metrics != null) {
-        metrics.setExecutorNumPreemptableRequests(preemptionQueue.size());
-      }
+      metrics.setExecutorNumPreemptableRequests(preemptionQueue.size());
     }
   }
 
@@ -893,9 +888,8 @@ public class TaskExecutorService extends AbstractService
       TaskWrapper taskWrapper) {
     boolean removed = preemptionQueue.remove(taskWrapper);
     taskWrapper.setIsInPreemptableQueue(false);
-    if (metrics != null) {
-      metrics.setExecutorNumPreemptableRequests(preemptionQueue.size());
-    }
+    metrics.setExecutorNumPreemptableRequests(preemptionQueue.size());
+
     return removed;
   }
 
@@ -913,9 +907,8 @@ public class TaskExecutorService extends AbstractService
         return null;
       }
       taskWrapper.setIsInPreemptableQueue(false);
-      if (metrics != null) {
-        metrics.setExecutorNumPreemptableRequests(preemptionQueue.size());
-      }
+      metrics.setExecutorNumPreemptableRequests(preemptionQueue.size());
+
       return taskWrapper;
     }
   }
@@ -970,10 +963,8 @@ public class TaskExecutorService extends AbstractService
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
       taskWrapper.getTaskRunnerCallable().setWmCountersDone();
-      if (metrics != null) {
-        metrics.addMetricsQueueTime(taskWrapper.getTaskRunnerCallable().getQueueTime());
-        metrics.addMetricsRunningTime(taskWrapper.getTaskRunnerCallable().getRunningTime());
-      }
+      metrics.addMetricsQueueTime(taskWrapper.getTaskRunnerCallable().getQueueTime());
+      metrics.addMetricsRunningTime(taskWrapper.getTaskRunnerCallable().getRunningTime());
       updatePreemptionListAndNotify(result.getEndReason());
       taskWrapper.getTaskRunnerCallable().getCallback().onSuccess(result);
     }
@@ -1007,9 +998,7 @@ public class TaskExecutorService extends AbstractService
       }
 
       numSlotsAvailable.incrementAndGet();
-      if (metrics != null) {
-        metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
-      }
+      metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
       if (LOG.isDebugEnabled()) {
         LOG.debug("Task {} complete. WaitQueueSize={}, numSlotsAvailable={}, preemptionQueueSize={}",
           taskWrapper.getRequestId(), waitQueue.size(), numSlotsAvailable.get(),
@@ -1040,19 +1029,13 @@ public class TaskExecutorService extends AbstractService
         long timeTaken = now - fragmentCompletion.completingTime;
         switch (fragmentCompletion.state) {
           case SUCCESS:
-            if (metrics != null) {
-              metrics.addMetricsFallOffSuccessTimeLost(timeTaken);
-            }
+          metrics.addMetricsFallOffSuccessTimeLost(timeTaken);
             break;
           case FAILED:
-            if (metrics != null) {
-              metrics.addMetricsFallOffFailedTimeLost(timeTaken);
-            }
+          metrics.addMetricsFallOffFailedTimeLost(timeTaken);
             break;
           case KILLED:
-            if (metrics != null) {
-              metrics.addMetricsFallOffKilledTimeLost(timeTaken);
-            }
+          metrics.addMetricsFallOffKilledTimeLost(timeTaken);
             break;
         }
       }
