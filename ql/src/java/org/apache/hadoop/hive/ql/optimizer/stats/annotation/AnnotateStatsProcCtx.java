@@ -77,6 +77,10 @@ public class AnnotateStatsProcCtx implements NodeProcessorCtx {
     affectedColumns.add(column.getColumn());
   }
 
+  public void addAffectedColumns(Set<String> columns) {
+    affectedColumns.addAll(columns);
+  }
+
   public Set<String> getAffectedColumns() {
     return affectedColumns;
   }

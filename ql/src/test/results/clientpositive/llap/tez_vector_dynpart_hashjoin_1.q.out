@@ -359,7 +359,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: smallint)
-                  minReductionHashAggr: 0.49950933
+                  minReductionHashAggr: 0.49951172
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE

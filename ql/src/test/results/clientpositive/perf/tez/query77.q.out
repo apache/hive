@@ -268,21 +268,21 @@ Stage-0
     Stage-1
       Reducer 8 vectorized
       File Output Operator [FS_363]
-        Limit [LIM_362] (rows=52 width=439)
+        Limit [LIM_362] (rows=63 width=439)
           Number of rows:100
-          Select Operator [SEL_361] (rows=52 width=439)
+          Select Operator [SEL_361] (rows=63 width=439)
             Output:["_col0","_col1","_col2","_col3","_col4"]
           <-Reducer 7 [SIMPLE_EDGE] vectorized
             SHUFFLE [RS_360]
-              Select Operator [SEL_359] (rows=52 width=439)
+              Select Operator [SEL_359] (rows=63 width=439)
                 Output:["_col0","_col1","_col2","_col3","_col4"]
-                Group By Operator [GBY_358] (rows=52 width=447)
+                Group By Operator [GBY_358] (rows=63 width=447)
                   Output:["_col0","_col1","_col3","_col4","_col5"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)"],keys:KEY._col0, KEY._col1, KEY._col2
                 <-Union 6 [SIMPLE_EDGE]
                   <-Reducer 16 [CONTAINS]
                     Reduce Output Operator [RS_319]
                       PartitionCols:_col0, _col1, _col2
-                      Group By Operator [GBY_318] (rows=52 width=447)
+                      Group By Operator [GBY_318] (rows=63 width=447)
                         Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["sum(_col2)","sum(_col3)","sum(_col4)"],keys:_col0, _col1, 0L
                         Select Operator [SEL_316] (rows=2 width=439)
                           Output:["_col0","_col1","_col2","_col3","_col4"]
@@ -354,11 +354,11 @@ Stage-0
                   <-Reducer 23 [CONTAINS]
                     Reduce Output Operator [RS_324]
                       PartitionCols:_col0, _col1, _col2
-                      Group By Operator [GBY_323] (rows=52 width=447)
+                      Group By Operator [GBY_323] (rows=63 width=447)
                         Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["sum(_col2)","sum(_col3)","sum(_col4)"],keys:_col0, _col1, 0L
-                        Select Operator [SEL_321] (rows=23 width=435)
+                        Select Operator [SEL_321] (rows=44 width=435)
                           Output:["_col0","_col1","_col2","_col3","_col4"]
-                          Merge Join Operator [MERGEJOIN_320] (rows=23 width=452)
+                          Merge Join Operator [MERGEJOIN_320] (rows=44 width=340)
                             Conds:RS_386._col0=RS_391._col0(Left Outer),Output:["_col0","_col1","_col2","_col4","_col5"]
                           <-Reducer 22 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_386]
@@ -413,12 +413,12 @@ Stage-0
                           <-Reducer 27 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_391]
                               PartitionCols:_col0
-                              Group By Operator [GBY_390] (rows=23 width=228)
+                              Group By Operator [GBY_390] (rows=21 width=228)
                                 Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0
                               <-Reducer 26 [SIMPLE_EDGE]
                                 SHUFFLE [RS_114]
                                   PartitionCols:_col0
-                                  Group By Operator [GBY_113] (rows=23 width=228)
+                                  Group By Operator [GBY_113] (rows=21 width=228)
                                     Output:["_col0","_col1","_col2"],aggregations:["sum(_col2)","sum(_col3)"],keys:_col6
                                     Merge Join Operator [MERGEJOIN_306] (rows=1458758 width=137)
                                       Conds:RS_109._col1=RS_384._col0(Inner),Output:["_col2","_col3","_col6"]
@@ -447,7 +447,7 @@ Stage-0
                   <-Reducer 5 [CONTAINS]
                     Reduce Output Operator [RS_314]
                       PartitionCols:_col0, _col1, _col2
-                      Group By Operator [GBY_313] (rows=52 width=447)
+                      Group By Operator [GBY_313] (rows=63 width=447)
                         Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["sum(_col2)","sum(_col3)","sum(_col4)"],keys:_col0, _col1, 0L
                         Select Operator [SEL_311] (rows=10 width=437)
                           Output:["_col0","_col1","_col2","_col3","_col4"]

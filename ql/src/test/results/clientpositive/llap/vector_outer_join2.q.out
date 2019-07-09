@@ -299,7 +299,7 @@ STAGE PLANS:
                       outputColumnNames: _col1
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 25 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 45 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Outer Join 0 to 1
@@ -318,7 +318,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 25 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 90 Data size: 648 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count(), sum(_col1)
                           Group By Vectorization:
@@ -328,7 +328,7 @@ STAGE PLANS:
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0, 1]
-                          minReductionHashAggr: 0.96
+                          minReductionHashAggr: 0.98888886
                           mode: hash
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
