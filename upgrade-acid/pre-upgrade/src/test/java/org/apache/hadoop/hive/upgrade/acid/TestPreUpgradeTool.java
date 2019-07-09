@@ -17,6 +17,25 @@
  */
 package org.apache.hadoop.hive.upgrade.acid;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringContains.containsString;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -30,12 +49,8 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
@@ -45,16 +60,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TestPreUpgradeTool {
   private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
@@ -71,7 +76,7 @@ public class TestPreUpgradeTool {
    */
   @Test
   public void testUpgrade() throws Exception {
-    int[][] data = {{1,2}, {3, 4}, {5, 6}};
+    int[][] data = {{1, 2}, {3, 4}, {5, 6}};
     int[][] dataPart = {{1, 2, 10}, {3, 4, 11}, {5, 6, 12}};
     runStatementOnDriver("drop table if exists TAcid");
     runStatementOnDriver("drop table if exists TAcidPart");
@@ -117,13 +122,14 @@ public class TestPreUpgradeTool {
       PreUpgradeTool.pollIntervalMs = 1;
       PreUpgradeTool.hiveConf = hiveConf;
       PreUpgradeTool.main(args);
-    /*
-    todo: parse
-    target/tmp/org.apache.hadoop.hive.upgrade.acid.TestPreUpgradeTool-1527286256834/compacts_1527286277624.sql
-    make sure it's the only 'compacts' file and contains
-    ALTER TABLE default.tacid COMPACT 'major';
-ALTER TABLE default.tacidpart PARTITION(p=10Y) COMPACT 'major';
-    * */
+
+      String[] scriptFiles = getScriptFiles();
+      assertThat(scriptFiles.length, is(1));
+
+      List<String> scriptContent = loadScriptContent(new File(getTestDataDir(), scriptFiles[0]));
+      assertThat(scriptContent.size(), is(2));
+      assertThat(scriptContent, hasItem(is("ALTER TABLE default.tacid COMPACT 'major';")));
+      assertThat(scriptContent, hasItem(is("ALTER TABLE default.tacidpart PARTITION(p=10Y) COMPACT 'major';")));
 
       TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
 
@@ -133,11 +139,20 @@ ALTER TABLE default.tacidpart PARTITION(p=10Y) COMPACT 'major';
         Assert.assertEquals(e.toString(), TxnStore.CLEANING_RESPONSE, e.getState());
       }
 
-      String[] args2 = {"-location", getTestDataDir()};
+      // Check whether compaction was successful in the first run
+      File secondRunDataDir = new File(getTestDataDir(), "secondRun");
+      if (!secondRunDataDir.exists()) {
+        if (!secondRunDataDir.mkdir()) {
+          throw new IOException("Unable to create directory" + secondRunDataDir.getAbsolutePath());
+        }
+      }
+      String[] args2 = {"-location", secondRunDataDir.getAbsolutePath()};
       PreUpgradeTool.main(args2);
-      /*
-       * todo: parse compacts script - make sure there is nothing in it
-       * */
+
+      scriptFiles = secondRunDataDir.list();
+      assertThat(scriptFiles, is(not(nullValue())));
+      assertThat(scriptFiles.length, is(0));
+
     } finally {
       runStatementOnDriver("drop table if exists TAcid");
       runStatementOnDriver("drop table if exists TAcidPart");
@@ -146,9 +161,119 @@ ALTER TABLE default.tacidpart PARTITION(p=10Y) COMPACT 'major';
     }
   }
 
+  private static final String INCLUDE_DATABASE_NAME ="DInclude";
+  private static final String EXCLUDE_DATABASE_NAME ="DExclude";
+
+  @Test
+  public void testOnlyFilteredDatabasesAreUpgradedWhenRegexIsGiven() throws Exception {
+    int[][] data = {{1, 2}, {3, 4}, {5, 6}};
+    runStatementOnDriver("drop database if exists " + INCLUDE_DATABASE_NAME + " cascade");
+    runStatementOnDriver("drop database if exists " + EXCLUDE_DATABASE_NAME + " cascade");
+
+    try {
+      runStatementOnDriver("create database " + INCLUDE_DATABASE_NAME);
+      runStatementOnDriver("use " + INCLUDE_DATABASE_NAME);
+      runStatementOnDriver("create table " + INCLUDE_TABLE_NAME + " (a int, b int) clustered by (b) " +
+              "into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+      runStatementOnDriver("insert into " + INCLUDE_TABLE_NAME + makeValuesClause(data));
+      runStatementOnDriver("update " + INCLUDE_TABLE_NAME + " set a = 1 where b = 2");
+
+      runStatementOnDriver("create database " + EXCLUDE_DATABASE_NAME);
+      runStatementOnDriver("use " + EXCLUDE_DATABASE_NAME);
+      runStatementOnDriver("create table " + EXCLUDE_DATABASE_NAME + " (a int, b int) clustered by (b) " +
+                "into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+      runStatementOnDriver("insert into " + EXCLUDE_DATABASE_NAME + makeValuesClause(data));
+      runStatementOnDriver("update " + EXCLUDE_DATABASE_NAME + " set a = 1 where b = 2");
+
+      String[] args = {"-location", getTestDataDir(), "-dbRegex", "*include*"};
+      PreUpgradeTool.callback = new PreUpgradeTool.Callback() {
+        @Override
+        void onWaitForCompaction() throws MetaException {
+          runWorker(hiveConf);
+        }
+      };
+      PreUpgradeTool.pollIntervalMs = 1;
+      PreUpgradeTool.hiveConf = hiveConf;
+      PreUpgradeTool.main(args);
+
+      String[] scriptFiles = getScriptFiles();
+      assertThat(scriptFiles.length, is(1));
+
+      List<String> scriptContent = loadScriptContent(new File(getTestDataDir(), scriptFiles[0]));
+      assertThat(scriptContent.size(), is(1));
+      assertThat(scriptContent.get(0), is("ALTER TABLE dinclude.tinclude COMPACT 'major';"));
+
+    } finally {
+      runStatementOnDriver("drop database if exists " + INCLUDE_DATABASE_NAME + " cascade");
+      runStatementOnDriver("drop database if exists " + EXCLUDE_DATABASE_NAME + " cascade");
+    }
+  }
+
+  private static final String INCLUDE_TABLE_NAME ="TInclude";
+  private static final String EXCLUDE_TABLE_NAME ="TExclude";
+
+  @Test
+  public void testOnlyFilteredTablesAreUpgradedWhenRegexIsGiven() throws Exception {
+    int[][] data = {{1, 2}, {3, 4}, {5, 6}};
+    runStatementOnDriver("drop table if exists " + INCLUDE_TABLE_NAME);
+    runStatementOnDriver("drop table if exists " + EXCLUDE_TABLE_NAME);
+
+    try {
+      runStatementOnDriver("create table " + INCLUDE_TABLE_NAME + " (a int, b int) clustered by (b) " +
+              "into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+      runStatementOnDriver("create table " + EXCLUDE_TABLE_NAME + " (a int, b int) clustered by (b) " +
+              "into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+
+      runStatementOnDriver("insert into " + INCLUDE_TABLE_NAME + makeValuesClause(data));
+      runStatementOnDriver("update " + INCLUDE_TABLE_NAME + " set a = 1 where b = 2");
+
+      runStatementOnDriver("insert into " + EXCLUDE_TABLE_NAME + makeValuesClause(data));
+      runStatementOnDriver("update " + EXCLUDE_TABLE_NAME + " set a = 1 where b = 2");
+
+      String[] args = {"-location", getTestDataDir(), "-tableRegex", "*include*"};
+      PreUpgradeTool.callback = new PreUpgradeTool.Callback() {
+        @Override
+        void onWaitForCompaction() throws MetaException {
+          runWorker(hiveConf);
+        }
+      };
+      PreUpgradeTool.pollIntervalMs = 1;
+      PreUpgradeTool.hiveConf = hiveConf;
+      PreUpgradeTool.main(args);
+
+      String[] scriptFiles = getScriptFiles();
+      assertThat(scriptFiles.length, is(1));
+
+      List<String> scriptContent = loadScriptContent(new File(getTestDataDir(), scriptFiles[0]));
+      assertThat(scriptContent.size(), is(1));
+      assertThat(scriptContent.get(0), allOf(
+              containsString("ALTER TABLE"),
+              containsString(INCLUDE_TABLE_NAME.toLowerCase()),
+              containsString("COMPACT")));
+
+    } finally {
+      runStatementOnDriver("drop table if exists " + INCLUDE_TABLE_NAME);
+      runStatementOnDriver("drop table if exists " + EXCLUDE_TABLE_NAME);
+    }
+  }
+
+  private String[] getScriptFiles() {
+    File testDataDir = new File(getTestDataDir());
+    String[] scriptFiles = testDataDir.list((dir, name) -> name.startsWith("compacts_") && name.endsWith(".sql"));
+    assertThat(scriptFiles, is(not(nullValue())));
+    return scriptFiles;
+  }
+
+  private List<String> loadScriptContent(File file) throws IOException {
+    List<String> content = org.apache.commons.io.FileUtils.readLines(file);
+    content.removeIf(line -> line.startsWith("--"));
+    content.removeIf(StringUtils::isBlank);
+    return content;
+  }
+
   @Test
   public void testUpgradeExternalTableNoReadPermissionForDatabase() throws Exception {
-    int[][] data = {{1,2}, {3, 4}, {5, 6}};
+    int[][] data = {{1, 2}, {3, 4}, {5, 6}};
 
     runStatementOnDriver("drop database if exists test cascade");
     runStatementOnDriver("drop table if exists TExternal");
@@ -187,7 +312,7 @@ ALTER TABLE default.tacidpart PARTITION(p=10Y) COMPACT 'major';
 
   @Test
   public void testUpgradeExternalTableNoReadPermissionForTable() throws Exception {
-    int[][] data = {{1,2}, {3, 4}, {5, 6}};
+    int[][] data = {{1, 2}, {3, 4}, {5, 6}};
     runStatementOnDriver("drop table if exists TExternal");
 
     runStatementOnDriver("create table TExternal (a int, b int) stored as orc tblproperties('transactional'='false')");
