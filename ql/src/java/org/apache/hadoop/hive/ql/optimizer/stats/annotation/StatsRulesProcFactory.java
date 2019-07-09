@@ -334,13 +334,14 @@ public class StatsRulesProcFactory {
 
         // for AND condition cascadingly update stats
         if (udf instanceof GenericUDFOPAnd) {
+          Set<String> affectedColumns = new HashSet<>();
           andStats = stats.clone();
           aspCtx.setAndExprStats(andStats);
+          aspCtx.clearAffectedColumns();
 
           // evaluate children
           long evaluatedRowCount = currNumRows;
           for (ExprNodeDesc child : genFunc.getChildren()) {
-            aspCtx.clearAffectedColumns();
             evaluatedRowCount = evaluateChildExpr(aspCtx.getAndExprStats(), child,
                 aspCtx, neededCols, op, evaluatedRowCount);
             newNumRows = evaluatedRowCount;
@@ -353,7 +354,10 @@ public class StatsRulesProcFactory {
             } else {
               StatsUtils.updateStats(aspCtx.getAndExprStats(), newNumRows, false, op);
             }
+            affectedColumns.addAll(aspCtx.getAffectedColumns());
+            aspCtx.clearAffectedColumns();
           }
+          aspCtx.addAffectedColumns(affectedColumns);
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats.
           for (ExprNodeDesc child : genFunc.getChildren()) {

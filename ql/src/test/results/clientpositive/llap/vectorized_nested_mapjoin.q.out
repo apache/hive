@@ -45,7 +45,7 @@ STAGE PLANS:
                         outputColumnNames: _col1, _col3
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 11087 Data size: 112232 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 14848 Data size: 157364 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -55,7 +55,7 @@ STAGE PLANS:
                           outputColumnNames: _col3
                           input vertices:
                             1 Map 4
-                          Statistics: Num rows: 782315 Data size: 6244648 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1389803 Data size: 11104552 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col3)
                             minReductionHashAggr: 0.99
