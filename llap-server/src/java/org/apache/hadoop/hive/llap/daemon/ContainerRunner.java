@@ -51,5 +51,5 @@ public interface ContainerRunner {
       UpdateFragmentRequestProto request) throws IOException;
 
   SetCapacityResponseProto setCapacity(
-      SetCapacityRequestProto request);
+      SetCapacityRequestProto request) throws IOException;
 }
