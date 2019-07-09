@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -213,7 +214,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
       String output = "";
 
-      boolean isColStatsAvailable = colStats != null;
+      boolean isColStatsAvailable = CollectionUtils.isNotEmpty(colStats);
 
       TextMetaDataTable mdt = new TextMetaDataTable();
       if (isFormatted && !isColStatsAvailable) {

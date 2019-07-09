@@ -43,18 +43,18 @@ public class DescTableDesc implements DDLDesc, Serializable {
 
   private final String resFile;
   private final String tableName;
-  private final Map<String, String> partSpec;
-  private final String colPath;
-  private final boolean isExt;
+  private final Map<String, String> partitionSpec;
+  private final String columnPath;
+  private final boolean isExtended;
   private final boolean isFormatted;
 
-  public DescTableDesc(Path resFile, String tableName, Map<String, String> partSpec, String colPath, boolean isExt,
-      boolean isFormatted) {
+  public DescTableDesc(Path resFile, String tableName, Map<String, String> partitionSpec, String columnPath,
+      boolean isExtended, boolean isFormatted) {
     this.resFile = resFile.toString();
     this.tableName = tableName;
-    this.partSpec = partSpec;
-    this.colPath = colPath;
-    this.isExt = isExt;
+    this.partitionSpec = partitionSpec;
+    this.columnPath = columnPath;
+    this.isExtended = isExtended;
     this.isFormatted = isFormatted;
   }
 
@@ -69,18 +69,22 @@ public class DescTableDesc implements DDLDesc, Serializable {
   }
 
   @Explain(displayName = "partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public Map<String, String> getPartSpec() {
-    return partSpec;
+  public Map<String, String> getPartitionSpec() {
+    return partitionSpec;
   }
 
   public String getColumnPath() {
-    return colPath;
+    return columnPath;
   }
 
-  public boolean isExt() {
-    return isExt;
+  @Explain(displayName = "extended", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean isExtended() {
+    return isExtended;
   }
 
+  @Explain(displayName = "formatted", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isFormatted() {
     return isFormatted;
   }

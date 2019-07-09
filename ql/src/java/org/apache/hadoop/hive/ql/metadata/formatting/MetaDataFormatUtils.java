@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -124,7 +125,7 @@ public final class MetaDataFormatUtils {
 
   static ColumnStatisticsObj getColumnStatisticsObject(String colName,
       String colType, List<ColumnStatisticsObj> colStats) {
-    if (colStats != null && !colStats.isEmpty()) {
+    if (CollectionUtils.isNotEmpty(colStats)) {
       for (ColumnStatisticsObj cso : colStats) {
         if (cso.getColName().equalsIgnoreCase(colName)
             && cso.getColType().equalsIgnoreCase(colType)) {

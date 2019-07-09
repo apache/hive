@@ -66,7 +66,6 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.IOUtils;
 
 /**
  * Operation process of dropping a table.
@@ -78,94 +77,37 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   @Override
   public int execute() throws Exception {
-    String colPath = desc.getColumnPath();
-    String tableName = desc.getTableName();
+    String columnPath = desc.getColumnPath();
 
-    // describe the table - populate the output stream
-    Table tbl = context.getDb().getTable(tableName, false);
-    if (tbl == null) {
-      throw new HiveException(ErrorMsg.INVALID_TABLE, tableName);
-    }
-    Partition part = null;
-    if (desc.getPartSpec() != null) {
-      part = context.getDb().getPartition(tbl, desc.getPartSpec(), false);
-      if (part == null) {
-        throw new HiveException(ErrorMsg.INVALID_PARTITION,
-            StringUtils.join(desc.getPartSpec().keySet(), ','), tableName);
-      }
-      tbl = part.getTable();
-    }
+    Table table = getTable();
+    Partition part = getPartition(table);
 
-    DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context);
-    try {
-      LOG.debug("DDLTask: got data for {}", tableName);
+    try (DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+      LOG.debug("DDLTask: got data for {}", desc.getTableName());
 
-      List<FieldSchema> cols = null;
-      List<ColumnStatisticsObj> colStats = null;
+      List<FieldSchema> cols = new ArrayList<>();
+      List<ColumnStatisticsObj> colStats = new ArrayList<>();
 
-      Deserializer deserializer = tbl.getDeserializer(true);
-      if (deserializer instanceof AbstractSerDe) {
-        String errorMsgs = ((AbstractSerDe) deserializer).getConfigurationErrors();
-        if (errorMsgs != null && !errorMsgs.isEmpty()) {
-          throw new SQLException(errorMsgs);
-        }
-      }
+      Deserializer deserializer = getDeserializer(table);
 
-      if (colPath.equals(tableName)) {
-        cols = (part == null || tbl.getTableType() == TableType.VIRTUAL_VIEW) ?
-            tbl.getCols() : part.getCols();
-
-        if (!desc.isFormatted()) {
-          cols.addAll(tbl.getPartCols());
-        }
-
-        if (tbl.isPartitioned() && part == null) {
-          // No partitioned specified for partitioned table, lets fetch all.
-          Map<String, String> tblProps = tbl.getParameters() == null ?
-              new HashMap<String, String>() : tbl.getParameters();
-          Map<String, Long> valueMap = new HashMap<>();
-          Map<String, Boolean> stateMap = new HashMap<>();
-          for (String stat : StatsSetupConst.SUPPORTED_STATS) {
-            valueMap.put(stat, 0L);
-            stateMap.put(stat, true);
-          }
-          PartitionIterable parts = new PartitionIterable(context.getDb(), tbl, null,
-              context.getConf().getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
-          int numParts = 0;
-          for (Partition partition : parts) {
-            Map<String, String> props = partition.getParameters();
-            Boolean state = StatsSetupConst.areBasicStatsUptoDate(props);
-            for (String stat : StatsSetupConst.SUPPORTED_STATS) {
-              stateMap.put(stat, stateMap.get(stat) && state);
-              if (props != null && props.get(stat) != null) {
-                valueMap.put(stat, valueMap.get(stat) + Long.parseLong(props.get(stat)));
-              }
-            }
-            numParts++;
-          }
-          for (String stat : StatsSetupConst.SUPPORTED_STATS) {
-            StatsSetupConst.setBasicStatsState(tblProps, Boolean.toString(stateMap.get(stat)));
-            tblProps.put(stat, valueMap.get(stat).toString());
-          }
-          tblProps.put(StatsSetupConst.NUM_PARTITIONS, Integer.toString(numParts));
-          tbl.setParameters(tblProps);
-        }
+      if (columnPath == null) {
+        getColumnsNoColumnPath(table, part, cols);
       } else {
         if (desc.isFormatted()) {
           // when column name is specified in describe table DDL, colPath will
           // will be table_name.column_name
-          String colName = colPath.split("\\.")[1];
-          String[] dbTab = Utilities.getDbTableName(tableName);
+          String colName = columnPath.split("\\.")[1];
+          String[] dbTab = Utilities.getDbTableName(desc.getTableName());
           List<String> colNames = new ArrayList<String>();
           colNames.add(colName.toLowerCase());
           if (null == part) {
-            if (tbl.isPartitioned()) {
-              Map<String, String> tblProps = tbl.getParameters() == null ?
-                  new HashMap<String, String>() : tbl.getParameters();
-              if (tbl.isPartitionKey(colNames.get(0))) {
-                FieldSchema partCol = tbl.getPartColByName(colNames.get(0));
+            if (table.isPartitioned()) {
+              Map<String, String> tblProps = table.getParameters() == null ?
+                  new HashMap<String, String>() : table.getParameters();
+              if (table.isPartitionKey(colNames.get(0))) {
+                FieldSchema partCol = table.getPartColByName(colNames.get(0));
                 cols = Collections.singletonList(partCol);
-                PartitionIterable parts = new PartitionIterable(context.getDb(), tbl, null,
+                PartitionIterable parts = new PartitionIterable(context.getDb(), table, null,
                     context.getConf().getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
                 ColumnInfo ci = new ColumnInfo(partCol.getName(),
                     TypeInfoUtils.getTypeInfoFromTypeString(partCol.getType()), null, false);
@@ -181,7 +123,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
                 colStats = Collections.singletonList(cso);
                 StatsSetupConst.setColumnStatsState(tblProps, colNames);
               } else {
-                cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
+                cols = Hive.getFieldsFromDeserializer(columnPath, deserializer);
                 List<String> parts = context.getDb().getPartitionNames(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(),
                     (short) -1);
                 AggrStats aggrStats = context.getDb().getAggrColStatsFor(
@@ -193,21 +135,21 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
                   StatsSetupConst.removeColumnStatsState(tblProps, colNames);
                 }
               }
-              tbl.setParameters(tblProps);
+              table.setParameters(tblProps);
             } else {
-              cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
+              cols = Hive.getFieldsFromDeserializer(columnPath, deserializer);
               colStats = context.getDb().getTableColumnStatistics(
                   dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames, false);
             }
           } else {
             List<String> partitions = new ArrayList<String>();
             partitions.add(part.getName());
-            cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
+            cols = Hive.getFieldsFromDeserializer(columnPath, deserializer);
             colStats = context.getDb().getPartitionColumnStatistics(dbTab[0].toLowerCase(),
                 dbTab[1].toLowerCase(), partitions, colNames, false).get(part.getName());
           }
         } else {
-          cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
+          cols = Hive.getFieldsFromDeserializer(columnPath, deserializer);
         }
       }
       PrimaryKeyInfo pkInfo = null;
@@ -217,46 +159,118 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       DefaultConstraint dInfo = null;
       CheckConstraint cInfo = null;
       StorageHandlerInfo storageHandlerInfo = null;
-      if (desc.isExt() || desc.isFormatted()) {
-        pkInfo = context.getDb().getPrimaryKeys(tbl.getDbName(), tbl.getTableName());
-        fkInfo = context.getDb().getForeignKeys(tbl.getDbName(), tbl.getTableName());
-        ukInfo = context.getDb().getUniqueConstraints(tbl.getDbName(), tbl.getTableName());
-        nnInfo = context.getDb().getNotNullConstraints(tbl.getDbName(), tbl.getTableName());
-        dInfo = context.getDb().getDefaultConstraints(tbl.getDbName(), tbl.getTableName());
-        cInfo = context.getDb().getCheckConstraints(tbl.getDbName(), tbl.getTableName());
-        storageHandlerInfo = context.getDb().getStorageHandlerInfo(tbl);
+      if (desc.isExtended() || desc.isFormatted()) {
+        pkInfo = context.getDb().getPrimaryKeys(table.getDbName(), table.getTableName());
+        fkInfo = context.getDb().getForeignKeys(table.getDbName(), table.getTableName());
+        ukInfo = context.getDb().getUniqueConstraints(table.getDbName(), table.getTableName());
+        nnInfo = context.getDb().getNotNullConstraints(table.getDbName(), table.getTableName());
+        dInfo = context.getDb().getDefaultConstraints(table.getDbName(), table.getTableName());
+        cInfo = context.getDb().getCheckConstraints(table.getDbName(), table.getTableName());
+        storageHandlerInfo = context.getDb().getStorageHandlerInfo(table);
       }
       fixDecimalColumnTypeName(cols);
       // Information for materialized views
-      if (tbl.isMaterializedView()) {
+      if (table.isMaterializedView()) {
         final String validTxnsList = context.getDb().getConf().get(ValidTxnList.VALID_TXNS_KEY);
         if (validTxnsList != null) {
-          List<String> tablesUsed = new ArrayList<>(tbl.getCreationMetadata().getTablesUsed());
+          List<String> tablesUsed = new ArrayList<>(table.getCreationMetadata().getTablesUsed());
           ValidTxnWriteIdList currentTxnWriteIds =
               SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
           long defaultTimeWindow = HiveConf.getTimeVar(context.getDb().getConf(),
               HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW, TimeUnit.MILLISECONDS);
-          tbl.setOutdatedForRewriting(Hive.isOutdatedMaterializedView(tbl,
+          table.setOutdatedForRewriting(Hive.isOutdatedMaterializedView(table,
               currentTxnWriteIds, defaultTimeWindow, tablesUsed, false));
         }
       }
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
-      context.getFormatter().describeTable(outStream, colPath, tableName, tbl, part,
-          cols, desc.isFormatted(), desc.isExt(), isOutputPadded,
+      context.getFormatter().describeTable(outStream, columnPath, desc.getTableName(), table, part,
+          cols, desc.isFormatted(), desc.isExtended(), isOutputPadded,
           colStats, pkInfo, fkInfo, ukInfo, nnInfo, dInfo, cInfo,
           storageHandlerInfo);
 
-      LOG.debug("DDLTask: written data for {}", tableName);
+      LOG.debug("DDLTask: written data for {}", desc.getTableName());
 
     } catch (SQLException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
-    } finally {
-      IOUtils.closeStream(outStream);
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, desc.getTableName());
     }
 
     return 0;
+  }
+
+  private Table getTable() throws HiveException {
+    Table table = context.getDb().getTable(desc.getTableName(), false);
+    if (table == null) {
+      throw new HiveException(ErrorMsg.INVALID_TABLE, desc.getTableName());
+    }
+    return table;
+  }
+
+  private Partition getPartition(Table table) throws HiveException {
+    Partition part = null;
+    if (desc.getPartitionSpec() != null) {
+      part = context.getDb().getPartition(table, desc.getPartitionSpec(), false);
+      if (part == null) {
+        throw new HiveException(ErrorMsg.INVALID_PARTITION,
+            StringUtils.join(desc.getPartitionSpec().keySet(), ','), desc.getTableName());
+      }
+    }
+    return part;
+  }
+
+  private Deserializer getDeserializer(Table table) throws SQLException {
+    Deserializer deserializer = table.getDeserializer(true);
+    if (deserializer instanceof AbstractSerDe) {
+      String errorMsgs = ((AbstractSerDe) deserializer).getConfigurationErrors();
+      if (StringUtils.isNotEmpty(errorMsgs)) {
+        throw new SQLException(errorMsgs);
+      }
+    }
+    return deserializer;
+  }
+
+  private void getColumnsNoColumnPath(Table table, Partition partition, List<FieldSchema> cols) throws HiveException {
+    cols.addAll(partition == null || table.getTableType() == TableType.VIRTUAL_VIEW ?
+      table.getCols() : partition.getCols());
+    if (!desc.isFormatted()) {
+      cols.addAll(table.getPartCols());
+    }
+
+    if (table.isPartitioned() && partition == null) {
+      // No partition specified for partitioned table, lets fetch all.
+      Map<String, String> tblProps = table.getParameters() == null ?
+        new HashMap<String, String>() : table.getParameters();
+
+      Map<String, Long> valueMap = new HashMap<>();
+      Map<String, Boolean> stateMap = new HashMap<>();
+      for (String stat : StatsSetupConst.SUPPORTED_STATS) {
+        valueMap.put(stat, 0L);
+        stateMap.put(stat, true);
+      }
+
+      PartitionIterable partitions = new PartitionIterable(context.getDb(), table, null,
+          context.getConf().getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+      int numParts = 0;
+      for (Partition p : partitions) {
+        Map<String, String> partitionProps = p.getParameters();
+        Boolean state = StatsSetupConst.areBasicStatsUptoDate(partitionProps);
+        for (String stat : StatsSetupConst.SUPPORTED_STATS) {
+          stateMap.put(stat, stateMap.get(stat) && state);
+          if (partitionProps != null && partitionProps.get(stat) != null) {
+            valueMap.put(stat, valueMap.get(stat) + Long.parseLong(partitionProps.get(stat)));
+          }
+        }
+        numParts++;
+      }
+      tblProps.put(StatsSetupConst.NUM_PARTITIONS, Integer.toString(numParts));
+
+      for (String stat : StatsSetupConst.SUPPORTED_STATS) {
+        StatsSetupConst.setBasicStatsState(tblProps, Boolean.toString(stateMap.get(stat)));
+        tblProps.put(stat, valueMap.get(stat).toString());
+      }
+      table.setParameters(tblProps);
+    }
   }
 
   /**

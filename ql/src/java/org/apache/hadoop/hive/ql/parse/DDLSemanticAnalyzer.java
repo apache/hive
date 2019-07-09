@@ -2315,7 +2315,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // if this ast has only one child, then no column name specified.
       if (node.getChildCount() == 1) {
-        return tableName;
+        return null;
       }
 
       ASTNode columnNode = null;
@@ -2336,7 +2336,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
               QualifiedNameUtil.getFullyQualifiedName(columnNode);
         }
       } else {
-        return tableName;
+        return null;
       }
     }
 
