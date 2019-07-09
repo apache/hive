@@ -86,7 +86,7 @@ public class TestLlapDaemonProtocolServerImpl {
     LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
     int numHandlers = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_NUM_HANDLERS);
     LlapDaemonExecutorMetrics executorMetrics =
-        LlapDaemonExecutorMetrics.create("LLAP", "SessionId", numHandlers, new int[] {30, 60, 300}, 0, 0L, 0);
+        LlapDaemonExecutorMetrics.create("LLAP", "SessionId", numHandlers, 1, new int[] {30, 60, 300}, 0, 0L, 0);
     LlapProtocolServerImpl server =
         new LlapProtocolServerImpl(null, numHandlers, null,
             new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
@@ -157,7 +157,7 @@ public class TestLlapDaemonProtocolServerImpl {
             .newBuilder()
             .build());
     LlapDaemonExecutorMetrics executorMetrics =
-        LlapDaemonExecutorMetrics.create("LLAP", "SessionId", numHandlers, new int[] {30, 60, 300}, 0, 0L, 0);
+        LlapDaemonExecutorMetrics.create("LLAP", "SessionId", numHandlers, 1, new int[] {30, 60, 300}, 0, 0L, 0);
     LlapProtocolServerImpl server =
         new LlapProtocolServerImpl(null, numHandlers, containerRunnerMock,
             new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
