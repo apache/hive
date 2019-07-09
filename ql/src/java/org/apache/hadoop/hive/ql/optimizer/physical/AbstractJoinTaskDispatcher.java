@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -119,8 +117,8 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
   }
 
   public long getTotalKnownInputSize(Context context, MapWork currWork,
-      Map<Path, ArrayList<String>> pathToAliases,
-      HashMap<String, Long> aliasToSize) throws SemanticException {
+      Map<Path, List<String>> pathToAliases,
+      Map<String, Long> aliasToSize) throws SemanticException {
     try {
       // go over all the input paths, and calculate a known total size, known
       // size for each input alias.
@@ -130,7 +128,7 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
       // is chosen as big table, what's the total size of left tables, which
       // are going to be small tables.
       long aliasTotalKnownInputSize = 0L;
-      for (Map.Entry<Path, ArrayList<String>> entry : pathToAliases.entrySet()) {
+      for (Map.Entry<Path, List<String>> entry : pathToAliases.entrySet()) {
         Path path = entry.getKey();
         List<String> aliasList = entry.getValue();
         ContentSummary cs = context.getCS(path);

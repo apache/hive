@@ -116,7 +116,6 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
@@ -863,8 +862,7 @@ public final class GenMapRedUtils {
     } else if (task instanceof ExecDriver) {
       MapredWork work = (MapredWork) task.getWork();
       work.getMapWork().deriveExplainAttributes();
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = work
-          .getMapWork().getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> opMap = work.getMapWork().getAliasToWork();
       if (opMap != null && !opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
           setKeyAndValueDesc(work.getReduceWork(), op);
@@ -983,7 +981,7 @@ public final class GenMapRedUtils {
         conf.getBoolVar(
             HiveConf.ConfVars.HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS);
     work.setMapperCannotSpanPartns(mapperCannotSpanPartns);
-    work.setPathToAliases(new LinkedHashMap<Path, ArrayList<String>>());
+    work.setPathToAliases(new LinkedHashMap<Path, List<String>>());
     work.setPathToPartitionInfo(new LinkedHashMap<Path, PartitionDesc>());
     work.setAliasToWork(new LinkedHashMap<String, Operator<? extends OperatorDesc>>());
     return mrWork;
@@ -1162,13 +1160,13 @@ public final class GenMapRedUtils {
    */
   public static void replaceMapWork(String sourceAlias, String targetAlias,
       MapWork source, MapWork target) {
-    Map<Path, ArrayList<String>> sourcePathToAliases = source.getPathToAliases();
+    Map<Path, List<String>> sourcePathToAliases = source.getPathToAliases();
     Map<Path, PartitionDesc> sourcePathToPartitionInfo = source.getPathToPartitionInfo();
     Map<String, Operator<? extends OperatorDesc>> sourceAliasToWork = source.getAliasToWork();
     Map<String, PartitionDesc> sourceAliasToPartnInfo = source.getAliasToPartnInfo();
 
-    LinkedHashMap<Path, ArrayList<String>> targetPathToAliases = target.getPathToAliases();
-    LinkedHashMap<Path, PartitionDesc> targetPathToPartitionInfo = target.getPathToPartitionInfo();
+    Map<Path, List<String>> targetPathToAliases = target.getPathToAliases();
+    Map<Path, PartitionDesc> targetPathToPartitionInfo = target.getPathToPartitionInfo();
     Map<String, Operator<? extends OperatorDesc>> targetAliasToWork = target.getAliasToWork();
     Map<String, PartitionDesc> targetAliasToPartnInfo = target.getAliasToPartnInfo();
 
@@ -1190,8 +1188,8 @@ public final class GenMapRedUtils {
     targetAliasToWork.remove(targetAlias);
     targetAliasToPartnInfo.remove(targetAlias);
     List<Path> pathsToRemove = new ArrayList<>();
-    for (Entry<Path, ArrayList<String>> entry: targetPathToAliases.entrySet()) {
-      ArrayList<String> aliases = entry.getValue();
+    for (Entry<Path, List<String>> entry: targetPathToAliases.entrySet()) {
+      List<String> aliases = entry.getValue();
       aliases.remove(targetAlias);
       if (aliases.isEmpty()) {
         pathsToRemove.add(entry.getKey());
@@ -1207,8 +1205,8 @@ public final class GenMapRedUtils {
     targetAliasToPartnInfo.putAll(sourceAliasToPartnInfo);
     targetPathToPartitionInfo.putAll(sourcePathToPartitionInfo);
     List<Path> pathsToAdd = new ArrayList<>();
-    for (Entry<Path, ArrayList<String>> entry: sourcePathToAliases.entrySet()) {
-      ArrayList<String> aliases = entry.getValue();
+    for (Entry<Path, List<String>> entry: sourcePathToAliases.entrySet()) {
+      List<String> aliases = entry.getValue();
       if (aliases.contains(sourceAlias)) {
         pathsToAdd.add(entry.getKey());
       }
@@ -1651,7 +1649,7 @@ public final class GenMapRedUtils {
     // create the merge file work
     MergeFileWork work = new MergeFileWork(inputDirs, finalName,
         hasDynamicPartitions, tblDesc.getInputFileFormatClass().getName(), tblDesc);
-    LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
+    Map<Path, List<String>> pathToAliases = new LinkedHashMap<>();
     pathToAliases.put(inputDir, inputDirstr);
     work.setMapperCannotSpanPartns(true);
     work.setPathToAliases(pathToAliases);

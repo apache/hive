@@ -1203,7 +1203,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       // Eliminate MR plans with more than one TableScanOperator.
 
-      LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork = mapWork.getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> aliasToWork = mapWork.getAliasToWork();
       if ((aliasToWork == null) || (aliasToWork.size() == 0)) {
         setNodeIssue("Vectorized map work requires work");
         return null;
@@ -1710,8 +1710,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       List<String> tableDataColumnList = null;
       List<TypeInfo> tableDataTypeInfoList = null;
 
-      LinkedHashMap<Path, ArrayList<String>> pathToAliases = mapWork.getPathToAliases();
-      LinkedHashMap<Path, PartitionDesc> pathToPartitionInfo = mapWork.getPathToPartitionInfo();
+      Map<Path, List<String>> pathToAliases = mapWork.getPathToAliases();
+      Map<Path, PartitionDesc> pathToPartitionInfo = mapWork.getPathToPartitionInfo();
 
       // Remember the input file formats we validated and why.
       Set<String> inputFileFormatClassNameSet = new HashSet<String>();
@@ -1722,7 +1722,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       Set<Support> inputFormatSupportSet = new TreeSet<Support>();
       boolean outsideLoopIsFirstPartition = true;
 
-      for (Entry<Path, ArrayList<String>> entry: pathToAliases.entrySet()) {
+      for (Entry<Path, List<String>> entry: pathToAliases.entrySet()) {
         final boolean isFirstPartition = outsideLoopIsFirstPartition;
         outsideLoopIsFirstPartition = false;
 

@@ -261,7 +261,7 @@ public class DagUtils {
     Set<URI> fileSinkUris = new HashSet<URI>();
 
     List<Node> topNodes = new ArrayList<Node>();
-    LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork = mapWork.getAliasToWork();
+    Map<String, Operator<? extends OperatorDesc>> aliasToWork = mapWork.getAliasToWork();
     for (Operator<? extends OperatorDesc> operator : aliasToWork.values()) {
       topNodes.add(operator);
     }

@@ -108,7 +108,7 @@ public class NullScanTaskDispatcher implements Dispatcher {
     return desc;
   }
 
-  private void processAlias(MapWork work, Path path, ArrayList<String> aliasesAffected,
+  private void processAlias(MapWork work, Path path,List<String> aliasesAffected,
       ArrayList<String> aliases) {
     // the aliases that are allowed to map to a null scan.
     ArrayList<String> allowed = new ArrayList<String>();
@@ -148,14 +148,14 @@ public class NullScanTaskDispatcher implements Dispatcher {
       tso.getConf().setIsMetadataOnly(true);
     }
     // group path alias according to work
-    LinkedHashMap<Path, ArrayList<String>> candidates = new LinkedHashMap<>();
+    Map<Path, List<String>> candidates = new LinkedHashMap<>();
     for (Path path : work.getPaths()) {
-      ArrayList<String> aliasesAffected = work.getPathToAliases().get(path);
+      List<String> aliasesAffected = work.getPathToAliases().get(path);
       if (aliasesAffected != null && aliasesAffected.size() > 0) {
         candidates.put(path, aliasesAffected);
       }
     }
-    for (Entry<Path, ArrayList<String>> entry : candidates.entrySet()) {
+    for (Entry<Path, List<String>> entry : candidates.entrySet()) {
       processAlias(work, entry.getKey(), entry.getValue(), aliases);
     }
   }

@@ -147,14 +147,14 @@ public class MapJoinProcessor extends Transform {
       smallTableAliasList.add(alias);
       // get input path and remove this alias from pathToAlias
       // because this file will be fetched by fetch operator
-      LinkedHashMap<Path, ArrayList<String>> pathToAliases = newWork.getMapWork().getPathToAliases();
+      Map<Path, List<String>> pathToAliases = newWork.getMapWork().getPathToAliases();
 
       // keep record all the input path for this alias
       HashSet<Path> pathSet = new HashSet<>();
       HashSet<Path> emptyPath = new HashSet<>();
-      for (Map.Entry<Path, ArrayList<String>> entry2 : pathToAliases.entrySet()) {
+      for (Map.Entry<Path, List<String>> entry2 : pathToAliases.entrySet()) {
         Path path = entry2.getKey();
-        ArrayList<String> list = entry2.getValue();
+        List<String> list = entry2.getValue();
         if (list.contains(alias)) {
           // add to path set
           pathSet.add(path);

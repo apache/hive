@@ -904,13 +904,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     ArrayList<String> aliases = new ArrayList<String>();
-    Iterator<Entry<Path, ArrayList<String>>> iterator = this.mrwork
-        .getPathToAliases().entrySet().iterator();
+    Iterator<Entry<Path, List<String>>> iterator = this.mrwork.getPathToAliases().entrySet().iterator();
 
     Set<Path> splitParentPaths = null;
     int pathsSize = this.mrwork.getPathToAliases().entrySet().size();
     while (iterator.hasNext()) {
-      Entry<Path, ArrayList<String>> entry = iterator.next();
+      Entry<Path, List<String>> entry = iterator.next();
       Path key = entry.getKey();
       boolean match;
       if (nonNative) {
@@ -940,7 +939,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         }
       }
       if (match) {
-        ArrayList<String> list = entry.getValue();
+        List<String> list = entry.getValue();
         for (String val : list) {
           aliases.add(val);
         }
