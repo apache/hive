@@ -2673,4 +2673,13 @@ class MetaStoreDirectSql {
       query.closeAll();
     }
   }
+
+  public void lockDbTable(String tableName) throws MetaException {
+    String lockCommand = "lock table \"" + tableName + "\" in exclusive mode";
+    try {
+      executeNoResult(lockCommand);
+    } catch (SQLException sqle) {
+      throw new MetaException("Error while locking table " + tableName + ": " + sqle.getMessage());
+    }
+  }
 }
