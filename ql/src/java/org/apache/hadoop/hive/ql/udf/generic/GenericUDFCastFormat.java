@@ -190,13 +190,21 @@ public class GenericUDFCastFormat extends GenericUDF implements Serializable {
 
     // format here
     Object formattedOutput = null;
-    if (inputOI.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.DATE) {
-      formattedOutput = formatter.format((Date) input);
-      if (formattedOutput == null) {
-        return null;
+    if (inputOI.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.DATE
+        || inputOI.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.TIMESTAMP) {
+      if (inputOI.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.DATE) {
+        try {
+          formattedOutput = formatter.format((Date) input);
+        } catch (IllegalArgumentException e) {
+          return null;
+        }
+      } else {
+        try {
+          formattedOutput = formatter.format((Timestamp) input);
+        } catch (IllegalArgumentException e) {
+          return null;
+        }
       }
-    } else if (inputOI.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.TIMESTAMP) {
-      formattedOutput = formatter.format((Timestamp) input);
       if (formattedOutput == null) {
         return null;
       }
@@ -213,17 +221,26 @@ public class GenericUDFCastFormat extends GenericUDF implements Serializable {
       return ((SettableHiveVarcharObjectInspector) outputOI)
           .create(new HiveVarchar((String) formattedOutput, -1));
     case TIMESTAMP:
-      Timestamp t = formatter.parseTimestamp((String) input);
-      if (t == null) {
+      try {
+        Timestamp t = formatter.parseTimestamp((String) input);
+        if (t == null) {
+          return null;
+        }
+        return ((SettableTimestampObjectInspector) outputOI).create(t);
+      } catch (IllegalArgumentException e) {
         return null;
       }
-      return ((SettableTimestampObjectInspector) outputOI).create(t);
+
     case DATE:
-      Date d = formatter.parseDate((String) input);
-      if (d == null) {
+      try {
+        Date d = formatter.parseDate((String) input);
+        if (d == null) {
+          return null;
+        }
+        return ((SettableDateObjectInspector) outputOI).create(d);
+      } catch (IllegalArgumentException e) {
         return null;
       }
-      return ((SettableDateObjectInspector) outputOI).create(d);
     default:
       throw new HiveException("Output type " + outputOI.getPrimitiveCategory() + " not valid");
     }
