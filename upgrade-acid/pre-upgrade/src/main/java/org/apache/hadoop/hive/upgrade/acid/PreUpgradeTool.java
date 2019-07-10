@@ -17,7 +17,21 @@
  */
 package org.apache.hadoop.hive.upgrade.acid;
 
-import com.google.common.annotations.VisibleForTesting;
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.escapeSQLString;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -46,10 +60,10 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -58,20 +72,7 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.escapeSQLString;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Look at the upgrade-acid/README.md for more info.
@@ -133,13 +134,8 @@ public class PreUpgradeTool {
       formatter.printHelp("upgrade-acid", tool.cmdLineOptions);
       return;
     }
-    if(line.hasOption("location")) {
-      outputDir = line.getOptionValue("location");
-    }
-    if(line.hasOption("execute")) {
-      execute = true;
-    }
-    LOG.info("Starting with execute=" + execute + ", location=" + outputDir);
+    RunOptions runOptions = RunOptions.fromCommandLine(line);
+    LOG.info("Starting with " + runOptions.toString());
 
     try {
       String hiveVer = HiveVersionInfo.getShortVersion();
@@ -148,7 +144,7 @@ public class PreUpgradeTool {
       if(!hiveVer.startsWith("1.")) {
         throw new IllegalStateException("preUpgrade requires Hive 1.x.  Actual: " + hiveVer);
       }
-      tool.prepareAcidUpgradeInternal(outputDir, execute);
+      tool.prepareAcidUpgradeInternal(runOptions);
     }
     catch(Exception ex) {
       LOG.error("PreUpgradeTool failed", ex);
@@ -169,8 +165,24 @@ public class PreUpgradeTool {
           "Executes commands equivalent to generated scrips");
       exec.setOptionalArg(true);
       cmdLineOptions.addOption(exec);
-      cmdLineOptions.addOption(new Option("location", true,
-          "Location to write scripts to. Default is CWD."));
+      Option locationOption = new Option("location", true,
+              "Location to write scripts to. Default is CWD.");
+      locationOption.setArgName("path of directory");
+      cmdLineOptions.addOption(locationOption);
+
+      Option dbRegexOption = new Option("d",
+              "Regular expression to match database names on which this tool will be run. Default: all databases");
+      dbRegexOption.setLongOpt("dbRegex");
+      dbRegexOption.setArgs(1);
+      dbRegexOption.setArgName("regex");
+      cmdLineOptions.addOption(dbRegexOption);
+
+      Option tableRegexOption = new Option("t",
+              "Regular expression to match table names on which this tool will be run. Default: all tables");
+      tableRegexOption.setLongOpt("tableRegex");
+      tableRegexOption.setArgs(1);
+      tableRegexOption.setArgName("regex");
+      cmdLineOptions.addOption(tableRegexOption);
     }
     catch(Exception ex) {
       LOG.error("init()", ex);
@@ -201,7 +213,7 @@ public class PreUpgradeTool {
   /**
    * todo: change script comments to a preamble instead of a footer
    */
-  private void prepareAcidUpgradeInternal(String scriptLocation, boolean execute)
+  private void prepareAcidUpgradeInternal(RunOptions runOptions)
       throws HiveException, TException, IOException {
     HiveConf conf = hiveConf != null ? hiveConf : new HiveConf();
     boolean isAcidEnabled = isAcidEnabled(conf);
@@ -214,16 +226,17 @@ public class PreUpgradeTool {
     ValidTxnList txns = null;
     Hive db = null;
     try {
-      databases = hms.getAllDatabases();//TException
+      databases = hms.getDatabases(runOptions.getDbRegex()); //TException
       LOG.debug("Found " + databases.size() + " databases to process");
-      if (execute) {
+      if (runOptions.isExecute()) {
         db = Hive.get(conf);
       }
 
       for (String dbName : databases) {
         try {
-          List<String> tables = hms.getAllTables(dbName);
-          LOG.debug("found " + tables.size() + " tables in " + dbName);
+          List<String> tables;
+          tables = hms.getTables(dbName, runOptions.getTableRegex());
+          LOG.debug("found {} tables in {}", tables.size(), dbName);
           for (String tableName : tables) {
             try {
               Table t = hms.getTable(dbName, tableName);
@@ -239,7 +252,7 @@ public class PreUpgradeTool {
                   txns = TxnUtils.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
                 }
                 List<String> compactionCommands =
-                  getCompactionCommands(t, conf, hms, compactionMetaInfo, execute, db, txns);
+                        getCompactionCommands(t, conf, hms, compactionMetaInfo, runOptions.isExecute(), db, txns);
                 compactions.addAll(compactionCommands);
               }
               /*todo: handle renaming files somewhere*/
@@ -275,9 +288,9 @@ public class PreUpgradeTool {
       throw new HiveException(exceptionMsg, e);
     }
 
-    makeCompactionScript(compactions, scriptLocation, compactionMetaInfo);
+    makeCompactionScript(compactions, runOptions.getOutputDir(), compactionMetaInfo);
 
-    if(execute) {
+    if(runOptions.isExecute()) {
       while(compactionMetaInfo.compactionIds.size() > 0) {
         LOG.debug("Will wait for " + compactionMetaInfo.compactionIds.size() +
             " compactions to complete");
@@ -318,7 +331,7 @@ public class PreUpgradeTool {
             }
             Thread.sleep(pollIntervalMs);
           } catch (InterruptedException ex) {
-            ;//this only responds to ^C
+            //this only responds to ^C
           }
         }
       }
