@@ -73,15 +73,15 @@ public class TestParser {
 
 
     List<TestBatch> result = Lists.newArrayList();
-    for(QFileTestBatch test : parseQFileTests()) {
-      result.add(test);
-      excluded.add(test.getDriver());
-    }
-
     Collection<TestBatch> unitTestBatches =
         new UnitTestPropertiesParser(context, batchIdCounter, testCasePropertyName, sourceDirectory, logger,
             excluded).generateTestBatches();
     result.addAll(unitTestBatches);
+
+    for(QFileTestBatch test : parseQFileTests()) {
+      result.add(test);
+      excluded.add(test.getDriver());
+    }
 
     return result;
   }
@@ -283,5 +283,6 @@ public class TestParser {
     for (TestBatch testBatch : testBatches) {
       System.out.println(testBatch.getTestArguments());
     }
+    System.out.println(testBatches.size());
   }
 }
