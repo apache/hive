@@ -4112,11 +4112,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       QBParseInfo qbp = getQBParseInfo(qb);
       SimpleEntry<Integer,Integer> entry =
           qbp.getDestToLimit().get(qbp.getClauseNames().iterator().next());
-      Integer offset = (entry == null) ? 0 : entry.getKey();
+      Integer offset = (entry == null) ? null : entry.getKey();
       Integer fetch = (entry == null) ? null : entry.getValue();
 
       if (fetch != null) {
-        RexNode offsetRN = cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(offset));
+        RexNode offsetRN = (offset == null || offset == 0) ?
+            null : cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(offset));
         RexNode fetchRN = cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(fetch));
         RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
         RelCollation canonizedCollation = traitSet.canonize(RelCollations.EMPTY);
