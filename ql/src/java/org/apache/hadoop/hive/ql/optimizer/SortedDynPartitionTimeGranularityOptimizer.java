@@ -66,7 +66,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEpochMilli;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFloor;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPDivide;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -364,27 +364,26 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
               selRS.getSignature().get(0).getTabAlias(), false, false);
       selRS.getSignature().add(ci);
       if (targetShardsPerGranularity > 0 ) {
-        // add another partitioning key based on floor(1/rand) % targetShardsPerGranularity
+        // add another partitioning key based on floor(targetShardsPerGranularity * rand) % targetShardsPerGranularity
         final ColumnInfo partitionKeyCi =
-            new ColumnInfo(Constants.DRUID_SHARD_KEY_COL_NAME, TypeInfoFactory.longTypeInfo,
-                selRS.getSignature().get(0).getTabAlias(), false, false
-            );
+                new ColumnInfo(Constants.DRUID_SHARD_KEY_COL_NAME, TypeInfoFactory.longTypeInfo,
+                        selRS.getSignature().get(0).getTabAlias(), false, false
+                );
         final ExprNodeDesc targetNumShardDescNode =
-            new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, targetShardsPerGranularity);
+                new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, targetShardsPerGranularity);
         final ExprNodeGenericFuncDesc randomFn = ExprNodeGenericFuncDesc
-            .newInstance(new GenericUDFBridge("rand", false, UDFRand.class.getName()),
-                Lists.newArrayList()
-            );
-
+                .newInstance(new GenericUDFBridge("rand", false, UDFRand.class.getName()),
+                        Lists.newArrayList()
+                );
         final ExprNodeGenericFuncDesc random = ExprNodeGenericFuncDesc.newInstance(
-            new GenericUDFFloor(), Lists.newArrayList(ExprNodeGenericFuncDesc
-                .newInstance(new GenericUDFOPDivide(),
-                    Lists.newArrayList(new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo, 1.0), randomFn)
-                )));
+                new GenericUDFFloor(), Lists.newArrayList(ExprNodeGenericFuncDesc
+                        .newInstance(new GenericUDFOPMultiply(),
+                                Lists.newArrayList(new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo, (double)targetShardsPerGranularity), randomFn)
+                        )));
         final ExprNodeGenericFuncDesc randModMax = ExprNodeGenericFuncDesc
-            .newInstance(new GenericUDFOPMod(),
-                Lists.newArrayList(random, targetNumShardDescNode)
-            );
+                .newInstance(new GenericUDFOPMod(),
+                        Lists.newArrayList(random, targetNumShardDescNode)
+                );
         descs.add(randModMax);
         colNames.add(Constants.DRUID_SHARD_KEY_COL_NAME);
         selRS.getSignature().add(partitionKeyCi);
