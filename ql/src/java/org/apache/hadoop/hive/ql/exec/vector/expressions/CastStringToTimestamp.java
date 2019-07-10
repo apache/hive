@@ -143,7 +143,7 @@ public class CastStringToTimestamp extends VectorExpression {
     }
   }
 
-  private void evaluate(TimestampColumnVector outputColVector, BytesColumnVector inputColVector, int i) {
+  protected void evaluate(TimestampColumnVector outputColVector, BytesColumnVector inputColVector, int i) {
     try {
       org.apache.hadoop.hive.common.type.Timestamp timestamp =
           PrimitiveObjectInspectorUtils.getTimestampFromString(
@@ -152,10 +152,14 @@ public class CastStringToTimestamp extends VectorExpression {
                   "UTF-8"));
       outputColVector.set(i, timestamp.toSqlTimestamp());
     } catch (Exception e) {
-      outputColVector.setNullValue(i);
-      outputColVector.isNull[i] = true;
-      outputColVector.noNulls = false;
+      setNull(outputColVector, i);
     }
+  }
+
+  void setNull(TimestampColumnVector outputColVector, int i) {
+    outputColVector.setNullValue(i);
+    outputColVector.isNull[i] = true;
+    outputColVector.noNulls = false;
   }
 
   @Override
