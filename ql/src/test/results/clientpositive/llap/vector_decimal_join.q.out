@@ -45,7 +45,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: foo
-                  filterExpr: x is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -128,7 +127,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bar
-                  filterExpr: x is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
