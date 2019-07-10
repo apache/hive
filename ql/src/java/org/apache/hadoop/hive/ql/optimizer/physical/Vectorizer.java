@@ -42,6 +42,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -4781,9 +4782,14 @@ public class Vectorizer implements PhysicalPlanResolver {
             }
           }
         } else {
+          Object[] arguments;
           int argumentCount = children.length + (parent.getOutputColumnNum() == -1 ? 0 : 1);
-          Object[] arguments = new Object[argumentCount];
-          // new input column numbers
+          if (parent instanceof DecimalColDivideDecimalScalar) {
+            arguments = new Object[argumentCount + 1];
+            arguments[children.length] = ((DecimalColDivideDecimalScalar) parent).getValue();
+          } else {
+            arguments = new Object[argumentCount];
+          }
           for (int i = 0; i < children.length; i++) {
             VectorExpression vce = children[i];
             arguments[i] = vce.getOutputColumnNum();
