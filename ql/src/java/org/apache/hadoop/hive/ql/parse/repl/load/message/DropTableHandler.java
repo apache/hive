@@ -46,10 +46,8 @@ public class DropTableHandler extends AbstractMessageHandler {
       actualTblName = msg.getTable();
     }
 
-    DropTableDesc dropTableDesc = new DropTableDesc(
-        actualDbName + "." + actualTblName,
-        null, true, true, context.eventOnlyReplicationSpec(), false
-    );
+    DropTableDesc dropTableDesc = new DropTableDesc(actualDbName + "." + actualTblName, true, true,
+        context.eventOnlyReplicationSpec(), false);
     Task<DDLWork> dropTableTask = TaskFactory.get(
         new DDLWork(readEntitySet, writeEntitySet, dropTableDesc), context.hiveConf
     );
