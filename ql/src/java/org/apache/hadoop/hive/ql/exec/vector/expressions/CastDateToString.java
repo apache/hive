@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.format.datetime.HiveSqlDateTimeFormatter;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
@@ -51,6 +52,22 @@ public class CastDateToString extends LongToStringUnaryUDF {
   protected void func(BytesColumnVector outV, long[] vector, int i) {
     dt.setTime(DateWritableV2.daysToMillis((int) vector[i]));
     byte[] temp = formatter.format(dt).getBytes();
+    assign(outV, i, temp, temp.length);
+  }
+
+  /**
+   * CastDateToString, CastDateToChar, CastDateToVarchar use this.
+   */
+  void sqlFormat(BytesColumnVector outV, long[] vector, int i,
+      HiveSqlDateTimeFormatter sqlFormatter) {
+    String formattedDate =
+        sqlFormatter.format(org.apache.hadoop.hive.common.type.Date.ofEpochDay((int) vector[i]));
+    if (formattedDate == null) {
+      outV.isNull[i] = true;
+      outV.noNulls = false;
+      return;
+    }
+    byte[] temp = formattedDate.getBytes();
     assign(outV, i, temp, temp.length);
   }
 }
