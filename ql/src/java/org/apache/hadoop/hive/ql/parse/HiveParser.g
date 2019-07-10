@@ -939,24 +939,8 @@ replTableLevelPolicy
 @init { pushMsg("Replication table level policy definition", state); }
 @after { popMsg(state); }
     :
-      ((replTablesIncludeList=replTablesList) (DOT replTablesExcludeList=replTablesList)?)
+      ((replTablesIncludeList=StringLiteral) (DOT replTablesExcludeList=StringLiteral)?)
       -> ^(TOK_REPL_TABLES $replTablesIncludeList $replTablesExcludeList?)
-    ;
-
-replTablesList
-@init { pushMsg("replication table name or comma separated table names pattern list", state); }
-@after { popMsg(state); }
-    :
-      (LSQUARE (tablePattern (COMMA tablePattern)*)? RSQUARE) -> ^(TOK_REPL_TABLES_LIST tablePattern*)
-    ;
-
-tablePattern
-@init { pushMsg("Table name pattern", state); }
-@after { popMsg(state); }
-    :
-      (pattern=StringLiteral) -> $pattern
-      |
-      (identifier) -> TOK_NULL
     ;
 
 replStatusStatement

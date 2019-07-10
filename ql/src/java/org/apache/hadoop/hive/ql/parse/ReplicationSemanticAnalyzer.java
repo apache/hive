@@ -58,14 +58,12 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_FROM;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_LIMIT;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_NULL;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_DUMP;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_LOAD;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_STATUS;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_TABLES;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_TABLES_LIST;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TO;
 
 public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
@@ -140,25 +138,16 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     // and exclude tables lists.
     String replScopeType = (replScope == this.replScope) ? "Current" : "Old";
     for (int listIdx = 0; listIdx < childCount; listIdx++) {
-      Tree tablesListNode = replTablesNode.getChild(listIdx);
-      assert(tablesListNode.getType() == TOK_REPL_TABLES_LIST);
-
-      List<String> tablesList = new ArrayList<>();
-      for (int child = 0; child < tablesListNode.getChildCount(); child++) {
-        Tree tablePatternNode = tablesListNode.getChild(child);
-        if (tablePatternNode.getType() == TOK_NULL) {
-          LOG.error(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getMsg());
-          throw new SemanticException(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getMsg());
-        }
-        tablesList.add(unescapeSQLString(tablePatternNode.getText()));
+      String tableList = unescapeSQLString(replTablesNode.getChild(listIdx).getText());
+      if (tableList == null || tableList.isEmpty()) {
+        throw new SemanticException(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN);
       }
-
       if (listIdx == 0) {
-        LOG.info("{} ReplScope: Set Included Tables List: {}", replScopeType, tablesList);
-        replScope.setIncludedTablePatterns(tablesList);
+        LOG.info("{} ReplScope: Set Included Tables List: {}", replScopeType, tableList);
+        replScope.setIncludedTablePatterns(tableList);
       } else {
-        LOG.info("{} ReplScope: Set Excluded Tables List: {}", replScopeType, tablesList);
-        replScope.setExcludedTablePatterns(tablesList);
+        LOG.info("{} ReplScope: Set Excluded Tables List: {}", replScopeType, tableList);
+        replScope.setExcludedTablePatterns(tableList);
       }
     }
   }
