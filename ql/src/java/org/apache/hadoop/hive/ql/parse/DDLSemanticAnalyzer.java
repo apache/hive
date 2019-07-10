@@ -2495,7 +2495,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // will contain tablename.column_name. If column_name is not specified
       // colPath will be equal to tableName. This is how we can differentiate
       // if we are describing a table or column
-      if (!colPath.equalsIgnoreCase(tableName) && isFormatted) {
+      if (colPath != null && isFormatted) {
         showColStats = true;
       }
     }
