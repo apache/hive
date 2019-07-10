@@ -204,7 +204,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     createTables(originalMMAcidTables, CreateTableType.MM_ACID);
 
     // Replicate and verify if only 2 tables are replicated to target.
-    String replPolicy = primaryDbName + ".['t1', 't4', 't5']";
+    String replPolicy = primaryDbName + ".'(t1)|(t4)|(t5)'";
     String[] replicatedTables = new String[] {"t1", "t4", "t5"};
     replicateAndVerify(replPolicy, null, null, null, replicatedTables);
   }
@@ -215,7 +215,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     createTables(originalTables, CreateTableType.NON_ACID);
 
     // Replicate and verify if only 3 tables are replicated to target.
-    String replPolicy = primaryDbName + ".['t1*', 't3'].['t100']";
+    String replPolicy = primaryDbName + ".'(t1*)|(t3)'.'t100'";
     String[] replicatedTables = new String[] {"t1", "t11", "t3"};
     replicateAndVerify(replPolicy, null, null, null, replicatedTables);
   }
@@ -234,7 +234,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     createTables(originalMMAcidTables, CreateTableType.MM_ACID);
 
     // Replicate and verify if only 2 tables are replicated to target.
-    String replPolicy = primaryDbName + ".['t1', 't5']";
+    String replPolicy = primaryDbName + ".'t1|t5'";
     String[] replicatedTables = new String[] {"t1", "t5"};
     replicateAndVerify(replPolicy, tupleBootstrap.lastReplicationId, null, null, replicatedTables);
   }
@@ -249,7 +249,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     createTables(originalTables, CreateTableType.NON_ACID);
 
     // Replicate and verify if only 3 tables are replicated to target.
-    String replPolicy = primaryDbName + ".['t1+', 't2'].['t11', 't3']";
+    String replPolicy = primaryDbName + ".'(t1+)|(t2)'.'t11|t3'";
     String[] replicatedTables = new String[] {"t1", "t111", "t2"};
     replicateAndVerify(replPolicy, tupleBootstrap.lastReplicationId, null, null, replicatedTables);
   }
@@ -263,12 +263,13 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     String[] replicatedTables = new String[] {};
     boolean failed;
     String[] invalidReplPolicies = new String[] {
-        primaryDbName + ".t1.t2", // Two explicit table names not allowed.
-        primaryDbName + ".['t1'].t2", // Table name and include list not allowed.
-        primaryDbName + ".t1.['t2']", // Table name and exclude list not allowed.
-        primaryDbName + ".[t1].t2", // Table name and include list not allowed.
-        primaryDbName + ".['t1+'].", // Abrubtly ended dot.
-        primaryDbName + "..[]" // Multiple dots
+        primaryDbName + ".t1.t2", // Didn't enclose table pattern within single quotes.
+        primaryDbName + ".'t1'.t2", // Table name and include list not allowed.
+        primaryDbName + ".t1.'t2'", // Table name and exclude list not allowed.
+        primaryDbName + ".'t1+'.", // Abrubtly ended dot.
+        primaryDbName +  ".['t1+'].['t11']", // With square brackets
+        primaryDbName + "..''", // Two dots with empty list
+        primaryDbName + ".'t1'.'tt2'.'t3'" // More than two list
     };
     for (String replPolicy : invalidReplPolicies) {
       failed = false;
@@ -302,7 +303,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     // Replace with replication policy having different DB name.
     String oldReplPolicy = replPolicy;
-    replPolicy = primaryDbName + "_dupe.['t1+'].['t1']";
+    replPolicy = primaryDbName + "_dupe.'t1+'.'t1'";
     failed = false;
     try {
       replicateAndVerify(replPolicy, oldReplPolicy, lastReplId, null, null, null, replicatedTables);
@@ -313,18 +314,23 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     }
     Assert.assertTrue(failed);
 
-    // Invalid pattern where we didn't enclose table pattern within single or double quotes.
-    replPolicy = primaryDbName + ".[t1].[t2]";
-    failed = false;
-    try {
-      replicateAndVerify(replPolicy, null, null, null, replicatedTables);
-    } catch (Exception ex) {
-      LOG.info("Got exception: {}", ex.getMessage());
-      Assert.assertTrue(ex instanceof SemanticException);
-      Assert.assertTrue(ex.getMessage().equals(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getMsg()));
-      failed = true;
+    // Invalid pattern, include/exclude table list is empty.
+    invalidReplPolicies = new String[] {
+        primaryDbName + ".''.'t2'", // Include list is empty.
+        primaryDbName + ".'t1'.''" // Exclude list is empty.
+    };
+    for (String invalidReplPolicy : invalidReplPolicies) {
+      failed = false;
+      try {
+        replicateAndVerify(invalidReplPolicy, null, null, null, replicatedTables);
+      } catch (Exception ex) {
+        LOG.info("Got exception: {}", ex.getMessage());
+        Assert.assertTrue(ex instanceof SemanticException);
+        Assert.assertTrue(ex.getMessage().equals(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getMsg()));
+        failed = true;
+      }
+      Assert.assertTrue(failed);
     }
-    Assert.assertTrue(failed);
   }
 
   @Test
@@ -334,8 +340,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     // List of repl policy formats that leads to Full DB replication.
     String[] fullDbReplPolicies = new String[] {
-        primaryDbName + ".['.*?']",
-        primaryDbName + ".['.*?'].[]"
+        primaryDbName + ".'.*?'",
+        primaryDbName
     };
 
     // Replicate and verify if all 3 tables are replicated to target.
@@ -350,13 +356,13 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     createTables(originalTables, CreateTableType.NON_ACID);
 
     // Replicate and verify if 2 tables are replicated as per policy.
-    String replPolicy = primaryDbName.toUpperCase() + ".['.*a1+', 'cc3', 'B2'].['AA1+', 'b2']";
+    String replPolicy = primaryDbName.toUpperCase() + ".'(.*a1+)|(cc3)|(B2)'.'(AA1+)|(b2)'";
     String[] replicatedTables = new String[] {"a1", "cc3"};
     String lastReplId = replicateAndVerify(replPolicy, null, null, null, replicatedTables);
 
     // Test case insensitive nature in REPLACE clause as well.
     String oldReplPolicy = replPolicy;
-    replPolicy = primaryDbName + ".['.*a1+', 'cc3', 'B2'].['AA1+']";
+    replPolicy = primaryDbName + ".'(.*a1+)|(cc3)|(B2)'.'AA1+'";
     replicatedTables = new String[] {"a1", "b2", "cc3"};
     String[] bootstrappedTables = new String[] {"b2"};
     replicateAndVerify(replPolicy, oldReplPolicy, lastReplId, null, null, bootstrappedTables, replicatedTables);
@@ -374,7 +380,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Replicate and verify if only non-acid tables are replicated to target.
     List<String> dumpWithoutAcidClause = Collections.singletonList(
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='false'");
-    String replPolicy = primaryDbName + ".['a[0-9]+', 'b1'].['a4']";
+    String replPolicy = primaryDbName + ".'(a[0-9]+)|(b1)'.'a4'";
     String[] bootstrapReplicatedTables = new String[] {"a1"};
     String lastReplId = replicateAndVerify(replPolicy, null, dumpWithoutAcidClause, null, bootstrapReplicatedTables);
 
@@ -398,7 +404,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     List<String> dumpWithClause = Collections.singletonList(
             "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'"
     );
-    String replPolicy = primaryDbName + ".['a[0-9]+', 'b2'].['a1']";
+    String replPolicy = primaryDbName + ".'(a[0-9]+)|(b2)'.'a1'";
     String[] replicatedTables = new String[] {"a2", "b2"};
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .dump(replPolicy, null, dumpWithClause);
@@ -429,7 +435,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     List<String> dumpWithClause = Collections.singletonList(
             "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
     );
-    String replPolicy = primaryDbName + ".['a[0-9]+', 'b2'].['a1']";
+    String replPolicy = primaryDbName + ".'(a[0-9]+)|(b2)'.'a1'";
     String[] bootstrapReplicatedTables = new String[] {"b2"};
     String lastReplId = replicateAndVerify(replPolicy, null,
             dumpWithClause, loadWithClause, bootstrapReplicatedTables);
@@ -465,7 +471,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     createTables(originalMMAcidTables, CreateTableType.MM_ACID);
 
     // Replicate and verify if only 2 tables are replicated to target.
-    String replPolicy = primaryDbName + ".['t1', 't4']";
+    String replPolicy = primaryDbName + ".'(t1)|(t4)'";
     String oldReplPolicy = null;
     String[] replicatedTables = new String[] {"t1", "t4"};
     String lastReplId = replicateAndVerify(replPolicy, null, null, null, replicatedTables);
@@ -473,7 +479,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Exclude t4 and include t3, t6
     createTables(new String[] {"t6"}, CreateTableType.MM_ACID);
     oldReplPolicy = replPolicy;
-    replPolicy = primaryDbName + ".['t1', 't3', 't6']";
+    replPolicy = primaryDbName + ".'t1|t3|t6'";
     replicatedTables = new String[] {"t1", "t3", "t6"};
     String[] bootstrappedTables = new String[] {"t3", "t6"};
     lastReplId = replicateAndVerify(replPolicy, oldReplPolicy, lastReplId,
@@ -489,7 +495,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     // Convert to regex that excludes t3, t4 and t5.
     oldReplPolicy = replPolicy;
-    replPolicy = primaryDbName + ".['.*?'].['t[3-5]+']";
+    replPolicy = primaryDbName + ".'.*?'.'t[3-5]+'";
     replicatedTables = new String[] {"t1", "t2", "t6"};
     bootstrappedTables = new String[] {};
     replicateAndVerify(replPolicy, oldReplPolicy, lastReplId,
@@ -508,7 +514,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Replicate and verify if only non-acid tables are replicated to target.
     List<String> dumpWithoutAcidClause = Collections.singletonList(
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='false'");
-    String replPolicy = primaryDbName + ".['a[0-9]+', 'b[0-9]+'].['b1']";
+    String replPolicy = primaryDbName + ".'(a[0-9]+)|(b[0-9]+)'.'b1'";
     String[] bootstrapReplicatedTables = new String[] {"a1"};
     String lastReplId = replicateAndVerify(replPolicy, null,
             dumpWithoutAcidClause, null, bootstrapReplicatedTables);
@@ -516,7 +522,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Enable acid tables for replication. Also, replace, replication policy to exclude "b1" and "a3"
     // instead of "a1" alone.
     String oldReplPolicy = replPolicy;
-    replPolicy = primaryDbName + ".['[a-z]+[0-9]+'].['a3', 'b1']";
+    replPolicy = primaryDbName + ".'[a-z]+[0-9]+'.'(a3)|(b1)'";
     List<String> dumpWithAcidBootstrapClause = Arrays.asList(
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES + "'='true'");
@@ -536,7 +542,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Replicate and verify if only non-acid tables are replicated to target.
     List<String> dumpWithoutAcidClause = Collections.singletonList(
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='false'");
-    String replPolicy = primaryDbName + ".['a[0-9]+', 'b[0-9]+'].['b1']";
+    String replPolicy = primaryDbName + ".'(a[0-9]+)|(b[0-9]+)'.'b1'";
     String[] bootstrapReplicatedTables = new String[] {"a1"};
     String lastReplId = replicateAndVerify(replPolicy, null,
             dumpWithoutAcidClause, null, bootstrapReplicatedTables);
@@ -545,7 +551,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // "a2" but exclude "a1" and "b1". Still ACID tables shouldn't be bootstrapped. Only non-ACID
     // table "b1" should be bootstrapped.
     String oldReplPolicy = replPolicy;
-    replPolicy = primaryDbName + ".['a[0-9]+', 'b[0-9]+'].['a2']";
+    replPolicy = primaryDbName + ".'(a[0-9]+)|(b[0-9]+)'.'a2'";
     String[] incrementalReplicatedTables = new String[] {"a1", "b1"};
     String[] bootstrappedTables = new String[] {"b1"};
     lastReplId = replicateAndVerify(replPolicy, oldReplPolicy, lastReplId,
@@ -564,7 +570,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     List<String> dumpWithClause = Collections.singletonList(
             "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
     );
-    String replPolicy = primaryDbName + ".['a[0-9]+', 'b1'].['a1']";
+    String replPolicy = primaryDbName + ".'(a[0-9]+)|(b1)'.'a1'";
     String[] bootstrapReplicatedTables = new String[] {"b1"};
     String lastReplId = replicateAndVerify(replPolicy, null,
             dumpWithClause, loadWithClause, bootstrapReplicatedTables);
@@ -572,7 +578,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Continue to disable external tables for replication. Also, replace, replication policy to exclude
     // "b1" and include "a1".
     String oldReplPolicy = replPolicy;
-    replPolicy = primaryDbName + ".['a[0-9]+', 'b[0-9]+'].['a2', 'b1']";
+    replPolicy = primaryDbName + ".'(a[0-9]+)|(b[0-9]+)'.'(a2)|(b1)'";
     String[] incrementalReplicatedTables = new String[] {"a1"};
     String[] bootstrappedTables = new String[] {"a1"};
     lastReplId = replicateAndVerify(replPolicy, oldReplPolicy, lastReplId,
@@ -581,7 +587,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Enable external tables replication and bootstrap in incremental phase. Also, replace,
     // replication policy to exclude tables with prefix "b".
     oldReplPolicy = replPolicy;
-    replPolicy = primaryDbName + ".['[a-z]+[0-9]+'].['b[0-9]+']";
+    replPolicy = primaryDbName + ".'[a-z]+[0-9]+'.'b[0-9]+'";
     incrementalReplicatedTables = new String[] {"a1", "a2", "c2"};
     bootstrappedTables = new String[] {"a2", "c2"};
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
@@ -608,7 +614,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
   @Test
   public void testRenameTableScenariosBasic() throws Throwable {
-    String replPolicy = primaryDbName + ".['in[0-9]+'].['out[0-9]+']";
+    String replPolicy = primaryDbName + ".'in[0-9]+'.'out[0-9]+'";
     String lastReplId = replicateAndVerify(replPolicy, null, null, null,
             null, new String[] {}, new String[] {});
 
@@ -662,7 +668,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
   @Test
   public void testRenameTableScenariosWithDmlOperations() throws Throwable {
-    String replPolicy = primaryDbName + ".['in[0-9]+'].['out[0-9]+']";
+    String replPolicy = primaryDbName + ".'in[0-9]+'.'out[0-9]+'";
     String lastReplId = replicateAndVerify(replPolicy, null, null, null,
             null, new String[] {}, new String[] {});
 
@@ -694,7 +700,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
   @Test
   public void testRenameTableScenariosAcidTable() throws Throwable {
-    String replPolicy = primaryDbName + ".['in[0-9]+'].['out[0-9]+']";
+    String replPolicy = primaryDbName + ".'in[0-9]+'.'out[0-9]+'";
     List<String> dumpWithClause = Arrays.asList(
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES.varname + "'='false'",
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='false'"
@@ -731,7 +737,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
   @Test
   public void testRenameTableScenariosExternalTable() throws Throwable {
-    String replPolicy = primaryDbName + ".['in[0-9]+'].['out[0-9]+']";
+    String replPolicy = primaryDbName + ".'in[0-9]+'.'out[0-9]+'";
     List<String> loadWithClause = ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);
     List<String> dumpWithClause = Arrays.asList(
             "'" +  HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'",
@@ -794,7 +800,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'"
     );
-    String replPolicy = primaryDbName + ".['in[0-9]+', 'out4', 'out5', 'out1500']";
+    String replPolicy = primaryDbName + ".'(in[0-9]+)|(out4)|(out5)|(out1500)'";
     String lastReplId = replicateAndVerify(replPolicy, null, null, dumpWithClause,
             loadWithClause, new String[] {}, new String[] {});
 
@@ -813,7 +819,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .run("alter table out11 rename to out12") // Old name not matching old and new name not matching both
             .run("alter table out12 rename to in12"); // Old name not matching old and new name matching both
 
-    String newPolicy = primaryDbName + ".['in[0-9]+', 'out1500'].['in2']";
+    String newPolicy = primaryDbName + ".'(in[0-9]+)|(out1500)|(in2)'";
     dumpWithClause = Arrays.asList(
             "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='false'"
@@ -828,7 +834,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
   @Test
   public void testRenameTableScenariosWithReplacePolicyDMLOperattion() throws Throwable {
-    String replPolicy = primaryDbName + ".['in[0-9]+', 'out5000', 'out5001'].['in100', 'in200', 'in305']";
+    String replPolicy = primaryDbName + ".'(in[0-9]+)|(out5000)|(out5001)'.'(in100)|(in200)|(in305)'";
     String lastReplId = replicateAndVerify(replPolicy, null, null, null,
             null, new String[] {}, new String[] {});
 
@@ -845,7 +851,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             null, bootstrapTables, replicatedTables);
 
     // Rename the tables to satisfy the condition also replace the policy.
-    String newPolicy = primaryDbName + ".['in[0-9]+', 'out3000'].['in2']";
+    String newPolicy = primaryDbName + ".'(in[0-9]+)|(out3000)'.'in2'";
     primary.run("use " + primaryDbName)
             .run("alter table in200 rename to in2000") // Old name not matching old, old and new matching new policy.
             .run("alter table in400 rename to out400") // Old name matching new and old policy, new matching none.

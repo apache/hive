@@ -85,48 +85,26 @@ public class DumpMetaData {
     }
 
     String[] lineContents = line.split("\t");
-    if (lineContents.length < 1) {
-      return;
-    }
-
     replScope = new ReplScope();
-
-    LOG.info("Read ReplScope: Set Db Name: {}.", lineContents[0]);
-    replScope.setDbName(lineContents[0]);
-
-    // Read/set include and exclude tables list.
-    int idx = readReplScopeTablesList(lineContents, 1, true);
-    readReplScopeTablesList(lineContents, idx, false);
-  }
-
-  private int readReplScopeTablesList(String[] lineContents, int startIdx, boolean includeList)
-          throws IOException {
-    // If the list doesn't exist, then return.
-    if (startIdx >= lineContents.length) {
-      return startIdx;
-    }
-
-    // Each tables list should start with "{" and ends with "}"
-    if (!"{".equals(lineContents[startIdx])) {
-      throw new IOException("Invalid repl tables list data in dump metadata file. Missing \"{\".");
-    }
-
-    List<String>tableNames = new ArrayList<>();
-    for (int i = (startIdx + 1); i < lineContents.length; i++) {
-      String value = lineContents[i];
-      if ("}".equals(value)) {
-        if (includeList) {
-          LOG.info("Read ReplScope: Set Include Table Names: {}.", tableNames);
-          replScope.setIncludedTablePatterns(tableNames);
-        } else {
-          LOG.info("Read ReplScope: Set Exclude Table Names: {}.", tableNames);
-          replScope.setExcludedTablePatterns(tableNames);
-        }
-        return (i + 1);
+    for (int idx = 0; idx < lineContents.length; idx++) {
+      String value = lineContents[idx];
+      switch (idx) {
+      case 0:
+        LOG.info("Read ReplScope: Set Db Name: {}.", value);
+        replScope.setDbName(value);
+        break;
+      case 1:
+        LOG.info("Read ReplScope: Include table name list: {}.", value);
+        replScope.setIncludedTablePatterns(value);
+        break;
+      case 2:
+        LOG.info("Read ReplScope: Exclude table name list: {}.", value);
+        replScope.setExcludedTablePatterns(value);
+        break;
+      default:
+        throw new IOException("Invalid repl tables list data in dump metadata file");
       }
-      tableNames.add(value);
     }
-    throw new IOException("Invalid repl tables list data in dump metadata file. Missing \"}\".");
   }
 
   private void loadDumpFromFile() throws SemanticException {
@@ -205,17 +183,13 @@ public class DumpMetaData {
     List<String> values = new ArrayList<>();
     values.add(replScope.getDbName());
 
-    List<String> includedTableNames = replScope.getIncludedTableNames();
-    List<String> excludedTableNames = replScope.getExcludedTableNames();
+    String includedTableNames = replScope.getIncludedTableNames();
+    String excludedTableNames = replScope.getExcludedTableNames();
     if (includedTableNames != null) {
-      values.add("{");
-      values.addAll(includedTableNames);
-      values.add("}");
+      values.add(includedTableNames);
     }
     if (excludedTableNames != null) {
-      values.add("{");
-      values.addAll(excludedTableNames);
-      values.add("}");
+      values.add(excludedTableNames);
     }
     LOG.info("Preparing ReplScope {} to dump.", values);
     return values;

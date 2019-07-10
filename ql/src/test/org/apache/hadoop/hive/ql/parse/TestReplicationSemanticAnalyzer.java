@@ -77,9 +77,7 @@ public class TestReplicationSemanticAnalyzer {
     ASTNode child = (ASTNode) root.getChild(1);
     assertEquals("TOK_REPL_TABLES", child.getText());
     assertEquals(1, child.getChildCount());
-    assertEquals("TOK_REPL_TABLES_LIST", child.getChild(0).getText());
-    assertEquals(1, child.getChild(0).getChildCount());
-    assertEquals("'test_table'", child.getChild(0).getChild(0).getText());
+    assertEquals("'test_table'", child.getChild(0).getText());
   }
 
   private static void assertDatabase(final int expectedNumberOfChildren, ASTNode root) {
@@ -110,14 +108,14 @@ public class TestReplicationSemanticAnalyzer {
 
     @Test
     public void parseTableName() throws ParseException {
-      ASTNode root = parse("repl dump testDb.['test_table']");
+      ASTNode root = parse("repl dump testDb.'test_table'");
       assertDatabase(2, root);
       assertTableName(root);
     }
 
     @Test
     public void parseFromEventId() throws ParseException {
-      ASTNode root = parse("repl dump testDb.['test_table'] from 100");
+      ASTNode root = parse("repl dump testDb.'test_table' from 100");
       assertDatabase(3, root);
       assertTableName(root);
       assertFromEvent(1, root);
@@ -125,7 +123,7 @@ public class TestReplicationSemanticAnalyzer {
 
     @Test
     public void parseToEventId() throws ParseException {
-      ASTNode root = parse("repl dump testDb.['test_table'] from 100 to 200");
+      ASTNode root = parse("repl dump testDb.'test_table' from 100 to 200");
       assertDatabase(3, root);
       assertTableName(root);
       ASTNode fromClauseRootNode = assertFromEvent(3, root);
@@ -134,7 +132,7 @@ public class TestReplicationSemanticAnalyzer {
 
     @Test
     public void parseLimit() throws ParseException {
-      ASTNode root = parse("repl dump testDb.['test_table'] from 100 to 200 limit 10");
+      ASTNode root = parse("repl dump testDb.'test_table' from 100 to 200 limit 10");
       assertDatabase(3, root);
       assertTableName(root);
       ASTNode fromClauseRootNode = assertFromEvent(5, root);
@@ -162,7 +160,7 @@ public class TestReplicationSemanticAnalyzer {
     @Test
     public void parseTableName() throws ParseException {
       ASTNode root =
-          parse("repl dump testDb.['test_table'] with ('key.1'='value.1','key.2'='value.2')");
+          parse("repl dump testDb.'test_table' with ('key.1'='value.1','key.2'='value.2')");
       assertDatabase(3, root);
       assertTableName(root);
       assertWithClause(root, 2);
@@ -170,7 +168,7 @@ public class TestReplicationSemanticAnalyzer {
 
     @Test
     public void parseFromEventId() throws ParseException {
-      ASTNode root = parse("repl dump testDb.['test_table'] from 100 "
+      ASTNode root = parse("repl dump testDb.'test_table' from 100 "
           + "with ('key.1'='value.1','key.2'='value.2')");
       assertDatabase(4, root);
       assertTableName(root);
@@ -180,7 +178,7 @@ public class TestReplicationSemanticAnalyzer {
 
     @Test
     public void parseToEventId() throws ParseException {
-      ASTNode root = parse("repl dump testDb.['test_table'] from 100 to 200 "
+      ASTNode root = parse("repl dump testDb.'test_table' from 100 to 200 "
           + "with ('key.1'='value.1','key.2'='value.2')");
       assertDatabase(4, root);
       assertTableName(root);
@@ -191,7 +189,7 @@ public class TestReplicationSemanticAnalyzer {
 
     @Test
     public void parseLimit() throws ParseException {
-      ASTNode root = parse("repl dump testDb.['test_table'] from 100 to 200 limit 10 "
+      ASTNode root = parse("repl dump testDb.'test_table' from 100 to 200 limit 10 "
           + "with ('key.1'='value.1','key.2'='value.2')");
       assertDatabase(4, root);
       assertTableName(root);
