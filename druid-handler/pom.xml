@@ -29,7 +29,7 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <druid.guava.version>16.0.1</druid.guava.version>
+    <druid.guava.version>28.1-jre</druid.guava.version>
   </properties>
 
   <dependencies>

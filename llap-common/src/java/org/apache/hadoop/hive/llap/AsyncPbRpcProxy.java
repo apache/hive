@@ -171,7 +171,7 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
           CallableRequest<T, U> request, LlapNodeId nodeId) {
         ListenableFuture<U> future = executor.submit(request);
         Futures.addCallback(future, new ResponseCallback<U>(
-            request.getCallback(), nodeId, this));
+            request.getCallback(), nodeId, this), MoreExecutors.directExecutor());
       }
 
       @VisibleForTesting
@@ -283,7 +283,7 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
           LOG.warn("RequestManager shutdown with error", t);
         }
       }
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   @Override
