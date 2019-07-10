@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
 import java.beans.Expression;
@@ -218,6 +219,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 @SuppressWarnings({ "nls", "deprecation" })
 public final class Utilities {
+
+  /**
+   * Mapper to use to serialize/deserialize JSON objects ().
+   */
+  public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
   /**
    * A logger mostly used to trace-log the details of Hive table file operations. Filtering the
    * logs for FileOperations (with trace logs present) allows one to debug what Hive has done with
@@ -404,7 +411,7 @@ public final class Utilities {
   /**
    * Pushes work into the global work map
    */
-  public static void setBaseWork(Configuration conf, String name, BaseWork work) {
+  private static void setBaseWork(Configuration conf, String name, BaseWork work) {
     Path path = getPlanPath(conf, name);
     setHasWork(conf, name);
     gWorkMap.get(conf).put(path, work);
@@ -753,14 +760,6 @@ public final class Utilities {
     }
   }
 
-  public static HashMap makeMap(Object... olist) {
-    HashMap ret = new HashMap();
-    for (int i = 0; i < olist.length; i += 2) {
-      ret.put(olist[i], olist[i + 1]);
-    }
-    return (ret);
-  }
-
   public static Properties makeProperties(String... olist) {
     Properties ret = new Properties();
     for (int i = 0; i < olist.length; i += 2) {
@@ -799,35 +798,9 @@ public final class Utilities {
     return new PartitionDesc(part, tableDesc);
   }
 
-  public static PartitionDesc getPartitionDesc(Partition part) throws HiveException {
-    return new PartitionDesc(part);
-  }
-
   public static PartitionDesc getPartitionDescFromTableDesc(TableDesc tblDesc, Partition part,
     boolean usePartSchemaProperties) throws HiveException {
     return new PartitionDesc(part, tblDesc, usePartSchemaProperties);
-  }
-
-  private static String getOpTreeSkel_helper(Operator<?> op, String indent) {
-    if (op == null) {
-      return StringUtils.EMPTY;
-    }
-
-    StringBuilder sb = new StringBuilder();
-    sb.append(indent);
-    sb.append(op.toString());
-    sb.append("\n");
-    if (op.getChildOperators() != null) {
-      for (Object child : op.getChildOperators()) {
-        sb.append(getOpTreeSkel_helper((Operator<?>) child, indent + "  "));
-      }
-    }
-
-    return sb.toString();
-  }
-
-  public static String getOpTreeSkel(Operator<?> op) {
-    return getOpTreeSkel_helper(op, StringUtils.EMPTY);
   }
 
   private static boolean isWhitespace(int c) {
@@ -926,22 +899,6 @@ public final class Utilities {
   }
 
   /**
-   * Convert an output stream to a compressed output stream based on codecs and compression options
-   * specified in the Job Configuration.
-   *
-   * @param jc
-   *          Job Configuration
-   * @param out
-   *          Output Stream to be converted into compressed output stream
-   * @return compressed output stream
-   */
-  public static OutputStream createCompressedStream(JobConf jc, OutputStream out)
-      throws IOException {
-    boolean isCompressed = FileOutputFormat.getCompressOutput(jc);
-    return createCompressedStream(jc, out, isCompressed);
-  }
-
-  /**
    * Convert an output stream to a compressed output stream based on codecs codecs in the Job
    * Configuration. Caller specifies directly whether file is compressed or not
    *
@@ -963,22 +920,6 @@ public final class Utilities {
     } else {
       return (out);
     }
-  }
-
-  /**
-   * Based on compression option and configured output codec - get extension for output file. This
-   * is only required for text files - not sequencefiles
-   *
-   * @param jc
-   *          Job Configuration
-   * @param isCompressed
-   *          Whether the output file is compressed or not
-   * @return the required file extension (example: .gz)
-   * @deprecated Use {@link #getFileExtension(JobConf, boolean, HiveOutputFormat)}
-   */
-  @Deprecated
-  public static String getFileExtension(JobConf jc, boolean isCompressed) {
-    return getFileExtension(jc, isCompressed, new HiveIgnoreKeyTextOutputFormat());
   }
 
   /**
@@ -1014,27 +955,6 @@ public final class Utilities {
   }
 
   /**
-   * Create a sequencefile output stream based on job configuration.
-   *
-   * @param jc
-   *          Job configuration
-   * @param fs
-   *          File System to create file in
-   * @param file
-   *          Path to be created
-   * @param keyClass
-   *          Java Class for key
-   * @param valClass
-   *          Java Class for value
-   * @return output stream over the created sequencefile
-   */
-  public static SequenceFile.Writer createSequenceWriter(JobConf jc, FileSystem fs, Path file,
-      Class<?> keyClass, Class<?> valClass, Progressable progressable) throws IOException {
-    boolean isCompressed = FileOutputFormat.getCompressOutput(jc);
-    return createSequenceWriter(jc, fs, file, keyClass, valClass, isCompressed, progressable);
-  }
-
-  /**
    * Create a sequencefile output stream based on job configuration Uses user supplied compression
    * flag (rather than obtaining it from the Job Configuration).
    *
@@ -1055,11 +975,11 @@ public final class Utilities {
       throws IOException {
     CompressionCodec codec = null;
     CompressionType compressionType = CompressionType.NONE;
-    Class codecClass = null;
+    Class<? extends CompressionCodec> codecClass = null;
     if (isCompressed) {
       compressionType = SequenceFileOutputFormat.getOutputCompressionType(jc);
       codecClass = FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
-      codec = (CompressionCodec) ReflectionUtil.newInstance(codecClass, jc);
+      codec = ReflectionUtil.newInstance(codecClass, jc);
     }
     return SequenceFile.createWriter(fs, jc, file, keyClass, valClass, compressionType, codec,
       progressable);
@@ -1156,7 +1076,7 @@ public final class Utilities {
   /**
    * Detect if the supplied file is a temporary path.
    */
-  public static boolean isTempPath(FileStatus file) {
+  private static boolean isTempPath(FileStatus file) {
     String name = file.getPath().getName();
     // in addition to detecting hive temporary files, we also check hadoop
     // temporary folders that used to show up in older releases
@@ -1178,46 +1098,6 @@ public final class Utilities {
   public static void rename(FileSystem fs, Path src, Path dst) throws IOException, HiveException {
     if (!fs.rename(src, dst)) {
       throw new HiveException("Unable to move: " + src + " to: " + dst);
-    }
-  }
-
-  /**
-   * Moves files from src to dst if it is within the specified set of paths
-   * @param fs
-   * @param src
-   * @param dst
-   * @param filesToMove
-   * @throws IOException
-   * @throws HiveException
-   */
-  private static void moveSpecifiedFiles(FileSystem fs, Path src, Path dst, Set<Path> filesToMove)
-      throws IOException, HiveException {
-    if (!fs.exists(dst)) {
-      fs.mkdirs(dst);
-    }
-
-    FileStatus[] files = fs.listStatus(src);
-    for (FileStatus file : files) {
-      if (filesToMove.contains(file.getPath())) {
-        Utilities.moveFile(fs, file, dst);
-      } else if (file.isDir()) {
-        // Traverse directory contents.
-        // Directory nesting for dst needs to match src.
-        Path nestedDstPath = new Path(dst, file.getPath().getName());
-        Utilities.moveSpecifiedFiles(fs, file.getPath(), nestedDstPath, filesToMove);
-      }
-    }
-  }
-
-  public static void moveSpecifiedFiles(FileSystem fs, Path dst, Set<Path> filesToMove)
-      throws IOException, HiveException {
-    if (!fs.exists(dst)) {
-      fs.mkdirs(dst);
-    }
-
-    for (Path path: filesToMove) {
-      FileStatus fsStatus = fs.getFileStatus(path);
-      Utilities.moveFile(fs, fsStatus, dst);
     }
   }
 
@@ -1333,7 +1213,7 @@ public final class Utilities {
    * @param filename
    *          filename to extract taskid from
    */
-  public static String getPrefixedTaskIdFromFilename(String filename) {
+  private static String getPrefixedTaskIdFromFilename(String filename) {
     return getTaskIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX);
   }
 
@@ -1341,7 +1221,7 @@ public final class Utilities {
     return getIdFromFilename(filename, pattern, 1);
   }
 
-  public static int getAttemptIdFromFilename(String filename) {
+  private static int getAttemptIdFromFilename(String filename) {
     String attemptStr = getIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX, 3);
     return Integer.parseInt(attemptStr.substring(1));
   }
@@ -1362,14 +1242,6 @@ public final class Utilities {
     }
     LOG.debug("TaskId for {} = {}", filename, taskId);
     return taskId;
-  }
-
-  public static String getFileNameFromDirName(String dirName) {
-    int dirEnd = dirName.lastIndexOf(Path.SEPARATOR);
-    if (dirEnd != -1) {
-      return dirName.substring(dirEnd + 1);
-    }
-    return dirName;
   }
 
   /**
@@ -1481,7 +1353,7 @@ public final class Utilities {
   }
 
 
-  public static boolean shouldAvoidRename(FileSinkDesc conf, Configuration hConf) {
+  private static boolean shouldAvoidRename(FileSinkDesc conf, Configuration hConf) {
     // we are avoiding rename/move only if following conditions are met
     //  * execution engine is tez
     //  * query cache is disabled
@@ -1647,7 +1519,7 @@ public final class Utilities {
     return removeTempOrDuplicateFiles(fs, stats, dpCtx, conf, hconf, isBaseDir);
   }
 
-  public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
+  private static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
       DynamicPartitionCtx dpCtx, FileSinkDesc conf, Configuration hconf, boolean isBaseDir) throws IOException {
     return removeTempOrDuplicateFiles(fs, fileStats, dpCtx, conf, hconf, null, isBaseDir);
   }
@@ -1657,7 +1529,7 @@ public final class Utilities {
    *
    * @return a list of path names corresponding to should-be-created empty buckets.
    */
-  public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
+  private static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
       DynamicPartitionCtx dpCtx, FileSinkDesc conf, Configuration hconf, Set<FileStatus> filesKept, boolean isBaseDir)
           throws IOException {
     int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
@@ -2512,7 +2384,7 @@ public final class Utilities {
         final Configuration myConf = conf;
         final JobConf myJobConf = jobConf;
         final Map<String, Operator<?>> aliasToWork = work.getAliasToWork();
-        final Map<Path, ArrayList<String>> pathToAlias = work.getPathToAliases();
+        final Map<Path, List<String>> pathToAlias = work.getPathToAliases();
         final PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
         Runnable r = new Runnable() {
           @Override
@@ -2711,7 +2583,6 @@ public final class Utilities {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private static <T> List<T> getTasks(List<Task<? extends Serializable>> tasks,
       TaskFilterFunction<T> function) {
     DAGTraversal.traverse(tasks, function);
@@ -3348,8 +3219,7 @@ public final class Utilities {
       LOG.info("Processing alias {}", alias);
 
       // The alias may not have any path
-      Collection<Map.Entry<Path, ArrayList<String>>> pathToAliases =
-          work.getPathToAliases().entrySet();
+      Collection<Map.Entry<Path, List<String>>> pathToAliases = work.getPathToAliases().entrySet();
       if (!skipDummy) {
         // ConcurrentModification otherwise if adding dummy.
         pathToAliases = new ArrayList<>(pathToAliases);
@@ -3357,7 +3227,7 @@ public final class Utilities {
       boolean isEmptyTable = true;
       boolean hasLogged = false;
 
-      for (Map.Entry<Path, ArrayList<String>> e : pathToAliases) {
+      for (Map.Entry<Path, List<String>> e : pathToAliases) {
         if (lDrvStat != null && lDrvStat.isAborted()) {
           throw new IOException("Operation is Canceled.");
         }
@@ -3576,8 +3446,8 @@ public final class Utilities {
 
     // update the work
 
-    LinkedHashMap<Path, ArrayList<String>> pathToAliases = work.getPathToAliases();
-    ArrayList<String> newList = new ArrayList<String>(1);
+    Map<Path, List<String>> pathToAliases = work.getPathToAliases();
+    List<String> newList = new ArrayList<String>(1);
     newList.add(alias);
     pathToAliases.put(newPath, newList);
 
@@ -3639,7 +3509,7 @@ public final class Utilities {
   public static void createTmpDirs(Configuration conf, MapWork mWork)
       throws IOException {
 
-    Map<Path, ArrayList<String>> pa = mWork.getPathToAliases();
+    Map<Path, List<String>> pa = mWork.getPathToAliases();
     if (MapUtils.isNotEmpty(pa)) {
       // common case: 1 table scan per map-work
       // rare case: smb joins
@@ -3666,7 +3536,6 @@ public final class Utilities {
    * @param rWork Used to find FileSinkOperators
    * @throws IOException
    */
-  @SuppressWarnings("unchecked")
   public static void createTmpDirs(Configuration conf, ReduceWork rWork)
       throws IOException {
     if (rWork == null) {
@@ -4585,6 +4454,22 @@ public final class Utilities {
     } else {
       logger.info("{} class path = unavailable for {}", prefix,
           loader == null ? "null" : loader.getClass().getSimpleName());
+    }
+  }
+
+  public static String encodeColumnNames(List<String> colNames) throws SemanticException {
+    try {
+      return JSON_MAPPER.writeValueAsString(colNames);
+    } catch (IOException e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static List<String> decodeColumnNames(String colNamesStr) throws SemanticException {
+    try {
+      return JSON_MAPPER.readValue(colNamesStr, List.class);
+    } catch (IOException e) {
+      throw new SemanticException(e);
     }
   }
 }

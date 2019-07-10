@@ -24,7 +24,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -284,13 +286,12 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         }
       }
     }
-    this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors,
+    this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors, waitQueueSize,
         Ints.toArray(intervalList), timedWindowAverageDataPoints, timedWindowAverageWindowLength,
         simpleAverageWindowDataSize);
     this.metrics.setMemoryPerInstance(executorMemoryPerInstance);
     this.metrics.setCacheMemoryPerInstance(ioMemoryBytes);
     this.metrics.setJvmMaxMemory(maxJvmMemory);
-    this.metrics.setWaitQueueSize(waitQueueSize);
     this.metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
     this.llapDaemonInfoBean = MBeans.register("LlapDaemon", "LlapDaemonInfo", this);
     LOG.info("Started LlapMetricsSystem with displayName: " + displayName +
@@ -641,7 +642,14 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   @Override
   public SetCapacityResponseProto setCapacity(
-      SetCapacityRequestProto request) {
+      SetCapacityRequestProto request) throws IOException {
+
+    Map<String, String> capacityValues = new HashMap<>(2);
+    capacityValues.put(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS,
+            Integer.toString(request.getExecutorNum()));
+    capacityValues.put(LlapRegistryService.LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE,
+            Integer.toString(request.getQueueSize()));
+    registry.updateRegistration(capacityValues.entrySet());
     return containerRunner.setCapacity(request);
   }
 

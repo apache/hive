@@ -275,6 +275,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+            Execution mode: vectorized
         Map 13 
             Map Operator Tree:
                 TableScan
@@ -333,6 +334,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+            Execution mode: vectorized
         Map 19 
             Map Operator Tree:
                 TableScan
@@ -391,6 +393,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+            Execution mode: vectorized
         Map 25 
             Map Operator Tree:
                 TableScan
@@ -449,6 +452,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+            Execution mode: vectorized
         Map 31 
             Map Operator Tree:
                 TableScan
@@ -507,6 +511,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+            Execution mode: vectorized
         Map 37 
             Map Operator Tree:
                 TableScan
@@ -604,6 +609,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+            Execution mode: vectorized
         Reducer 10 
             Reduce Operator Tree:
               Join Operator

@@ -76,28 +76,28 @@ Stage-0
       File Output Operator [FS_165]
         Limit [LIM_164] (rows=100 width=100)
           Number of rows:100
-          Select Operator [SEL_163] (rows=816091 width=100)
+          Select Operator [SEL_163] (rows=663970 width=100)
             Output:["_col0"]
           <-Reducer 4 [SIMPLE_EDGE]
             SHUFFLE [RS_52]
-              Select Operator [SEL_51] (rows=816091 width=100)
+              Select Operator [SEL_51] (rows=663970 width=100)
                 Output:["_col0"]
-                Filter Operator [FIL_50] (rows=816091 width=324)
+                Filter Operator [FIL_50] (rows=663970 width=324)
                   predicate:(_col3 > _col6)
-                  Merge Join Operator [MERGEJOIN_136] (rows=2448274 width=324)
+                  Merge Join Operator [MERGEJOIN_136] (rows=1991910 width=324)
                     Conds:RS_47._col2=RS_162._col1(Inner),Output:["_col3","_col5","_col6"]
                   <-Reducer 10 [SIMPLE_EDGE] vectorized
                     SHUFFLE [RS_162]
                       PartitionCols:_col1
-                      Select Operator [SEL_161] (rows=31 width=115)
+                      Select Operator [SEL_161] (rows=29 width=115)
                         Output:["_col0","_col1"]
-                        Filter Operator [FIL_160] (rows=31 width=123)
+                        Filter Operator [FIL_160] (rows=29 width=123)
                           predicate:(_col1 is not null and _col2 is not null)
-                          Group By Operator [GBY_159] (rows=31 width=123)
+                          Group By Operator [GBY_159] (rows=29 width=123)
                             Output:["_col0","_col1","_col2"],aggregations:["sum(_col2)","count(_col2)"],keys:_col1
-                            Select Operator [SEL_158] (rows=14291868 width=119)
+                            Select Operator [SEL_158] (rows=13369812 width=119)
                               Output:["_col1","_col2"]
-                              Group By Operator [GBY_157] (rows=14291868 width=119)
+                              Group By Operator [GBY_157] (rows=13369812 width=119)
                                 Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1
                               <-Reducer 9 [SIMPLE_EDGE]
                                 SHUFFLE [RS_32]
@@ -127,7 +127,7 @@ Stage-0
                   <-Reducer 3 [SIMPLE_EDGE]
                     SHUFFLE [RS_47]
                       PartitionCols:_col2
-                      Merge Join Operator [MERGEJOIN_134] (rows=2369298 width=213)
+                      Merge Join Operator [MERGEJOIN_134] (rows=1923224 width=213)
                         Conds:RS_44._col1=RS_156._col0(Inner),Output:["_col2","_col3","_col5"]
                       <-Map 12 [SIMPLE_EDGE] vectorized
                         SHUFFLE [RS_156]
@@ -141,7 +141,7 @@ Stage-0
                       <-Reducer 2 [SIMPLE_EDGE]
                         SHUFFLE [RS_44]
                           PartitionCols:_col1
-                          Merge Join Operator [MERGEJOIN_133] (rows=2369298 width=114)
+                          Merge Join Operator [MERGEJOIN_133] (rows=1923224 width=114)
                             Conds:RS_139._col0=RS_153._col1(Inner),Output:["_col1","_col2","_col3"]
                           <-Map 1 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_139]
@@ -155,11 +155,11 @@ Stage-0
                           <-Reducer 8 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_153]
                               PartitionCols:_col1
-                              Select Operator [SEL_152] (rows=14291868 width=119)
+                              Select Operator [SEL_152] (rows=11601100 width=119)
                                 Output:["_col0","_col1","_col2"]
-                                Filter Operator [FIL_151] (rows=14291868 width=119)
+                                Filter Operator [FIL_151] (rows=11601100 width=119)
                                   predicate:_col2 is not null
-                                  Group By Operator [GBY_150] (rows=14291868 width=119)
+                                  Group By Operator [GBY_150] (rows=11601100 width=119)
                                     Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1
                                   <-Reducer 7 [SIMPLE_EDGE]
                                     SHUFFLE [RS_14]

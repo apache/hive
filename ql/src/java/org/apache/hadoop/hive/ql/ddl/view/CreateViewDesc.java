@@ -23,8 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -70,6 +72,10 @@ public class CreateViewDesc implements DDLDesc, Serializable {
   private String storageHandler; // only used for materialized views
   private Map<String, String> serdeProps; // only used for materialized views
   private Set<String> tablesUsed;  // only used for materialized views
+  private List<String> sortColNames;  // only used for materialized views
+  private List<FieldSchema> sortCols;  // only used for materialized views
+  private List<String> distributeColNames;  // only used for materialized views
+  private List<FieldSchema> distributeCols;  // only used for materialized views
   private ReplicationSpec replicationSpec = null;
   private String ownerName = null;
 
@@ -77,14 +83,17 @@ public class CreateViewDesc implements DDLDesc, Serializable {
    * Used to create a materialized view descriptor.
    */
   public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment, Map<String, String> tblProps,
-      List<String> partColNames, boolean ifNotExists, boolean orReplace, boolean rewriteEnabled, boolean isAlterViewAs,
-          String inputFormat, String outputFormat, String location,
-          String serde, String storageHandler, Map<String, String> serdeProps) {
+      List<String> partColNames, List<String> sortColNames, List<String> distributeColNames,
+      boolean ifNotExists, boolean orReplace, boolean rewriteEnabled, boolean isAlterViewAs,
+      String inputFormat, String outputFormat, String location,
+      String serde, String storageHandler, Map<String, String> serdeProps) {
     this.viewName = viewName;
     this.schema = schema;
     this.comment = comment;
     this.tblProps = tblProps;
     this.partColNames = partColNames;
+    this.sortColNames = sortColNames;
+    this.distributeColNames = distributeColNames;
     this.ifNotExists = ifNotExists;
     this.orReplace = orReplace;
 
@@ -104,8 +113,7 @@ public class CreateViewDesc implements DDLDesc, Serializable {
    */
   public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment, Map<String, String> tblProps,
       List<String> partColNames, boolean ifNotExists, boolean orReplace,
-      boolean isAlterViewAs,
-                        String inputFormat, String outputFormat, String serde) {
+      boolean isAlterViewAs, String inputFormat, String outputFormat, String serde) {
     this.viewName = viewName;
     this.schema = schema;
     this.comment = comment;
@@ -190,6 +198,53 @@ public class CreateViewDesc implements DDLDesc, Serializable {
 
   public void setPartColNames(List<String> partColNames) {
     this.partColNames = partColNames;
+  }
+
+  public boolean isOrganized() {
+    return (sortColNames != null && !sortColNames.isEmpty()) ||
+        (distributeColNames != null && !distributeColNames.isEmpty());
+  }
+
+  @Explain(displayName = "sort columns")
+  public List<String> getSortColsString() {
+    return Utilities.getFieldSchemaString(sortCols);
+  }
+
+  public List<FieldSchema> getSortCols() {
+    return sortCols;
+  }
+
+  public void setSortCols(List<FieldSchema> sortCols) {
+    this.sortCols = sortCols;
+  }
+
+  public List<String> getSortColNames() {
+    return sortColNames;
+  }
+
+  public void setSortColNames(List<String> sortColNames) {
+    this.sortColNames = sortColNames;
+  }
+
+  @Explain(displayName = "distribute columns")
+  public List<String> getDistributeColsString() {
+    return Utilities.getFieldSchemaString(distributeCols);
+  }
+
+  public List<FieldSchema> getDistributeCols() {
+    return distributeCols;
+  }
+
+  public void setDistributeCols(List<FieldSchema> distributeCols) {
+    this.distributeCols = distributeCols;
+  }
+
+  public List<String> getDistributeColNames() {
+    return distributeColNames;
+  }
+
+  public void setDistributeColNames(List<String> distributeColNames) {
+    this.distributeColNames = distributeColNames;
   }
 
   @Explain(displayName = "comment")
@@ -322,12 +377,22 @@ public class CreateViewDesc implements DDLDesc, Serializable {
     if (getComment() != null) {
       tbl.setProperty("comment", getComment());
     }
-    if (getTblProps() != null) {
-      tbl.getTTable().getParameters().putAll(getTblProps());
+
+    if (tblProps != null) {
+      tbl.getParameters().putAll(tblProps);
     }
 
-    if (getPartCols() != null) {
-      tbl.setPartCols(getPartCols());
+    if (!CollectionUtils.isEmpty(partCols)) {
+      tbl.setPartCols(partCols);
+    }
+
+    if (!CollectionUtils.isEmpty(sortColNames)) {
+      tbl.setProperty(Constants.MATERIALIZED_VIEW_SORT_COLUMNS,
+          Utilities.encodeColumnNames(sortColNames));
+    }
+    if (!CollectionUtils.isEmpty(distributeColNames)) {
+      tbl.setProperty(Constants.MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS,
+          Utilities.encodeColumnNames(distributeColNames));
     }
 
     if (getInputFormat() != null) {
@@ -400,4 +465,5 @@ public class CreateViewDesc implements DDLDesc, Serializable {
   public String getOwnerName() {
     return this.ownerName;
   }
+
 }

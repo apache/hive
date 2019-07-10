@@ -387,9 +387,9 @@ Stage-0
                                             <-Reducer 33 [SIMPLE_EDGE]
                                               SHUFFLE [RS_239]
                                                 PartitionCols:_col0
-                                                Group By Operator [GBY_237] (rows=362 width=4)
+                                                Group By Operator [GBY_237] (rows=364 width=4)
                                                   Output:["_col0"],keys:_col0
-                                                  Merge Join Operator [MERGEJOIN_1151] (rows=724 width=4)
+                                                  Merge Join Operator [MERGEJOIN_1151] (rows=729 width=4)
                                                     Conds:RS_1327._col1, _col2, _col3=RS_1355._col0, _col1, _col2(Inner),Output:["_col0"]
                                                   <-Map 24 [SIMPLE_EDGE] vectorized
                                                     SHUFFLE [RS_1327]
@@ -406,20 +406,20 @@ Stage-0
                                                         Output:["_col0","_col1","_col2"]
                                                         Filter Operator [FIL_1353] (rows=1 width=20)
                                                           predicate:(_col3 = 3L)
-                                                          Group By Operator [GBY_1352] (rows=121728 width=19)
+                                                          Group By Operator [GBY_1352] (rows=120960 width=19)
                                                             Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                           <-Union 31 [SIMPLE_EDGE]
                                                             <-Reducer 30 [CONTAINS] vectorized
                                                               Reduce Output Operator [RS_1409]
                                                                 PartitionCols:_col0, _col1, _col2
-                                                                Group By Operator [GBY_1408] (rows=121728 width=19)
+                                                                Group By Operator [GBY_1408] (rows=120960 width=19)
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
-                                                                  Group By Operator [GBY_1407] (rows=121728 width=19)
+                                                                  Group By Operator [GBY_1407] (rows=120960 width=19)
                                                                     Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                   <-Reducer 26 [SIMPLE_EDGE]
                                                                     SHUFFLE [RS_175]
                                                                       PartitionCols:_col0, _col1, _col2
-                                                                      Group By Operator [GBY_28] (rows=121728 width=19)
+                                                                      Group By Operator [GBY_28] (rows=120960 width=19)
                                                                         Output:["_col0","_col1","_col2","_col3"],aggregations:["count()"],keys:_col4, _col5, _col6
                                                                         Merge Join Operator [MERGEJOIN_1134] (rows=14628613 width=11)
                                                                           Conds:RS_24._col1=RS_1323._col0(Inner),Output:["_col4","_col5","_col6"]
@@ -468,14 +468,14 @@ Stage-0
                                                             <-Reducer 40 [CONTAINS] vectorized
                                                               Reduce Output Operator [RS_1423]
                                                                 PartitionCols:_col0, _col1, _col2
-                                                                Group By Operator [GBY_1422] (rows=121728 width=19)
+                                                                Group By Operator [GBY_1422] (rows=120960 width=19)
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
-                                                                  Group By Operator [GBY_1421] (rows=121728 width=19)
+                                                                  Group By Operator [GBY_1421] (rows=120960 width=19)
                                                                     Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                   <-Reducer 38 [SIMPLE_EDGE]
                                                                     SHUFFLE [RS_195]
                                                                       PartitionCols:_col0, _col1, _col2
-                                                                      Group By Operator [GBY_48] (rows=121728 width=19)
+                                                                      Group By Operator [GBY_48] (rows=120960 width=19)
                                                                         Output:["_col0","_col1","_col2","_col3"],aggregations:["count()"],keys:_col4, _col5, _col6
                                                                         Merge Join Operator [MERGEJOIN_1136] (rows=7620440 width=11)
                                                                           Conds:RS_44._col1=RS_1324._col0(Inner),Output:["_col4","_col5","_col6"]
@@ -519,14 +519,14 @@ Stage-0
                                                             <-Reducer 44 [CONTAINS] vectorized
                                                               Reduce Output Operator [RS_1437]
                                                                 PartitionCols:_col0, _col1, _col2
-                                                                Group By Operator [GBY_1436] (rows=121728 width=19)
+                                                                Group By Operator [GBY_1436] (rows=120960 width=19)
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
-                                                                  Group By Operator [GBY_1435] (rows=121728 width=19)
+                                                                  Group By Operator [GBY_1435] (rows=120960 width=19)
                                                                     Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                   <-Reducer 42 [SIMPLE_EDGE]
                                                                     SHUFFLE [RS_216]
                                                                       PartitionCols:_col0, _col1, _col2
-                                                                      Group By Operator [GBY_69] (rows=121728 width=19)
+                                                                      Group By Operator [GBY_69] (rows=120960 width=19)
                                                                         Output:["_col0","_col1","_col2","_col3"],aggregations:["count()"],keys:_col4, _col5, _col6
                                                                         Merge Join Operator [MERGEJOIN_1138] (rows=3828623 width=11)
                                                                           Conds:RS_65._col1=RS_1325._col0(Inner),Output:["_col4","_col5","_col6"]
@@ -761,9 +761,9 @@ Stage-0
                                             <-Reducer 37 [SIMPLE_EDGE]
                                               SHUFFLE [RS_386]
                                                 PartitionCols:_col0
-                                                Group By Operator [GBY_384] (rows=362 width=4)
+                                                Group By Operator [GBY_384] (rows=364 width=4)
                                                   Output:["_col0"],keys:_col0
-                                                  Merge Join Operator [MERGEJOIN_1163] (rows=724 width=4)
+                                                  Merge Join Operator [MERGEJOIN_1163] (rows=729 width=4)
                                                     Conds:RS_1329._col1, _col2, _col3=RS_1371._col0, _col1, _col2(Inner),Output:["_col0"]
                                                   <-Map 24 [SIMPLE_EDGE] vectorized
                                                     SHUFFLE [RS_1329]
@@ -780,15 +780,15 @@ Stage-0
                                                         Output:["_col0","_col1","_col2"]
                                                         Filter Operator [FIL_1369] (rows=1 width=20)
                                                           predicate:(_col3 = 3L)
-                                                          Group By Operator [GBY_1368] (rows=121728 width=19)
+                                                          Group By Operator [GBY_1368] (rows=120960 width=19)
                                                             Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                           <-Union 35 [SIMPLE_EDGE]
                                                             <-Reducer 34 [CONTAINS] vectorized
                                                               Reduce Output Operator [RS_1412]
                                                                 PartitionCols:_col0, _col1, _col2
-                                                                Group By Operator [GBY_1411] (rows=121728 width=19)
+                                                                Group By Operator [GBY_1411] (rows=120960 width=19)
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
-                                                                  Group By Operator [GBY_1410] (rows=121728 width=19)
+                                                                  Group By Operator [GBY_1410] (rows=120960 width=19)
                                                                     Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                   <-Reducer 26 [SIMPLE_EDGE]
                                                                     SHUFFLE [RS_322]
@@ -797,9 +797,9 @@ Stage-0
                                                             <-Reducer 41 [CONTAINS] vectorized
                                                               Reduce Output Operator [RS_1426]
                                                                 PartitionCols:_col0, _col1, _col2
-                                                                Group By Operator [GBY_1425] (rows=121728 width=19)
+                                                                Group By Operator [GBY_1425] (rows=120960 width=19)
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
-                                                                  Group By Operator [GBY_1424] (rows=121728 width=19)
+                                                                  Group By Operator [GBY_1424] (rows=120960 width=19)
                                                                     Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                   <-Reducer 38 [SIMPLE_EDGE]
                                                                     SHUFFLE [RS_342]
@@ -808,9 +808,9 @@ Stage-0
                                                             <-Reducer 45 [CONTAINS] vectorized
                                                               Reduce Output Operator [RS_1440]
                                                                 PartitionCols:_col0, _col1, _col2
-                                                                Group By Operator [GBY_1439] (rows=121728 width=19)
+                                                                Group By Operator [GBY_1439] (rows=120960 width=19)
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
-                                                                  Group By Operator [GBY_1438] (rows=121728 width=19)
+                                                                  Group By Operator [GBY_1438] (rows=120960 width=19)
                                                                     Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                   <-Reducer 42 [SIMPLE_EDGE]
                                                                     SHUFFLE [RS_363]
@@ -910,9 +910,9 @@ Stage-0
                                             <-Reducer 25 [SIMPLE_EDGE]
                                               SHUFFLE [RS_93]
                                                 PartitionCols:_col0
-                                                Group By Operator [GBY_91] (rows=362 width=4)
+                                                Group By Operator [GBY_91] (rows=364 width=4)
                                                   Output:["_col0"],keys:_col0
-                                                  Merge Join Operator [MERGEJOIN_1139] (rows=724 width=4)
+                                                  Merge Join Operator [MERGEJOIN_1139] (rows=729 width=4)
                                                     Conds:RS_1322._col1, _col2, _col3=RS_1333._col0, _col1, _col2(Inner),Output:["_col0"]
                                                   <-Map 24 [SIMPLE_EDGE] vectorized
                                                     SHUFFLE [RS_1322]
@@ -929,15 +929,15 @@ Stage-0
                                                         Output:["_col0","_col1","_col2"]
                                                         Filter Operator [FIL_1331] (rows=1 width=20)
                                                           predicate:(_col3 = 3L)
-                                                          Group By Operator [GBY_1330] (rows=121728 width=19)
+                                                          Group By Operator [GBY_1330] (rows=120960 width=19)
                                                             Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                           <-Union 28 [SIMPLE_EDGE]
                                                             <-Reducer 27 [CONTAINS] vectorized
                                                               Reduce Output Operator [RS_1406]
                                                                 PartitionCols:_col0, _col1, _col2
-                                                                Group By Operator [GBY_1405] (rows=121728 width=19)
+                                                                Group By Operator [GBY_1405] (rows=120960 width=19)
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
-                                                                  Group By Operator [GBY_1404] (rows=121728 width=19)
+                                                                  Group By Operator [GBY_1404] (rows=120960 width=19)
                                                                     Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                   <-Reducer 26 [SIMPLE_EDGE]
                                                                     SHUFFLE [RS_29]
@@ -946,9 +946,9 @@ Stage-0
                                                             <-Reducer 39 [CONTAINS] vectorized
                                                               Reduce Output Operator [RS_1420]
                                                                 PartitionCols:_col0, _col1, _col2
-                                                                Group By Operator [GBY_1419] (rows=121728 width=19)
+                                                                Group By Operator [GBY_1419] (rows=120960 width=19)
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
-                                                                  Group By Operator [GBY_1418] (rows=121728 width=19)
+                                                                  Group By Operator [GBY_1418] (rows=120960 width=19)
                                                                     Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                   <-Reducer 38 [SIMPLE_EDGE]
                                                                     SHUFFLE [RS_49]
@@ -957,9 +957,9 @@ Stage-0
                                                             <-Reducer 43 [CONTAINS] vectorized
                                                               Reduce Output Operator [RS_1434]
                                                                 PartitionCols:_col0, _col1, _col2
-                                                                Group By Operator [GBY_1433] (rows=121728 width=19)
+                                                                Group By Operator [GBY_1433] (rows=120960 width=19)
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
-                                                                  Group By Operator [GBY_1432] (rows=121728 width=19)
+                                                                  Group By Operator [GBY_1432] (rows=120960 width=19)
                                                                     Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                   <-Reducer 42 [SIMPLE_EDGE]
                                                                     SHUFFLE [RS_70]

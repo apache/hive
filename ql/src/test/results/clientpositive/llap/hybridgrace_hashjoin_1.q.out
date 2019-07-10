@@ -315,7 +315,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 13785 Data size: 110280 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 18464 Data size: 147712 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           minReductionHashAggr: 0.99
@@ -439,7 +439,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 13785 Data size: 110280 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 18464 Data size: 147712 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           minReductionHashAggr: 0.99
@@ -559,7 +559,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 18466 Data size: 147728 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 21560 Data size: 172480 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         minReductionHashAggr: 0.99
@@ -679,7 +679,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 18466 Data size: 147728 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 21560 Data size: 172480 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         minReductionHashAggr: 0.99

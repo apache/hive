@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Random;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.serde2.RandomTypeUtil;
@@ -115,18 +116,20 @@ public class TestVectorMathFunctions {
     Assert.assertEquals(1.2346d, resultV.vector[7], Double.MIN_VALUE);
   }
 
-  static int DAYS_LIMIT = 365 * 9999;
+  private static final int DAYS_LIMIT = 365 * 9999;
+  //approximate, so we get some negative values:
+  private static final int SMALLEST_EPOCH_DAY = -365 * 1969;
 
   public static VectorizedRowBatch getVectorizedRowBatchDateInTimestampOut(int[] intValues) {
     Random r = new Random(12099);
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
     LongColumnVector inV;
     TimestampColumnVector outV;
-    inV = new LongColumnVector();
-    outV = new TimestampColumnVector();
+    inV = new LongColumnVector(intValues.length);
+    outV = new TimestampColumnVector(intValues.length);
 
     for (int i = 0; i < intValues.length; i++) {
-      intValues[i] = r.nextInt() % DAYS_LIMIT;
+      intValues[i] = SMALLEST_EPOCH_DAY + r.nextInt() % DAYS_LIMIT;
       inV.vector[i] = intValues[i];
     }
 
@@ -134,6 +137,36 @@ public class TestVectorMathFunctions {
     batch.cols[1] = outV;
 
     batch.size = intValues.length;
+    return batch;
+  }
+
+  public static VectorizedRowBatch getVectorizedRowBatchDateInStringOut(int[] intValues) {
+    // get date in timestamp out, and change timestamp out to string out
+    VectorizedRowBatch batch =  getVectorizedRowBatchDateInTimestampOut(intValues);
+    BytesColumnVector outV = new BytesColumnVector(intValues.length);
+    batch.cols[1] = outV;
+    return batch;
+  }
+
+  // For testing CastDateToStringWithFormat with
+  // TestVectorTypeCastsWithFormat#testCastDateToStringWithFormat
+  public static VectorizedRowBatch getVectorizedRowBatchDateInStringOutFormatted() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    LongColumnVector dateColumnV;
+    BytesColumnVector stringColumnV;
+    dateColumnV = new LongColumnVector();
+    stringColumnV = new BytesColumnVector();
+
+    dateColumnV.vector[0] = Date.valueOf("2019-12-31").toEpochDay();
+    dateColumnV.vector[1] = Date.valueOf("1776-07-04").toEpochDay();
+    dateColumnV.vector[2] = Date.valueOf("2012-02-29").toEpochDay();
+    dateColumnV.vector[3] = Date.valueOf("1580-08-08").toEpochDay();
+    dateColumnV.vector[4] = Date.valueOf("0005-01-01").toEpochDay();
+    dateColumnV.vector[5] = Date.valueOf("9999-12-31").toEpochDay();
+
+    batch.cols[0] = dateColumnV;
+    batch.cols[1] = stringColumnV;
+    batch.size = 6;
     return batch;
   }
 
@@ -277,6 +310,42 @@ public class TestVectorMathFunctions {
     return batch;
   }
 
+  public static VectorizedRowBatch getVectorizedRowBatchStringInTimestampOutFormatted() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    BytesColumnVector inV;
+    inV = new BytesColumnVector();
+    inV.initBuffer();
+    inV.setVal(0, StandardCharsets.UTF_8.encode("2019-12-31 00:00:00.999999999").array());
+    inV.setVal(1, StandardCharsets.UTF_8.encode("1776-07-04 17:07:06.177617761").array());
+    inV.setVal(2, StandardCharsets.UTF_8.encode("2012-02-29 23:59:59.999999999").array());
+    inV.setVal(3, StandardCharsets.UTF_8.encode("1580-08-08 00:00:00.0").array());
+    inV.setVal(4, StandardCharsets.UTF_8.encode("0005-01-01 00:00:00.0").array());
+    inV.setVal(5, StandardCharsets.UTF_8.encode("9999-12-31 23:59:59.999999999").array());
+
+    batch.cols[0] = inV;
+
+    batch.size = 6;
+    return batch;
+  }
+
+  public static VectorizedRowBatch getVectorizedRowBatchStringInDateOutFormatted() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    BytesColumnVector inV;
+    inV = new BytesColumnVector();
+    inV.initBuffer();
+    inV.setVal(0, StandardCharsets.UTF_8.encode("19/12/31").array());
+    inV.setVal(1, StandardCharsets.UTF_8.encode("1776--07--04").array());
+    inV.setVal(2, StandardCharsets.UTF_8.encode("2012/02/29").array());
+    inV.setVal(3, StandardCharsets.UTF_8.encode("1580/08/08").array());
+    inV.setVal(4, StandardCharsets.UTF_8.encode("0005/01/01").array());
+    inV.setVal(5, StandardCharsets.UTF_8.encode("9999/12/31").array());
+
+    batch.cols[0] = inV;
+
+    batch.size = 6;
+    return batch;
+  }
+
   public static VectorizedRowBatch getVectorizedRowBatchTimestampInLongOut(long[] longValues) {
     Random r = new Random(345);
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
@@ -295,6 +364,55 @@ public class TestVectorMathFunctions {
 
     batch.size = longValues.length;
     return batch;
+  }
+
+
+  public static VectorizedRowBatch getVectorizedRowBatchTimestampInStringOut(
+      long[] epochSecondValues, int[] nanoValues) {
+    Random r = new Random(345);
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    batch.size = epochSecondValues.length;
+
+    TimestampColumnVector inV;
+    BytesColumnVector outV;
+    inV = new TimestampColumnVector(batch.size);
+    outV = new BytesColumnVector(batch.size);
+
+    for (int i = 0; i < batch.size; i++) {
+      Timestamp randTimestamp = RandomTypeUtil.getRandTimestamp(r);
+      epochSecondValues[i] = randTimestamp.toEpochSecond();
+      nanoValues[i] = randTimestamp.getNanos();
+      inV.set(i, randTimestamp.toSqlTimestamp());
+    }
+
+    batch.cols[0] = inV;
+    batch.cols[1] = outV;
+
+    return batch;
+  }
+
+  public static VectorizedRowBatch getVectorizedRowBatchTimestampInStringOutFormatted() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    TimestampColumnVector timestampColumnV;
+    BytesColumnVector stringColumnV;
+    timestampColumnV = new TimestampColumnVector();
+    stringColumnV = new BytesColumnVector();
+
+    timestampColumnV.set(0, getSqlTimestamp("2019-12-31 19:20:21.999999999"));
+    timestampColumnV.set(1, getSqlTimestamp("1776-07-04 17:07:06.177617761"));
+    timestampColumnV.set(2, getSqlTimestamp("2012-02-29 23:59:59.999999999"));
+    timestampColumnV.set(3, getSqlTimestamp("1580-08-08 00:00:00"));
+    timestampColumnV.set(4, getSqlTimestamp("0005-01-01 00:00:00"));
+    timestampColumnV.set(5, getSqlTimestamp("9999-12-31 23:59:59.999999999"));
+
+    batch.cols[0] = timestampColumnV;
+    batch.cols[1] = stringColumnV;
+    batch.size = 6;
+    return batch;
+  }
+
+  private static java.sql.Timestamp getSqlTimestamp(String s) {
+    return Timestamp.valueOf(s).toSqlTimestamp();
   }
 
   static long SECONDS_LIMIT = 60L * 24L * 365L * 9999L;

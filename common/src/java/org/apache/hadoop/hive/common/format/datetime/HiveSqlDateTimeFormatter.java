@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 
+import java.io.Serializable;
 import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.Instant;
@@ -211,7 +212,7 @@ import java.util.TimeZone;
  * See T.
  */
 
-public class HiveSqlDateTimeFormatter {
+public class HiveSqlDateTimeFormatter implements Serializable {
 
   private static final int LONGEST_TOKEN_LENGTH = 5;
   private static final int LONGEST_ACCEPTED_PATTERN = 100; // for sanity's sake
@@ -274,7 +275,7 @@ public class HiveSqlDateTimeFormatter {
   /**
    * Token representation.
    */
-  public static class Token {
+  public static class Token implements Serializable {
     TokenType type;
     TemporalField temporalField; // for type TEMPORAL e.g. ChronoField.YEAR
     TemporalUnit temporalUnit; // for type TIMEZONE e.g. ChronoUnit.HOURS

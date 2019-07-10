@@ -21,7 +21,11 @@ import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.cr
 import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createSubmitWorkRequestProto;
 import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createTaskWrapper;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.MockitoAnnotations.initMocks;
 
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.yarn.util.SystemClock;
 
 import org.apache.hadoop.hive.llap.testhelpers.ControlledClock;
@@ -48,9 +52,19 @@ import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorService.TaskWrapper;
 import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.MockRequest;
 import org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator;
 import org.apache.tez.runtime.task.TaskRunner2Result;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 public class TestTaskExecutorService {
+
+  @Mock
+  private LlapDaemonExecutorMetrics mockMetrics;
+
+  @Before
+  public void setUp() {
+    initMocks(this);
+  }
 
   @Test(timeout = 5000)
   public void testPreemptionQueueComparator() throws InterruptedException {
@@ -114,7 +128,7 @@ public class TestTaskExecutorService {
   private void testPreemptionHelper(
       MockRequest r1, MockRequest r2, boolean isPreemted) throws InterruptedException {
     TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(1, 2,
-        ShortestJobFirstComparator.class.getName(), true);
+        ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.init(new Configuration());
     taskExecutorService.start();
 
@@ -154,7 +168,7 @@ public class TestTaskExecutorService {
     MockRequest r2 = createMockRequest(2, 1, 100, 200, true, 2000000l, true);
 
     TaskExecutorServiceForTest taskExecutorService =
-        new TaskExecutorServiceForTest(1, 2, ShortestJobFirstComparator.class.getName(), true);
+        new TaskExecutorServiceForTest(1, 2, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.init(new Configuration());
     taskExecutorService.start();
 
@@ -228,7 +242,7 @@ public class TestTaskExecutorService {
       InterruptedException {
 
     TaskExecutorServiceForTest taskExecutorService =
-        new TaskExecutorServiceForTest(1, 2, ShortestJobFirstComparator.class.getName(), true);
+        new TaskExecutorServiceForTest(1, 2, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
 
     // Fourth is lower priority as a result of canFinish being set to false.
     MockRequest r1 = createMockRequest(1, 1, 100, 200, true, 20000l, false);
@@ -302,7 +316,7 @@ public class TestTaskExecutorService {
       MockRequest r3, MockRequest r4, MockRequest r5)
       throws InterruptedException {
     TaskExecutorServiceForTest taskExecutorService =
-        new TaskExecutorServiceForTest(1, 2, ShortestJobFirstComparator.class.getName(), true);
+        new TaskExecutorServiceForTest(1, 2, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.init(new Configuration());
     taskExecutorService.start();
 
@@ -394,7 +408,7 @@ public class TestTaskExecutorService {
   @Test(timeout = 10000)
   public void testSetCapacity() throws InterruptedException {
     TaskExecutorServiceForTest taskExecutorService =
-        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true);
+        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
 
     // Fourth is lower priority as a result of canFinish being set to false.
     MockRequest r1 = createMockRequest(1, 1, 1, 100, 200, true, 20000L, true);
@@ -520,31 +534,50 @@ public class TestTaskExecutorService {
   @Test(timeout = 1000, expected = IllegalArgumentException.class)
   public void testSetCapacityHighExecutors() {
     TaskExecutorServiceForTest taskExecutorService =
-        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true);
+        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.setCapacity(3, 3);
   }
 
   @Test(timeout = 1000, expected = IllegalArgumentException.class)
   public void testSetCapacityHighQueueSize() {
     TaskExecutorServiceForTest taskExecutorService =
-        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true);
+        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.setCapacity(2, 5);
   }
 
   @Test(timeout = 1000, expected = IllegalArgumentException.class)
   public void testSetCapacityNegativeExecutors() {
     TaskExecutorServiceForTest taskExecutorService =
-        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true);
+        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.setCapacity(-3, 3);
   }
 
   @Test(timeout = 1000, expected = IllegalArgumentException.class)
   public void testSetCapacityNegativeQueueSize() {
     TaskExecutorServiceForTest taskExecutorService =
-        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true);
+        new TaskExecutorServiceForTest(2, 3, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
     taskExecutorService.setCapacity(2, -5);
   }
 
+  @Test(timeout = 1000)
+  public void testCapacityMetricsInitial() {
+    TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(2, 10,
+        ShortestJobFirstComparator.class.getName(), true, mockMetrics);
+
+    verify(mockMetrics).setNumExecutors(2);
+    verify(mockMetrics).setWaitQueueSize(10);
+  }
+
+  @Test(timeout = 1000)
+  public void testCapacityMetricsModification() {
+    TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(2, 10,
+        ShortestJobFirstComparator.class.getName(), true, mockMetrics);
+    reset(mockMetrics);
+    taskExecutorService.setCapacity(1, 5);
+
+    verify(mockMetrics).setNumExecutors(1);
+    verify(mockMetrics).setWaitQueueSize(5);
+  }
 
   private void runPreemptionGraceTest(
       MockRequest victim1, MockRequest victim2, int time) throws InterruptedException {
@@ -555,7 +588,7 @@ public class TestTaskExecutorService {
     ControlledClock clock = new ControlledClock(new SystemClock());
     clock.setTime(0);
     TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(
-        2, 3, ShortestJobFirstComparator.class.getName(), true, clock);
+        2, 3, ShortestJobFirstComparator.class.getName(), true, mockMetrics, clock);
     taskExecutorService.init(new Configuration());
     taskExecutorService.start();
 
@@ -600,14 +633,14 @@ public class TestTaskExecutorService {
     private int scheduleAttempts = 0;
 
     public TaskExecutorServiceForTest(int numExecutors, int waitQueueSize,
-        String waitQueueComparatorClassName, boolean enablePreemption) {
-      this(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption, null);
+        String waitQueueComparatorClassName, boolean enablePreemption, LlapDaemonExecutorMetrics metrics) {
+      this(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption, metrics, null);
     }
 
     public TaskExecutorServiceForTest(int numExecutors, int waitQueueSize,
-        String waitQueueComparatorClassName, boolean enablePreemption, Clock clock) {
+        String waitQueueComparatorClassName, boolean enablePreemption, LlapDaemonExecutorMetrics metrics, Clock clock) {
       super(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption,
-          Thread.currentThread().getContextClassLoader(), null, clock);
+              Thread.currentThread().getContextClassLoader(), metrics, clock);
     }
 
     private ConcurrentMap<String, InternalCompletionListenerForTest> completionListeners =

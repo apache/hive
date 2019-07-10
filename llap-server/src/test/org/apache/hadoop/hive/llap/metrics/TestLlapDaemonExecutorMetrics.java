@@ -17,9 +17,23 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
+import com.google.common.collect.Maps;
+import org.apache.hadoop.hive.llap.daemon.impl.DumpingMetricsCollector;
 import org.junit.Test;
+
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorAvailableFreeSlots;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxFreeSlotsConfigured;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxFreeSlots;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumExecutors;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumExecutorsAvailable;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumExecutorsConfigured;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumQueuedRequests;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorWaitQueueSize;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorWaitQueueSizeConfigured;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics.TimedAverageMetrics;
+import java.util.Map;
 
 /**
  * Test class for LlapDaemonExecutorMetrics.
@@ -140,6 +154,38 @@ public class TestLlapDaemonExecutorMetrics {
 
     // Checking value from [3000/600s] - [14999/1000s] -> 8999.5
     assertEquals("Checking the calculated value", 9000, metrics.value(currentTime + 50L * 1000L * 1000L * 20000L));
+  }
+
+  @Test
+  public void testSimpleAndDerivedMetricsCalculations() {
+    int numExecutorsConfigured = 4;
+    int numExecutors = 2;
+    int numExecutorsAvailable = 1;
+    int waitQueueSizeConfigured = 10;
+    int waitQueueSize = 5;
+    int queuedRequests = 3;
+
+    LlapDaemonExecutorMetrics metrics = LlapDaemonExecutorMetrics.create("test", "test", numExecutorsConfigured,
+        waitQueueSizeConfigured, new int[]{1}, 1, 1, 1);
+    metrics.setNumExecutors(numExecutors);
+    metrics.setNumExecutorsAvailable(numExecutorsAvailable);
+    metrics.setWaitQueueSize(waitQueueSize);
+    metrics.setExecutorNumQueuedRequests(queuedRequests);
+    Map<String, Long> data = Maps.newHashMap();
+    metrics.getMetrics(new DumpingMetricsCollector(data), true);
+
+    // Simple values
+    assertTrue(numExecutorsConfigured == data.get(ExecutorNumExecutorsConfigured.name()));
+    assertTrue(numExecutors == data.get(ExecutorNumExecutors.name()));
+    assertTrue(waitQueueSizeConfigured == data.get(ExecutorWaitQueueSizeConfigured.name()));
+    assertTrue(waitQueueSize == data.get(ExecutorWaitQueueSize.name()));
+    assertTrue(queuedRequests == data.get(ExecutorNumQueuedRequests.name()));
+    assertTrue(numExecutorsAvailable == data.get(ExecutorNumExecutorsAvailable.name()));
+
+    // Derived values
+    assertTrue((waitQueueSizeConfigured + numExecutorsConfigured) == data.get(ExecutorMaxFreeSlotsConfigured.name()));
+    assertTrue((waitQueueSize + numExecutors) == data.get(ExecutorMaxFreeSlots.name()));
+    assertTrue((waitQueueSize + numExecutorsAvailable - queuedRequests) == data.get(ExecutorAvailableFreeSlots.name()));
   }
 
   private TimedAverageMetrics generateTimedAverageMetrics(int windowDataSize, long windowTimeSize, int dataNum,
