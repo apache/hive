@@ -54,11 +54,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Alter Table Operator:
-        Alter Table
-          type: add columns
-          new columns: x double
-          old name: default.TEST3b
+    Add Columns
+      new columns: x double
+      table name: default.TEST3b
 
 PREHOOK: query: ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -93,11 +91,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Alter Table Operator:
-        Alter Table
-          type: rename
-          new name: default.TEST3c
-          old name: default.TEST3b
+    Rename Table
+      new table name: default.TEST3c
+      table name: default.TEST3b
 
 PREHOOK: query: ALTER TABLE TEST3b RENAME TO TEST3c
 PREHOOK: type: ALTERTABLE_RENAME
@@ -141,11 +137,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Alter Table Operator:
-        Alter Table
-          type: replace columns
-          new columns: r1 int, r2 double
-          old name: default.TEST3c
+    Replace Columns
+      new columns: r1 int, r2 double
+      table name: default.TEST3c
 
 PREHOOK: query: ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
 PREHOOK: type: ALTERTABLE_REPLACECOLS

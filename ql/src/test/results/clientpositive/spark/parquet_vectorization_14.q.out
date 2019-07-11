@@ -88,7 +88,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: ((UDFToLong(ctinyint) <= cbigint) and ((UDFToDouble(cint) <= cdouble) or (ctimestamp2 < ctimestamp1)) and (cdouble < UDFToDouble(ctinyint)) and ((cbigint > -257L) or (cfloat < UDFToFloat(cint)))) (type: boolean)
+                  filterExpr: ((UDFToLong(ctinyint) <= cbigint) and (cdouble < UDFToDouble(ctinyint)) and ((cbigint > -257L) or (cfloat < UDFToFloat(cint))) and ((UDFToDouble(cint) <= cdouble) or (ctimestamp2 < ctimestamp1))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -96,8 +96,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColLessEqualLongColumn(col 0:bigint, col 3:bigint)(children: col 0:tinyint), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 2:int) -> 13:double), FilterTimestampColLessTimestampColumn(col 9:timestamp, col 8:timestamp)), FilterDoubleColLessDoubleColumn(col 5:double, col 14:double)(children: CastLongToDouble(col 0:tinyint) -> 14:double), FilterExprOrExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val -257), FilterDoubleColLessDoubleColumn(col 4:float, col 15:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 15:float)))
-                    predicate: (((UDFToDouble(cint) <= cdouble) or (ctimestamp2 < ctimestamp1)) and ((cbigint > -257L) or (cfloat < UDFToFloat(cint))) and (UDFToLong(ctinyint) <= cbigint) and (cdouble < UDFToDouble(ctinyint))) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColLessEqualLongColumn(col 0:bigint, col 3:bigint)(children: col 0:tinyint), FilterDoubleColLessDoubleColumn(col 5:double, col 13:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double), FilterExprOrExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val -257), FilterDoubleColLessDoubleColumn(col 4:float, col 14:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 14:float)), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleColumn(col 15:double, col 5:double)(children: CastLongToDouble(col 2:int) -> 15:double), FilterTimestampColLessTimestampColumn(col 9:timestamp, col 8:timestamp)))
+                    predicate: ((UDFToLong(ctinyint) <= cbigint) and (cdouble < UDFToDouble(ctinyint)) and ((cbigint > -257L) or (cfloat < UDFToFloat(cint))) and ((UDFToDouble(cint) <= cdouble) or (ctimestamp2 < ctimestamp1))) (type: boolean)
                     Statistics: Num rows: 606 Data size: 29281 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string), cboolean1 (type: boolean), cdouble (type: double), (- (-26.28D + cdouble)) (type: double), ((- (-26.28D + cdouble)) * (- (-26.28D + cdouble))) (type: double), UDFToDouble(cfloat) (type: double), (UDFToDouble(cfloat) * UDFToDouble(cfloat)) (type: double)

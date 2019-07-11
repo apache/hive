@@ -1,0 +1,468 @@
+PREHOOK: query: create table s (x int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s
+POSTHOOK: query: create table s (x int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s
+PREHOOK: query: insert into s values
+	(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+	(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+	(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+	(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+	(1),(2),(3),(4),(5),(6),(7),(8),(9),(10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@s
+POSTHOOK: query: insert into s values
+	(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+	(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+	(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+	(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),
+	(1),(2),(3),(4),(5),(6),(7),(8),(9),(10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@s
+POSTHOOK: Lineage: s.x SCRIPT []
+PREHOOK: query: create table tu(id_uv int,id_uw int,u int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tu
+POSTHOOK: query: create table tu(id_uv int,id_uw int,u int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tu
+PREHOOK: query: create table tv(id_uv int,v int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tv
+POSTHOOK: query: create table tv(id_uv int,v int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tv
+PREHOOK: query: create table tw(id_uw int,w int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tw
+POSTHOOK: query: create table tw(id_uw int,w int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tw
+PREHOOK: query: from s
+insert overwrite table tu
+        select x,x,x
+        where x<=6 or x=10
+insert overwrite table tv
+        select x,x
+        where x=1 or x>5
+insert overwrite table tw
+        select x,x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s
+PREHOOK: Output: default@tu
+PREHOOK: Output: default@tv
+PREHOOK: Output: default@tw
+POSTHOOK: query: from s
+insert overwrite table tu
+        select x,x,x
+        where x<=6 or x=10
+insert overwrite table tv
+        select x,x
+        where x=1 or x>5
+insert overwrite table tw
+        select x,x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s
+POSTHOOK: Output: default@tu
+POSTHOOK: Output: default@tv
+POSTHOOK: Output: default@tw
+POSTHOOK: Lineage: tu.id_uv SIMPLE [(s)s.FieldSchema(name:x, type:int, comment:null), ]
+POSTHOOK: Lineage: tu.id_uw SIMPLE [(s)s.FieldSchema(name:x, type:int, comment:null), ]
+POSTHOOK: Lineage: tu.u SIMPLE [(s)s.FieldSchema(name:x, type:int, comment:null), ]
+POSTHOOK: Lineage: tv.id_uv SIMPLE [(s)s.FieldSchema(name:x, type:int, comment:null), ]
+POSTHOOK: Lineage: tv.v SIMPLE [(s)s.FieldSchema(name:x, type:int, comment:null), ]
+POSTHOOK: Lineage: tw.id_uw SIMPLE [(s)s.FieldSchema(name:x, type:int, comment:null), ]
+POSTHOOK: Lineage: tw.w SIMPLE [(s)s.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select (1 > sum(u*v*w)) from tu
+        join tv on (tu.id_uv=tv.id_uv)
+        join tw on (tu.id_uw=tw.id_uw)
+        where w>9 and u>1 and v>3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tu
+PREHOOK: Input: default@tv
+PREHOOK: Input: default@tw
+#### A masked pattern was here ####
+POSTHOOK: query: select (1 > sum(u*v*w)) from tu
+        join tv on (tu.id_uv=tv.id_uv)
+        join tw on (tu.id_uw=tw.id_uw)
+        where w>9 and u>1 and v>3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tu
+POSTHOOK: Input: default@tv
+POSTHOOK: Input: default@tw
+#### A masked pattern was here ####
+false
+PREHOOK: query: explain
+select (1 > sum(u*v*w)) from tu
+        join tv on (tu.id_uv=tv.id_uv)
+        join tw on (tu.id_uw=tw.id_uw)
+        where w>9 and u>1 and v>3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tu
+PREHOOK: Input: default@tv
+PREHOOK: Input: default@tw
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select (1 > sum(u*v*w)) from tu
+        join tv on (tu.id_uv=tv.id_uv)
+        join tw on (tu.id_uw=tw.id_uw)
+        where w>9 and u>1 and v>3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tu
+POSTHOOK: Input: default@tv
+POSTHOOK: Input: default@tw
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+Reducer 3 <- Map 6 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 4 vectorized, llap
+      File Output Operator [FS_63]
+        Select Operator [SEL_62] (rows=1 width=4)
+          Output:["_col0"]
+          Group By Operator [GBY_61] (rows=1 width=8)
+            Output:["_col0"],aggregations:["sum(VALUE._col0)"]
+          <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
+            PARTITION_ONLY_SHUFFLE [RS_18]
+              Group By Operator [GBY_17] (rows=1 width=8)
+                Output:["_col0"],aggregations:["sum(_col0)"]
+                Select Operator [SEL_15] (rows=114 width=12)
+                  Output:["_col0"]
+                  Merge Join Operator [MERGEJOIN_51] (rows=114 width=12)
+                    Conds:RS_12._col1=RS_60._col0(Inner),Output:["_col2","_col4","_col6"]
+                  <-Map 6 [SIMPLE_EDGE] vectorized, llap
+                    SHUFFLE [RS_60]
+                      PartitionCols:_col0
+                      Select Operator [SEL_59] (rows=16 width=8)
+                        Output:["_col0","_col1"]
+                        Filter Operator [FIL_58] (rows=16 width=8)
+                          predicate:((w > 9) and id_uw is not null)
+                          TableScan [TS_6] (rows=50 width=8)
+                            default@tw,tw,Tbl:COMPLETE,Col:COMPLETE,Output:["id_uw","w"]
+                  <-Reducer 2 [SIMPLE_EDGE] llap
+                    SHUFFLE [RS_12]
+                      PartitionCols:_col1
+                      Merge Join Operator [MERGEJOIN_50] (rows=50 width=12)
+                        Conds:RS_54._col0=RS_57._col0(Inner),Output:["_col1","_col2","_col4"]
+                      <-Map 1 [SIMPLE_EDGE] vectorized, llap
+                        SHUFFLE [RS_54]
+                          PartitionCols:_col0
+                          Select Operator [SEL_53] (rows=35 width=12)
+                            Output:["_col0","_col1","_col2"]
+                            Filter Operator [FIL_52] (rows=35 width=12)
+                              predicate:((u > 1) and id_uv is not null and id_uw is not null)
+                              TableScan [TS_0] (rows=35 width=12)
+                                default@tu,tu,Tbl:COMPLETE,Col:COMPLETE,Output:["id_uv","id_uw","u"]
+                      <-Map 5 [SIMPLE_EDGE] vectorized, llap
+                        SHUFFLE [RS_57]
+                          PartitionCols:_col0
+                          Select Operator [SEL_56] (rows=10 width=8)
+                            Output:["_col0","_col1"]
+                            Filter Operator [FIL_55] (rows=10 width=8)
+                              predicate:((v > 3) and id_uv is not null)
+                              TableScan [TS_3] (rows=30 width=8)
+                                default@tv,tv,Tbl:COMPLETE,Col:COMPLETE,Output:["id_uv","v"]
+
+PREHOOK: query: explain reoptimization
+select 1 > sum(u*v*w) from tu
+        join tv on (tu.id_uv=tv.id_uv)
+        join tw on (tu.id_uw=tw.id_uw)
+        where w>9 and u>1 and v>3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tu
+PREHOOK: Input: default@tv
+PREHOOK: Input: default@tw
+#### A masked pattern was here ####
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 35
+   RECORDS_IN_Map_5: 30
+   RECORDS_IN_Map_6: 50
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 30
+   RECORDS_OUT_INTERMEDIATE_Map_5: 25
+   RECORDS_OUT_INTERMEDIATE_Map_6: 5
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 50
+   RECORDS_OUT_INTERMEDIATE_Reducer_3: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_4: 0
+   RECORDS_OUT_OPERATOR_FIL_52: 30
+   RECORDS_OUT_OPERATOR_FIL_55: 25
+   RECORDS_OUT_OPERATOR_FIL_58: 5
+   RECORDS_OUT_OPERATOR_FS_63: 1
+   RECORDS_OUT_OPERATOR_GBY_17: 1
+   RECORDS_OUT_OPERATOR_GBY_61: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_MERGEJOIN_50: 50
+   RECORDS_OUT_OPERATOR_MERGEJOIN_51: 125
+   RECORDS_OUT_OPERATOR_RS_12: 50
+   RECORDS_OUT_OPERATOR_RS_18: 1
+   RECORDS_OUT_OPERATOR_RS_54: 30
+   RECORDS_OUT_OPERATOR_RS_57: 25
+   RECORDS_OUT_OPERATOR_RS_60: 5
+   RECORDS_OUT_OPERATOR_SEL_15: 125
+   RECORDS_OUT_OPERATOR_SEL_53: 30
+   RECORDS_OUT_OPERATOR_SEL_56: 25
+   RECORDS_OUT_OPERATOR_SEL_59: 5
+   RECORDS_OUT_OPERATOR_SEL_62: 1
+   RECORDS_OUT_OPERATOR_TS_0: 35
+   RECORDS_OUT_OPERATOR_TS_3: 30
+   RECORDS_OUT_OPERATOR_TS_6: 50
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 565
+   NUM_DECODED_BATCHES: 3
+   NUM_VECTOR_BATCHES: 3
+   ROWS_EMITTED: 115
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   GROUPED_INPUT_SPLITS_Map_5: 1
+   GROUPED_INPUT_SPLITS_Map_6: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_DIRECTORIES_Map_5: 1
+   INPUT_DIRECTORIES_Map_6: 1
+   INPUT_FILES_Map_1: 1
+   INPUT_FILES_Map_5: 1
+   INPUT_FILES_Map_6: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+   RAW_INPUT_SPLITS_Map_5: 1
+   RAW_INPUT_SPLITS_Map_6: 1
+PREHOOK: query: explain reoptimization
+select 200000 > sum(u*v*w) from tu
+        join tv on (tu.id_uv=tv.id_uv)
+        join tw on (tu.id_uw=tw.id_uw)
+        where w>9 and u>1 and v>3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tu
+PREHOOK: Input: default@tv
+PREHOOK: Input: default@tw
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+Reducer 3 <- Map 6 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 4 vectorized, llap
+      File Output Operator [FS_63]
+        Select Operator [SEL_62] (rows=1 width=4)
+          Output:["_col0"]
+          Group By Operator [GBY_61] (rows=1 width=8)
+            Output:["_col0"],aggregations:["sum(VALUE._col0)"]
+          <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
+            PARTITION_ONLY_SHUFFLE [RS_18]
+              Group By Operator [GBY_17] (rows=1 width=8)
+                Output:["_col0"],aggregations:["sum(_col0)"]
+                Select Operator [SEL_15] (rows=105 width=12)
+                  Output:["_col0"]
+                  Merge Join Operator [MERGEJOIN_51] (rows=105 width=12)
+                    Conds:RS_12._col0=RS_60._col0(Inner),Output:["_col2","_col4","_col6"]
+                  <-Map 6 [SIMPLE_EDGE] vectorized, llap
+                    SHUFFLE [RS_60]
+                      PartitionCols:_col0
+                      Select Operator [SEL_59] (runtime: rows=25 width=8)
+                        Output:["_col0","_col1"]
+                        Filter Operator [FIL_58] (rows=10 width=8)
+                          predicate:((v > 3) and id_uv is not null)
+                          TableScan [TS_6] (runtime: rows=30 width=8)
+                            default@tv,tv,Tbl:COMPLETE,Col:COMPLETE,Output:["id_uv","v"]
+                  <-Reducer 2 [SIMPLE_EDGE] llap
+                    SHUFFLE [RS_12]
+                      PartitionCols:_col0
+                      Merge Join Operator [MERGEJOIN_50] (rows=21 width=12)
+                        Conds:RS_54._col1=RS_57._col0(Inner),Output:["_col0","_col2","_col4"]
+                      <-Map 1 [SIMPLE_EDGE] vectorized, llap
+                        SHUFFLE [RS_54]
+                          PartitionCols:_col1
+                          Select Operator [SEL_53] (runtime: rows=30 width=12)
+                            Output:["_col0","_col1","_col2"]
+                            Filter Operator [FIL_52] (rows=35 width=12)
+                              predicate:((u > 1) and id_uv is not null and id_uw is not null)
+                              TableScan [TS_0] (runtime: rows=35 width=12)
+                                default@tu,tu,Tbl:COMPLETE,Col:COMPLETE,Output:["id_uv","id_uw","u"]
+                      <-Map 5 [SIMPLE_EDGE] vectorized, llap
+                        SHUFFLE [RS_57]
+                          PartitionCols:_col0
+                          Select Operator [SEL_56] (runtime: rows=5 width=8)
+                            Output:["_col0","_col1"]
+                            Filter Operator [FIL_55] (rows=16 width=8)
+                              predicate:((w > 9) and id_uw is not null)
+                              TableScan [TS_3] (runtime: rows=50 width=8)
+                                default@tw,tw,Tbl:COMPLETE,Col:COMPLETE,Output:["id_uw","w"]
+
+PREHOOK: query: select assert_true_oom(1 > sum(u*v*w)) from tu
+        join tv on (tu.id_uv=tv.id_uv)
+        join tw on (tu.id_uw=tw.id_uw)
+        where w>9 and u>1 and v>3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tu
+PREHOOK: Input: default@tv
+PREHOOK: Input: default@tw
+#### A masked pattern was here ####
+Status: Failed
+Vertex failed, vertexName=Reducer 4, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 4] killed/failed due to:OWN_TASK_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 4, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 4] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+PREHOOK: query: select assert_true_oom(200000 > sum(u*v*w)) from tu
+        join tv on (tu.id_uv=tv.id_uv)
+        join tw on (tu.id_uw=tw.id_uw)
+        where w>9 and u>1 and v>3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tu
+PREHOOK: Input: default@tv
+PREHOOK: Input: default@tw
+#### A masked pattern was here ####
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 35
+   RECORDS_IN_Map_5: 50
+   RECORDS_IN_Map_6: 30
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 30
+   RECORDS_OUT_INTERMEDIATE_Map_5: 5
+   RECORDS_OUT_INTERMEDIATE_Map_6: 25
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 25
+   RECORDS_OUT_INTERMEDIATE_Reducer_3: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_4: 0
+   RECORDS_OUT_OPERATOR_FIL_52: 30
+   RECORDS_OUT_OPERATOR_FIL_55: 5
+   RECORDS_OUT_OPERATOR_FIL_58: 25
+   RECORDS_OUT_OPERATOR_FS_63: 1
+   RECORDS_OUT_OPERATOR_GBY_17: 1
+   RECORDS_OUT_OPERATOR_GBY_61: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_MERGEJOIN_50: 25
+   RECORDS_OUT_OPERATOR_MERGEJOIN_51: 125
+   RECORDS_OUT_OPERATOR_RS_12: 25
+   RECORDS_OUT_OPERATOR_RS_18: 1
+   RECORDS_OUT_OPERATOR_RS_54: 30
+   RECORDS_OUT_OPERATOR_RS_57: 5
+   RECORDS_OUT_OPERATOR_RS_60: 25
+   RECORDS_OUT_OPERATOR_SEL_15: 125
+   RECORDS_OUT_OPERATOR_SEL_53: 30
+   RECORDS_OUT_OPERATOR_SEL_56: 5
+   RECORDS_OUT_OPERATOR_SEL_59: 25
+   RECORDS_OUT_OPERATOR_SEL_62: 1
+   RECORDS_OUT_OPERATOR_TS_0: 35
+   RECORDS_OUT_OPERATOR_TS_3: 50
+   RECORDS_OUT_OPERATOR_TS_6: 30
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 565
+   NUM_DECODED_BATCHES: 3
+   NUM_VECTOR_BATCHES: 3
+   ROWS_EMITTED: 115
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   GROUPED_INPUT_SPLITS_Map_5: 1
+   GROUPED_INPUT_SPLITS_Map_6: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_DIRECTORIES_Map_5: 1
+   INPUT_DIRECTORIES_Map_6: 1
+   INPUT_FILES_Map_1: 1
+   INPUT_FILES_Map_5: 1
+   INPUT_FILES_Map_6: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+   RAW_INPUT_SPLITS_Map_5: 1
+   RAW_INPUT_SPLITS_Map_6: 1
+NULL
+PREHOOK: query: explain
+select assert_true_oom(1 > sum(u*v*w)) from tu
+        join tv on (tu.id_uv=tv.id_uv)
+        join tw on (tu.id_uw=tw.id_uw)
+        where w>9 and u>1 and v>3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tu
+PREHOOK: Input: default@tv
+PREHOOK: Input: default@tw
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+Reducer 3 <- Map 6 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 4 vectorized, llap
+      File Output Operator [FS_63]
+        Select Operator [SEL_62] (rows=1 width=4)
+          Output:["_col0"]
+          Group By Operator [GBY_61] (rows=1 width=8)
+            Output:["_col0"],aggregations:["sum(VALUE._col0)"]
+          <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
+            PARTITION_ONLY_SHUFFLE [RS_18]
+              Group By Operator [GBY_17] (rows=1 width=8)
+                Output:["_col0"],aggregations:["sum(_col0)"]
+                Select Operator [SEL_15] (rows=114 width=12)
+                  Output:["_col0"]
+                  Merge Join Operator [MERGEJOIN_51] (rows=114 width=12)
+                    Conds:RS_12._col1=RS_60._col0(Inner),Output:["_col2","_col4","_col6"]
+                  <-Map 6 [SIMPLE_EDGE] vectorized, llap
+                    SHUFFLE [RS_60]
+                      PartitionCols:_col0
+                      Select Operator [SEL_59] (rows=16 width=8)
+                        Output:["_col0","_col1"]
+                        Filter Operator [FIL_58] (rows=16 width=8)
+                          predicate:((w > 9) and id_uw is not null)
+                          TableScan [TS_6] (rows=50 width=8)
+                            default@tw,tw,Tbl:COMPLETE,Col:COMPLETE,Output:["id_uw","w"]
+                  <-Reducer 2 [SIMPLE_EDGE] llap
+                    SHUFFLE [RS_12]
+                      PartitionCols:_col1
+                      Merge Join Operator [MERGEJOIN_50] (rows=50 width=12)
+                        Conds:RS_54._col0=RS_57._col0(Inner),Output:["_col1","_col2","_col4"]
+                      <-Map 1 [SIMPLE_EDGE] vectorized, llap
+                        SHUFFLE [RS_54]
+                          PartitionCols:_col0
+                          Select Operator [SEL_53] (rows=35 width=12)
+                            Output:["_col0","_col1","_col2"]
+                            Filter Operator [FIL_52] (rows=35 width=12)
+                              predicate:((u > 1) and id_uv is not null and id_uw is not null)
+                              TableScan [TS_0] (rows=35 width=12)
+                                default@tu,tu,Tbl:COMPLETE,Col:COMPLETE,Output:["id_uv","id_uw","u"]
+                      <-Map 5 [SIMPLE_EDGE] vectorized, llap
+                        SHUFFLE [RS_57]
+                          PartitionCols:_col0
+                          Select Operator [SEL_56] (rows=10 width=8)
+                            Output:["_col0","_col1"]
+                            Filter Operator [FIL_55] (rows=10 width=8)
+                              predicate:((v > 3) and id_uv is not null)
+                              TableScan [TS_3] (rows=30 width=8)
+                                default@tv,tv,Tbl:COMPLETE,Col:COMPLETE,Output:["id_uv","v"]
+

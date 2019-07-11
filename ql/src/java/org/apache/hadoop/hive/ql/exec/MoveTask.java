@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
@@ -51,7 +52,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -423,7 +424,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                   resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
                   tbd.isInsertOverwrite());
           if (work.getOutputs() != null) {
-            DDLTask.addIfAbsentByName(new WriteEntity(table,
+            DDLUtils.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
           }
         } else {
@@ -535,7 +536,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     DataContainer dc = new DataContainer(table.getTTable(), partn.getTPartition());
     // add this partition to post-execution hook
     if (work.getOutputs() != null) {
-      DDLTask.addIfAbsentByName(new WriteEntity(partn,
+      DDLUtils.addIfAbsentByName(new WriteEntity(partn,
         getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
     }
     return dc;
@@ -602,7 +603,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       WriteEntity enty = new WriteEntity(partn,
         getWriteType(tbd, work.getLoadTableWork().getWriteType()));
       if (work.getOutputs() != null) {
-        DDLTask.addIfAbsentByName(enty, work.getOutputs());
+        DDLUtils.addIfAbsentByName(enty, work.getOutputs());
       }
       // Need to update the queryPlan's output as well so that post-exec hook get executed.
       // This is only needed for dynamic partitioning since for SP the the WriteEntity is
@@ -818,9 +819,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       for (SortCol sortCol : sortCols) {
         if (sortCol.getIndexes().get(0) < partn.getCols().size()) {
           newSortCols.add(new Order(
-            partn.getCols().get(sortCol.getIndexes().get(0)).getName(),
-            sortCol.getSortOrder() == '+' ? BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC :
-              BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC));
+              partn.getCols().get(sortCol.getIndexes().get(0)).getName(),
+              DirectionUtils.signToCode(sortCol.getSortOrder())));
         } else {
           // If the table is sorted on a partition column, not valid for sorting
           updateSortCols = false;

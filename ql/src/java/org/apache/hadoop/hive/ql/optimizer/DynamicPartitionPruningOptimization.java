@@ -157,10 +157,14 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       semiJoin = false;
     }
 
+    List<ExprNodeDesc> newBetweenNodes = new ArrayList<>();
+    List<ExprNodeDesc> newBloomFilterNodes = new ArrayList<>();
     for (DynamicListContext ctx : removerContext) {
       String column = ExprNodeDescUtils.extractColName(ctx.parent);
       boolean semiJoinAttempted = false;
 
+      ExprNodeDesc constNode =
+          new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
       if (column != null) {
         // Need unique IDs to refer to each min/max key value in the DynamicValueRegistry
         String keyBaseAlias = "";
@@ -265,22 +269,29 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
           ExprNodeDesc bloomFilterNode = ExprNodeGenericFuncDesc.newInstance(
                   FunctionRegistry.getFunctionInfo("in_bloom_filter").
                           getGenericUDF(), bloomFilterArgs);
-          List<ExprNodeDesc> andArgs = new ArrayList<ExprNodeDesc>();
-          andArgs.add(betweenNode);
-          andArgs.add(bloomFilterNode);
-          ExprNodeDesc andExpr = ExprNodeGenericFuncDesc.newInstance(
-              FunctionRegistry.getFunctionInfo("and").getGenericUDF(), andArgs);
-          replaceExprNode(ctx, desc, andExpr);
-        } else {
-          ExprNodeDesc replaceNode = new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
-          replaceExprNode(ctx, desc, replaceNode);
+          newBetweenNodes.add(betweenNode);
+          newBloomFilterNodes.add(bloomFilterNode);
         }
+      }
+      replaceExprNode(ctx, desc, constNode);
+    }
+
+    if (!newBetweenNodes.isEmpty()) {
+      // We need to add the new nodes: first the between nodes, then the bloom filters
+      if (FunctionRegistry.isOpAnd(desc.getPredicate())) { // AND
+        desc.getPredicate().getChildren().addAll(newBetweenNodes);
+        desc.getPredicate().getChildren().addAll(newBloomFilterNodes);
       } else {
-        ExprNodeDesc constNode =
-                new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
-        replaceExprNode(ctx, desc, constNode);
+        List<ExprNodeDesc> andArgs = new ArrayList<>();
+        andArgs.add(desc.getPredicate());
+        andArgs.addAll(newBetweenNodes);
+        andArgs.addAll(newBloomFilterNodes);
+        ExprNodeDesc andExpr = ExprNodeGenericFuncDesc.newInstance(
+            FunctionRegistry.getFunctionInfo("and").getGenericUDF(), andArgs);
+        desc.setPredicate(andExpr);
       }
     }
+
     // if we pushed the predicate into the table scan we need to remove the
     // synthetic conditions there.
     cleanTableScanFilters(ts);
@@ -604,16 +615,11 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     // Create the column expr map
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
     ExprNodeDesc exprNode = null;
-    if ( parentOfRS.getColumnExprMap() != null) {
-      exprNode = parentOfRS.getColumnExprMap().get(internalColName).clone();
-    } else {
-      exprNode = new ExprNodeColumnDesc(columnInfo);
+    if (columnInfo == null) {
+      LOG.debug("No ColumnInfo found in {} for {}", parentOfRS.getOperatorId(), internalColName);
+      return false;
     }
-
-    if (exprNode instanceof ExprNodeColumnDesc) {
-      ExprNodeColumnDesc encd = (ExprNodeColumnDesc) exprNode;
-      encd.setColumn(internalColName);
-    }
+    exprNode = new ExprNodeColumnDesc(columnInfo);
     colExprMap.put(internalColName, exprNode);
 
     // Create the Select Operator

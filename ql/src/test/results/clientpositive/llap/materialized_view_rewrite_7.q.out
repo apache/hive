@@ -253,7 +253,7 @@ STAGE PLANS:
                   filterExpr: ((deptno > 10) and (deptno <= 11)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno <= 11) and (deptno > 10)) (type: boolean)
+                    predicate: ((deptno > 10) and (deptno <= 11)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int)
@@ -277,7 +277,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: int), _col1 (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -315,7 +315,7 @@ STAGE PLANS:
                   filterExpr: ((deptno > 10) and (deptno <= 11) and name is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno <= 11) and (deptno > 10) and name is not null) (type: boolean)
+                    predicate: ((deptno > 10) and (deptno <= 11) and name is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int), name (type: varchar(256))
@@ -378,7 +378,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: int), _col1 (type: int)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -569,7 +569,7 @@ STAGE PLANS:
                   filterExpr: ((deptno > 10) and (deptno < 20) and ((deptno <= 11) or (deptno >= 19)) and name is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((deptno <= 11) or (deptno >= 19)) and (deptno < 20) and (deptno > 10) and name is not null) (type: boolean)
+                    predicate: ((deptno > 10) and (deptno < 20) and ((deptno <= 11) or (deptno >= 19)) and name is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int), name (type: varchar(256))
@@ -634,7 +634,7 @@ STAGE PLANS:
                   filterExpr: ((deptno > 10) and (deptno < 20) and ((deptno <= 11) or (deptno >= 19))) (type: boolean)
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((deptno <= 11) or (deptno >= 19)) and (deptno < 20) and (deptno > 10)) (type: boolean)
+                    predicate: ((deptno > 10) and (deptno < 20) and ((deptno <= 11) or (deptno >= 19))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int), salary (type: float)
@@ -664,7 +664,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: sum(_col1)
                     keys: _col0 (type: int)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.5
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -727,7 +727,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(_col1)
                   keys: _col0 (type: int)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -888,7 +888,7 @@ STAGE PLANS:
                   filterExpr: ((deptno > 0) and (deptno < 10) and name is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno < 10) and (deptno > 0) and name is not null) (type: boolean)
+                    predicate: ((deptno > 0) and (deptno < 10) and name is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int), name (type: varchar(256))
@@ -909,7 +909,7 @@ STAGE PLANS:
                   filterExpr: ((deptno > 0) and (deptno < 10)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno < 10) and (deptno > 0)) (type: boolean)
+                    predicate: ((deptno > 0) and (deptno < 10)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int)

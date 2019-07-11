@@ -30,4 +30,4 @@ POSTHOOK: query: LOCK TABLE tstsrcpart PARTITION(ds='2008-04-08', hr='11') EXCLU
 POSTHOOK: type: LOCKTABLE
 PREHOOK: query: SHOW LOCKS tstsrcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: SHOWLOCKS
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. org.apache.hadoop.hive.ql.metadata.HiveException: Partition {ds=2008-04-08, hr=12} for table tstsrcpart does not exist
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Partition {ds=2008-04-08, hr=12} for table tstsrcpart does not exist

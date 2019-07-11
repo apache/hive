@@ -51,7 +51,7 @@ STAGE PLANS:
                   filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
+                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string), key (type: string)
@@ -64,7 +64,7 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: compute_stats(col1, 'hll')
                           keys: col2 (type: string)
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.5090909
                           mode: hash
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
@@ -150,5 +150,7 @@ STAGE PLANS:
           Table: default.partition_mv_sdp
 
   Stage: Stage-5
-    Materialized View Work
+    Materialized View Update
+      name: default.partition_mv_sdp
+      retrieveAndInclude: true
 

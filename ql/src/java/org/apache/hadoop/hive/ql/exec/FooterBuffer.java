@@ -29,7 +29,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.util.ReflectionUtils;
 
 public class FooterBuffer {
-  private ArrayList<ObjectPair> buffer;
+  private ArrayList<ObjectPair<WritableComparable, Writable>> buffer;
   private int cur;
 
   public FooterBuffer() {
@@ -64,13 +64,13 @@ public class FooterBuffer {
       int footerCount, WritableComparable key, Writable value) throws IOException {
 
     // Fill the buffer with key value pairs.
-    this.buffer = new ArrayList<ObjectPair>();
+    this.buffer = new ArrayList<>();
     while (buffer.size() < footerCount) {
       boolean notEOF = recordreader.next(key, value);
       if (!notEOF) {
         return false;
       }
-      ObjectPair tem = new ObjectPair();
+      ObjectPair<WritableComparable, Writable> tem = new ObjectPair<>();
       tem.setFirst(ReflectionUtils.copy(job, key, tem.getFirst()));
       tem.setSecond(ReflectionUtils.copy(job, value, tem.getSecond()));
       buffer.add(tem);
@@ -98,8 +98,8 @@ public class FooterBuffer {
    */
   public boolean updateBuffer(JobConf job, RecordReader recordreader,
       WritableComparable key, Writable value) throws IOException {
-    key = ReflectionUtils.copy(job, (WritableComparable)buffer.get(cur).getFirst(), key);
-    value = ReflectionUtils.copy(job, (Writable)buffer.get(cur).getSecond(), value);
+    key = ReflectionUtils.copy(job, buffer.get(cur).getFirst(), key);
+    value = ReflectionUtils.copy(job, buffer.get(cur).getSecond(), value);
     boolean notEOF = recordreader.next(buffer.get(cur).getFirst(), buffer.get(cur).getSecond());
     if (notEOF) {
       cur = (++cur) % buffer.size();

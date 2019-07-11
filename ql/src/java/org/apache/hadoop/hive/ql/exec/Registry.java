@@ -661,7 +661,7 @@ public class Registry {
       // At this point we should add any relevant jars that would be needed for the UDf.
       FunctionResource[] resources = function.getResources();
       try {
-        FunctionTask.addFunctionResources(resources);
+        FunctionUtils.addFunctionResources(resources);
       } catch (Exception e) {
         LOG.error("Unable to load resources for " + qualifiedName + ":" + e, e);
         return null;
@@ -786,7 +786,7 @@ public class Registry {
       }
       // Found UDF in metastore - now add it to the function registry.
       FunctionInfo fi = registerPermanentFunction(functionName, func.getClassName(), true,
-          FunctionTask.toFunctionResource(func.getResourceUris()));
+          FunctionUtils.toFunctionResource(func.getResourceUris()));
       if (fi == null) {
         LOG.error(func.getClassName() + " is not a valid UDF class and was not registered");
         return null;

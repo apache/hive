@@ -33,4 +33,4 @@ PREHOOK: query: DROP DATABASE db_drop_non_empty_restrict
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:db_drop_non_empty_restrict
 PREHOOK: Output: database:db_drop_non_empty_restrict
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidOperationException(message:Database db_drop_non_empty_restrict is not empty. One or more tables exist.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Database db_drop_non_empty_restrict is not empty. One or more tables exist.)

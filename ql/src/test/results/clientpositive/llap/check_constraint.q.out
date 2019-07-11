@@ -414,6 +414,18 @@ POSTHOOK: query: create table tmulti(url string NOT NULL ENABLE, userName string
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmulti
+PREHOOK: query: explain alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: explain alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Add Constraint
+      table name: default.tmulti
+
 PREHOOK: query: alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
@@ -1901,7 +1913,7 @@ STAGE PLANS:
                         Statistics: Num rows: 83 Data size: 17181 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: decimal(5,2)), _col2 (type: string)
                   Filter Operator
-                    predicate: ((key < 20) and (key > 10) and enforce_constraint(value is not null)) (type: boolean)
+                    predicate: ((key > 10) and (key < 20) and enforce_constraint(value is not null)) (type: boolean)
                     Statistics: Num rows: 27 Data size: 4806 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -2063,6 +2075,19 @@ POSTHOOK: query: select * from acid_uami_n0 order by de desc limit 15
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
+PREHOOK: query: explain ALTER table acid_uami_n0 drop constraint ch2
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: explain ALTER table acid_uami_n0 drop constraint ch2
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Constraint
+      constraint name: ch2
+      table name: default.acid_uami_n0
+
 PREHOOK: query: ALTER table acid_uami_n0 drop constraint ch2
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER table acid_uami_n0 drop constraint ch2
@@ -2307,7 +2332,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col0 = _col6) and (_col6 < 5)) (type: boolean)
+                  predicate: ((_col6 < 5) and (_col0 = _col6)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col5 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -2319,7 +2344,7 @@ STAGE PLANS:
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col0 = _col6) and (_col6 < 3) and (_col6 >= 5) and enforce_constraint(((_col0 > 0) and ((_col0 < 100) or (_col0 = 5))) is not false)) (type: boolean)
+                  predicate: ((_col6 < 3) and (_col6 >= 5) and enforce_constraint(((_col0 > 0) and ((_col0 < 100) or (_col0 = 5))) is not false) and (_col0 = _col6)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col5 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col0 (type: int), _col2 (type: string)
@@ -2332,7 +2357,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: int), _col3 (type: string)
                 Filter Operator
-                  predicate: (_col0 is null and enforce_constraint((_col7 is not null and ((_col6 > 0) and ((_col6 < 100) or (_col6 = 5))) is not false))) (type: boolean)
+                  predicate: (enforce_constraint((_col7 is not null and ((_col6 > 0) and ((_col6 < 100) or (_col6 = 5))) is not false)) and _col0 is null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col6 (type: int), _col7 (type: string), _col8 (type: string)
@@ -2508,7 +2533,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col0 = _col6) and (_col6 < 5)) (type: boolean)
+                  predicate: ((_col6 < 5) and (_col0 = _col6)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col5 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -2520,7 +2545,7 @@ STAGE PLANS:
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col0 = _col6) and (_col6 < 3) and (_col6 >= 5) and enforce_constraint(((_col0 > 0) and ((_col0 < 100) or (_col0 = 5))) is not false)) (type: boolean)
+                  predicate: ((_col6 < 3) and (_col6 >= 5) and enforce_constraint(((_col0 > 0) and ((_col0 < 100) or (_col0 = 5))) is not false) and (_col0 = _col6)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col5 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col0 (type: int), _col2 (type: string)
@@ -2553,7 +2578,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
                 Filter Operator
-                  predicate: (_col0 is null and enforce_constraint((_col7 is not null and ((_col6 > 0) and ((_col6 < 100) or (_col6 = 5))) is not false))) (type: boolean)
+                  predicate: (enforce_constraint((_col7 is not null and ((_col6 > 0) and ((_col6 < 100) or (_col6 = 5))) is not false)) and _col0 is null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col6 (type: int), _col7 (type: string), _col8 (type: string)
@@ -2757,7 +2782,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col0 = _col6) and (_col6 < 5)) (type: boolean)
+                  predicate: ((_col6 < 5) and (_col0 = _col6)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col5 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -2789,7 +2814,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
                 Filter Operator
-                  predicate: (_col0 is null and enforce_constraint((_col7 is not null and ((_col6 > 0) and ((_col6 < 100) or (_col6 = 5))) is not false))) (type: boolean)
+                  predicate: (enforce_constraint((_col7 is not null and ((_col6 > 0) and ((_col6 < 100) or (_col6 = 5))) is not false)) and _col0 is null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col6 (type: int), _col7 (type: string), _col8 (type: string)

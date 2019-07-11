@@ -103,6 +103,19 @@ POSTHOOK: query: ALTER TABLE avro_extschema_literal_n1 SET
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@avro_extschema_literal_n1
 POSTHOOK: Output: default@avro_extschema_literal_n1
+PREHOOK: query: EXPLAIN ALTER TABLE avro_extschema_literal_n1 UPDATE COLUMNS CASCADE
+PREHOOK: type: ALTERTABLE_UPDATECOLUMNS
+POSTHOOK: query: EXPLAIN ALTER TABLE avro_extschema_literal_n1 UPDATE COLUMNS CASCADE
+POSTHOOK: type: ALTERTABLE_UPDATECOLUMNS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Update Columns
+      table name: default.avro_extschema_literal_n1
+      cascade: true
+
 PREHOOK: query: ALTER TABLE avro_extschema_literal_n1 UPDATE COLUMNS CASCADE
 PREHOOK: type: ALTERTABLE_UPDATECOLUMNS
 POSTHOOK: query: ALTER TABLE avro_extschema_literal_n1 UPDATE COLUMNS CASCADE
@@ -306,6 +319,20 @@ POSTHOOK: query: ALTER TABLE avro_extschema_url_parted SET
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@avro_extschema_url_parted
 POSTHOOK: Output: default@avro_extschema_url_parted
+PREHOOK: query: EXPLAIN ALTER TABLE avro_extschema_url_parted PARTITION (p1=2018) UPDATE COLUMNS
+PREHOOK: type: ALTERTABLE_UPDATECOLUMNS
+POSTHOOK: query: EXPLAIN ALTER TABLE avro_extschema_url_parted PARTITION (p1=2018) UPDATE COLUMNS
+POSTHOOK: type: ALTERTABLE_UPDATECOLUMNS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Update Columns
+      partition:
+        p1 2018
+      table name: default.avro_extschema_url_parted
+
 PREHOOK: query: ALTER TABLE avro_extschema_url_parted PARTITION (p1=2018) UPDATE COLUMNS
 PREHOOK: type: ALTERTABLE_UPDATECOLUMNS
 POSTHOOK: query: ALTER TABLE avro_extschema_url_parted PARTITION (p1=2018) UPDATE COLUMNS

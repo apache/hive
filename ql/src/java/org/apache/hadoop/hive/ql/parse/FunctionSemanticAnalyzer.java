@@ -29,6 +29,10 @@ import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.function.CreateFunctionDesc;
+import org.apache.hadoop.hive.ql.ddl.function.DropFunctionDesc;
+import org.apache.hadoop.hive.ql.ddl.function.ReloadFunctionsDesc;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
@@ -36,10 +40,6 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
-import org.apache.hadoop.hive.ql.plan.ReloadFunctionDesc;
-import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
-import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 /**
@@ -60,8 +60,8 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeCreateFunction(ast);
     } else if (ast.getType() == HiveParser.TOK_DROPFUNCTION) {
       analyzeDropFunction(ast);
-    } else if (ast.getType() == HiveParser.TOK_RELOADFUNCTION) {
-      rootTasks.add(TaskFactory.get(new FunctionWork(new ReloadFunctionDesc())));
+    } else if (ast.getType() == HiveParser.TOK_RELOADFUNCTIONS) {
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), new ReloadFunctionsDesc())));
     }
 
     LOG.info("analyze done");
@@ -85,8 +85,8 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     CreateFunctionDesc desc =
-        new CreateFunctionDesc(functionName, isTemporaryFunction, className, resources, null);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
+        new CreateFunctionDesc(functionName, className, isTemporaryFunction, resources, null);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     addEntities(functionName, className, isTemporaryFunction, resources);
   }
@@ -114,7 +114,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     boolean isTemporaryFunction = (ast.getFirstChildWithType(HiveParser.TOK_TEMPORARY) != null);
     DropFunctionDesc desc = new DropFunctionDesc(functionName, isTemporaryFunction, null);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     addEntities(functionName, info.getClassName(), isTemporaryFunction, null);
   }

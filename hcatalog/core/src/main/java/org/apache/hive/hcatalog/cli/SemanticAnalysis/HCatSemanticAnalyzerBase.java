@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -103,11 +102,6 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
           if (work != null) {
             authorizeDDLWork(context, hive, work);
           }
-        } else if (task.getWork() instanceof DDLWork2) {
-          DDLWork2 work = (DDLWork2) task.getWork();
-          if (work != null) {
-            authorizeDDLWork2(context, hive, work);
-          }
         }
       }
     } catch (SemanticException ex) {
@@ -120,19 +114,10 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
   }
 
   /**
-   * Authorized the given DDLWork. Does nothing by default. Override this
-   * and delegate to the relevant method in HiveAuthorizationProvider obtained by
-   * getAuthProvider().
+   * Authorized the given DDLWork. It is only for the interim time while DDLTask and DDLWork are being refactored.
    */
   protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext context,
                   Hive hive, DDLWork work) throws HiveException {
-  }
-
-  /**
-   * Authorized the given DDLWork2. It is only for the interim time while DDLTask and DDLWork are being refactored.
-   */
-  protected void authorizeDDLWork2(HiveSemanticAnalyzerHookContext context,
-                  Hive hive, DDLWork2 work) throws HiveException {
   }
 
   protected void authorize(Privilege[] inputPrivs, Privilege[] outputPrivs)

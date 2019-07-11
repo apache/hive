@@ -1298,17 +1298,17 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<String> getTables(String catName, String dbName, String pattern)
       throws MetaException {
-    return getTables(catName, dbName, pattern, null);
+    return getTables(catName, dbName, pattern, null, -1);
   }
 
   @Override
-  public List<String> getTables(String catName, String dbName, String pattern, TableType tableType)
+  public List<String> getTables(String catName, String dbName, String pattern, TableType tableType, int limit)
       throws MetaException {
     try {
       // We only support pattern matching via jdo since pattern matching in Java
       // might be different than the one used by the metastore backends
       return getTablesInternal(catName, dbName, pattern, tableType,
-          (pattern == null || pattern.equals(".*")), true);
+          (pattern == null || pattern.equals(".*")), true, limit);
     } catch (NoSuchObjectException e) {
       throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
@@ -1405,7 +1405,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   protected List<String> getTablesInternal(String catName, String dbName, String pattern,
-                                           TableType tableType, boolean allowSql, boolean allowJdo)
+                                           TableType tableType, boolean allowSql, boolean allowJdo, int limit)
       throws MetaException, NoSuchObjectException {
     final String db_name = normalizeIdentifier(dbName);
     final String cat_name = normalizeIdentifier(catName);
@@ -1413,19 +1413,19 @@ public class ObjectStore implements RawStore, Configurable {
       @Override
       protected List<String> getSqlResult(GetHelper<List<String>> ctx)
               throws MetaException {
-        return directSql.getTables(cat_name, db_name, tableType);
+        return directSql.getTables(cat_name, db_name, tableType, limit);
       }
 
       @Override
       protected List<String> getJdoResult(GetHelper<List<String>> ctx)
               throws MetaException, NoSuchObjectException {
-        return getTablesInternalViaJdo(cat_name, db_name, pattern, tableType);
+        return getTablesInternalViaJdo(cat_name, db_name, pattern, tableType, limit);
       }
     }.run(false);
   }
 
   private List<String> getTablesInternalViaJdo(String catName, String dbName, String pattern,
-                                               TableType tableType) throws MetaException {
+                                               TableType tableType, int limit) throws MetaException {
     boolean commited = false;
     Query query = null;
     List<String> tbls = null;
@@ -1449,6 +1449,8 @@ public class ObjectStore implements RawStore, Configurable {
       query = pm.newQuery(MTable.class, filterBuilder.toString());
       query.setResult("tableName");
       query.setOrdering("tableName ascending");
+      if (limit >= 0)
+        query.setRange(0, limit);
       Collection<String> names = (Collection<String>) query.executeWithArray(parameterVals.toArray(new String[0]));
       tbls = new ArrayList<>(names);
       commited = commitTransaction();
@@ -2707,8 +2709,7 @@ public class ObjectStore implements RawStore, Configurable {
     return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
-        Integer max = (maxParts < 0) ? null : maxParts;
-        return directSql.getPartitions(catName, dbName, tblName, max);
+        return directSql.getPartitions(catName, dbName, tblName, maxParts);
       }
       @Override
       protected List<Partition> getJdoResult(
@@ -10016,17 +10017,26 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private void lockForUpdate() throws MetaException {
-    String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
-    String selectForUpdateQuery = sqlGenerator.addForUpdateClause(selectQuery);
-    new RetryingExecutor(conf, () -> {
-      prepareQuotes();
-      Query query = pm.newQuery("javax.jdo.query.SQL", selectForUpdateQuery);
-      query.setUnique(true);
-      // only need to execute it to get db Lock
-      query.execute();
-      query.closeAll();
-    }).run();
+  private void lockNotificationSequenceForUpdate() throws MetaException {
+    if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY && directSql != null) {
+      // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
+      // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
+      // only one row in the table, this shouldn't cause any performance degradation.
+      new RetryingExecutor(conf, () -> {
+        directSql.lockDbTable("NOTIFICATION_SEQUENCE");
+      }).run();
+    } else {
+      String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
+      String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
+      new RetryingExecutor(conf, () -> {
+        prepareQuotes();
+        Query query = pm.newQuery("javax.jdo.query.SQL", lockingQuery);
+        query.setUnique(true);
+        // only need to execute it to get db Lock
+        query.execute();
+        query.closeAll();
+      }).run();
+    }
   }
 
   static class RetryingExecutor {
@@ -10090,7 +10100,7 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      lockForUpdate();
+      lockNotificationSequenceForUpdate();
       query = pm.newQuery(MNotificationNextId.class);
       Collection<MNotificationNextId> ids = (Collection) query.execute();
       MNotificationNextId mNotificationNextId = null;

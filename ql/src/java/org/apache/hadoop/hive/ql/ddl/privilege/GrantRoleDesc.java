@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.privilege;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -30,10 +29,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @Explain(displayName="Grant roles", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class GrantRoleDesc implements DDLDesc {
-
-  static {
-    DDLTask2.registerOperation(GrantRoleDesc.class, GrantRoleOperation.class);
-  }
 
   private final List<String> roles;
   private final List<PrincipalDesc> principals;

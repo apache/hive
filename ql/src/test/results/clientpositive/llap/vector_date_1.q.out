@@ -788,7 +788,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_date_1
-                  filterExpr: ((dt1 <> dt2) and (dt1 < dt2) and (dt1 <= dt2) and (dt2 > dt1) and (dt2 >= dt1)) (type: boolean)
+                  filterExpr: ((dt1 < dt2) and (dt1 <= dt2) and (dt2 > dt1) and (dt2 >= dt1) and (dt1 <> dt2)) (type: boolean)
                   Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -797,8 +797,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongColumn(col 0:date, col 1:date), FilterLongColLessLongColumn(col 0:date, col 1:date), FilterLongColLessEqualLongColumn(col 0:date, col 1:date), FilterLongColGreaterLongColumn(col 1:date, col 0:date), FilterLongColGreaterEqualLongColumn(col 1:date, col 0:date))
-                    predicate: ((dt1 < dt2) and (dt1 <= dt2) and (dt1 <> dt2) and (dt2 > dt1) and (dt2 >= dt1)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColLessLongColumn(col 0:date, col 1:date), FilterLongColLessEqualLongColumn(col 0:date, col 1:date), FilterLongColGreaterLongColumn(col 1:date, col 0:date), FilterLongColGreaterEqualLongColumn(col 1:date, col 0:date), FilterLongColNotEqualLongColumn(col 0:date, col 1:date))
+                    predicate: ((dt1 < dt2) and (dt1 <= dt2) and (dt2 > dt1) and (dt2 >= dt1) and (dt1 <> dt2)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dt1 (type: date), dt2 (type: date)
@@ -970,7 +970,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDateColEqualDateScalar(col 0:date, val 11323), FilterDateColNotEqualDateScalar(col 0:date, val 0))
-                    predicate: ((dt1 <> DATE'1970-01-01') and (dt1 = DATE'2001-01-01')) (type: boolean)
+                    predicate: ((dt1 = DATE'2001-01-01') and (dt1 <> DATE'1970-01-01')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: DATE'2001-01-01' (type: date), dt2 (type: date)

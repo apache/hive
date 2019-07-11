@@ -868,7 +868,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and UDFToDouble(substring(value, 5)) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(substring(value, 5)) is not null and key is not null) (type: boolean)
+                    predicate: (key is not null and UDFToDouble(substring(value, 5)) is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -886,7 +886,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and (substring(value, 5) + 1) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((substring(value, 5) + 1) is not null and key is not null) (type: boolean)
+                    predicate: (key is not null and (substring(value, 5) + 1) is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1071,7 +1071,7 @@ STAGE PLANS:
                   filterExpr: ((key < 80) and (key < 100)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 100) and (key < 80)) (type: boolean)
+                    predicate: ((key < 80) and (key < 100)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)

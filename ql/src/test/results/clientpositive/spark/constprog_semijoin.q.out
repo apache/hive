@@ -191,7 +191,7 @@ STAGE PLANS:
                   filterExpr: ((val = 't1val01') and id is not null and dimid is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((val = 't1val01') and dimid is not null and id is not null) (type: boolean)
+                    predicate: ((val = 't1val01') and id is not null and dimid is not null) (type: boolean)
                     Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), dimid (type: int)

@@ -137,7 +137,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
-            predicate: ((_col0 < 200) and (_col0 >= 100)) (type: boolean)
+            predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
             Statistics: Num rows: 87 Data size: 15486 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
@@ -168,7 +168,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
-            predicate: ((_col0 < 300) and (_col0 >= 200)) (type: boolean)
+            predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
             Statistics: Num rows: 87 Data size: 15486 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: UDFToInteger(_col0) (type: int)
@@ -1557,7 +1557,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
-            predicate: ((_col0 < 200) and (_col0 >= 100)) (type: boolean)
+            predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
             Statistics: Num rows: 87 Data size: 15486 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
@@ -1588,7 +1588,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
-            predicate: ((_col0 < 300) and (_col0 >= 200)) (type: boolean)
+            predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
             Statistics: Num rows: 87 Data size: 15486 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: UDFToInteger(_col0) (type: int)

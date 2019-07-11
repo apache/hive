@@ -44,7 +44,7 @@ public interface HiveMetaHook {
 
   public String ALTER_TABLE_OPERATION_TYPE = "alterTableOpType";
 
-  // These should remain in sync with AlterTableDesc::AlterTableType enum
+  // These should remain in sync with AlterTableType enum
   public List<String> allowedAlterTypes = ImmutableList.of("ADDPROPS", "DROPPROPS");
   String ALTERLOCATION = "ALTERLOCATION";
 

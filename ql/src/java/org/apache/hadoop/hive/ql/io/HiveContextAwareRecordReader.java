@@ -54,7 +54,8 @@ import org.apache.hadoop.mapred.RecordReader;
   * a binary search to find the block to begin reading from, and stop reading once it can be
   * determined no other entries will match the filter.
   */
-public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader<K, V> {
+public abstract class HiveContextAwareRecordReader<K extends WritableComparable, V extends Writable>
+    implements RecordReader<K, V> {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveContextAwareRecordReader.class.getName());
 
@@ -68,7 +69,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   private final List<Comparison> stopComparisons = new ArrayList<Comparison>();
   private Map<Path, PartitionDesc> pathToPartitionInfo;
 
-  protected RecordReader recordReader;
+  protected RecordReader<K, V> recordReader;
   protected JobConf jobConf;
   protected boolean isSorted = false;
 
@@ -76,17 +77,17 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     this(null, conf);
   }
 
-  public HiveContextAwareRecordReader(RecordReader recordReader) {
+  public HiveContextAwareRecordReader(RecordReader<K, V> recordReader) {
     this.recordReader = recordReader;
   }
 
-  public HiveContextAwareRecordReader(RecordReader recordReader, JobConf conf)
+  public HiveContextAwareRecordReader(RecordReader<K, V> recordReader, JobConf conf)
       throws IOException {
     this.recordReader = recordReader;
     this.jobConf = conf;
   }
 
-  public void setRecordReader(RecordReader recordReader) {
+  public void setRecordReader(RecordReader<K, V> recordReader) {
     this.recordReader = recordReader;
   }
 
@@ -345,12 +346,12 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
         }
 
         // If input contains header, skip header.
-        if (!Utilities.skipHeader(recordReader, headerCount, (WritableComparable)key, (Writable)value)) {
+        if (!Utilities.skipHeader(recordReader, headerCount, key, value)) {
           return false;
         }
         if (footerCount > 0) {
           footerBuffer = new FooterBuffer();
-          if (!footerBuffer.initializeBuffer(jobConf, recordReader, footerCount, (WritableComparable)key, (Writable)value)) {
+          if (!footerBuffer.initializeBuffer(jobConf, recordReader, footerCount, key, value)) {
             return false;
           }
         }
@@ -360,7 +361,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
         // Table files don't have footer rows.
         return recordReader.next(key,  value);
       } else {
-        return footerBuffer.updateBuffer(jobConf, recordReader, (WritableComparable)key, (Writable)value);
+        return footerBuffer.updateBuffer(jobConf, recordReader, key, value);
       }
     } catch (Exception e) {
       return HiveIOExceptionHandlerUtil.handleRecordReaderNextException(e, jobConf);

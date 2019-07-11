@@ -205,4 +205,21 @@ SELECT
    IF(cast(ctimestamp1 as double) % 500 > 100, DATE_ADD(cdate, 1), DATE_ADD(cdate, 365)) AS Field_5
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2;
- 
+
+
+create temporary table foo(q548284 int);
+insert into foo values(1),(2),(3),(4),(5),(6);
+
+set hive.cbo.enable=true;
+explain vectorization detail select q548284, CASE WHEN ((q548284 = 1)) THEN (0.2)
+    WHEN ((q548284 = 2)) THEN (0.4) WHEN ((q548284 = 3)) THEN (0.6) WHEN ((q548284 = 4))
+    THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (null) END from foo order by q548284 limit 1;
+select q548284, CASE WHEN ((q548284 = 1)) THEN (0.2)
+    WHEN ((q548284 = 2)) THEN (0.4) WHEN ((q548284 = 3)) THEN (0.6) WHEN ((q548284 = 4))
+    THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (null) END from foo order by q548284 limit 1;
+
+explain vectorization detail select q548284, CASE WHEN  ((q548284 = 4)) THEN (0.8)
+    WHEN ((q548284 = 5)) THEN (1) ELSE (8) END from foo order by q548284 limit 1;
+select q548284, CASE WHEN  ((q548284 = 4)) THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (8) END
+    from foo order by q548284 limit 1;
+

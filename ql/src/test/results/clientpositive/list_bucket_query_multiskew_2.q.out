@@ -88,7 +88,7 @@ POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, CAST('val_484' AS STRING) AS `value`
 FROM `default`.`fact_daily_n2`
-WHERE `ds` = '1' AND `hr` = '4' AND `value` = 'val_484'
+WHERE `value` = 'val_484' AND `ds` = '1' AND `hr` = '4'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -99,7 +99,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily_n2
-            filterExpr: ((ds = '1') and (hr = '4') and (value = 'val_484')) (type: boolean)
+            filterExpr: ((value = 'val_484') and (ds = '1') and (hr = '4')) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
@@ -267,7 +267,7 @@ POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('406' AS STRING) AS `$f0`
 FROM `default`.`fact_daily_n2`
-WHERE `ds` = '1' AND `hr` = '4' AND `key` = '406'
+WHERE `key` = '406' AND `ds` = '1' AND `hr` = '4'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -278,7 +278,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily_n2
-            filterExpr: ((ds = '1') and (hr = '4') and (key = '406')) (type: boolean)
+            filterExpr: ((key = '406') and (ds = '1') and (hr = '4')) (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator

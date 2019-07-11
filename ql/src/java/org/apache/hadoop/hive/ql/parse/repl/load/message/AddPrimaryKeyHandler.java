@@ -22,15 +22,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.table.constaint.AlterTableAddConstraintDesc;
+import org.apache.hadoop.hive.ql.ddl.table.constaint.Constraints;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 
 public class AddPrimaryKeyHandler extends AbstractMessageHandler {
   @Override
@@ -38,7 +37,7 @@ public class AddPrimaryKeyHandler extends AbstractMessageHandler {
       throws SemanticException {
     AddPrimaryKeyMessage msg = deserializer.getAddPrimaryKeyMessage(context.dmd.getPayload());
 
-    List<SQLPrimaryKey> pks = null;
+    List<SQLPrimaryKey> pks;
     try {
       pks = msg.getPrimaryKeys();
     } catch (Exception e) {
@@ -55,20 +54,21 @@ public class AddPrimaryKeyHandler extends AbstractMessageHandler {
     }
 
     String actualDbName = context.isDbNameEmpty() ? pks.get(0).getTable_db() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? pks.get(0).getTable_name() : context.tableName;
+    String actualTblName = pks.get(0).getTable_name();
 
     for (SQLPrimaryKey pk : pks) {
       pk.setTable_db(actualDbName);
       pk.setTable_name(actualTblName);
     }
 
-    AlterTableDesc addConstraintsDesc = new AlterTableDesc(actualDbName + "." + actualTblName, pks, new ArrayList<SQLForeignKey>(),
-        new ArrayList<SQLUniqueConstraint>(), context.eventOnlyReplicationSpec());
+    Constraints constraints = new Constraints(pks, null, null, null, null, null);
+    AlterTableAddConstraintDesc addConstraintsDesc = new AlterTableAddConstraintDesc(actualDbName + "." + actualTblName,
+        context.eventOnlyReplicationSpec(), constraints);
     Task<DDLWork> addConstraintsTask = TaskFactory.get(
             new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);
     tasks.add(addConstraintsTask);
     context.log.debug("Added add constrains task : {}:{}", addConstraintsTask.getId(), actualTblName);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
-    return Collections.singletonList(addConstraintsTask);    
+    return Collections.singletonList(addConstraintsTask);
   }
 }

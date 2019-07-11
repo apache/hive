@@ -32,6 +32,7 @@ Drop table tudf;
 
 -- multiple constraints
 create table tmulti(url string NOT NULL ENABLE, userName string, numClicks int CHECK (numClicks > 0), d date);
+explain alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE;
 alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE;
 DESC formatted tmulti;
 EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018');
@@ -125,6 +126,7 @@ select * from acid_uami_n0 order by de desc limit 15;
 explain update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00;
 update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00;
 select * from acid_uami_n0 order by de desc limit 15;
+explain ALTER table acid_uami_n0 drop constraint ch2;
 ALTER table acid_uami_n0 drop constraint ch2;
 explain update acid_uami_n0 set vc = 'apache_hive' where de = 893.14 ;
 update acid_uami_n0 set vc = 'apache_hive' where de = 893.14 ;

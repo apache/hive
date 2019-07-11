@@ -673,7 +673,7 @@ STAGE PLANS:
                   filterExpr: ((key > 10) and (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) and (key > 10)) (type: boolean)
+                    predicate: ((key > 10) and (key < 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       filter predicates:
@@ -2582,7 +2582,7 @@ STAGE PLANS:
                   filterExpr: ((key > 10) and (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) and (key > 10)) (type: boolean)
+                    predicate: ((key > 10) and (key < 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
@@ -2606,7 +2606,7 @@ STAGE PLANS:
                   filterExpr: ((key > 10) and (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) and (key > 10)) (type: boolean)
+                    predicate: ((key > 10) and (key < 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
@@ -2688,7 +2688,7 @@ STAGE PLANS:
                   filterExpr: ((key > 10) and (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) and (key > 10)) (type: boolean)
+                    predicate: ((key > 10) and (key < 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       filter predicates:
@@ -3340,7 +3340,7 @@ STAGE PLANS:
                   filterExpr: ((key > 10) and (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) and (key > 10)) (type: boolean)
+                    predicate: ((key > 10) and (key < 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       filter predicates:
@@ -3624,7 +3624,7 @@ STAGE PLANS:
                   filterExpr: ((key > 10) and (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) and (key > 10)) (type: boolean)
+                    predicate: ((key > 10) and (key < 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
@@ -3648,7 +3648,7 @@ STAGE PLANS:
                   filterExpr: ((key > 10) and (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) and (key > 10)) (type: boolean)
+                    predicate: ((key > 10) and (key < 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:

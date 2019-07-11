@@ -4,6 +4,7 @@ key BIGINT,
 value STRING
 )
 PARTITIONED BY (file_tag STRING)
+TBLPROPERTIES('bucketing_version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@stage_bucket_big_n17
@@ -13,6 +14,7 @@ key BIGINT,
 value STRING
 )
 PARTITIONED BY (file_tag STRING)
+TBLPROPERTIES('bucketing_version'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stage_bucket_big_n17
@@ -44,6 +46,7 @@ key BIGINT,
 value string
 )
 PARTITIONED BY (file_tag STRING)
+TBLPROPERTIES('bucketing_version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@stage_bucket_small_n17
@@ -53,6 +56,7 @@ key BIGINT,
 value string
 )
 PARTITIONED BY (file_tag STRING)
+TBLPROPERTIES('bucketing_version'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stage_bucket_small_n17
@@ -223,19 +227,19 @@ STAGE PLANS:
                 TableScan
                   alias: bucket_small_n17
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 236 Data size: 43392 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 225 Data size: 43508 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 225 Data size: 41369 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: bigint), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 225 Data size: 43508 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 225 Data size: 41369 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 225 Data size: 43508 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 225 Data size: 41369 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -249,14 +253,14 @@ STAGE PLANS:
                   0 _col0 (type: bigint)
                   1 _col0 (type: bigint)
                 outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 247 Data size: 47858 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 247 Data size: 45505 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: bigint), _col1 (type: string), _col3 (type: string), 'day1' (type: string), 1 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                  Statistics: Num rows: 247 Data size: 47858 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 247 Data size: 45505 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 247 Data size: 47858 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 247 Data size: 45505 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -374,14 +378,14 @@ STAGE PLANS:
                 TableScan
                   alias: bucket_small_n17
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 236 Data size: 43392 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 225 Data size: 43508 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 225 Data size: 41369 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: bigint), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 225 Data size: 43508 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 225 Data size: 41369 Basic stats: COMPLETE Column stats: NONE
             Map Operator Tree:
                 TableScan
                   alias: bucket_big_n17
@@ -398,14 +402,14 @@ STAGE PLANS:
                         0 _col0 (type: bigint)
                         1 _col0 (type: bigint)
                       outputColumnNames: _col0, _col1, _col3
-                      Statistics: Num rows: 247 Data size: 47858 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 247 Data size: 45505 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: bigint), _col1 (type: string), _col3 (type: string), 'day1' (type: string), 1 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                        Statistics: Num rows: 247 Data size: 47858 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 247 Data size: 45505 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 247 Data size: 47858 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 247 Data size: 45505 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -633,14 +637,14 @@ STAGE PLANS:
                 TableScan
                   alias: bucket_small_n17
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 236 Data size: 43392 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 225 Data size: 43508 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 225 Data size: 41369 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: bigint), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 225 Data size: 43508 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 225 Data size: 41369 Basic stats: COMPLETE Column stats: NONE
             Map Operator Tree:
                 TableScan
                   alias: bucket_big_n17
@@ -657,14 +661,14 @@ STAGE PLANS:
                         0 _col0 (type: bigint)
                         1 _col0 (type: bigint)
                       outputColumnNames: _col0, _col1, _col3
-                      Statistics: Num rows: 247 Data size: 47858 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 247 Data size: 45505 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: bigint), _col1 (type: string), _col3 (type: string), 'day1' (type: string), 1 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                        Statistics: Num rows: 247 Data size: 47858 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 247 Data size: 45505 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 247 Data size: 47858 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 247 Data size: 45505 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

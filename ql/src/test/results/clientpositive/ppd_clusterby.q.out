@@ -86,7 +86,7 @@ STAGE PLANS:
             filterExpr: (key = 20) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key = 20) and key is not null) (type: boolean)
+              predicate: (key is not null and (key = 20)) (type: boolean)
               Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -99,7 +99,7 @@ STAGE PLANS:
             filterExpr: (key = 20) (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key = 20) and key is not null) (type: boolean)
+              predicate: (key is not null and (key = 20)) (type: boolean)
               Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)

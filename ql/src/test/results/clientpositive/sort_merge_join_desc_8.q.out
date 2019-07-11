@@ -202,7 +202,7 @@ STAGE PLANS:
             filterExpr: (value2 is not null and (key < 10)) (type: boolean)
             Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key < 10) and value2 is not null) (type: boolean)
+              predicate: (value2 is not null and (key < 10)) (type: boolean)
               Statistics: Num rows: 166 Data size: 29880 Basic stats: COMPLETE Column stats: COMPLETE
               HashTable Sink Operator
                 keys:
@@ -217,7 +217,7 @@ STAGE PLANS:
             filterExpr: (value2 is not null and (key < 10)) (type: boolean)
             Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key < 10) and value2 is not null) (type: boolean)
+              predicate: (value2 is not null and (key < 10)) (type: boolean)
               Statistics: Num rows: 166 Data size: 29880 Basic stats: COMPLETE Column stats: COMPLETE
               Map Join Operator
                 condition map:

@@ -33,12 +33,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 /**
  * Operation process of granting.
  */
-public class GrantOperation extends DDLOperation {
-  private final GrantDesc desc;
-
+public class GrantOperation extends DDLOperation<GrantDesc> {
   public GrantOperation(DDLOperationContext context, GrantDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

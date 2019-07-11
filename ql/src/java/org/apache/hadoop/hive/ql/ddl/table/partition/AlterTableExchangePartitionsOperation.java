@@ -33,12 +33,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of exchanging some partitions between tables.
  */
-public class AlterTableExchangePartitionsOperation extends DDLOperation {
-  private final AlterTableExchangePartitionsDesc desc;
-
+public class AlterTableExchangePartitionsOperation extends DDLOperation<AlterTableExchangePartitionsDesc> {
   public AlterTableExchangePartitionsOperation(DDLOperationContext context, AlterTableExchangePartitionsDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

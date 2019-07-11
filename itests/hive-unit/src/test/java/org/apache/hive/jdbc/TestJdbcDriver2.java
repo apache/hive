@@ -1096,7 +1096,7 @@ public class TestJdbcDriver2 {
     // codes and messages. This should be fixed.
     doTestErrorCase(
         "create table " + tableName + " (key int, value string)",
-        "FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2",
+        "FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask",
         "08S01", 1);
   }
 
@@ -3163,6 +3163,18 @@ public class TestJdbcDriver2 {
     } finally {
       stmt.execute("drop table " + tblName);
     }
+  }
+
+  @Test
+  public void testUnionUniqueColumnNames() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+
+    stmt.execute("SET hive.resultset.use.unique.column.names=true");
+    ResultSet rs = stmt.executeQuery("select 1 UNION ALL select 2");
+    ResultSetMetaData metaData = rs.getMetaData();
+    assertEquals("_c0", metaData.getColumnLabel(1));
+    assertTrue("There's no . for the UNION column name", !metaData.getColumnLabel(1).contains("."));
+    stmt.close();
   }
 
   @Test

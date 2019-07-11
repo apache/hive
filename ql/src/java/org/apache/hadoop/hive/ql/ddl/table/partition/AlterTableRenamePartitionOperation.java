@@ -39,12 +39,9 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 /**
  * Operation process of renaming a partition of a table.
  */
-public class AlterTableRenamePartitionOperation extends DDLOperation {
-  private final AlterTableRenamePartitionDesc desc;
-
+public class AlterTableRenamePartitionOperation extends DDLOperation<AlterTableRenamePartitionDesc> {
   public AlterTableRenamePartitionOperation(DDLOperationContext context, AlterTableRenamePartitionDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

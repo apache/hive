@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
-import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.database.AbstractAlterDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetOwnerDesc;
+import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -44,19 +46,13 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
-
-    if (!context.isTableNameEmpty()) {
-      throw new SemanticException(
-              "Alter Database are not supported for table-level replication");
-    }
-
     AlterDatabaseMessage msg = deserializer.getAlterDatabaseMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
 
     try {
       Database oldDb = msg.getDbObjBefore();
       Database newDb = msg.getDbObjAfter();
-      AlterDatabaseDesc alterDbDesc;
+      AbstractAlterDatabaseDesc alterDbDesc;
 
       if ((oldDb.getOwnerType() == newDb.getOwnerType())
             && oldDb.getOwnerName().equalsIgnoreCase(newDb.getOwnerName())) {
@@ -76,14 +72,14 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
           }
           newDbProps.put(key, entry.getValue());
         }
-        alterDbDesc = new AlterDatabaseDesc(actualDbName, newDbProps, context.eventOnlyReplicationSpec());
+        alterDbDesc = new AlterDatabaseSetPropertiesDesc(actualDbName, newDbProps, context.eventOnlyReplicationSpec());
       } else {
-        alterDbDesc = new AlterDatabaseDesc(actualDbName, new PrincipalDesc(newDb.getOwnerName(), newDb.getOwnerType()),
-                context.eventOnlyReplicationSpec());
+        alterDbDesc = new AlterDatabaseSetOwnerDesc(actualDbName, new PrincipalDesc(newDb.getOwnerName(),
+            newDb.getOwnerType()), context.eventOnlyReplicationSpec());
       }
 
-      Task<DDLWork2> alterDbTask = TaskFactory.get(
-          new DDLWork2(readEntitySet, writeEntitySet, alterDbDesc), context.hiveConf);
+      Task<DDLWork> alterDbTask = TaskFactory.get(
+          new DDLWork(readEntitySet, writeEntitySet, alterDbDesc), context.hiveConf);
       context.log.debug("Added alter database task : {}:{}",
               alterDbTask.getId(), actualDbName);
 

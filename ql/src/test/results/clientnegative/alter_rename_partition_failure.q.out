@@ -34,4 +34,4 @@ POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1,pcol2=old_pa
 PREHOOK: query: alter table alter_rename_partition partition (pCol1='nonexist_part1', pcol2='nonexist_part2') rename to partition (pCol1='new_part1', pcol2='new_part2')
 PREHOOK: type: ALTERTABLE_RENAMEPART
 PREHOOK: Input: default@alter_rename_partition
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Rename partition: source partition [pcol1=nonexist_part1/pcol2=nonexist_part2] does not exist.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Rename partition: source partition [pcol1=nonexist_part1/pcol2=nonexist_part2] does not exist.

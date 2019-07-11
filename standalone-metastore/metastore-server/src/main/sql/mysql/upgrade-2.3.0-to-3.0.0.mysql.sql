@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 2.3.0 to 3.0.0' AS ' ';
+SELECT 'Upgrading MetaStore schema from 2.3.0 to 3.0.0' AS MESSAGE;
 
 --SOURCE 041-HIVE-16556.mysql.sql;
 --
@@ -235,8 +235,8 @@ ALTER TABLE `DBS` ADD COLUMN `CTLG_NAME` VARCHAR(256);
 UPDATE `DBS` 
   SET `CTLG_NAME` = 'hive';
 
--- Add the not null constraint
-ALTER TABLE `DBS` CHANGE COLUMN `CTLG_NAME` `CTLG_NAME` varchar(256) NOT NULL;
+-- Add the not null constraint and default value
+ALTER TABLE `DBS` CHANGE COLUMN `CTLG_NAME` `CTLG_NAME` varchar(256) NOT NULL DEFAULT 'hive';
 
 -- Put back the unique index 
 ALTER TABLE `DBS` ADD UNIQUE KEY `UNIQUE_DATABASE` (`NAME`, `CTLG_NAME`);
@@ -323,4 +323,4 @@ ALTER TABLE `TBLS` ADD COLUMN `OWNER_TYPE` VARCHAR(10) CHARACTER SET latin1 COLL
 
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.0.0', VERSION_COMMENT='Hive release version 3.0.0' where VER_ID=1;
-SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0' AS ' ';
+SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0' AS MESSAGE;

@@ -110,6 +110,19 @@ public class TestHS2HttpServer {
   }
 
   @Test
+  public void testBaseUrlResponseHeader() throws Exception{
+    String baseURL = "http://localhost:" + webUIPort + "/";
+    URL url = new URL(baseURL);
+    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    String xfoHeader = conn.getHeaderField("X-FRAME-OPTIONS");
+    String xXSSProtectionHeader = conn.getHeaderField("X-XSS-Protection");
+    String xContentTypeHeader = conn.getHeaderField("X-Content-Type-Options");
+    assertNotNull(xfoHeader);
+    assertNotNull(xXSSProtectionHeader);
+    assertNotNull(xContentTypeHeader);
+  }
+
+  @Test
   public void testContextRootUrlRewrite() throws Exception {
     String datePattern = "[a-zA-Z]{3} [a-zA-Z]{3} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}";
     String dateMask = "xxxMasked_DateTime_xxx";

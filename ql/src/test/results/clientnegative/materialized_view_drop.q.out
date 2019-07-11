@@ -39,4 +39,4 @@ PREHOOK: query: drop materialized view cmv_basetable
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Output: default@cmv_basetable
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Cannot drop a base table with DROP MATERIALIZED VIEW
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Cannot drop a base table with DROP MATERIALIZED VIEW

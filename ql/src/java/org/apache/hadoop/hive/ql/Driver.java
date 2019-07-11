@@ -63,11 +63,13 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DagUtils;
@@ -123,7 +125,6 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -1087,6 +1088,15 @@ public class Driver implements IDriver {
         additionalInputs.add(new ReadEntity(e.getTable()));
       }
     }
+    // skipping the auth check for the "CREATE DATABASE" operation if database already exists
+    // we know that if the database already exists then "CREATE DATABASE" operation will fail.
+    if(op.equals(HiveOperation.CREATEDATABASE)){
+      for (WriteEntity e : sem.getOutputs()) {
+        if(e.getType() == Entity.Type.DATABASE && db.databaseExists(e.getName().split(":")[1])){
+          return;
+        }
+      }
+    }
 
     Set<WriteEntity> additionalOutputs = new HashSet<WriteEntity>();
     for (WriteEntity e : sem.getOutputs()) {
@@ -1395,15 +1405,21 @@ public class Driver implements IDriver {
       List<String> partKeys = null;
       List<String> columns = null;
       String className = null;
+      String ownerName = null;
+      PrincipalType ownerType = null;
       switch(privObject.getType()){
       case DATABASE:
         dbname = privObject.getDatabase().getName();
+        ownerName = privObject.getDatabase().getOwnerName();
+        ownerType = privObject.getDatabase().getOwnerType();
         break;
       case TABLE:
         dbname = privObject.getTable().getDbName();
         objName = privObject.getTable().getTableName();
         columns = tableName2Cols == null ? null :
             tableName2Cols.get(Table.getCompleteName(dbname, objName));
+        ownerName = privObject.getTable().getOwner();
+        ownerType = privObject.getTable().getOwnerType();
         break;
       case DFS_DIR:
       case LOCAL_DIR:
@@ -1428,7 +1444,7 @@ public class Driver implements IDriver {
       }
       HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
       HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, objName,
-          partKeys, columns, actionType, null, className);
+          partKeys, columns, actionType, null, className, ownerName, ownerType);
       hivePrivobjs.add(hPrivObject);
     }
     return hivePrivobjs;

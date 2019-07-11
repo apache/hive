@@ -230,25 +230,27 @@ public class StatsUtils {
 
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
-      List<String> referencedColumns, boolean fetchColStats)
+      List<String> referencedColumns, boolean needColStats)
       throws HiveException {
     return collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache,
-        referencedColumns, fetchColStats, false);
+        referencedColumns, needColStats, false);
   }
 
   private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList, Table table,
       List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
-      List<String> referencedColumns, boolean fetchColStats, boolean failIfCacheMiss) throws HiveException {
+      List<String> referencedColumns, boolean needColStats, boolean failIfCacheMiss) throws HiveException {
 
     Statistics stats = null;
 
-    boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
+    boolean fetchColStats =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
+    boolean estimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
 
     if (!table.isPartitioned()) {
 
       Factory basicStatsFactory = new BasicStats.Factory();
 
-      if (shouldEstimateStats) {
+      if (estimateStats) {
         basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
       }
 
@@ -261,22 +263,19 @@ public class StatsUtils {
       //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
       long ds = basicStats.getDataSize();
       long nr = basicStats.getNumRows();
-      List<ColStatistics> colStats = Lists.newArrayList();
+      List<ColStatistics> colStats = Collections.emptyList();
 
       long numErasureCodedFiles = getErasureCodedFiles(table);
 
-      if (fetchColStats) {
-        colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache);
-        if(colStats == null) {
-          colStats = Lists.newArrayList();
-        }
+      if (needColStats) {
+        colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache, fetchColStats);
         estimateStatsForMissingCols(neededColumns, colStats, table, conf, nr, schema);
-
         // we should have stats for all columns (estimated or actual)
-        assert(neededColumns.size() == colStats.size());
+        assert (neededColumns.size() == colStats.size());
         long betterDS = getDataSizeFromColumnStats(nr, colStats);
         ds = (betterDS < 1 || colStats.isEmpty()) ? ds : betterDS;
       }
+
       stats = new Statistics(nr, ds, numErasureCodedFiles);
       // infer if any column can be primary key based on column statistics
       inferAndSetPrimaryKey(stats.getNumRows(), colStats);
@@ -289,7 +288,7 @@ public class StatsUtils {
       // the partitions that are not required
 
       Factory basicStatsFactory = new Factory();
-      if (shouldEstimateStats) {
+      if (estimateStats) {
         // FIXME: misses parallel
         basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
       }
@@ -304,11 +303,6 @@ public class StatsUtils {
       }
       BasicStats bbs = BasicStats.buildFrom(partStats);
 
-      List<Long> rowCounts = Lists.newArrayList();
-      for (BasicStats basicStats : partStats) {
-        rowCounts.add(basicStats.getNumRows());
-      }
-
       long nr = bbs.getNumRows();
       long ds = bbs.getDataSize();
 
@@ -317,7 +311,7 @@ public class StatsUtils {
       long numErasureCodedFiles = getSumIgnoreNegatives(erasureCodedFiles);
 
       if (nr == 0) {
-        nr=1;
+        nr = 1;
       }
       stats = new Statistics(nr, ds, numErasureCodedFiles);
       stats.setBasicStatsState(bbs.getState());
@@ -328,55 +322,16 @@ public class StatsUtils {
         }
       }
 
-      if (fetchColStats) {
+      if (needColStats) {
         List<String> partitionCols = getPartitionColumns(schema, neededColumns, referencedColumns);
 
         // We will retrieve stats from the metastore only for columns that are not cached
-        List<String> neededColsToRetrieve;
-        List<String> partitionColsToRetrieve;
         List<ColStatistics> columnStats = new ArrayList<>();
-        if (colStatsCache != null) {
-          neededColsToRetrieve = new ArrayList<String>(neededColumns.size());
-          for (String colName : neededColumns) {
-            ColStatistics colStats = colStatsCache.getColStats().get(colName);
-            if (colStats == null) {
-              neededColsToRetrieve.add(colName);
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("Stats for column " + colName +
-                    " in table " + table.getCompleteName() + " could not be retrieved from cache");
-              }
-            } else {
-              columnStats.add(colStats);
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("Stats for column " + colName +
-                    " in table " + table.getCompleteName() + " retrieved from cache");
-              }
-            }
-          }
-          partitionColsToRetrieve = new ArrayList<>(partitionCols.size());
-          for (String colName : partitionCols) {
-            ColStatistics colStats = colStatsCache.getColStats().get(colName);
-            if (colStats == null) {
-              partitionColsToRetrieve.add(colName);
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("Stats for column " + colName +
-                    " in table " + table.getCompleteName() + " could not be retrieved from cache");
-              }
-            } else {
-              columnStats.add(colStats);
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("Stats for column " + colName +
-                    " in table " + table.getCompleteName() + " retrieved from cache");
-              }
-            }
-          }
-        } else {
-          neededColsToRetrieve = neededColumns;
-          partitionColsToRetrieve = partitionCols;
-        }
+        List<String> neededColsToRetrieve = extractColumnStates(table, neededColumns, colStatsCache, columnStats);
+        List<String> partitionColsToRetrieve = extractColumnStates(table, partitionCols, colStatsCache, columnStats);
 
         // List of partitions
-        List<String> partNames = new ArrayList<String>(partList.getNotDeniedPartns().size());
+        List<String> partNames = new ArrayList<>(partList.getNotDeniedPartns().size());
         for (Partition part : partList.getNotDeniedPartns()) {
           partNames.add(part.getName());
         }
@@ -385,15 +340,14 @@ public class StatsUtils {
         // We check the sizes of neededColumns and partNames here. If either
         // size is 0, aggrStats is null after several retries. Thus, we can
         // skip the step to connect to the metastore.
-        if (neededColsToRetrieve.size() > 0 && partNames.size() > 0) {
+        if (fetchColStats && !neededColsToRetrieve.isEmpty() && !partNames.isEmpty()) {
           aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
               neededColsToRetrieve, partNames, false);
         }
 
         boolean statsRetrieved = aggrStats != null &&
             aggrStats.getColStats() != null && aggrStats.getColStatsSize() != 0;
-        if (neededColumns.size() == 0 ||
-            (neededColsToRetrieve.size() > 0 && !statsRetrieved)) {
+        if (neededColumns.isEmpty() || (!neededColsToRetrieve.isEmpty() && !statsRetrieved)) {
           estimateStatsForMissingCols(neededColsToRetrieve, columnStats, table, conf, nr, schema);
           // There are some partitions with no state (or we didn't fetch any state).
           // Update the stats with empty list to reflect that in the
@@ -440,7 +394,7 @@ public class StatsUtils {
           }
         }
 
-        if(rowCounts.size() == 0 ) {
+        if (partStats.isEmpty()) {
           // all partitions are filtered by partition pruning
           stats.setBasicStatsState(State.COMPLETE);
         }
@@ -458,6 +412,26 @@ public class StatsUtils {
       }
     }
     return stats;
+  }
+
+  private static List<String> extractColumnStates(Table table, List<String> columns,
+      ColumnStatsList colStatsCache, List<ColStatistics> columnStats) {
+    if (colStatsCache == null) {
+      return columns;
+    }
+    List<String> neededColsToRetrieve = new ArrayList<>(columns.size());
+    for (String colName : columns) {
+      ColStatistics colStats = colStatsCache.getColStats().get(colName);
+      if (colStats == null) {
+        neededColsToRetrieve.add(colName);
+        LOG.debug("Stats for column {} in table {} could not be retrieved from cache", colName,
+            table.getCompleteName());
+      } else {
+        columnStats.add(colStats);
+        LOG.debug("Stats for column {} in table {} retrieved from cache", colName, table.getCompleteName());
+      }
+    }
+    return neededColsToRetrieve;
   }
 
 
@@ -998,10 +972,11 @@ public class StatsUtils {
    */
   public static List<ColStatistics> getTableColumnStats(
       Table table, List<ColumnInfo> schema, List<String> neededColumns,
-      ColumnStatsList colStatsCache) {
+      ColumnStatsList colStatsCache, boolean fetchColStats) {
+    List<ColStatistics> stats = new ArrayList<>();
     if (table.isMaterializedTable()) {
       LOG.debug("Materialized table does not contain table statistics");
-      return null;
+      return stats;
     }
     // We will retrieve stats from the metastore only for columns that are not cached
     List<String> colStatsToRetrieve;
@@ -1022,16 +997,16 @@ public class StatsUtils {
         SemanticAnalyzer.DUMMY_TABLE.equals(tabName)) {
       // insert into values gets written into insert from select dummy_table
       // This table is dummy and has no stats
-      return null;
+      return stats;
     }
-    List<ColStatistics> stats = null;
-    try {
-      List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
-          dbName, tabName, colStatsToRetrieve, false);
-      stats = convertColStats(colStat, tabName);
-    } catch (HiveException e) {
-      LOG.error("Failed to retrieve table statistics: ", e);
-      stats = new ArrayList<ColStatistics>();
+    if (fetchColStats) {
+      try {
+        List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
+            dbName, tabName, colStatsToRetrieve, false);
+        stats = convertColStats(colStat, tabName);
+      } catch (HiveException e) {
+        LOG.error("Failed to retrieve table statistics: ", e);
+      }
     }
     // Merge stats from cache with metastore cache
     if (colStatsCache != null) {

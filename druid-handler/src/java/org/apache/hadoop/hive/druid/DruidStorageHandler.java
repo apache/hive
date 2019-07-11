@@ -137,7 +137,8 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   private static final HttpClient HTTP_CLIENT;
 
-  private static final List<String> ALLOWED_ALTER_TYPES = ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
+  private static final List<String> ALLOWED_ALTER_TYPES =
+      ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
 
   static {
     final Lifecycle lifecycle = new Lifecycle();

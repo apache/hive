@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.privilege;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -33,10 +32,6 @@ public class ShowRolesDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final String SCHEMA = "role#string";
-
-  static {
-    DDLTask2.registerOperation(ShowRolesDesc.class, ShowRolesOperation.class);
-  }
 
   private final String resFile;
 

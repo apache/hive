@@ -608,7 +608,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 1052 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
             Filter Operator
-              predicate: ((key < 20) and (key > 10)) (type: boolean)
+              predicate: ((key > 10) and (key < 20)) (type: boolean)
               Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)

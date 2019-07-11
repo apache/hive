@@ -355,8 +355,8 @@ public class OrcRecordUpdater implements RecordUpdater {
       writerOptions.bufferSize(baseBufferSizeValue / ratio);
       writerOptions.stripeSize(baseStripeSizeValue / ratio);
       writerOptions.blockPadding(false);
-      if (optionsCloneForDelta.getConfiguration().getBoolean(
-        HiveConf.ConfVars.HIVE_ORC_DELTA_STREAMING_OPTIMIZATIONS_ENABLED.varname, false)) {
+      if (HiveConf.getBoolVar(optionsCloneForDelta.getConfiguration(),
+              HiveConf.ConfVars.HIVE_ORC_DELTA_STREAMING_OPTIMIZATIONS_ENABLED) || options.isTemporary()) {
         writerOptions.encodingStrategy(org.apache.orc.OrcFile.EncodingStrategy.SPEED);
         writerOptions.rowIndexStride(0);
         writerOptions.getConfiguration().set(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getAttribute(), "-1.0");
@@ -573,10 +573,18 @@ public class OrcRecordUpdater implements RecordUpdater {
             writer.close(); // normal close, when there are inserts.
           }
         } else {
-          if (LOG.isDebugEnabled()) {
+          if (options.isWritingBase()) {
+            // With insert overwrite we need the empty file to delete the previous content of the table
+            LOG.debug("Empty file has been created for overwrite: {}", path);
+
+            OrcFile.WriterOptions wo = OrcFile.writerOptions(this.options.getConfiguration())
+                .inspector(rowInspector)
+                .callback(new OrcRecordUpdater.KeyIndexBuilder("testEmpty"));
+            OrcFile.createWriter(path, wo).close();
+          } else {
             LOG.debug("No insert events in path: {}.. Deleting..", path);
+            fs.delete(path, false);
           }
-          fs.delete(path, false);
         }
       } else {
         //so that we create empty bucket files when needed (but see HIVE-17138)

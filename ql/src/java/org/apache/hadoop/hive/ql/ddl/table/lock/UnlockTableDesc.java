@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -32,10 +31,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Unlock Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class UnlockTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(UnlockTableDesc.class, UnlockTableOperation.class);
-  }
 
   private final String tableName;
   private final Map<String, String> partSpec;

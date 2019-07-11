@@ -547,7 +547,7 @@ STAGE PLANS:
                 Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col1 (type: int)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.6
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -670,7 +670,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n0
-                  filterExpr: ((name = name2) and (deptno = deptno2)) (type: boolean)
+                  filterExpr: ((deptno = deptno2) and (name = name2)) (type: boolean)
                   Statistics: Num rows: 8 Data size: 1536 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((deptno = deptno2) and (name = name2)) (type: boolean)
@@ -681,7 +681,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.5
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE

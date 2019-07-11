@@ -88,7 +88,7 @@ HiveProject(_o__c0=[$0], sm_type=[$1], cc_name=[$2], 30 days=[$3], 31-60 days=[$
             HiveJoin(condition=[=($2, $10)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveJoin(condition=[=($0, $9)], joinType=[inner], algorithm=[none], cost=[not available])
                 HiveProject(cs_ship_date_sk=[$2], cs_call_center_sk=[$11], cs_ship_mode_sk=[$13], cs_warehouse_sk=[$14], CASE=[CASE(<=(-($2, $0), 30), 1, 0)], CASE5=[CASE(AND(>(-($2, $0), 30), <=(-($2, $0), 60)), 1, 0)], CASE6=[CASE(AND(>(-($2, $0), 60), <=(-($2, $0), 90)), 1, 0)], CASE7=[CASE(AND(>(-($2, $0), 90), <=(-($2, $0), 120)), 1, 0)], CASE8=[CASE(>(-($2, $0), 120), 1, 0)])
-                  HiveFilter(condition=[AND(IS NOT NULL($14), IS NOT NULL($13), IS NOT NULL($11), IS NOT NULL($2))])
+                  HiveFilter(condition=[AND(IS NOT NULL($14), IS NOT NULL($2), IS NOT NULL($13), IS NOT NULL($11))])
                     HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
                 HiveProject(d_date_sk=[$0])
                   HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])

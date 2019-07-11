@@ -8,4 +8,4 @@ POSTHOOK: query: create role accounting
 POSTHOOK: type: CREATEROLE
 PREHOOK: query: show role grant role accounting
 PREHOOK: type: SHOW_ROLE_GRANT
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Error getting role grant information for user accounting: User : user1 is not allowed check privileges of a role it does not belong to : accounting. User has to belong to ADMIN role and have it as current role, for this action.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Error getting role grant information for user accounting: User : user1 is not allowed check privileges of a role it does not belong to : accounting. User has to belong to ADMIN role and have it as current role, for this action.

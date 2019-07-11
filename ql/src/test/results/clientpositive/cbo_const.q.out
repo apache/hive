@@ -272,7 +272,7 @@ STAGE PLANS:
             filterExpr: ((ds = '2008-04-08') and (UDFToDouble(hr) = 14.0D) and value is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 452 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(hr) = 14.0D) and (ds = '2008-04-08') and value is not null) (type: boolean)
+              predicate: ((ds = '2008-04-08') and (UDFToDouble(hr) = 14.0D) and value is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 452 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)

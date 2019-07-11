@@ -37,13 +37,13 @@ POSTHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`
 FROM (SELECT `value`
 FROM `default`.`filter_join_breaktask`
-WHERE `ds` = '2008-04-08' AND `value` <> '') AS `t0`
+WHERE `value` <> '' AND `ds` = '2008-04-08') AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`filter_join_breaktask`
-WHERE `ds` = '2008-04-08' AND `value` <> '' AND `key` IS NOT NULL) AS `t2` ON `t0`.`value` = `t2`.`value`
+WHERE `key` IS NOT NULL AND `value` <> '' AND `ds` = '2008-04-08') AS `t2` ON `t0`.`value` = `t2`.`value`
 INNER JOIN (SELECT `key`
 FROM `default`.`filter_join_breaktask`
-WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`
+WHERE `key` IS NOT NULL AND `ds` = '2008-04-08') AS `t4` ON `t2`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -60,7 +60,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: g
-                  filterExpr: ((ds = '2008-04-08') and (value <> '')) (type: boolean)
+                  filterExpr: ((value <> '') and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -137,12 +137,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: m
-                  filterExpr: ((value <> '') and key is not null) (type: boolean)
+                  filterExpr: (key is not null and (value <> '')) (type: boolean)
                   Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((value <> '') and key is not null) (type: boolean)
+                    predicate: (key is not null and (value <> '')) (type: boolean)
                     Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -215,7 +215,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: f
-                  filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+                  filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

@@ -2597,6 +2597,9 @@ public class AcidUtils {
 
   private static void validateAcidFiles(FileStatus[] srcs, FileSystem fs) throws SemanticException {
     try {
+      if (srcs == null) {
+        return;
+      }
       for (FileStatus oneSrc : srcs) {
         if (!AcidUtils.MetaDataFile.isRawFormatFile(oneSrc.getPath(), fs)) {
           throw new SemanticException(ErrorMsg.LOAD_DATA_ACID_FILE, oneSrc.getPath().toString());

@@ -409,17 +409,17 @@ public class StatsOptimizer extends Transform {
               return null;
             }
             switch (category) {
-              case LONG:
-                oneRow.add(Long.valueOf(constant) * rowCnt);
-                break;
-              case DOUBLE:
-                oneRow.add(Double.valueOf(constant) * rowCnt);
-                break;
-              case DECIMAL:
-                oneRow.add(HiveDecimal.create(constant).multiply(HiveDecimal.create(rowCnt)));
-                break;
-              default:
-                throw new IllegalStateException("never");
+            case LONG:
+              oneRow.add(Long.parseLong(constant) * rowCnt);
+              break;
+            case DOUBLE:
+              oneRow.add(Double.parseDouble(constant) * rowCnt);
+              break;
+            case DECIMAL:
+              oneRow.add(HiveDecimal.create(constant).multiply(HiveDecimal.create(rowCnt)));
+              break;
+            default:
+              throw new IllegalStateException("never");
             }
           }
           else if (udaf instanceof GenericUDAFCount) {
@@ -460,11 +460,7 @@ public class StatsOptimizer extends Transform {
                   Logger.debug("Stats for table : " + tbl.getTableName() + " are not up to date.");
                   return null;
                 }
-                rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
-                if (rowCnt == null) {
-                  Logger.debug("Table doesn't have up to date stats " + tbl.getTableName());
-                  return null;
-                }
+                rowCnt = Long.valueOf(tbl.getProperty(StatsSetupConst.ROW_COUNT));
                 if (!StatsUtils.areColumnStatsUptoDateForQueryAnswering(tbl, tbl.getParameters(), colName)) {
                   Logger.debug("Stats for table : " + tbl.getTableName() + " column " + colName
                       + " are not up to date.");
@@ -496,12 +492,8 @@ public class StatsOptimizer extends Transform {
                     Logger.debug("Stats for part : " + part.getSpec() + " are not up to date.");
                     return null;
                   }
-                  Long partRowCnt = Long.parseLong(part.getParameters().get(
+                  long partRowCnt = Long.parseLong(part.getParameters().get(
                       StatsSetupConst.ROW_COUNT));
-                  if (partRowCnt == null) {
-                    Logger.debug("Partition doesn't have up to date stats " + part.getSpec());
-                    return null;
-                  }
                   rowCnt += partRowCnt;
                 }
                 Collection<List<ColumnStatisticsObj>> result = verifyAndGetPartColumnStats(hive,
@@ -937,24 +929,14 @@ public class StatsOptimizer extends Transform {
           if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(part.getTable(), part.getParameters())) {
             return null;
           }
-          Long partRowCnt = Long.parseLong(part.getParameters().get(StatsSetupConst.ROW_COUNT));
-          if (partRowCnt == null) {
-            Logger.debug("Partition doesn't have up to date stats " + part.getSpec());
-            return null;
-          }
+          long partRowCnt = Long.parseLong(part.getParameters().get(StatsSetupConst.ROW_COUNT));
           rowCnt += partRowCnt;
         }
       } else { // unpartitioned table
         if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(tbl, tbl.getParameters())) {
           return null;
         }
-        rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
-        if (rowCnt == null) {
-          // if rowCnt < 1 than its either empty table or table on which stats are not
-          //  computed We assume the worse and don't attempt to optimize.
-          Logger.debug("Table doesn't have up to date stats " + tbl.getTableName());
-          rowCnt = null;
-        }
+        rowCnt = Long.valueOf(tbl.getProperty(StatsSetupConst.ROW_COUNT));
       }
       return rowCnt;
     }

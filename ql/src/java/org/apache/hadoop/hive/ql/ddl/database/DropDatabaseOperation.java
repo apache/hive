@@ -30,12 +30,9 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 /**
  * Operation process of creating a database.
  */
-public class DropDatabaseOperation extends DDLOperation {
-  private final DropDatabaseDesc desc;
-
+public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
   public DropDatabaseOperation(DDLOperationContext context, DropDatabaseDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

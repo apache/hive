@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -34,10 +33,6 @@ public class ShowTableStatusDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final String SCHEMA = "tab_name#string";
-
-  static {
-    DDLTask2.registerOperation(ShowTableStatusDesc.class, ShowTableStatusOperation.class);
-  }
 
   private final String resFile;
   private final String dbName;

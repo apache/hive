@@ -107,7 +107,7 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                           keys: ds (type: string), hr (type: string)
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2, _col3
                           Statistics: Num rows: 2 Data size: 2496 Basic stats: COMPLETE Column stats: COMPLETE
@@ -139,7 +139,7 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                           keys: '2008-12-31' (type: string), hr (type: string)
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2, _col3
                           Statistics: Num rows: 2 Data size: 2316 Basic stats: COMPLETE Column stats: COMPLETE

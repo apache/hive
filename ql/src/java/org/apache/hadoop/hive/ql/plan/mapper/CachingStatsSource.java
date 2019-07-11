@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 import com.google.common.cache.Cache;
@@ -31,19 +31,19 @@ import com.google.common.cache.CacheBuilder;
 
 public class CachingStatsSource implements StatsSource {
 
-
-  private final Cache<OpTreeSignature, OperatorStats> cache;
+  private final Cache<Object, OperatorStats> cache;
 
   public CachingStatsSource(int cacheSize) {
     cache = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
   }
 
-  public void put(OpTreeSignature sig, OperatorStats opStat) {
-    cache.put(sig, opStat);
+  @Override
+  public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
+    return Optional.ofNullable(cache.getIfPresent(treeSig));
   }
 
   @Override
-  public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
+  public Optional<OperatorStats> lookup(RelTreeSignature treeSig) {
     return Optional.ofNullable(cache.getIfPresent(treeSig));
   }
 
@@ -55,10 +55,19 @@ public class CachingStatsSource implements StatsSource {
     return false;
   }
 
+  private void put(OpTreeSignature sig, OperatorStats opStat) {
+    cache.put(sig, opStat);
+  }
+
   @Override
-  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-    for (Entry<OpTreeSignature, OperatorStats> entry : map.entrySet()) {
-      put(entry.getKey(), entry.getValue());
+  public void load(List<PersistedRuntimeStats> statMap) {
+    for (PersistedRuntimeStats entry : statMap) {
+      if (entry.rSig != null) {
+        cache.put(entry.rSig, entry.stat);
+      }
+      if (entry.sig != null) {
+        cache.put(entry.sig, entry.stat);
+      }
     }
   }
 

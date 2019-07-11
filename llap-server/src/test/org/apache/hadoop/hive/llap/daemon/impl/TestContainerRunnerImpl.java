@@ -98,8 +98,8 @@ public class TestContainerRunnerImpl {
     srvAddress.set(serverSocket);
 
     this.metrics = LlapDaemonExecutorMetrics
-        .create("ContinerRunerTests", MetricsUtils.getUUID(), numExecutors,
-            Ints.toArray(intervalList));
+        .create("ContinerRunerTests", MetricsUtils.getUUID(), numExecutors, waitQueueSize,
+            Ints.toArray(intervalList), 0, 0L, 0);
 
     for (int i = 0; i < numLocalDirs; i++) {
       File f = new File(testWorkDir, "localDir");

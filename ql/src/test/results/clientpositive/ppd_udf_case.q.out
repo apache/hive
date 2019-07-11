@@ -44,10 +44,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
+            filterExpr: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 546000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
+              predicate: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
               Statistics: Num rows: 3 Data size: 1638 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string), hr (type: string)
@@ -59,10 +59,10 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             alias: b
-            filterExpr: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
+            filterExpr: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 546000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
+              predicate: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
               Statistics: Num rows: 3 Data size: 1638 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string), hr (type: string)
@@ -199,7 +199,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
+            filterExpr: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = '27') (type: boolean)
@@ -214,7 +214,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             alias: b
-            filterExpr: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
+            filterExpr: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = '27') (type: boolean)

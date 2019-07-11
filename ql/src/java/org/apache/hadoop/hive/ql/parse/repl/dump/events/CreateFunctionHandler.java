@@ -39,7 +39,7 @@ class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> 
 
   @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} CREATE_MESSAGE message : {}", fromEventId(), eventMessageAsJSON);
+    LOG.info("Processing#{} CREATE_FUNCTION message : {}", fromEventId(), eventMessageAsJSON);
     Path metadataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
     FileSystem fileSystem = metadataPath.getFileSystem(withinContext.hiveConf);
 

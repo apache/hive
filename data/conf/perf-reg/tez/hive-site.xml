@@ -307,4 +307,9 @@
   <value>true</value>
 </property>
 
+<property>
+  <name>hive.query.reexecution.stats.persist.scope</name>
+  <value>query</value>
+</property>
+
 </configuration>

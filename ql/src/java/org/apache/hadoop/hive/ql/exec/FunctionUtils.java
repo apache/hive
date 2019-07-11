@@ -18,6 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.List;
+
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
@@ -25,7 +30,55 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
 
-public class FunctionUtils {
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
+/**
+ * Function related utilities.
+ */
+public final class FunctionUtils {
+  private FunctionUtils() {
+    throw new UnsupportedOperationException("FunctionUtils should not be instantiated");
+  }
+
+  public static FunctionResource[] toFunctionResource(List<ResourceUri> resources) throws HiveException {
+    if (resources == null) {
+      return null;
+    }
+
+    FunctionResource[] converted = new FunctionResource[resources.size()];
+    for (int i = 0; i < converted.length; i++) {
+      ResourceUri resource = resources.get(i);
+      SessionState.ResourceType type = getResourceType(resource.getResourceType());
+      converted[i] = new FunctionResource(type, resource.getUri());
+    }
+    return converted;
+  }
+
+  public static void addFunctionResources(FunctionResource[] resources) throws HiveException {
+    if (resources != null) {
+      Multimap<SessionState.ResourceType, String> mappings = HashMultimap.create();
+      for (FunctionResource res : resources) {
+        mappings.put(res.getResourceType(), res.getResourceURI());
+      }
+      for (SessionState.ResourceType type : mappings.keys()) {
+        SessionState.get().add_resources(type, mappings.get(type));
+      }
+    }
+  }
+
+  public static SessionState.ResourceType getResourceType(ResourceType rt) {
+    switch (rt) {
+    case JAR:
+      return SessionState.ResourceType.JAR;
+    case FILE:
+      return SessionState.ResourceType.FILE;
+    case ARCHIVE:
+      return SessionState.ResourceType.ARCHIVE;
+    default:
+      throw new AssertionError("Unexpected resource type " + rt);
+    }
+  }
 
   public static boolean isQualifiedFunctionName(String functionName) {
     return functionName.indexOf('.') >= 0;

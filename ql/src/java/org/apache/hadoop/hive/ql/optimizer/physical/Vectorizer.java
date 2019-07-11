@@ -42,6 +42,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -1206,7 +1207,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       // Eliminate MR plans with more than one TableScanOperator.
 
-      LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork = mapWork.getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> aliasToWork = mapWork.getAliasToWork();
       if ((aliasToWork == null) || (aliasToWork.size() == 0)) {
         setNodeIssue("Vectorized map work requires work");
         return null;
@@ -1713,8 +1714,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       List<String> tableDataColumnList = null;
       List<TypeInfo> tableDataTypeInfoList = null;
 
-      LinkedHashMap<Path, ArrayList<String>> pathToAliases = mapWork.getPathToAliases();
-      LinkedHashMap<Path, PartitionDesc> pathToPartitionInfo = mapWork.getPathToPartitionInfo();
+      Map<Path, List<String>> pathToAliases = mapWork.getPathToAliases();
+      Map<Path, PartitionDesc> pathToPartitionInfo = mapWork.getPathToPartitionInfo();
 
       // Remember the input file formats we validated and why.
       Set<String> inputFileFormatClassNameSet = new HashSet<String>();
@@ -1725,7 +1726,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       Set<Support> inputFormatSupportSet = new TreeSet<Support>();
       boolean outsideLoopIsFirstPartition = true;
 
-      for (Entry<Path, ArrayList<String>> entry: pathToAliases.entrySet()) {
+      for (Entry<Path, List<String>> entry: pathToAliases.entrySet()) {
         final boolean isFirstPartition = outsideLoopIsFirstPartition;
         outsideLoopIsFirstPartition = false;
 
@@ -4781,9 +4782,14 @@ public class Vectorizer implements PhysicalPlanResolver {
             }
           }
         } else {
+          Object[] arguments;
           int argumentCount = children.length + (parent.getOutputColumnNum() == -1 ? 0 : 1);
-          Object[] arguments = new Object[argumentCount];
-          // new input column numbers
+          if (parent instanceof DecimalColDivideDecimalScalar) {
+            arguments = new Object[argumentCount + 1];
+            arguments[children.length] = ((DecimalColDivideDecimalScalar) parent).getValue();
+          } else {
+            arguments = new Object[argumentCount];
+          }
           for (int i = 0; i < children.length; i++) {
             VectorExpression vce = children[i];
             arguments[i] = vce.getOutputColumnNum();

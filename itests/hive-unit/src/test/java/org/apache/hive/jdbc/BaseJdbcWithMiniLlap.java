@@ -106,8 +106,8 @@ public abstract class BaseJdbcWithMiniLlap {
   private static Path kvDataFilePath;
   private static Path dataTypesFilePath;
 
-  private static HiveConf conf = null;
-  private static Connection hs2Conn = null;
+  protected static HiveConf conf = null;
+  protected static Connection hs2Conn = null;
 
   // This method should be called by sub-classes in a @BeforeClass initializer
   public static MiniHS2 beforeTest(HiveConf inputConf) throws Exception {
@@ -160,7 +160,7 @@ public abstract class BaseJdbcWithMiniLlap {
     }
   }
 
-  private void createTestTable(String tableName) throws Exception {
+  protected void createTestTable(String tableName) throws Exception {
     createTestTable(hs2Conn, null, tableName, kvDataFilePath.toString());
   }
 

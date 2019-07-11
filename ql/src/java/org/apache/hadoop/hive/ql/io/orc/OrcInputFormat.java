@@ -1728,9 +1728,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         if (context.cacheStripeDetails) {
           context.footerCache.put(new FooterCacheKey(fsFileId, file.getPath()), orcTail);
         }
+        stripes = orcReader.getStripes();
+        stripeStats = orcReader.getStripeStatistics();
+      } else {
+        stripes = orcTail.getStripes();
+        stripeStats = orcTail.getStripeStatistics();
       }
-      stripes = orcTail.getStripes();
-      stripeStats = orcTail.getStripeStatistics();
       fileTypes = orcTail.getTypes();
       TypeDescription fileSchema = OrcUtils.convertTypeFromProtobuf(fileTypes, 0);
       Reader.Options readerOptions = new Reader.Options(context.conf);

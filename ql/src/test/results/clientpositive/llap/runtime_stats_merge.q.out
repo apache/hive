@@ -1,50 +1,50 @@
-PREHOOK: query: create table lineitem (L_ORDERKEY integer)
+PREHOOK: query: create table lineitem1 (L_ORDERKEY integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@lineitem
-POSTHOOK: query: create table lineitem (L_ORDERKEY integer)
+PREHOOK: Output: default@lineitem1
+POSTHOOK: query: create table lineitem1 (L_ORDERKEY integer)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@lineitem
-PREHOOK: query: insert into lineitem values (1),(2),(3)
+POSTHOOK: Output: default@lineitem1
+PREHOOK: query: insert into lineitem1 values (1),(2),(3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@lineitem
-POSTHOOK: query: insert into lineitem values (1),(2),(3)
+PREHOOK: Output: default@lineitem1
+POSTHOOK: query: insert into lineitem1 values (1),(2),(3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@lineitem
-POSTHOOK: Lineage: lineitem.l_orderkey SCRIPT []
+POSTHOOK: Output: default@lineitem1
+POSTHOOK: Lineage: lineitem1.l_orderkey SCRIPT []
 PREHOOK: query: create table lineitem2
  stored as orc  TBLPROPERTIES ('transactional'='true')
-  as select * from lineitem
+  as select * from lineitem1
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@lineitem
+PREHOOK: Input: default@lineitem1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@lineitem2
 POSTHOOK: query: create table lineitem2
  stored as orc  TBLPROPERTIES ('transactional'='true')
-  as select * from lineitem
+  as select * from lineitem1
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@lineitem
+POSTHOOK: Input: default@lineitem1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lineitem2
-POSTHOOK: Lineage: lineitem2.l_orderkey SIMPLE [(lineitem)lineitem.FieldSchema(name:l_orderkey, type:int, comment:null), ]
+POSTHOOK: Lineage: lineitem2.l_orderkey SIMPLE [(lineitem1)lineitem1.FieldSchema(name:l_orderkey, type:int, comment:null), ]
 PREHOOK: query: create table lineitem_stage
  stored as orc  TBLPROPERTIES ('transactional'='true')
-  as select * from lineitem limit 1
+  as select * from lineitem1 limit 1
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@lineitem
+PREHOOK: Input: default@lineitem1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@lineitem_stage
 POSTHOOK: query: create table lineitem_stage
  stored as orc  TBLPROPERTIES ('transactional'='true')
-  as select * from lineitem limit 1
+  as select * from lineitem1 limit 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@lineitem
+POSTHOOK: Input: default@lineitem1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lineitem_stage
-POSTHOOK: Lineage: lineitem_stage.l_orderkey SIMPLE [(lineitem)lineitem.FieldSchema(name:l_orderkey, type:int, comment:null), ]
+POSTHOOK: Lineage: lineitem_stage.l_orderkey SIMPLE [(lineitem1)lineitem1.FieldSchema(name:l_orderkey, type:int, comment:null), ]
 PREHOOK: query: analyze table lineitem2 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@lineitem2

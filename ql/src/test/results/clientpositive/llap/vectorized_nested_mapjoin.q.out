@@ -45,7 +45,7 @@ STAGE PLANS:
                         outputColumnNames: _col1, _col3
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 11087 Data size: 112232 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 14848 Data size: 157364 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -55,10 +55,10 @@ STAGE PLANS:
                           outputColumnNames: _col3
                           input vertices:
                             1 Map 4
-                          Statistics: Num rows: 782315 Data size: 6244648 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1389803 Data size: 11104552 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col3)
-                            minReductionHashAggr: 0.0
+                            minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -84,7 +84,7 @@ STAGE PLANS:
                   filterExpr: (ctinyint is not null and csmallint is not null) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 146796 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (csmallint is not null and ctinyint is not null) (type: boolean)
+                    predicate: (ctinyint is not null and csmallint is not null) (type: boolean)
                     Statistics: Num rows: 6848 Data size: 81820 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cdouble (type: double)
@@ -172,4 +172,4 @@ POSTHOOK: query: select sum(t1.td) from (select  v1.csmallint as tsi, v1.cdouble
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-6.065190932488632E11
+6.06519093248863E11

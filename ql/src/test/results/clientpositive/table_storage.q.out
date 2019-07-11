@@ -1,0 +1,547 @@
+PREHOOK: query: CREATE TABLE t (key STRING, val STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE TABLE t (key STRING, val STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN ALTER TABLE t CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Clustered By
+      bucket columns: key
+      number of buckets: 2
+      sort columns: key ASC
+      table name: default.t
+
+PREHOOK: query: ALTER TABLE t CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+CLUSTERED BY ( 
+  key) 
+SORTED BY ( 
+  key ASC) 
+INTO 2 BUCKETS
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN ALTER TABLE t INTO 3 BUCKETS
+PREHOOK: type: ALTERTABLE_BUCKETNUM
+PREHOOK: Input: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t INTO 3 BUCKETS
+POSTHOOK: type: ALTERTABLE_BUCKETNUM
+POSTHOOK: Input: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Into Buckets
+      number of buckets: 3
+      table name: default.t
+
+PREHOOK: query: ALTER TABLE t INTO 3 BUCKETS
+PREHOOK: type: ALTERTABLE_BUCKETNUM
+PREHOOK: Input: default@t
+POSTHOOK: query: ALTER TABLE t INTO 3 BUCKETS
+POSTHOOK: type: ALTERTABLE_BUCKETNUM
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+CLUSTERED BY ( 
+  key) 
+SORTED BY ( 
+  key ASC) 
+INTO 3 BUCKETS
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN ALTER TABLE t NOT SORTED
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t NOT SORTED
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Not Sorted
+      table name: default.t
+
+PREHOOK: query: ALTER TABLE t NOT SORTED
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t NOT SORTED
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+CLUSTERED BY ( 
+  key) 
+INTO 3 BUCKETS
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN ALTER TABLE t NOT CLUSTERED
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t NOT CLUSTERED
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Not Clustered
+      table name: default.t
+
+PREHOOK: query: ALTER TABLE t NOT CLUSTERED
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t NOT CLUSTERED
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN ALTER TABLE t SKEWED BY (key) ON (("a"), ("b")) STORED AS DIRECTORIES
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t SKEWED BY (key) ON (("a"), ("b")) STORED AS DIRECTORIES
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Skewed By
+      skewedColumnNames: key
+      skewedColumnValues: [a], [b]
+      table name: default.t
+      isStoredAsDirectories: true
+
+PREHOOK: query: ALTER TABLE t SKEWED BY (key) ON (("a"), ("b")) STORED AS DIRECTORIES
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t SKEWED BY (key) ON (("a"), ("b")) STORED AS DIRECTORIES
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+SKEWED BY (key)
+  ON (('a'),('b'))
+  STORED AS DIRECTORIES
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTBLPART_SKEWED_LOCATION
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTBLPART_SKEWED_LOCATION
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+#### A masked pattern was here ####
+      table name: default.t
+
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTBLPART_SKEWED_LOCATION
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTBLPART_SKEWED_LOCATION
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+#### A masked pattern was here ####
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+SKEWED BY (key)
+  ON (('a'),('b'))
+  STORED AS DIRECTORIES
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN ALTER TABLE t NOT SKEWED
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t NOT SKEWED
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Not Skewed
+      table name: default.t
+
+PREHOOK: query: ALTER TABLE t NOT SKEWED
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t NOT SKEWED
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN ALTER TABLE t SET FILEFORMAT parquet
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t SET FILEFORMAT parquet
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Set File Format
+      input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+      output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+      table name: default.t
+
+PREHOOK: query: ALTER TABLE t SET FILEFORMAT parquet
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t SET FILEFORMAT parquet
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_LOCATION
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+#### A masked pattern was here ####
+      table name: default.t
+
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_LOCATION
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+#### A masked pattern was here ####
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN ALTER TABLE t SET SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe"
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t SET SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe"
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Set Serde
+      serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+      table name: default.t
+
+PREHOOK: query: ALTER TABLE t SET SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe"
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t SET SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe"
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN ALTER TABLE t SET SERDEPROPERTIES('property1'='value1', 'property2'='value2')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: EXPLAIN ALTER TABLE t SET SERDEPROPERTIES('property1'='value1', 'property2'='value2')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Set Serde Props
+      properties:
+        property1 value1
+        property2 value2
+      table name: default.t
+
+PREHOOK: query: ALTER TABLE t SET SERDEPROPERTIES('property1'='value1', 'property2'='value2')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t SET SERDEPROPERTIES('property1'='value1', 'property2'='value2')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE TABLE `t`(
+  `key` string, 
+  `val` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+WITH SERDEPROPERTIES ( 
+  'property1'='value1', 
+  'property2'='value2') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####

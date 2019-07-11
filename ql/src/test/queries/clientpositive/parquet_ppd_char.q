@@ -1,7 +1,6 @@
 --! qt:dataset:src1
 --! qt:dataset:src
 
-set hive.parquet.timestamp.skip.conversion=true;
 set hive.vectorized.execution.enabled=false;
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET hive.optimize.ppd=true;

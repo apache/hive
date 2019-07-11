@@ -26,12 +26,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Operation process of killing queries.
  */
-public class KillQueriesOperation extends DDLOperation {
-  private final KillQueriesDesc desc;
-
+public class KillQueriesOperation extends DDLOperation<KillQueriesDesc> {
   public KillQueriesOperation(DDLOperationContext context, KillQueriesDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

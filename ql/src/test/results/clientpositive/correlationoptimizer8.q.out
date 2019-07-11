@@ -34,10 +34,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            filterExpr: ((UDFToDouble(key) < 20.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+            filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(key) < 20.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+              predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
               Statistics: Num rows: 148 Data size: 12876 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
@@ -131,10 +131,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
-            filterExpr: ((UDFToDouble(key) > 100.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+            filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 100.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+              predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
               Statistics: Num rows: 148 Data size: 12876 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
@@ -239,10 +239,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            filterExpr: ((UDFToDouble(key) < 20.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+            filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(key) < 20.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+              predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
               Statistics: Num rows: 148 Data size: 12876 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
@@ -259,10 +259,10 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
           TableScan
             alias: x1
-            filterExpr: ((UDFToDouble(key) > 100.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+            filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 100.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+              predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
               Statistics: Num rows: 148 Data size: 12876 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
@@ -906,10 +906,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            filterExpr: ((UDFToDouble(key) < 20.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+            filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(key) < 20.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+              predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
               Statistics: Num rows: 148 Data size: 12876 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
@@ -1003,10 +1003,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
-            filterExpr: ((UDFToDouble(key) > 100.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+            filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 100.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+              predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
               Statistics: Num rows: 148 Data size: 26344 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()

@@ -81,7 +81,7 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    Alter Database
+    Set Database Properties
       name: d
       properties:
         test yesthisis

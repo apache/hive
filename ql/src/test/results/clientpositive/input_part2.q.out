@@ -57,7 +57,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((ds = '2008-04-08') and (key < 100)) (type: boolean)
+              predicate: ((key < 100) and (ds = '2008-04-08')) (type: boolean)
               Statistics: Num rows: 333 Data size: 90576 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), value (type: string), '12' (type: string), '2008-04-08' (type: string)
@@ -115,7 +115,7 @@ STAGE PLANS:
                       auto parallelism: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((ds = '2008-04-09') and (key < 100)) (type: boolean)
+              predicate: ((key < 100) and (ds = '2008-04-09')) (type: boolean)
               Statistics: Num rows: 333 Data size: 90576 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), value (type: string), '12' (type: string), '2008-04-09' (type: string)

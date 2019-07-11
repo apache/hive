@@ -20,6 +20,17 @@ SELECT count(*) FROM ext_non_part;
 
 drop table ext_non_part;
 
+CREATE TABLE int_non_part (col string) STORED AS ORC TBLPROPERTIES ('transactional'='true');
+INSERT INTO int_non_part VALUES ('first'), ('second');
+
+INSERT OVERWRITE TABLE int_non_part SELECT * FROM b;
+
+-- should be 0
+SELECT count(*) FROM int_non_part;
+
+drop table int_non_part;
+
+
 CREATE TABLE int_non_part (col string);
 INSERT INTO int_non_part VALUES ('first'), ('second');
 

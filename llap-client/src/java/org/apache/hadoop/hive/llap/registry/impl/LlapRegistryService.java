@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
-import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.service.AbstractService;
@@ -33,6 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LlapRegistryService extends AbstractService {
+
+  public static final String LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE =
+      "hive.llap.daemon.task.scheduler.enabled.wait.queue.size";
+  public static final String LLAP_DAEMON_NUM_ENABLED_EXECUTORS =
+      "hive.llap.daemon.num.enabled.executors";
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapRegistryService.class);
 
@@ -132,6 +136,12 @@ public class LlapRegistryService extends AbstractService {
     }
   }
 
+  public void updateRegistration(Iterable<Map.Entry<String, String>> attributes) throws IOException {
+    if (isDaemon && this.registry != null) {
+      this.registry.updateRegistration(attributes);
+    }
+  }
+
   public LlapServiceInstanceSet getInstances() throws IOException {
     return getInstances(0);
   }
@@ -158,4 +168,5 @@ public class LlapRegistryService extends AbstractService {
   public ApplicationId getApplicationId() throws IOException {
     return registry.getApplicationId();
   }
+
 }

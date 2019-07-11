@@ -16,4 +16,4 @@ POSTHOOK: query: grant role role1 to role role2
 POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: grant role role2 to role role1
 PREHOOK: type: GRANT_ROLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Error granting role: Cannot grant role role1 to role2 as role2 already belongs to the role role1. (no cycles allowed)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Error granting role: Cannot grant role role1 to role2 as role2 already belongs to the role role1. (no cycles allowed)

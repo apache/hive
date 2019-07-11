@@ -85,7 +85,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((cstring2 like '%ss%') or (cstring1 like '10%') or ((cint >= -75) and (UDFToShort(ctinyint) = csmallint) and (cdouble >= -3728.0D))) (type: boolean)
+                  filterExpr: ((cstring1 like '10%') or (cstring2 like '%ss%') or ((cint >= -75) and (UDFToShort(ctinyint) = csmallint) and (cdouble >= -3728.0D))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2491562 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -94,8 +94,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterStringColLikeStringScalar(col 7:string, pattern %ss%), FilterStringColLikeStringScalar(col 6:string, pattern 10%), FilterExprAndExpr(children: FilterLongColGreaterEqualLongScalar(col 2:int, val -75), FilterLongColEqualLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint), FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -3728.0)))
-                    predicate: (((cint >= -75) and (UDFToShort(ctinyint) = csmallint) and (cdouble >= -3728.0D)) or (cstring1 like '10%') or (cstring2 like '%ss%')) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterStringColLikeStringScalar(col 6:string, pattern 10%), FilterStringColLikeStringScalar(col 7:string, pattern %ss%), FilterExprAndExpr(children: FilterLongColGreaterEqualLongScalar(col 2:int, val -75), FilterLongColEqualLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint), FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -3728.0)))
+                    predicate: ((cstring1 like '10%') or (cstring2 like '%ss%') or ((cint >= -75) and (UDFToShort(ctinyint) = csmallint) and (cdouble >= -3728.0D))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2491562 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cfloat (type: float), cboolean1 (type: boolean), cdouble (type: double), cstring1 (type: string), ctinyint (type: tinyint), cint (type: int), ctimestamp1 (type: timestamp), UDFToDouble(cfloat) (type: double), (UDFToDouble(cfloat) * UDFToDouble(cfloat)) (type: double), UDFToDouble(ctinyint) (type: double), (UDFToDouble(ctinyint) * UDFToDouble(ctinyint)) (type: double), UDFToDouble(cint) (type: double), (UDFToDouble(cint) * UDFToDouble(cint)) (type: double)

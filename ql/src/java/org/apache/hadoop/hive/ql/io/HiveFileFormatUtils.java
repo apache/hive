@@ -23,13 +23,11 @@ import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -66,7 +64,6 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapreduce.MRJobConfig;
-import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,13 +174,17 @@ public final class HiveFileFormatUtils {
   }
 
   /**
-   * checks if files are in same format as the given input format.
+   * Checks if files are in same format as the given input format.
+   *
+   * Note: an empty set of files is considered compliant.
    */
   @SuppressWarnings("unchecked")
   public static boolean checkInputFormat(FileSystem fs, HiveConf conf,
       Class<? extends InputFormat> inputFormatCls, List<FileStatus> files)
       throws HiveException {
-    if (files.isEmpty()) return false;
+    if (files.isEmpty()) {
+      return true;
+    }
     Class<? extends InputFormatChecker> checkerCls = FileChecker.getInstance()
         .getInputFormatCheckerClass(inputFormatCls);
     if (checkerCls == null
@@ -270,7 +271,7 @@ public final class HiveFileFormatUtils {
         String codecStr = conf.getCompressCodec();
         if (codecStr != null && !codecStr.trim().equals("")) {
           Class<? extends CompressionCodec> codec = 
-              (Class<? extends CompressionCodec>) JavaUtils.loadClass(codecStr);
+              JavaUtils.loadClass(codecStr);
           FileOutputFormat.setOutputCompressorClass(jc_output, codec);
         }
         String type = conf.getCompressType();
@@ -279,23 +280,11 @@ public final class HiveFileFormatUtils {
           SequenceFileOutputFormat.setOutputCompressionType(jc, style);
         }
       }
-      return getRecordWriter(jc_output, hiveOutputFormat, outputClass,
-          isCompressed, tableInfo.getProperties(), outPath, reporter);
+      return hiveOutputFormat.getHiveRecordWriter(jc_output, outPath, outputClass, isCompressed,
+          tableInfo.getProperties(), reporter);
     } catch (Exception e) {
       throw new HiveException(e);
     }
-  }
-
-  public static RecordWriter getRecordWriter(JobConf jc,
-      OutputFormat<?, ?> outputFormat,
-      Class<? extends Writable> valueClass, boolean isCompressed,
-      Properties tableProp, Path outPath, Reporter reporter
-      ) throws IOException, HiveException {
-    if (!(outputFormat instanceof HiveOutputFormat)) {
-      outputFormat = new HivePassThroughOutputFormat(outputFormat);
-    }
-    return ((HiveOutputFormat)outputFormat).getHiveRecordWriter(
-        jc, outPath, valueClass, isCompressed, tableProp, reporter);
   }
 
   public static HiveOutputFormat<?, ?> getHiveOutputFormat(Configuration conf, TableDesc tableDesc)
@@ -358,7 +347,8 @@ public final class HiveFileFormatUtils {
         .inspector(inspector)
         .recordIdColumn(rowIdColNum)
         .statementId(conf.getStatementId())
-        .finalDestination(conf.getDestPath()));
+        .finalDestination(conf.getDestPath())
+        .temporary(conf.isTemporary()));
   }
 
   public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
@@ -427,8 +417,7 @@ public final class HiveFileFormatUtils {
     return pathToPartitionInfo.get(path);
   }
 
-  private static boolean foundAlias(Map<Path, ArrayList<String>> pathToAliases,
-                                    Path path) {
+  private static boolean foundAlias(Map<Path, List<String>> pathToAliases, Path path) {
     List<String> aliases = pathToAliases.get(path);
     if ((aliases == null) || (aliases.isEmpty())) {
       return false;
@@ -436,8 +425,7 @@ public final class HiveFileFormatUtils {
     return true;
   }
 
-  private static Path getMatchingPath(Map<Path, ArrayList<String>> pathToAliases,
-                                        Path dir) {
+  private static Path getMatchingPath(Map<Path, List<String>> pathToAliases, Path dir) {
     // First find the path to be searched
     Path path = dir;
     if (foundAlias(pathToAliases, path)) {
@@ -469,11 +457,9 @@ public final class HiveFileFormatUtils {
    * @param aliasToWork    The operator tree to be invoked for a given alias
    * @param dir            The path to look for
    **/
-  public static List<Operator<? extends OperatorDesc>> doGetWorksFromPath(
-    Map<Path, ArrayList<String>> pathToAliases,
-    Map<String, Operator<? extends OperatorDesc>> aliasToWork, Path dir) {
-    List<Operator<? extends OperatorDesc>> opList =
-      new ArrayList<Operator<? extends OperatorDesc>>();
+  public static List<Operator<? extends OperatorDesc>> doGetWorksFromPath(Map<Path, List<String>> pathToAliases,
+      Map<String, Operator<? extends OperatorDesc>> aliasToWork, Path dir) {
+    List<Operator<? extends OperatorDesc>> opList = new ArrayList<Operator<? extends OperatorDesc>>();
 
     List<String> aliases = doGetAliasesFromPath(pathToAliases, dir);
     for (String alias : aliases) {
@@ -487,9 +473,7 @@ public final class HiveFileFormatUtils {
    * @param pathToAliases  mapping from path to aliases
    * @param dir            The path to look for
    **/
-  public static List<String> doGetAliasesFromPath(
-    Map<Path, ArrayList<String>> pathToAliases,
-    Path dir) {
+  public static List<String> doGetAliasesFromPath(Map<Path, List<String>> pathToAliases, Path dir) {
     if (pathToAliases == null) {
       return new ArrayList<String>();
     }

@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.creation.DropTableDesc;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -94,7 +94,7 @@ public class LoadTable {
     String dbName = tableContext.dbNameToLoadIn; //this can never be null or empty;
     // Create table associated with the import
     // Executed if relevant, and used to contain all the other details about the table if not.
-    ImportTableDesc tableDesc = tableContext.overrideProperties(event.tableDesc(dbName));
+    ImportTableDesc tableDesc = event.tableDesc(dbName);
     Table table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
 
     // Normally, on import, trying to create a table or a partition in a db that does not yet exist
@@ -336,6 +336,6 @@ public class LoadTable {
     assert(table != null);
     DropTableDesc dropTblDesc = new DropTableDesc(table.getFullyQualifiedName(), table.getTableType(),
             true, false, event.replicationSpec());
-    return TaskFactory.get(new DDLWork2(new HashSet<>(), new HashSet<>(), dropTblDesc), context.hiveConf);
+    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc), context.hiveConf);
   }
 }

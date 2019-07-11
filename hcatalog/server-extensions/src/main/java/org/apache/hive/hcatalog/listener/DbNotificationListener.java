@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -519,7 +520,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     public String next() {
       String result;
       try {
-        result = ReplChangeManager.encodeFileUri(files.get(i), chksums != null ? chksums.get(i) : null,
+        result = ReplChangeManager.encodeFileUri(files.get(i), (chksums != null && !chksums.isEmpty()) ? chksums.get(i) : null,
                 subDirs != null ? subDirs.get(i) : null);
       } catch (IOException e) {
         // File operations failed
@@ -997,6 +998,14 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
 
+      // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
+      // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
+      // only one row in the table, this shouldn't cause any performance degradation.
+      if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY) {
+        String lockingQuery = "lock table \"NOTIFICATION_SEQUENCE\" in exclusive mode";
+        LOG.info("Going to execute query <" + lockingQuery + ">");
+        stmt.executeUpdate(lockingQuery);
+      }
       String s = sqlGenerator.addForUpdateClause("select \"NEXT_EVENT_ID\" " +
               " from \"NOTIFICATION_SEQUENCE\"");
       LOG.debug("Going to execute query <" + s + ">");
@@ -1081,6 +1090,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
               String.join(", ", params) + ")");
       pst.execute();
 
+      event.setEventId(nextEventId);
       // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
       if (event.isSetEventId()) {
         listenerEvent.putParameter(

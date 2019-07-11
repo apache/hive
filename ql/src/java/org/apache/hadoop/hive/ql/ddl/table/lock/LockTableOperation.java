@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of locking a table.
  */
-public class LockTableOperation extends DDLOperation {
-  private final LockTableDesc desc;
-
+public class LockTableOperation extends DDLOperation<LockTableDesc> {
   public LockTableOperation(DDLOperationContext context, LockTableDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

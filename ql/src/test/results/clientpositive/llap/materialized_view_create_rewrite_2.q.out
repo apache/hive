@@ -367,7 +367,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 450 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: b (type: varchar(256))
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.6
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -564,7 +564,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: a (type: int)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.5
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE

@@ -196,7 +196,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 894 Data size: 3224 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 958 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count(_col1)
                           Group By Vectorization:
@@ -206,7 +206,7 @@ STAGE PLANS:
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -412,7 +412,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 894 Data size: 3224 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 958 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count(_col1)
                           Group By Vectorization:
@@ -422,7 +422,7 @@ STAGE PLANS:
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

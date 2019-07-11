@@ -53,6 +53,10 @@ public class TestCachedStoreUpdateUsingEvents {
 
     rawStore = new ObjectStore();
     rawStore.setConf(hmsHandler.getConf());
+
+    CachedStore cachedStore = new CachedStore();
+    CachedStore.clearSharedCache();
+    cachedStore.setConfForTest(conf);
     sharedCache = CachedStore.getSharedCache();
 
     // Stop the CachedStore cache update service. We'll start it explicitly to control the test
@@ -190,7 +194,7 @@ public class TestCachedStoreUpdateUsingEvents {
     hmsHandler.drop_database(dbName, true, true);
     hmsHandler.drop_database(dbName2, true, true);
     sharedCache.getDatabaseCache().clear();
-    sharedCache.getTableCache().clear();
+    sharedCache.clearTableCache();
     sharedCache.getSdCache().clear();
   }
 
@@ -267,7 +271,7 @@ public class TestCachedStoreUpdateUsingEvents {
     Assert.assertNull(tblRead);
 
     sharedCache.getDatabaseCache().clear();
-    sharedCache.getTableCache().clear();
+    sharedCache.clearTableCache();
     sharedCache.getSdCache().clear();
   }
 
@@ -379,7 +383,7 @@ public class TestCachedStoreUpdateUsingEvents {
     // Clean up
     rawStore.dropDatabase(DEFAULT_CATALOG_NAME, dbName);
     sharedCache.getDatabaseCache().clear();
-    sharedCache.getTableCache().clear();
+    sharedCache.clearTableCache();
     sharedCache.getSdCache().clear();
   }
 

@@ -112,6 +112,8 @@ public class MetaStoreServerUtils {
   private static final Charset ENCODING = StandardCharsets.UTF_8;
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreServerUtils.class);
 
+  public static final String JUNIT_DATABASE_PREFIX = "junit_metastore_db";
+
   /**
    * Helper function to transform Nulls to empty strings.
    */

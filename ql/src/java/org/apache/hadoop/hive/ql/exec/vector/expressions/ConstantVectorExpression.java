@@ -439,6 +439,25 @@ public class ConstantVectorExpression extends VectorExpression {
     return intervalDayTimeValue;
   }
 
+  public Object getValue() {
+    switch (type) {
+    case LONG:
+      return getLongValue();
+    case DOUBLE:
+      return getDoubleValue();
+    case BYTES:
+      return getBytesValue();
+    case DECIMAL:
+      return getDecimalValue();
+    case TIMESTAMP:
+      return getTimestampValue();
+    case INTERVAL_DAY_TIME:
+      return getIntervalDayTimeValue();
+    default:
+      throw new RuntimeException("Unexpected column vector type " + type);
+    }
+  }
+
   public void setStructValue(Object structValue) throws HiveException {
     StructTypeInfo structTypeInfo = (StructTypeInfo) outputTypeInfo;
     ArrayList<TypeInfo> fieldTypeInfoList = structTypeInfo.getAllStructFieldTypeInfos();

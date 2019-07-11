@@ -119,6 +119,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
@@ -354,6 +355,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
@@ -453,6 +455,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
@@ -502,6 +505,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 	discover.partitions 	false               
 	numFiles            	0                   
 	numPartitions       	0                   

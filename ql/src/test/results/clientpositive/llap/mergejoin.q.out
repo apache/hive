@@ -32,7 +32,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_b_key_min) AND DynamicValue(RS_7_b_key_max) and in_bloom_filter(key, DynamicValue(RS_7_b_key_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and key BETWEEN DynamicValue(RS_7_b_key_min) AND DynamicValue(RS_7_b_key_max) and in_bloom_filter(key, DynamicValue(RS_7_b_key_bloom_filter))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -41,8 +41,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:string), FilterExprAndExpr(children: FilterStringColumnBetweenDynamicValue(col 0:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue))
-                    predicate: ((key BETWEEN DynamicValue(RS_7_b_key_min) AND DynamicValue(RS_7_b_key_max) and in_bloom_filter(key, DynamicValue(RS_7_b_key_bloom_filter))) and key is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:string), FilterStringColumnBetweenDynamicValue(col 0:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue)
+                    predicate: (key is not null and key BETWEEN DynamicValue(RS_7_b_key_min) AND DynamicValue(RS_7_b_key_max) and in_bloom_filter(key, DynamicValue(RS_7_b_key_bloom_filter))) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -134,7 +134,7 @@ STAGE PLANS:
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0, 1, 2]
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.96
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -454,7 +454,7 @@ STAGE PLANS:
                         Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -1563,7 +1563,7 @@ STAGE PLANS:
                       Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -1701,7 +1701,7 @@ STAGE PLANS:
                       Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -1910,7 +1910,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -2027,7 +2027,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null and (value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and value is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2036,8 +2036,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:string), FilterExprAndExpr(children: FilterStringColumnBetweenDynamicValue(col 1:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue))
-                    predicate: ((value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) and key is not null and value is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:string), FilterStringColumnBetweenDynamicValue(col 1:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue)
+                    predicate: (key is not null and value is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -2128,7 +2128,7 @@ STAGE PLANS:
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0, 1, 2]
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.96
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -2162,7 +2162,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2171,8 +2171,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 0:int, left 0, right 0), VectorInBloomFilterColDynamicValue))
-                    predicate: ((key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter))) and key is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), FilterLongColumnBetweenDynamicValue(col 0:int, left 0, right 0), VectorInBloomFilterColDynamicValue)
+                    predicate: (key is not null and key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter))) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int)
@@ -2232,7 +2232,7 @@ STAGE PLANS:
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=25)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.974359
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -2255,7 +2255,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.984375
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -2551,7 +2551,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -2821,7 +2821,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3028,7 +3028,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3143,7 +3143,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null and (value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and value is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3152,8 +3152,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:string), FilterExprAndExpr(children: FilterStringColumnBetweenDynamicValue(col 1:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue))
-                    predicate: ((value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) and key is not null and value is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:string), FilterStringColumnBetweenDynamicValue(col 1:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue)
+                    predicate: (key is not null and value is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -3244,7 +3244,7 @@ STAGE PLANS:
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0, 1, 2]
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.96
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3278,7 +3278,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3287,8 +3287,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 0:int, left 0, right 0), VectorInBloomFilterColDynamicValue))
-                    predicate: ((key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter))) and key is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), FilterLongColumnBetweenDynamicValue(col 0:int, left 0, right 0), VectorInBloomFilterColDynamicValue)
+                    predicate: (key is not null and key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter))) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int)
@@ -3348,7 +3348,7 @@ STAGE PLANS:
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=25)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.974359
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3371,7 +3371,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.984375
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3717,7 +3717,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3943,7 +3943,7 @@ STAGE PLANS:
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE

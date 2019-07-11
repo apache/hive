@@ -299,48 +299,6 @@ public class TestHostAffinitySplitLocationProvider {
     assertArrayEquals(retLoc13, retLoc132);
   }
 
-  @Test (timeout = 90000000)
-  public void testDFSLocalityAwareAffinity() throws IOException {
-    List<String> someLocations = locations.subList(0, 2); // 0,1 locations
-    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(someLocations);
-
-    // Different base localities
-    InputSplit os1 = createMockFileSplit(true, "path1", 0, 15000, new String[] {locations.get(0), locations.get(1)}); // 0 or 1
-    InputSplit os2 = createMockFileSplit(true, "path2", 0, 30000, new String[] {locations.get(2), locations.get(3)}); // 0 or 1
-    InputSplit os3 = createMockFileSplit(true, "path3", 15000, 30000, new String[] {locations.get(0), locations.get(2)}); // 0
-    InputSplit os4 = createMockFileSplit(true, "path4", 15000, 30000, new String[] {locations.get(1), locations.get(2)}); // 1
-
-    String[] retLoc1 = locationProvider.getLocations(os1);
-    String[] retLoc2 = locationProvider.getLocations(os2);
-    String[] retLoc3 = locationProvider.getLocations(os3);
-    String[] retLoc4 = locationProvider.getLocations(os4);
-
-    assertEquals(1, retLoc1.length);
-    assertTrue(someLocations.contains(retLoc1[0]));
-
-    assertEquals(1, retLoc2.length);
-    assertTrue(someLocations.contains(retLoc2[0]));
-
-    assertEquals(1, retLoc3.length);
-    assertTrue(someLocations.contains(retLoc3[0]));
-    assertEquals(someLocations.get(0), retLoc3[0]); // is always 0
-
-    assertEquals(1, retLoc4.length);
-    assertTrue(someLocations.contains(retLoc4[0]));
-    assertEquals(someLocations.get(1), retLoc4[0]); // is always 1
-
-    String[] againLoc1 = locationProvider.getLocations(os1);
-    String[] againLoc2 = locationProvider.getLocations(os2);
-    String[] againLoc3 = locationProvider.getLocations(os3);
-    String[] againLoc4 = locationProvider.getLocations(os4);
-
-    assertArrayEquals(retLoc1, againLoc1);
-    assertArrayEquals(retLoc2, againLoc2);
-    assertArrayEquals(retLoc3, againLoc3);
-    assertArrayEquals(retLoc4, againLoc4);
-  }
-
-
 
   private InputSplit createMockInputSplit(String[] locations) throws IOException {
     InputSplit inputSplit = mock(InputSplit.class);

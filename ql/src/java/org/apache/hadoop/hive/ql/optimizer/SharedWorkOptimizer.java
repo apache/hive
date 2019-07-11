@@ -35,11 +35,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
+import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -1374,21 +1376,21 @@ public class SharedWorkOptimizer extends Transform {
     // 1.1. None of the works that we are merging can contain a Union
     // operator. This is not supported yet as we might end up with cycles in
     // the Tez DAG.
-    // 1.2. There cannot be more than one DummyStore operator in the new resulting
-    // work when the operators are merged. This is due to an assumption in
-    // MergeJoinProc that needs to be further explored.
+    // 1.2. There cannot be any DummyStore operator in the works being merged.
+    //  This is due to an assumption in MergeJoinProc that needs to be further explored.
+    //  This is also due to some assumption in task generation
     // If any of these conditions are not met, we cannot merge.
     // TODO: Extend rule so it can be applied for these cases.
     final Set<Operator<?>> workOps1 = findWorkOperators(optimizerCache, op1);
     final Set<Operator<?>> workOps2 = findWorkOperators(optimizerCache, op2);
-    boolean foundDummyStoreOp = false;
     for (Operator<?> op : workOps1) {
       if (op instanceof UnionOperator) {
         // We cannot merge (1.1)
         return false;
       }
       if (op instanceof DummyStoreOperator) {
-        foundDummyStoreOp = true;
+        // We cannot merge (1.2)
+        return false;
       }
     }
     for (Operator<?> op : workOps2) {
@@ -1396,7 +1398,7 @@ public class SharedWorkOptimizer extends Transform {
         // We cannot merge (1.1)
         return false;
       }
-      if (foundDummyStoreOp && op instanceof DummyStoreOperator) {
+      if (op instanceof DummyStoreOperator) {
         // We cannot merge (1.2)
         return false;
       }
@@ -1653,10 +1655,33 @@ public class SharedWorkOptimizer extends Transform {
             }
           }
         }
-        ExprNodeGenericFuncDesc newPred = ExprNodeGenericFuncDesc.newInstance(
-                new GenericUDFOPAnd(),
-                Arrays.<ExprNodeDesc>asList(tableScanExprNode.clone(), filterExprNode));
-        filterOp.getConf().setPredicate(newPred);
+        // Combine filters trying to remove any duplicate nodes
+        boolean isOpAndFilter = FunctionRegistry.isOpAnd(filterExprNode);
+        boolean isOpAndTS = FunctionRegistry.isOpAnd(tableScanExprNode);
+        if (isOpAndFilter && isOpAndTS) {
+          Set<String> visitedExprs = filterExprNode.getChildren()
+              .stream()
+              .map(ExprNodeDesc::getExprString)
+              .collect(Collectors.toSet());
+          for (ExprNodeDesc e : tableScanExprNode.getChildren()) {
+            if (visitedExprs.add(e.getExprString())) {
+              filterExprNode.getChildren().add(e.clone());
+            }
+          }
+        } else if (isOpAndFilter) {
+          Set<String> visitedExprs = filterExprNode.getChildren()
+              .stream()
+              .map(ExprNodeDesc::getExprString)
+              .collect(Collectors.toSet());
+          if (visitedExprs.add(tableScanExprNode.getExprString())) {
+            filterExprNode.getChildren().add(tableScanExprNode.clone());
+          }
+        } else {
+          ExprNodeGenericFuncDesc newPred = ExprNodeGenericFuncDesc.newInstance(
+              new GenericUDFOPAnd(),
+              Arrays.<ExprNodeDesc>asList(tableScanExprNode.clone(), filterExprNode));
+          filterOp.getConf().setPredicate(newPred);
+        }
       } else {
         Operator<FilterDesc> newOp = OperatorFactory.get(tsOp.getCompilationOpContext(),
                 new FilterDesc(tableScanExprNode.clone(), false),

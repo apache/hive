@@ -151,14 +151,17 @@ public class CastStringToDate extends VectorExpression {
     }
   }
 
-  private void evaluate(LongColumnVector outputColVector, BytesColumnVector inV, int i) {
+  protected void evaluate(LongColumnVector outputColVector, BytesColumnVector inV, int i) {
     String dateString = new String(inV.vector[i], inV.start[i], inV.length[i], StandardCharsets.UTF_8);
     Date hDate = new Date();
     if (dateParser.parseDate(dateString, hDate)) {
       outputColVector.vector[i] = DateWritableV2.dateToDays(hDate);
       return;
     }
+    setNull(outputColVector, i);
+  }
 
+  protected void setNull(LongColumnVector outputColVector, int i) {
     outputColVector.vector[i] = 1;
     outputColVector.isNull[i] = true;
     outputColVector.noNulls = false;

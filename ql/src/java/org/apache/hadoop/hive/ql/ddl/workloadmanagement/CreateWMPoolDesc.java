@@ -15,13 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +31,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Create Pool", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateWMPoolDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 4872940135771213510L;
-
-  static {
-    DDLTask2.registerOperation(CreateWMPoolDesc.class, CreateWMPoolOperation.class);
-  }
 
   private final WMPool pool;
 

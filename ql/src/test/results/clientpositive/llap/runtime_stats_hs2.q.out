@@ -83,7 +83,7 @@ Stage-0
                     Select Operator [SEL_35] (rows=1 width=4)
                       Output:["_col0"]
                       Filter Operator [FIL_34] (rows=1 width=4)
-                        predicate:((p < 10) and (p > 2))
+                        predicate:((p > 2) and (p < 10))
                         TableScan [TS_3] (rows=5 width=4)
                           default@px_n0,px_n0,Tbl:COMPLETE,Col:COMPLETE,Output:["p"]
 
@@ -147,7 +147,7 @@ Stage-0
                     Select Operator [SEL_35] (runtime: rows=3 width=4)
                       Output:["_col0"]
                       Filter Operator [FIL_34] (runtime: rows=3 width=4)
-                        predicate:((p < 10) and (p > 2))
+                        predicate:((p > 2) and (p < 10))
                         TableScan [TS_3] (runtime: rows=5 width=4)
                           default@px_n0,px_n0,Tbl:COMPLETE,Col:COMPLETE,Output:["p"]
 

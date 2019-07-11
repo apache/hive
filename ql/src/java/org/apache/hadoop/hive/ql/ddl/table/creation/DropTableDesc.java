@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -33,10 +32,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Drop Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DropTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(DropTableDesc.class, DropTableOperation.class);
-  }
 
   private final String tableName;
   private final TableType expectedType;

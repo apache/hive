@@ -36,10 +36,11 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.creation.DropTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -49,8 +50,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.ExportWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -152,7 +151,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     try {
       ReadEntity dbForTmpTable = new ReadEntity(db.getDatabase(exportTable.getDbName()));
       inputs.add(dbForTmpTable); //so the plan knows we are 'reading' this db - locks, security...
-      DDLTask2 createTableTask = (DDLTask2) TaskFactory.get(new DDLWork2(new HashSet<>(), new HashSet<>(), ctlt), conf);
+      DDLTask createTableTask = (DDLTask) TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), ctlt), conf);
       createTableTask.setConf(conf); //above get() doesn't set it
       createTableTask.execute(new DriverContext(new Context(conf)));
       newTable = db.getTable(newTableName);
@@ -189,18 +188,17 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     // do it after populating temp table so that it's written as non-transactional table but
     // update props before export so that export archive metadata has these props.  This way when
     // IMPORT is done for this archive and target table doesn't exist, it will be created as Acid.
-    AlterTableDesc alterTblDesc = new AlterTableDesc(AlterTableDesc.AlterTableTypes.ADDPROPS);
     Map<String, String> mapProps = new HashMap<>();
     mapProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.TRUE.toString());
-    alterTblDesc.setProps(mapProps);
-    alterTblDesc.setOldName(newTableName);
+    AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(newTableName, null, null, false,
+        mapProps, false, false, null);
     addExportTask(rootTasks, exportTask, TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
 
     // Now make a task to drop temp table
     // {@link DDLSemanticAnalyzer#analyzeDropTable(ASTNode ast, TableType expectedType)
     ReplicationSpec replicationSpec = new ReplicationSpec();
     DropTableDesc dropTblDesc = new DropTableDesc(newTableName, TableType.MANAGED_TABLE, false, true, replicationSpec);
-    Task<DDLWork2> dropTask = TaskFactory.get(new DDLWork2(new HashSet<>(), new HashSet<>(), dropTblDesc), conf);
+    Task<DDLWork> dropTask = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc), conf);
     exportTask.addDependentTask(dropTask);
     markReadEntityForUpdate();
     if (ctx.isExplainPlan()) {

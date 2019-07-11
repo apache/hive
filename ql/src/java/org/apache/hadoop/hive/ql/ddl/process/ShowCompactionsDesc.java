@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.ddl.process;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +30,6 @@ import java.io.Serializable;
 @Explain(displayName = "Show Compactions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ShowCompactionsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(ShowCompactionsDesc.class, ShowCompactionsOperation.class);
-  }
 
   public static final String SCHEMA =
       "compactionid,dbname,tabname,partname,type,state,hostname,workerid,starttime,duration,hadoopjobid#" +

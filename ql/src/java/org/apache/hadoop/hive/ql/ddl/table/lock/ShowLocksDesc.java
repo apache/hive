@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -38,10 +37,6 @@ public class ShowLocksDesc implements DDLDesc, Serializable {
   private static final String NEW_FORMAT_SCHEMA = "lockid,database,table,partition,lock_state," +
       "blocked_by,lock_type,transaction_id,last_heartbeat,acquired_at,user,hostname,agent_info#" +
       "string:string:string:string:string:string:string:string:string:string:string:string:string";
-
-  static {
-    DDLTask2.registerOperation(ShowLocksDesc.class, ShowLocksOperation.class);
-  }
 
   private final String resFile;
   private final String dbName;

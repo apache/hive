@@ -18,12 +18,12 @@
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.function.DropFunctionDesc;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
-import org.apache.hadoop.hive.ql.plan.FunctionWork;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -39,9 +39,10 @@ public class DropFunctionHandler extends AbstractMessageHandler {
         FunctionUtils.qualifyFunctionName(msg.getFunctionName(), actualDbName);
     DropFunctionDesc desc = new DropFunctionDesc(
             qualifiedFunctionName, false, context.eventOnlyReplicationSpec());
-    Task<FunctionWork> dropFunctionTask = TaskFactory.get(new FunctionWork(desc), context.hiveConf);
+    Task<DDLWork> dropFunctionTask =
+        TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet, desc), context.hiveConf);
     context.log.debug(
-        "Added drop function task : {}:{}", dropFunctionTask.getId(), desc.getFunctionName()
+        "Added drop function task : {}:{}", dropFunctionTask.getId(), desc.getName()
     );
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, null, null);
     return Collections.singletonList(dropFunctionTask);

@@ -127,7 +127,7 @@ STAGE PLANS:
             filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
+              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
@@ -2804,7 +2804,7 @@ STAGE PLANS:
             filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
+              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
@@ -8376,10 +8376,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: ((UDFToDouble(key) > 0.0D) and (UDFToDouble(key) < 10.0D) and ((UDFToDouble(key) % 2.0D) = 0.0D)) (type: boolean)
+            filterExpr: (((UDFToDouble(key) % 2.0D) = 0.0D) and (UDFToDouble(key) > 0.0D) and (UDFToDouble(key) < 10.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((UDFToDouble(key) % 2.0D) = 0.0D) and (UDFToDouble(key) < 10.0D) and (UDFToDouble(key) > 0.0D)) (type: boolean)
+              predicate: (((UDFToDouble(key) % 2.0D) = 0.0D) and (UDFToDouble(key) > 0.0D) and (UDFToDouble(key) < 10.0D)) (type: boolean)
               Statistics: Num rows: 27 Data size: 4806 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), upper(value) (type: string)

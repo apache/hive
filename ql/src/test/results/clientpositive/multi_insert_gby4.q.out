@@ -72,7 +72,7 @@ STAGE PLANS:
               outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               Filter Operator
-                predicate: (((_col0 > 500) or (_col0 > 450)) or (_col0 > 490)) (type: boolean)
+                predicate: ((_col0 > 490) or ((_col0 > 500) or (_col0 > 450))) (type: boolean)
                 Statistics: Num rows: 498 Data size: 43326 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)

@@ -464,7 +464,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 17:int), SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 11:int), SelectColumnIsNotNull(col 13:int))
-                    predicate: (ws_order_number is not null and ws_ship_addr_sk is not null and ws_ship_date_sk is not null and ws_web_site_sk is not null) (type: boolean)
+                    predicate: (ws_order_number is not null and ws_ship_date_sk is not null and ws_ship_addr_sk is not null and ws_web_site_sk is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ws_ship_date_sk (type: int), ws_ship_addr_sk (type: int), ws_web_site_sk (type: int), ws_order_number (type: int), ws_ext_ship_cost (type: decimal(7,2)), ws_net_profit (type: decimal(7,2))

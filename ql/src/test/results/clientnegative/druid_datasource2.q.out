@@ -4,4 +4,4 @@ TBLPROPERTIES ("property" = "localhost", "druid.datasource" = "mydatasource")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@druid_table_1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. MetaException(message:Table default.druid_table_1 failed strict managed table checks due to the following reason: Table is marked as a managed table but is not transactional.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Table default.druid_table_1 failed strict managed table checks due to the following reason: Table is marked as a managed table but is not transactional.)

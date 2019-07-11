@@ -571,22 +571,12 @@ public class RexNodeConverter {
    * If a CASE has branches with string/int/boolean branch types; there is no common type.
    */
   private List<RexNode> adjustCaseBranchTypes(List<RexNode> nodes, RelDataType retType) {
-    List<RelDataType> branchTypes = new ArrayList<>();
-    for (int i = 0; i < nodes.size(); i++) {
-      if (i % 2 == 1 || i == nodes.size() - 1) {
-        branchTypes.add(nodes.get(i).getType());
-      }
-    }
-    RelDataType commonType = cluster.getTypeFactory().leastRestrictive(branchTypes);
-    if (commonType != null) {
-      // conversion is possible; not changes are neccessary
-      return nodes;
-    }
     List<RexNode> newNodes = new ArrayList<>();
     for (int i = 0; i < nodes.size(); i++) {
       RexNode node = nodes.get(i);
-      if (i % 2 == 1 || i == nodes.size() - 1) {
-        newNodes.add(cluster.getRexBuilder().makeCast(retType, node));
+      if ((i % 2 == 1 || i == nodes.size() - 1)
+          && !node.getType().getSqlTypeName().equals(retType.getSqlTypeName())) {
+          newNodes.add(cluster.getRexBuilder().makeCast(retType, node));
       } else {
         newNodes.add(node);
       }

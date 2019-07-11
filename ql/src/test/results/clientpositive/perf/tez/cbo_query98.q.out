@@ -79,7 +79,7 @@ HiveProject(i_item_desc=[$0], i_category=[$1], i_class=[$2], i_current_price=[$3
               HiveTableScan(table=[[default, item]], table:alias=[item])
           HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_ext_sales_price=[$15])
-              HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($0))])
+              HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2))])
                 HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
             HiveProject(d_date_sk=[$0])
               HiveFilter(condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 2001-01-12 00:00:00:TIMESTAMP(9), 2001-02-11 00:00:00:TIMESTAMP(9)), IS NOT NULL($0))])

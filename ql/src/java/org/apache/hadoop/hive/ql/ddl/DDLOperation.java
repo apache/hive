@@ -23,14 +23,19 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Abstract ancestor class of all DDL Operation classes.
+ *
+ * A class that is extending this abstract class, and which is under the org.apache.hadoop.hive.ql.ddl package
+ * will be registered automatically as the operation for it's generic DDLDesc argument.
  */
-public abstract class DDLOperation {
+public abstract class DDLOperation<T extends DDLDesc> {
   protected static final Logger LOG = LoggerFactory.getLogger("hive.ql.exec.DDLTask");
 
   protected final DDLOperationContext context;
+  protected final T desc;
 
-  public DDLOperation(DDLOperationContext context) {
+  public DDLOperation(DDLOperationContext context, T desc) {
     this.context = context;
+    this.desc = desc;
   }
 
   public abstract int execute() throws Exception;

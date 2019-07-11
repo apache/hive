@@ -50,7 +50,7 @@ STAGE PLANS:
             filterExpr: ((key > 500) or (key > 450)) (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key > 450) or (key > 500)) (type: boolean)
+              predicate: ((key > 500) or (key > 450)) (type: boolean)
               Statistics: Num rows: 332 Data size: 28884 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)

@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.privilege.CreateRoleDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.DropRoleDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.GrantDesc;
@@ -121,7 +121,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testCreateRole() throws Exception {
-    DDLWork2 work = analyze("CREATE ROLE " + ROLE);
+    DDLWork work = analyze("CREATE ROLE " + ROLE);
     CreateRoleDesc roleDesc = (CreateRoleDesc)work.getDDLDesc();
     Assert.assertNotNull("Role should not be null", roleDesc);
     Assert.assertEquals(ROLE, roleDesc.getName());
@@ -131,7 +131,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testDropRole() throws Exception {
-    DDLWork2 work = analyze("DROp ROLE " + ROLE);
+    DDLWork work = analyze("DROp ROLE " + ROLE);
     DropRoleDesc roleDesc = (DropRoleDesc)work.getDDLDesc();
     Assert.assertNotNull("Role should not be null", roleDesc);
     Assert.assertEquals(ROLE, roleDesc.getName());
@@ -141,7 +141,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testGrantUserTable() throws Exception {
-    DDLWork2 work = analyze("GRANT " + SELECT + " ON TABLE " + TABLE + " TO USER " + USER);
+    DDLWork work = analyze("GRANT " + SELECT + " ON TABLE " + TABLE + " TO USER " + USER);
     GrantDesc grantDesc = (GrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     for(PrincipalDesc principal : ListSizeMatcher.inList(grantDesc.getPrincipals()).ofSize(1)) {
@@ -159,7 +159,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testGrantRoleTable() throws Exception {
-    DDLWork2 work = analyze("GRANT " + SELECT + " ON TABLE " + TABLE + " TO ROLE " + ROLE);
+    DDLWork work = analyze("GRANT " + SELECT + " ON TABLE " + TABLE + " TO ROLE " + ROLE);
     GrantDesc grantDesc = (GrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     for(PrincipalDesc principal : ListSizeMatcher.inList(grantDesc.getPrincipals()).ofSize(1)) {
@@ -177,7 +177,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testGrantGroupTable() throws Exception {
-    DDLWork2 work = analyze("GRANT " + SELECT + " ON TABLE " + TABLE + " TO GROUP " + GROUP);
+    DDLWork work = analyze("GRANT " + SELECT + " ON TABLE " + TABLE + " TO GROUP " + GROUP);
     GrantDesc grantDesc = (GrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     for(PrincipalDesc principal : ListSizeMatcher.inList(grantDesc.getPrincipals()).ofSize(1)) {
@@ -195,7 +195,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testRevokeUserTable() throws Exception {
-    DDLWork2 work = analyze("REVOKE " + SELECT + " ON TABLE " + TABLE + " FROM USER " + USER);
+    DDLWork work = analyze("REVOKE " + SELECT + " ON TABLE " + TABLE + " FROM USER " + USER);
     RevokeDesc grantDesc = (RevokeDesc)work.getDDLDesc();
     Assert.assertNotNull("Revoke should not be null", grantDesc);
     for(PrincipalDesc principal : ListSizeMatcher.inList(grantDesc.getPrincipals()).ofSize(1)) {
@@ -213,7 +213,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testRevokeRoleTable() throws Exception {
-    DDLWork2 work = analyze("REVOKE " + SELECT + " ON TABLE " + TABLE + " FROM ROLE " + ROLE);
+    DDLWork work = analyze("REVOKE " + SELECT + " ON TABLE " + TABLE + " FROM ROLE " + ROLE);
     RevokeDesc grantDesc = (RevokeDesc)work.getDDLDesc();
     Assert.assertNotNull("Revoke should not be null", grantDesc);
     for(PrincipalDesc principal : ListSizeMatcher.inList(grantDesc.getPrincipals()).ofSize(1)) {
@@ -231,7 +231,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testRevokeGroupTable() throws Exception {
-    DDLWork2 work = analyze("REVOKE " + SELECT + " ON TABLE " + TABLE + " FROM GROUP " + GROUP);
+    DDLWork work = analyze("REVOKE " + SELECT + " ON TABLE " + TABLE + " FROM GROUP " + GROUP);
     RevokeDesc grantDesc = (RevokeDesc)work.getDDLDesc();
     Assert.assertNotNull("Revoke should not be null", grantDesc);
     for(PrincipalDesc principal : ListSizeMatcher.inList(grantDesc.getPrincipals()).ofSize(1)) {
@@ -249,7 +249,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testGrantRoleUser() throws Exception {
-    DDLWork2 work = analyze("GRANT ROLE " + ROLE + " TO USER " + USER);
+    DDLWork work = analyze("GRANT ROLE " + ROLE + " TO USER " + USER);
     GrantRoleDesc grantDesc = (GrantRoleDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
@@ -267,7 +267,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testGrantRoleRole() throws Exception {
-    DDLWork2 work = analyze("GRANT ROLE " + ROLE + " TO ROLE " + ROLE);
+    DDLWork work = analyze("GRANT ROLE " + ROLE + " TO ROLE " + ROLE);
     GrantRoleDesc grantDesc = (GrantRoleDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
@@ -285,7 +285,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testGrantRoleGroup() throws Exception {
-    DDLWork2 work = analyze("GRANT ROLE " + ROLE + " TO GROUP " + GROUP);
+    DDLWork work = analyze("GRANT ROLE " + ROLE + " TO GROUP " + GROUP);
     GrantRoleDesc grantDesc = (GrantRoleDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
@@ -303,7 +303,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testRevokeRoleUser() throws Exception {
-    DDLWork2 work = analyze("REVOKE ROLE " + ROLE + " FROM USER " + USER);
+    DDLWork work = analyze("REVOKE ROLE " + ROLE + " FROM USER " + USER);
     RevokeRoleDesc grantDesc = (RevokeRoleDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
@@ -321,7 +321,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testRevokeRoleRole() throws Exception {
-    DDLWork2 work = analyze("REVOKE ROLE " + ROLE + " FROM ROLE " + ROLE);
+    DDLWork work = analyze("REVOKE ROLE " + ROLE + " FROM ROLE " + ROLE);
     RevokeRoleDesc grantDesc = (RevokeRoleDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
@@ -339,7 +339,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testRevokeRoleGroup() throws Exception {
-    DDLWork2 work = analyze("REVOKE ROLE " + ROLE + " FROM GROUP " + GROUP);
+    DDLWork work = analyze("REVOKE ROLE " + ROLE + " FROM GROUP " + GROUP);
     RevokeRoleDesc grantDesc = (RevokeRoleDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
     Assert.assertFalse("With admin option is not specified", grantDesc.isGrantOption());
@@ -357,7 +357,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testShowRoleGrantUser() throws Exception {
-    DDLWork2 work = analyze("SHOW ROLE GRANT USER " + USER);
+    DDLWork work = analyze("SHOW ROLE GRANT USER " + USER);
     ShowRoleGrantDesc roleDesc = (ShowRoleGrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Role should not be null", roleDesc);
     Assert.assertEquals(PrincipalType.USER, roleDesc.getPrincipalType());
@@ -368,7 +368,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testShowRoleGrantRole() throws Exception {
-    DDLWork2 work = analyze("SHOW ROLE GRANT ROLE " + ROLE);
+    DDLWork work = analyze("SHOW ROLE GRANT ROLE " + ROLE);
     ShowRoleGrantDesc roleDesc = (ShowRoleGrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Role should not be null", roleDesc);
     Assert.assertEquals(PrincipalType.ROLE, roleDesc.getPrincipalType());
@@ -379,7 +379,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testShowRoleGrantGroup() throws Exception {
-    DDLWork2 work = analyze("SHOW ROLE GRANT GROUP " + GROUP);
+    DDLWork work = analyze("SHOW ROLE GRANT GROUP " + GROUP);
     ShowRoleGrantDesc roleDesc = (ShowRoleGrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Role should not be null", roleDesc);
     Assert.assertEquals(PrincipalType.GROUP, roleDesc.getPrincipalType());
@@ -390,7 +390,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testShowGrantUserOnTable() throws Exception {
-    DDLWork2 work = analyze("SHOW GRANT USER " + USER + " ON TABLE " + TABLE);
+    DDLWork work = analyze("SHOW GRANT USER " + USER + " ON TABLE " + TABLE);
     ShowGrantDesc grantDesc = (ShowGrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Show grant should not be null", grantDesc);
     Assert.assertEquals(PrincipalType.USER, grantDesc.getPrincipalDesc().getType());
@@ -404,7 +404,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testShowGrantRoleOnTable() throws Exception {
-    DDLWork2 work = analyze("SHOW GRANT ROLE " + ROLE + " ON TABLE " + TABLE);
+    DDLWork work = analyze("SHOW GRANT ROLE " + ROLE + " ON TABLE " + TABLE);
     ShowGrantDesc grantDesc = (ShowGrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Show grant should not be null", grantDesc);
     Assert.assertEquals(PrincipalType.ROLE, grantDesc.getPrincipalDesc().getType());
@@ -418,7 +418,7 @@ public class TestHiveAuthorizationTaskFactory {
    */
   @Test
   public void testShowGrantGroupOnTable() throws Exception {
-    DDLWork2 work = analyze("SHOW GRANT GROUP " + GROUP + " ON TABLE " + TABLE);
+    DDLWork work = analyze("SHOW GRANT GROUP " + GROUP + " ON TABLE " + TABLE);
     ShowGrantDesc grantDesc = (ShowGrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Show grant should not be null", grantDesc);
     Assert.assertEquals(PrincipalType.GROUP, grantDesc.getPrincipalDesc().getType());
@@ -456,7 +456,7 @@ public class TestHiveAuthorizationTaskFactory {
     }
   }
 
-  private DDLWork2 analyze(String command) throws Exception {
+  private DDLWork analyze(String command) throws Exception {
     return AuthorizationTestUtil.analyze(command, queryState, db);
   }
 

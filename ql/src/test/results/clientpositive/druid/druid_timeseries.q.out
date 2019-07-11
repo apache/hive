@@ -31,7 +31,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames $f0
             druid.fieldTypes bigint
-            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","filter":{"type":"or","fields":[{"type":"bound","dimension":"__time","lower":"2010-01-01T00:00:00.000Z","lowerStrict":false,"upper":"2012-03-01T00:00:00.000Z","upperStrict":false,"ordering":"lexicographic","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"bound","dimension":"added","upper":"0.0","upperStrict":false,"ordering":"numeric"}]},"aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","filter":{"type":"or","fields":[{"type":"bound","dimension":"added","upper":"0.0","upperStrict":false,"ordering":"numeric"},{"type":"bound","dimension":"__time","lower":"2010-01-01T00:00:00.000Z","lowerStrict":false,"upper":"2012-03-01T00:00:00.000Z","upperStrict":false,"ordering":"lexicographic","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}}]},"aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
             druid.query.type timeseries
           Select Operator
             expressions: $f0 (type: bigint)

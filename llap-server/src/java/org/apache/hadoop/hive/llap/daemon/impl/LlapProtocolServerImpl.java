@@ -17,6 +17,8 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.PrivilegedAction;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.io.ByteArrayDataOutput;
@@ -28,6 +30,7 @@ import com.google.protobuf.ServiceException;
 
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -79,11 +82,13 @@ public class LlapProtocolServerImpl extends AbstractService
   private String clusterUser = null;
   private boolean isRestrictedToClusterUser = false;
   private final DaemonId daemonId;
+  private final LlapDaemonExecutorMetrics executorMetrics;
   private TokenRequiresSigning isSigningRequiredConfig = TokenRequiresSigning.TRUE;
 
   public LlapProtocolServerImpl(SecretManager secretManager, int numHandlers,
       ContainerRunner containerRunner, AtomicReference<InetSocketAddress> srvAddress,
-      AtomicReference<InetSocketAddress> mngAddress, int srvPort, int mngPort, DaemonId daemonId) {
+      AtomicReference<InetSocketAddress> mngAddress, int srvPort, int mngPort, DaemonId daemonId,
+      LlapDaemonExecutorMetrics executorMetrics) {
     super("LlapDaemonProtocolServerImpl");
     this.numHandlers = numHandlers;
     this.containerRunner = containerRunner;
@@ -93,6 +98,7 @@ public class LlapProtocolServerImpl extends AbstractService
     this.mngAddress = mngAddress;
     this.mngPort = mngPort;
     this.daemonId = daemonId;
+    this.executorMetrics = executorMetrics;
     LOG.info("Creating: " + LlapProtocolServerImpl.class.getSimpleName() +
         " with port configured to: " + srvPort);
   }
@@ -300,6 +306,31 @@ public class LlapProtocolServerImpl extends AbstractService
       responseProtoBuilder.setPurgedMemoryBytes(0);
     }
     return responseProtoBuilder.build();
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto getDaemonMetrics(final RpcController controller,
+      final LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto request) throws ServiceException {
+    LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto.Builder responseProtoBuilder =
+        LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto.newBuilder();
+    if (executorMetrics != null) {
+      Map<String, Long> data = new HashMap<>();
+      DumpingMetricsCollector dmc = new DumpingMetricsCollector(data);
+      executorMetrics.getMetrics(dmc, true);
+      data.forEach((key, value) -> responseProtoBuilder.addMetrics(
+          LlapDaemonProtocolProtos.MapEntry.newBuilder().setKey(key).setValue(value).build()));
+    }
+    return responseProtoBuilder.build();
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.SetCapacityResponseProto setCapacity(final RpcController controller,
+      final LlapDaemonProtocolProtos.SetCapacityRequestProto request) throws ServiceException {
+    try {
+      return containerRunner.setCapacity(request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
   }
 
   private boolean determineIfSigningIsRequired(UserGroupInformation callingUser) {

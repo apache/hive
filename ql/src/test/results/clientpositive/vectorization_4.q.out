@@ -62,7 +62,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            filterExpr: ((UDFToInteger(csmallint) >= cint) or ((UDFToInteger(ctinyint) <= -89010) and (cdouble > 79.553D)) or ((cbigint <> -563L) and ((UDFToLong(ctinyint) <> cbigint) or (cdouble <= -3728.0D)))) (type: boolean)
+            filterExpr: ((UDFToInteger(csmallint) >= cint) or ((cbigint <> -563L) and ((UDFToLong(ctinyint) <> cbigint) or (cdouble <= -3728.0D))) or ((UDFToInteger(ctinyint) <= -89010) and (cdouble > 79.553D))) (type: boolean)
             Statistics: Num rows: 12288 Data size: 256884 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
@@ -71,8 +71,8 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprOrExpr(children: FilterLongColGreaterEqualLongColumn(col 1:int, col 2:int)(children: col 1:smallint), FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 0:int, val -89010)(children: col 0:tinyint), FilterDoubleColGreaterDoubleScalar(col 5:double, val 79.553)), FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 3:bigint, val -563), FilterExprOrExpr(children: FilterLongColNotEqualLongColumn(col 0:bigint, col 3:bigint)(children: col 0:tinyint), FilterDoubleColLessEqualDoubleScalar(col 5:double, val -3728.0))))
-              predicate: (((UDFToInteger(ctinyint) <= -89010) and (cdouble > 79.553D)) or ((cbigint <> -563L) and ((UDFToLong(ctinyint) <> cbigint) or (cdouble <= -3728.0D))) or (UDFToInteger(csmallint) >= cint)) (type: boolean)
+                  predicateExpression: FilterExprOrExpr(children: FilterLongColGreaterEqualLongColumn(col 1:int, col 2:int)(children: col 1:smallint), FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 3:bigint, val -563), FilterExprOrExpr(children: FilterLongColNotEqualLongColumn(col 0:bigint, col 3:bigint)(children: col 0:tinyint), FilterDoubleColLessEqualDoubleScalar(col 5:double, val -3728.0))), FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 0:int, val -89010)(children: col 0:tinyint), FilterDoubleColGreaterDoubleScalar(col 5:double, val 79.553)))
+              predicate: ((UDFToInteger(csmallint) >= cint) or ((cbigint <> -563L) and ((UDFToLong(ctinyint) <> cbigint) or (cdouble <= -3728.0D))) or ((UDFToInteger(ctinyint) <= -89010) and (cdouble > 79.553D))) (type: boolean)
               Statistics: Num rows: 12288 Data size: 256884 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: cint (type: int), cdouble (type: double), ctinyint (type: tinyint), (cdouble * cdouble) (type: double)

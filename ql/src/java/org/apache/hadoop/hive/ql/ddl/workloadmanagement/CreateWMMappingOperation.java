@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of creating a workload management mapping.
  */
-public class CreateWMMappingOperation extends DDLOperation {
-  private final CreateWMMappingDesc desc;
-
+public class CreateWMMappingOperation extends DDLOperation<CreateWMMappingDesc> {
   public CreateWMMappingOperation(DDLOperationContext context, CreateWMMappingDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

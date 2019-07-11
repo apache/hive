@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_NONE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READWRITE;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_WRITEONLY;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -45,7 +44,6 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   private static final String CONNECTORWRITE = "CONNECTORWRITE".intern();
   private static final String EXTWRITE = "EXTWRITE".intern();
   private static final String EXTREAD = "EXTREAD".intern();
-  private static final String HIVEACIDWRITE = "HIVEACIDWRITE".intern();
   private static final String HIVEBUCKET2 = "HIVEBUCKET2".intern();
   private static final String HIVECACHEINVALIDATE = "HIVECACHEINVALIDATE".intern();
   private static final String HIVEFULLACIDREAD = "HIVEFULLACIDREAD".intern();
@@ -58,8 +56,30 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   private static final String HIVESQL = "HIVESQL".intern();
   private static final String OBJCAPABILITIES = "OBJCAPABILITIES".intern();
 
+  private static final List<String> ACIDCOMMONWRITELIST = new ArrayList(Arrays.asList(
+      HIVEMANAGESTATS,
+      HIVECACHEINVALIDATE,
+      CONNECTORWRITE));
+
+  private List<String> acidWriteList = new ArrayList<>(Arrays.asList(HIVEFULLACIDWRITE));
+  private List<String> insertOnlyWriteList = new ArrayList<>(Arrays.asList(HIVEMANAGEDINSERTWRITE));
+  private static List<String> MQTLIST = new ArrayList<>(Arrays.asList(HIVEFULLACIDREAD, HIVEONLYMQTWRITE,
+      HIVEMANAGESTATS, HIVEMQT, CONNECTORREAD));
+
+  private List<String> acidList = new ArrayList<>();
+  private List<String> insertOnlyList = new ArrayList<>();
   public MetastoreDefaultTransformer(IHMSHandler handler) throws HiveMetaException {
     this.hmsHandler = handler;
+
+    acidWriteList.addAll(ACIDCOMMONWRITELIST);
+    acidList.addAll(acidWriteList);
+    acidList.add(HIVEFULLACIDREAD);
+    acidList.add(CONNECTORREAD);
+
+    insertOnlyWriteList.addAll(ACIDCOMMONWRITELIST);
+    insertOnlyList.addAll(insertOnlyWriteList);
+    insertOnlyList.add(HIVEMANAGEDINSERTREAD);
+    insertOnlyList.add(CONNECTORREAD);
   }
 
   @Override
@@ -96,6 +116,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                 StorageDescriptor newSd = new StorageDescriptor(table.getSd());
                 newSd.setNumBuckets(-1); // remove bucketing info
                 newTable.setSd(newSd);
+                LOG.info("Bucketed table without HIVEBUCKET2 capability, removed bucketing info from table");
               }
             } else { // Unbucketed, so RW for all
               newTable.setAccessType(ACCESSTYPE_READWRITE);
@@ -106,8 +127,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           case "MANAGED_TABLE":
             String txnal = params.get("transactional");
             if (txnal == null || txnal.equalsIgnoreCase("FALSE")) { // non-ACID MANAGED table
-              table.setAccessType(ACCESSTYPE_READWRITE);
-              // table does not require any capabilities for full RW
+              table.setAccessType(ACCESSTYPE_READONLY);
+              generated.addAll(acidWriteList);
             }
 
             if (txnal != null && txnal.equalsIgnoreCase("TRUE")) { // ACID table
@@ -115,69 +136,72 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                   processorCapabilities.contains(HIVEFULLACIDREAD) ||
                   processorCapabilities.contains(HIVEMANAGEDINSERTREAD))) {
                 table.setAccessType(ACCESSTYPE_NONE); // clients have no access to ACID tables without capabilities
-                generated.add(CONNECTORREAD);
-                generated.add(CONNECTORWRITE);
-                generated.add(HIVECACHEINVALIDATE);
-                generated.add(HIVEMANAGESTATS);
+                generated.addAll(acidList);
               }
 
               String txntype = params.get("transactional_properties");
               if (txntype != null && txntype.equalsIgnoreCase("insert_only")) { // MICRO_MANAGED Tables
-                generated.add(HIVEMANAGEDINSERTREAD);
-                generated.add(HIVEMANAGEDINSERTWRITE);
                 // MGD table is insert only, not full ACID
                 if (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) || processorCapabilities.contains(CONNECTORWRITE)) {
                   table.setAccessType(ACCESSTYPE_READWRITE); // clients have RW access to INSERT-ONLY ACID tables
+                  processorCapabilities.retainAll(insertOnlyWriteList);
+                  generated.addAll(processorCapabilities);
                 } else if (processorCapabilities.contains(HIVEMANAGEDINSERTREAD) || processorCapabilities.contains(CONNECTORREAD)) {
                   table.setAccessType(ACCESSTYPE_READONLY); // clients have RO access to INSERT-ONLY ACID tables
+                  generated.addAll(insertOnlyWriteList);
+                  processorCapabilities.retainAll(getReads(insertOnlyList));
+                  generated.addAll(processorCapabilities);
                 } else {
                   table.setAccessType(ACCESSTYPE_NONE); // clients have NO access to INSERT-ONLY ACID tables
+                  generated.addAll(insertOnlyList);
                 }
               } else { // FULL ACID MANAGED TABLE
-                generated.add(HIVEFULLACIDWRITE);
-                generated.add(HIVEFULLACIDREAD);
                 if (processorCapabilities.contains(HIVEFULLACIDWRITE) || processorCapabilities.contains(CONNECTORWRITE)) {
                   table.setAccessType(ACCESSTYPE_READWRITE); // clients have RW access to IUD ACID tables
+                  processorCapabilities.retainAll(acidWriteList);
+                  generated.addAll(processorCapabilities);
                 } else if (processorCapabilities.contains(HIVEFULLACIDREAD) || processorCapabilities.contains(CONNECTORREAD)) {
                   table.setAccessType(ACCESSTYPE_READONLY); // clients have RO access to IUD ACID tables
+                  generated.addAll(acidWriteList);
+                  processorCapabilities.retainAll(getReads(acidList));
+                  generated.addAll(processorCapabilities);
                 } else {
                   table.setAccessType(ACCESSTYPE_NONE); // clients have NO access to IUD ACID tables
+                  generated.addAll(acidList);
                 }
               }
             }
             ret.put(table, generated);
             break;
           case "VIRTUAL_VIEW":
-            generated.add("HIVESQL");
             if (processorCapabilities.contains(HIVESQL) ||
                 processorCapabilities.contains(CONNECTORREAD)) {
               table.setAccessType(ACCESSTYPE_READONLY);
             } else {
               table.setAccessType(ACCESSTYPE_NONE);
+              generated.add(HIVESQL);
+              generated.add(CONNECTORREAD);
             }
             ret.put(table, generated);
             break;
           case "MATERIALIZED_VIEW":
-            generated.add(CONNECTORREAD);
-            generated.add(HIVEFULLACIDREAD);
-            generated.add(HIVEONLYMQTWRITE);
-            generated.add(HIVEMANAGESTATS);
-            generated.add(HIVEMQT);
             if ((processorCapabilities.contains(CONNECTORREAD) ||
                 processorCapabilities.contains(HIVEFULLACIDREAD)) && processorCapabilities.contains(HIVEMQT)) {
               LOG.info("Processor has one of the READ abilities and HIVEMQT, AccessType=RO");
               table.setAccessType(ACCESSTYPE_READONLY);
+              generated.addAll(diff(MQTLIST, processorCapabilities));
             } else {
               LOG.info("Processor has no READ abilities or HIVEMQT, AccessType=None");
               table.setAccessType(ACCESSTYPE_NONE);
+              generated.addAll(MQTLIST);
             }
             ret.put(table, generated);
             break;
           default:
             table.setAccessType(ACCESSTYPE_NONE);
+            ret.put(table,generated);
             break;
         }
-        ret.put(table,generated);
         continue;
       }
 
@@ -223,6 +247,13 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           ret.put(newTable, requiredCapabilities);
           break;
         case "MANAGED_TABLE":
+          if (processorCapabilities.size() == 0) { // processor has no capabilities
+            LOG.info("Client has no capabilities for type " + tableType + ",accesstype is NONE");
+            table.setAccessType(ACCESSTYPE_NONE);
+            ret.put(table, requiredCapabilities);
+            continue;
+          }
+
           if (processorCapabilities.containsAll(requiredCapabilities)) {
             // AccessType is RW
             LOG.info("Abilities for match: Table type=" + tableType + ",accesstype is RW");
@@ -233,56 +264,94 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
           String txnal = params.get("transactional");
           if (txnal == null || txnal.equalsIgnoreCase("FALSE")) { // non-ACID MANAGED table
-            LOG.info("Table is non ACID: ,accesstype is RW");
-            table.setAccessType(ACCESSTYPE_READWRITE);
-            // table does not require any capabilities for full RW
+            LOG.info("Table is non ACID, accesstype is RO");
+            table.setAccessType(ACCESSTYPE_READONLY);
+            List<String> missing = diff(requiredCapabilities, processorCapabilities);
+            ret.put(table, missing);
+            continue;
           }
 
           if (txnal != null && txnal.equalsIgnoreCase("TRUE")) { // ACID table
             String txntype = params.get("transactional_properties");
+            List<String> hintList = new ArrayList<>();
             if (txntype != null && txntype.equalsIgnoreCase("insert_only")) { // MICRO_MANAGED Tables
-              LOG.info("Table is INSERTONLY ACID: ,accesstype is RW");
+              LOG.info("Table is INSERTONLY ACID");
               // MGD table is insert only, not full ACID
-              if ((processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) && requiredCapabilities.contains(HIVEMANAGEDINSERTWRITE))
-                   || (processorCapabilities.contains(CONNECTORWRITE) && requiredCapabilities.contains(CONNECTORWRITE))) {
+              if (processorCapabilities.containsAll(getWrites(requiredCapabilities)) // contains all writes on table
+                   || processorCapabilities.contains(HIVEFULLACIDWRITE)) {
+                LOG.info("Processor has all writes or full acid write, access is RW");
                 table.setAccessType(ACCESSTYPE_READWRITE); // clients have RW access to INSERT-ONLY ACID tables
-              } else if ((processorCapabilities.contains(HIVEMANAGEDINSERTREAD) && requiredCapabilities.contains(HIVEMANAGEDINSERTREAD))
-                   || (processorCapabilities.contains(CONNECTORREAD) && requiredCapabilities.contains(CONNECTORREAD))) {
+                ret.put(table, hintList);
+                continue;
+              }
+
+              if (processorCapabilities.contains(CONNECTORWRITE)) {
+                table.setAccessType(ACCESSTYPE_READWRITE); // clients have RW access to INSERT-ONLY ACID tables with CONNWRITE
+                hintList.add(CONNECTORWRITE);
+                hintList.addAll(getReads(requiredCapabilities));
+                ret.put(table, hintList);
+                continue;
+              } else if (processorCapabilities.containsAll(getReads(requiredCapabilities))
+                      || processorCapabilities.contains(CONNECTORREAD)) {
                 table.setAccessType(ACCESSTYPE_READONLY);
+                hintList.add(CONNECTORREAD);
+                hintList.addAll(diff(getWrites(requiredCapabilities), processorCapabilities));
+                ret.put(table, hintList);
+                continue;
               } else {
                 table.setAccessType(ACCESSTYPE_NONE);
+                ret.put(table, requiredCapabilities);
+                continue;
               }
             } else { // MANAGED FULL ACID TABLES
-              LOG.info("Table is FULL ACID:");
-              if ((processorCapabilities.contains(HIVEFULLACIDWRITE) && requiredCapabilities.contains(HIVEFULLACIDWRITE))
-                  || (processorCapabilities.contains(CONNECTORWRITE) && requiredCapabilities.contains(CONNECTORWRITE))) {
+              LOG.info("Table is FULLACID");
+              if (processorCapabilities.containsAll(getWrites(requiredCapabilities)) // contains all writes on table
+                  || processorCapabilities.contains(HIVEFULLACIDWRITE)) {
+                LOG.info("Processor has all writes or atleast " + HIVEFULLACIDWRITE + ", access is RW");
+                table.setAccessType(ACCESSTYPE_READWRITE); // clients have RW access to ACID tables
+                ret.put(table, hintList);
+                continue;
+              }
+
+              if(processorCapabilities.contains(CONNECTORWRITE)) {
                 table.setAccessType(ACCESSTYPE_READWRITE); // clients have RW access to IUD ACID tables
-              } else if ((processorCapabilities.contains(HIVEFULLACIDREAD) && requiredCapabilities.contains(HIVEFULLACIDREAD))
-                   || (processorCapabilities.contains(CONNECTORREAD) && requiredCapabilities.contains(CONNECTORREAD))) {
+                hintList.add(CONNECTORWRITE);
+                hintList.addAll(getReads(requiredCapabilities));
+                ret.put(table, hintList);
+                continue;
+              } else if (processorCapabilities.contains(HIVEFULLACIDREAD)
+                     || (processorCapabilities.contains(CONNECTORREAD) )) {
                 table.setAccessType(ACCESSTYPE_READONLY); // clients have RO access to IUD ACID tables
+                hintList.add(CONNECTORREAD);
+                hintList.addAll(diff(getWrites(requiredCapabilities), processorCapabilities));
+                ret.put(table, hintList);
+                continue;
               } else {
                 table.setAccessType(ACCESSTYPE_NONE); // clients have NO access to IUD ACID tables
+                ret.put(table, requiredCapabilities);
+                continue;
               }
             }
           }
-          LOG.info("setting required to " + requiredCapabilities + ",MANAGED:Access=" + table.getAccessType());
-          ret.put(table, requiredCapabilities);
+          LOG.info("setting required to " + ret.get(table) + ",MANAGED:Access=" + table.getAccessType());
           break;
         case "VIRTUAL_VIEW":
           if (processorCapabilities.containsAll(requiredCapabilities)) {
             table.setAccessType(ACCESSTYPE_READONLY);
+            ret.put(table, new ArrayList<String>());
           } else {
             table.setAccessType(ACCESSTYPE_NONE);
+            ret.put(table, requiredCapabilities);
           }
-          ret.put(table, requiredCapabilities);
           break;
         case "MATERIALIZED_VIEW":
           if (processorCapabilities.containsAll(requiredCapabilities)) {
             table.setAccessType(ACCESSTYPE_READONLY);
+            ret.put(table, new ArrayList<String>());
           } else {
             table.setAccessType(ACCESSTYPE_NONE);
+            ret.put(table, requiredCapabilities);
           }
-          ret.put(table, requiredCapabilities);
           break;
         default:
           table.setAccessType(ACCESSTYPE_NONE);
@@ -291,7 +360,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       }
     }
 
-    LOG.info("Transformer return list of " + objects.size());
+    LOG.info("Transformer return list of " + ret.size());
     return ret;
   }
 
@@ -400,5 +469,59 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     }
     LOG.info("Returning partition set of size " + ret.size());
     return ret;
+  }
+
+  // returns the elements contained in list1 but missing in list2
+  private List<String> diff(final List<String> list1, final List<String> list2) {
+    List<String> diffList = new ArrayList<>();
+
+    if (list2 == null || list2.size() == 0)
+      return list1;
+
+    if (list1 == null || list1.size() == 0)
+      return new ArrayList<String>();
+
+    if (list2.containsAll(list1))
+      return new ArrayList<String>();
+
+    diffList.addAll(list2);
+    LOG.debug("diffList=" + Arrays.toString(diffList.toArray()) + ",master list=" + Arrays.toString(list1.toArray()));
+    if (diffList.retainAll(list1)) {
+      LOG.debug("diffList=" + Arrays.toString(diffList.toArray()));
+      if (diffList.size() == list1.size()) { // lists match
+        return new ArrayList<String>(); // return empty list indicating no missing elements
+      } else {
+        list1.removeAll(diffList);
+        LOG.debug("list1.size():" + list1.size());
+        return list1;
+      }
+    } else {
+      list1.removeAll(diffList);
+      LOG.debug("diff returning " + Arrays.toString(diffList.toArray()) + ",full list=" + Arrays.toString(list1.toArray()));
+      return list1;
+    }
+  }
+
+  private List<String> getWrites(List<String> capabilities) {
+    List<String> writes = new ArrayList<>();
+    for (String capability : capabilities) {
+      if (capability.toUpperCase().endsWith("WRITE") ||
+          capability.toUpperCase().endsWith("STATS") ||
+          capability.toUpperCase().endsWith("INVALIDATE")) {
+        writes.add(capability);
+      }
+    }
+    return writes;
+  }
+
+  private List<String> getReads(List<String> capabilities) {
+    List<String> reads = new ArrayList<>();
+    for (String capability : capabilities) {
+      if (capability.toUpperCase().endsWith("READ") ||
+          capability.toUpperCase().endsWith("SQL")) {
+        reads.add(capability);
+      }
+    }
+    return reads;
   }
 }

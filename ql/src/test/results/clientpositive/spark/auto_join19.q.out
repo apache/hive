@@ -70,7 +70,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: ((ds) IN ('2008-04-08', '2008-04-09') and (hr) IN ('12', '11') and key is not null) (type: boolean)
+                  filterExpr: (key is not null and (ds) IN ('2008-04-08', '2008-04-09') and (hr) IN ('12', '11')) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
