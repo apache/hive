@@ -26,24 +26,46 @@ public class RunOptions {
 
   public static RunOptions fromCommandLine(CommandLine commandLine) {
     String tableTypeText = commandLine.getOptionValue("tableType");
+
+    int defaultPoolSize = Runtime.getRuntime().availableProcessors();
+    if (defaultPoolSize < 1)
+      defaultPoolSize = 1;
+
+    int tablePoolSize = getIntOptionValue(commandLine, "tablePoolSize", defaultPoolSize);
+    if (tablePoolSize < 1)
+      throw new IllegalArgumentException("Please specify a positive integer option value for tablePoolSize");
+
     return new RunOptions(
-            commandLine.getOptionValue("location", "."),
-            commandLine.hasOption("execute"),
-            commandLine.getOptionValue("dbRegex", ".*"),
-            commandLine.getOptionValue("tableRegex", ".*")
-    );
+      commandLine.getOptionValue("location", "."),
+      commandLine.hasOption("execute"),
+      commandLine.getOptionValue("dbRegex", ".*"),
+      commandLine.getOptionValue("tableRegex", ".*"),
+      tablePoolSize);
+  }
+
+  private static int getIntOptionValue(CommandLine commandLine, String optionName, int defaultValue) {
+    if (commandLine.hasOption(optionName)) {
+      try {
+        return Integer.parseInt(commandLine.getOptionValue(optionName));
+      } catch (NumberFormatException e) {
+        throw new IllegalArgumentException("Please specify a positive integer option value for " + optionName, e);
+      }
+    }
+    return defaultValue;
   }
 
   private final String outputDir;
   private final boolean execute;
   private final String dbRegex;
   private final String tableRegex;
+  private final int tablePoolSize;
 
-  public RunOptions(String outputDir, boolean execute, String dbRegex, String tableRegex) {
+  private RunOptions(String outputDir, boolean execute, String dbRegex, String tableRegex, int tablePoolSize) {
     this.outputDir = outputDir;
     this.execute = execute;
     this.dbRegex = dbRegex;
     this.tableRegex = tableRegex;
+    this.tablePoolSize = tablePoolSize;
   }
 
   public String getOutputDir() {
@@ -62,6 +84,10 @@ public class RunOptions {
     return tableRegex;
   }
 
+  public int getTablePoolSize() {
+    return tablePoolSize;
+  }
+
   @Override
   public String toString() {
     return "RunOptions{" +
@@ -69,6 +95,7 @@ public class RunOptions {
             ", execute=" + execute +
             ", dbRegex='" + dbRegex + '\'' +
             ", tableRegex='" + tableRegex + '\'' +
+            ", tablePoolSize=" + tablePoolSize +
             '}';
   }
 }
