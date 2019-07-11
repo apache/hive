@@ -142,7 +142,7 @@
     <commons-pool.version>1.5.4</commons-pool.version>
     <cdh.logredactor.version>2.0.8</cdh.logredactor.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
-    <derby.version>10.14.1.0</derby.version>
+    <derby.version>10.14.2.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <druid.version>0.12.1.7.0.2.0-SNAPSHOT</druid.version>
