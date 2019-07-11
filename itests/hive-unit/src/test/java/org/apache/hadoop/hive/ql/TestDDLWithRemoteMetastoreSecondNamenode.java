@@ -50,8 +50,6 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
   private static final String Table5Name = "table5_nondefault_nn";
   private static final String Table6Name = "table6_nondefault_nn";
   private static final String Table7Name = "table7_nondefault_nn";
-  private static final String Index1Name = "index1_table1_nondefault_nn";
-  private static final String Index2Name = "index2_table1_nondefault_nn";
   private static final String tmpdir = System.getProperty("test.tmp.dir");
   private static final String tmpdirFs2 = "/" + TestDDLWithRemoteMetastoreSecondNamenode.class.getName();
   private static final Path tmppath = new Path(tmpdir);
@@ -141,10 +139,6 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
   }
 
   private void cleanup() throws Exception {
-      String[] srcidx = {Index1Name, Index2Name};
-      for (String src : srcidx) {
-        driver.run("DROP INDEX IF EXISTS " + src + " ON " + Table1Name);
-      }
       String[] srctables = {Table1Name, Table2Name, Database1Name + "." + Table3Name,
         Database1Name + "." + Table4Name, Table5Name, Table6Name};
       for (String src : srctables) {
