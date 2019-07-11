@@ -2279,8 +2279,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   // TODO: If we want to make use of convention (e.g., while directly generating operator
                   // tree instead of AST), this should be changed.
                   newScan = DruidQuery.create(optCluster, optCluster.traitSetOf(BindableConvention.INSTANCE),
-                      scan.getTable(), dq.getDruidTable(),
-                      ImmutableList.<RelNode>of(dq.getTableScan()));
+                      scan.getTable(), dq.getDruidTable(), ImmutableList.of(dq.getTableScan()),
+                      DruidSqlOperatorConverter.getDefaultMap());
                 } else {
                   newScan = new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
                       (RelOptHiveTable) scan.getTable(), ((RelOptHiveTable) scan.getTable()).getName(),
