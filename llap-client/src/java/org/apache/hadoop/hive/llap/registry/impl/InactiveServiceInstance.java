@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap.registry.impl;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
@@ -62,7 +63,7 @@ public class InactiveServiceInstance implements LlapServiceInstance {
 
   @Override
   public Map<String, String> getProperties() {
-    throw new UnsupportedOperationException();
+    return Collections.emptyMap();
   }
 
   @Override

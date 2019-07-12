@@ -29,6 +29,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -122,7 +124,8 @@ public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstanc
     return "host-" + host;
   }
 
-  private final class FixedServiceInstance implements LlapServiceInstance {
+  @VisibleForTesting
+  public final class FixedServiceInstance implements LlapServiceInstance {
 
     private final String host;
     private final String serviceAddress;

@@ -13,6 +13,7 @@
  */
 package org.apache.hadoop.hive.llap.registry.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 
 import com.google.common.collect.Sets;
@@ -186,7 +187,8 @@ public class LlapZookeeperRegistryImpl
     // Nothing for the zkCreate models
   }
 
-  private class DynamicServiceInstance
+  @VisibleForTesting
+  public class DynamicServiceInstance
       extends ServiceInstanceBase implements LlapServiceInstance {
     private final int mngPort;
     private final int shufflePort;
