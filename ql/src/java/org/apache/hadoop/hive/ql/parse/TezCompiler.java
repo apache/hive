@@ -697,7 +697,7 @@ public class TezCompiler extends TaskCompiler {
       for (BaseWork w: all) {
         if (w instanceof MapWork) {
           MapWork mapWork = (MapWork) w;
-          HashMap<String, Operator<? extends OperatorDesc>> opMap = mapWork.getAliasToWork();
+          Map<String, Operator<? extends OperatorDesc>> opMap = mapWork.getAliasToWork();
           if (!opMap.isEmpty()) {
             for (Operator<? extends OperatorDesc> op : opMap.values()) {
               setInputFormat(mapWork, op);

@@ -148,14 +148,14 @@ public class NullScanTaskDispatcher implements Dispatcher {
       tso.getConf().setIsMetadataOnly(true);
     }
     // group path alias according to work
-    Map<Path, ArrayList<String>> candidates = new HashMap<>();
+    Map<Path, List<String>> candidates = new HashMap<>();
     for (Path path : work.getPaths()) {
-      ArrayList<String> aliasesAffected = work.getPathToAliases().get(path);
+      List<String> aliasesAffected = work.getPathToAliases().get(path);
       if (CollectionUtils.isNotEmpty(aliasesAffected)) {
         candidates.put(path, aliasesAffected);
       }
     }
-    for (Entry<Path, ArrayList<String>> entry : candidates.entrySet()) {
+    for (Entry<Path, List<String>> entry : candidates.entrySet()) {
       processAlias(work, entry.getKey(), entry.getValue(), aliases);
     }
   }

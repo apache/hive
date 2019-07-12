@@ -334,7 +334,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       Map<Path, PartitionDesc> pathToPartitionInfo)
       throws IOException {
     init(job);
-    Map<Path, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
+    Map<Path, List<String>> pathToAliases = mrwork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork =
       mrwork.getAliasToWork();
     CombineFileInputFormatShim combine = ShimLoader.getHadoopShims()
@@ -608,11 +608,11 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
    * @return the sampled splits
    */
   private List<CombineFileSplit> sampleSplits(List<CombineFileSplit> splits) {
-    HashMap<String, SplitSample> nameToSamples = mrwork.getNameToSplitSample();
+    Map<String, SplitSample> nameToSamples = mrwork.getNameToSplitSample();
     List<CombineFileSplit> retLists = new ArrayList<CombineFileSplit>();
     Map<String, ArrayList<CombineFileSplit>> aliasToSplitList = new HashMap<String, ArrayList<CombineFileSplit>>();
-    Map<Path, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
-    Map<Path, ArrayList<String>> pathToAliasesNoScheme = removeScheme(pathToAliases);
+    Map<Path, List<String>> pathToAliases = mrwork.getPathToAliases();
+    Map<Path, List<String>> pathToAliasesNoScheme = removeScheme(pathToAliases);
 
     // Populate list of exclusive splits for every sampled alias
     //
@@ -681,9 +681,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     return retLists;
   }
 
-  Map<Path, ArrayList<String>> removeScheme(Map<Path, ArrayList<String>> pathToAliases) {
-    Map<Path, ArrayList<String>> result = new HashMap<>();
-    for (Map.Entry <Path, ArrayList<String>> entry : pathToAliases.entrySet()) {
+  Map<Path, List<String>> removeScheme(Map<Path, List<String>> pathToAliases) {
+    Map<Path, List<String>> result = new HashMap<>();
+    for (Map.Entry <Path, List<String>> entry : pathToAliases.entrySet()) {
       Path newKey = Path.getPathWithoutSchemeAndAuthority(entry.getKey());
       StringInternUtils.internUriStringsInPath(newKey);
       result.put(newKey, entry.getValue());

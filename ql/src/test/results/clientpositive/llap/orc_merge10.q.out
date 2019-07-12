@@ -632,7 +632,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Concatenate
-      partition desc:
+      partition spec:
         ds 1
         part 0
       table name: default.orcfile_merge1

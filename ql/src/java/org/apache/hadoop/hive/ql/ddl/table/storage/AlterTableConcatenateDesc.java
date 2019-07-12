@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
@@ -34,20 +32,25 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * DDL task description for ALTER TABLE ... [PARTITION ... ] CONCATENATE commands.
  */
 @Explain(displayName = "Concatenate", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@SuppressWarnings("rawtypes")
 public class AlterTableConcatenateDesc implements DDLDesc {
-  private String tableName;
-  private Map<String, String> partSpec;
-  private ListBucketingCtx lbCtx; // context for list bucketing.
+  private final String tableName;
+  private final Map<String, String> partitionSpec;
+  private final ListBucketingCtx lbCtx;
+  private final Path inputDir;
+  private final Path outputDir;
+  private final Class<? extends InputFormat> inputFormatClass;
+  private final TableDesc tableDesc;
 
-  private List<Path> inputDir = new ArrayList<Path>();
-  private Path outputDir = null;
-  private Class<? extends InputFormat> inputFormatClass;
-  private TableDesc tableDesc;
-
-  public AlterTableConcatenateDesc(String tableName,
-      Map<String, String> partSpec) {
+  public AlterTableConcatenateDesc(String tableName, Map<String, String> partitionSpec, ListBucketingCtx lbCtx,
+      Path inputDir, Path outputDir, Class<? extends InputFormat> inputFormatClass, TableDesc tableDesc) {
     this.tableName = tableName;
-    this.partSpec = partSpec;
+    this.partitionSpec = partitionSpec;
+    this.lbCtx = lbCtx;
+    this.inputDir = inputDir;
+    this.outputDir = outputDir;
+    this.inputFormatClass = inputFormatClass;
+    this.tableDesc = tableDesc;
   }
 
   @Explain(displayName = "table name")
@@ -55,45 +58,26 @@ public class AlterTableConcatenateDesc implements DDLDesc {
     return tableName;
   }
 
-  @Explain(displayName = "partition desc")
-  public Map<String, String> getPartSpec() {
-    return partSpec;
-  }
-
-  public Path getOutputDir() {
-    return outputDir;
-  }
-
-  public void setOutputDir(Path outputDir) {
-    this.outputDir = outputDir;
-  }
-
-  public List<Path> getInputDir() {
-    return inputDir;
-  }
-
-  public void setInputDir(List<Path> inputDir) {
-    this.inputDir = inputDir;
+  /** For Explain only. */
+  @Explain(displayName = "partition spec")
+  public Map<String, String> getPartitionSpec() {
+    return partitionSpec;
   }
 
   public ListBucketingCtx getLbCtx() {
     return lbCtx;
   }
 
-  public void setLbCtx(ListBucketingCtx lbCtx) {
-    this.lbCtx = lbCtx;
+  public Path getInputDir() {
+    return inputDir;
+  }
+
+  public Path getOutputDir() {
+    return outputDir;
   }
 
   public Class<? extends InputFormat> getInputFormatClass() {
     return inputFormatClass;
-  }
-
-  public void setInputFormatClass(Class<? extends InputFormat> inputFormatClass) {
-    this.inputFormatClass = inputFormatClass;
-  }
-
-  public void setTableDesc(TableDesc tableDesc) {
-    this.tableDesc = tableDesc;
   }
 
   public TableDesc getTableDesc() {
