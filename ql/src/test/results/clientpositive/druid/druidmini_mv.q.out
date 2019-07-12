@@ -243,7 +243,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double)
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -258,8 +259,10 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                     value expressions: a (type: int), c (type: double)
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -372,7 +375,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: double)
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -389,8 +393,10 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: double)
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -504,6 +510,8 @@ STAGE PLANS:
                           Map-reduce partition columns: __time_granularity (type: timestamp)
                           Statistics: Num rows: 4 Data size: 1104 Basic stats: COMPLETE Column stats: PARTIAL
                           value expressions: _col0 (type: timestamp with local time zone), _col1 (type: int), _col2 (type: varchar(256)), _col3 (type: double), _col4 (type: varchar(256))
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -523,7 +531,10 @@ STAGE PLANS:
                         Map-reduce partition columns: __time_granularity (type: timestamp)
                         Statistics: Num rows: 4 Data size: 1104 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col0 (type: timestamp with local time zone), _col1 (type: int), _col2 (type: varchar(256)), _col3 (type: double), _col4 (type: varchar(256))
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 3 
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: timestamp with local time zone), VALUE._col1 (type: int), VALUE._col2 (type: varchar(256)), VALUE._col3 (type: double), VALUE._col4 (type: varchar(256)), KEY.__time_granularity (type: timestamp)
@@ -618,7 +629,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double)
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -633,8 +645,10 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                     value expressions: a (type: int), c (type: double)
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:

@@ -278,6 +278,8 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: bigint)
                         auto parallelism: false
+            Execution mode: llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_n0]
             Path -> Partition:
@@ -352,6 +354,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /druid_table_n0 [druid_table_n0]
         Reducer 2 
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -455,7 +458,10 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: timestamp with local time zone), _col1 (type: string)
                       Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col2 (type: bigint), _col3 (type: double)
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1)
@@ -524,7 +530,10 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: timestamp with local time zone), _col1 (type: string)
                       Statistics: Num rows: 9173 Data size: 2091840 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col2 (type: bigint), _col3 (type: double)
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1)
@@ -593,7 +602,10 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: timestamp with local time zone), _col1 (type: string)
                       Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col2 (type: bigint), _col3 (type: double)
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1)
@@ -662,7 +674,10 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: timestamp with local time zone), _col1 (type: string)
                       Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col2 (type: bigint), _col3 (type: double)
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1)
@@ -728,7 +743,10 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -789,7 +807,10 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint), _col1 (type: double)
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1)
@@ -850,7 +871,10 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint), _col1 (type: double), _col2 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1), min(VALUE._col2)
@@ -911,7 +935,10 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -949,7 +976,7 @@ POSTHOOK: query: select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6078	2.73086627938E7
+6078	2.7308662793799996E7
 PREHOOK: query: select count(distinct cstring2), sum(2 * cdouble) FROM druid_table_n0 GROUP  BY floor_year(`__time`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_n0
@@ -958,7 +985,7 @@ POSTHOOK: query: select count(distinct cstring2), sum(2 * cdouble) FROM druid_ta
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6078	5.46173255876E7
+6078	5.461732558759999E7
 PREHOOK: query: select count(DISTINCT cstring2) FROM druid_table_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_n0
@@ -976,7 +1003,7 @@ POSTHOOK: query: select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6078	2.73086627938E7
+6078	2.7308662793799996E7
 PREHOOK: query: select count(distinct cstring2 || '_'|| cstring1), sum(cdouble), min(cint) FROM druid_table_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_n0
@@ -985,7 +1012,7 @@ POSTHOOK: query: select count(distinct cstring2 || '_'|| cstring1), sum(cdouble)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-3030	2.73086627938E7	-1073279343
+3030	2.7308662793799996E7	-1073279343
 PREHOOK: query: explain select unix_timestamp(from_unixtime(1396681200)) from druid_table_n0 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_n0
@@ -1347,7 +1374,7 @@ GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DAT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-3.832948315033821E14	1969-12-01
+3.83294831503382E14	1969-12-01
 PREHOOK: query: explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_n0  order by date_1, date_2 limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_n0
@@ -1387,7 +1414,10 @@ STAGE PLANS:
                       sort order: ++
                       Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: date), KEY.reducesinkkey1 (type: date)
@@ -1787,7 +1817,10 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1857,7 +1890,10 @@ STAGE PLANS:
                       sort order: +
                       Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
@@ -1871,6 +1907,7 @@ STAGE PLANS:
                     sort order: +
                     Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
@@ -1930,7 +1967,10 @@ STAGE PLANS:
                       sort order: +
                       Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
+            Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
@@ -1944,6 +1984,7 @@ STAGE PLANS:
                     sort order: +
                     Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
@@ -1971,11 +2012,11 @@ POSTHOOK: query: select `timets_with_tz` from (select `__time` as timets_with_tz
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2019-05-24 15:06:00.0 US/Pacific
-2019-05-24 15:06:00.0 US/Pacific
-2019-05-24 15:06:00.0 US/Pacific
-2019-05-24 15:06:00.0 US/Pacific
-2019-05-24 15:06:00.0 US/Pacific
+2019-07-11 17:00:00.0 US/Pacific
+2019-07-11 17:00:00.0 US/Pacific
+2019-07-11 17:00:00.0 US/Pacific
+2019-07-11 17:00:00.0 US/Pacific
+2019-07-11 17:00:00.0 US/Pacific
 PREHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_n1
@@ -1984,8 +2025,8 @@ POSTHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as ti
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2019-05-24 15:06:00
-2019-05-24 15:06:00
-2019-05-24 15:06:00
-2019-05-24 15:06:00
-2019-05-24 15:06:00
+2019-07-11 17:00:00
+2019-07-11 17:00:00
+2019-07-11 17:00:00
+2019-07-11 17:00:00
+2019-07-11 17:00:00

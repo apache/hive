@@ -256,7 +256,8 @@ STAGE PLANS:
                       tag: 0
                       value expressions: _col0 (type: string)
                       auto parallelism: true
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_1_n2]
             Path -> Partition:
@@ -345,7 +346,8 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     tag: 1
                     auto parallelism: true
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_1_n2]
             Path -> Partition:
@@ -416,6 +418,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /druid_table_1_n2 [druid_table_1_n2]
         Reducer 2 
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Merge Join Operator
@@ -525,7 +528,8 @@ STAGE PLANS:
                       tag: 0
                       value expressions: _col0 (type: string)
                       auto parallelism: false
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_1_n2]
             Path -> Partition:
@@ -612,7 +616,8 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     tag: 1
                     auto parallelism: false
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_1_n2]
             Path -> Partition:
@@ -683,6 +688,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /druid_table_1_n2 [druid_table_1_n2]
         Reducer 2 
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Merge Join Operator
@@ -975,6 +981,8 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col3 (type: float), _col4 (type: double)
                         auto parallelism: true
+            Execution mode: llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_1_n2]
             Path -> Partition:
@@ -1037,6 +1045,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /druid_table_1_n2 [druid_table_1_n2]
         Reducer 2 
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -1060,6 +1069,7 @@ STAGE PLANS:
                     value expressions: _col0 (type: string), _col1 (type: timestamp with local time zone), _col3 (type: double)
                     auto parallelism: false
         Reducer 3 
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
