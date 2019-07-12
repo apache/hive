@@ -27,13 +27,33 @@ public class RunOptions {
 
   public static RunOptions fromCommandLine(CommandLine commandLine) {
     String tableTypeText = commandLine.getOptionValue("tableType");
+
+    int defaultPoolSize = Runtime.getRuntime().availableProcessors();
+    if (defaultPoolSize < 1)
+      defaultPoolSize = 1;
+
+    int tablePoolSize = getIntOptionValue(commandLine, "tablePoolSize", defaultPoolSize);
+    if (tablePoolSize < 1)
+      throw new IllegalArgumentException("Please specify a positive integer option value for tablePoolSize");
+
     return new RunOptions(
       commandLine.getOptionValue("location", "."),
       commandLine.hasOption("execute"),
       commandLine.getOptionValue("dbRegex", ".*"),
       commandLine.getOptionValue("tableRegex", ".*"),
-      tableTypeText == null ? null : TableType.valueOf(tableTypeText)
-    );
+      tableTypeText == null ? null : TableType.valueOf(tableTypeText),
+      tablePoolSize);
+  }
+
+  private static int getIntOptionValue(CommandLine commandLine, String optionName, int defaultValue) {
+    if (commandLine.hasOption(optionName)) {
+      try {
+        return Integer.parseInt(commandLine.getOptionValue(optionName));
+      } catch (NumberFormatException e) {
+        throw new IllegalArgumentException("Please specify a positive integer option value for " + optionName, e);
+      }
+    }
+    return defaultValue;
   }
 
   private final String outputDir;
@@ -41,13 +61,15 @@ public class RunOptions {
   private final String dbRegex;
   private final String tableRegex;
   private final TableType tableType;
+  private final int tablePoolSize;
 
-  public RunOptions(String outputDir, boolean execute, String dbRegex, String tableRegex, TableType tableType) {
+  private RunOptions(String outputDir, boolean execute, String dbRegex, String tableRegex, TableType tableType, int tablePoolSize) {
     this.outputDir = outputDir;
     this.execute = execute;
     this.dbRegex = dbRegex;
     this.tableRegex = tableRegex;
     this.tableType = tableType;
+    this.tablePoolSize = tablePoolSize;
   }
 
   public String getOutputDir() {
@@ -70,6 +92,10 @@ public class RunOptions {
     return tableType;
   }
 
+  public int getTablePoolSize() {
+    return tablePoolSize;
+  }
+
   @Override
   public String toString() {
     return "RunOptions{" +
@@ -78,6 +104,7 @@ public class RunOptions {
             ", dbRegex='" + dbRegex + '\'' +
             ", tableRegex='" + tableRegex + '\'' +
             ", tableType=" + tableType +
+            ", tablePoolSize=" + tablePoolSize +
             '}';
   }
 }
