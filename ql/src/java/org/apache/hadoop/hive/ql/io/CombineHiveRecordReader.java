@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
@@ -52,7 +53,7 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     extends HiveContextAwareRecordReader<K, V> {
   private org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(CombineHiveRecordReader.class);
 
-  private Map<Path, PartitionDesc> pathToPartInfo;
+  private LinkedHashMap<Path, PartitionDesc> pathToPartInfo;
 
   public CombineHiveRecordReader(InputSplit split, Configuration conf,
       Reporter reporter, Integer partition, RecordReader preReader) throws IOException {

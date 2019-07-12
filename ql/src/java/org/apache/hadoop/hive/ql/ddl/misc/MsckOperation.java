@@ -23,19 +23,13 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Msck;
 import org.apache.hadoop.hive.metastore.MsckInfo;
-import org.apache.hadoop.hive.metastore.PartitionManagementTask;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.thrift.TException;
 
 /**
  * Operation process of metastore check.
@@ -49,29 +43,15 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
   }
 
   @Override
-  public int execute() throws HiveException, IOException, TException {
+  public int execute() throws HiveException, IOException {
     try {
       Msck msck = new Msck(false, false);
       msck.init(context.getDb().getConf());
 
       String[] names = Utilities.getDbTableName(desc.getTableName());
-
-      long partitionExpirySeconds = -1L;
-      try (HiveMetaStoreClient msc = new HiveMetaStoreClient(context.getConf())) {
-        Table table = msc.getTable(SessionState.get().getCurrentCatalog(), names[0], names[1]);
-        String qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
-        boolean msckEnablePartitionRetention = context.getConf().getBoolean(
-            MetastoreConf.ConfVars.MSCK_REPAIR_ENABLE_PARTITION_RETENTION.getHiveName(), false);
-        if (msckEnablePartitionRetention) {
-          partitionExpirySeconds = PartitionManagementTask.getRetentionPeriodInSeconds(table);
-          LOG.info("{} - Retention period ({}s) for partition is enabled for MSCK REPAIR..", qualifiedTableName,
-              partitionExpirySeconds);
-        }
-      }
-
       MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), names[0], names[1],
           desc.getPartitionsSpecs(), desc.getResFile(), desc.isRepairPartitions(), desc.isAddPartitions(),
-          desc.isDropPartitions(), partitionExpirySeconds);
+          desc.isDropPartitions(), -1);
       return msck.repair(msckInfo);
     } catch (MetaException e) {
       LOG.error("Unable to create msck instance.", e);

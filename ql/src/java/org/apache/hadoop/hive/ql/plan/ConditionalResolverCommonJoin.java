@@ -21,9 +21,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,8 +53,8 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     private static final long serialVersionUID = 1L;
 
     private HashMap<Task<? extends Serializable>, Set<String>> taskToAliases;
-    Map<Path, List<String>> pathToAliases;
-    Map<String, Long> aliasToKnownSize;
+    HashMap<Path, ArrayList<String>> pathToAliases;
+    HashMap<String, Long> aliasToKnownSize;
     private Task<? extends Serializable> commonJoinTask;
 
     private Path localTmpDir;
@@ -77,7 +79,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       this.commonJoinTask = commonJoinTask;
     }
 
-    public Map<String, Long> getAliasToKnownSize() {
+    public HashMap<String, Long> getAliasToKnownSize() {
       return aliasToKnownSize == null ?
           aliasToKnownSize = new HashMap<String, Long>() : aliasToKnownSize;
     }
@@ -86,11 +88,11 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       this.aliasToKnownSize = aliasToKnownSize;
     }
 
-    public Map<Path, List<String>> getPathToAliases() {
+    public HashMap<Path, ArrayList<String>> getPathToAliases() {
       return pathToAliases;
     }
 
-    public void setPathToAliases(Map<Path, List<String>> pathToAliases) {
+    public void setPathToAliases(final HashMap<Path, ArrayList<String>> pathToAliases) {
       this.pathToAliases = pathToAliases;
     }
 
@@ -212,10 +214,10 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     Set<String> aliases = getParticipants(ctx);
 
     Map<String, Long> aliasToKnownSize = ctx.getAliasToKnownSize();
-    Map<Path, List<String>> pathToAliases = ctx.getPathToAliases();
+    Map<Path, ArrayList<String>> pathToAliases = ctx.getPathToAliases();
 
     Set<Path> unknownPaths = new HashSet<>();
-    for (Map.Entry<Path, List<String>> entry : pathToAliases.entrySet()) {
+    for (Map.Entry<Path, ArrayList<String>> entry : pathToAliases.entrySet()) {
       for (String alias : entry.getValue()) {
         if (aliases.contains(alias) && !aliasToKnownSize.containsKey(alias)) {
           unknownPaths.add(entry.getKey());

@@ -22,8 +22,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -66,7 +64,7 @@ public class TestPlan extends TestCase {
 
       ArrayList<String> aliasList = new ArrayList<String>();
       aliasList.add("a");
-      Map<Path, List<String>> pa = new LinkedHashMap<>();
+      LinkedHashMap<Path, ArrayList<String>> pa = new LinkedHashMap<>();
       pa.put(new Path("/tmp/testfolder"), aliasList);
 
       TableDesc tblDesc = Utilities.defaultTd;
