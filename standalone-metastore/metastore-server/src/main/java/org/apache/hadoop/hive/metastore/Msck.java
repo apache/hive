@@ -108,15 +108,11 @@ public class Msck {
     boolean success = false;
     long txnId = -1;
     int ret = 0;
+    long partitionExpirySeconds = msckInfo.getPartitionExpirySeconds();
     try {
       Table table = getMsc().getTable(msckInfo.getCatalogName(), msckInfo.getDbName(), msckInfo.getTableName());
       qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
-      if (getConf().getBoolean(MetastoreConf.ConfVars.MSCK_REPAIR_ENABLE_PARTITION_RETENTION.getHiveName(), false)) {
-        msckInfo.setPartitionExpirySeconds(PartitionManagementTask.getRetentionPeriodInSeconds(table));
-        LOG.info("{} - Retention period ({}s) for partition is enabled for MSCK REPAIR..",
-          qualifiedTableName, msckInfo.getPartitionExpirySeconds());
-      }
-      HiveMetaStoreChecker checker = new HiveMetaStoreChecker(getMsc(), getConf(), msckInfo.getPartitionExpirySeconds());
+      HiveMetaStoreChecker checker = new HiveMetaStoreChecker(getMsc(), getConf(), partitionExpirySeconds);
       // checkMetastore call will fill in result with partitions that are present in filesystem
       // and missing in metastore - accessed through getPartitionsNotInMs
       // And partitions that are not present in filesystem and metadata exists in metastore -
@@ -253,7 +249,7 @@ public class Msck {
           firstWritten |= writeMsckResult(result.getPartitionsNotOnFs(),
             "Partitions missing from filesystem:", resultOut, firstWritten);
           firstWritten |= writeMsckResult(result.getExpiredPartitions(),
-            "Expired partitions (retention period: " + msckInfo.getPartitionExpirySeconds() + "s) :", resultOut, firstWritten);
+            "Expired partitions (retention period: " + partitionExpirySeconds + "s) :", resultOut, firstWritten);
           // sorting to stabilize qfile output (msck_repair_drop.q)
           Collections.sort(repairOutput);
           for (String rout : repairOutput) {

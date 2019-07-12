@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,7 +96,7 @@ public class MapReduceCompiler extends TaskCompiler {
   protected void setInputFormat(Task<? extends Serializable> task) {
     if (task instanceof ExecDriver) {
       MapWork work = ((MapredWork) task.getWork()).getMapWork();
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = work.getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> opMap = work.getAliasToWork();
       if (!opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
           setInputFormat(work, op);
@@ -141,8 +140,8 @@ public class MapReduceCompiler extends TaskCompiler {
   private void breakTaskTree(Task<? extends Serializable> task) {
 
     if (task instanceof ExecDriver) {
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = ((MapredWork) task
-          .getWork()).getMapWork().getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> opMap =
+          ((MapredWork) task.getWork()).getMapWork().getAliasToWork();
       if (!opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
           breakOperatorTree(op);

@@ -26,12 +26,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -382,10 +382,8 @@ public class TestGetInputSummary {
       context.addCS(partitionPath.toString(), entry.getValue());
     }
 
-    LinkedHashMap<Path, PartitionDesc> pathToPartitionInfo =
-        new LinkedHashMap<>();
-    LinkedHashMap<Path, ArrayList<String>> pathToAliasTable =
-        new LinkedHashMap<>();
+    Map<Path, PartitionDesc> pathToPartitionInfo = new LinkedHashMap<>();
+    Map<Path, List<String>> pathToAliasTable = new LinkedHashMap<>();
     TableScanOperator scanOp = new TableScanOperator();
 
     PartitionDesc partitionDesc = new PartitionDesc(

@@ -163,7 +163,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
     }
   }
 
-  static long getRetentionPeriodInSeconds(final Table table) {
+  public static long getRetentionPeriodInSeconds(final Table table) {
     String retentionPeriod;
     long retentionSeconds = -1;
     if (table.getParameters() != null && table.getParameters().containsKey(PARTITION_RETENTION_PERIOD_TBLPROPERTY)) {
