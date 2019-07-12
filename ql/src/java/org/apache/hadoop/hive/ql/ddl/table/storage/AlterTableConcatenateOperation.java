@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -43,8 +43,6 @@ import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
-import com.google.common.collect.Lists;
-
 /**
  * Operation process of concatenating the files of a table/partition.
  */
@@ -55,48 +53,29 @@ public class AlterTableConcatenateOperation extends DDLOperation<AlterTableConca
 
   @Override
   public int execute() throws HiveException {
-    CompilationOpContext opContext = context.getDriverContext().getCtx().getOpContext();
-
-    MergeFileWork mergeWork = getMergeFileWork(opContext);
-    Task<?> task = getTask(mergeWork);
-    return executeTask(opContext, task);
-  }
-
-  private MergeFileWork getMergeFileWork(CompilationOpContext opContext) {
-    List<Path> inputDirList = Lists.newArrayList(desc.getInputDir());
+    ListBucketingCtx lbCtx = desc.getLbCtx();
+    boolean lbatc = lbCtx == null ? false : lbCtx.isSkewedStoredAsDir();
+    int lbd = lbCtx == null ? 0 : lbCtx.calculateListBucketingLevel();
 
     // merge work only needs input and output.
-    MergeFileWork mergeWork = new MergeFileWork(inputDirList, desc.getOutputDir(),
+    MergeFileWork mergeWork = new MergeFileWork(desc.getInputDir(), desc.getOutputDir(),
         desc.getInputFormatClass().getName(), desc.getTableDesc());
+    LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
+    ArrayList<String> inputDirstr = new ArrayList<String>(1);
+    inputDirstr.add(desc.getInputDir().toString());
+    pathToAliases.put(desc.getInputDir().get(0), inputDirstr);
+    mergeWork.setPathToAliases(pathToAliases);
     mergeWork.setListBucketingCtx(desc.getLbCtx());
     mergeWork.resolveConcatenateMerge(context.getDb().getConf());
     mergeWork.setMapperCannotSpanPartns(true);
     mergeWork.setSourceTableInputFormat(desc.getInputFormatClass().getName());
-
-    Map<Path, List<String>> pathToAliases = new LinkedHashMap<>();
-    List<String> inputDirStr = Lists.newArrayList(inputDirList.toString());
-    pathToAliases.put(desc.getInputDir(), inputDirStr);
-    mergeWork.setPathToAliases(pathToAliases);
-
-    FileMergeDesc fmd = getFileMergeDesc();
-    Operator<? extends OperatorDesc> mergeOp = OperatorFactory.get(opContext, fmd);
-    Map<String, Operator<? extends  OperatorDesc>> aliasToWork =
-        new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
-    aliasToWork.put(inputDirList.toString(), mergeOp);
-    mergeWork.setAliasToWork(aliasToWork);
-
-    return mergeWork;
-  }
-
-  private FileMergeDesc getFileMergeDesc() {
-    // safe to assume else is ORC as semantic analyzer will check for RC/ORC
-    FileMergeDesc fmd = (desc.getInputFormatClass().equals(RCFileInputFormat.class)) ?
-        new RCFileMergeDesc() :
-        new OrcFileMergeDesc();
-
-    ListBucketingCtx lbCtx = desc.getLbCtx();
-    boolean lbatc = lbCtx == null ? false : lbCtx.isSkewedStoredAsDir();
-    int lbd = lbCtx == null ? 0 : lbCtx.calculateListBucketingLevel();
+    final FileMergeDesc fmd;
+    if (desc.getInputFormatClass().equals(RCFileInputFormat.class)) {
+      fmd = new RCFileMergeDesc();
+    } else {
+      // safe to assume else is ORC as semantic analyzer will check for RC/ORC
+      fmd = new OrcFileMergeDesc();
+    }
 
     fmd.setDpCtx(null);
     fmd.setHasDynamicPartitions(false);
@@ -104,30 +83,32 @@ public class AlterTableConcatenateOperation extends DDLOperation<AlterTableConca
     fmd.setListBucketingDepth(lbd);
     fmd.setOutputPath(desc.getOutputDir());
 
-    return fmd;
-  }
+    CompilationOpContext opContext = context.getDriverContext().getCtx().getOpContext();
+    Operator<? extends OperatorDesc> mergeOp = OperatorFactory.get(opContext, fmd);
 
-  private Task<?> getTask(MergeFileWork mergeWork) {
+    LinkedHashMap<String, Operator<? extends  OperatorDesc>> aliasToWork =
+        new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
+    aliasToWork.put(desc.getInputDir().toString(), mergeOp);
+    mergeWork.setAliasToWork(aliasToWork);
+    DriverContext driverCxt = new DriverContext();
+    Task<?> task;
     if (context.getConf().getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       TezWork tezWork = new TezWork(context.getQueryState().getQueryId(), context.getConf());
       mergeWork.setName("File Merge");
       tezWork.add(mergeWork);
-      Task<?> task = new TezTask();
+      task = new TezTask();
       ((TezTask) task).setWork(tezWork);
-      return task;
     } else {
-      Task<?> task = new MergeFileTask();
+      task = new MergeFileTask();
       ((MergeFileTask) task).setWork(mergeWork);
-      return task;
     }
-  }
 
-  private int executeTask(CompilationOpContext opContext, Task<?> task) {
-    DriverContext driverCxt = new DriverContext();
+    // initialize the task and execute
     task.initialize(context.getQueryState(), context.getQueryPlan(), driverCxt, opContext);
+    Task<? extends Serializable> subtask = task;
     int ret = task.execute(driverCxt);
-    if (task.getException() != null) {
-      context.getTask().setException(task.getException());
+    if (subtask.getException() != null) {
+      context.getTask().setException(subtask.getException());
     }
     return ret;
   }

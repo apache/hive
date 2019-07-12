@@ -299,10 +299,10 @@ public class TestOperators extends TestCase {
           new Path("hdfs:///testDir/testFile"));
 
       // initialize pathToAliases
-      List<String> aliases = new ArrayList<String>();
+      ArrayList<String> aliases = new ArrayList<String>();
       aliases.add("a");
       aliases.add("b");
-      Map<Path, List<String>> pathToAliases = new LinkedHashMap<>();
+      LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
       pathToAliases.put(new Path("hdfs:///testDir"), aliases);
 
       // initialize pathToTableInfo

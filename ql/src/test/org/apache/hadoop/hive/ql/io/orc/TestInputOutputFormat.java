@@ -2201,8 +2201,8 @@ public class TestInputOutputFormat {
       mapWork.setVectorizedRowBatchCtx(vectorizedRowBatchCtx);
     }
     mapWork.setUseBucketizedHiveInputFormat(false);
-    Map<Path, List<String>> aliasMap = new LinkedHashMap<>();
-    List<String> aliases = new ArrayList<String>();
+    LinkedHashMap<Path, ArrayList<String>> aliasMap = new LinkedHashMap<>();
+    ArrayList<String> aliases = new ArrayList<String>();
     aliases.add(tableName);
     LinkedHashMap<Path, PartitionDesc> partMap = new LinkedHashMap<>();
     for(int p=0; p < partitions; ++p) {

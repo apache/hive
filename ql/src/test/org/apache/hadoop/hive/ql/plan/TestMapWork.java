@@ -19,9 +19,8 @@ package org.apache.hadoop.hive.ql.plan;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
@@ -32,11 +31,11 @@ public class TestMapWork {
   @Test
   public void testGetAndSetConsistency() {
     MapWork mw = new MapWork();
-    Map<Path, List<String>> pathToAliases = new LinkedHashMap<>();
+    LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
     pathToAliases.put(new Path("p0"), Lists.newArrayList("a1", "a2"));
     mw.setPathToAliases(pathToAliases);
 
-    Map<Path, List<String>> pta = mw.getPathToAliases();
+    LinkedHashMap<Path, ArrayList<String>> pta = mw.getPathToAliases();
     assertEquals(pathToAliases, pta);
 
   }

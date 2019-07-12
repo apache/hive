@@ -18,9 +18,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.hadoop.hive.common.StringInternUtils;
@@ -85,7 +87,7 @@ public class ProjectionPusher {
 
     final Set<String> aliases = new HashSet<String>();
     try {
-      List<String> a = HiveFileFormatUtils.getFromPathRecursively(
+      ArrayList<String> a = HiveFileFormatUtils.getFromPathRecursively(
           mapWork.getPathToAliases(), new Path(splitPath), null, false, true);
       if (a != null) {
         aliases.addAll(a);

@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.ddl.misc;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,16 +36,19 @@ public class MsckDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   private final String tableName;
-  private final List<Map<String, String>> partitionsSpecs;
+  private final ArrayList<LinkedHashMap<String, String>> partitionsSpecs;
   private final String resFile;
   private final boolean repairPartitions;
   private final boolean addPartitions;
   private final boolean dropPartitions;
 
-  public MsckDesc(String tableName, List<Map<String, String>> partitionsSpecs, Path resFile,
+  public MsckDesc(String tableName, List<? extends Map<String, String>> partitionSpecs, Path resFile,
       boolean repairPartitions, boolean addPartitions, boolean dropPartitions) {
     this.tableName = tableName;
-    this.partitionsSpecs = partitionsSpecs;
+    this.partitionsSpecs = new ArrayList<LinkedHashMap<String, String>>(partitionSpecs.size());
+    for (Map<String, String> partSpec : partitionSpecs) {
+      this.partitionsSpecs.add(new LinkedHashMap<>(partSpec));
+    }
     this.resFile = resFile.toString();
     this.repairPartitions = repairPartitions;
     this.addPartitions = addPartitions;
@@ -56,7 +61,7 @@ public class MsckDesc implements DDLDesc, Serializable {
   }
 
   @Explain(displayName = "partitions specs", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public List<Map<String, String>> getPartitionsSpecs() {
+  public ArrayList<LinkedHashMap<String, String>> getPartitionsSpecs() {
     return partitionsSpecs;
   }
 
