@@ -50,6 +50,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: customer_demographics
+            filterExpr: (((cd_marital_status = 'M') and (cd_education_status = 'Unknown             ')) or ((cd_marital_status = 'W') and (cd_education_status = 'Advanced Degree     '))) (type: boolean)
             Statistics: Num rows: 4 Data size: 88 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((cd_marital_status = 'M') and (cd_education_status = 'Unknown             ')) or ((cd_marital_status = 'W') and (cd_education_status = 'Advanced Degree     '))) (type: boolean)
@@ -128,6 +129,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: customer_demographics
+            filterExpr: (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown             '), const struct('W','Advanced Degree     ')) (type: boolean)
             Statistics: Num rows: 4 Data size: 88 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown             '), const struct('W','Advanced Degree     ')) (type: boolean)

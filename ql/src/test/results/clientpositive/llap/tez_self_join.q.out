@@ -88,6 +88,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tez_self_join2
+                  filterExpr: id1 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: id1 is not null (type: boolean)
@@ -107,6 +108,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: self1
+                  filterExpr: ((id2 = 'ab') and id1 is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((id2 = 'ab') and id1 is not null) (type: boolean)

@@ -36,6 +36,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ax
+            filterExpr: ((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) (type: boolean)
             Statistics: Num rows: 3 Data size: 11 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) (type: boolean)
@@ -106,6 +107,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ax
+            filterExpr: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
             Statistics: Num rows: 3 Data size: 11 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)

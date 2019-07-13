@@ -206,6 +206,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vectortab_a_1korc
+                  filterExpr: (dt is not null and CAST( ts AS DATE) is not null and s is not null) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 187480 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -273,6 +274,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vectortab_b_1korc
+                  filterExpr: (dt is not null and CAST( ts AS DATE) is not null and s is not null) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 186864 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

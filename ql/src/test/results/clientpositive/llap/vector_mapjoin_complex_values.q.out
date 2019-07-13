@@ -99,6 +99,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: census_clus
+                  filterExpr: (ssn = 100) (type: boolean)
                   Statistics: Num rows: 1 Data size: 185 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -170,6 +171,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: census
+                  filterExpr: (ssn = 100) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

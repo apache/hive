@@ -214,6 +214,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table__1232
+                  filterExpr: ((col_24) IN ('part1', 'part2', 'part3') or col_24 is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -309,6 +310,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table__133
+                  filterExpr: col_1 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -387,6 +389,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table__1215
+                  filterExpr: ((UDFToDouble(col_100) = 210.0D) and col_1 is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

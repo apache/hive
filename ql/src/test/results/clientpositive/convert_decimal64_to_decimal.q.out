@@ -159,6 +159,7 @@ STAGE PLANS:
         $hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: decimal0801_col_4 is not null (type: boolean)
             Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: decimal0801_col_4 is not null (type: boolean)
@@ -177,6 +178,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
+            filterExpr: decimal0402_col_20 is not null (type: boolean)
             Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -317,6 +319,7 @@ STAGE PLANS:
         $hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: decimal0801_col_4 is not null (type: boolean)
             Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: decimal0801_col_4 is not null (type: boolean)
@@ -335,6 +338,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
+            filterExpr: decimal0402_col_20 is not null (type: boolean)
             Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

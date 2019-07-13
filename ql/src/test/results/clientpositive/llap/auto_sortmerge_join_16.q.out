@@ -226,6 +226,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_small_n17
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 236 Data size: 23364 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -376,6 +377,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_small_n17
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 236 Data size: 23364 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -634,6 +636,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_small_n17
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 236 Data size: 23364 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)

@@ -35,9 +35,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t
+            filterExpr: ((a = 'x') or (UDFToDouble(a)) IN (1.0D, 2.0D)) (type: boolean)
             Statistics: Num rows: 3 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(a)) IN (1.0D, 2.0D) or (a = 'x')) (type: boolean)
+              predicate: ((a = 'x') or (UDFToDouble(a)) IN (1.0D, 2.0D)) (type: boolean)
               Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: string)

@@ -94,6 +94,7 @@ STAGE PLANS:
         $hdt$_1:t2 
           TableScan
             alias: t2
+            filterExpr: c is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c is not null (type: boolean)
@@ -222,6 +223,7 @@ STAGE PLANS:
         $hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: a is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)

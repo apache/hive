@@ -2609,6 +2609,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
+                  filterExpr: enforce_constraint(key is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: enforce_constraint(key is not null) (type: boolean)

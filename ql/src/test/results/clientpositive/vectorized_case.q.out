@@ -52,7 +52,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            filterExpr: ((csmallint = 418S) or (csmallint = 12205S) or (csmallint = 10583S)) (type: boolean)
+            filterExpr: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -202,7 +202,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            filterExpr: ((csmallint = 418S) or (csmallint = 12205S) or (csmallint = 10583S)) (type: boolean)
+            filterExpr: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

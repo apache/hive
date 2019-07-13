@@ -599,7 +599,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: nested_tbl_1
-                  filterExpr: (s1.f1 = false) (type: boolean)
+                  filterExpr: (not s1.f1) (type: boolean)
                   Pruned Column Paths: s1.f2, s1.f1
                   Statistics: Num rows: 1 Data size: 316 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -1494,7 +1494,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-                  filterExpr: ((s2.f8.f9 = false) and s1.f6 is not null) (type: boolean)
+                  filterExpr: (s1.f6 is not null and (not s2.f8.f9)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

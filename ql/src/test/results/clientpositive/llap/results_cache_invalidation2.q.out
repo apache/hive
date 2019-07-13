@@ -287,6 +287,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1500 Data size: 130500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -306,6 +307,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)

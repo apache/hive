@@ -43,6 +43,7 @@ STAGE PLANS:
         $hdt$_1:cd 
           TableScan
             alias: cd
+            filterExpr: cint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
@@ -58,6 +59,7 @@ STAGE PLANS:
         $hdt$_2:hd 
           TableScan
             alias: hd
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)

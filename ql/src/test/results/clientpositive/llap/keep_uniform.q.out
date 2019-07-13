@@ -455,6 +455,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws1
+                  filterExpr: (ws_order_number is not null and ws_ship_date_sk is not null and ws_ship_addr_sk is not null and ws_web_site_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -507,6 +508,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00' AND TIMESTAMP'1999-06-30 00:00:00' and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -557,6 +559,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws1
+                  filterExpr: ws_order_number is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -610,6 +613,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws2
+                  filterExpr: ws_order_number is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -662,6 +666,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_returns
+                  filterExpr: wr_order_number is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -713,6 +718,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: ((ca_state = 'TX') and ca_address_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -763,6 +769,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_site
+                  filterExpr: ((web_company_name = 'pri') and web_site_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

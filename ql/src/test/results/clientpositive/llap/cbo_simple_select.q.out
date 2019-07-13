@@ -761,7 +761,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
-          filterExpr: (c_int = c_int) (type: boolean)
+          filterExpr: c_int is not null (type: boolean)
           Filter Operator
             predicate: c_int is not null (type: boolean)
             Select Operator
@@ -821,7 +821,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
-          filterExpr: (c_int = c_int) (type: boolean)
+          filterExpr: c_int is not null (type: boolean)
           Filter Operator
             predicate: c_int is not null (type: boolean)
             Select Operator
@@ -849,7 +849,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
-          filterExpr: (c_int = null) (type: boolean)
           Filter Operator
             predicate: false (type: boolean)
             Select Operator
@@ -879,7 +878,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
-          filterExpr: (c_int) IN (c_int, (2 * c_int)) (type: boolean)
+          filterExpr: (c_int is not null or (c_int = (2 * c_int))) (type: boolean)
           Filter Operator
             predicate: (c_int is not null or (c_int = (2 * c_int))) (type: boolean)
             Select Operator
@@ -909,7 +908,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
-          filterExpr: (c_int) IN (c_int, 0) (type: boolean)
+          filterExpr: (c_int is not null or (c_int = 0)) (type: boolean)
           Filter Operator
             predicate: (c_int is not null or (c_int = 0)) (type: boolean)
             Select Operator

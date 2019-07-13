@@ -94,6 +94,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_s0
+                  filterExpr: ((s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC') and s_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC') and s_store_sk is not null) (type: boolean)
@@ -130,6 +131,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales_s0
+                  filterExpr: ss_store_sk is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ss_item_sk (type: int), ss_store_sk (type: int)

@@ -92,7 +92,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n3
-            filterExpr: (key = 5) (type: boolean)
+            filterExpr: (((key % 2) = 0) and (key < 10) and (key = 5)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key % 2) = 0) and (key < 10) and (key = 5)) (type: boolean)
@@ -138,7 +138,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n3
-            filterExpr: (key = 5) (type: boolean)
+            filterExpr: (((key % 2) = 0) and (key < 10) and (key = 5)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key % 2) = 0) and (key < 10) and (key = 5)) (type: boolean)
@@ -186,6 +186,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_subq_n0
+            filterExpr: UDFToDouble(key) is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
@@ -198,6 +199,7 @@ STAGE PLANS:
                 value expressions: key (type: int), value (type: string)
           TableScan
             alias: src
+            filterExpr: UDFToDouble(key) is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)

@@ -169,6 +169,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: testacid1
+                  filterExpr: (id = '0128') (type: boolean)
                   Statistics: Num rows: 10000 Data size: 1800000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (id = '0128') (type: boolean)

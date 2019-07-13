@@ -826,6 +826,7 @@ STAGE PLANS:
         $hdt$_1:b 
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -970,6 +971,7 @@ STAGE PLANS:
         $hdt$_1:a 
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1126,6 +1128,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1319,6 +1322,7 @@ STAGE PLANS:
         $hdt$_0:src 
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1958,6 +1962,7 @@ STAGE PLANS:
         $hdt$_3:$hdt$_3:t1 
           TableScan
             alias: t1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

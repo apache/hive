@@ -214,6 +214,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab1_n6
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -233,6 +234,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab2_n5
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -530,6 +532,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab1_n6
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -549,6 +552,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab2_n5
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -759,6 +763,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab1_n6
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -778,6 +783,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab2_n5
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)

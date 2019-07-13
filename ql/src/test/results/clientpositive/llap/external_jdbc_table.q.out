@@ -452,6 +452,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: simple_hive_table1
+                  filterExpr: ikey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ikey is not null (type: boolean)

@@ -123,7 +123,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: (((cbigint % 500) = 0) and (sin(cfloat) >= -1.0D)) (type: boolean)
+                  filterExpr: (((cbigint % 500L) = 0L) and (sin(cfloat) >= -1.0D)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 293580 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

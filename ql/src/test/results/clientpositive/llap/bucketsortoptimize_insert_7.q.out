@@ -95,6 +95,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key) IN (0, 5) (type: boolean)
                   Statistics: Num rows: 84 Data size: 7896 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key) IN (0, 5) (type: boolean)
@@ -106,6 +107,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key) IN (0, 5) (type: boolean)
                   Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key) IN (0, 5) (type: boolean)
@@ -318,6 +320,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_table2_n19
+                  filterExpr: (key) IN (0, 5) (type: boolean)
                   Statistics: Num rows: 84 Data size: 7896 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key) IN (0, 5) (type: boolean)
@@ -329,6 +332,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_table1_n20
+                  filterExpr: (key) IN (0, 5) (type: boolean)
                   Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key) IN (0, 5) (type: boolean)
@@ -547,6 +551,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_table2_n19
+                  filterExpr: ((key < 8) and (key) IN (0, 5)) (type: boolean)
                   Statistics: Num rows: 84 Data size: 7896 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key < 8) and (key) IN (0, 5)) (type: boolean)
@@ -558,6 +563,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_table1_n20
+                  filterExpr: ((key < 8) and (key) IN (0, 5)) (type: boolean)
                   Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key < 8) and (key) IN (0, 5)) (type: boolean)

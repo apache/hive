@@ -3843,11 +3843,7 @@ FROM `default`.`dst_union22_n0`
 WHERE `k1` > 20) AS `t2`
 LEFT JOIN (SELECT `k1`, `k3`, `k4`
 FROM `default`.`dst_union22_delta_n0`
-<<<<<<< HEAD
-WHERE `ds` = '1' AND `k0` > 50 AND `k1` > 20) AS `t4` ON `t2`.`k1` = `t4`.`k1` AND `t2`.`ds` = '1')
-=======
-WHERE `k0` > 50 AND `k1` > 20 AND `ds` = '1') AS `t4` ON `t2`.`k1` = `t4`.`k1` AND `t2`.`=`)
->>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+WHERE `k0` > 50 AND `k1` > 20 AND `ds` = '1') AS `t4` ON `t2`.`k1` = `t4`.`k1` AND `t2`.`ds` = '1')
 GROUP BY `k1`, `k2`, `k3`, `k4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5208,12 +5204,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src2_n2
-<<<<<<< HEAD
-                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 56640 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -5297,12 +5289,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src5_n1
-<<<<<<< HEAD
-                  Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 54280 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -5384,12 +5372,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src3
-<<<<<<< HEAD
-                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 56640 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -5473,12 +5457,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src4
-<<<<<<< HEAD
-                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 56640 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -5777,12 +5757,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src2_n2
-<<<<<<< HEAD
-                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 56640 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -5866,12 +5842,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src3
-<<<<<<< HEAD
-                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 56640 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -5955,12 +5927,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< HEAD
-                  Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 54280 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -6038,12 +6006,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-<<<<<<< HEAD
-                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 56640 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -6306,12 +6270,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src2_n2
-<<<<<<< HEAD
-                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 56640 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -6394,14 +6354,9 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-<<<<<<< HEAD
                   alias: src3
-                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  alias: b
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 54280 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -6484,14 +6439,9 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-<<<<<<< HEAD
                   alias: a
-                  Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  alias: src3
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 56640 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -6589,14 +6539,9 @@ STAGE PLANS:
         Map 9 
             Map Operator Tree:
                 TableScan
-<<<<<<< HEAD
                   alias: b
-                  Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  alias: a
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 309 Data size: 54280 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -8411,12 +8356,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< HEAD
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) = 97.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 97.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8434,12 +8375,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dim_pho
-<<<<<<< HEAD
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) = 97.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 97.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8463,12 +8400,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: jackson_sev_add
-<<<<<<< HEAD
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: (UDFToDouble(key) = 97.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 97.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11090,12 +11023,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< HEAD
-                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11134,12 +11063,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-<<<<<<< HEAD
-                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11277,12 +11202,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< HEAD
-                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11321,12 +11242,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-<<<<<<< HEAD
-                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11422,12 +11339,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< HEAD
-                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11466,12 +11379,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-<<<<<<< HEAD
-                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11609,12 +11518,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< HEAD
-                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11653,12 +11558,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-<<<<<<< HEAD
-                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+                  Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE

@@ -88,6 +88,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t3
+            filterExpr: (b) IN (2, 3) (type: boolean)
             Statistics: Num rows: 1000/1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (b) IN (2, 3) (type: boolean)
@@ -157,6 +158,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t3
+            filterExpr: (a) IN (1, 2) (type: boolean)
             Statistics: Num rows: 1000/1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (a) IN (1, 2) (type: boolean)
@@ -226,6 +228,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t3
+            filterExpr: ((a = 1) or ((a = 2) and (b = 3))) (type: boolean)
             Statistics: Num rows: 1000/1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((a = 1) or ((a = 2) and (b = 3))) (type: boolean)
@@ -295,6 +298,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t3
+            filterExpr: (a = 1) (type: boolean)
             Statistics: Num rows: 1000/1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (a = 1) (type: boolean)
@@ -368,6 +372,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t3
+            filterExpr: ((a = 1) and (b = 2)) (type: boolean)
             Statistics: Num rows: 1000/1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((a = 1) and (b = 2)) (type: boolean)
@@ -439,6 +444,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t3
+            filterExpr: ((a = 1) and (b = 2) and (c = 3)) (type: boolean)
             Statistics: Num rows: 1000/1000 Data size: 12000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((a = 1) and (b = 2) and (c = 3)) (type: boolean)
@@ -510,6 +516,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t3
+            filterExpr: (struct(a,b)) IN (const struct(1,2), const struct(2,3), const struct(3,4)) (type: boolean)
             Statistics: Num rows: 1000/1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (struct(a,b)) IN (const struct(1,2), const struct(2,3), const struct(3,4)) (type: boolean)

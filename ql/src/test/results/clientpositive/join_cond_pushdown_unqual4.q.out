@@ -317,10 +317,10 @@ STAGE PLANS:
               value expressions: _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: int), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: int), _col15 (type: string), _col16 (type: double), _col17 (type: string)
           TableScan
             alias: p1
-            filterExpr: (p_name is not null and p_partkey is not null) (type: boolean)
+            filterExpr: (p_partkey is not null and p_name is not null) (type: boolean)
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (p_name is not null and p_partkey is not null) (type: boolean)
+              predicate: (p_partkey is not null and p_name is not null) (type: boolean)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)

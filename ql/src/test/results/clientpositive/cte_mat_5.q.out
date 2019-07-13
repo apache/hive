@@ -137,7 +137,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: colnum is not null (type: boolean)
+            filterExpr: UDFToDouble(colnum) is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(colnum) is not null (type: boolean)
@@ -154,7 +154,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int)
           TableScan
             alias: b
-            filterExpr: key is not null (type: boolean)
+            filterExpr: UDFToDouble(key) is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)

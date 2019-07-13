@@ -14,7 +14,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL
+WHERE `key` IS NOT NULL AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -25,7 +25,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

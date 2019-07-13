@@ -146,6 +146,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: c1 is not null (type: boolean)
@@ -251,6 +252,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: c1 is not null (type: boolean)
@@ -392,6 +394,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -565,6 +568,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -742,6 +746,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -919,6 +924,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

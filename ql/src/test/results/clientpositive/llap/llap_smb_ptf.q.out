@@ -492,6 +492,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cogs_alc_rqst
+                  filterExpr: cogs_alc_rqst_id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cogs_alc_rqst_id is not null (type: boolean)
@@ -508,6 +509,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: temp_post
+                  filterExpr: ((part_dt = '201611181320') and cogs_alc_rqst_id is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((part_dt = '201611181320') and cogs_alc_rqst_id is not null) (type: boolean)
@@ -533,6 +535,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cogs_alc_stat
+                  filterExpr: cogs_alc_rqst_id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cogs_alc_rqst_id is not null (type: boolean)
@@ -554,6 +557,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cogs_alc_rqst_trgt_offs
+                  filterExpr: cogs_alc_rqst_id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cogs_alc_rqst_id is not null (type: boolean)

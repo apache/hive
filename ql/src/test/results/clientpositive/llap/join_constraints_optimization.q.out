@@ -191,6 +191,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lineorder_removal_n0
+          filterExpr: lo_orderdate is not null (type: boolean)
           Filter Operator
             predicate: lo_orderdate is not null (type: boolean)
             Select Operator
@@ -436,6 +437,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lineorder_removal_n0
+          filterExpr: lo_orderdate is not null (type: boolean)
           Filter Operator
             predicate: lo_orderdate is not null (type: boolean)
             Select Operator
@@ -473,6 +475,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lineorder_removal_n0
+          filterExpr: lo_orderdate is not null (type: boolean)
           Filter Operator
             predicate: lo_orderdate is not null (type: boolean)
             Select Operator

@@ -691,6 +691,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: ((idp_data_date = DATE'2017-12-28') and finplan_detail_object_id is not null and l3_snapshot_number is not null) (type: boolean)
                   Statistics: Num rows: 180340 Data size: 14427200 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -771,6 +772,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  filterExpr: ((idp_data_date = DATE'2017-12-28') and (project_object_id = 7147200L) and l3_snapshot_number is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1198,6 +1200,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: ((idp_data_date = DATE'2017-12-28') and finplan_detail_object_id is not null and l3_snapshot_number is not null) (type: boolean)
                   Statistics: Num rows: 180340 Data size: 14427200 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1278,6 +1281,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  filterExpr: ((idp_data_date = DATE'2017-12-28') and (project_object_id = 7147200L) and l3_snapshot_number is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator

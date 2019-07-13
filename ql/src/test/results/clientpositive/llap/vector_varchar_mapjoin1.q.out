@@ -153,6 +153,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: c2 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: c2 is not null (type: boolean)
@@ -191,6 +192,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: c2 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: c2 is not null (type: boolean)
@@ -285,6 +287,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: c2 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: c2 is not null (type: boolean)
@@ -323,6 +326,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: c2 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: c2 is not null (type: boolean)
@@ -419,6 +423,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: CAST( c2 AS STRING) is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: CAST( c2 AS STRING) is not null (type: boolean)
@@ -448,6 +453,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: c2 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: c2 is not null (type: boolean)

@@ -298,10 +298,10 @@ OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS 
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
-WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-08') AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
-WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-08') AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -314,7 +314,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
-            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-08')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -336,7 +336,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
-            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-08')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -542,10 +542,10 @@ OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS 
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
-WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-08') AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
-WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-09') AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -558,7 +558,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
-            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-08')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -580,7 +580,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
-            filterExpr: ((ds = '2000-04-09') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-09')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1928,10 +1928,10 @@ OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS 
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
-WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-08') AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
-WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-08') AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1944,7 +1944,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
-            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-08')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1966,7 +1966,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
-            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-08')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2172,10 +2172,10 @@ OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS 
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
-WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-08') AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
-WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-09') AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2188,7 +2188,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
-            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-08')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2210,7 +2210,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
-            filterExpr: ((ds = '2000-04-09') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-09')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

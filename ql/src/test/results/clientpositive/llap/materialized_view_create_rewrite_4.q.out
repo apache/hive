@@ -95,6 +95,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -114,6 +115,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
+                  filterExpr: ((c > 10) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
@@ -333,6 +335,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -352,6 +355,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
+                  filterExpr: ((c > 10.1) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10.1) and a is not null) (type: boolean)
@@ -561,6 +565,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -580,6 +585,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
+                  filterExpr: ((c > 10.1) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10.1) and a is not null) (type: boolean)
@@ -707,6 +713,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_n5
+                  filterExpr: ((c > 10) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
@@ -727,6 +734,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -746,6 +754,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
+                  filterExpr: ((c > 10) and (ROW__ID.writeid > 1L) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and (ROW__ID.writeid > 1L) and a is not null) (type: boolean)
@@ -1093,6 +1102,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -1112,6 +1122,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
+                  filterExpr: ((c > 10) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
@@ -1378,6 +1389,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -1397,6 +1409,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
+                  filterExpr: ((c > 10) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
@@ -1677,6 +1690,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_n5
+                  filterExpr: ((c > 10) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
@@ -1697,6 +1711,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -1716,6 +1731,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
+                  filterExpr: ((c > 10) and (ROW__ID.writeid > 4L) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and (ROW__ID.writeid > 4L) and a is not null) (type: boolean)

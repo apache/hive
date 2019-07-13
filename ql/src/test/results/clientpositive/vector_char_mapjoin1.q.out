@@ -455,7 +455,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: c2 is not null (type: boolean)
+            filterExpr: CAST( c2 AS STRING) is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

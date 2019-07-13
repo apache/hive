@@ -128,6 +128,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test2_n9
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -288,6 +289,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test2_n9
+                  filterExpr: (value is not null and key BETWEEN 100 AND 102) (type: boolean)
                   Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -554,6 +556,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test1_n14
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1324,6 +1327,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test2_n9
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1859,6 +1863,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test1_n14
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

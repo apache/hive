@@ -125,6 +125,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: mysource
+            filterExpr: (p = 100) (type: boolean)
             Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (p = 100) (type: boolean)

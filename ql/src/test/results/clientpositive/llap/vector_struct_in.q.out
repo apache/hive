@@ -869,7 +869,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_4
-                  filterExpr: (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(3L,'b',1.5D), const struct(1L,'d',1.5D), const struct(1L,'c',1.5D), const struct(1L,'b',2.5D), const struct(1L,'b',0.5D), const struct(5L,'b',1.5D), const struct(1L,'a',0.5D), const struct(3L,'b',1.5D)) (type: boolean)
+                  filterExpr: (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(3L,'b',1.5D), const struct(1L,'d',1.5D), const struct(1L,'c',1.5D), const struct(1L,'b',2.5D), const struct(1L,'b',0.5D), const struct(5L,'b',1.5D), const struct(1L,'a',0.5D)) (type: boolean)
                   Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

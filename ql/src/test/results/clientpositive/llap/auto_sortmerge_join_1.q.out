@@ -142,6 +142,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -209,6 +210,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 240 Data size: 39008 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -439,6 +441,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -506,6 +509,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 240 Data size: 39008 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -736,6 +740,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -803,6 +808,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 240 Data size: 39008 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator

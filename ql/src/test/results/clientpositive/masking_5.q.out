@@ -28,6 +28,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n6
+            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
             Row Limit Per Split: 10
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -80,6 +81,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n6
+            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
@@ -165,6 +167,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n6
+            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((((hash(key) & 2147483647) % 2) = 0) and ((key % 2) = 0) and (key < 10)) (type: boolean)

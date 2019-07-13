@@ -70,6 +70,7 @@ STAGE PLANS:
                 value expressions: _col0 (type: int), _col1 (type: int)
           TableScan
             alias: r
+            filterExpr: (rk1 is not null and rk2 is not null) (type: boolean)
             Statistics: Num rows: 2 Data size: 47 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (rk1 is not null and rk2 is not null) (type: boolean)
@@ -147,6 +148,7 @@ STAGE PLANS:
         $hdt$_1:r 
           TableScan
             alias: r
+            filterExpr: (rk1 is not null and rk2 is not null) (type: boolean)
             Statistics: Num rows: 2 Data size: 47 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (rk1 is not null and rk2 is not null) (type: boolean)

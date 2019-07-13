@@ -90,6 +90,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: customer_removal_n0
+          filterExpr: (c_nation) IN ('USA', 'INDIA') (type: boolean)
           Filter Operator
             predicate: (c_nation) IN ('USA', 'INDIA') (type: boolean)
             Select Operator
@@ -117,6 +118,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: customer_removal_n0
+          filterExpr: (c_nation) IN ('USA', 'INDIA') (type: boolean)
           Filter Operator
             predicate: (c_nation) IN ('USA', 'INDIA') (type: boolean)
             Select Operator
@@ -144,6 +146,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dates_removal_n0
+          filterExpr: (d_year) IN (1985, 2004) (type: boolean)
           Filter Operator
             predicate: (d_year) IN (1985, 2004) (type: boolean)
             Select Operator
@@ -179,6 +182,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dates_removal_n0
+                  filterExpr: (d_year) IN (1985, 2004) (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
@@ -246,6 +250,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dates_removal_n0
+                  filterExpr: (d_year) IN (1985, 2004) (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
@@ -314,6 +319,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dates_removal_n0
+                  filterExpr: (d_year) IN (1985, 2004) (type: boolean)
                   Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
@@ -571,6 +577,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dates_removal_n0
+                  filterExpr: (d_year) IN (1985, 2004) (type: boolean)
                   Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
@@ -664,6 +671,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_removal_n0
+                  filterExpr: (c_nation) IN ('USA', 'INDIA') (type: boolean)
                   Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c_nation) IN ('USA', 'INDIA') (type: boolean)
@@ -809,6 +817,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dest_g21
+          filterExpr: (value1 > 1.0D) (type: boolean)
           Filter Operator
             predicate: (value1 > 1.0D) (type: boolean)
             Select Operator
@@ -845,6 +854,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dest_g21
+          filterExpr: (key1 > 1) (type: boolean)
           Filter Operator
             predicate: (key1 > 1) (type: boolean)
             Select Operator
@@ -976,6 +986,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dest_g21
+                  filterExpr: (value1 > 1.0D) (type: boolean)
                   Statistics: Num rows: 6 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (value1 > 1.0D) (type: boolean)
@@ -1079,6 +1090,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: (value1 > 2.0D) (type: boolean)
                   Statistics: Num rows: 6 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (value1 > 2.0D) (type: boolean)
@@ -1169,6 +1181,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: (value1 > 2.0D) (type: boolean)
                   Statistics: Num rows: 6 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (value1 > 2.0D) (type: boolean)
@@ -1264,6 +1277,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dest_g21
+          filterExpr: (value1 < 4.5D) (type: boolean)
           Filter Operator
             predicate: (value1 < 4.5D) (type: boolean)
             Select Operator
@@ -1309,6 +1323,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dest_g21
+                  filterExpr: (value1 < 4.5D) (type: boolean)
                   Statistics: Num rows: 6 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (value1 < 4.5D) (type: boolean)
@@ -1497,6 +1512,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tconst
+                  filterExpr: j is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: j is not null (type: boolean)
@@ -1671,6 +1687,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: j is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: j is not null (type: boolean)

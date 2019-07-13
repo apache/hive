@@ -186,6 +186,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_part_n2
+                  filterExpr: (empid < 120) (type: boolean)
                   Statistics: Num rows: 3 Data size: 315 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (empid < 120) (type: boolean)
@@ -353,6 +354,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_part_n2
+                  filterExpr: deptno is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: name (type: varchar(256)), salary (type: float), commission (type: int), deptno (type: int)
@@ -507,6 +509,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: emps_n30
+                  filterExpr: (empid > 120) (type: boolean)
                   Statistics: Num rows: 5 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (empid > 120) (type: boolean)
@@ -528,6 +531,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_part_n2
+                  filterExpr: (empid < 150) (type: boolean)
                   Statistics: Num rows: 4 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (empid < 150) (type: boolean)

@@ -151,6 +151,7 @@ STAGE PLANS:
               value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
           TableScan
             alias: alias03
+            filterExpr: a is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)

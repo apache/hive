@@ -1454,6 +1454,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_uq12
+            filterExpr: j is not null (type: boolean)
             Statistics: Num rows: 10000 Data size: 79688 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: j is not null (type: boolean)
@@ -1470,6 +1471,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int)
           TableScan
             alias: t2_uq12
+            filterExpr: i2 is not null (type: boolean)
             Statistics: Num rows: 100000000 Data size: 400000000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: i2 is not null (type: boolean)

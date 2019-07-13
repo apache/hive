@@ -86,6 +86,7 @@ STAGE PLANS:
         $hdt$_1:n 
           TableScan
             alias: n
+            filterExpr: member is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: member is not null (type: boolean)

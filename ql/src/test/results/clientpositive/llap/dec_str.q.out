@@ -24,6 +24,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
+          filterExpr: (a = 22.3) (type: boolean)
           Filter Operator
             predicate: (a = 22.3) (type: boolean)
             Select Operator
@@ -49,6 +50,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
+          filterExpr: (a = 2.3) (type: boolean)
           Filter Operator
             predicate: (a = 2.3) (type: boolean)
             Select Operator
@@ -74,6 +76,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
+          filterExpr: (a = 213.223) (type: boolean)
           Filter Operator
             predicate: (a = 213.223) (type: boolean)
             Select Operator

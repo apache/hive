@@ -158,6 +158,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: n
+                  filterExpr: member is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

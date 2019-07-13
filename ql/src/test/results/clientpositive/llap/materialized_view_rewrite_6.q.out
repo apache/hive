@@ -436,6 +436,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -455,6 +456,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dependents
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -589,6 +591,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -608,6 +611,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: locations
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -627,6 +631,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dependents
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)

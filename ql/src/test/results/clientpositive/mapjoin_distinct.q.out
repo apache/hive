@@ -35,7 +35,7 @@ STAGE PLANS:
         $hdt$_0:c 
           TableScan
             alias: c
-            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -54,7 +54,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: d
-            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -192,7 +192,7 @@ STAGE PLANS:
         $hdt$_0:c 
           TableScan
             alias: c
-            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -211,7 +211,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: d
-            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -327,7 +327,7 @@ STAGE PLANS:
         $hdt$_0:c 
           TableScan
             alias: c
-            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -346,7 +346,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: d
-            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -478,7 +478,7 @@ STAGE PLANS:
         $hdt$_0:c 
           TableScan
             alias: c
-            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -497,7 +497,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: d
-            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
