@@ -80,6 +80,10 @@ public class ReplUtils {
   // Root directory for dumping bootstrapped tables along with incremental events dump.
   public static final String INC_BOOTSTRAP_ROOT_DIR_NAME = "_bootstrap";
 
+  // Name of the file which stores the list of tables included in the policy in case of table level replication.
+  // The file is not created for db level replication.
+  public static final String REPL_TABLE_LIST_FILE_NAME = "_tables";
+
   // Migrating to transactional tables in bootstrap load phase.
   // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
   public static final Long REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID = 1L;
@@ -232,7 +236,8 @@ public class ReplUtils {
   public static PathFilter getEventsDirectoryFilter(final FileSystem fs) {
     return p -> {
       try {
-        return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
+        return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME)
+                && !p.getName().equalsIgnoreCase(ReplUtils.REPL_TABLE_LIST_FILE_NAME);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
