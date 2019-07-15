@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.ddl.table.creation;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -34,23 +33,20 @@ public class DropTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   private final String tableName;
-  private final TableType expectedType;
   private final boolean ifExists;
-  private final boolean ifPurge;
+  private final boolean purge;
   private final ReplicationSpec replicationSpec;
   private final boolean validationRequired;
 
-  public DropTableDesc(String tableName, TableType expectedType, boolean ifExists, boolean ifPurge,
-      ReplicationSpec replicationSpec) {
-    this(tableName, expectedType, ifExists, ifPurge, replicationSpec, true);
+  public DropTableDesc(String tableName, boolean ifExists, boolean ifPurge, ReplicationSpec replicationSpec) {
+    this(tableName, ifExists, ifPurge, replicationSpec, true);
   }
 
-  public DropTableDesc(String tableName, TableType expectedType, boolean ifExists, boolean ifPurge,
-      ReplicationSpec replicationSpec, boolean validationRequired) {
+  public DropTableDesc(String tableName, boolean ifExists, boolean purge, ReplicationSpec replicationSpec,
+      boolean validationRequired) {
     this.tableName = tableName;
-    this.expectedType = expectedType;
     this.ifExists = ifExists;
-    this.ifPurge = ifPurge;
+    this.purge = purge;
     this.replicationSpec = replicationSpec == null ? new ReplicationSpec() : replicationSpec;
     this.validationRequired = validationRequired;
   }
@@ -60,20 +56,12 @@ public class DropTableDesc implements DDLDesc, Serializable {
     return tableName;
   }
 
-  public boolean getExpectView() {
-    return expectedType != null && expectedType == TableType.VIRTUAL_VIEW;
-  }
-
-  public boolean getExpectMaterializedView() {
-    return expectedType != null && expectedType == TableType.MATERIALIZED_VIEW;
-  }
-
-  public boolean getIfExists() {
+  public boolean isIfExists() {
     return ifExists;
   }
 
-  public boolean getIfPurge() {
-    return ifPurge;
+  public boolean isPurge() {
+    return purge;
   }
 
   /**
@@ -81,10 +69,10 @@ public class DropTableDesc implements DDLDesc, Serializable {
    * This can result in a "DROP IF OLDER THAN" kind of semantic
    */
   public ReplicationSpec getReplicationSpec(){
-    return this.replicationSpec;
+    return replicationSpec;
   }
 
   public boolean getValidationRequired(){
-    return this.validationRequired;
+    return validationRequired;
   }
 }
