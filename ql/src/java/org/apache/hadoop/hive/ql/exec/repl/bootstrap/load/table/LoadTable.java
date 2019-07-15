@@ -334,8 +334,7 @@ public class LoadTable {
 
   private Task<?> dropTableTask(Table table) {
     assert(table != null);
-    DropTableDesc dropTblDesc = new DropTableDesc(table.getFullyQualifiedName(), table.getTableType(),
-            true, false, event.replicationSpec());
+    DropTableDesc dropTblDesc = new DropTableDesc(table.getFullyQualifiedName(), true, false, event.replicationSpec());
     return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc), context.hiveConf);
   }
 }

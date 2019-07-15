@@ -149,6 +149,8 @@ import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSkewedByDesc;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableUnarchiveDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc.PartitionDesc;
 import org.apache.hadoop.hive.ql.ddl.view.AlterMaterializedViewRewriteDesc;
+import org.apache.hadoop.hive.ql.ddl.view.DropMaterializedViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.DropViewDesc;
 import org.apache.hadoop.hive.ql.ddl.workloadmanagement.AlterPoolAddTriggerDesc;
 import org.apache.hadoop.hive.ql.ddl.workloadmanagement.AlterPoolDropTriggerDesc;
 import org.apache.hadoop.hive.ql.ddl.workloadmanagement.AlterResourcePlanDesc;
@@ -406,7 +408,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
     }
     case HiveParser.TOK_DROPTABLE:
-      analyzeDropTable(ast, null);
+      analyzeDropTable(ast);
       break;
     case HiveParser.TOK_TRUNCATETABLE:
       analyzeTruncateTable(ast);
@@ -486,10 +488,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeMetastoreCheck(ast);
       break;
     case HiveParser.TOK_DROPVIEW:
-      analyzeDropTable(ast, TableType.VIRTUAL_VIEW);
+      analyzeDropView(ast);
       break;
     case HiveParser.TOK_DROP_MATERIALIZED_VIEW:
-      analyzeDropTable(ast, TableType.MATERIALIZED_VIEW);
+      analyzeDropMaterializedView(ast);
       break;
     case HiveParser.TOK_ALTERVIEW: {
       String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
@@ -1466,28 +1468,51 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), switchDatabaseDesc)));
   }
 
-
-
-  private void analyzeDropTable(ASTNode ast, TableType expectedType)
-      throws SemanticException {
+  private void analyzeDropTable(ASTNode ast) throws SemanticException {
     String tableName = getUnescapedName((ASTNode) ast.getChild(0));
     boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
-    // we want to signal an error if the table/view doesn't exist and we're
-    // configured not to fail silently
-    boolean throwException =
-        !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
+    boolean throwException = !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
 
-    ReplicationSpec replicationSpec = new ReplicationSpec(ast);
-
-    Table tab = getTable(tableName, throwException);
-    if (tab != null) {
-      inputs.add(new ReadEntity(tab));
-      outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_EXCLUSIVE));
+    Table table = getTable(tableName, throwException);
+    if (table != null) {
+      inputs.add(new ReadEntity(table));
+      outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_EXCLUSIVE));
     }
 
-    boolean ifPurge = (ast.getFirstChildWithType(HiveParser.KW_PURGE) != null);
-    DropTableDesc dropTblDesc = new DropTableDesc(tableName, expectedType, ifExists, ifPurge, replicationSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc)));
+    boolean purge = (ast.getFirstChildWithType(HiveParser.KW_PURGE) != null);
+    ReplicationSpec replicationSpec = new ReplicationSpec(ast);
+    DropTableDesc dropTableDesc = new DropTableDesc(tableName, ifExists, purge, replicationSpec);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTableDesc)));
+  }
+
+  private void analyzeDropView(ASTNode ast) throws SemanticException {
+    String viewName = getUnescapedName((ASTNode) ast.getChild(0));
+    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
+    boolean throwException = !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
+
+    Table view = getTable(viewName, throwException);
+    if (view != null) {
+      inputs.add(new ReadEntity(view));
+      outputs.add(new WriteEntity(view, WriteEntity.WriteType.DDL_EXCLUSIVE));
+    }
+
+    DropViewDesc dropViewDesc = new DropViewDesc(viewName, ifExists);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropViewDesc)));
+  }
+
+  private void analyzeDropMaterializedView(ASTNode ast) throws SemanticException {
+    String viewName = getUnescapedName((ASTNode) ast.getChild(0));
+    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
+    boolean throwException = !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
+
+    Table materializedView = getTable(viewName, throwException);
+    if (materializedView != null) {
+      inputs.add(new ReadEntity(materializedView));
+      outputs.add(new WriteEntity(materializedView, WriteEntity.WriteType.DDL_EXCLUSIVE));
+    }
+
+    DropMaterializedViewDesc dropMaterializedViewDesc = new DropMaterializedViewDesc(viewName, ifExists);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropMaterializedViewDesc)));
   }
 
   private void analyzeTruncateTable(ASTNode ast) throws SemanticException {
@@ -3343,7 +3368,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
 
     boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null)
-        || HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
+        || HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
     // If the drop has to fail on non-existent partitions, we cannot batch expressions.
     // That is because we actually have to check each separate expression for existence.
     // We could do a small optimization for the case where expr has all columns and all
