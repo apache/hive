@@ -98,7 +98,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Truncate Table or Partition
-      TableName: tmp_src
+      table name: tmp_src
 
 PREHOOK: query: TRUNCATE TABLE tmp_src
 PREHOOK: type: TRUNCATETABLE
@@ -127,7 +127,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Truncate Table or Partition
-      TableName: tmp_srcpart
+      table name: tmp_srcpart
 
 PREHOOK: query: TRUNCATE TABLE tmp_srcpart
 PREHOOK: type: TRUNCATETABLE

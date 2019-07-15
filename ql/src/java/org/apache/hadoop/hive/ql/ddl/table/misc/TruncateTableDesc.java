@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * DDL task description for TRUNCATE TABLE commands.
  */
 @Explain(displayName = "Truncate Table or Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class TruncateTableDesc implements Serializable, DDLDescWithWriteId {
+public class TruncateTableDesc implements DDLDescWithWriteId, Serializable {
   private static final long serialVersionUID = 1L;
 
   private final String tableName;
@@ -44,11 +44,10 @@ public class TruncateTableDesc implements Serializable, DDLDescWithWriteId {
   private final Map<String, String> partSpec;
   private final ReplicationSpec replicationSpec;
   private final boolean isTransactional;
-
-  private List<Integer> columnIndexes;
-  private Path inputDir;
-  private Path outputDir;
-  private ListBucketingCtx lbCtx;
+  private final List<Integer> columnIndexes;
+  private final Path inputDir;
+  private final Path outputDir;
+  private final ListBucketingCtx lbCtx;
 
   private long writeId = 0;
 
@@ -58,14 +57,23 @@ public class TruncateTableDesc implements Serializable, DDLDescWithWriteId {
 
   public TruncateTableDesc(String tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec,
       Table table) {
+    this(tableName, partSpec, replicationSpec, table, null, null, null, null);
+  }
+
+  public TruncateTableDesc(String tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec,
+      Table table, List<Integer> columnIndexes, Path inputDir, Path outputDir, ListBucketingCtx lbCtx) {
     this.tableName = tableName;
     this.fullTableName = table == null ? tableName : Warehouse.getQualifiedName(table.getTTable());
     this.partSpec = partSpec;
     this.replicationSpec = replicationSpec;
     this.isTransactional = AcidUtils.isTransactionalTable(table);
+    this.columnIndexes = columnIndexes;
+    this.inputDir = inputDir;
+    this.outputDir = outputDir;
+    this.lbCtx = lbCtx;
   }
 
-  @Explain(displayName = "TableName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
   }
@@ -75,7 +83,7 @@ public class TruncateTableDesc implements Serializable, DDLDescWithWriteId {
     return fullTableName;
   }
 
-  @Explain(displayName = "Partition Spec", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "partition spec", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getPartSpec() {
     return partSpec;
   }
@@ -88,37 +96,21 @@ public class TruncateTableDesc implements Serializable, DDLDescWithWriteId {
     return replicationSpec;
   }
 
-  @Explain(displayName = "Column Indexes")
+  @Explain(displayName = "column indexes")
   public List<Integer> getColumnIndexes() {
     return columnIndexes;
-  }
-
-  public void setColumnIndexes(List<Integer> columnIndexes) {
-    this.columnIndexes = columnIndexes;
   }
 
   public Path getInputDir() {
     return inputDir;
   }
 
-  public void setInputDir(Path inputDir) {
-    this.inputDir = inputDir;
-  }
-
   public Path getOutputDir() {
     return outputDir;
   }
 
-  public void setOutputDir(Path outputDir) {
-    this.outputDir = outputDir;
-  }
-
   public ListBucketingCtx getLbCtx() {
     return lbCtx;
-  }
-
-  public void setLbCtx(ListBucketingCtx lbCtx) {
-    this.lbCtx = lbCtx;
   }
 
   @Override
