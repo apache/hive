@@ -32,9 +32,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFDateDiff extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
+
+/**
+ * TestGenericUDFDateDiff.
+ */
+public class TestGenericUDFDateDiff {
+  @Test
   public void testStringToDate() throws HiveException {
     GenericUDFDateDiff udf = new GenericUDFDateDiff();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
@@ -60,6 +67,7 @@ public class TestGenericUDFDateDiff extends TestCase {
     assertNull("date_add() both args null", udf.evaluate(args));
   }
 
+  @Test
   public void testTimestampToDate() throws HiveException {
     GenericUDFDateDiff udf = new GenericUDFDateDiff();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
@@ -87,6 +95,7 @@ public class TestGenericUDFDateDiff extends TestCase {
     assertNull("date_add() both args null", udf.evaluate(args));
   }
 
+  @Test
   public void testDateWritablepToDate() throws HiveException {
     GenericUDFDateDiff udf = new GenericUDFDateDiff();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;

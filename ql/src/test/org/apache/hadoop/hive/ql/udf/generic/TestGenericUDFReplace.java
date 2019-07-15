@@ -17,13 +17,22 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import junit.framework.TestCase;
+
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFReplace;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestGenericUDFReplace extends TestCase {
+/**
+ * TestGenericUDFReplace.
+ *
+ */
+public class TestGenericUDFReplace {
 
+  @Test
   public void testReplace() throws HiveException {
     UDFReplace udf = new UDFReplace();
 

@@ -50,7 +50,12 @@ import org.apache.thrift.TException;
 
 import com.google.common.collect.Lists;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  * Tests hive metastore expression support. This should be moved in metastore module
@@ -60,13 +65,13 @@ import junit.framework.TestCase;
  * it doesn't test all the edge cases of the filter (if classes were merged, perhaps the
  * filter test could be rolled into it); assumption is that they use the same path in SQL/JDO.
  */
-public class TestMetastoreExpr extends TestCase {
+public class TestMetastoreExpr {
   protected static HiveMetaStoreClient client;
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     try {
-      super.tearDown();
+
       client.close();
     } catch (Throwable e) {
       System.err.println("Unable to close metastore");
@@ -75,9 +80,9 @@ public class TestMetastoreExpr extends TestCase {
     }
   }
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
+
     try {
       client = new HiveMetaStoreClient(new HiveConf(this.getClass()));
     } catch (Throwable e) {
@@ -98,6 +103,7 @@ public class TestMetastoreExpr extends TestCase {
     }
   }
 
+  @Test
   public void testPartitionExpr() throws Exception {
     String dbName = "filterdb";
     String tblName = "filtertbl";

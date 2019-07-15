@@ -18,40 +18,54 @@
  */
 package org.apache.hive.hcatalog.templeton;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hive.hcatalog.templeton.mock.MockServer;
 import java.util.List;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.Test;
 
 /*
  * Test that the server code exists, and responds to basic requests.
  */
-public class TestServer extends TestCase {
+/**
+ * TestServer.
+ */
+public class TestServer {
 
   MockServer server;
 
+  @Before
   public void setUp() {
     new Main(new String[]{});         // Initialize the config
     server = new MockServer();
   }
 
+  @Test
   public void testServer() {
     assertNotNull(server);
   }
 
+  @Test
   public void testStatus() {
     assertEquals(server.status().get("status"), "ok");
   }
 
+  @Test
   public void testVersions() {
     assertEquals(server.version().get("version"), "v1");
   }
 
+  @Test
   public void testFormats() {
     assertEquals(1, server.requestFormats().size());
     assertEquals( ((List)server.requestFormats().get("responseTypes")).get(0), "application/json");
   }
 
+  @Test
   public void testVerifyPropertyParam() {
     // HIVE-15410: Though there are not restrictions to Hive table property key and it could be any
     // combination of the letters, digits and even punctuations, we support conventional property

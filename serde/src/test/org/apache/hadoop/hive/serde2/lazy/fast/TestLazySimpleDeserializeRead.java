@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.lazy.fast;
 
-import junit.framework.TestCase;
+
 
 import java.util.Properties;
 
@@ -28,17 +28,21 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * Unit tests for LazySimpleDeserializeRead.
  *
  */
-public class TestLazySimpleDeserializeRead extends TestCase {
+public class TestLazySimpleDeserializeRead {
 
   /**
    * Test for escaping.
    *
    */
+  @Test
   public void testEscaping() throws Exception {
     HiveConf hconf = new HiveConf();
 

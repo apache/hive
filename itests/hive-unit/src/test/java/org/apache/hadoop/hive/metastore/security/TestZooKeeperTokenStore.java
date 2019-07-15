@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -37,16 +37,28 @@ import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.ACL;
 import org.junit.Assert;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
 
-public class TestZooKeeperTokenStore extends TestCase {
+/**
+ * TestZooKeeperTokenStore.
+ */
+public class TestZooKeeperTokenStore {
 
   private MiniZooKeeperCluster zkCluster = null;
   private CuratorFramework zkClient = null;
   private int zkPort = -1;
   private ZooKeeperTokenStore ts;
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     File zkDataDir = new File(System.getProperty("test.tmp.dir"));
     if (this.zkCluster != null) {
       throw new IOException("Cluster already running");
@@ -59,8 +71,8 @@ public class TestZooKeeperTokenStore extends TestCase {
     this.zkClient.start();
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     this.zkClient.close();
     if (ts != null) {
       ts.close();
@@ -77,6 +89,7 @@ public class TestZooKeeperTokenStore extends TestCase {
     return conf;
   }
 
+  @Test
   public void testTokenStorage() throws Exception {
     String ZK_PATH = "/zktokenstore-testTokenStorage";
     ts = new ZooKeeperTokenStore();
@@ -126,6 +139,7 @@ public class TestZooKeeperTokenStore extends TestCase {
     assertNull(ts.getToken(tokenId));
   }
 
+  @Test
   public void testAclNoAuth() throws Exception {
     String ZK_PATH = "/zktokenstore-testAclNoAuth";
     Configuration conf = createConf(ZK_PATH);
@@ -143,6 +157,7 @@ public class TestZooKeeperTokenStore extends TestCase {
     }
   }
 
+  @Test
   public void testAclInvalid() throws Exception {
     String ZK_PATH = "/zktokenstore-testAclInvalid";
     String aclString = "sasl:hive/host@TEST.DOMAIN:cdrwa, fail-parse-ignored";
@@ -164,6 +179,7 @@ public class TestZooKeeperTokenStore extends TestCase {
     }
   }
 
+  @Test
   public void testAclPositive() throws Exception {
     String ZK_PATH = "/zktokenstore-testAcl";
     Configuration conf = createConf(ZK_PATH);

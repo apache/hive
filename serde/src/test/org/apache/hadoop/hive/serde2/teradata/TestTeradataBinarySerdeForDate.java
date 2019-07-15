@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.serde2.teradata;
 
 import com.google.common.io.BaseEncoding;
-import junit.framework.TestCase;
+
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -29,21 +29,25 @@ import org.junit.Assert;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test the data type DATE for Teradata binary format.
  */
-public class TestTeradataBinarySerdeForDate extends TestCase {
+public class TestTeradataBinarySerdeForDate {
 
   private final TeradataBinarySerde serde = new TeradataBinarySerde();
   private final Properties props = new Properties();
 
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     props.setProperty(serdeConstants.LIST_COLUMNS, "TD_DATE");
     props.setProperty(serdeConstants.LIST_COLUMN_TYPES, "date");
     serde.initialize(null, props);
   }
 
+  @Test
   public void testTimestampBefore1900() throws Exception {
 
     //0060-01-01
@@ -59,6 +63,7 @@ public class TestTeradataBinarySerdeForDate extends TestCase {
     Assert.assertTrue(Arrays.equals(in.copyBytes(), res.copyBytes()));
   }
 
+  @Test
   public void testTimestampAfter1900() throws Exception {
 
     //9999-01-01

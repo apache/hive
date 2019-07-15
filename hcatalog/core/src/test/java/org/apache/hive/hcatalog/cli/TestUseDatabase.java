@@ -21,7 +21,7 @@ package org.apache.hive.hcatalog.cli;
 import java.io.File;
 import java.io.IOException;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -31,14 +31,21 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Before;
+import org.junit.Test;
 
 /* Unit test for GitHub Howl issue #3 */
-public class TestUseDatabase extends TestCase {
+/**
+ * TestUseDatabase.
+ */
+public class TestUseDatabase {
 
   private IDriver hcatDriver;
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
 
     HiveConf hcatConf = new HiveConf(this.getClass());
     hcatConf.set(ConfVars.PREEXECHOOKS.varname, "");
@@ -54,6 +61,7 @@ public class TestUseDatabase extends TestCase {
   private final String dbName = "testUseDatabase_db";
   private final String tblName = "testUseDatabase_tbl";
 
+  @Test
   public void testAlterTablePass() throws Exception {
 
     hcatDriver.run("create database " + dbName);

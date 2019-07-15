@@ -26,10 +26,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFLTrim extends TestCase {
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
+/**
+ * TestGenericUDFLTrim.
+ */
+public class TestGenericUDFLTrim {
+
+  @Test
   public void testTrim() throws HiveException {
     GenericUDFLTrim udf = new GenericUDFLTrim();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;

@@ -28,12 +28,13 @@ import org.apache.hadoop.hive.druid.io.HiveDruidSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
 import org.apache.druid.query.Query;
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * Test Class.
  */
-@SuppressWarnings("SameParameterValue") public class TestHiveDruidQueryBasedInputFormat extends TestCase {
+@SuppressWarnings("SameParameterValue") public class TestHiveDruidQueryBasedInputFormat {
 
   private static final String
       TIMESERIES_QUERY =
@@ -181,6 +182,7 @@ import junit.framework.TestCase;
           + "\"pagingSpec\":{\"pagingIdentifiers\":{},\"threshold\":5,\"fromNext\":false},"
           + "\"context\":{\"druid.query.fetch\":true,\"queryId\":\"\"}}, [localhost:8082]}]";
 
+  @Test
   public void testTimeZone() throws Exception {
     DruidQueryBasedInputFormat input = new DruidQueryBasedInputFormat();
 
