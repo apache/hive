@@ -183,33 +183,36 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
   }
 
   public static void dumpLockInfo(DataOutputStream os, ShowLocksResponse response) throws IOException {
-    // Write a header
-    os.writeBytes("Lock ID");
-    os.write(Utilities.tabCode);
-    os.writeBytes("Database");
-    os.write(Utilities.tabCode);
-    os.writeBytes("Table");
-    os.write(Utilities.tabCode);
-    os.writeBytes("Partition");
-    os.write(Utilities.tabCode);
-    os.writeBytes("State");
-    os.write(Utilities.tabCode);
-    os.writeBytes("Blocked By");
-    os.write(Utilities.tabCode);
-    os.writeBytes("Type");
-    os.write(Utilities.tabCode);
-    os.writeBytes("Transaction ID");
-    os.write(Utilities.tabCode);
-    os.writeBytes("Last Heartbeat");
-    os.write(Utilities.tabCode);
-    os.writeBytes("Acquired At");
-    os.write(Utilities.tabCode);
-    os.writeBytes("User");
-    os.write(Utilities.tabCode);
-    os.writeBytes("Hostname");
-    os.write(Utilities.tabCode);
-    os.writeBytes("Agent Info");
-    os.write(Utilities.newLineCode);
+    SessionState sessionState = SessionState.get();
+    // Write a header for CliDriver
+    if(!sessionState.isHiveServerQuery()) {
+      os.writeBytes("Lock ID");
+      os.write(Utilities.tabCode);
+      os.writeBytes("Database");
+      os.write(Utilities.tabCode);
+      os.writeBytes("Table");
+      os.write(Utilities.tabCode);
+      os.writeBytes("Partition");
+      os.write(Utilities.tabCode);
+      os.writeBytes("State");
+      os.write(Utilities.tabCode);
+      os.writeBytes("Blocked By");
+      os.write(Utilities.tabCode);
+      os.writeBytes("Type");
+      os.write(Utilities.tabCode);
+      os.writeBytes("Transaction ID");
+      os.write(Utilities.tabCode);
+      os.writeBytes("Last Heartbeat");
+      os.write(Utilities.tabCode);
+      os.writeBytes("Acquired At");
+      os.write(Utilities.tabCode);
+      os.writeBytes("User");
+      os.write(Utilities.tabCode);
+      os.writeBytes("Hostname");
+      os.write(Utilities.tabCode);
+      os.writeBytes("Agent Info");
+      os.write(Utilities.newLineCode);
+    }
 
     List<ShowLocksResponseElement> locks = response.getLocks();
     if (locks != null) {
