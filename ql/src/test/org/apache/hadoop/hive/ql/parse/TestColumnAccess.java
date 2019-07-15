@@ -59,7 +59,7 @@ public class TestColumnAccess {
   public void testQueryTable1() throws ParseException {
     String query = "select * from t1";
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertEquals("Checking command success", 0, rc);
     QueryPlan plan = driver.getPlan();
     // check access columns from ColumnAccessInfo
@@ -83,7 +83,7 @@ public class TestColumnAccess {
   public void testJoinTable1AndTable2() throws ParseException {
     String query = "select * from t1 join t2 on (t1.id1 = t2.id1)";
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertEquals("Checking command success", 0, rc);
     QueryPlan plan = driver.getPlan();
     // check access columns from ColumnAccessInfo
@@ -120,7 +120,7 @@ public class TestColumnAccess {
   public void testJoinView1AndTable2() throws ParseException {
     String query = "select * from v1 join t2 on (v1.id1 = t2.id1)";
     Driver driver = createDriver();
-    int rc = driver.compile(query);
+    int rc = driver.compile(query, true);
     Assert.assertEquals("Checking command success", 0, rc);
     QueryPlan plan = driver.getPlan();
     // check access columns from ColumnAccessInfo
