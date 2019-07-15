@@ -26,6 +26,9 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 
+import org.junit.Test;
+import static org.junit.Assert.fail;
+
 /**
  * Suite for testing location. e.g. if "alter table alter partition
  * location" is run, do the partitions end up in the correct location.
@@ -109,6 +112,7 @@ public class TestLocationQueries extends BaseTestQueries {
    * the path should end in "parta" and not "dt=a" (the default).
    *
    */
+  @Test
   public void testAlterTablePartitionLocation_alter5() throws Exception {
     String[] testNames = new String[] {"alter5.q"};
 

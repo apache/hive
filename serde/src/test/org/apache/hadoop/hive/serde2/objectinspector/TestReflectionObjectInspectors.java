@@ -35,17 +35,20 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaConstantStrin
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
-import org.junit.Test;
-
 import com.google.common.collect.Lists;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
 /**
  * TestReflectionObjectInspectors.
  *
  */
-public class TestReflectionObjectInspectors extends TestCase {
+public class TestReflectionObjectInspectors {
 
   @Test
   public void testReflectionObjectInspectors() throws Throwable {

@@ -54,12 +54,15 @@ import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * Unit test for the vectorized serialize and deserialize row.
  */
-public class TestVectorSerDeRow extends TestCase {
+public class TestVectorSerDeRow {
 
   public static enum SerializationType {
     NONE,
@@ -77,7 +80,7 @@ public class TestVectorSerDeRow extends TestCase {
       Object complexFieldObj = VectorVerifyFast.deserializeReadComplexType(deserializeRead, typeInfo);
       if (expectedObject == null) {
         if (complexFieldObj != null) {
-          TestCase.fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
+          fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
               ", " + complexFieldObj.toString() + ")");
         }
       } else {
@@ -89,12 +92,12 @@ public class TestVectorSerDeRow extends TestCase {
               return;
             }
           }
-          TestCase.fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
+          fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
               ", " + expectedObject.toString() + ")");
         }
       }
       if (!VerifyLazy.lazyCompare(typeInfo, complexFieldObj, expectedObject)) {
-        TestCase.fail("Comparision failed typeInfo " + typeInfo.toString());
+        fail("Comparision failed typeInfo " + typeInfo.toString());
       }
     }
   }
@@ -111,7 +114,7 @@ public class TestVectorSerDeRow extends TestCase {
       TypeInfo typeInfo = typeInfos[i];
       verifyRead(deserializeRead, typeInfo, expected);
     }
-    TestCase.assertTrue(deserializeRead.isEndOfInputReached());
+    assertTrue(deserializeRead.isEndOfInputReached());
   }
 
   void serializeBatch(
@@ -555,21 +558,25 @@ public class TestVectorSerDeRow extends TestCase {
     }
   }
 
+  @Test
   public void testVectorBinarySortableSerializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorSerializeRow(r, SerializationType.BINARY_SORTABLE);
   }
 
+  @Test
   public void testVectorLazyBinarySerializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorSerializeRow(r, SerializationType.LAZY_BINARY);
   }
 
+  @Test
   public void testVectorLazySimpleSerializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorSerializeRow(r, SerializationType.LAZY_SIMPLE);
   }
  
+  @Test
   public void testVectorBinarySortableDeserializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorDeserializeRow(r,
@@ -621,6 +628,7 @@ public class TestVectorSerDeRow extends TestCase {
         /* useExternalBuffer */ true);
   }
 
+  @Test
   public void testVectorLazyBinaryDeserializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorDeserializeRow(r,
@@ -636,6 +644,7 @@ public class TestVectorSerDeRow extends TestCase {
         /* useExternalBuffer */ true);
   }
 
+  @Test
   public void testVectorLazySimpleDeserializeRow() throws Throwable {
     Random r = new Random(8732);
     testVectorDeserializeRow(r,

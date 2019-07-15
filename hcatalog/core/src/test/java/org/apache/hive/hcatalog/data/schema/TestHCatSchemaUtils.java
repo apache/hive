@@ -20,7 +20,7 @@ package org.apache.hive.hcatalog.data.schema;
 
 import java.io.PrintStream;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -30,11 +30,17 @@ import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestHCatSchemaUtils extends TestCase {
+/**
+ * TestHCatSchemaUtils.
+ */
+public class TestHCatSchemaUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatSchemaUtils.class);
 
+  @Test
   public void testSimpleOperation() throws Exception {
     String typeString = "struct<name:string,studentid:int,"
         + "contact:struct<phNo:string,email:string>,"
@@ -53,6 +59,7 @@ public class TestHCatSchemaUtils extends TestCase {
     assertEquals(hsch.get(0).getTypeString(), typeString.toLowerCase());
   }
   
+  @Test
   public void testHCatFieldSchemaConversion() throws Exception {
 	  FieldSchema stringFieldSchema = new FieldSchema("name1", serdeConstants.STRING_TYPE_NAME, "comment1");
 	  HCatFieldSchema stringHCatFieldSchema = HCatSchemaUtils.getHCatFieldSchema(stringFieldSchema);

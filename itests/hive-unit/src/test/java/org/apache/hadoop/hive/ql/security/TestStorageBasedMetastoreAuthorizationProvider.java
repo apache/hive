@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 /**
  * TestStorageBasedMetastoreAuthorizationProvider. Test case for
  * StorageBasedAuthorizationProvider, by overriding methods defined in

@@ -31,10 +31,18 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFMonthsBetween extends TestCase {
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
+/**
+ * TestGenericUDFMonthsBetween.
+ */
+public class TestGenericUDFMonthsBetween {
+
+  @Test
   public void testMonthsBetweenForString() throws HiveException {
     // Default run
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
@@ -58,6 +66,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     testMonthsBetweenForString(udf);
   }
 
+  @Test
   public void testWrongDateStr() throws HiveException {
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -126,6 +135,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
 
 
 
+  @Test
   public void testMonthsBetweenForTimestamp() throws HiveException {
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
@@ -183,6 +193,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestTs("2003-04-23 23:59:59", "2003-03-24 00:00:00", 0.99999963, udf);
   }
 
+  @Test
   public void testMonthsBetweenForDate() throws HiveException {
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;

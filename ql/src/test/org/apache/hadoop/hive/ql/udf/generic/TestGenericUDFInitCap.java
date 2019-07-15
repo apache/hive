@@ -25,10 +25,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFInitCap extends TestCase {
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
+/**
+ * TestGenericUDFInitCap.
+ */
+public class TestGenericUDFInitCap {
+
+  @Test
   public void testInitCap() throws HiveException {
     GenericUDFInitCap udf = new GenericUDFInitCap();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;

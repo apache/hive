@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.util.StringUtils;
 
+import org.junit.Before;
+
 /**
  *
  * TestHiveRemote.
@@ -36,8 +38,8 @@ public class TestHiveRemote extends TestHive {
   /**
    * Start a remote metastore and initialize a Hive object pointing at it.
    */
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
     hiveConf

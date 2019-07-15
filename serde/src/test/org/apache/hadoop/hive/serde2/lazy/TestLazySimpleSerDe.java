@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import junit.framework.TestCase;
+
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
@@ -46,16 +46,18 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 /**
  * TestLazySimpleSerDe.
  *
  */
-public class TestLazySimpleSerDe extends TestCase {
+public class TestLazySimpleSerDe {
 
   /**
    * Test the LazySimpleSerDe class.
    */
+  @Test
   public void testLazySimpleSerDe() throws Throwable {
     try {
       // Create the SerDe
@@ -92,6 +94,7 @@ public class TestLazySimpleSerDe extends TestCase {
   /**
    * Test the LazySimpleSerDe class with LastColumnTakesRest option.
    */
+  @Test
   public void testLazySimpleSerDeLastColumnTakesRest() throws Throwable {
     try {
       // Create the SerDe
@@ -121,6 +124,7 @@ public class TestLazySimpleSerDe extends TestCase {
   /**
    * Test the LazySimpleSerDe class with extra columns.
    */
+  @Test
   public void testLazySimpleSerDeExtraColumns() throws Throwable {
     try {
       // Create the SerDe
@@ -149,6 +153,7 @@ public class TestLazySimpleSerDe extends TestCase {
   /**
    * Test the LazySimpleSerDe class with missing columns.
    */
+  @Test
   public void testLazySimpleSerDeMissingColumns() throws Throwable {
     try {
       // Create the SerDe

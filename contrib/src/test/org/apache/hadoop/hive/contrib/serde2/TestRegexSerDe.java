@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.contrib.serde2;
 
 import java.util.Properties;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -29,12 +29,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * TestRegexSerDe.
  *
  */
-public class TestRegexSerDe extends TestCase {
+public class TestRegexSerDe {
 
   private AbstractSerDe createSerDe(String fieldNames, String fieldTypes,
       String inputRegex, String outputFormatString) throws Throwable {
@@ -52,6 +54,7 @@ public class TestRegexSerDe extends TestCase {
   /**
    * Test the LazySimpleSerDe class.
    */
+  @Test
   public void testRegexSerDe() throws Throwable {
     try {
       // Create the SerDe

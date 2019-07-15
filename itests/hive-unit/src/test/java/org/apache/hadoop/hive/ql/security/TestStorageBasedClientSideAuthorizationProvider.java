@@ -25,6 +25,9 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 /**
  * TestStorageBasedClientSideAuthorizationProvider : Overrides
  * TestClientSideAuthorizationProvider to test StorageBasedAuthorizationProvider

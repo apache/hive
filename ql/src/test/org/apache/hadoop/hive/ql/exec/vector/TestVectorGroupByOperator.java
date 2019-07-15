@@ -584,6 +584,7 @@ public class TestVectorGroupByOperator {
         buildHashMap((byte)1, 2L, null, 1L));
   }
 
+  @Test
   public void testDoubleValueTypeCountOneKey() throws HiveException {
     testKeyTypeAggregate(
         "count",

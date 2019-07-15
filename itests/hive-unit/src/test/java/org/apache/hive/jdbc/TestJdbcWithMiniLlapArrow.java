@@ -122,6 +122,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
   // Currently MAP type is not supported. Add it back when Arrow 1.0 is released.
   // See: SPARK-21187
+  @Test
   @Override
   public void testDataTypes() throws Exception {
     createDataTypesTable("datatypes");
@@ -404,6 +405,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     testKillQueryByTagOwner();
   }
 
+  @Test
   public void testKillQueryById() throws Exception {
     ExceptionHolder tExecuteHolder = new ExceptionHolder();
     ExceptionHolder tKillHolder = new ExceptionHolder();
@@ -413,6 +415,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     assertNull("tCancel", tKillHolder.throwable);
   }
 
+  @Test
   public void testKillQueryByTagNegative() throws Exception {
     ExceptionHolder tExecuteHolder = new ExceptionHolder();
     ExceptionHolder tKillHolder = new ExceptionHolder();
@@ -422,6 +425,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     assertTrue(tKillHolder.throwable.getMessage(), tKillHolder.throwable.getMessage().contains("No privilege"));
   }
 
+  @Test
   public void testKillQueryByTagAdmin() throws Exception {
     ExceptionHolder tExecuteHolder = new ExceptionHolder();
     ExceptionHolder tKillHolder = new ExceptionHolder();
@@ -430,6 +434,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     assertNull("tCancel", tKillHolder.throwable);
   }
 
+  @Test
   public void testKillQueryByTagOwner() throws Exception {
     ExceptionHolder tExecuteHolder = new ExceptionHolder();
     ExceptionHolder tKillHolder = new ExceptionHolder();

@@ -30,6 +30,9 @@ import org.apache.hadoop.hive.ql.testutil.OperatorTestUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 public class TestGenericUDFConcat extends BaseScalarUdfTest {
 
   @Override
@@ -67,6 +70,11 @@ public class TestGenericUDFConcat extends BaseScalarUdfTest {
     earr.add(expr1);
     earr.add(exprDesc2);
     return earr;
+  }
+
+  @Test
+  public void testDummy() {
+    assertTrue(true);
   }
 
 }

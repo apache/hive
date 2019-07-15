@@ -38,25 +38,28 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * TestPlan.
  *
  */
-public class TestPlan extends TestCase {
+public class TestPlan {
 
+  @Test
   public void testPlan() throws Exception {
 
-    final String F1 = "#affiliations";
-    final String F2 = "friends[0].friendid";
+    final String f1 = "#affiliations";
+    final String f2 = "friends[0].friendid";
 
     try {
       // initialize a complete map reduce configuration
       ExprNodeDesc expr1 = new ExprNodeColumnDesc(
-          TypeInfoFactory.stringTypeInfo, F1, "", false);
+          TypeInfoFactory.stringTypeInfo, f1, "", false);
       ExprNodeDesc expr2 = new ExprNodeColumnDesc(
-          TypeInfoFactory.stringTypeInfo, F2, "", false);
+          TypeInfoFactory.stringTypeInfo, f2, "", false);
       ExprNodeDesc filterExpr = TypeCheckProcFactory.DefaultExprProcessor
           .getFuncExprNodeDesc("==", expr1, expr2);
 
@@ -75,7 +78,7 @@ public class TestPlan extends TestCase {
       pt.put(new Path("/tmp/testfolder"), partDesc);
 
       LinkedHashMap<String, Operator<? extends OperatorDesc>> ao =
-        new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
+          new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
       ao.put("a", op);
 
       MapredWork mrwork = new MapredWork();
@@ -94,7 +97,7 @@ public class TestPlan extends TestCase {
 
       job.set("fs.default.name", "file:///");
       Utilities.setMapRedWork(job, mrwork, new Path(System.getProperty("java.io.tmpdir") + File.separator +
-        System.getProperty("user.name") + File.separator + "hive"));
+          System.getProperty("user.name") + File.separator + "hive"));
       MapredWork mrwork2 = Utilities.getMapRedWork(job);
       Utilities.clearWork(job);
 
