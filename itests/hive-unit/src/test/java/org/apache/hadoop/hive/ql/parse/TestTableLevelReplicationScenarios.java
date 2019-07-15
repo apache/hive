@@ -205,15 +205,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
   private void verifyTableListForPolicy(String dumpLocation, String[] tableList) throws Throwable {
     FileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
-    Path tableListFile = new Path(dumpLocation, ReplUtils.REPL_TABLE_LIST_FILE_NAME);
-    if (fileSystem.exists(tableListFile)) {
-      // Incremental dump
-      tableListFile = new Path(tableListFile, primaryDbName.toLowerCase());
-    } else {
-      // Bootstrap dump
-      tableListFile = new Path(dumpLocation, primaryDbName.toLowerCase());
-      tableListFile = new Path(tableListFile, ReplUtils.REPL_TABLE_LIST_FILE_NAME);
-    }
+    Path tableListFile = new Path(dumpLocation, ReplUtils.REPL_TABLE_LIST_DIR_NAME);
+    tableListFile = new Path(tableListFile, primaryDbName.toLowerCase());
 
     if (tableList == null) {
       Assert.assertFalse(fileSystem.exists(tableListFile));

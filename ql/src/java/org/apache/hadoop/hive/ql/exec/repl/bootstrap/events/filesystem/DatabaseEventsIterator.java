@@ -123,9 +123,9 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
         while (remoteIterator.hasNext()) {
           LocatedFileStatus next = remoteIterator.next();
           // we want to skip this file, this also means there cant be a table with name represented
-          // by constant ReplExternalTables.FILE_NAME or ReplUtils.REPL_TABLE_LIST_FILE_NAME (_tables)
+          // by constant ReplExternalTables.FILE_NAME or ReplUtils.REPL_TABLE_LIST_DIR_NAME (_tables)
           if(next.getPath().toString().endsWith(ReplExternalTables.FILE_NAME) ||
-                  next.getPath().toString().endsWith(ReplUtils.REPL_TABLE_LIST_FILE_NAME)) {
+                  next.getPath().toString().endsWith(ReplUtils.REPL_TABLE_LIST_DIR_NAME)) {
             continue;
           }
           if (next.getPath().toString().endsWith(EximUtil.METADATA_NAME)) {

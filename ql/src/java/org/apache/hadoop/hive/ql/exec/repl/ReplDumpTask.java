@@ -353,7 +353,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           }
         }
       }
-      dumpTableListToDumpLocation(tableList, dumpRoot, dbName, true, conf);
+      dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
     }
 
     return lastReplId;
@@ -405,7 +405,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return rspec;
   }
 
-  private void dumpTableListToDumpLocation(List<String> tableList, Path dbRoot, String dbName, boolean isIncLoad,
+  private void dumpTableListToDumpLocation(List<String> tableList, Path dbRoot, String dbName,
                                            HiveConf hiveConf) throws IOException, LoginException {
     // Empty list will create an empty file to distinguish it from db level replication. If no file is there, that means
     // db level replication. If empty file is there, means no table satisfies the policy.
@@ -414,16 +414,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return;
     }
 
-    // For incremental dump the table list is dumped in _tables/dbname file and for bootstrap dump, its dumped in
-    // dbname/_tables file.
-    Path tableListFile;
-    if (isIncLoad) {
-      tableListFile = new Path(dbRoot, ReplUtils.REPL_TABLE_LIST_FILE_NAME);
-      tableListFile = new Path(tableListFile, dbName.toLowerCase());
-    } else {
-      tableListFile = new Path(dbRoot, dbName.toLowerCase());
-      tableListFile = new Path(tableListFile, ReplUtils.REPL_TABLE_LIST_FILE_NAME);
-    }
+    // The table list is dumped in _tables/dbname file
+    Path tableListFile = new Path(dbRoot, ReplUtils.REPL_TABLE_LIST_DIR_NAME);
+    tableListFile = new Path(tableListFile, dbName.toLowerCase());
 
     int count = 0;
     while (count < FileUtils.MAX_IO_ERROR_RETRY) {
@@ -523,7 +516,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             tableList.add(tblName);
           }
         }
-        dumpTableListToDumpLocation(tableList, dumpRoot, dbName, false, conf);
+        dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
       } catch (Exception e) {
         caught = e;
       } finally {
