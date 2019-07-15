@@ -18,13 +18,12 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.creation;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
@@ -43,54 +42,25 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
 
   @Override
   public int execute() throws HiveException {
-    Table tbl = null;
-    try {
-      tbl = context.getDb().getTable(desc.getTableName());
-    } catch (InvalidTableException e) {
-      // drop table is idempotent
+    Table table = getTable();
+    if (table == null) {
+      return 0; // dropping not existing table is handled by DDLSemanticAnalyzer
     }
 
-    // This is a true DROP TABLE
-    if (tbl != null && desc.getValidationRequired()) {
-      if (tbl.isView()) {
-        if (!desc.getExpectView()) {
-          if (desc.getIfExists()) {
-            return 0;
-          }
-          if (desc.getExpectMaterializedView()) {
-            throw new HiveException("Cannot drop a view with DROP MATERIALIZED VIEW");
-          } else {
-            throw new HiveException("Cannot drop a view with DROP TABLE");
-          }
-        }
-      } else if (tbl.isMaterializedView()) {
-        if (!desc.getExpectMaterializedView()) {
-          if (desc.getIfExists()) {
-            return 0;
-          }
-          if (desc.getExpectView()) {
-            throw new HiveException("Cannot drop a materialized view with DROP VIEW");
-          } else {
-            throw new HiveException("Cannot drop a materialized view with DROP TABLE");
-          }
-        }
-      } else {
-        if (desc.getExpectView()) {
-          if (desc.getIfExists()) {
-            return 0;
-          }
-          throw new HiveException("Cannot drop a base table with DROP VIEW");
-        } else if (desc.getExpectMaterializedView()) {
-          if (desc.getIfExists()) {
-            return 0;
-          }
-          throw new HiveException("Cannot drop a base table with DROP MATERIALIZED VIEW");
+    if (desc.getValidationRequired()) {
+      if (table.isView() || table.isMaterializedView()) {
+        if (desc.isIfExists()) {
+          return 0;
+        } else if (table.isView()) {
+          throw new HiveException("Cannot drop a view with DROP TABLE");
+        } else {
+          throw new HiveException("Cannot drop a materialized view with DROP TABLE");
         }
       }
     }
 
     ReplicationSpec replicationSpec = desc.getReplicationSpec();
-    if (tbl != null && replicationSpec.isInReplicationScope()) {
+    if (replicationSpec.isInReplicationScope()) {
       /**
        * DROP TABLE FOR REPLICATION behaves differently from DROP TABLE IF EXISTS - it more closely
        * matches a DROP TABLE IF OLDER THAN(x) semantic.
@@ -112,15 +82,15 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
        * drop the partitions inside it that are older than this event. To wit, DROP TABLE FOR REPL
        * acts like a recursive DROP TABLE IF OLDER.
        */
-      if (!replicationSpec.allowEventReplacementInto(tbl.getParameters())) {
+      if (!replicationSpec.allowEventReplacementInto(table.getParameters())) {
         // Drop occured as part of replicating a drop, but the destination
         // table was newer than the event being replicated. Ignore, but drop
         // any partitions inside that are older.
-        if (tbl.isPartitioned()) {
-          PartitionIterable partitions = new PartitionIterable(context.getDb(), tbl, null,
-              context.getConf().getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
-          for (Partition p : Iterables.filter(partitions, replicationSpec.allowEventReplacementInto())){
-            context.getDb().dropPartition(tbl.getDbName(), tbl.getTableName(), p.getValues(), true);
+        if (table.isPartitioned()) {
+          PartitionIterable partitions = new PartitionIterable(context.getDb(), table, null,
+              MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
+          for (Partition p : Iterables.filter(partitions, replicationSpec.allowEventReplacementInto())) {
+            context.getDb().dropPartition(table.getDbName(), table.getTableName(), p.getValues(), true);
           }
         }
         LOG.debug("DDLTask: Drop Table is skipped as table {} is newer than update", desc.getTableName());
@@ -128,18 +98,18 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
       }
     }
 
-    // drop the table
     // TODO: API w/catalog name
-    context.getDb().dropTable(desc.getTableName(), desc.getIfPurge());
-    if (tbl != null) {
-      // Remove from cache if it is a materialized view
-      if (tbl.isMaterializedView()) {
-        HiveMaterializedViewsRegistry.get().dropMaterializedView(tbl);
-      }
-      // We have already locked the table in DDLSemanticAnalyzer, don't do it again here
-      DDLUtils.addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK), context);
-    }
+    context.getDb().dropTable(desc.getTableName(), desc.isPurge());
+    DDLUtils.addIfAbsentByName(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK), context);
 
     return 0;
+  }
+
+  private Table getTable() throws HiveException {
+    try {
+      return context.getDb().getTable(desc.getTableName());
+    } catch (InvalidTableException e) {
+      return null;
+    }
   }
 }

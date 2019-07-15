@@ -98,7 +98,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     // we want to signal an error if the function doesn't exist and we're
     // configured not to ignore this
     boolean throwException =
-      !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
+        !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
 
     FunctionInfo info = FunctionRegistry.getFunctionInfo(functionName);
     if (info == null) {
