@@ -99,7 +99,7 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
   @Test
   public void testOwnerNames() throws Exception {
     reset(mockedAuthorizer);
-    driver.compile("create table default.t1 (name string)");
+    driver.compile("create table default.t1 (name string)", true);
 
     Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
     boolean containsDBOwnerName = false;
@@ -129,7 +129,7 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
   @Test
   public void testOwnerType() throws Exception {
     reset(mockedAuthorizer);
-    driver.compile("create table default.t1 (name string)");
+    driver.compile("create table default.t1 (name string)", true);
 
     Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
     boolean containsOwnerType = false;
@@ -164,7 +164,8 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
         .checkPrivileges(any(HiveOperationType.class), inputsCapturer.capture(), outputsCapturer.capture(),
             any(HiveAuthzContext.class));
 
-    return new ImmutablePair(inputsCapturer.getValue(), outputsCapturer.getValue());
+    return new ImmutablePair<List<HivePrivilegeObject>, List<HivePrivilegeObject>>(
+        inputsCapturer.getValue(), outputsCapturer.getValue());
   }
 
 }
