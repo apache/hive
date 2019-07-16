@@ -44,9 +44,9 @@ public class HostAffinitySplitLocationProvider implements SplitLocationProvider 
 
   private final static Logger LOG = LoggerFactory.getLogger(
       HostAffinitySplitLocationProvider.class);
-  private final boolean isDebugEnabled = LOG.isDebugEnabled();
 
-  private final List<String> locations;
+  @VisibleForTesting
+  final List<String> locations;
 
   public HostAffinitySplitLocationProvider(List<String> knownLocations) {
     Preconditions.checkState(knownLocations != null && !knownLocations.isEmpty(),
