@@ -19,7 +19,7 @@ public class ScheduledQueryMaintTask extends Task<ScheduledQueryMaintWork> {
   }
 
   @Override
-  protected int execute(DriverContext driverContext) {
+  public int execute(DriverContext driverContext) {
     ScheduledQueryMaintenanceRequest request = buildScheduledQueryRequest();
     try {
       Hive.get().getMSC().scheduledQueryMaintenance(request);
