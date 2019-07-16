@@ -618,6 +618,7 @@ import com.google.common.annotations.VisibleForTesting;
     udfsNeedingImplicitDecimalCast.add(GenericUDFOPGreaterThan.class);
     udfsNeedingImplicitDecimalCast.add(GenericUDFOPEqualOrGreaterThan.class);
     udfsNeedingImplicitDecimalCast.add(GenericUDFBetween.class);
+    udfsNeedingImplicitDecimalCast.add(GenericUDFWhen.class);
     udfsNeedingImplicitDecimalCast.add(UDFSqrt.class);
     udfsNeedingImplicitDecimalCast.add(UDFRand.class);
     udfsNeedingImplicitDecimalCast.add(UDFLn.class);
@@ -1192,6 +1193,23 @@ import com.google.common.annotations.VisibleForTesting;
           childrenWithCasts.add(castExpression);
         } else {
           childrenWithCasts.add(child);
+        }
+      }
+    } else if(genericUDF instanceof GenericUDFWhen) {
+      boolean hasElseClause = children.size() % 2 == 1 ;
+      for (int i=0; i<children.size(); i++) {
+        ExprNodeDesc castExpression = null;
+        if (i % 2 == 1) {
+          castExpression = getImplicitCastExpression(genericUDF, children.get(i), commonType);
+        }
+        if(hasElseClause && i == children.size()-1) {
+          castExpression = getImplicitCastExpression(genericUDF, children.get(i), commonType);
+        }
+        if (castExpression != null) {
+          atleastOneCastNeeded = true;
+          childrenWithCasts.add(castExpression);
+        } else {
+          childrenWithCasts.add(children.get(i));
         }
       }
     } else {
