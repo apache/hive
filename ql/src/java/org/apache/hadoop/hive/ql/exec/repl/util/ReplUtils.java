@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
@@ -79,6 +80,10 @@ public class ReplUtils {
 
   // Root directory for dumping bootstrapped tables along with incremental events dump.
   public static final String INC_BOOTSTRAP_ROOT_DIR_NAME = "_bootstrap";
+
+  // Name of the directory which stores the list of tables included in the policy in case of table level replication.
+  // One file per database, named after the db name. The directory is not created for db level replication.
+  public static final String REPL_TABLE_LIST_DIR_NAME = "_tables";
 
   // Migrating to transactional tables in bootstrap load phase.
   // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
@@ -232,7 +237,18 @@ public class ReplUtils {
   public static PathFilter getEventsDirectoryFilter(final FileSystem fs) {
     return p -> {
       try {
-        return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
+        return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME)
+                && !p.getName().equalsIgnoreCase(ReplUtils.REPL_TABLE_LIST_DIR_NAME);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    };
+  }
+
+  public static PathFilter getBootstrapDirectoryFilter(final FileSystem fs) {
+    return p -> {
+      try {
+        return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.REPL_TABLE_LIST_DIR_NAME);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

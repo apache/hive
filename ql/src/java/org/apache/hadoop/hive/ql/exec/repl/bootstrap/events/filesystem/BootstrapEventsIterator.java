@@ -83,7 +83,7 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
     Path path = new Path(dumpDirectory);
     FileSystem fileSystem = path.getFileSystem(hiveConf);
     FileStatus[] fileStatuses =
-        fileSystem.listStatus(new Path(dumpDirectory), EximUtil.getDirectoryFilter(fileSystem));
+        fileSystem.listStatus(new Path(dumpDirectory), ReplUtils.getBootstrapDirectoryFilter(fileSystem));
     if ((fileStatuses == null) || (fileStatuses.length == 0)) {
       throw new IllegalArgumentException("No data to load in path " + dumpDirectory);
     }

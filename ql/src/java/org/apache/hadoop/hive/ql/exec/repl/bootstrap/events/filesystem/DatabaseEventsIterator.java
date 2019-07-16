@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.slf4j.Logger;
@@ -122,8 +123,9 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
         while (remoteIterator.hasNext()) {
           LocatedFileStatus next = remoteIterator.next();
           // we want to skip this file, this also means there cant be a table with name represented
-          // by constant ReplExternalTables.FILE_NAME
-          if(next.getPath().toString().endsWith(ReplExternalTables.FILE_NAME)) {
+          // by constant ReplExternalTables.FILE_NAME or ReplUtils.REPL_TABLE_LIST_DIR_NAME (_tables)
+          if(next.getPath().toString().endsWith(ReplExternalTables.FILE_NAME) ||
+                  next.getPath().toString().endsWith(ReplUtils.REPL_TABLE_LIST_DIR_NAME)) {
             continue;
           }
           if (next.getPath().toString().endsWith(EximUtil.METADATA_NAME)) {
