@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked"})
-public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatisticsData, ColumnStatisticsData._Fields> {
+@org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatisticsData, ColumnStatisticsData._Fields> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ColumnStatisticsData");
   private static final org.apache.thrift.protocol.TField BOOLEAN_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("booleanStats", org.apache.thrift.protocol.TType.STRUCT, (short)1);
   private static final org.apache.thrift.protocol.TField LONG_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("longStats", org.apache.thrift.protocol.TType.STRUCT, (short)2);
