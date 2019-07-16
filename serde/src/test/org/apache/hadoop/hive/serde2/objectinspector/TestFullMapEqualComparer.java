@@ -20,11 +20,16 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 import java.util.Map;
 import java.util.TreeMap;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
-public class TestFullMapEqualComparer extends TestCase {
+/**
+ * FullMapEqualComparer Test.
+ */
+public class TestFullMapEqualComparer {
 
   public static class IntegerIntegerMapHolder {
     Map<Integer, Integer> mMap;
@@ -34,6 +39,7 @@ public class TestFullMapEqualComparer extends TestCase {
     }
   }
 
+  @Test
   public void testAntiSymmetry() {
     IntegerIntegerMapHolder o1 = new IntegerIntegerMapHolder();
     IntegerIntegerMapHolder o2 = new IntegerIntegerMapHolder();
@@ -66,6 +72,7 @@ public class TestFullMapEqualComparer extends TestCase {
 
   }
 
+  @Test
   public void testTransitivity() {
     IntegerIntegerMapHolder o1 = new IntegerIntegerMapHolder();
     IntegerIntegerMapHolder o2 = new IntegerIntegerMapHolder();

@@ -30,9 +30,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFToUnixTimestamp extends TestCase {
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
+/**
+ * TestGenericUDFToUnixTimestamp.
+ */
+public class TestGenericUDFToUnixTimestamp {
 
   public static void runAndVerify(GenericUDFToUnixTimeStamp udf,
       Object arg, Object expected) throws HiveException {
@@ -56,6 +62,7 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
     }
   }
 
+  @Test
   public void testTimestamp() throws HiveException {
     GenericUDFToUnixTimeStamp udf = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
@@ -76,6 +83,7 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
     runAndVerify(udf, null, null);
   }
 
+  @Test
   public void testDate() throws HiveException {
     GenericUDFToUnixTimeStamp udf = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
@@ -91,6 +99,7 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
     runAndVerify(udf, null, null);
   }
 
+  @Test
   public void testString() throws HiveException {
     GenericUDFToUnixTimeStamp udf1 = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;

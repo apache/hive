@@ -34,13 +34,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * TestBinarySortableSerDe.
  *
  */
-public class TestBinarySortableSerDe extends TestCase {
+public class TestBinarySortableSerDe {
 
   private static final String DECIMAL_CHARS = "0123456789";
 
@@ -135,6 +138,7 @@ public class TestBinarySortableSerDe extends TestCase {
     }
   }
 
+  @Test
   public void testBinarySortableSerDe() throws Throwable {
     try {
 

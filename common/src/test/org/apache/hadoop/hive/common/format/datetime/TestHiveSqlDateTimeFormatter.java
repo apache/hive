@@ -41,14 +41,19 @@ import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 import static java.time.temporal.ChronoField.YEAR;
 
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 /**
  * Tests HiveSqlDateTimeFormatter.
  */
 
-public class TestHiveSqlDateTimeFormatter extends TestCase {
+public class TestHiveSqlDateTimeFormatter {
 
   private HiveSqlDateTimeFormatter formatter;
 
+  @Test
   public void testSetPattern() {
     verifyPatternParsing(" ---yyyy-\'-:-  -,.;/MM-dd--", new ArrayList<>(List.of(
         null, // represents separator, which has no temporal field
@@ -73,6 +78,7 @@ public class TestHiveSqlDateTimeFormatter extends TestCase {
     )));
   }
 
+  @Test
   public void testSetPatternWithBadPatterns() {
     verifyBadPattern("eyyyy-ddd", true);
     verifyBadPattern("1yyyy-mm-dd", true);
@@ -102,6 +108,7 @@ public class TestHiveSqlDateTimeFormatter extends TestCase {
     verifyBadPattern("tzh", false);
   }
 
+  @Test
   public void testFormatTimestamp() {
     checkFormatTs("rr rrrr ddd", "2018-01-03 00:00:00", "18 2018 003");
     checkFormatTs("yyyy-mm-ddtsssss.ff4z", "2018-02-03 00:00:10.777777777", "2018-02-03T00010.7777Z");
@@ -118,6 +125,7 @@ public class TestHiveSqlDateTimeFormatter extends TestCase {
     assertEquals(expectedOutput, formatter.format(toTimestamp(input)));
   }
 
+  @Test
   public void testFormatDate() {
     checkFormatDate("rr rrrr ddd", "2018-01-03", "18 2018 003");
     checkFormatDate("yyyy-mm-ddtsssss.ff4z", "2018-02-03", "2018-02-03T00000.0000Z");
@@ -133,6 +141,7 @@ public class TestHiveSqlDateTimeFormatter extends TestCase {
     assertEquals(expectedOutput, formatter.format(toDate(input)));
   }
 
+  @Test
   public void testParseTimestamp() {
     String thisYearString = String.valueOf(LocalDateTime.now().getYear());
     int firstTwoDigits = getFirstTwoDigits();
@@ -205,6 +214,7 @@ public class TestHiveSqlDateTimeFormatter extends TestCase {
     assertEquals(toTimestamp(expectedOutput), formatter.parseTimestamp(input));
   }
 
+  @Test
   public void testParseDate() {
 
     String thisYearString = String.valueOf(LocalDateTime.now().getYear());
@@ -235,6 +245,7 @@ public class TestHiveSqlDateTimeFormatter extends TestCase {
     assertEquals(toDate(expectedOutput), formatter.parseDate(input));
   }
 
+  @Test
   public void testParseTimestampError() {
     verifyBadParseString("yyyy", "2019-02-03");
     verifyBadParseString("yyyy-mm-dd  ", "2019-02-03"); //separator missing

@@ -795,7 +795,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Truncate Table or Partition
-      TableName: M1
+      table name: M1
 
 PREHOOK: query: select count(*) from M1 where key > 0
 PREHOOK: type: QUERY

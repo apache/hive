@@ -18,13 +18,18 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-public class TestUDFUUID extends TestCase {
+/**
+ * TestUDFUUID.
+ */
+public class TestUDFUUID {
   @Test
   public void testUUID() throws Exception {
     UDFUUID udf = new UDFUUID();

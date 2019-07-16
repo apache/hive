@@ -33,7 +33,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,11 +58,9 @@ import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
@@ -75,9 +72,6 @@ import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.FunctionInfo;
-import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionType;
-import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -89,7 +83,6 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
-import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
@@ -106,24 +99,17 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
-import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
-import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -131,13 +117,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
-import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.security.authorization.command.CommandAuthorizer;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -157,8 +137,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
-
 
 public class Driver implements IDriver {
 
@@ -715,7 +693,7 @@ public class Driver implements IDriver {
           // As both admin or operation owner can perform the operation.
           // Which is not directly supported in authorizer
           if (queryState.getHiveOperation() != HiveOperation.KILL_QUERY) {
-            doAuthorization(queryState.getHiveOperation(), sem, command);
+            CommandAuthorizer.doAuthorization(queryState.getHiveOperation(), sem, command);
           }
         } catch (AuthorizationException authExp) {
           console.printError("Authorization failed:" + authExp.getMessage()
@@ -1066,392 +1044,6 @@ public class Driver implements IDriver {
     }
 
     return ret;
-  }
-
-  /**
-   * Do authorization using post semantic analysis information in the semantic analyzer
-   * The original command is also passed so that authorization interface can provide
-   * more useful information in logs.
-   * @param sem SemanticAnalyzer used to parse input query
-   * @param command input query
-   * @throws HiveException
-   * @throws AuthorizationException
-   */
-  public static void doAuthorization(HiveOperation op, BaseSemanticAnalyzer sem, String command)
-      throws HiveException, AuthorizationException {
-    SessionState ss = SessionState.get();
-    Hive db = sem.getDb();
-
-    Set<ReadEntity> additionalInputs = new HashSet<ReadEntity>();
-    for (Entity e : sem.getInputs()) {
-      if (e.getType() == Entity.Type.PARTITION) {
-        additionalInputs.add(new ReadEntity(e.getTable()));
-      }
-    }
-    // skipping the auth check for the "CREATE DATABASE" operation if database already exists
-    // we know that if the database already exists then "CREATE DATABASE" operation will fail.
-    if(op.equals(HiveOperation.CREATEDATABASE)){
-      for (WriteEntity e : sem.getOutputs()) {
-        if(e.getType() == Entity.Type.DATABASE && db.databaseExists(e.getName().split(":")[1])){
-          return;
-        }
-      }
-    }
-
-    Set<WriteEntity> additionalOutputs = new HashSet<WriteEntity>();
-    for (WriteEntity e : sem.getOutputs()) {
-      if (e.getType() == Entity.Type.PARTITION) {
-        additionalOutputs.add(new WriteEntity(e.getTable(), e.getWriteType()));
-      }
-    }
-
-    // The following union operation returns a union, which traverses over the
-    // first set once and then  then over each element of second set, in order,
-    // that is not contained in first. This means it doesn't replace anything
-    // in first set, and would preserve the WriteType in WriteEntity in first
-    // set in case of outputs list.
-    Set<ReadEntity> inputs = Sets.union(sem.getInputs(), additionalInputs);
-    Set<WriteEntity> outputs = Sets.union(sem.getOutputs(), additionalOutputs);
-
-    if (ss.isAuthorizationModeV2()) {
-      // get mapping of tables to columns used
-      ColumnAccessInfo colAccessInfo = sem.getColumnAccessInfo();
-      // colAccessInfo is set only in case of SemanticAnalyzer
-      Map<String, List<String>> selectTab2Cols = colAccessInfo != null
-          ? colAccessInfo.getTableToColumnAccessMap() : null;
-      Map<String, List<String>> updateTab2Cols = sem.getUpdateColumnAccessInfo() != null
-          ? sem.getUpdateColumnAccessInfo().getTableToColumnAccessMap() : null;
-
-      // convert to List as above Set was created using Sets.union (for reasons
-      // explained there)
-      // but that Set is immutable
-      List<ReadEntity> inputList = new ArrayList<ReadEntity>(inputs);
-      List<WriteEntity> outputList = new ArrayList<WriteEntity>(outputs);
-
-      // add permanent UDFs being used
-      inputList.addAll(getPermanentFunctionEntities(ss));
-
-      doAuthorizationV2(ss, op, inputList, outputList, command, selectTab2Cols, updateTab2Cols);
-      return;
-    }
-    if (op == null) {
-      throw new HiveException("Operation should not be null");
-    }
-    HiveAuthorizationProvider authorizer = ss.getAuthorizer();
-    if (op.equals(HiveOperation.CREATEDATABASE)) {
-      authorizer.authorize(
-          op.getInputRequiredPrivileges(), op.getOutputRequiredPrivileges());
-    } else if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
-        || op.equals(HiveOperation.CREATETABLE)) {
-      authorizer.authorize(
-          db.getDatabase(SessionState.get().getCurrentDatabase()), null,
-          HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
-    } else {
-      if (op.equals(HiveOperation.IMPORT)) {
-        ImportSemanticAnalyzer isa = (ImportSemanticAnalyzer) sem;
-        if (!isa.existsTable()) {
-          authorizer.authorize(
-              db.getDatabase(SessionState.get().getCurrentDatabase()), null,
-              HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
-        }
-      }
-    }
-    if (outputs != null && outputs.size() > 0) {
-      for (WriteEntity write : outputs) {
-        if (write.isDummy() || write.isPathType()) {
-          continue;
-        }
-        if (write.getType() == Entity.Type.DATABASE) {
-          if (!op.equals(HiveOperation.IMPORT)){
-            // We skip DB check for import here because we already handle it above
-            // as a CTAS check.
-            authorizer.authorize(write.getDatabase(),
-                null, op.getOutputRequiredPrivileges());
-          }
-          continue;
-        }
-
-        if (write.getType() == WriteEntity.Type.PARTITION) {
-          Partition part = db.getPartition(write.getTable(), write
-              .getPartition().getSpec(), false);
-          if (part != null) {
-            authorizer.authorize(write.getPartition(), null,
-                    op.getOutputRequiredPrivileges());
-            continue;
-          }
-        }
-
-        if (write.getTable() != null) {
-          authorizer.authorize(write.getTable(), null,
-                  op.getOutputRequiredPrivileges());
-        }
-      }
-    }
-
-    if (inputs != null && inputs.size() > 0) {
-      Map<Table, List<String>> tab2Cols = new HashMap<Table, List<String>>();
-      Map<Partition, List<String>> part2Cols = new HashMap<Partition, List<String>>();
-
-      //determine if partition level privileges should be checked for input tables
-      Map<String, Boolean> tableUsePartLevelAuth = new HashMap<String, Boolean>();
-      for (ReadEntity read : inputs) {
-        if (read.isDummy() || read.isPathType() || read.getType() == Entity.Type.DATABASE) {
-          continue;
-        }
-        Table tbl = read.getTable();
-        if ((read.getPartition() != null) || (tbl != null && tbl.isPartitioned())) {
-          String tblName = tbl.getTableName();
-          if (tableUsePartLevelAuth.get(tblName) == null) {
-            boolean usePartLevelPriv = (tbl.getParameters().get(
-                "PARTITION_LEVEL_PRIVILEGE") != null && ("TRUE"
-                .equalsIgnoreCase(tbl.getParameters().get(
-                    "PARTITION_LEVEL_PRIVILEGE"))));
-            if (usePartLevelPriv) {
-              tableUsePartLevelAuth.put(tblName, Boolean.TRUE);
-            } else {
-              tableUsePartLevelAuth.put(tblName, Boolean.FALSE);
-            }
-          }
-        }
-      }
-
-      // column authorization is checked through table scan operators.
-      getTablePartitionUsedColumns(op, sem, tab2Cols, part2Cols, tableUsePartLevelAuth);
-
-      // cache the results for table authorization
-      Set<String> tableAuthChecked = new HashSet<String>();
-      for (ReadEntity read : inputs) {
-        // if read is not direct, we do not need to check its autho.
-        if (read.isDummy() || read.isPathType() || !read.isDirect()) {
-          continue;
-        }
-        if (read.getType() == Entity.Type.DATABASE) {
-          authorizer.authorize(read.getDatabase(), op.getInputRequiredPrivileges(), null);
-          continue;
-        }
-        Table tbl = read.getTable();
-        if (tbl.isView() && sem instanceof SemanticAnalyzer) {
-          tab2Cols.put(tbl,
-              sem.getColumnAccessInfo().getTableToColumnAccessMap().get(tbl.getCompleteName()));
-        }
-        if (read.getPartition() != null) {
-          Partition partition = read.getPartition();
-          tbl = partition.getTable();
-          // use partition level authorization
-          if (Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
-            List<String> cols = part2Cols.get(partition);
-            if (cols != null && cols.size() > 0) {
-              authorizer.authorize(partition.getTable(),
-                  partition, cols, op.getInputRequiredPrivileges(),
-                  null);
-            } else {
-              authorizer.authorize(partition,
-                  op.getInputRequiredPrivileges(), null);
-            }
-            continue;
-          }
-        }
-
-        // if we reach here, it means it needs to do a table authorization
-        // check, and the table authorization may already happened because of other
-        // partitions
-        if (tbl != null && !tableAuthChecked.contains(tbl.getTableName()) &&
-            !(Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName())))) {
-          List<String> cols = tab2Cols.get(tbl);
-          if (cols != null && cols.size() > 0) {
-            authorizer.authorize(tbl, null, cols,
-                op.getInputRequiredPrivileges(), null);
-          } else {
-            authorizer.authorize(tbl, op.getInputRequiredPrivileges(),
-                null);
-          }
-          tableAuthChecked.add(tbl.getTableName());
-        }
-      }
-
-    }
-  }
-
-  private static List<ReadEntity> getPermanentFunctionEntities(SessionState ss) throws HiveException {
-    List<ReadEntity> functionEntities = new ArrayList<>();
-    for (Entry<String, FunctionInfo> permFunction : ss.getCurrentFunctionsInUse().entrySet()) {
-      if (permFunction.getValue().getFunctionType() != FunctionType.PERSISTENT) {
-        // Only permanent functions need to be authorized.
-        // Built-in function access is allowed to all users.
-        // If user can create a temp function, they should be able to use it
-        // without additional authorization.
-        continue;
-      }
-      functionEntities.add(createReadEntity(permFunction.getKey(), permFunction.getValue()));
-    }
-    return functionEntities;
-  }
-
-  private static ReadEntity createReadEntity(String functionName, FunctionInfo functionInfo)
-      throws HiveException {
-    String[] qualFunctionName = FunctionUtils.getQualifiedFunctionNameParts(functionName);
-    // this is only for the purpose of authorization, only the name matters.
-    Database db = new Database(qualFunctionName[0], "", "", null);
-    return new ReadEntity(db, qualFunctionName[1], functionInfo.getClassName(), Type.FUNCTION);
-  }
-
-  private static void getTablePartitionUsedColumns(HiveOperation op, BaseSemanticAnalyzer sem,
-      Map<Table, List<String>> tab2Cols, Map<Partition, List<String>> part2Cols,
-      Map<String, Boolean> tableUsePartLevelAuth) throws HiveException {
-    // for a select or create-as-select query, populate the partition to column
-    // (par2Cols) or
-    // table to columns mapping (tab2Cols)
-    if (op.equals(HiveOperation.CREATETABLE_AS_SELECT) || op.equals(HiveOperation.QUERY)) {
-      SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
-      ParseContext parseCtx = querySem.getParseContext();
-
-      for (Map.Entry<String, TableScanOperator> topOpMap : querySem.getParseContext().getTopOps()
-          .entrySet()) {
-        TableScanOperator tableScanOp = topOpMap.getValue();
-        if (!tableScanOp.isInsideView()) {
-          Table tbl = tableScanOp.getConf().getTableMetadata();
-          List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
-          List<FieldSchema> columns = tbl.getCols();
-          List<String> cols = new ArrayList<String>();
-          for (int i = 0; i < neededColumnIds.size(); i++) {
-            cols.add(columns.get(neededColumnIds.get(i)).getName());
-          }
-          // map may not contain all sources, since input list may have been
-          // optimized out
-          // or non-existent tho such sources may still be referenced by the
-          // TableScanOperator
-          // if it's null then the partition probably doesn't exist so let's use
-          // table permission
-          if (tbl.isPartitioned()
-              && Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
-            String alias_id = topOpMap.getKey();
-
-            PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp, parseCtx, alias_id);
-            Set<Partition> parts = partsList.getPartitions();
-            for (Partition part : parts) {
-              List<String> existingCols = part2Cols.get(part);
-              if (existingCols == null) {
-                existingCols = new ArrayList<String>();
-              }
-              existingCols.addAll(cols);
-              part2Cols.put(part, existingCols);
-            }
-          } else {
-            List<String> existingCols = tab2Cols.get(tbl);
-            if (existingCols == null) {
-              existingCols = new ArrayList<String>();
-            }
-            existingCols.addAll(cols);
-            tab2Cols.put(tbl, existingCols);
-          }
-        }
-      }
-    }
-  }
-
-  private static void doAuthorizationV2(SessionState ss, HiveOperation op, List<ReadEntity> inputs,
-      List<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols,
-      Map<String, List<String>> updateTab2Cols) throws HiveException {
-
-    /* comment for reviewers -> updateTab2Cols needed to be separate from tab2cols because if I
-    pass tab2cols to getHivePrivObjects for the output case it will trip up insert/selects,
-    since the insert will get passed the columns from the select.
-     */
-
-    HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
-    authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
-    authzContextBuilder.setForwardedAddresses(ss.getForwardedAddresses());
-    authzContextBuilder.setCommandString(command);
-
-    HiveOperationType hiveOpType = getHiveOperationType(op);
-    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputs, tab2cols);
-    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputs, updateTab2Cols);
-
-    ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs, authzContextBuilder.build());
-  }
-
-  private static List<HivePrivilegeObject> getHivePrivObjects(
-      List<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
-    List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
-    if(privObjects == null){
-      return hivePrivobjs;
-    }
-    for(Entity privObject : privObjects){
-      HivePrivilegeObjectType privObjType =
-          AuthorizationUtils.getHivePrivilegeObjectType(privObject.getType());
-      if(privObject.isDummy()) {
-        //do not authorize dummy readEntity or writeEntity
-        continue;
-      }
-      if(privObject instanceof ReadEntity && !((ReadEntity)privObject).isDirect()){
-        // In case of views, the underlying views or tables are not direct dependencies
-        // and are not used for authorization checks.
-        // This ReadEntity represents one of the underlying tables/views, so skip it.
-        // See description of the isDirect in ReadEntity
-        continue;
-      }
-      if(privObject instanceof WriteEntity && ((WriteEntity)privObject).isTempURI()){
-        //do not authorize temporary uris
-        continue;
-      }
-      if (privObject.getTyp() == Type.TABLE
-          && (privObject.getT() == null || privObject.getT().isTemporary())) {
-        // skip temporary tables from authorization
-        continue;
-      }
-      //support for authorization on partitions needs to be added
-      String dbname = null;
-      String objName = null;
-      List<String> partKeys = null;
-      List<String> columns = null;
-      String className = null;
-      String ownerName = null;
-      PrincipalType ownerType = null;
-      switch(privObject.getType()){
-      case DATABASE:
-        dbname = privObject.getDatabase().getName();
-        ownerName = privObject.getDatabase().getOwnerName();
-        ownerType = privObject.getDatabase().getOwnerType();
-        break;
-      case TABLE:
-        dbname = privObject.getTable().getDbName();
-        objName = privObject.getTable().getTableName();
-        columns = tableName2Cols == null ? null :
-            tableName2Cols.get(Table.getCompleteName(dbname, objName));
-        ownerName = privObject.getTable().getOwner();
-        ownerType = privObject.getTable().getOwnerType();
-        break;
-      case DFS_DIR:
-      case LOCAL_DIR:
-        objName = privObject.getD().toString();
-        break;
-      case FUNCTION:
-        if(privObject.getDatabase() != null) {
-          dbname = privObject.getDatabase().getName();
-        }
-        objName = privObject.getFunctionName();
-        className = privObject.getClassName();
-        break;
-      case DUMMYPARTITION:
-      case PARTITION:
-        // not currently handled
-        continue;
-      case SERVICE_NAME:
-        objName = privObject.getServiceName();
-        break;
-        default:
-          throw new AssertionError("Unexpected object type");
-      }
-      HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
-      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, objName,
-          partKeys, columns, actionType, null, className, ownerName, ownerType);
-      hivePrivobjs.add(hPrivObject);
-    }
-    return hivePrivobjs;
-  }
-
-  private static HiveOperationType getHiveOperationType(HiveOperation op) {
-    return HiveOperationType.valueOf(op.name());
   }
 
   @Override

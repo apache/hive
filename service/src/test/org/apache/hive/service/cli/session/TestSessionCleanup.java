@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -35,7 +35,10 @@ import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestSessionCleanup extends TestCase {
+/**
+ * TestSessionCleanup.
+ */
+public class TestSessionCleanup {
 
   @Test
   // This is to test session temporary files are cleaned up after HIVE-11768

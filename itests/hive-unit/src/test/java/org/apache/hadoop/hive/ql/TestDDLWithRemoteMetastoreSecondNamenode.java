@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import junit.framework.JUnit4TestAdapter;
-import junit.framework.TestCase;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
@@ -33,12 +33,18 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  * Tests DDL with remote metastore service and second namenode (HIVE-6374)
  *
  */
-public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
+public class TestDDLWithRemoteMetastoreSecondNamenode {
   static HiveConf conf;
 
   private static final String Database1Name = "db1_nondefault_nn";
@@ -63,9 +69,9 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
   private static int tests = 0;
   private static Boolean isInitialized = false;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
+
     if (tests > 0) {
       return;
     }
@@ -123,9 +129,9 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
     }
   }
 
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
+  @After
+  public void tearDown() throws Exception {
+
     if (--tests == 0) {
       cleanup();
       shutdownMiniDfs();
@@ -249,6 +255,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
     }
   }
 
+  @Test
   public void testAlterPartitionSetLocationNonDefaultNameNode() throws Exception {
     assertTrue("Test suite should have been initialized", isInitialized);
     String tableLocation = tmppathFs2 + "/" + "test_set_part_loc";
@@ -258,6 +265,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
     alterPartitionAndCheck(table, "p", "p1", "/tmp/test/2");
   }
 
+  @Test
   public void testCreateDatabaseWithTableNonDefaultNameNode() throws Exception {
     assertTrue("Test suite should be initialied", isInitialized );
     final String tableLocation = tmppathFs2 + "/" + Table3Name;

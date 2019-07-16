@@ -531,6 +531,46 @@ public class TestTaskExecutorService {
     }
   }
 
+  @Test(timeout = 1000)
+  public void testZeroCapacity() throws InterruptedException {
+    TaskExecutorServiceForTest taskExecutorService =
+        new TaskExecutorServiceForTest(1, 1, ShortestJobFirstComparator.class.getName(), true, mockMetrics);
+
+    // Fourth is lower priority as a result of canFinish being set to false.
+    MockRequest r1 = createMockRequest(1, 1, 1, 100, 200, true, 20000L, true);
+    MockRequest r2 = createMockRequest(2, 1, 2, 100, 200, true, 20000L, true);
+
+    taskExecutorService.init(new Configuration());
+    taskExecutorService.start();
+
+    try {
+      Scheduler.SubmissionState submissionState;
+      // Schedule the first 2 tasks (1 to execute, 1 to the queue)
+      submissionState = taskExecutorService.schedule(r1);
+      assertEquals(Scheduler.SubmissionState.ACCEPTED, submissionState);
+
+      submissionState = taskExecutorService.schedule(r2);
+      assertEquals(Scheduler.SubmissionState.ACCEPTED, submissionState);
+
+      awaitStartAndSchedulerRun(r1, taskExecutorService);
+
+      taskExecutorService.setCapacity(0, 0);
+
+      // The queued task should be killed
+      assertTrue(r2.wasPreempted());
+
+      // The already running should be able to finish
+      assertFalse(r1.wasPreempted());
+      r1.complete();
+      r1.awaitEnd();
+      TaskExecutorServiceForTest.InternalCompletionListenerForTest icl =
+          taskExecutorService.getInternalCompletionListenerForTest(r1.getRequestId());
+      icl.awaitCompletion();
+    } finally {
+      taskExecutorService.shutDown(false);
+    }
+  }
+
   @Test(timeout = 1000, expected = IllegalArgumentException.class)
   public void testSetCapacityHighExecutors() {
     TaskExecutorServiceForTest taskExecutorService =

@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 
 import org.junit.Assert;
-import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -49,12 +48,13 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.mockito.InOrder;
+import org.junit.Test;
 
 /**
  * TestHiveBinarySearchRecordReader.
  *
  */
-public class TestHiveBinarySearchRecordReader extends TestCase {
+public class TestHiveBinarySearchRecordReader {
 
   private RCFileRecordReader rcfReader;
   private JobConf conf;
@@ -152,6 +152,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
      return hbsReader.next(hbsReader.createKey(), hbsReader.createValue());
   }
 
+  @Test
   public void testNonLinearGreaterThan() throws Exception {
     init();
     Assert.assertTrue(executeDoNext());
@@ -165,6 +166,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     verify(rcfReader).sync(25);
   }
 
+  @Test
   public void testNonLinearLessThan() throws Exception {
     init();
     Assert.assertTrue(executeDoNext());
@@ -178,6 +180,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     verify(rcfReader).sync(75);
   }
 
+  @Test
   public void testNonLinearEqualTo() throws Exception {
     init();
     Assert.assertTrue(executeDoNext());
@@ -191,6 +194,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     verify(rcfReader).sync(25);
   }
 
+  @Test
   public void testHitLastBlock() throws Exception {
     init();
     Assert.assertTrue(executeDoNext());
@@ -209,6 +213,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     Assert.assertFalse(ioContext.isBinarySearching());
   }
 
+  @Test
   public void testHitSamePositionTwice() throws Exception {
     init();
     Assert.assertTrue(executeDoNext());
@@ -225,6 +230,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     Assert.assertFalse(ioContext.isBinarySearching());
   }
 
+  @Test
   public void testResetRange() throws Exception {
     init();
     InOrder inOrder = inOrder(rcfReader);
@@ -247,6 +253,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     Assert.assertFalse(ioContext.shouldEndBinarySearch());
   }
 
+  @Test
   public void testEqualOpClass() throws Exception {
     init();
     ioContext.setGenericUDFClassName(GenericUDFOPEqual.class.getName());
@@ -261,6 +268,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     Assert.assertFalse(executeDoNext());
   }
 
+  @Test
   public void testLessThanOpClass() throws Exception {
     init();
     ioContext.setGenericUDFClassName(GenericUDFOPLessThan.class.getName());
@@ -274,6 +282,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     Assert.assertFalse(executeDoNext());
   }
 
+  @Test
   public void testLessThanOrEqualOpClass() throws Exception {
     init();
     ioContext.setGenericUDFClassName(GenericUDFOPEqualOrLessThan.class.getName());
@@ -287,6 +296,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     Assert.assertFalse(executeDoNext());
   }
 
+  @Test
   public void testGreaterThanOpClass() throws Exception {
     init();
     ioContext.setGenericUDFClassName(GenericUDFOPGreaterThan.class.getName());
@@ -301,6 +311,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     Assert.assertTrue(executeDoNext());
   }
 
+  @Test
   public void testGreaterThanOrEqualOpClass() throws Exception {
     init();
     ioContext.setGenericUDFClassName(GenericUDFOPEqualOrGreaterThan.class.getName());

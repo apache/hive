@@ -503,7 +503,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
       <field name="writeId">
@@ -553,7 +553,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
     </class>

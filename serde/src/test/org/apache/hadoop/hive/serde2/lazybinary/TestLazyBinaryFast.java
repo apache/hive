@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -39,8 +39,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
-public class TestLazyBinaryFast extends TestCase {
+/**
+ * TestLazyBinaryFast.
+ */
+public class TestLazyBinaryFast {
 
   private void testLazyBinaryFast(
       SerdeRandomRowSource source, Object[][] rows,
@@ -51,8 +57,8 @@ public class TestLazyBinaryFast extends TestCase {
 
     int rowCount = rows.length;
     int columnCount = typeInfos.length;
-
     boolean[] columnsToInclude = null;
+
     if (useIncludeColumns) {
       columnsToInclude = new boolean[columnCount];
       for (int i = 0; i < columnCount; i++) {
@@ -111,7 +117,7 @@ public class TestLazyBinaryFast extends TestCase {
         }
       }
       if (writeColumnCount == columnCount) {
-        TestCase.assertTrue(lazyBinaryDeserializeRead.isEndOfInputReached());
+        assertTrue(lazyBinaryDeserializeRead.isEndOfInputReached());
       }
     }
 
@@ -204,7 +210,7 @@ public class TestLazyBinaryFast extends TestCase {
         }
       }
       if (writeColumnCount == columnCount) {
-        TestCase.assertTrue(lazyBinaryDeserializeRead.isEndOfInputReached());
+        assertTrue(lazyBinaryDeserializeRead.isEndOfInputReached());
       }
     }
   }
@@ -217,7 +223,7 @@ public class TestLazyBinaryFast extends TestCase {
       Object complexFieldObj = VerifyFast.deserializeReadComplexType(lazyBinaryDeserializeRead, typeInfo);
       if (expectedObject == null) {
         if (complexFieldObj != null) {
-          TestCase.fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
+          fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
               ", " + complexFieldObj.toString() + ")");
         }
       } else {
@@ -229,12 +235,12 @@ public class TestLazyBinaryFast extends TestCase {
               return;
             }
           }
-          TestCase.fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
+          fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
               ", " + expectedObject.toString() + ")");
         }
       }
       if (!VerifyLazy.lazyCompare(typeInfo, complexFieldObj, expectedObject)) {
-        TestCase.fail("Comparision failed typeInfo " + typeInfo.toString());
+        fail("Comparision failed typeInfo " + typeInfo.toString());
       }
     }
   }
@@ -335,14 +341,17 @@ public class TestLazyBinaryFast extends TestCase {
     }
   }
 
+  @Test
   public void testLazyBinaryFastPrimitive() throws Throwable {
     testLazyBinaryFast(SerdeRandomRowSource.SupportedTypes.PRIMITIVE, 0);
   }
 
+  @Test
   public void testLazyBinaryFastComplexDepthOne() throws Throwable {
     testLazyBinaryFast(SerdeRandomRowSource.SupportedTypes.ALL, 1);
   }
 
+  @Test
   public void testLazyBinaryFastComplexDepthFour() throws Throwable {
     testLazyBinaryFast(SerdeRandomRowSource.SupportedTypes.ALL, 4);
   }

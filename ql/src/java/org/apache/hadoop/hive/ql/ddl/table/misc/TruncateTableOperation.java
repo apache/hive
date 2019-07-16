@@ -18,14 +18,12 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.misc;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
-import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -49,15 +47,16 @@ public class TruncateTableOperation extends DDLOperation<TruncateTableDesc> {
           desc.getOutputDir());
       truncateWork.setListBucketingCtx(desc.getLbCtx());
       truncateWork.setMapperCannotSpanPartns(true);
+
       DriverContext driverCxt = new DriverContext();
       ColumnTruncateTask taskExec = new ColumnTruncateTask();
       taskExec.initialize(context.getQueryState(), null, driverCxt, null);
       taskExec.setWork(truncateWork);
       taskExec.setQueryPlan(context.getQueryPlan());
-      Task<? extends Serializable> subtask = taskExec;
+
       int ret = taskExec.execute(driverCxt);
-      if (subtask.getException() != null) {
-        context.getTask().setException(subtask.getException());
+      if (taskExec.getException() != null) {
+        context.getTask().setException(taskExec.getException());
       }
       return ret;
     }

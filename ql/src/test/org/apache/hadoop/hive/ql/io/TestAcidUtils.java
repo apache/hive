@@ -651,6 +651,7 @@ public class TestAcidUtils {
   /**
    * See {@link TestOrcRawRecordMerger#testGetLogicalLength()}
    */
+  @Test
   public void testGetLogicalLength() throws Exception {
   }
 }

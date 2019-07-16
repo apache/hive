@@ -16,7 +16,5 @@
  * limitations under the License.
  */
 
-/**
- * Tests formatting and parsing of datetime objects.
- */
-package org.apache.hadoop.hive.common.format.datetime;
+/** Command Authorization codes. */
+package org.apache.hadoop.hive.ql.security.authorization.command;

@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Collections;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -53,6 +53,12 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  * TestHiveMetastoreAuthorizationProvider. Test case for
@@ -69,7 +75,7 @@ import org.slf4j.LoggerFactory;
  * This test is also intended to be extended to provide tests for other
  * authorization providers like StorageBasedAuthorizationProvider
  */
-public class TestMetastoreAuthorizationProvider extends TestCase {
+public class TestMetastoreAuthorizationProvider {
   private static final Logger LOG = LoggerFactory.getLogger(TestMetastoreAuthorizationProvider.class);
 
   protected HiveConf clientHiveConf;
@@ -90,10 +96,10 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     return null;
   }
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
 
-    super.setUp();
+
 
     // Turn on metastore-side authorization
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
@@ -135,9 +141,9 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname, "false");
   }
 
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
+  @After
+  public void tearDown() throws Exception {
+
   }
 
   private void validateCreateDb(Database expectedDb, String dbName) {
@@ -166,38 +172,31 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     return ugi.getUserName();
   }
 
+  @Test
   public void testSimplePrivileges() throws Exception {
     if (!isTestEnabled()) {
       System.out.println("Skipping test " + this.getClass().getName());
       return;
     }
-
     String dbName = getTestDbName();
     String tblName = getTestTableName();
     String userName = setupUser();
-
     allowCreateDatabase(userName);
-
     CommandProcessorResponse ret = driver.run("create database " + dbName);
     assertEquals(0,ret.getResponseCode());
     Database db = msc.getDatabase(dbName);
     String dbLocn = db.getLocationUri();
-
     validateCreateDb(db,dbName);
     disallowCreateInDb(dbName, userName, dbLocn);
-
     disallowCreateDatabase(userName);
-
     driver.run("use " + dbName);
     ret = driver.run(
         String.format("create table %s (a string) partitioned by (b string)", tblName));
-
     assertEquals(1,ret.getResponseCode());
 
     // Even if table location is specified table creation should fail
     String tblNameLoc = tblName + "_loc";
     String tblLocation = new Path(dbLocn).getParent().toUri() + "/" + tblNameLoc;
-
     driver.run("use " + dbName);
     ret = driver.run(
         String.format("create table %s (a string) partitioned by (b string) location '" +
@@ -205,10 +204,8 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     assertEquals(1, ret.getResponseCode());
 
     // failure from not having permissions to create table
-
     ArrayList<FieldSchema> fields = new ArrayList<FieldSchema>(2);
     fields.add(new FieldSchema("a", serdeConstants.STRING_TYPE_NAME, ""));
-
     Table ttbl = new Table();
     ttbl.setDbName(dbName);
     ttbl.setTableName(tblName);
@@ -237,7 +234,6 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     assertNoPrivileges(me);
 
     allowCreateInDb(dbName, userName, dbLocn);
-
     driver.run("use " + dbName);
     ret = driver.run(
         String.format("create table %s (a string) partitioned by (b string)", tblName));
@@ -246,7 +242,6 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     Table tbl = msc.getTable(dbName, tblName);
     Assert.assertTrue(tbl.isSetId());
     tbl.unsetId();
-
     validateCreateTable(tbl,tblName, dbName);
 
     // Table creation should succeed even if location is specified
@@ -338,7 +333,6 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     disallowDropOnTable(tblName, userName, tbl.getSd().getLocation());
     ret = driver.run("drop table "+tbl.getTableName());
     assertEquals(1,ret.getResponseCode());
-
   }
 
   protected void allowCreateDatabase(String userName)

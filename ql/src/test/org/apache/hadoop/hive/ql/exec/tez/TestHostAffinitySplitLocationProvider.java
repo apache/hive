@@ -306,8 +306,8 @@ public class TestHostAffinitySplitLocationProvider {
     return inputSplit;
   }
 
-  private FileSplit createMockFileSplit(boolean createOrcSplit, String fakePathString, long start,
-                                         long length, String[] locations) throws IOException {
+  static FileSplit createMockFileSplit(boolean createOrcSplit, String fakePathString, long start,
+                                       long length, String[] locations) throws IOException {
     FileSplit fileSplit;
     if (createOrcSplit) {
       fileSplit = mock(OrcSplit.class);

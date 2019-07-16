@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.testutil;
 
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.CollectOperator;
@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
 import org.junit.Ignore;
 
+import org.junit.Test;
 /**
  *
  * Provides a base environment for testing scalar UDF's. Users should extend this class
@@ -45,7 +46,7 @@ import org.junit.Ignore;
  */
 @SuppressWarnings("deprecation")
 @Ignore
-public abstract class BaseScalarUdfTest extends TestCase {
+public abstract class BaseScalarUdfTest {
 
   /**
    * The data from this method will be fed through the
@@ -79,6 +80,7 @@ public abstract class BaseScalarUdfTest extends TestCase {
    * and if every row is the expected result the method completes without asserting.
    * @throws HiveException
    */
+  @Test
   public final void testUdf() throws HiveException {
     InspectableObject [] data = getBaseTable();
     List<ExprNodeDesc> expressionList = getExpressionList();

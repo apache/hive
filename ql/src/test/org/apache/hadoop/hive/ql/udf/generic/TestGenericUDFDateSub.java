@@ -31,9 +31,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFDateSub extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
+
+/**
+ * TestGenericUDFDateSub.
+ */
+public class TestGenericUDFDateSub {
+  @Test
   public void testStringToDate() throws HiveException {
     GenericUDFDateSub udf = new GenericUDFDateSub();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
@@ -59,6 +66,7 @@ public class TestGenericUDFDateSub extends TestCase {
     assertNull("date_add() both args null", udf.evaluate(args));
   }
 
+  @Test
   public void testTimestampToDate() throws HiveException {
     GenericUDFDateSub udf = new GenericUDFDateSub();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
@@ -85,6 +93,7 @@ public class TestGenericUDFDateSub extends TestCase {
     assertNull("date_add() both args null", udf.evaluate(args));
   }
 
+  @Test
   public void testDateWritablepToDate() throws HiveException {
     GenericUDFDateSub udf = new GenericUDFDateSub();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
@@ -111,6 +120,7 @@ public class TestGenericUDFDateSub extends TestCase {
     assertNull("date_add() both args null", udf.evaluate(args));
   }
 
+  @Test
   public void testByteDataTypeAsDays() throws HiveException {
     GenericUDFDateSub udf = new GenericUDFDateSub();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
@@ -126,6 +136,7 @@ public class TestGenericUDFDateSub extends TestCase {
     assertEquals("date_add() test for BYTE failed ", "0109-06-16", output.toString());
   }
 
+  @Test
   public void testShortDataTypeAsDays() throws HiveException {
     GenericUDFDateSub udf = new GenericUDFDateSub();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;

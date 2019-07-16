@@ -52,14 +52,20 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import org.junit.Test;
+
 /**
  * TestLazyHBaseObject is a test for the LazyHBaseXXX classes.
  */
-public class TestLazyHBaseObject extends TestCase {
+public class TestLazyHBaseObject {
   /**
    * Test the LazyMap class with Integer-to-String.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseCellMap1() throws SerDeException {
     // Map of Integer to String
     Text nullSequence = new Text("\\N");
@@ -122,6 +128,7 @@ public class TestLazyHBaseObject extends TestCase {
    * Test the LazyMap class with String-to-String.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseCellMap2() throws SerDeException {
     // Map of String to String
     Text nullSequence = new Text("\\N");
@@ -185,6 +192,7 @@ public class TestLazyHBaseObject extends TestCase {
    * map are stored in binary format using the appropriate LazyPrimitive objects.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseCellMap3() throws SerDeException {
 
     Text nullSequence = new Text("\\N");
@@ -456,6 +464,7 @@ public class TestLazyHBaseObject extends TestCase {
    * Hive fields and HBase columns.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseRow1() throws SerDeException {
     List<TypeInfo> fieldTypeInfos =
       TypeInfoUtils.getTypeInfosFromTypeString(
@@ -578,6 +587,7 @@ public class TestLazyHBaseObject extends TestCase {
    * an HBase column family.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseRow2() throws SerDeException {
     // column family is mapped to Map<string,string>
     List<TypeInfo> fieldTypeInfos =
@@ -700,6 +710,7 @@ public class TestLazyHBaseObject extends TestCase {
    * are stored in binary format in HBase.
    * @throws SerDeException
    */
+  @Test
   public void testLazyHBaseRow3() throws SerDeException {
 
     List<TypeInfo> fieldTypeInfos = TypeInfoUtils.getTypeInfosFromTypeString(

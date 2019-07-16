@@ -32,9 +32,15 @@ import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestSimpleMapEqualComparer extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import org.junit.Test;
+
+/**
+ * SimpleMapEqualComparer Test.
+ */
+public class TestSimpleMapEqualComparer {
 
   public static class IntegerStringMapHolder {
     Map<Integer, String> mMap;
@@ -44,6 +50,7 @@ public class TestSimpleMapEqualComparer extends TestCase {
     }
   }
 
+  @Test
   public void testSameType() {
     // empty maps
     IntegerStringMapHolder o1 = new IntegerStringMapHolder();
@@ -88,6 +95,7 @@ public class TestSimpleMapEqualComparer extends TestCase {
     return serde.deserialize(t);
   }
 
+  @Test
   public void testCompatibleType() throws SerDeException, IOException {
     // empty maps
     TextStringMapHolder o1 = new TextStringMapHolder();
@@ -141,6 +149,7 @@ public class TestSimpleMapEqualComparer extends TestCase {
     return serde.deserialize(t);
   }
 
+  @Test
   public void testIncompatibleType() throws SerDeException, IOException {
     // empty maps
     StringTextMapHolder o1 = new StringTextMapHolder();
