@@ -114,7 +114,7 @@ public class StatsSetupConst {
   /**
    * List of all supported statistics
    */
-  public static final String[] supportedStats = {NUM_FILES,ROW_COUNT,TOTAL_SIZE,RAW_DATA_SIZE};
+  public static final String[] SUPPORTED_STATS = {NUM_FILES,ROW_COUNT,TOTAL_SIZE,RAW_DATA_SIZE};
 
   /**
    * List of all statistics that need to be collected during query execution. These are
@@ -329,7 +329,7 @@ public class StatsSetupConst {
   public static void setStatsStateForCreateTable(Map<String, String> params,
       List<String> cols, String setting) {
     if (TRUE.equals(setting)) {
-      for (String stat : StatsSetupConst.supportedStats) {
+      for (String stat : StatsSetupConst.SUPPORTED_STATS) {
         params.put(stat, "0");
       }
     }

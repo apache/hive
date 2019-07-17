@@ -139,7 +139,7 @@ public class TestStatsReplicationScenarios {
 
   private Map<String, String> collectStatsParams(Map<String, String> allParams) {
     Map<String, String> statsParams = new HashMap<>();
-    List<String> params = new ArrayList<String>(Arrays.asList(StatsSetupConst.supportedStats));
+    List<String> params = new ArrayList<String>(Arrays.asList(StatsSetupConst.SUPPORTED_STATS));
     params.add(StatsSetupConst.COLUMN_STATS_ACCURATE);
     for (String param : params) {
       String value = allParams.get(param);
@@ -206,7 +206,7 @@ public class TestStatsReplicationScenarios {
     // new table created on replica i.e. zero or null.
     Map<String, String> rParams =
             collectStatsParams(replica.getTable(replicatedDbName, tableName).getParameters());
-    for (String param : StatsSetupConst.supportedStats) {
+    for (String param : StatsSetupConst.SUPPORTED_STATS) {
       String val = rParams.get(param);
       Assert.assertTrue("parameter " + param + " of table " + tableName + " is expected to be " +
               "null or 0", val == null || val.trim().equals("0"));

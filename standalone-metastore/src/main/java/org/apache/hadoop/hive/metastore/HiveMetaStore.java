@@ -2963,7 +2963,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (null == props) {
         return;
       }
-      for (String stat : StatsSetupConst.supportedStats) {
+      for (String stat : StatsSetupConst.SUPPORTED_STATS) {
         String statVal = props.get(stat);
         if (statVal != null) {
           //In the case of truncate table, we set the stats to be 0.

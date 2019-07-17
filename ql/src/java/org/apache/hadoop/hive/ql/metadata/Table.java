@@ -102,6 +102,7 @@ public class Table implements Serializable {
   private Path path;
 
   private transient HiveStorageHandler storageHandler;
+  private transient StorageHandlerInfo storageHandlerInfo;
 
   private transient TableSpec tableSpec;
 
@@ -116,6 +117,8 @@ public class Table implements Serializable {
   private transient ForeignKeyInfo fki;
   private transient UniqueConstraint uki;
   private transient NotNullConstraint nnc;
+  private transient DefaultConstraint dc;
+  private transient CheckConstraint cc;
 
   /**
    * Used only for serialization.
@@ -318,6 +321,14 @@ public class Table implements Serializable {
       throw new RuntimeException(e);
     }
     return storageHandler;
+  }
+
+  public StorageHandlerInfo getStorageHandlerInfo() {
+    return storageHandlerInfo;
+  }
+
+  public void setStorageHandlerInfo(StorageHandlerInfo storageHandlerInfo) {
+    this.storageHandlerInfo = storageHandlerInfo;
   }
 
   final public Class<? extends InputFormat> getInputFormatClass() {
@@ -1114,7 +1125,7 @@ public class Table implements Serializable {
     return outdatedForRewritingMaterializedView;
   }
 
-  /* These are only populated during optimization */
+  /* These are only populated during optimization and describing */
   public PrimaryKeyInfo getPrimaryKeyInfo() {
     return pki;
   }
@@ -1145,6 +1156,22 @@ public class Table implements Serializable {
 
   public void setNotNullConstraint(NotNullConstraint nnc) {
     this.nnc = nnc;
+  }
+
+  public DefaultConstraint getDefaultConstraint() {
+    return dc;
+  }
+
+  public void setDefaultConstraint(DefaultConstraint dc) {
+    this.dc = dc;
+  }
+
+  public CheckConstraint getCheckConstraint() {
+    return cc;
+  }
+
+  public void setCheckConstraint(CheckConstraint cc) {
+    this.cc = cc;
   }
 
 
