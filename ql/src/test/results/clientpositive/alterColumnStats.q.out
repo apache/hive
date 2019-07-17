@@ -144,18 +144,8 @@ PREHOOK: Input: default@p_n0
 POSTHOOK: query: desc formatted p_n0 c1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p_n0
-col_name            	c1                  	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
-distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
+c1                  	string              	from deserializer   	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted p_n0 c2
 PREHOOK: type: DESCTABLE
@@ -163,16 +153,6 @@ PREHOOK: Input: default@p_n0
 POSTHOOK: query: desc formatted p_n0 c2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p_n0
-col_name            	c2                  	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
-distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
+c2                  	string              	from deserializer   	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
