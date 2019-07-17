@@ -160,7 +160,7 @@ public class TypeConverter {
       convertedType = convert((UnionTypeInfo) type, dtFactory);
       break;
     }
-    return convertedType;
+    return dtFactory.createTypeWithNullability(convertedType, true);
   }
 
   public static RelDataType convert(PrimitiveTypeInfo type, RelDataTypeFactory dtFactory) {

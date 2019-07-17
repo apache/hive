@@ -21,3 +21,14 @@ IN (
 struct('1234-1111-0074578664','3'),
 struct('1234-1111-0074578695',1)
 );
+
+CREATE TABLE test_struct
+(
+  f1 string,
+  demo_struct struct<f1:string, f2:string, f3:string>,
+  datestr string
+);
+
+explain select * from test_struct where datestr='2019-01-01' and demo_struct is not null;
+
+DROP TABLE test_struct;
