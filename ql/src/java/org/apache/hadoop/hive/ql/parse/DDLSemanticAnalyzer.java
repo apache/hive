@@ -2363,7 +2363,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // if this ast has only one child, then no column name specified.
       if (node.getChildCount() == 1) {
-        return tableName;
+        return null;
       }
 
       ASTNode columnNode = null;
@@ -2384,7 +2384,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
               QualifiedNameUtil.getFullyQualifiedName(columnNode);
         }
       } else {
-        return tableName;
+        return null;
       }
     }
 
@@ -2543,7 +2543,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // will contain tablename.column_name. If column_name is not specified
       // colPath will be equal to tableName. This is how we can differentiate
       // if we are describing a table or column
-      if (!colPath.equalsIgnoreCase(tableName) && isFormatted) {
+      if (colPath != null && isFormatted) {
         showColStats = true;
       }
     }

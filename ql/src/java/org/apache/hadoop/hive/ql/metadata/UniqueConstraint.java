@@ -108,4 +108,8 @@ public class UniqueConstraint implements Serializable {
     sb.append("]");
     return sb.toString();
   }
+
+  public static boolean isUniqueConstraintNotEmpty(UniqueConstraint info) {
+    return info != null && !info.getUniqueConstraints().isEmpty();
+  }
 }

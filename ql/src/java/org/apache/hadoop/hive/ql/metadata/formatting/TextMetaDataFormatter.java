@@ -30,10 +30,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.ql.ddl.table.info.DescTableDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
@@ -201,26 +202,21 @@ class TextMetaDataFormatter implements MetaDataFormatter {
   }
 
   @Override
-  public void describeTable(DataOutputStream outStream,  String colPath,
-      String tableName, Table tbl, Partition part, List<FieldSchema> cols,
-      boolean isFormatted, boolean isExt,
-      boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
-      PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo, CheckConstraint cInfo,
-      StorageHandlerInfo storageHandlerInfo)
-        throws HiveException {
+  public void describeTable(DataOutputStream outStream,  String colPath, String tableName, Table tbl, Partition part,
+      List<FieldSchema> cols, boolean isFormatted, boolean isExt, boolean isOutputPadded,
+      List<ColumnStatisticsObj> colStats) throws HiveException {
     try {
       List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
       String output = "";
 
-      boolean isColStatsAvailable = colStats != null;
+      boolean isColStatsAvailable = CollectionUtils.isNotEmpty(colStats);
 
       TextMetaDataTable mdt = new TextMetaDataTable();
       if (isFormatted && !isColStatsAvailable) {
         output = "# ";
       }
       if (isFormatted) {
-        mdt.addRow(MetaDataFormatUtils.getColumnsHeader(colStats));
+        mdt.addRow(DescTableDesc.getSchema(isColStatsAvailable).split("#")[0].split(","));
       }
       for (FieldSchema col : cols) {
         mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, isColStatsAvailable,
@@ -231,11 +227,11 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       }
       output += mdt.renderTable(isOutputPadded);
 
-      if (colPath.equals(tableName)) {
+      if (colPath == null) {
         if ((partCols != null) && !partCols.isEmpty() && showPartColsSeparately) {
           mdt = new TextMetaDataTable();
           output += MetaDataFormatUtils.LINE_DELIM + "# Partition Information" + MetaDataFormatUtils.LINE_DELIM + "# ";
-          mdt.addRow(MetaDataFormatUtils.getColumnsHeader(null));
+          mdt.addRow(DescTableDesc.getSchema(false).split("#")[0].split(","));
           for (FieldSchema col : partCols) {
             mdt.addRow(MetaDataFormatUtils.extractColumnValues(col));
           }
@@ -253,7 +249,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       }
       outStream.write(output.getBytes("UTF-8"));
 
-      if (tableName.equals(colPath)) {
+      if (colPath == null) {
         if (isFormatted) {
           if (part != null) {
             output = MetaDataFormatUtils.getPartitionInformation(part);
@@ -262,13 +258,13 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           }
           outStream.write(output.getBytes("UTF-8"));
 
-          if ((pkInfo != null && !pkInfo.getColNames().isEmpty()) ||
-              (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) ||
-              (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) ||
-              (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) ||
-              cInfo != null && !cInfo.getCheckConstraints().isEmpty() ||
-              dInfo != null && !dInfo.getDefaultConstraints().isEmpty()) {
-            output = MetaDataFormatUtils.getConstraintsInformation(pkInfo, fkInfo, ukInfo, nnInfo, dInfo, cInfo);
+          if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(tbl.getPrimaryKeyInfo()) ||
+              ForeignKeyInfo.isForeignKeyInfoNotEmpty(tbl.getForeignKeyInfo()) ||
+              UniqueConstraint.isUniqueConstraintNotEmpty(tbl.getUniqueKeyInfo()) ||
+              NotNullConstraint.isNotNullConstraintNotEmpty(tbl.getNotNullConstraint()) ||
+              CheckConstraint.isCheckConstraintNotEmpty(tbl.getCheckConstraint()) ||
+              DefaultConstraint.isCheckConstraintNotEmpty(tbl.getDefaultConstraint())) {
+            output = MetaDataFormatUtils.getConstraintsInformation(tbl);
             outStream.write(output.getBytes("UTF-8"));
           }
         }
@@ -294,44 +290,44 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             outStream.write(separator);
             outStream.write(terminator);
           }
-          if ((pkInfo != null && !pkInfo.getColNames().isEmpty()) ||
-              (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) ||
-              (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) ||
-              (dInfo!= null && !dInfo.getDefaultConstraints().isEmpty()) ||
-              (cInfo != null && !cInfo.getCheckConstraints().isEmpty()) ||
-              (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty())) {
+          if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(tbl.getPrimaryKeyInfo()) ||
+              ForeignKeyInfo.isForeignKeyInfoNotEmpty(tbl.getForeignKeyInfo()) ||
+              UniqueConstraint.isUniqueConstraintNotEmpty(tbl.getUniqueKeyInfo()) ||
+              NotNullConstraint.isNotNullConstraintNotEmpty(tbl.getNotNullConstraint()) ||
+              DefaultConstraint.isCheckConstraintNotEmpty(tbl.getDefaultConstraint()) ||
+              CheckConstraint.isCheckConstraintNotEmpty(tbl.getCheckConstraint())) {
             outStream.write(("Constraints").getBytes("UTF-8"));
             outStream.write(separator);
-            if (pkInfo != null && !pkInfo.getColNames().isEmpty()) {
-              outStream.write(pkInfo.toString().getBytes("UTF-8"));
+            if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(tbl.getPrimaryKeyInfo())) {
+              outStream.write(tbl.getPrimaryKeyInfo().toString().getBytes("UTF-8"));
               outStream.write(terminator);
             }
-            if (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) {
-              outStream.write(fkInfo.toString().getBytes("UTF-8"));
+            if (ForeignKeyInfo.isForeignKeyInfoNotEmpty(tbl.getForeignKeyInfo())) {
+              outStream.write(tbl.getForeignKeyInfo().toString().getBytes("UTF-8"));
               outStream.write(terminator);
             }
-            if (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) {
-              outStream.write(ukInfo.toString().getBytes("UTF-8"));
+            if (UniqueConstraint.isUniqueConstraintNotEmpty(tbl.getUniqueKeyInfo())) {
+              outStream.write(tbl.getUniqueKeyInfo().toString().getBytes("UTF-8"));
               outStream.write(terminator);
             }
-            if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
-              outStream.write(nnInfo.toString().getBytes("UTF-8"));
+            if (NotNullConstraint.isNotNullConstraintNotEmpty(tbl.getNotNullConstraint())) {
+              outStream.write(tbl.getNotNullConstraint().toString().getBytes("UTF-8"));
               outStream.write(terminator);
             }
-            if (dInfo != null && !dInfo.getDefaultConstraints().isEmpty()) {
-              outStream.write(dInfo.toString().getBytes("UTF-8"));
+            if (DefaultConstraint.isCheckConstraintNotEmpty(tbl.getDefaultConstraint())) {
+              outStream.write(tbl.getDefaultConstraint().toString().getBytes("UTF-8"));
               outStream.write(terminator);
             }
-            if (cInfo != null && !cInfo.getCheckConstraints().isEmpty()) {
-              outStream.write(cInfo.toString().getBytes("UTF-8"));
+            if (CheckConstraint.isCheckConstraintNotEmpty(tbl.getCheckConstraint())) {
+              outStream.write(tbl.getCheckConstraint().toString().getBytes("UTF-8"));
               outStream.write(terminator);
             }
           }
 
-          if (storageHandlerInfo!= null) {
+          if (tbl.getStorageHandlerInfo() != null) {
             outStream.write(("StorageHandlerInfo").getBytes("UTF-8"));
             outStream.write(terminator);
-            outStream.write(storageHandlerInfo.formatAsText().getBytes("UTF-8"));
+            outStream.write(tbl.getStorageHandlerInfo().formatAsText().getBytes("UTF-8"));
             outStream.write(terminator);
           }
         }
