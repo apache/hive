@@ -113,12 +113,15 @@ public class HttpServer {
   public static final String ADMINS_ACL = "admins.acl";
   private XFrameOption xFrameOption;
   private boolean xFrameOptionIsEnabled;
+  private boolean isSSLEnabled;
   public static final String HTTP_HEADER_PREFIX = "hadoop.http.header.";
   private static final String X_FRAME_OPTIONS = "X-FRAME-OPTIONS";
   static final String X_XSS_PROTECTION  =
           "X-XSS-Protection:1; mode=block";
   static final String X_CONTENT_TYPE_OPTIONS =
           "X-Content-Type-Options:nosniff";
+  static final String STRICT_TRANSPORT_SECURITY =
+          "Strict-Transport-Security:max-age=31536000; includeSubDomains";
   private static final String HTTP_HEADER_REGEX =
           "hadoop\\.http\\.header\\.([a-zA-Z\\-_]+)";
   private static final Pattern PATTERN_HTTP_HEADER_REGEX =
@@ -137,6 +140,7 @@ public class HttpServer {
   private HttpServer(final Builder b) throws IOException {
     this.name = b.name;
     this.xFrameOptionIsEnabled = b.xFrameEnabled;
+    this.isSSLEnabled = b.useSSL;
     this.xFrameOption = b.xFrameOption;
     createWebServer(b);
   }
@@ -675,6 +679,10 @@ public class HttpServer {
     splitVal = X_XSS_PROTECTION.split(":");
     headers.put(HTTP_HEADER_PREFIX + splitVal[0],
             splitVal[1]);
+    if(this.isSSLEnabled){
+      splitVal = STRICT_TRANSPORT_SECURITY.split(":");
+      headers.put(HTTP_HEADER_PREFIX + splitVal[0],splitVal[1]);
+    }
     return headers;
   }
 
