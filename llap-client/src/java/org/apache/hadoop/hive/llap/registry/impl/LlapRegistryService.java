@@ -1,16 +1,21 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.hadoop.hive.llap.registry.impl;
 
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
@@ -19,11 +24,13 @@ import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
+import org.apache.hadoop.hive.llap.registry.impl.LlapZookeeperRegistryImpl.ConfigChangeLockResult;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.service.AbstractService;
@@ -139,6 +146,25 @@ public class LlapRegistryService extends AbstractService {
   public void updateRegistration(Iterable<Map.Entry<String, String>> attributes) throws IOException {
     if (isDaemon && this.registry != null) {
       this.registry.updateRegistration(attributes);
+    }
+  }
+
+  /**
+   * Locks the Llap Cluster for configuration change for the given time window.
+   * @param windowStart The beginning of the time window when no other configuration change is allowed.
+   * @param windowEnd The end of the time window when no other configuration change is allowed.
+   * @return The result of the change (success if the lock is succeeded, and the next possible
+   * configuration change time
+   */
+  public ConfigChangeLockResult lockForConfigChange(long windowStart, long windowEnd) {
+    if (this.registry == null) {
+      throw new IllegalStateException("Not allowed to call lockForConfigChange before serviceInit");
+    }
+    if (isDynamic) {
+      LlapZookeeperRegistryImpl zkRegisty = (LlapZookeeperRegistryImpl)registry;
+      return zkRegisty.lockForConfigChange(windowStart, windowEnd);
+    } else {
+      throw new UnsupportedOperationException("Acquiring config lock is only allowed for dynamic registries");
     }
   }
 

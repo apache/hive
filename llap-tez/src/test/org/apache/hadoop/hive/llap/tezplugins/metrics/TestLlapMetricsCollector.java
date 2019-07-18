@@ -63,7 +63,7 @@ public class TestLlapMetricsCollector {
   private Configuration mockConf;
 
   @Mock
-  private LlapMetricsCollector.LlapManagementProtocolClientImplFactory mockClientFactory;
+  private LlapManagementProtocolClientImplFactory mockClientFactory;
 
   @Mock
   private LlapManagementProtocolClientImpl mockClient;
