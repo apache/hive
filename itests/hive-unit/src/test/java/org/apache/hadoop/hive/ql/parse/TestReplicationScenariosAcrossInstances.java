@@ -84,7 +84,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     primary.run("CREATE FUNCTION " + primaryDbName
         + ".testFunctionOne as 'hivemall.tools.string.StopwordUDF' "
-        + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'");
+        + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'")
+        .run("CREATE FUNCTION " + primaryDbName
+            + ".testFunctionTwo as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax'");
 
     WarehouseInstance.Tuple incrementalDump =
         primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
@@ -92,14 +94,16 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
-        .verifyResult(replicatedDbName + ".testFunctionOne");
+        .verifyResults(new String[] { replicatedDbName + ".testFunctionOne",
+                                      replicatedDbName + ".testFunctionTwo" });
 
     // Test the idempotent behavior of CREATE FUNCTION
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
-        .verifyResult(replicatedDbName + ".testFunctionOne");
+        .verifyResults(new String[] { replicatedDbName + ".testFunctionOne",
+                                      replicatedDbName + ".testFunctionTwo" });
   }
 
   @Test
