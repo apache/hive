@@ -51,18 +51,20 @@ public class FunctionSerializer implements JsonWriter.Serializer {
       throws SemanticException, IOException, MetaException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     List<ResourceUri> resourceUris = new ArrayList<>();
-    for (ResourceUri uri : function.getResourceUris()) {
-      Path inputPath = new Path(uri.getUri());
-      if ("hdfs".equals(inputPath.toUri().getScheme())) {
-        FileSystem fileSystem = inputPath.getFileSystem(hiveConf);
-        Path qualifiedUri = PathBuilder.fullyQualifiedHDFSUri(inputPath, fileSystem);
-        // Initialize ReplChangeManager instance since we will require it to encode file URI.
-        ReplChangeManager.getInstance(hiveConf);
-        String checkSum = ReplChangeManager.checksumFor(qualifiedUri, fileSystem);
-        String newFileUri = ReplChangeManager.encodeFileUri(qualifiedUri.toString(), checkSum, null);
-        resourceUris.add(new ResourceUri(uri.getResourceType(), newFileUri));
-      } else {
-        resourceUris.add(uri);
+    if (function.getResourceUris() != null) {
+      for (ResourceUri uri : function.getResourceUris()) {
+        Path inputPath = new Path(uri.getUri());
+        if ("hdfs".equals(inputPath.toUri().getScheme())) {
+          FileSystem fileSystem = inputPath.getFileSystem(hiveConf);
+          Path qualifiedUri = PathBuilder.fullyQualifiedHDFSUri(inputPath, fileSystem);
+          // Initialize ReplChangeManager instance since we will require it to encode file URI.
+          ReplChangeManager.getInstance(hiveConf);
+          String checkSum = ReplChangeManager.checksumFor(qualifiedUri, fileSystem);
+          String newFileUri = ReplChangeManager.encodeFileUri(qualifiedUri.toString(), checkSum, null);
+          resourceUris.add(new ResourceUri(uri.getResourceType(), newFileUri));
+        } else {
+          resourceUris.add(uri);
+        }
       }
     }
     Function copyObj = new Function(this.function);
