@@ -6845,7 +6845,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Operator genBucketingSortingDest(String dest, Operator input, QB qb,
-                                           TableDesc table_desc, Table dest_tab, SortBucketRSCtx ctx) throws SemanticException {
+      TableDesc table_desc, Table dest_tab, SortBucketRSCtx ctx) throws SemanticException {
 
     // If the table is bucketed, and bucketing is enforced, do the following:
     // If the number of buckets is smaller than the number of maximum reducers,
@@ -6854,10 +6854,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // spray the data into multiple buckets. That way, we can support a very large
     // number of buckets without needing a very large number of reducers.
     boolean enforceBucketing = false;
-    ArrayList<ExprNodeDesc> partnCols = new ArrayList<ExprNodeDesc>();
-    ArrayList<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
-    ArrayList<Integer> sortOrders = new ArrayList<Integer>();
-    ArrayList<Integer> nullSortOrders = new ArrayList<Integer>();
+    ArrayList<ExprNodeDesc> partnCols = new ArrayList<>();
+    ArrayList<ExprNodeDesc> sortCols = new ArrayList<>();
+    ArrayList<Integer> sortOrders = new ArrayList<>();
     boolean multiFileSpray = false;
     int numFiles = 1;
     int totalFiles = 1;
@@ -6869,8 +6868,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         partnCols = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, true);
       }
-    }
-    else {
+    } else {
       if(updating(dest) || deleting(dest)) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
         enforceBucketing = true;
@@ -6883,6 +6881,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       sortOrders = getSortOrders(dest, qb, dest_tab, input);
       if (!enforceBucketing) {
         throw new SemanticException(ErrorMsg.TBL_SORTED_NOT_BUCKETED.getErrorCodedMsg(dest_tab.getCompleteName()));
+      }
+    } else if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SORT_WHEN_BUCKETING) &&
+        enforceBucketing && !updating(dest) && !deleting(dest)) {
+      sortCols = new ArrayList<>();
+      for (ExprNodeDesc expr : partnCols) {
+        sortCols.add(expr.clone());
+      }
+      sortOrders = new ArrayList<>();
+      for (int i = 0; i < sortCols.size(); i++) {
+        sortOrders.add(DirectionUtils.ASCENDING_CODE);
       }
     }
 

@@ -102,8 +102,8 @@ POSTHOOK: query: select * from bucket0_mm tablesample (bucket 2 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
-100	100
 0	0
+100	100
 103	103
 PREHOOK: query: insert into table bucket0_mm select key, key from intermediate_n2
 PREHOOK: type: QUERY
@@ -163,10 +163,10 @@ POSTHOOK: query: select * from bucket0_mm tablesample (bucket 2 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
-100	100
 0	0
 100	100
 0	0
+100	100
 103	103
 103	103
 PREHOOK: query: drop table bucket0_mm

@@ -43,8 +43,9 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      null sort order: 
-                      sort order: 
+                      key expressions: UDFToInteger(_col0) (type: int)
+                      null sort order: a
+                      sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
