@@ -97,7 +97,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	0                   
-	totalSize           	4063                
+	totalSize           	4380                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -184,7 +184,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	0                   
-	totalSize           	4063                
+	totalSize           	4380                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -235,7 +235,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	0                   
-	totalSize           	4063                
+	totalSize           	4380                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -331,7 +331,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	0                   
-	totalSize           	8126                
+	totalSize           	8761                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -380,7 +380,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	0                   
-	totalSize           	8126                
+	totalSize           	8761                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -592,7 +592,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	176000              
-	totalSize           	3008                
+	totalSize           	3322                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

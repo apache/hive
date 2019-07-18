@@ -31,7 +31,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -52,10 +52,11 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          sort order: 
+                          key expressions: _col0 (type: int)
+                          sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: int), _col1 (type: string)
+                          value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -73,7 +74,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string)
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
                 outputColumnNames: _col0, _col1
                 Select Vectorization:
                     className: VectorSelectOperator

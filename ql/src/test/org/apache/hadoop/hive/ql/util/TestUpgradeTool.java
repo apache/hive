@@ -165,11 +165,11 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
      * each set of copy_N goes into matching delta_N_N.*/
     String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from TAcid order by a, b, ROW__ID";
     String[][] expected = new String[][] {
-        {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t1\t2",
+        {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
             "tacid/000000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t2",
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
             "tacid/delta_0000001_0000001/000000_0"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t1\t2",
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
             "tacid/delta_0000002_0000002/000000_0"},
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t3\t4",
             "tacid/000001_0"},
@@ -177,11 +177,11 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
             "tacid/delta_0000001_0000001/000001_0"},
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t3\t4",
             "tacid/delta_0000002_0000002/000001_0"},
-        {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
+        {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t5\t6",
             "tacid/000000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t5\t6",
             "tacid/delta_0000001_0000001/000000_0"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t5\t6",
             "tacid/delta_0000002_0000002/000000_0"}
     };
     checkResult(expected, testQuery, false, "TAcid post-check", LOG);
