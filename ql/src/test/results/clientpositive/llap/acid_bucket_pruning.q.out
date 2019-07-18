@@ -112,7 +112,7 @@ STAGE PLANS:
                     serialization.ddl struct acidtbldefault { i32 a}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 34795
+                    totalSize 34777
                     transactional true
                     transactional_properties default
 #### A masked pattern was here ####
@@ -138,7 +138,7 @@ STAGE PLANS:
                       serialization.ddl struct acidtbldefault { i32 a}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 34795
+                      totalSize 34777
                       transactional true
                       transactional_properties default
 #### A masked pattern was here ####
