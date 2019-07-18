@@ -4358,6 +4358,32 @@ public class HiveConf extends Configuration {
       "The listener which is called when new Llap Daemon statistics is received on AM side.\n" +
       "The listener should implement the " +
       "org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsListener interface."),
+    LLAP_NODEHEALTHCHECKS_MINTASKS(
+      "hive.llap.nodehealthchecks.mintasks", 2000,
+      "Specifies the minimum amount of tasks, executed by a particular LLAP daemon, before the health\n" +
+      "status of the node is examined."),
+    LLAP_NODEHEALTHCHECKS_MININTERVALDURATION(
+      "hive.llap.nodehealthckecks.minintervalduration", "300s",
+      new TimeValidator(TimeUnit.SECONDS),
+      "The minimum time that needs to elapse between two actions that are the correcting results of identifying\n" +
+      "an unhealthy node. Even if additional nodes are considered to be unhealthy, no action is performed until\n" +
+      "this time interval has passed since the last corrective action."),
+    LLAP_NODEHEALTHCHECKS_TASKTIMERATIO(
+      "hive.llap.nodehealthckecks.tasktimeratio", 1.5f,
+      "LLAP daemons are considered unhealthy, if their average (Map-) task execution time is significantly larger\n" +
+      "than the average task execution time of other nodes. This value specifies the ratio of a node to other\n" +
+      "nodes, which is considered as threshold for unhealthy. A value of 1.5 for example considers a node to be\n" +
+      "unhealthy if its average task execution time is 50% larger than the average of other nodes."),
+    LLAP_NODEHEALTHCHECKS_EXECUTORRATIO(
+      "hive.llap.nodehealthckecks.executorratio", 2.0f,
+      "If an unhealthy node is identified, it is blacklisted only where there is enough free executors to execute\n" +
+      "the tasks. This value specifies the ratio of the free executors compared to the blacklisted ones.\n" +
+      "A value of 2.0 for example defines that we blacklist an unhealthy node only if we have 2 times more\n" +
+      "free executors on the remaining nodes than the unhealthy node."),
+    LLAP_NODEHEALTHCHECKS_MAXNODES(
+      "hive.llap.nodehealthckecks.maxnodes", 1,
+      "The maximum number of blacklisted nodes. If there are at least this number of blacklisted nodes\n" +
+      "the listener will not blacklist further nodes even if all the conditions are met."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME("hive.llap.task.scheduler.am.registry", "llap",
       "AM registry name for LLAP task scheduler plugin to register with."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_PRINCIPAL("hive.llap.task.scheduler.am.registry.principal", "",
