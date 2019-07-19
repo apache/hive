@@ -48,7 +48,7 @@ public class ShowTransactionsOperation extends DDLOperation<ShowTransactionsDesc
 
     // Write the results into the file
     try (DataOutputStream os = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
-      if(!sessionState.isHiveServerQuery()) {
+      if (!sessionState.isHiveServerQuery()) {
         writeHeader(os);
       }
 
