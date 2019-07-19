@@ -38,14 +38,10 @@ public class ShowFunctionsDesc implements DDLDesc, Serializable {
   private final String pattern;
 
   public ShowFunctionsDesc(Path resFile) {
-    this(resFile, null, false);
+    this(resFile, null);
   }
 
   public ShowFunctionsDesc(Path resFile, String pattern) {
-    this(resFile, pattern, false);
-  }
-
-  public ShowFunctionsDesc(Path resFile, String pattern, boolean isLikePattern) {
     this.resFile = resFile.toString();
     this.pattern = pattern;
   }

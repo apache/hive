@@ -124,7 +124,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
     return (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
   }
 
-  public void finalizeAlterTableWithWriteIdOp(Table table, Table oldTable, List<Partition> partitions,
+  private void finalizeAlterTableWithWriteIdOp(Table table, Table oldTable, List<Partition> partitions,
       DDLOperationContext context, EnvironmentContext environmentContext, AbstractAlterTableDesc alterTable)
       throws HiveException {
     if (partitions == null) {

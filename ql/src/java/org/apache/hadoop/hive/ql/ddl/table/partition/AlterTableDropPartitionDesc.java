@@ -96,7 +96,7 @@ public class AlterTableDropPartitionDesc implements DDLDesc, Serializable {
    * @return what kind of replication scope this drop is running under.
    * This can result in a "DROP IF OLDER THAN" kind of semantic
    */
-  public ReplicationSpec getReplicationSpec(){
+  public ReplicationSpec getReplicationSpec() {
     return replicationSpec;
   }
 }

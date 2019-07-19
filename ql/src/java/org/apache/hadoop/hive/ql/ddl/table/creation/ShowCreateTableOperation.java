@@ -27,10 +27,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -50,20 +53,25 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.stringtemplate.v4.ST;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+
 /**
  * Operation process showing the creation of a table.
  */
 public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> {
   private static final String EXTERNAL = "external";
   private static final String TEMPORARY = "temporary";
+  private static final String NAME = "name";
   private static final String LIST_COLUMNS = "columns";
-  private static final String TBL_COMMENT = "tbl_comment";
-  private static final String LIST_PARTITIONS = "partitions";
-  private static final String SORT_BUCKET = "sort_bucket";
-  private static final String SKEWED_INFO = "tbl_skewedinfo";
+  private static final String COMMENT = "comment";
+  private static final String PARTITIONS = "partitions";
+  private static final String BUCKETS = "buckets";
+  private static final String SKEWED = "skewedinfo";
   private static final String ROW_FORMAT = "row_format";
-  private static final String TBL_LOCATION = "tbl_location";
-  private static final String TBL_PROPERTIES = "tbl_properties";
+  private static final String LOCATION_BLOCK = "location_block";
+  private static final String LOCATION = "location";
+  private static final String PROPERTIES = "properties";
 
   public ShowCreateTableOperation(DDLOperationContext context, ShowCreateTableDesc desc) {
     super(context, desc);
@@ -73,198 +81,207 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
   public int execute() throws HiveException {
     // get the create table statement for the table and populate the output
     try (DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
-      return showCreateTable(outStream);
+      Table table = context.getDb().getTable(desc.getTableName(), false);
+      String command = table.isView() ?
+          getCreateViewCommand(table) :
+          getCreateTableCommand(table);
+      outStream.write(command.getBytes(StandardCharsets.UTF_8));
+      return 0;
+    } catch (IOException e) {
+      LOG.info("show create table: ", e);
+      return 1;
     } catch (Exception e) {
       throw new HiveException(e);
     }
   }
 
-  private int showCreateTable(DataOutputStream outStream) throws HiveException {
-    boolean needsLocation = true;
-    StringBuilder createTabCommand = new StringBuilder();
+  private static final String CREATE_VIEW_COMMAND = "CREATE VIEW `%s` AS %s";
 
-    Table tbl = context.getDb().getTable(desc.getTableName(), false);
-    List<String> duplicateProps = new ArrayList<String>();
-    try {
-      needsLocation = CreateTableOperation.doesTableNeedLocation(tbl);
-
-      if (tbl.isView()) {
-        String createTabStmt = "CREATE VIEW `" + desc.getTableName() + "` AS " + tbl.getViewExpandedText();
-        outStream.write(createTabStmt.getBytes(StandardCharsets.UTF_8));
-        return 0;
-      }
-
-      createTabCommand.append("CREATE <" + TEMPORARY + "><" + EXTERNAL + ">TABLE `");
-      createTabCommand.append(desc.getTableName() + "`(\n");
-      createTabCommand.append("<" + LIST_COLUMNS + ">)\n");
-      createTabCommand.append("<" + TBL_COMMENT + ">\n");
-      createTabCommand.append("<" + LIST_PARTITIONS + ">\n");
-      createTabCommand.append("<" + SORT_BUCKET + ">\n");
-      createTabCommand.append("<" + SKEWED_INFO + ">\n");
-      createTabCommand.append("<" + ROW_FORMAT + ">\n");
-      if (needsLocation) {
-        createTabCommand.append("LOCATION\n");
-        createTabCommand.append("<" + TBL_LOCATION + ">\n");
-      }
-      createTabCommand.append("TBLPROPERTIES (\n");
-      createTabCommand.append("<" + TBL_PROPERTIES + ">)\n");
-      ST createTabStmt = new ST(createTabCommand.toString());
-
-      // For cases where the table is temporary
-      String tblTemp = "";
-      if (tbl.isTemporary()) {
-        duplicateProps.add("TEMPORARY");
-        tblTemp = "TEMPORARY ";
-      }
-      // For cases where the table is external
-      String tblExternal = "";
-      if (tbl.getTableType() == TableType.EXTERNAL_TABLE) {
-        duplicateProps.add("EXTERNAL");
-        tblExternal = "EXTERNAL ";
-      }
-
-      // Columns
-      String tblColumns = "";
-      List<FieldSchema> cols = tbl.getCols();
-      List<String> columns = new ArrayList<String>();
-      for (FieldSchema col : cols) {
-        String columnDesc = "  `" + col.getName() + "` " + col.getType();
-        if (col.getComment() != null) {
-          columnDesc = columnDesc + " COMMENT '" + HiveStringUtils.escapeHiveCommand(col.getComment()) + "'";
-        }
-        columns.add(columnDesc);
-      }
-      tblColumns = StringUtils.join(columns, ", \n");
-
-      // Table comment
-      String tblComment = "";
-      String tabComment = tbl.getProperty("comment");
-      if (tabComment != null) {
-        duplicateProps.add("comment");
-        tblComment = "COMMENT '" + HiveStringUtils.escapeHiveCommand(tabComment) + "'";
-      }
-
-      // Partitions
-      String tblPartitions = "";
-      List<FieldSchema> partKeys = tbl.getPartitionKeys();
-      if (partKeys.size() > 0) {
-        tblPartitions += "PARTITIONED BY ( \n";
-        List<String> partCols = new ArrayList<String>();
-        for (FieldSchema partKey : partKeys) {
-          String partColDesc = "  `" + partKey.getName() + "` " + partKey.getType();
-          if (partKey.getComment() != null) {
-            partColDesc = partColDesc + " COMMENT '" + HiveStringUtils.escapeHiveCommand(partKey.getComment()) + "'";
-          }
-          partCols.add(partColDesc);
-        }
-        tblPartitions += StringUtils.join(partCols, ", \n");
-        tblPartitions += ")";
-      }
-
-      // Clusters (Buckets)
-      String tblSortBucket = "";
-      List<String> buckCols = tbl.getBucketCols();
-      if (buckCols.size() > 0) {
-        duplicateProps.add("SORTBUCKETCOLSPREFIX");
-        tblSortBucket += "CLUSTERED BY ( \n  ";
-        tblSortBucket += StringUtils.join(buckCols, ", \n  ");
-        tblSortBucket += ") \n";
-        List<Order> sortCols = tbl.getSortCols();
-        if (sortCols.size() > 0) {
-          tblSortBucket += "SORTED BY ( \n";
-          // Order
-          List<String> sortKeys = new ArrayList<String>();
-          for (Order sortCol : sortCols) {
-            String sortKeyDesc = "  " + sortCol.getCol() + " " + DirectionUtils.codeToText(sortCol.getOrder());
-            sortKeys.add(sortKeyDesc);
-          }
-          tblSortBucket += StringUtils.join(sortKeys, ", \n");
-          tblSortBucket += ") \n";
-        }
-        tblSortBucket += "INTO " + tbl.getNumBuckets() + " BUCKETS";
-      }
-
-      // Skewed Info
-      StringBuilder tblSkewedInfo = new StringBuilder();
-      SkewedInfo skewedInfo = tbl.getSkewedInfo();
-      if (skewedInfo != null && !skewedInfo.getSkewedColNames().isEmpty()) {
-        tblSkewedInfo.append("SKEWED BY (" + StringUtils.join(skewedInfo.getSkewedColNames(), ",") + ")\n");
-        tblSkewedInfo.append("  ON (");
-        List<String> colValueList = new ArrayList<String>();
-        for (List<String> colValues : skewedInfo.getSkewedColValues()) {
-          colValueList.add("('" + StringUtils.join(colValues, "','") + "')");
-        }
-        tblSkewedInfo.append(StringUtils.join(colValueList, ",") + ")");
-        if (tbl.isStoredAsSubDirectories()) {
-          tblSkewedInfo.append("\n  STORED AS DIRECTORIES");
-        }
-      }
-
-      // Row format (SerDe)
-      StringBuilder tblRowFormat = new StringBuilder();
-      StorageDescriptor sd = tbl.getTTable().getSd();
-      SerDeInfo serdeInfo = sd.getSerdeInfo();
-      Map<String, String> serdeParams = serdeInfo.getParameters();
-      tblRowFormat.append("ROW FORMAT SERDE \n");
-      tblRowFormat.append("  '" + HiveStringUtils.escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
-      if (tbl.getStorageHandler() == null) {
-        // If serialization.format property has the default value, it will not to be included in
-        // SERDE properties
-        if (Warehouse.DEFAULT_SERIALIZATION_FORMAT.equals(serdeParams.get(serdeConstants.SERIALIZATION_FORMAT))) {
-          serdeParams.remove(serdeConstants.SERIALIZATION_FORMAT);
-        }
-        if (!serdeParams.isEmpty()) {
-          appendSerdeParams(tblRowFormat, serdeParams).append(" \n");
-        }
-        tblRowFormat.append("STORED AS INPUTFORMAT \n  '"
-            + HiveStringUtils.escapeHiveCommand(sd.getInputFormat()) + "' \n");
-        tblRowFormat.append("OUTPUTFORMAT \n  '" + HiveStringUtils.escapeHiveCommand(sd.getOutputFormat()) + "'");
-      } else {
-        duplicateProps.add(META_TABLE_STORAGE);
-        tblRowFormat.append("STORED BY \n  '" +
-            HiveStringUtils.escapeHiveCommand(tbl.getParameters().get(META_TABLE_STORAGE)) + "' \n");
-        // SerDe Properties
-        if (!serdeParams.isEmpty()) {
-          appendSerdeParams(tblRowFormat, serdeInfo.getParameters());
-        }
-      }
-      String tblLocation = "  '" + HiveStringUtils.escapeHiveCommand(sd.getLocation()) + "'";
-
-      // Table properties
-      duplicateProps.addAll(StatsSetupConst.TABLE_PARAMS_STATS_KEYS);
-      String tblProperties = DDLUtils.propertiesToString(tbl.getParameters(), duplicateProps);
-
-      createTabStmt.add(TEMPORARY, tblTemp);
-      createTabStmt.add(EXTERNAL, tblExternal);
-      createTabStmt.add(LIST_COLUMNS, tblColumns);
-      createTabStmt.add(TBL_COMMENT, tblComment);
-      createTabStmt.add(LIST_PARTITIONS, tblPartitions);
-      createTabStmt.add(SORT_BUCKET, tblSortBucket);
-      createTabStmt.add(SKEWED_INFO, tblSkewedInfo);
-      createTabStmt.add(ROW_FORMAT, tblRowFormat);
-      // Table location should not be printed with hbase backed tables
-      if (needsLocation) {
-        createTabStmt.add(TBL_LOCATION, tblLocation);
-      }
-      createTabStmt.add(TBL_PROPERTIES, tblProperties);
-
-      outStream.write(createTabStmt.render().getBytes(StandardCharsets.UTF_8));
-    } catch (IOException e) {
-      LOG.info("show create table: ", e);
-      return 1;
-    }
-
-    return 0;
+  private String getCreateViewCommand(Table table) {
+    return String.format(CREATE_VIEW_COMMAND, desc.getTableName(), table.getViewExpandedText());
   }
 
-  public static StringBuilder appendSerdeParams(StringBuilder builder, Map<String, String> serdeParam) {
-    serdeParam = new TreeMap<String, String>(serdeParam);
-    builder.append("WITH SERDEPROPERTIES ( \n");
+  private static final String CREATE_TABLE_TEMPLATE =
+      "CREATE <" + TEMPORARY + "><" + EXTERNAL + ">TABLE `<" + NAME + ">`(\n" +
+      "<" + LIST_COLUMNS + ">)\n" +
+      "<" + COMMENT + ">\n" +
+      "<" + PARTITIONS + ">\n" +
+      "<" + BUCKETS + ">\n" +
+      "<" + SKEWED + ">\n" +
+      "<" + ROW_FORMAT + ">\n" +
+      "<" + LOCATION_BLOCK + ">" +
+      "TBLPROPERTIES (\n" +
+      "<" + PROPERTIES + ">)\n";
+
+  private String getCreateTableCommand(Table table) {
+    ST command = new ST(CREATE_TABLE_TEMPLATE);
+
+    command.add(NAME, desc.getTableName());
+    command.add(TEMPORARY, getTemporary(table));
+    command.add(EXTERNAL, getExternal(table));
+    command.add(LIST_COLUMNS, getColumns(table));
+    command.add(COMMENT, getComment(table));
+    command.add(PARTITIONS, getPartitions(table));
+    command.add(BUCKETS, getBuckets(table));
+    command.add(SKEWED, getSkewed(table));
+    command.add(ROW_FORMAT, getRowFormat(table));
+    command.add(LOCATION_BLOCK, getLocationBlock(table));
+    command.add(PROPERTIES, getProperties(table));
+
+    return command.render();
+  }
+
+  private String getTemporary(Table table) {
+    return table.isTemporary() ? "TEMPORARY " : "";
+  }
+
+  private String getExternal(Table table) {
+    return table.getTableType() == TableType.EXTERNAL_TABLE ? "EXTERNAL " : "";
+  }
+
+  private String getColumns(Table table) {
+    List<String> columnDescs = new ArrayList<String>();
+    for (FieldSchema col : table.getCols()) {
+      String columnDesc = "  `" + col.getName() + "` " + col.getType();
+      if (col.getComment() != null) {
+        columnDesc += " COMMENT '" + HiveStringUtils.escapeHiveCommand(col.getComment()) + "'";
+      }
+      columnDescs.add(columnDesc);
+    }
+    return StringUtils.join(columnDescs, ", \n");
+  }
+
+  private String getComment(Table table) {
+    String comment = table.getProperty("comment");
+    return (comment != null) ? "COMMENT '" + HiveStringUtils.escapeHiveCommand(comment) + "'" : "";
+  }
+
+  private String getPartitions(Table table) {
+    List<FieldSchema> partitionKeys = table.getPartitionKeys();
+    if (partitionKeys.isEmpty()) {
+      return "";
+    }
+
+    List<String> partitionDescs = new ArrayList<String>();
+    for (FieldSchema partitionKey : partitionKeys) {
+      String partitionDesc = "  `" + partitionKey.getName() + "` " + partitionKey.getType();
+      if (partitionKey.getComment() != null) {
+        partitionDesc += " COMMENT '" + HiveStringUtils.escapeHiveCommand(partitionKey.getComment()) + "'";
+      }
+      partitionDescs.add(partitionDesc);
+    }
+    return "PARTITIONED BY ( \n" + StringUtils.join(partitionDescs, ", \n") + ")";
+  }
+
+  private String getBuckets(Table table) {
+    List<String> bucketCols = table.getBucketCols();
+    if (bucketCols.isEmpty()) {
+      return "";
+    }
+
+    String buckets = "CLUSTERED BY ( \n  " + StringUtils.join(bucketCols, ", \n  ") + ") \n";
+
+    List<Order> sortColumns = table.getSortCols();
+    if (!sortColumns.isEmpty()) {
+      List<String> sortKeys = new ArrayList<String>();
+      for (Order sortColumn : sortColumns) {
+        String sortKeyDesc = "  " + sortColumn.getCol() + " " + DirectionUtils.codeToText(sortColumn.getOrder());
+        sortKeys.add(sortKeyDesc);
+      }
+      buckets += "SORTED BY ( \n" + StringUtils.join(sortKeys, ", \n") + ") \n";
+    }
+
+    buckets += "INTO " + table.getNumBuckets() + " BUCKETS";
+    return buckets;
+  }
+
+  private String getSkewed(Table table) {
+    SkewedInfo skewedInfo = table.getSkewedInfo();
+    if (skewedInfo == null || skewedInfo.getSkewedColNames().isEmpty()) {
+      return "";
+    }
+
+    List<String> columnValuesList = new ArrayList<String>();
+    for (List<String> columnValues : skewedInfo.getSkewedColValues()) {
+      columnValuesList.add("('" + StringUtils.join(columnValues, "','") + "')");
+    }
+
+    String skewed =
+        "SKEWED BY (" + StringUtils.join(skewedInfo.getSkewedColNames(), ",") + ")\n" +
+        "  ON (" + StringUtils.join(columnValuesList, ",") + ")";
+    if (table.isStoredAsSubDirectories()) {
+      skewed += "\n  STORED AS DIRECTORIES";
+    }
+    return skewed;
+  }
+
+  private String getRowFormat(Table table) {
+    StringBuilder rowFormat = new StringBuilder();
+
+    StorageDescriptor sd = table.getTTable().getSd();
+    SerDeInfo serdeInfo = sd.getSerdeInfo();
+
+    rowFormat
+      .append("ROW FORMAT SERDE \n")
+      .append("  '" + HiveStringUtils.escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
+
+    Map<String, String> serdeParams = serdeInfo.getParameters();
+    if (table.getStorageHandler() == null) {
+      // If serialization.format property has the default value, it will not to be included in SERDE properties
+      if (Warehouse.DEFAULT_SERIALIZATION_FORMAT.equals(serdeParams.get(serdeConstants.SERIALIZATION_FORMAT))) {
+        serdeParams.remove(serdeConstants.SERIALIZATION_FORMAT);
+      }
+      if (!serdeParams.isEmpty()) {
+        appendSerdeParams(rowFormat, serdeParams);
+        rowFormat.append(" \n");
+      }
+      rowFormat
+        .append("STORED AS INPUTFORMAT \n  '" + HiveStringUtils.escapeHiveCommand(sd.getInputFormat()) + "' \n")
+        .append("OUTPUTFORMAT \n  '" + HiveStringUtils.escapeHiveCommand(sd.getOutputFormat()) + "'");
+    } else {
+      String metaTableStorage = table.getParameters().get(META_TABLE_STORAGE);
+      rowFormat.append("STORED BY \n  '" + HiveStringUtils.escapeHiveCommand(metaTableStorage) + "' \n");
+      if (!serdeParams.isEmpty()) {
+        appendSerdeParams(rowFormat, serdeInfo.getParameters());
+      }
+    }
+
+    return rowFormat.toString();
+  }
+
+  public static void appendSerdeParams(StringBuilder builder, Map<String, String> serdeParams) {
+    SortedMap<String, String> sortedSerdeParams = new TreeMap<String, String>(serdeParams);
     List<String> serdeCols = new ArrayList<String>();
-    for (Entry<String, String> entry : serdeParam.entrySet()) {
+    for (Entry<String, String> entry : sortedSerdeParams.entrySet()) {
       serdeCols.add("  '" + entry.getKey() + "'='" + HiveStringUtils.escapeHiveCommand(entry.getValue()) + "'");
     }
-    builder.append(StringUtils.join(serdeCols, ", \n")).append(')');
-    return builder;
+
+    builder
+      .append("WITH SERDEPROPERTIES ( \n")
+      .append(StringUtils.join(serdeCols, ", \n"))
+      .append(')');
+  }
+
+  private static final String CREATE_TABLE_TEMPLATE_LOCATION =
+      "LOCATION\n" +
+      "<" + LOCATION + ">\n";
+
+  private String getLocationBlock(Table table) {
+    if (!CreateTableOperation.doesTableNeedLocation(table)) {
+      return "";
+    }
+
+    ST locationBlock = new ST(CREATE_TABLE_TEMPLATE_LOCATION);
+    StorageDescriptor sd = table.getTTable().getSd();
+    locationBlock.add(LOCATION, "  '" + HiveStringUtils.escapeHiveCommand(sd.getLocation()) + "'");
+    return locationBlock.render();
+  }
+
+  private static final Set<String> PROPERTIES_TO_IGNORE_AT_TBLPROPERTIES = Sets.union(
+      ImmutableSet.<String>of("TEMPORARY", "EXTERNAL", "comment", "SORTBUCKETCOLSPREFIX", META_TABLE_STORAGE),
+      new HashSet<String>(StatsSetupConst.TABLE_PARAMS_STATS_KEYS));
+
+  private String getProperties(Table table) {
+    return DDLUtils.propertiesToString(table.getParameters(), PROPERTIES_TO_IGNORE_AT_TBLPROPERTIES);
   }
 }

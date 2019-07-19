@@ -48,7 +48,7 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
       // Check whether we are replicating
       if (desc.getReplicationSpec().isInReplicationScope()) {
         // if this is a replication spec, then replace-mode semantics might apply.
-        if (desc.getReplicationSpec().allowEventReplacementInto(oldview.getParameters())){
+        if (desc.getReplicationSpec().allowEventReplacementInto(oldview.getParameters())) {
           desc.setReplace(true); // we replace existing view.
         } else {
           LOG.debug("DDLTask: Create View is skipped as view {} is newer than update",

@@ -84,14 +84,14 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
       return;
     }
 
-    for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()){
+    for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()) {
       List<Partition> partitions = new ArrayList<>();
       try {
         context.getDb().getPartitionsByExpr(tbl, partSpec.getPartSpec(), context.getConf(), partitions);
         for (Partition p : Iterables.filter(partitions, replicationSpec.allowEventReplacementInto())) {
           context.getDb().dropPartition(tbl.getDbName(), tbl.getTableName(), p.getValues(), true);
         }
-      } catch (NoSuchObjectException e){
+      } catch (NoSuchObjectException e) {
         // ignore NSOE because that means there's nothing to drop.
       } catch (Exception e) {
         throw new HiveException(e.getMessage(), e);

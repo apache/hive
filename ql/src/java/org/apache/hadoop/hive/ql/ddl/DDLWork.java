@@ -33,23 +33,16 @@ public final class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private DDLDesc ddlDesc;
-  boolean needLock = false;
+  private boolean needLock = false;
 
   /** ReadEntitites that are passed to the hooks. */
   private Set<ReadEntity> inputs;
   /** List of WriteEntities that are passed to the hooks. */
   private Set<WriteEntity> outputs;
 
-  public DDLWork() {
-  }
-
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, DDLDesc ddlDesc) {
     this.inputs = inputs;
     this.outputs = outputs;
-  }
-
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, DDLDesc ddlDesc) {
-    this(inputs, outputs);
     this.ddlDesc = ddlDesc;
   }
 

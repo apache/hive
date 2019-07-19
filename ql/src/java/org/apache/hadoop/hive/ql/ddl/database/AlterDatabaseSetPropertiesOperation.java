@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
  * Operation process of altering a database's properties.
  */
 public class AlterDatabaseSetPropertiesOperation
-  extends AbstractAlterDatabaseOperation<AlterDatabaseSetPropertiesDesc> {
+    extends AbstractAlterDatabaseOperation<AlterDatabaseSetPropertiesDesc> {
   public AlterDatabaseSetPropertiesOperation(DDLOperationContext context, AlterDatabaseSetPropertiesDesc desc) {
     super(context, desc);
   }

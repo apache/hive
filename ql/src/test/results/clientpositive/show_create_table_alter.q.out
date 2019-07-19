@@ -65,7 +65,6 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
-  'EXTERNAL'='FALSE', 
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE tmp_showcrt1_n1 SET TBLPROPERTIES ('comment'='changed comment', 'EXTERNAL'='TRUE')
