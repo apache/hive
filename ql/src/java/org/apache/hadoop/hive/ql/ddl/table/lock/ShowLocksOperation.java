@@ -185,7 +185,7 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
   public static void dumpLockInfo(DataOutputStream os, ShowLocksResponse response) throws IOException {
     SessionState sessionState = SessionState.get();
     // Write a header for CliDriver
-    if(!sessionState.isHiveServerQuery()) {
+    if (!sessionState.isHiveServerQuery()) {
       os.writeBytes("Lock ID");
       os.write(Utilities.tabCode);
       os.writeBytes("Database");

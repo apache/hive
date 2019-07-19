@@ -186,6 +186,8 @@ public class TestReplicationScenarios {
     });
 
     MetaStoreTestUtils.startMetaStoreWithRetry(hconf);
+    // re set the WAREHOUSE property to the test dir, as the previous command added a random port to it
+    hconf.set(MetastoreConf.ConfVars.WAREHOUSE.getVarname(), System.getProperty("test.warehouse.dir", "/tmp"));
 
     Path testPath = new Path(TEST_PATH);
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
@@ -459,7 +461,6 @@ public class TestReplicationScenarios {
     String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
     String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
     String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
-    String ptn_locn_2_later = new Path(TEST_PATH, name + "_ptn2_later").toUri().getPath();
 
     createTestDataFile(unptn_locn, unptn_data);
     createTestDataFile(ptn_locn_1, ptn_data_1);
@@ -549,7 +550,6 @@ public class TestReplicationScenarios {
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
     String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
-    String[] empty = new String[]{};
 
     String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
     String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
@@ -694,7 +694,6 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     String[] ptn_data = new String[]{ "eleven" , "twelve" };
-    String[] empty = new String[]{};
     String ptn_locn = new Path(TEST_PATH, name + "_ptn").toUri().getPath();
 
     createTestDataFile(ptn_locn, ptn_data);
@@ -767,7 +766,6 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     String[] ptn_data = new String[]{ "eleven" , "twelve" };
-    String[] empty = new String[]{};
     String ptn_locn = new Path(TEST_PATH, name + "_ptn").toUri().getPath();
 
     createTestDataFile(ptn_locn, ptn_data);
@@ -2572,7 +2570,6 @@ public class TestReplicationScenarios {
     // List to maintain the incremental dumps for each operation
     List<Tuple> incrementalDumpList = new ArrayList<Tuple>();
 
-    String[] empty = new String[] {};
     String[] unptn_data = new String[] { "ten" };
     String[] ptn_data_1 = new String[] { "fifteen" };
     String[] ptn_data_2 = new String[] { "seventeen" };
@@ -2682,7 +2679,6 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS ORC", driver);
 
     String[] unptn_data = new String[] { "eleven", "twelve" };
-    String[] empty = new String[] {};
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
 
     // Bootstrap dump/load
@@ -2695,7 +2691,7 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
 
     // Replicate all the events happened after bootstrap
-    Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
+    incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
 
     // migration test is failing as CONCATENATE is not working. Its not creating the merged file.
     if (!isMigrationTest) {
@@ -2728,7 +2724,7 @@ public class TestReplicationScenarios {
     run("ALTER TABLE " + dbName + ".ptned PARTITION(b=2) CONCATENATE", driver);
 
     // Replicate all the events happened so far
-    Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
+    incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
 
     // migration test is failing as CONCATENATE is not working. Its not creating the merged file.
     if (!isMigrationTest) {
@@ -3268,7 +3264,7 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".normal(a int)", driver);
     run("INSERT INTO " + dbName + ".normal values (1)", driver);
 
-    Path path = new Path(System.getProperty("test.warehouse.dir", ""));
+    Path path = new Path(System.getProperty("test.warehouse.dir", "/tmp"));
     path = new Path(path, dbName.toLowerCase() + ".db");
     path = new Path(path, "normal");
     FileSystem fs = path.getFileSystem(hconf);
@@ -3288,7 +3284,7 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".normal(a int) PARTITIONED BY (part int)", driver);
     run("INSERT INTO " + dbName + ".normal partition (part= 124) values (1)", driver);
 
-    Path path = new Path(System.getProperty("test.warehouse.dir",""));
+    Path path = new Path(System.getProperty("test.warehouse.dir", "/tmp"));
     path = new Path(path, dbName.toLowerCase()+".db");
     path = new Path(path, "normal");
     path = new Path(path, "part=124");
@@ -3546,12 +3542,6 @@ public class TestReplicationScenarios {
     return results;
   }
 
-  private void printOutput(IDriver myDriver) throws IOException {
-    for (String s : getOutput(myDriver)){
-      LOG.info(s);
-    }
-  }
-
   private void verifyIfTableNotExist(String dbName, String tableName, HiveMetaStoreClient myClient){
     Exception e = null;
     try {
@@ -3590,15 +3580,6 @@ public class TestReplicationScenarios {
       Partition ptn = myClient.getPartition(dbName, tableName, partValues);
       assertNotNull(ptn);
     } catch (TException te) {
-      assert(false);
-    }
-  }
-
-  private void verifyIfDirNotExist(FileSystem fs, Path path, PathFilter filter){
-    try {
-      FileStatus[] statuses = fs.listStatus(path, filter);
-      assertEquals(0, statuses.length);
-    } catch (IOException e) {
       assert(false);
     }
   }
