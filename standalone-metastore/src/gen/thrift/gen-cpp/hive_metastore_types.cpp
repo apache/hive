@@ -18231,11 +18231,6 @@ void ReplLastIdInfo::__set_partitionList(const std::vector<std::string> & val) {
 __isset.partitionList = true;
 }
 
-void ReplLastIdInfo::__set_needUpdateDBReplId(const bool val) {
-  this->needUpdateDBReplId = val;
-__isset.needUpdateDBReplId = true;
-}
-
 uint32_t ReplLastIdInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -18311,14 +18306,6 @@ uint32_t ReplLastIdInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 6:
-        if (ftype == ::apache::thrift::protocol::T_BOOL) {
-          xfer += iprot->readBool(this->needUpdateDBReplId);
-          this->__isset.needUpdateDBReplId = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -18371,11 +18358,6 @@ uint32_t ReplLastIdInfo::write(::apache::thrift::protocol::TProtocol* oprot) con
     }
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.needUpdateDBReplId) {
-    xfer += oprot->writeFieldBegin("needUpdateDBReplId", ::apache::thrift::protocol::T_BOOL, 6);
-    xfer += oprot->writeBool(this->needUpdateDBReplId);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -18388,7 +18370,6 @@ void swap(ReplLastIdInfo &a, ReplLastIdInfo &b) {
   swap(a.table, b.table);
   swap(a.catalog, b.catalog);
   swap(a.partitionList, b.partitionList);
-  swap(a.needUpdateDBReplId, b.needUpdateDBReplId);
   swap(a.__isset, b.__isset);
 }
 
@@ -18398,7 +18379,6 @@ ReplLastIdInfo::ReplLastIdInfo(const ReplLastIdInfo& other724) {
   table = other724.table;
   catalog = other724.catalog;
   partitionList = other724.partitionList;
-  needUpdateDBReplId = other724.needUpdateDBReplId;
   __isset = other724.__isset;
 }
 ReplLastIdInfo& ReplLastIdInfo::operator=(const ReplLastIdInfo& other725) {
@@ -18407,7 +18387,6 @@ ReplLastIdInfo& ReplLastIdInfo::operator=(const ReplLastIdInfo& other725) {
   table = other725.table;
   catalog = other725.catalog;
   partitionList = other725.partitionList;
-  needUpdateDBReplId = other725.needUpdateDBReplId;
   __isset = other725.__isset;
   return *this;
 }
@@ -18419,7 +18398,6 @@ void ReplLastIdInfo::printTo(std::ostream& out) const {
   out << ", " << "table="; (__isset.table ? (out << to_string(table)) : (out << "<null>"));
   out << ", " << "catalog="; (__isset.catalog ? (out << to_string(catalog)) : (out << "<null>"));
   out << ", " << "partitionList="; (__isset.partitionList ? (out << to_string(partitionList)) : (out << "<null>"));
-  out << ", " << "needUpdateDBReplId="; (__isset.needUpdateDBReplId ? (out << to_string(needUpdateDBReplId)) : (out << "<null>"));
   out << ")";
 }
 

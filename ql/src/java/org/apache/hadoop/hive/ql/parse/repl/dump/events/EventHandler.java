@@ -41,15 +41,17 @@ public interface EventHandler {
     final HiveConf hiveConf;
     final ReplicationSpec replicationSpec;
     final ReplScope replScope;
+    final ReplScope oldReplScope;
 
     public Context(Path eventRoot, Path cmRoot, Hive db, HiveConf hiveConf,
-        ReplicationSpec replicationSpec, ReplScope replScope) {
+        ReplicationSpec replicationSpec, ReplScope replScope, ReplScope oldReplScope) {
       this.eventRoot = eventRoot;
       this.cmRoot = cmRoot;
       this.db = db;
       this.hiveConf = hiveConf;
       this.replicationSpec = replicationSpec;
       this.replScope = replScope;
+      this.oldReplScope = oldReplScope;
     }
 
     public Context(Context other) {
@@ -59,6 +61,7 @@ public interface EventHandler {
       this.hiveConf = other.hiveConf;
       this.replicationSpec = other.replicationSpec;
       this.replScope = other.replScope;
+      this.oldReplScope = other.oldReplScope;
     }
 
     void setEventRoot(Path eventRoot) {

@@ -52,7 +52,7 @@ public class TableSerializer implements JsonWriter.Serializer {
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    if (!Utils.shouldReplicate(additionalPropertiesProvider, tableHandle, false, hiveConf)) {
+    if (!Utils.shouldReplicate(additionalPropertiesProvider, tableHandle, false, null, hiveConf)) {
       return;
     }
 

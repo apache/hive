@@ -139,7 +139,7 @@ public class TestReplDumpTask {
 
     task.initialize(queryState, null, null, null);
     task.setWork(
-        new ReplDumpWork(replScope,
+        new ReplDumpWork(replScope, null,
             Long.MAX_VALUE, Long.MAX_VALUE, "",
             Integer.MAX_VALUE, "")
     );
