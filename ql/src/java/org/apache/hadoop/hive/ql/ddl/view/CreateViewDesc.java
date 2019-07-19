@@ -350,8 +350,8 @@ public class CreateViewDesc implements DDLDesc, Serializable {
   /**
    * @return what kind of replication spec this create is running under.
    */
-  public ReplicationSpec getReplicationSpec(){
-    if (replicationSpec == null){
+  public ReplicationSpec getReplicationSpec() {
+    if (replicationSpec == null) {
       this.replicationSpec = new ReplicationSpec();
     }
     return this.replicationSpec;

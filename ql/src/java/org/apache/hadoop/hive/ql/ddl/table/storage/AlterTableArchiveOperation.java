@@ -130,7 +130,7 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
       throw new HiveException("No partition matches the specification");
     } else if (partitionSpecInfo.values.size() != table.getPartCols().size()) {
       // for partial specifications we need partitions to follow the scheme
-      for (Partition partition : partitions){
+      for (Partition partition : partitions) {
         if (AlterTableArchiveUtils.partitionInCustomLocation(table, partition)) {
           throw new HiveException(String.format("ARCHIVE cannot run for partition groups with custom locations like %s",
               partition.getLocation()));

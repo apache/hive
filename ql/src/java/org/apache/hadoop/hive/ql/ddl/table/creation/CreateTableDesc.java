@@ -247,7 +247,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     return tableName;
   }
 
-  public String getDatabaseName(){
+  public String getDatabaseName() {
     return databaseName;
   }
 
@@ -606,7 +606,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
         } catch (Exception err) {
           LOG.error("Failed to get type info", err);
         }
-        if(null == pti){
+        if (null == pti) {
           throw new SemanticException(ErrorMsg.PARTITION_COLUMN_NON_PRIMITIVE.getMsg() + " Found "
               + partCol + " of type: " + fs.getType());
         }
@@ -711,8 +711,8 @@ public class CreateTableDesc implements DDLDesc, Serializable {
    * @return what kind of replication scope this drop is running under.
    * This can result in a "CREATE/REPLACE IF NEWER THAN" kind of semantic
    */
-  public ReplicationSpec getReplicationSpec(){
-    if (replicationSpec == null){
+  public ReplicationSpec getReplicationSpec() {
+    if (replicationSpec == null) {
       this.replicationSpec = new ReplicationSpec();
     }
     return this.replicationSpec;

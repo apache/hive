@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -70,7 +71,7 @@ public class AlterTableSetPropertiesOperation extends AbstractAlterTableOperatio
         } else {
           if (!table.getPartitionKeys().isEmpty()) {
             PartitionIterable parts = new PartitionIterable(context.getDb(), table, null,
-                HiveConf.getIntVar(context.getConf(), ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+                MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
             for (Partition part : parts) {
               checkMmLb(part);
             }
@@ -112,7 +113,7 @@ public class AlterTableSetPropertiesOperation extends AbstractAlterTableOperatio
 
     if (!table.getPartitionKeys().isEmpty()) {
       PartitionIterable parts = new PartitionIterable(context.getDb(), table, null,
-          HiveConf.getIntVar(context.getConf(), ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+          MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
       for (Partition part : parts) {
         checkMmLb(part);
         Path source = part.getDataLocation();
