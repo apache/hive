@@ -429,7 +429,8 @@ public class TezSessionState implements TezSession {
 
   protected final Credentials createLlapCredentials(boolean llapMode,
       TezConfiguration tezConfig) throws IOException {
-    if (!llapMode || !UserGroupInformation.isSecurityEnabled()) return null;
+    if (!llapMode || !UserGroupInformation.isSecurityEnabled()
+         || !tezConfig.getBoolean(ConfVars.LLAP_KERBEROS_ENABLED.varname, true)) return null;
     Credentials llapCredentials = new Credentials();
     llapCredentials.addToken(LlapTokenIdentifier.KIND_NAME, getLlapToken(user, tezConfig));
     return llapCredentials;
