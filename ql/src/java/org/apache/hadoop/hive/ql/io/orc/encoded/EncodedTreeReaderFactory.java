@@ -65,7 +65,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
                                   boolean isFileCompressed, OrcProto.ColumnEncoding encoding,
                                   TreeReaderFactory.Context context,
                                   List<ColumnVector> vectors) throws IOException {
-      super(columnId, present, data, nanos, encoding, context);
+      super(columnId, present, data, nanos, encoding, context, false);
       this.isFileCompressed = isFileCompressed;
       this._presentStream = present;
       this._secondsStream = data;
