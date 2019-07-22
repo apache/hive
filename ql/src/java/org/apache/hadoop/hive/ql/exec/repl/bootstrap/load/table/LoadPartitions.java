@@ -182,7 +182,7 @@ public class LoadPartitions {
    */
   private Task<?> tasksForAddPartition(Table table, AlterTableAddPartitionDesc addPartitionDesc, Task<?> ptnRootTask)
           throws MetaException, HiveException {
-    AlterTableAddPartitionDesc.PartitionDesc partSpec = addPartitionDesc.getPartition(0);
+    AlterTableAddPartitionDesc.PartitionDesc partSpec = addPartitionDesc.getPartitions().get(0);
     Path sourceWarehousePartitionLocation = new Path(partSpec.getLocation());
     Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, partSpec);
     partSpec.setLocation(replicaWarehousePartitionLocation.toString());
@@ -362,7 +362,7 @@ public class LoadPartitions {
     boolean encounteredTheLastReplicatedPartition = (lastPartitionReplicated == null);
     Map<String, String> lastReplicatedPartSpec = null;
     if (!encounteredTheLastReplicatedPartition) {
-      lastReplicatedPartSpec = lastPartitionReplicated.getPartition(0).getPartSpec();
+      lastReplicatedPartSpec = lastPartitionReplicated.getPartitions().get(0).getPartSpec();
       LOG.info("Start processing from partition info spec : {}",
           StringUtils.mapToString(lastReplicatedPartSpec));
     }
@@ -370,13 +370,13 @@ public class LoadPartitions {
     Iterator<AlterTableAddPartitionDesc> partitionIterator = event.partitionDescriptions(tableDesc).iterator();
     while (!encounteredTheLastReplicatedPartition && partitionIterator.hasNext()) {
       AlterTableAddPartitionDesc addPartitionDesc = partitionIterator.next();
-      Map<String, String> currentSpec = addPartitionDesc.getPartition(0).getPartSpec();
+      Map<String, String> currentSpec = addPartitionDesc.getPartitions().get(0).getPartSpec();
       encounteredTheLastReplicatedPartition = lastReplicatedPartSpec.equals(currentSpec);
     }
 
     while (partitionIterator.hasNext() && tracker.canAddMoreTasks()) {
       AlterTableAddPartitionDesc addPartitionDesc = partitionIterator.next();
-      Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
+      Map<String, String> partSpec = addPartitionDesc.getPartitions().get(0).getPartSpec();
       Task<?> ptnRootTask = null;
       ReplLoadOpType loadPtnType = getLoadPartitionType(partSpec);
       switch (loadPtnType) {
