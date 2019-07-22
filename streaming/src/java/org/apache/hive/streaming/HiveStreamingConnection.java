@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.thrift.TException;
@@ -437,11 +437,13 @@ public class HiveStreamingConnection implements StreamingConnection {
 
     try {
       Map<String, String> partSpec = Warehouse.makeSpecFromValues(tableObject.getPartitionKeys(), partitionValues);
-      AlterTableAddPartitionDesc addPartitionDesc = new AlterTableAddPartitionDesc(database, table, true);
+
+      Path location = new Path(tableObject.getDataLocation(), Warehouse.makePartPath(partSpec));
+      location = new Path(Utilities.getQualifiedPath(conf, location));
+      partLocation = location.toString();
       partName = Warehouse.makePartName(tableObject.getPartitionKeys(), partitionValues);
-      partLocation = new Path(tableObject.getDataLocation(), Warehouse.makePartPath(partSpec)).toString();
-      addPartitionDesc.addPartition(partSpec, partLocation);
-      Partition partition = Hive.convertAddSpecToMetaPartition(tableObject, addPartitionDesc.getPartition(0), conf);
+      Partition partition =
+          org.apache.hadoop.hive.ql.metadata.Partition.createMetaPartitionObject(tableObject, partSpec, location);
 
       if (getMSC() == null) {
         // We assume it doesn't exist if we can't check it
