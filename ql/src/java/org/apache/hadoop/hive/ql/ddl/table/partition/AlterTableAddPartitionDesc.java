@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.ddl.table.partition;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,45 +31,67 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for ALTER TABLE ... DROP PARTITION ... commands.
+ * DDL task description for ALTER TABLE ... ADD PARTITION ... commands.
  */
 @Explain(displayName = "Add Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableAddPartitionDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Description of a partition to add.
+   */
+  @Explain(displayName = "Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public static class PartitionDesc {
-    PartitionDesc(
-        Map<String, String> partSpec, String location, Map<String, String> params) {
-      this(partSpec, location);
-      this.partParams = params;
+    private final Map<String, String> partitionSpec;
+    private String location; // TODO: make location final too
+    private final Map<String, String> params;
+    private final String inputFormat;
+    private final String outputFormat;
+    private final int numBuckets;
+    private final List<FieldSchema> columns;
+    private final String serializationLib;
+    private final Map<String, String> serdeParams;
+    private final List<String> bucketColumns;
+    private final List<Order> sortColumns;
+    private final ColumnStatistics columnStats;
+    private final long writeId;
+
+    public PartitionDesc(Map<String, String> partitionSpec, String location, Map<String, String> params) {
+      this(partitionSpec, location, params, null, null, -1, null, null, null, null, null, null, -1);
     }
 
-    PartitionDesc(Map<String, String> partSpec, String location) {
-      this.partSpec = partSpec;
+    public PartitionDesc(Map<String, String> partitionSpec, String location, Map<String, String> params,
+        String inputFormat, String outputFormat, int numBuckets, List<FieldSchema> columns, String serializationLib,
+        Map<String, String> serdeParams, List<String> bucketColumns, List<Order> sortColumns,
+        ColumnStatistics columnStats, long writeId) {
+      this.partitionSpec = partitionSpec;
       this.location = location;
+      this.params = params;
+      this.inputFormat = inputFormat;
+      this.outputFormat = outputFormat;
+      this.numBuckets = numBuckets;
+      this.columns = columns;
+      this.serializationLib = serializationLib;
+      this.serdeParams = serdeParams;
+      this.bucketColumns = bucketColumns;
+      this.sortColumns = sortColumns;
+      this.columnStats = columnStats;
+      this.writeId = writeId;
     }
-
-    Map<String, String> partSpec;
-    Map<String, String> partParams;
-    String location;
-    String inputFormat = null;
-    String outputFormat = null;
-    int numBuckets = -1;
-    List<FieldSchema> cols = null;
-    String serializationLib = null;
-    Map<String, String> serdeParams = null;
-    List<String> bucketCols = null;
-    List<Order> sortCols = null;
-    ColumnStatistics colStats = null;
-    long writeId = -1;
 
     public Map<String, String> getPartSpec() {
-      return partSpec;
+      return partitionSpec;
+    }
+
+    @Explain(displayName = "partition spec", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+    public String getPartSpecForExplain() {
+      return partitionSpec.toString();
     }
 
     /**
      * @return location of partition in relation to table
      */
+    @Explain(displayName = "location", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
     public String getLocation() {
       return location;
     }
@@ -80,241 +101,102 @@ public class AlterTableAddPartitionDesc implements DDLDesc, Serializable {
     }
 
     public Map<String, String> getPartParams() {
-      return partParams;
+      return params;
     }
 
-    public void setPartParams(Map<String, String> partParams) {
-      this.partParams = partParams;
+    @Explain(displayName = "params", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+    public String getPartParamsForExplain() {
+      return params.toString();
+    }
+
+    @Explain(displayName = "input format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+    public String getInputFormat() {
+      return inputFormat;
+    }
+
+    @Explain(displayName = "output format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+    public String getOutputFormat() {
+      return outputFormat;
     }
 
     public int getNumBuckets() {
       return numBuckets;
     }
 
-    public void setNumBuckets(int numBuckets) {
-      this.numBuckets = numBuckets;
+    @Explain(displayName = "num buckets", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+    public Integer getNumBucketsExplain() {
+      return numBuckets == -1 ? null : numBuckets;
     }
 
+    @Explain(displayName = "columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
     public List<FieldSchema> getCols() {
-      return cols;
+      return columns;
     }
 
-    public void setCols(List<FieldSchema> cols) {
-      this.cols = cols;
-    }
-
+    @Explain(displayName = "serialization lib", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
     public String getSerializationLib() {
       return serializationLib;
     }
 
-    public void setSerializationLib(String serializationLib) {
-      this.serializationLib = serializationLib;
-    }
-
+    @Explain(displayName = "serde params", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
     public Map<String, String> getSerdeParams() {
       return serdeParams;
     }
 
-    public void setSerdeParams(Map<String, String> serdeParams) {
-      this.serdeParams = serdeParams;
-    }
-
+    @Explain(displayName = "bucket columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
     public List<String> getBucketCols() {
-      return bucketCols;
+      return bucketColumns;
     }
 
-    public void setBucketCols(List<String> bucketCols) {
-      this.bucketCols = bucketCols;
-    }
-
+    @Explain(displayName = "sort columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
     public List<Order> getSortCols() {
-      return sortCols;
+      return sortColumns;
     }
 
-    public void setSortCols(List<Order> sortCols) {
-      this.sortCols = sortCols;
+    @Explain(displayName = "column stats", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+    public ColumnStatistics getColStats() {
+      return columnStats;
     }
 
-    public String getInputFormat() {
-      return inputFormat;
+    public long getWriteId() {
+      return writeId;
     }
-
-    public void setInputFormat(String inputFormat) {
-      this.inputFormat = inputFormat;
-    }
-
-    public String getOutputFormat() {
-      return outputFormat;
-    }
-
-    public void setOutputFormat(String outputFormat) {
-      this.outputFormat = outputFormat;
-    }
-
-    public ColumnStatistics getColStats() { return colStats; }
-
-    public void setColStats(ColumnStatistics colStats) { this.colStats = colStats; }
-
-    public long getWriteId() { return writeId; }
-
-    public void setWriteId(long writeId) { this.writeId = writeId; }
   }
 
-  String tableName;
-  String dbName;
-  boolean ifNotExists;
-  List<PartitionDesc> partitions = null;
-  boolean replaceMode = false;
-  private ReplicationSpec replicationSpec = null;
+  private final String dbName;
+  private final String tableName;
+  private final boolean ifNotExists;
+  private final List<PartitionDesc> partitions;
 
+  private ReplicationSpec replicationSpec = null; // TODO: make replicationSpec final too
 
-  /**
-   * For serialization only.
-   */
-  public AlterTableAddPartitionDesc() {
-  }
-
-  public AlterTableAddPartitionDesc(
-      String dbName, String tableName, boolean ifNotExists) {
-    super();
+  public AlterTableAddPartitionDesc(String dbName, String tableName, boolean ifNotExists,
+      List<PartitionDesc> partitions) {
     this.dbName = dbName;
     this.tableName = tableName;
     this.ifNotExists = ifNotExists;
+    this.partitions = partitions;
   }
 
-  /**
-   * Legacy single-partition ctor for ImportSemanticAnalyzer
-   * @param dbName
-   *          database to add to.
-   * @param tableName
-   *          table to add to.
-   * @param partSpec
-   *          partition specification.
-   * @param location
-   *          partition location, relative to table location.
-   * @param params
-   *          partition parameters.
-   */
-  @Deprecated
-  public AlterTableAddPartitionDesc(String dbName, String tableName,
-      Map<String, String> partSpec, String location, Map<String, String> params) {
-    super();
-    this.dbName = dbName;
-    this.tableName = tableName;
-    this.ifNotExists = true;
-    addPartition(partSpec, location, params);
-  }
-
-  public void addPartition(Map<String, String> partSpec, String location) {
-    addPartition(partSpec, location, null);
-  }
-
-  private void addPartition(
-      Map<String, String> partSpec, String location, Map<String, String> params) {
-    if (this.partitions == null) {
-      this.partitions = new ArrayList<PartitionDesc>();
-    }
-    this.partitions.add(new PartitionDesc(partSpec, location, params));
-  }
-
-  /**
-   * @return database name
-   */
+  @Explain(displayName = "db name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDbName() {
     return dbName;
   }
 
-  /**
-   * @param dbName
-   *          database name
-   */
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
-  }
-
-  /**
-   * @return the table we're going to add the partitions to.
-   */
+  @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
   }
 
-  /**
-   * @param tableName
-   *          the table we're going to add the partitions to.
-   */
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
-
-  /**
-   * @return location of partition in relation to table
-   */
-  @Explain(displayName = "Location")
-  public String getLocationForExplain() {
-    if (this.partitions == null || this.partitions.isEmpty()) return "<no partition>";
-    boolean isFirst = true;
-    StringBuilder sb = new StringBuilder();
-    for (PartitionDesc desc : this.partitions) {
-      if (!isFirst) {
-        sb.append(", ");
-      }
-      isFirst = false;
-      sb.append(desc.location);
-    }
-    return sb.toString();
-  }
-
-  @Explain(displayName = "Spec")
-  public String getPartSpecStringForExplain() {
-    if (this.partitions == null || this.partitions.isEmpty()) return "<no partition>";
-    boolean isFirst = true;
-    StringBuilder sb = new StringBuilder();
-    for (PartitionDesc desc : this.partitions) {
-      if (!isFirst) {
-        sb.append(", ");
-      }
-      isFirst = false;
-      sb.append(desc.partSpec.toString());
-    }
-    return sb.toString();
-  }
-
-  /**
-   * @return if the partition should only be added if it doesn't exist already
-   */
+  @Explain(displayName = "if not exists", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isIfNotExists() {
-    return this.ifNotExists;
+    return ifNotExists;
   }
 
-  /**
-   * @param ifNotExists
-   *          if the part should be added only if it doesn't exist
-   */
-  public void setIfNotExists(boolean ifNotExists) {
-    this.ifNotExists = ifNotExists;
-  }
-
-  public int getPartitionCount() {
-    return this.partitions.size();
-  }
-
-  public PartitionDesc getPartition(int i) {
-    return this.partitions.get(i);
-  }
-
-  /**
-   * @param replaceMode Determine if this AddPartition should behave like a replace-into alter instead
-   */
-  public void setReplaceMode(boolean replaceMode){
-    this.replaceMode = replaceMode;
-  }
-
-  /**
-   * @return true if this AddPartition should behave like a replace-into alter instead
-   */
-  public boolean getReplaceMode() {
-    return this.replaceMode;
+  @Explain(displayName = "partitions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public List<PartitionDesc> getPartitions() {
+    return partitions;
   }
 
   /**
@@ -333,6 +215,6 @@ public class AlterTableAddPartitionDesc implements DDLDesc, Serializable {
     if (replicationSpec == null) {
       this.replicationSpec = new ReplicationSpec();
     }
-    return this.replicationSpec;
+    return replicationSpec;
   }
 }
