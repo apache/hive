@@ -512,7 +512,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("repl status " + replicatedDbName)
             .verifyResult("null")
             .run("show tables like t2")
-            .verifyResults(new String[] { });
+            .verifyResults(new String[] { })
+            .verifyReplTargetProperty(replicatedDbName);
 
     // Retry with different dump should fail.
     replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
@@ -546,7 +547,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("select id from t1")
             .verifyResults(Arrays.asList("1"))
             .run("select name from t2 order by name")
-            .verifyResults(Arrays.asList("bob", "carl"));
+            .verifyResults(Arrays.asList("bob", "carl"))
+            .verifyReplTargetProperty(replicatedDbName);
   }
 
   @Test
