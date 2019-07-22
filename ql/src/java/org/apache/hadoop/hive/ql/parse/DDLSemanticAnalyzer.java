@@ -147,7 +147,6 @@ import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetSerdePropsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetSkewedLocationDesc;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSkewedByDesc;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableUnarchiveDesc;
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc.PartitionDesc;
 import org.apache.hadoop.hive.ql.ddl.view.AlterMaterializedViewRewriteDesc;
 import org.apache.hadoop.hive.ql.ddl.view.DropMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.ddl.view.DropViewDesc;
@@ -3513,15 +3512,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // ^(TOK_ALTERTABLE_ADDPARTS identifier ifNotExists? alterStatementSuffixAddPartitionsElement+)
     boolean ifNotExists = ast.getChild(0).getType() == HiveParser.TOK_IFNOTEXISTS;
 
-    Table tab = getTable(qualified);
-    boolean isView = tab.isView();
-    validateAlterTableType(tab, AlterTableType.ADDPARTITION, expectView);
-    outputs.add(new WriteEntity(tab,
+    Table table = getTable(qualified);
+    boolean isView = table.isView();
+    validateAlterTableType(table, AlterTableType.ADDPARTITION, expectView);
+    outputs.add(new WriteEntity(table,
         /*use DDL_EXCLUSIVE to cause X lock to prevent races between concurrent add partition calls
         with IF NOT EXISTS.  w/o this 2 concurrent calls to add the same partition may both add
         data since for transactional tables creating partition metadata and moving data there are
         2 separate actions. */
-        ifNotExists && AcidUtils.isTransactionalTable(tab) ? WriteType.DDL_EXCLUSIVE
+        ifNotExists && AcidUtils.isTransactionalTable(table) ? WriteType.DDL_EXCLUSIVE
         : WriteEntity.WriteType.DDL_SHARED));
 
     int numCh = ast.getChildCount();
@@ -3530,17 +3529,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String currentLocation = null;
     Map<String, String> currentPart = null;
     // Parser has done some verification, so the order of tokens doesn't need to be verified here.
-    AlterTableAddPartitionDesc addPartitionDesc =
-        new AlterTableAddPartitionDesc(tab.getDbName(), tab.getTableName(), ifNotExists);
+
+    List<AlterTableAddPartitionDesc.PartitionDesc> partitions = new ArrayList<>();
     for (int num = start; num < numCh; num++) {
       ASTNode child = (ASTNode) ast.getChild(num);
       switch (child.getToken().getType()) {
       case HiveParser.TOK_PARTSPEC:
         if (currentPart != null) {
-          addPartitionDesc.addPartition(currentPart, currentLocation);
+          partitions.add(createPartitionDesc(table, currentLocation, currentPart));
           currentLocation = null;
         }
-        currentPart = getValidatedPartSpec(tab, child, conf, true);
+        currentPart = getValidatedPartSpec(table, child, conf, true);
         validatePartitionValues(currentPart); // validate reserved values
         break;
       case HiveParser.TOK_PARTITIONLOCATION:
@@ -3558,31 +3557,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // add the last one
     if (currentPart != null) {
-      addPartitionDesc.addPartition(currentPart, currentLocation);
+      partitions.add(createPartitionDesc(table, currentLocation, currentPart));
     }
 
-    if (this.conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-      for (int index = 0; index < addPartitionDesc.getPartitionCount(); index++) {
-        PartitionDesc desc = addPartitionDesc.getPartition(index);
-        if (desc.getLocation() == null) {
-          if (desc.getPartParams() == null) {
-            desc.setPartParams(new HashMap<String, String>());
-          }
-          StatsSetupConst.setStatsStateForCreateTable(desc.getPartParams(),
-              MetaStoreUtils.getColumnNames(tab.getCols()), StatsSetupConst.TRUE);
-        }
-      }
-    }
-
-    if (addPartitionDesc.getPartitionCount() == 0) {
+    if (partitions.isEmpty()) {
       // nothing to do
       return;
     }
 
+    AlterTableAddPartitionDesc addPartitionDesc = new AlterTableAddPartitionDesc(table.getDbName(),
+        table.getTableName(), ifNotExists, partitions);
+
     Task<DDLWork> ddlTask =
         TaskFactory.get(new DDLWork(getInputs(), getOutputs(), addPartitionDesc));
     rootTasks.add(ddlTask);
-    handleTransactionalTable(tab, addPartitionDesc, ddlTask);
+    handleTransactionalTable(table, addPartitionDesc, ddlTask);
 
     if (isView) {
       // Compile internal query to capture underlying table partition dependencies
@@ -3593,8 +3582,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       cmd.append(HiveUtils.unparseIdentifier(qualified[1]));
       cmd.append(" WHERE ");
       boolean firstOr = true;
-      for (int i = 0; i < addPartitionDesc.getPartitionCount(); ++i) {
-        AlterTableAddPartitionDesc.PartitionDesc partitionDesc = addPartitionDesc.getPartition(i);
+      for (AlterTableAddPartitionDesc.PartitionDesc partitionDesc : partitions) {
         if (firstOr) {
           firstOr = false;
         } else {
@@ -3627,6 +3615,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private AlterTableAddPartitionDesc.PartitionDesc createPartitionDesc(Table table, String currentLocation,
+      Map<String, String> currentPart) {
+    Map<String, String> params = null;
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER) && currentLocation == null) {
+      params = new HashMap<String, String>();
+      StatsSetupConst.setStatsStateForCreateTable(params,
+          MetaStoreUtils.getColumnNames(table.getCols()), StatsSetupConst.TRUE);
+    }
+    return new AlterTableAddPartitionDesc.PartitionDesc(currentPart, currentLocation, params);
+  }
+
   /**
    * Add partition for Transactional tables needs to add (copy/rename) the data so that it lands
    * in a delta_x_x/ folder in the partition dir.
@@ -3639,13 +3638,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Long writeId = null;
     int stmtId = 0;
 
-    for (int index = 0; index < addPartitionDesc.getPartitionCount(); index++) {
-      PartitionDesc desc = addPartitionDesc.getPartition(index);
-      if (desc.getLocation() != null) {
-        AcidUtils.validateAcidPartitionLocation(desc.getLocation(), conf);
+    for (AlterTableAddPartitionDesc.PartitionDesc partitonDesc : addPartitionDesc.getPartitions()) {
+      if (partitonDesc.getLocation() != null) {
+        AcidUtils.validateAcidPartitionLocation(partitonDesc.getLocation(), conf);
         if(addPartitionDesc.isIfNotExists()) {
           //Don't add partition data if it already exists
-          Partition oldPart = getPartition(tab, desc.getPartSpec(), false);
+          Partition oldPart = getPartition(tab, partitonDesc.getPartSpec(), false);
           if(oldPart != null) {
             continue;
           }
@@ -3661,15 +3659,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           stmtId = getTxnMgr().getStmtIdAndIncrement();
         }
-        LoadTableDesc loadTableWork = new LoadTableDesc(new Path(desc.getLocation()),
-            Utilities.getTableDesc(tab), desc.getPartSpec(),
+        LoadTableDesc loadTableWork = new LoadTableDesc(new Path(partitonDesc.getLocation()),
+            Utilities.getTableDesc(tab), partitonDesc.getPartSpec(),
             LoadTableDesc.LoadFileType.KEEP_EXISTING, //not relevant - creating new partition
             writeId);
         loadTableWork.setStmtId(stmtId);
         loadTableWork.setInheritTableSpecs(true);
         try {
-          desc.setLocation(new Path(tab.getDataLocation(),
-              Warehouse.makePartPath(desc.getPartSpec())).toString());
+          partitonDesc.setLocation(new Path(tab.getDataLocation(),
+              Warehouse.makePartPath(partitonDesc.getPartSpec())).toString());
         }
         catch (MetaException ex) {
           throw new SemanticException("Could not determine partition path due to: "
