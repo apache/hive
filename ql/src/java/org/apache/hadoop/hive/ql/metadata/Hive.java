@@ -83,7 +83,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
@@ -112,7 +111,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableDropPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -132,7 +130,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -2999,143 +2996,46 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public List<Partition> createPartitions(AlterTableAddPartitionDesc addPartitionDesc) throws HiveException {
-    // TODO: catalog name everywhere in this method
-    Table tbl = getTable(addPartitionDesc.getDbName(), addPartitionDesc.getTableName());
-    int size = addPartitionDesc.getPartitionCount();
-    List<org.apache.hadoop.hive.metastore.api.Partition> in =
-        new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>(size);
-    long writeId;
-    String validWriteIdList;
-
-    // In case of replication, get the writeId from the source and use valid write Id list
-    // for replication.
-    if (addPartitionDesc.getReplicationSpec().isInReplicationScope() &&
-        addPartitionDesc.getPartition(0).getWriteId() > 0) {
-      writeId = addPartitionDesc.getPartition(0).getWriteId();
-      // We need a valid writeId list for a transactional change. During replication we do not
-      // have a valid writeId list which was used for this on the source. But we know for sure
-      // that the writeId associated with it was valid then (otherwise the change would have
-      // failed on the source). So use a valid transaction list with only that writeId.
-      validWriteIdList = new ValidReaderWriteIdList(TableName.getDbTable(tbl.getDbName(),
-                                                                          tbl.getTableName()),
-                                                    new long[0], new BitSet(), writeId).writeToString();
-    } else {
-      AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, true);
-      if (tableSnapshot != null && tableSnapshot.getWriteId() > 0) {
-        writeId = tableSnapshot.getWriteId();
-        validWriteIdList = tableSnapshot.getValidWriteIdList();
-      } else {
-        writeId = -1;
-        validWriteIdList = null;
-      }
-    }
-    for (int i = 0; i < size; ++i) {
-      org.apache.hadoop.hive.metastore.api.Partition tmpPart =
-          convertAddSpecToMetaPartition(tbl, addPartitionDesc.getPartition(i), conf);
-      if (tmpPart != null && writeId > 0) {
-        tmpPart.setWriteId(writeId);
-      }
-      in.add(tmpPart);
-    }
-    List<Partition> out = new ArrayList<Partition>();
+  public List<org.apache.hadoop.hive.metastore.api.Partition> addPartition(
+      List<org.apache.hadoop.hive.metastore.api.Partition> partitions, boolean ifNotExists, boolean needResults)
+          throws HiveException {
     try {
-      if (!addPartitionDesc.getReplicationSpec().isInReplicationScope()){
-        // TODO: normally, the result is not necessary; might make sense to pass false
-        for (org.apache.hadoop.hive.metastore.api.Partition outPart
-            : getMSC().add_partitions(in, addPartitionDesc.isIfNotExists(), true)) {
-          out.add(new Partition(tbl, outPart));
-        }
-      } else {
-
-        // For replication add-ptns, we need to follow a insert-if-not-exist, alter-if-exists scenario.
-        // TODO : ideally, we should push this mechanism to the metastore, because, otherwise, we have
-        // no choice but to iterate over the partitions here.
-
-        List<org.apache.hadoop.hive.metastore.api.Partition> partsToAdd = new ArrayList<>();
-        List<org.apache.hadoop.hive.metastore.api.Partition> partsToAlter = new ArrayList<>();
-        List<String> part_names = new ArrayList<>();
-        for (org.apache.hadoop.hive.metastore.api.Partition p: in){
-          part_names.add(Warehouse.makePartName(tbl.getPartitionKeys(), p.getValues()));
-          try {
-            org.apache.hadoop.hive.metastore.api.Partition ptn =
-                getMSC().getPartition(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), p.getValues());
-            if (addPartitionDesc.getReplicationSpec().allowReplacementInto(ptn.getParameters())){
-              ReplicationSpec.copyLastReplId(ptn.getParameters(), p.getParameters());
-              partsToAlter.add(p);
-            } // else ptn already exists, but we do nothing with it.
-          } catch (NoSuchObjectException nsoe){
-            // if the object does not exist, we want to add it.
-            partsToAdd.add(p);
-          }
-        }
-        for (org.apache.hadoop.hive.metastore.api.Partition outPart
-            : getMSC().add_partitions(partsToAdd, addPartitionDesc.isIfNotExists(), true)) {
-          out.add(new Partition(tbl, outPart));
-        }
-        EnvironmentContext ec = new EnvironmentContext();
-        // In case of replication, statistics is obtained from the source, so do not update those
-        // on replica.
-        ec.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
-        getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),
-            partsToAlter, ec, validWriteIdList, writeId);
-
-        for ( org.apache.hadoop.hive.metastore.api.Partition outPart :
-        getMSC().getPartitionsByNames(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),part_names)){
-          out.add(new Partition(tbl,outPart));
-        }
-      }
+      return getMSC().add_partitions(partitions, ifNotExists, needResults);
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
-    return out;
   }
 
-  public static org.apache.hadoop.hive.metastore.api.Partition convertAddSpecToMetaPartition(
-      Table tbl, AlterTableAddPartitionDesc.PartitionDesc addSpec, final HiveConf conf) throws HiveException {
-    Path location = addSpec.getLocation() != null
-        ? new Path(tbl.getPath(), addSpec.getLocation()) : null;
-    if (location != null) {
-      // Ensure that it is a full qualified path (in most cases it will be since tbl.getPath() is full qualified)
-      location = new Path(Utilities.getQualifiedPath(conf, location));
+  public org.apache.hadoop.hive.metastore.api.Partition getPartition(String dbName, String tableName,
+      List<String> params) throws HiveException {
+    try {
+      return getMSC().getPartition(dbName, tableName, params);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
     }
-    org.apache.hadoop.hive.metastore.api.Partition part =
-        Partition.createMetaPartitionObject(tbl, addSpec.getPartSpec(), location);
-    if (addSpec.getPartParams() != null) {
-      part.setParameters(addSpec.getPartParams());
+  }
+
+  public void alterPartitions(String dbName, String tableName,
+      List<org.apache.hadoop.hive.metastore.api.Partition> partitions, EnvironmentContext ec, String validWriteIdList,
+      long writeId) throws HiveException {
+    try {
+      getMSC().alter_partitions(dbName, tableName, partitions, ec, validWriteIdList, writeId);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
     }
-    if (addSpec.getInputFormat() != null) {
-      part.getSd().setInputFormat(addSpec.getInputFormat());
+  }
+
+  public List<org.apache.hadoop.hive.metastore.api.Partition> getPartitionsByNames(String dbName, String tableName,
+      List<String> partitionNames) throws HiveException {
+    try {
+      return getMSC().getPartitionsByNames(dbName, tableName, partitionNames);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
     }
-    if (addSpec.getOutputFormat() != null) {
-      part.getSd().setOutputFormat(addSpec.getOutputFormat());
-    }
-    if (addSpec.getNumBuckets() != -1) {
-      part.getSd().setNumBuckets(addSpec.getNumBuckets());
-    }
-    if (addSpec.getCols() != null) {
-      part.getSd().setCols(addSpec.getCols());
-    }
-    if (addSpec.getSerializationLib() != null) {
-        part.getSd().getSerdeInfo().setSerializationLib(addSpec.getSerializationLib());
-    }
-    if (addSpec.getSerdeParams() != null) {
-      part.getSd().getSerdeInfo().setParameters(addSpec.getSerdeParams());
-    }
-    if (addSpec.getBucketCols() != null) {
-      part.getSd().setBucketCols(addSpec.getBucketCols());
-    }
-    if (addSpec.getSortCols() != null) {
-      part.getSd().setSortCols(addSpec.getSortCols());
-    }
-    if (addSpec.getColStats() != null) {
-      part.setColStats(addSpec.getColStats());
-      // Statistics will have an associated write Id for a transactional table. We need it to
-      // update column statistics.
-      part.setWriteId(addSpec.getWriteId());
-    }
-    return part;
   }
 
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
