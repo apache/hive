@@ -510,6 +510,15 @@ public class SharedWorkOptimizer extends Transform {
     return mergedExecuted;
   }
 
+  /**
+   * When we call this method, we have already verified that the SJ expressions targeting
+   * two TS operators are the same.
+   * Since we already had a method to push the filter expressions on top of the discardable
+   * TS (pushFilterToTopOfTableScan), here we remove the old SJ expressions from the
+   * discardable TS (and follow-up Filters if present) and we add the SJ expressions
+   * from the retainable TS. That way the SJ expressions will be pushed on top of the
+   * discardable TS by pushFilterToTopOfTableScan.
+   */
   private static void replaceSemijoinExpressions(TableScanOperator tsOp, List<ExprNodeDesc> semijoinExprNodes) {
     ExprNodeDesc constNode = new ExprNodeConstantDesc(
         TypeInfoFactory.booleanTypeInfo, Boolean.TRUE);
