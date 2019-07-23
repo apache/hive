@@ -342,18 +342,23 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
     // wait for other thread to create the stmt handle
     int count = 0;
-    while (count < 10) {
+    boolean queryIdFound = false;
+    while (count++ < 10) {
       try {
         Thread.sleep(2000);
         String queryId = ((HiveStatement) stmt).getQueryId();
-        System.out.println("Killing query: " + queryId);
-        stmt2.execute("kill query '" + queryId + "'");
-        stmt2.close();
-        break;
+        if (queryId != null) {
+          queryIdFound = true;
+          System.out.println("Killing query: " + queryId);
+          stmt2.execute("kill query '" + queryId + "'");
+          stmt2.close();
+          break;
+        }
       } catch (SQLException e) {
-        count++;
+        System.err.println("Error while killing query: " + e);
       }
     }
+    assertTrue(queryIdFound);
     
     tExecute.join();
     stmt.close();
