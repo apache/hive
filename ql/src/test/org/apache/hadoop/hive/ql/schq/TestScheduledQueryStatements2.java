@@ -22,7 +22,9 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -31,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.io.ProxyLocalFileSystem;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -88,6 +91,18 @@ public class TestScheduledQueryStatements2 {
   @Test
   public void testSimpleCreate() throws ParseException, Exception {
     for (int i = 0; i < 1000; i++) {
+
+      System.out.println("TRY# " + i);
+      System.out.println("TRY# " + i);
+      System.out.println("TRY# " + i);
+      System.out.println("TRY# " + i);
+      System.out.println("TRY# " + i);
+      try (PrintStream fos = new PrintStream("/tmp/stack/idx")) {
+        RuntimeException ex = new RuntimeException("c");
+        fos.println(i);
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+      }
 
       doOneSelect();
     }

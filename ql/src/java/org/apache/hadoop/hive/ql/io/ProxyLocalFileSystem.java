@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
@@ -27,6 +30,21 @@ import org.apache.hadoop.fs.Path;
  * This class is to workaround existing issues on LocalFileSystem.
  */
 public class ProxyLocalFileSystem extends LocalFileSystem {
+
+  static int stackIdx = 0;
+
+  public ProxyLocalFileSystem() {
+    synchronized (ProxyLocalFileSystem.class) {
+      try (PrintStream fos = new PrintStream("/tmp/stack/" + stackIdx)) {
+        RuntimeException ex = new RuntimeException("c");
+        ex.printStackTrace(fos);
+        stackIdx++;
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+  }
 
   @Override
   public boolean rename(Path src, Path dst) throws IOException {

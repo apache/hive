@@ -706,9 +706,10 @@ public class TezSessionState {
 
   protected final void cleanupScratchDir() throws IOException {
     if (tezScratchDir != null) {
-      FileSystem fs = tezScratchDir.getFileSystem(conf);
-      fs.delete(tezScratchDir, true);
-      tezScratchDir = null;
+      try (FileSystem fs = tezScratchDir.getFileSystem(conf)) {
+        fs.delete(tezScratchDir, true);
+        tezScratchDir = null;
+      }
     }
   }
 
