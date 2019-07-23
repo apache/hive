@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 
-import org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -55,9 +55,10 @@ public class TezAmRegistryImpl extends ZkRegistryBase<TezAmInstance> {
   private TezAmRegistryImpl(String instanceName, Configuration conf, boolean useSecureZk) {
     super(instanceName, conf, null, NAMESPACE_PREFIX, USER_SCOPE_PATH_PREFIX, WORKER_PREFIX, WORKER_GROUP,
         useSecureZk ? SASL_LOGIN_CONTEXT_NAME : null,
-        HiveConf.getVar(conf, ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_PRINCIPAL),
-        HiveConf.getVar(conf, ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_KEYTAB_FILE),
-        null); // Always validate ACLs
+          HiveConf.getVar(conf, ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_PRINCIPAL),
+          HiveConf.getVar(conf, ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_KEYTAB_FILE),
+          null, null
+    ); // Always validate ACLs
     this.registryName = instanceName;
     LOG.info("AM Zookeeper Registry is enabled with registryid: " + instanceName);
   }
@@ -67,8 +68,8 @@ public class TezAmRegistryImpl extends ZkRegistryBase<TezAmInstance> {
   }
 
   public void populateCache(boolean doInvokeListeners) throws IOException {
-    PathChildrenCache pcc = ensureInstancesCache(0);
-    populateCache(pcc, doInvokeListeners);
+    TreeCache treeCache = ensureInstancesCache(0);
+    populateCache(treeCache, doInvokeListeners);
   }
 
   public String register(int amPort, int pluginPort, String sessionId, String serializedToken,

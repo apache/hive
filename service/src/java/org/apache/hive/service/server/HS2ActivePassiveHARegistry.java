@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.apache.curator.utils.CloseableUtils;
@@ -90,7 +90,8 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     final String krbPrincipal, final String krbKeytab, final String saslContextName, final Configuration conf,
     final boolean isClient) {
     super(instanceName, conf, null, zkNamespacePrefix, null, INSTANCE_PREFIX, INSTANCE_GROUP,
-      saslContextName, krbPrincipal, krbKeytab, null);
+          saslContextName, krbPrincipal, krbKeytab, null, null
+    );
     this.isClient = isClient;
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST) &&
       conf.get(ZkRegistryBase.UNIQUE_IDENTIFIER) != null) {
@@ -146,8 +147,8 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
   }
 
   private void populateCache() throws IOException {
-    PathChildrenCache pcc = ensureInstancesCache(0);
-    populateCache(pcc, false);
+    TreeCache treeCache = ensureInstancesCache(0);
+    populateCache(treeCache, false);
   }
 
   @Override
