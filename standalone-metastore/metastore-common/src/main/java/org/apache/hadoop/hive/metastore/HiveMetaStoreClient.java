@@ -928,19 +928,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String dbName, String tableName, List<String> partNames, List<String> colNames,
-      String validWriteIdList)
+      String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException {
     return getPartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName,
-        partNames, colNames, validWriteIdList);
+        partNames, colNames, engine, validWriteIdList);
   }
 
   @Override
   public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName, List<String> partNames,
-      List<String> colNames, String validWriteIdList)
+      List<String> colNames, String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException {
     PartitionsStatsRequest rqst = new PartitionsStatsRequest(dbName, tableName, colNames,
-        partNames == null ? new ArrayList<String>() : partNames);
+        partNames == null ? new ArrayList<String>() : partNames, engine);
     rqst.setCatName(catName);
     rqst.setValidWriteIdList(validWriteIdList);
     return client.get_partitions_statistics_req(rqst).getPartStats();
@@ -948,21 +948,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public AggrStats getAggrColStatsFor(String dbName, String tblName, List<String> colNames,
-      List<String> partNames, String writeIdList)
+      List<String> partNames, String engine, String writeIdList)
       throws NoSuchObjectException, MetaException, TException {
     return getAggrColStatsFor(getDefaultCatalog(conf), dbName, tblName, colNames,
-        partNames, writeIdList);
+        partNames, engine, writeIdList);
   }
 
   @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
-      List<String> partNames, String writeIdList)
+      List<String> partNames, String engine, String writeIdList)
       throws NoSuchObjectException, MetaException, TException {
     if (colNames.isEmpty() || partNames.isEmpty()) {
       LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
       return new AggrStats(new ArrayList<>(), 0); // Nothing to aggregate
     }
-    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
+    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
     req.setCatName(catName);
     req.setValidWriteIdList(writeIdList);
     return client.get_aggr_stats_for(req);
@@ -1899,26 +1899,29 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-                                              List<String> part_names, boolean getColStats)
+          List<String> part_names, boolean getColStats, String engine)
           throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats);
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine);
   }
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
                                               List<String> part_names) throws TException {
-    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false);
+    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
   }
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                              List<String> part_names, boolean getColStats) throws TException {
+          List<String> part_names, boolean getColStats, String engine) throws TException {
     checkDbAndTableFilters(catName, db_name, tbl_name);
     GetPartitionsByNamesRequest gpbnr =
             new GetPartitionsByNamesRequest(prependCatalogToDbName(catName, db_name, conf),
                     tbl_name);
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(getColStats);
+    if (getColStats) {
+      gpbnr.setEngine(engine);
+    }
     if (processorCapabilities != null)
       gpbnr.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
@@ -1966,20 +1969,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public Table getTable(String dbname, String name, boolean getColumnStats) throws TException {
-    return getTable(getDefaultCatalog(conf), dbname, name, getColumnStats);
+  public Table getTable(String dbname, String name, boolean getColumnStats, String engine) throws TException {
+    return getTable(getDefaultCatalog(conf), dbname, name, getColumnStats, engine);
   }
 
   @Override
   public Table getTable(String catName, String dbName, String tableName) throws TException {
-    return getTable(catName, dbName, tableName, false);
+    return getTable(catName, dbName, tableName, false, null);
   }
 
-  public Table getTable(String catName, String dbName, String tableName, boolean getColumnStats) throws TException {
+  public Table getTable(String catName, String dbName, String tableName,
+      boolean getColumnStats, String engine) throws TException {
     GetTableRequest req = new GetTableRequest(dbName, tableName);
     req.setCatName(catName);
     req.setCapabilities(version);
     req.setGetColumnStats(getColumnStats);
+    if (getColumnStats) {
+      req.setEngine(engine);
+    }
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
@@ -1992,17 +1999,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Table getTable(String catName, String dbName, String tableName,
       String validWriteIdList) throws TException {
-    return getTable(catName, dbName, tableName, validWriteIdList, false);
+    return getTable(catName, dbName, tableName, validWriteIdList, false, null);
   }
 
   @Override
   public Table getTable(String catName, String dbName, String tableName, String validWriteIdList,
-                        boolean getColumnStats) throws TException {
+      boolean getColumnStats, String engine) throws TException {
     GetTableRequest req = new GetTableRequest(dbName, tableName);
     req.setCatName(catName);
     req.setCapabilities(version);
     req.setValidWriteIdList(validWriteIdList);
     req.setGetColumnStats(getColumnStats);
+    if (getColumnStats) {
+      req.setEngine(engine);
+    }
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
@@ -2422,6 +2432,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     // Note: currently this method doesn't set txn properties and thus won't work on txn tables.
     SetPartitionsStatsRequest req = new SetPartitionsStatsRequest();
     req.addToColStats(statsObj);
+    req.setEngine(statsObj.getEngine());
     req.setNeedMerge(false);
     return client.update_table_column_statistics_req(req).isResult();
   }
@@ -2434,6 +2445,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     // Note: currently this method doesn't set txn properties and thus won't work on txn tables.
     SetPartitionsStatsRequest req = new SetPartitionsStatsRequest();
     req.addToColStats(statsObj);
+    req.setEngine(statsObj.getEngine());
     req.setNeedMerge(false);
     return client.update_partition_column_statistics_req(req).isResult();
   }
@@ -2461,81 +2473,78 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-      List<String> colNames) throws TException {
-    return getTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colNames);
+      List<String> colNames, String engine) throws TException {
+    return getTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colNames, engine);
   }
 
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
-                                                            String tableName,
-                                                            List<String> colNames) throws TException {
-    TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames);
+      String tableName, List<String> colNames, String engine) throws TException {
+    TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
     rqst.setCatName(catName);
+    rqst.setEngine(engine);
     return client.get_table_statistics_req(rqst).getTableStats();
   }
 
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-                                                            List<String> colNames,
-                                                            String validWriteIdList) throws TException {
+      List<String> colNames, String engine, String validWriteIdList) throws TException {
     return getTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colNames,
-        validWriteIdList);
+        engine, validWriteIdList);
   }
 
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
-                                                            String tableName,
-                                                            List<String> colNames,
-                                                            String validWriteIdList) throws TException {
-    TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames);
+      String tableName, List<String> colNames, String engine, String validWriteIdList) throws TException {
+    TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
     rqst.setCatName(catName);
+    rqst.setEngine(engine);
     rqst.setValidWriteIdList(validWriteIdList);
     return client.get_table_statistics_req(rqst).getTableStats();
   }
 
   @Override
   public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
-      String dbName, String tableName, List<String> partNames, List<String> colNames)
+      String dbName, String tableName, List<String> partNames, List<String> colNames, String engine)
           throws TException {
-    return getPartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName, partNames, colNames);
+    return getPartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName, partNames, colNames, engine);
   }
 
   @Override
   public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName, List<String> partNames,
-      List<String> colNames) throws TException {
+      List<String> colNames, String engine) throws TException {
     PartitionsStatsRequest rqst = new PartitionsStatsRequest(dbName, tableName, colNames,
-        partNames);
+        partNames, engine);
     rqst.setCatName(catName);
     return client.get_partitions_statistics_req(rqst).getPartStats();
   }
 
   @Override
   public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
-      String colName) throws TException {
+      String colName, String engine) throws TException {
     return deletePartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName, partName,
-        colName);
+        colName, engine);
   }
 
   @Override
   public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-                                                 String partName, String colName)
-      throws TException {
+      String partName, String colName, String engine) throws TException {
     return client.delete_partition_column_statistics(prependCatalogToDbName(catName, dbName, conf),
-            tableName, partName, colName);
+        tableName, partName, colName, engine);
   }
 
   @Override
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
+  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine)
       throws TException {
-    return deleteTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colName);
+    return deleteTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colName, engine);
   }
 
   @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-                                             String colName) throws TException {
+      String colName, String engine) throws TException {
     return client.delete_table_column_statistics(prependCatalogToDbName(catName, dbName, conf),
-        tableName, colName);
+        tableName, colName, engine);
   }
 
   @Override
@@ -3497,18 +3506,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public AggrStats getAggrColStatsFor(String dbName, String tblName,
-    List<String> colNames, List<String> partNames) throws NoSuchObjectException, MetaException, TException {
-    return getAggrColStatsFor(getDefaultCatalog(conf), dbName, tblName, colNames, partNames);
+    List<String> colNames, List<String> partNames, String engine) throws NoSuchObjectException, MetaException, TException {
+    return getAggrColStatsFor(getDefaultCatalog(conf), dbName, tblName, colNames, partNames, engine);
   }
 
   @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
-                                      List<String> colNames, List<String> partNames) throws TException {
+      List<String> colNames, List<String> partNames, String engine) throws TException {
     if (colNames.isEmpty() || partNames.isEmpty()) {
       LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
       return new AggrStats(new ArrayList<>(),0); // Nothing to aggregate
     }
-    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
+    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
     req.setCatName(catName);
     return client.get_aggr_stats_for(req);
   }

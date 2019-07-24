@@ -699,7 +699,7 @@ public class SharedCache {
             colStatObjs.add(colStatObj);
           }
         }
-        return CachedStore.adjustColStatForGet(getTable().getParameters(), new ColumnStatistics(csd, colStatObjs),
+        return CachedStore.adjustColStatForGet(getTable().getParameters(), new ColumnStatistics(csd, colStatObjs, CacheUtils.HIVE_ENGINE),
             getTable().getWriteId(), validWriteIds, areTxnStatsSupported);
       } finally {
         tableLock.readLock().unlock();
@@ -784,7 +784,7 @@ public class SharedCache {
               return null;
             }
           }
-          ColumnStatistics columnStatistics = new ColumnStatistics(csd, statObject);
+          ColumnStatistics columnStatistics = new ColumnStatistics(csd, statObject, CacheUtils.HIVE_ENGINE);
           if (writeIdList != null && TxnUtils.isTransactionalTable(getParameters())) {
             columnStatistics.setIsStatsCompliant(true);
             if (!txnStatSupported) {

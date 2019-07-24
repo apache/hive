@@ -3160,7 +3160,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         NoSuchObjectException {
       String[] parsedDbName = parseDbName(dbname, conf);
       return getTableInternal(
-            parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null, false);
+            parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null, false, null);
     }
 
     @Override
@@ -3236,18 +3236,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         NoSuchObjectException {
       String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
       return new GetTableResult(getTableInternal(catName, req.getDbName(), req.getTblName(),
-          req.getCapabilities(), req.getValidWriteIdList(), req.isGetColumnStats(),
+          req.getCapabilities(), req.getValidWriteIdList(), req.isGetColumnStats(), req.getEngine(),
           req.getProcessorCapabilities(), req.getProcessorIdentifier()));
     }
 
     private Table getTableInternal(String catName, String dbname, String name,
-        ClientCapabilities capabilities, String writeIdList, boolean getColumnStats)
+        ClientCapabilities capabilities, String writeIdList, boolean getColumnStats, String engine)
         throws MetaException, NoSuchObjectException {
-      return getTableInternal(catName, dbname, name, capabilities, writeIdList, getColumnStats, null, null);
+      return getTableInternal(catName, dbname, name, capabilities, writeIdList, getColumnStats, engine, null, null);
     }
 
     private Table getTableInternal(String catName, String dbname, String name,
-        ClientCapabilities capabilities, String writeIdList, boolean getColumnStats,
+        ClientCapabilities capabilities, String writeIdList, boolean getColumnStats, String engine,
         List<String> processorCapabilities, String processorId)
         throws MetaException, NoSuchObjectException {
       if (isInTest) {
@@ -3259,7 +3259,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startTableFunction("get_table", catName, dbname, name);
       Exception ex = null;
       try {
-        t = get_table_core(catName, dbname, name, writeIdList, getColumnStats);
+        t = get_table_core(catName, dbname, name, writeIdList, getColumnStats, engine);
         if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
           assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
               "insert-only tables", "get_table_req");
@@ -3327,14 +3327,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final String name,
         final String writeIdList)
         throws MetaException, NoSuchObjectException {
-      return get_table_core(catName, dbname, name, writeIdList, false);
+      return get_table_core(catName, dbname, name, writeIdList, false, null);
     }
 
     public Table get_table_core(final String catName,
         final String dbname,
         final String name,
         final String writeIdList,
-        boolean getColumnStats)
+        boolean getColumnStats, String engine)
         throws MetaException, NoSuchObjectException {
       Table t = null;
       try {
@@ -3347,7 +3347,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // If column statistics was requested and is valid fetch it.
         if (getColumnStats) {
           ColumnStatistics colStats = getMS().getTableColumnStatistics(catName, dbname, name,
-                  StatsSetupConst.getColumnsHavingStats(t.getParameters()), writeIdList);
+                  StatsSetupConst.getColumnsHavingStats(t.getParameters()), engine, writeIdList);
           if (colStats != null) {
             t.setColStats(colStats);
           }
@@ -6166,7 +6166,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         statsObj = getMS().getTableColumnStatistics(
             parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, Lists.newArrayList(colName),
-            null);
+            "hive", null);
         if (statsObj != null) {
           assert statsObj.getStatsObjSize() <= 1;
         }
@@ -6192,7 +6192,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ColumnStatistics cs = getMS().getTableColumnStatistics(
             catName, dbName, tblName, lowerCaseColNames,
-            request.getValidWriteIdList());
+            request.getEngine(), request.getValidWriteIdList());
         // Note: stats compliance is not propagated to the client; instead, we just return nothing
         //       if stats are not compliant for now. This won't work for stats merging, but that
         //       is currently only done on metastore size (see set_aggr...).
@@ -6226,7 +6226,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         List<ColumnStatistics> list = getMS().getPartitionColumnStatistics(
             parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-            Lists.newArrayList(convertedPartName), Lists.newArrayList(colName));
+            Lists.newArrayList(convertedPartName), Lists.newArrayList(colName),
+            "hive");
         if (list.isEmpty()) {
           return null;
         }
@@ -6261,7 +6262,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         List<ColumnStatistics> stats = getMS().getPartitionColumnStatistics(
             catName, dbName, tblName, lowerCasePartNames, lowerCaseColNames,
-            request.isSetValidWriteIdList() ? request.getValidWriteIdList() : null);
+            request.getEngine(), request.isSetValidWriteIdList() ? request.getValidWriteIdList() : null);
         Map<String, List<ColumnStatisticsObj>> map = new HashMap<>();
         if (stats != null) {
           for (ColumnStatistics stat : stats) {
@@ -6438,7 +6439,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public boolean delete_partition_column_statistics(String dbName, String tableName,
-                                                      String partName, String colName) throws TException {
+        String partName, String colName, String engine) throws TException {
       dbName = dbName.toLowerCase();
       String[] parsedDbName = parseDbName(dbName, conf);
       tableName = tableName.toLowerCase();
@@ -6462,19 +6463,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
 
         ret = getMS().deletePartitionColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                                                      convertedPartName, partVals, colName);
+            convertedPartName, partVals, colName, engine);
         if (ret) {
           if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                     EventType.DELETE_PARTITION_COLUMN_STAT,
                     new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                            convertedPartName, partVals, colName, this));
+                            convertedPartName, partVals, colName, engine, this));
           }
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                     EventType.DELETE_PARTITION_COLUMN_STAT,
                     new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                            convertedPartName, partVals, colName, this));
+                            convertedPartName, partVals, colName, engine, this));
           }
         }
         committed = getMS().commitTransaction();
@@ -6488,7 +6489,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public boolean delete_table_column_statistics(String dbName, String tableName, String colName)
+    public boolean delete_table_column_statistics(String dbName, String tableName, String colName, String engine)
         throws TException {
       dbName = dbName.toLowerCase();
       tableName = tableName.toLowerCase();
@@ -6513,19 +6514,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new MetaException("Cannot delete stats via this API for a transactional table");
         }
 
-        ret = getMS().deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName);
+        ret = getMS().deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine);
         if (ret) {
           if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                     EventType.DELETE_TABLE_COLUMN_STAT,
                     new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-                            tableName, colName, this));
+                            tableName, colName, engine, this));
           }
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                     EventType.DELETE_TABLE_COLUMN_STAT,
                     new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-                            tableName, colName, this));
+                            tableName, colName, engine, this));
           }
         }
         committed = getMS().commitTransaction();
@@ -6682,7 +6683,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
                                                    final List<String> partNames) throws TException {
-      return get_partitions_by_names(dbName, tblName, partNames, false);
+      return get_partitions_by_names(dbName, tblName, partNames, false, null);
     }
 
     @Override
@@ -6690,19 +6691,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throws TException {
       List<Partition> partitions = get_partitions_by_names(gpbnr.getDb_name(),
               gpbnr.getTbl_name(), gpbnr.getNames(),
-              gpbnr.isSetGet_col_stats() && gpbnr.isGet_col_stats(), gpbnr.getProcessorCapabilities(),
-              gpbnr.getProcessorIdentifier());
+              gpbnr.isSetGet_col_stats() && gpbnr.isGet_col_stats(), gpbnr.getEngine(),
+              gpbnr.getProcessorCapabilities(), gpbnr.getProcessorIdentifier());
       return new GetPartitionsByNamesResult(partitions);
     }
 
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
-           final List<String> partNames, boolean getColStats) throws TException {
-      return get_partitions_by_names(dbName, tblName, partNames, getColStats, null, null);
+           final List<String> partNames, boolean getColStats, String engine) throws TException {
+      return get_partitions_by_names(dbName, tblName, partNames, getColStats, engine, null, null);
     }
  
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
-           final List<String> partNames, boolean getColStats, List<String> processorCapabilities,
-           String processorId) throws TException {
+           final List<String> partNames, boolean getColStats, String engine,
+           List<String> processorCapabilities, String processorId) throws TException {
 
       String[] dbNameParts = parseDbName(dbName, conf);
       String parsedCatName = dbNameParts[CAT_NAME];
@@ -6732,7 +6733,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             List<ColumnStatistics> partColStatsList =
                     getMS().getPartitionColumnStatistics(parsedCatName, parsedDbName, tblName,
                             Collections.singletonList(partName),
-                            StatsSetupConst.getColumnsHavingStats(part.getParameters()));
+                            StatsSetupConst.getColumnsHavingStats(part.getParameters()),
+                            engine);
             if (partColStatsList != null && !partColStatsList.isEmpty()) {
               ColumnStatistics partColStats = partColStatsList.get(0);
               if (partColStats != null) {
@@ -8220,7 +8222,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       try {
         aggrStats = getMS().get_aggr_stats_for(catName, dbName, tblName,
-            lowerCasePartNames, lowerCaseColNames, request.getValidWriteIdList());
+            lowerCasePartNames, lowerCaseColNames, request.getEngine(), request.getValidWriteIdList());
         return aggrStats;
       } finally {
           endFunction("get_aggr_stats_for", aggrStats == null, null, request.getTblName());
@@ -8298,7 +8300,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<String> partitionNames = new ArrayList<>();
         partitionNames.addAll(newStatsMap.keySet());
         List<ColumnStatistics> csOlds = ms.getPartitionColumnStatistics(catName, dbName, tableName,
-            partitionNames, colNames, request.getValidWriteIdList());
+            partitionNames, colNames, request.getEngine(), request.getValidWriteIdList());
         if (newStatsMap.values().size() != csOlds.size()) {
           // some of the partitions miss stats.
           LOG.debug("Some of the partitions miss stats.");
@@ -8374,7 +8376,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean isCommitted = false, result = false;
       try {
         ColumnStatistics csOld = ms.getTableColumnStatistics(catName, dbName, tableName, colNames,
-            request.getValidWriteIdList());
+            request.getEngine(), request.getValidWriteIdList());
         // we first use the valid stats list to prune the stats
         boolean isInvalidTxnStats = csOld != null
             && csOld.isSetIsStatsCompliant() && !csOld.isIsStatsCompliant();
