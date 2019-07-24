@@ -606,10 +606,12 @@ public class HiveStrictManagedMigration {
           LOG.error("Not updating database location for {} since an error was encountered. " +
                           "The migration must be run again for this database.", dbObj.getName());
         } else {
-          Path newDefaultDbLocation = wh.get().getDefaultDatabasePath(dbName);
-          // dbObj after this call would have the new DB location.
-          // Keep that in mind if anything below this requires the old DB path.
-          hiveUpdater.get().updateDbLocation(dbObj, newDefaultDbLocation);
+          if (!runOptions.dryRun) {
+            Path newDefaultDbLocation = wh.get().getDefaultDatabasePath(dbName);
+            // dbObj after this call would have the new DB location.
+            // Keep that in mind if anything below this requires the old DB path.
+            hiveUpdater.get().updateDbLocation(dbObj, newDefaultDbLocation);
+          }
         }
       }
     } catch (InterruptedException e) {
