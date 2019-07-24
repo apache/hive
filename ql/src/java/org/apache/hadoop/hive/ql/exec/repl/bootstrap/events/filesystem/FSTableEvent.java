@@ -201,7 +201,7 @@ public class FSTableEvent implements TableEvent {
         ColumnStatisticsDesc colStatsDesc = new ColumnStatisticsDesc(colStats.getStatsDesc());
         colStatsDesc.setTableName(tblDesc.getTableName());
         colStatsDesc.setDbName(tblDesc.getDatabaseName());
-        partDesc.setColStats(new ColumnStatistics(colStatsDesc, colStats.getStatsObj()));
+        partDesc.setColStats(new ColumnStatistics(colStatsDesc, colStats.getStatsObj(), colStats.getEngine()));
         long writeId = replicationSpec().isMigratingToTxnTable() ?
                 ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID : partition.getWriteId();
         partDesc.setWriteId(writeId);

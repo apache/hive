@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -281,6 +282,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     ColumnStatistics colStat = new ColumnStatistics();
     colStat.setStatsDesc(statsDesc);
     colStat.addToStatsObj(statsObj);
+    colStat.setEngine(Constants.HIVE_ENGINE);
     return colStat;
   }
 
@@ -301,7 +303,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private int persistColumnStats(Hive db) throws HiveException, MetaException, IOException {
     ColumnStatistics colStats = constructColumnStatsFromInput();
     SetPartitionsStatsRequest request =
-            new SetPartitionsStatsRequest(Collections.singletonList(colStats));
+            new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
 
     // Set writeId and validWriteId list for replicated statistics. getColStats() will return
     // non-null value only during replication.

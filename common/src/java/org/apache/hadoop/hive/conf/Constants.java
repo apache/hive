@@ -18,6 +18,9 @@
 package org.apache.hadoop.hive.conf;
 
 public class Constants {
+  /* Constants for Hive stats */
+  public static final String HIVE_ENGINE = "hive";
+
   /* Constants for LLAP */
   public static final String LLAP_LOGGER_NAME_QUERY_ROUTING = "query-routing";
   public static final String LLAP_LOGGER_NAME_CONSOLE = "console";

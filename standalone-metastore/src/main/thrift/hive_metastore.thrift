@@ -530,8 +530,9 @@ struct ColumnStatisticsDesc {
 struct ColumnStatistics {
 1: required ColumnStatisticsDesc statsDesc,
 2: required list<ColumnStatisticsObj> statsObj,
-3: optional bool isStatsCompliant // Are the stats isolation-level-compliant with the
+3: optional bool isStatsCompliant, // Are the stats isolation-level-compliant with the
                                                       // the calling query?
+4: required string engine
 }
 
 // table information
@@ -616,7 +617,8 @@ struct SetPartitionsStatsRequest {
 1: required list<ColumnStatistics> colStats,
 2: optional bool needMerge, //stats need to be merged with the existing stats
 3: optional i64 writeId=-1,         // writeId for the current query that updates the stats
-4: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
+4: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
+5: required string engine //engine creating the current request
 }
 
 struct SetPartitionsStatsResponse {
@@ -763,7 +765,8 @@ struct TableStatsRequest {
  2: required string tblName,
  3: required list<string> colNames
  4: optional string catName,
- 5: optional string validWriteIdList  // valid write id list for the table for which this struct is being sent
+ 5: optional string validWriteIdList,  // valid write id list for the table for which this struct is being sent
+ 6: required string engine //engine creating the current request
 }
 
 struct PartitionsStatsRequest {
@@ -772,7 +775,8 @@ struct PartitionsStatsRequest {
  3: required list<string> colNames,
  4: required list<string> partNames,
  5: optional string catName,
- 6: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
+ 6: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
+ 7: required string engine //engine creating the current request
 }
 
 // Return type for add_partitions_req
@@ -847,7 +851,8 @@ struct GetPartitionsByNamesRequest {
   3: optional list<string> names,
   4: optional bool get_col_stats,
   5: optional list<string> processorCapabilities,
-  6: optional string processorIdentifier
+  6: optional string processorIdentifier,
+  7: optional string engine
 }
 
 struct GetPartitionsByNamesResult {
@@ -1337,7 +1342,8 @@ struct GetTableRequest {
   6: optional string validWriteIdList,
   7: optional bool getColumnStats,
   8: optional list<string> processorCapabilities,
-  9: optional string processorIdentifier
+  9: optional string processorIdentifier,
+  10: optional string engine
 }
 
 struct GetTableResult {
@@ -1857,8 +1863,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
   void create_table_with_constraints(1:Table tbl, 2: list<SQLPrimaryKey> primaryKeys, 3: list<SQLForeignKey> foreignKeys,
-  4: list<SQLUniqueConstraint> uniqueConstraints, 5: list<SQLNotNullConstraint> notNullConstraints,
-  6: list<SQLDefaultConstraint> defaultConstraints, 7: list<SQLCheckConstraint> checkConstraints)
+      4: list<SQLUniqueConstraint> uniqueConstraints, 5: list<SQLNotNullConstraint> notNullConstraints,
+      6: list<SQLDefaultConstraint> defaultConstraints, 7: list<SQLCheckConstraint> checkConstraints)
       throws (1:AlreadyExistsException o1,
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
@@ -2188,10 +2194,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // delete APIs attempt to delete column statistics, if found, associated with a given db_name, tbl_name, [part_name]
   // and col_name. If the delete API doesn't find the statistics record in the metastore, throws NoSuchObjectException
   // Delete API validates the input and if the input is invalid throws InvalidInputException/InvalidObjectException.
-  bool delete_partition_column_statistics(1:string db_name, 2:string tbl_name, 3:string part_name, 4:string col_name) throws
+  bool delete_partition_column_statistics(1:string db_name, 2:string tbl_name, 3:string part_name, 4:string col_name, 5:string engine) throws
               (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
                4:InvalidInputException o4)
-  bool delete_table_column_statistics(1:string db_name, 2:string tbl_name, 3:string col_name) throws
+  bool delete_table_column_statistics(1:string db_name, 2:string tbl_name, 3:string col_name, 4:string engine) throws
               (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
                4:InvalidInputException o4)
 

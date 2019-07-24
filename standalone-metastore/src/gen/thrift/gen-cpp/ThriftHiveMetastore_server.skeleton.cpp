@@ -602,12 +602,12 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("set_aggr_stats_for\n");
   }
 
-  bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) {
+  bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine) {
     // Your implementation goes here
     printf("delete_partition_column_statistics\n");
   }
 
-  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
+  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) {
     // Your implementation goes here
     printf("delete_table_column_statistics\n");
   }

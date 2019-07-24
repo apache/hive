@@ -38,6 +38,7 @@ import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -482,7 +483,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     List<ColumnStatisticsObj> stats;
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     stats = msClient.getTableColumnStatistics(
-        "default", tableName, Lists.newArrayList("a"), validWriteIds);
+        "default", tableName, Lists.newArrayList("a"), Constants.HIVE_ENGINE, validWriteIds);
     return stats;
   }
 

@@ -34,6 +34,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.ObjectStore;
@@ -443,7 +444,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     try {
       // Note: this should NOT do txn verification - we want to get outdated stats, to
       //       see if we need to update anything.
-      existingStats = rs.getTableColumnStatistics(cat, db, tbl, allCols);
+      existingStats = rs.getTableColumnStatistics(cat, db, tbl, allCols, Constants.HIVE_ENGINE);
     } catch (NoSuchObjectException e) {
       LOG.error("Cannot retrieve existing stats, skipping " + fullTableName, e);
       return null;

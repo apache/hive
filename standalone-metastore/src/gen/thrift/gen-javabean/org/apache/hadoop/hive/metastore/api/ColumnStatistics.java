@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField STATS_DESC_FIELD_DESC = new org.apache.thrift.protocol.TField("statsDesc", org.apache.thrift.protocol.TType.STRUCT, (short)1);
   private static final org.apache.thrift.protocol.TField STATS_OBJ_FIELD_DESC = new org.apache.thrift.protocol.TField("statsObj", org.apache.thrift.protocol.TType.LIST, (short)2);
   private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.BOOL, (short)3);
+  private static final org.apache.thrift.protocol.TField ENGINE_FIELD_DESC = new org.apache.thrift.protocol.TField("engine", org.apache.thrift.protocol.TType.STRING, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,12 +52,14 @@ import org.slf4j.LoggerFactory;
   private ColumnStatisticsDesc statsDesc; // required
   private List<ColumnStatisticsObj> statsObj; // required
   private boolean isStatsCompliant; // optional
+  private String engine; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     STATS_DESC((short)1, "statsDesc"),
     STATS_OBJ((short)2, "statsObj"),
-    IS_STATS_COMPLIANT((short)3, "isStatsCompliant");
+    IS_STATS_COMPLIANT((short)3, "isStatsCompliant"),
+    ENGINE((short)4, "engine");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +80,8 @@ import org.slf4j.LoggerFactory;
           return STATS_OBJ;
         case 3: // IS_STATS_COMPLIANT
           return IS_STATS_COMPLIANT;
+        case 4: // ENGINE
+          return ENGINE;
         default:
           return null;
       }
@@ -130,6 +135,8 @@ import org.slf4j.LoggerFactory;
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnStatisticsObj.class))));
     tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.ENGINE, new org.apache.thrift.meta_data.FieldMetaData("engine", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ColumnStatistics.class, metaDataMap);
   }
@@ -139,11 +146,13 @@ import org.slf4j.LoggerFactory;
 
   public ColumnStatistics(
     ColumnStatisticsDesc statsDesc,
-    List<ColumnStatisticsObj> statsObj)
+    List<ColumnStatisticsObj> statsObj,
+    String engine)
   {
     this();
     this.statsDesc = statsDesc;
     this.statsObj = statsObj;
+    this.engine = engine;
   }
 
   /**
@@ -162,6 +171,9 @@ import org.slf4j.LoggerFactory;
       this.statsObj = __this__statsObj;
     }
     this.isStatsCompliant = other.isStatsCompliant;
+    if (other.isSetEngine()) {
+      this.engine = other.engine;
+    }
   }
 
   public ColumnStatistics deepCopy() {
@@ -174,6 +186,7 @@ import org.slf4j.LoggerFactory;
     this.statsObj = null;
     setIsStatsCompliantIsSet(false);
     this.isStatsCompliant = false;
+    this.engine = null;
   }
 
   public ColumnStatisticsDesc getStatsDesc() {
@@ -259,6 +272,29 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID, value);
   }
 
+  public String getEngine() {
+    return this.engine;
+  }
+
+  public void setEngine(String engine) {
+    this.engine = engine;
+  }
+
+  public void unsetEngine() {
+    this.engine = null;
+  }
+
+  /** Returns true if field engine is set (has been assigned a value) and false otherwise */
+  public boolean isSetEngine() {
+    return this.engine != null;
+  }
+
+  public void setEngineIsSet(boolean value) {
+    if (!value) {
+      this.engine = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case STATS_DESC:
@@ -285,6 +321,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case ENGINE:
+      if (value == null) {
+        unsetEngine();
+      } else {
+        setEngine((String)value);
+      }
+      break;
+
     }
   }
 
@@ -298,6 +342,9 @@ import org.slf4j.LoggerFactory;
 
     case IS_STATS_COMPLIANT:
       return isIsStatsCompliant();
+
+    case ENGINE:
+      return getEngine();
 
     }
     throw new IllegalStateException();
@@ -316,6 +363,8 @@ import org.slf4j.LoggerFactory;
       return isSetStatsObj();
     case IS_STATS_COMPLIANT:
       return isSetIsStatsCompliant();
+    case ENGINE:
+      return isSetEngine();
     }
     throw new IllegalStateException();
   }
@@ -360,6 +409,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_engine = true && this.isSetEngine();
+    boolean that_present_engine = true && that.isSetEngine();
+    if (this_present_engine || that_present_engine) {
+      if (!(this_present_engine && that_present_engine))
+        return false;
+      if (!this.engine.equals(that.engine))
+        return false;
+    }
+
     return true;
   }
 
@@ -381,6 +439,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_isStatsCompliant);
     if (present_isStatsCompliant)
       list.add(isStatsCompliant);
+
+    boolean present_engine = true && (isSetEngine());
+    list.add(present_engine);
+    if (present_engine)
+      list.add(engine);
 
     return list.hashCode();
   }
@@ -419,6 +482,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetIsStatsCompliant()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isStatsCompliant, other.isStatsCompliant);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetEngine()).compareTo(other.isSetEngine());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetEngine()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.engine, other.engine);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -464,6 +537,14 @@ import org.slf4j.LoggerFactory;
       sb.append(this.isStatsCompliant);
       first = false;
     }
+    if (!first) sb.append(", ");
+    sb.append("engine:");
+    if (this.engine == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.engine);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -476,6 +557,10 @@ import org.slf4j.LoggerFactory;
 
     if (!isSetStatsObj()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'statsObj' is unset! Struct:" + toString());
+    }
+
+    if (!isSetEngine()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'engine' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -556,6 +641,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // ENGINE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.engine = iprot.readString();
+              struct.setEngineIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -591,6 +684,11 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.isStatsCompliant);
         oprot.writeFieldEnd();
       }
+      if (struct.engine != null) {
+        oprot.writeFieldBegin(ENGINE_FIELD_DESC);
+        oprot.writeString(struct.engine);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -616,6 +714,7 @@ import org.slf4j.LoggerFactory;
           _iter218.write(oprot);
         }
       }
+      oprot.writeString(struct.engine);
       BitSet optionals = new BitSet();
       if (struct.isSetIsStatsCompliant()) {
         optionals.set(0);
@@ -644,6 +743,8 @@ import org.slf4j.LoggerFactory;
         }
       }
       struct.setStatsObjIsSet(true);
+      struct.engine = iprot.readString();
+      struct.setEngineIsSet(true);
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         struct.isStatsCompliant = iprot.readBool();
