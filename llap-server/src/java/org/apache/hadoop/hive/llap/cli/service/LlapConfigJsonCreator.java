@@ -102,6 +102,9 @@ class LlapConfigJsonCreator {
     long maxDirect = (xmx > 0 && cache > 0 && xmx < cache * 1.25) ? (long) (cache * 1.25) : -1;
     configs.put("max_direct_memory", Long.toString(maxDirect));
 
+    configs.put(ConfVars.LLAP_HDFS_PACKAGE_DIR.varname,
+            conf.getVar(ConfVars.LLAP_HDFS_PACKAGE_DIR));
+
     return configs;
   }
 
