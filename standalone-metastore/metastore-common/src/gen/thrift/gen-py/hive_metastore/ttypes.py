@@ -7185,6 +7185,7 @@ class ColumnStatistics:
    - statsDesc
    - statsObj
    - isStatsCompliant
+   - engine
   """
 
   thrift_spec = (
@@ -7192,12 +7193,14 @@ class ColumnStatistics:
     (1, TType.STRUCT, 'statsDesc', (ColumnStatisticsDesc, ColumnStatisticsDesc.thrift_spec), None, ), # 1
     (2, TType.LIST, 'statsObj', (TType.STRUCT,(ColumnStatisticsObj, ColumnStatisticsObj.thrift_spec)), None, ), # 2
     (3, TType.BOOL, 'isStatsCompliant', None, None, ), # 3
+    (4, TType.STRING, 'engine', None, None, ), # 4
   )
 
-  def __init__(self, statsDesc=None, statsObj=None, isStatsCompliant=None,):
+  def __init__(self, statsDesc=None, statsObj=None, isStatsCompliant=None, engine=None,):
     self.statsDesc = statsDesc
     self.statsObj = statsObj
     self.isStatsCompliant = isStatsCompliant
+    self.engine = engine
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -7230,6 +7233,11 @@ class ColumnStatistics:
           self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.engine = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -7255,6 +7263,10 @@ class ColumnStatistics:
       oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 3)
       oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
+    if self.engine is not None:
+      oprot.writeFieldBegin('engine', TType.STRING, 4)
+      oprot.writeString(self.engine)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -7263,6 +7275,8 @@ class ColumnStatistics:
       raise TProtocol.TProtocolException(message='Required field statsDesc is unset!')
     if self.statsObj is None:
       raise TProtocol.TProtocolException(message='Required field statsObj is unset!')
+    if self.engine is None:
+      raise TProtocol.TProtocolException(message='Required field engine is unset!')
     return
 
 
@@ -7271,6 +7285,7 @@ class ColumnStatistics:
     value = (value * 31) ^ hash(self.statsDesc)
     value = (value * 31) ^ hash(self.statsObj)
     value = (value * 31) ^ hash(self.isStatsCompliant)
+    value = (value * 31) ^ hash(self.engine)
     return value
 
   def __repr__(self):
@@ -7627,6 +7642,7 @@ class SetPartitionsStatsRequest:
    - needMerge
    - writeId
    - validWriteIdList
+   - engine
   """
 
   thrift_spec = (
@@ -7635,13 +7651,15 @@ class SetPartitionsStatsRequest:
     (2, TType.BOOL, 'needMerge', None, None, ), # 2
     (3, TType.I64, 'writeId', None, -1, ), # 3
     (4, TType.STRING, 'validWriteIdList', None, None, ), # 4
+    (5, TType.STRING, 'engine', None, None, ), # 5
   )
 
-  def __init__(self, colStats=None, needMerge=None, writeId=thrift_spec[3][4], validWriteIdList=None,):
+  def __init__(self, colStats=None, needMerge=None, writeId=thrift_spec[3][4], validWriteIdList=None, engine=None,):
     self.colStats = colStats
     self.needMerge = needMerge
     self.writeId = writeId
     self.validWriteIdList = validWriteIdList
+    self.engine = engine
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -7678,6 +7696,11 @@ class SetPartitionsStatsRequest:
           self.validWriteIdList = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.engine = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -7707,12 +7730,18 @@ class SetPartitionsStatsRequest:
       oprot.writeFieldBegin('validWriteIdList', TType.STRING, 4)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
+    if self.engine is not None:
+      oprot.writeFieldBegin('engine', TType.STRING, 5)
+      oprot.writeString(self.engine)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
   def validate(self):
     if self.colStats is None:
       raise TProtocol.TProtocolException(message='Required field colStats is unset!')
+    if self.engine is None:
+      raise TProtocol.TProtocolException(message='Required field engine is unset!')
     return
 
 
@@ -7722,6 +7751,7 @@ class SetPartitionsStatsRequest:
     value = (value * 31) ^ hash(self.needMerge)
     value = (value * 31) ^ hash(self.writeId)
     value = (value * 31) ^ hash(self.validWriteIdList)
+    value = (value * 31) ^ hash(self.engine)
     return value
 
   def __repr__(self):
@@ -10019,6 +10049,7 @@ class TableStatsRequest:
    - colNames
    - catName
    - validWriteIdList
+   - engine
   """
 
   thrift_spec = (
@@ -10028,14 +10059,16 @@ class TableStatsRequest:
     (3, TType.LIST, 'colNames', (TType.STRING,None), None, ), # 3
     (4, TType.STRING, 'catName', None, None, ), # 4
     (5, TType.STRING, 'validWriteIdList', None, None, ), # 5
+    (6, TType.STRING, 'engine', None, None, ), # 6
   )
 
-  def __init__(self, dbName=None, tblName=None, colNames=None, catName=None, validWriteIdList=None,):
+  def __init__(self, dbName=None, tblName=None, colNames=None, catName=None, validWriteIdList=None, engine=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.colNames = colNames
     self.catName = catName
     self.validWriteIdList = validWriteIdList
+    self.engine = engine
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -10076,6 +10109,11 @@ class TableStatsRequest:
           self.validWriteIdList = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.engine = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -10109,6 +10147,10 @@ class TableStatsRequest:
       oprot.writeFieldBegin('validWriteIdList', TType.STRING, 5)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
+    if self.engine is not None:
+      oprot.writeFieldBegin('engine', TType.STRING, 6)
+      oprot.writeString(self.engine)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -10119,6 +10161,8 @@ class TableStatsRequest:
       raise TProtocol.TProtocolException(message='Required field tblName is unset!')
     if self.colNames is None:
       raise TProtocol.TProtocolException(message='Required field colNames is unset!')
+    if self.engine is None:
+      raise TProtocol.TProtocolException(message='Required field engine is unset!')
     return
 
 
@@ -10129,6 +10173,7 @@ class TableStatsRequest:
     value = (value * 31) ^ hash(self.colNames)
     value = (value * 31) ^ hash(self.catName)
     value = (value * 31) ^ hash(self.validWriteIdList)
+    value = (value * 31) ^ hash(self.engine)
     return value
 
   def __repr__(self):
@@ -10151,6 +10196,7 @@ class PartitionsStatsRequest:
    - partNames
    - catName
    - validWriteIdList
+   - engine
   """
 
   thrift_spec = (
@@ -10161,15 +10207,17 @@ class PartitionsStatsRequest:
     (4, TType.LIST, 'partNames', (TType.STRING,None), None, ), # 4
     (5, TType.STRING, 'catName', None, None, ), # 5
     (6, TType.STRING, 'validWriteIdList', None, None, ), # 6
+    (7, TType.STRING, 'engine', None, None, ), # 7
   )
 
-  def __init__(self, dbName=None, tblName=None, colNames=None, partNames=None, catName=None, validWriteIdList=None,):
+  def __init__(self, dbName=None, tblName=None, colNames=None, partNames=None, catName=None, validWriteIdList=None, engine=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.colNames = colNames
     self.partNames = partNames
     self.catName = catName
     self.validWriteIdList = validWriteIdList
+    self.engine = engine
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -10220,6 +10268,11 @@ class PartitionsStatsRequest:
           self.validWriteIdList = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.engine = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -10260,6 +10313,10 @@ class PartitionsStatsRequest:
       oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
+    if self.engine is not None:
+      oprot.writeFieldBegin('engine', TType.STRING, 7)
+      oprot.writeString(self.engine)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -10272,6 +10329,8 @@ class PartitionsStatsRequest:
       raise TProtocol.TProtocolException(message='Required field colNames is unset!')
     if self.partNames is None:
       raise TProtocol.TProtocolException(message='Required field partNames is unset!')
+    if self.engine is None:
+      raise TProtocol.TProtocolException(message='Required field engine is unset!')
     return
 
 
@@ -10283,6 +10342,7 @@ class PartitionsStatsRequest:
     value = (value * 31) ^ hash(self.partNames)
     value = (value * 31) ^ hash(self.catName)
     value = (value * 31) ^ hash(self.validWriteIdList)
+    value = (value * 31) ^ hash(self.engine)
     return value
 
   def __repr__(self):
@@ -11322,6 +11382,7 @@ class GetPartitionsByNamesRequest:
    - get_col_stats
    - processorCapabilities
    - processorIdentifier
+   - engine
   """
 
   thrift_spec = (
@@ -11332,15 +11393,17 @@ class GetPartitionsByNamesRequest:
     (4, TType.BOOL, 'get_col_stats', None, None, ), # 4
     (5, TType.LIST, 'processorCapabilities', (TType.STRING,None), None, ), # 5
     (6, TType.STRING, 'processorIdentifier', None, None, ), # 6
+    (7, TType.STRING, 'engine', None, None, ), # 7
   )
 
-  def __init__(self, db_name=None, tbl_name=None, names=None, get_col_stats=None, processorCapabilities=None, processorIdentifier=None,):
+  def __init__(self, db_name=None, tbl_name=None, names=None, get_col_stats=None, processorCapabilities=None, processorIdentifier=None, engine=None,):
     self.db_name = db_name
     self.tbl_name = tbl_name
     self.names = names
     self.get_col_stats = get_col_stats
     self.processorCapabilities = processorCapabilities
     self.processorIdentifier = processorIdentifier
+    self.engine = engine
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -11391,6 +11454,11 @@ class GetPartitionsByNamesRequest:
           self.processorIdentifier = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.engine = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -11431,6 +11499,10 @@ class GetPartitionsByNamesRequest:
       oprot.writeFieldBegin('processorIdentifier', TType.STRING, 6)
       oprot.writeString(self.processorIdentifier)
       oprot.writeFieldEnd()
+    if self.engine is not None:
+      oprot.writeFieldBegin('engine', TType.STRING, 7)
+      oprot.writeString(self.engine)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -11450,6 +11522,7 @@ class GetPartitionsByNamesRequest:
     value = (value * 31) ^ hash(self.get_col_stats)
     value = (value * 31) ^ hash(self.processorCapabilities)
     value = (value * 31) ^ hash(self.processorIdentifier)
+    value = (value * 31) ^ hash(self.engine)
     return value
 
   def __repr__(self):
@@ -18474,6 +18547,7 @@ class GetTableRequest:
    - getColumnStats
    - processorCapabilities
    - processorIdentifier
+   - engine
   """
 
   thrift_spec = (
@@ -18487,9 +18561,10 @@ class GetTableRequest:
     (7, TType.BOOL, 'getColumnStats', None, None, ), # 7
     (8, TType.LIST, 'processorCapabilities', (TType.STRING,None), None, ), # 8
     (9, TType.STRING, 'processorIdentifier', None, None, ), # 9
+    (10, TType.STRING, 'engine', None, None, ), # 10
   )
 
-  def __init__(self, dbName=None, tblName=None, capabilities=None, catName=None, validWriteIdList=None, getColumnStats=None, processorCapabilities=None, processorIdentifier=None,):
+  def __init__(self, dbName=None, tblName=None, capabilities=None, catName=None, validWriteIdList=None, getColumnStats=None, processorCapabilities=None, processorIdentifier=None, engine=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.capabilities = capabilities
@@ -18498,6 +18573,7 @@ class GetTableRequest:
     self.getColumnStats = getColumnStats
     self.processorCapabilities = processorCapabilities
     self.processorIdentifier = processorIdentifier
+    self.engine = engine
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -18554,6 +18630,11 @@ class GetTableRequest:
           self.processorIdentifier = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.STRING:
+          self.engine = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -18599,6 +18680,10 @@ class GetTableRequest:
       oprot.writeFieldBegin('processorIdentifier', TType.STRING, 9)
       oprot.writeString(self.processorIdentifier)
       oprot.writeFieldEnd()
+    if self.engine is not None:
+      oprot.writeFieldBegin('engine', TType.STRING, 10)
+      oprot.writeString(self.engine)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -18620,6 +18705,7 @@ class GetTableRequest:
     value = (value * 31) ^ hash(self.getColumnStats)
     value = (value * 31) ^ hash(self.processorCapabilities)
     value = (value * 31) ^ hash(self.processorIdentifier)
+    value = (value * 31) ^ hash(self.engine)
     return value
 
   def __repr__(self):
