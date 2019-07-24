@@ -85,6 +85,7 @@ public class ProxyLocalFileSystem extends LocalFileSystem {
     for (FileSystem f : tracked) {
       f.close();
     }
+    tracked.clear();
     mode = Mode.OFF;
 
   }

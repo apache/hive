@@ -61,7 +61,8 @@ public class TestScheduledQueryStatements2 {
     dropTables(driver);
     String cmds[] = {
         // @formatter:off
-        "create table tu(c int)",
+        "create table tu(c int) stored as orc",
+        "insert into tu values(1),(3),(10)",
         "create database asd",
         "create table asd.tasd(c int)",
         // @formatter:on
@@ -119,11 +120,13 @@ public class TestScheduledQueryStatements2 {
   private void doOneSelect() throws IOException {
 
     HiveConf conf = env_setup.getTestCtx().hiveConf;
-
+    conf.set("hive.query.results.cache.enabled", "true");
     SessionState ss = SessionState.start(conf);
 
     try (IDriver driver = DriverFactory.newDriver(conf)) {
-      driver.run("select 1");
+      driver.run("drop table tt");
+      driver.run("create table tt as select c,count(1) from tu group by c");
+      //      driver.run("select 1");
     }
 
     ss.close();
