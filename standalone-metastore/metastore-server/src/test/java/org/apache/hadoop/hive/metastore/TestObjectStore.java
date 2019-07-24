@@ -113,6 +113,7 @@ public class TestObjectStore {
   private ObjectStore objectStore = null;
   private Configuration conf;
 
+  private static final String ENGINE = "hive";
   private static final String DB1 = "testobjectstoredb1";
   private static final String DB2 = "testobjectstoredb2";
   private static final String TABLE1 = "testobjectstoretable1";
@@ -645,6 +646,7 @@ public class TestObjectStore {
 
         List<ColumnStatisticsObj> statsObjList = new ArrayList<>(1);
         stats.setStatsObj(statsObjList);
+        stats.setEngine(ENGINE);
 
         ColumnStatisticsData data = new ColumnStatisticsData();
         BooleanColumnStatsData boolStats = new BooleanColumnStatsData();

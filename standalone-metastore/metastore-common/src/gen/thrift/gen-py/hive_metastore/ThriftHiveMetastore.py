@@ -966,22 +966,24 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def delete_partition_column_statistics(self, db_name, tbl_name, part_name, col_name):
+  def delete_partition_column_statistics(self, db_name, tbl_name, part_name, col_name, engine):
     """
     Parameters:
      - db_name
      - tbl_name
      - part_name
      - col_name
+     - engine
     """
     pass
 
-  def delete_table_column_statistics(self, db_name, tbl_name, col_name):
+  def delete_table_column_statistics(self, db_name, tbl_name, col_name, engine):
     """
     Parameters:
      - db_name
      - tbl_name
      - col_name
+     - engine
     """
     pass
 
@@ -6083,24 +6085,26 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o4
     raise TApplicationException(TApplicationException.MISSING_RESULT, "set_aggr_stats_for failed: unknown result")
 
-  def delete_partition_column_statistics(self, db_name, tbl_name, part_name, col_name):
+  def delete_partition_column_statistics(self, db_name, tbl_name, part_name, col_name, engine):
     """
     Parameters:
      - db_name
      - tbl_name
      - part_name
      - col_name
+     - engine
     """
-    self.send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name)
+    self.send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name, engine)
     return self.recv_delete_partition_column_statistics()
 
-  def send_delete_partition_column_statistics(self, db_name, tbl_name, part_name, col_name):
+  def send_delete_partition_column_statistics(self, db_name, tbl_name, part_name, col_name, engine):
     self._oprot.writeMessageBegin('delete_partition_column_statistics', TMessageType.CALL, self._seqid)
     args = delete_partition_column_statistics_args()
     args.db_name = db_name
     args.tbl_name = tbl_name
     args.part_name = part_name
     args.col_name = col_name
+    args.engine = engine
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -6128,22 +6132,24 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o4
     raise TApplicationException(TApplicationException.MISSING_RESULT, "delete_partition_column_statistics failed: unknown result")
 
-  def delete_table_column_statistics(self, db_name, tbl_name, col_name):
+  def delete_table_column_statistics(self, db_name, tbl_name, col_name, engine):
     """
     Parameters:
      - db_name
      - tbl_name
      - col_name
+     - engine
     """
-    self.send_delete_table_column_statistics(db_name, tbl_name, col_name)
+    self.send_delete_table_column_statistics(db_name, tbl_name, col_name, engine)
     return self.recv_delete_table_column_statistics()
 
-  def send_delete_table_column_statistics(self, db_name, tbl_name, col_name):
+  def send_delete_table_column_statistics(self, db_name, tbl_name, col_name, engine):
     self._oprot.writeMessageBegin('delete_table_column_statistics', TMessageType.CALL, self._seqid)
     args = delete_table_column_statistics_args()
     args.db_name = db_name
     args.tbl_name = tbl_name
     args.col_name = col_name
+    args.engine = engine
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -13024,7 +13030,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = delete_partition_column_statistics_result()
     try:
-      result.success = self._handler.delete_partition_column_statistics(args.db_name, args.tbl_name, args.part_name, args.col_name)
+      result.success = self._handler.delete_partition_column_statistics(args.db_name, args.tbl_name, args.part_name, args.col_name, args.engine)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -13055,7 +13061,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = delete_table_column_statistics_result()
     try:
-      result.success = self._handler.delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name)
+      result.success = self._handler.delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name, args.engine)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -36354,6 +36360,7 @@ class delete_partition_column_statistics_args:
    - tbl_name
    - part_name
    - col_name
+   - engine
   """
 
   thrift_spec = (
@@ -36362,13 +36369,15 @@ class delete_partition_column_statistics_args:
     (2, TType.STRING, 'tbl_name', None, None, ), # 2
     (3, TType.STRING, 'part_name', None, None, ), # 3
     (4, TType.STRING, 'col_name', None, None, ), # 4
+    (5, TType.STRING, 'engine', None, None, ), # 5
   )
 
-  def __init__(self, db_name=None, tbl_name=None, part_name=None, col_name=None,):
+  def __init__(self, db_name=None, tbl_name=None, part_name=None, col_name=None, engine=None,):
     self.db_name = db_name
     self.tbl_name = tbl_name
     self.part_name = part_name
     self.col_name = col_name
+    self.engine = engine
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -36399,6 +36408,11 @@ class delete_partition_column_statistics_args:
           self.col_name = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.engine = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -36425,6 +36439,10 @@ class delete_partition_column_statistics_args:
       oprot.writeFieldBegin('col_name', TType.STRING, 4)
       oprot.writeString(self.col_name)
       oprot.writeFieldEnd()
+    if self.engine is not None:
+      oprot.writeFieldBegin('engine', TType.STRING, 5)
+      oprot.writeString(self.engine)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -36438,6 +36456,7 @@ class delete_partition_column_statistics_args:
     value = (value * 31) ^ hash(self.tbl_name)
     value = (value * 31) ^ hash(self.part_name)
     value = (value * 31) ^ hash(self.col_name)
+    value = (value * 31) ^ hash(self.engine)
     return value
 
   def __repr__(self):
@@ -36577,6 +36596,7 @@ class delete_table_column_statistics_args:
    - db_name
    - tbl_name
    - col_name
+   - engine
   """
 
   thrift_spec = (
@@ -36584,12 +36604,14 @@ class delete_table_column_statistics_args:
     (1, TType.STRING, 'db_name', None, None, ), # 1
     (2, TType.STRING, 'tbl_name', None, None, ), # 2
     (3, TType.STRING, 'col_name', None, None, ), # 3
+    (4, TType.STRING, 'engine', None, None, ), # 4
   )
 
-  def __init__(self, db_name=None, tbl_name=None, col_name=None,):
+  def __init__(self, db_name=None, tbl_name=None, col_name=None, engine=None,):
     self.db_name = db_name
     self.tbl_name = tbl_name
     self.col_name = col_name
+    self.engine = engine
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -36615,6 +36637,11 @@ class delete_table_column_statistics_args:
           self.col_name = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.engine = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -36637,6 +36664,10 @@ class delete_table_column_statistics_args:
       oprot.writeFieldBegin('col_name', TType.STRING, 3)
       oprot.writeString(self.col_name)
       oprot.writeFieldEnd()
+    if self.engine is not None:
+      oprot.writeFieldBegin('engine', TType.STRING, 4)
+      oprot.writeString(self.engine)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -36649,6 +36680,7 @@ class delete_table_column_statistics_args:
     value = (value * 31) ^ hash(self.db_name)
     value = (value * 31) ^ hash(self.tbl_name)
     value = (value * 31) ^ hash(self.col_name)
+    value = (value * 31) ^ hash(self.engine)
     return value
 
   def __repr__(self):
