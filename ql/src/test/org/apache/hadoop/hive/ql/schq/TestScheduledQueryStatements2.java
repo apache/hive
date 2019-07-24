@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.FileSystem;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -70,7 +71,7 @@ public class TestScheduledQueryStatements2 {
       assertEquals("Checking command success", 0, ret);
     }
 
-    ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
+    //    ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
 
   }
 
@@ -97,6 +98,10 @@ public class TestScheduledQueryStatements2 {
       System.out.println("TRY# " + i);
       System.out.println("TRY# " + i);
       System.out.println("TRY# " + i);
+      boolean ex1 = (i > 3);
+      if (ex1) {
+        ProxyLocalFileSystem.track();
+      }
       try (PrintStream fos = new PrintStream("/tmp/stack/idx")) {
         RuntimeException ex = new RuntimeException("c");
         fos.println(i);
@@ -105,10 +110,14 @@ public class TestScheduledQueryStatements2 {
       }
 
       doOneSelect();
+      if (ex1) {
+        ProxyLocalFileSystem.boom();
+      }
     }
   }
 
   private void doOneSelect() throws IOException {
+
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
     SessionState ss = SessionState.start(conf);
