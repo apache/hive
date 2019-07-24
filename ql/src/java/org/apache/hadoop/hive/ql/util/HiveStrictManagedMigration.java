@@ -89,6 +89,7 @@ public class HiveStrictManagedMigration {
     final String tableRegex;
     final String oldWarehouseRoot;
     final TableMigrationOption migrationOption;
+    final Properties confProps;
     final boolean shouldModifyManagedTableLocation;
     final boolean shouldModifyManagedTableOwner;
     final boolean shouldModifyManagedTablePermissions;
@@ -100,6 +101,7 @@ public class HiveStrictManagedMigration {
                String tableRegex,
                String oldWarehouseRoot,
                TableMigrationOption migrationOption,
+               Properties confProps,
                boolean shouldModifyManagedTableLocation,
                boolean shouldModifyManagedTableOwner,
                boolean shouldModifyManagedTablePermissions,
@@ -111,6 +113,7 @@ public class HiveStrictManagedMigration {
       this.tableRegex = tableRegex;
       this.oldWarehouseRoot = oldWarehouseRoot;
       this.migrationOption = migrationOption;
+      this.confProps = confProps;
       this.shouldModifyManagedTableLocation = shouldModifyManagedTableLocation;
       this.shouldModifyManagedTableOwner = shouldModifyManagedTableOwner;
       this.shouldModifyManagedTablePermissions = shouldModifyManagedTablePermissions;
@@ -125,6 +128,7 @@ public class HiveStrictManagedMigration {
               this.tableRegex,
               this.oldWarehouseRoot,
               this.migrationOption,
+              this.confProps,
               shouldModifyManagedTableLocation,
               this.shouldModifyManagedTableOwner,
               this.shouldModifyManagedTablePermissions,
@@ -140,6 +144,7 @@ public class HiveStrictManagedMigration {
               ", tableRegex='" + tableRegex + '\'' +
               ", oldWarehouseRoot='" + oldWarehouseRoot + '\'' +
               ", migrationOption=" + migrationOption +
+              ", confProps=" + confProps +
               ", shouldModifyManagedTableLocation=" + shouldModifyManagedTableLocation +
               ", shouldModifyManagedTableOwner=" + shouldModifyManagedTableOwner +
               ", shouldModifyManagedTablePermissions=" + shouldModifyManagedTablePermissions +
@@ -357,6 +362,7 @@ public class HiveStrictManagedMigration {
         tableRegex,
         oldWarehouseRoot,
         migrationOption,
+        confProps,
         shouldModifyManagedTableLocation,
         shouldModifyManagedTableOwner,
         shouldModifyManagedTablePermissions,
@@ -406,6 +412,15 @@ public class HiveStrictManagedMigration {
     this.filePerms = ownerPermsOptions.filePerms;
     this.curWhRootPath = warehouseRootCheckResult.curWhRootPath;
     this.encryptionShim = warehouseRootCheckResult.encryptionShim;
+
+    // Make sure all --hiveconf settings get added to the HiveConf.
+    // This allows utility-specific settings (such as strict.managed.tables.migration.owner)
+    // to be set via command line.
+    if (runOptions.confProps != null) {
+      for (String propKey : runOptions.confProps.stringPropertyNames()) {
+        this.conf.set(propKey, runOptions.confProps.getProperty(propKey));
+      }
+    }
 
     this.hms = new CloseableThreadLocal<>(() -> {
       try {
