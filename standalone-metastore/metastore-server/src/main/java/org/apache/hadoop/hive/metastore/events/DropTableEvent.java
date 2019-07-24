@@ -29,13 +29,16 @@ public class DropTableEvent extends ListenerEvent {
 
   private final Table table;
   private final boolean deleteData;
+  private final boolean isReplicated;
 
-  public DropTableEvent(Table table, boolean status, boolean deleteData, IHMSHandler handler) {
+  public DropTableEvent(Table table, boolean status, boolean deleteData, IHMSHandler handler,
+                        boolean isReplicated) {
     super(status, handler);
     this.table = table;
     // In HiveMetaStore, the deleteData flag indicates whether DFS data should be
     // removed on a drop.
     this.deleteData = deleteData;
+    this.isReplicated = isReplicated;
   }
 
   /**
@@ -51,4 +54,9 @@ public class DropTableEvent extends ListenerEvent {
   public boolean getDeleteData() {
     return deleteData;
   }
+
+  /**
+   * @return whether this event was created by replication
+   */
+  public boolean isReplicated() { return isReplicated; }
 }

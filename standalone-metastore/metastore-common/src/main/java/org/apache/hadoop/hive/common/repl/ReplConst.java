@@ -30,4 +30,11 @@ public class ReplConst {
   public static final String REPL_DATA_LOCATION_CHANGED = "REPL_DATA_LOCATION_CHANGED";
 
   public static final String TRUE = "true";
+
+  /**
+   * The constant string literal added as a property of database being replicated into. We choose
+   * this property over other properties is because this property is added right when the
+   * database is created as part of repl load and survives the incremental cycles.
+   */
+  public static final String REPL_TARGET_DB_PROPERTY = "hive.repl.ckpt.key";
 }
