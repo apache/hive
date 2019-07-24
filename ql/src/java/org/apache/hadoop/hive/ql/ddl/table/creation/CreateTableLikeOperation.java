@@ -94,6 +94,8 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
       setExternalProperties(table);
     }
 
+    setUserSpecifiedLocation(table);
+
     table.setFields(oldTable.getCols());
     table.setPartCols(oldTable.getPartCols());
 
@@ -114,11 +116,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     table.setTableName(names[1]);
     table.setOwner(SessionState.getUserFromAuthenticator());
 
-    if (desc.getLocation() != null) {
-      table.setDataLocation(new Path(desc.getLocation()));
-    } else {
-      table.unsetDataLocation();
-    }
+    setUserSpecifiedLocation(table);
 
     setTableParameters(table);
 
@@ -136,6 +134,14 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     }
 
     return table;
+  }
+
+  private void setUserSpecifiedLocation(Table table) {
+    if (desc.getLocation() != null) {
+      table.setDataLocation(new Path(desc.getLocation()));
+    } else {
+      table.unsetDataLocation();
+    }
   }
 
   private void setTableParameters(Table tbl) throws HiveException {
