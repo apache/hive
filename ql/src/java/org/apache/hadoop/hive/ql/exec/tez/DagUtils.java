@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
@@ -1344,9 +1345,27 @@ public class DagUtils {
    * @throws IOException
    */
   public JobConf createConfiguration(HiveConf hiveConf) throws IOException {
+    return createConfiguration(hiveConf, false);
+  }
+
+  /**
+   * Creates and initializes a JobConf object that can be used to execute
+   * the DAG. This can skip the configs which are already included in AM configs.
+   * @param hiveConf Current conf for the execution
+   * @param skipAMConf Skip the configs where are already set across all DAGs 
+   * @return JobConf base configuration for job execution
+   * @throws IOException
+   */
+  public JobConf createConfiguration(HiveConf hiveConf, boolean skipAMConf) throws IOException {
     hiveConf.setBoolean("mapred.mapper.new-api", false);
 
-    JobConf conf = new JobConf(new TezConfiguration(hiveConf));
+    Predicate<String> findDefaults =
+        (s) -> ((s != null) && (s.endsWith(".xml") || (s.endsWith(".java") && !"HiveConf.java".equals(s))));
+
+    // since this is an inclusion filter, negate the predicate
+    JobConf conf =
+        TezConfigurationFactory
+            .wrapWithJobConf(hiveConf, skipAMConf ? findDefaults.negate() : null);
 
     conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
 
@@ -1364,6 +1383,7 @@ public class DagUtils {
     // Removing job credential entry/ cannot be set on the tasks
     conf.unset("mapreduce.job.credentials.binary");
 
+    // TODO: convert this to a predicate too
     hiveConf.stripHiddenConfigurations(conf);
     return conf;
   }
