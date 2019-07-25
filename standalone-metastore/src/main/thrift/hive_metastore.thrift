@@ -557,7 +557,9 @@ struct Table {
   19: optional i64 writeId=-1,
   20: optional bool isStatsCompliant,
   21: optional ColumnStatistics colStats // column statistics for table
-  23: optional byte accessType
+  23: optional byte accessType,
+  24: optional list<string> requiredReadCapabilities,
+  25: optional list<string> requiredWriteCapabilities
 }
 
 struct Partition {
@@ -1368,9 +1370,10 @@ struct GetTablesExtRequest {
 
 // response to GetTablesExtRequest call
 struct ExtendedTableInfo {
- 1: required string tblName,                     // always returned
- 2: optional i32 accessType,              // if AccessType set
- 3: optional list<string> processorCapabilities  // if ProcessorCapabilities set
+ 1: required string tblName,                    // always returned
+ 2: optional i32 accessType,                    // if AccessType set
+ 3: optional list<string> requiredReadCapabilities  // capabilities required for read access
+ 4: optional list<string> requiredWriteCapabilities // capabilities required for write access
 }
 
 // Request type for cm_recycle
@@ -1687,6 +1690,19 @@ struct GetRuntimeStatsRequest {
   2: required i32 maxCreateTime
 }
 
+struct CreateTableRequest {
+   1: required Table table,
+   2: optional EnvironmentContext envContext,
+   3: optional list<SQLPrimaryKey> primaryKeys,
+   4: optional list<SQLForeignKey> foreignKeys,
+   5: optional list<SQLUniqueConstraint> uniqueConstraints,
+   6: optional list<SQLNotNullConstraint> notNullConstraints,
+   7: optional list<SQLDefaultConstraint> defaultConstraints,
+   8: optional list<SQLCheckConstraint> checkConstraints,
+   9: optional list<string> processorCapabilities,
+   10: optional string processorIdentifier
+}
+
 struct AlterPartitionsRequest {
   1: optional string catName,
   2: required string dbName,
@@ -1846,6 +1862,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
       throws (1:AlreadyExistsException o1,
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
+  void create_table_req(1:CreateTableRequest request) throws (1:AlreadyExistsException o1,
+        2:InvalidObjectException o2, 3:MetaException o3,
+        4:NoSuchObjectException o4)
   void drop_constraint(1:DropConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o3)
   void add_primary_key(1:AddPrimaryKeyRequest req)

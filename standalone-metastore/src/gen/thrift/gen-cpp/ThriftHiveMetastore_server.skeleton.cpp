@@ -142,6 +142,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_table_with_constraints\n");
   }
 
+  void create_table_req(const CreateTableRequest& request) {
+    // Your implementation goes here
+    printf("create_table_req\n");
+  }
+
   void drop_constraint(const DropConstraintRequest& req) {
     // Your implementation goes here
     printf("drop_constraint\n");

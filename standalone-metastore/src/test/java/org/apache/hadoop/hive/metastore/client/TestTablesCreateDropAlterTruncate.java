@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
@@ -101,6 +102,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Map<String, String> extraConf = new HashMap<>();
     extraConf.put("fs.trash.checkpoint.interval", "30");  // FS_TRASH_CHECKPOINT_INTERVAL_KEY
     extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
+    extraConf.put(ConfVars.HIVE_IN_TEST.getVarname(), "true");
     startMetaStores(msConf, extraConf);
   }
 

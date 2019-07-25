@@ -48,6 +48,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void create_table(Table tbl)')
   print('  void create_table_with_environment_context(Table tbl, EnvironmentContext environment_context)')
   print('  void create_table_with_constraints(Table tbl,  primaryKeys,  foreignKeys,  uniqueConstraints,  notNullConstraints,  defaultConstraints,  checkConstraints)')
+  print('  void create_table_req(CreateTableRequest request)')
   print('  void drop_constraint(DropConstraintRequest req)')
   print('  void add_primary_key(AddPrimaryKeyRequest req)')
   print('  void add_foreign_key(AddForeignKeyRequest req)')
@@ -460,6 +461,12 @@ elif cmd == 'create_table_with_constraints':
     print('create_table_with_constraints requires 7 args')
     sys.exit(1)
   pp.pprint(client.create_table_with_constraints(eval(args[0]),eval(args[1]),eval(args[2]),eval(args[3]),eval(args[4]),eval(args[5]),eval(args[6]),))
+
+elif cmd == 'create_table_req':
+  if len(args) != 1:
+    print('create_table_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_table_req(eval(args[0]),))
 
 elif cmd == 'drop_constraint':
   if len(args) != 1:

@@ -35,11 +35,14 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -69,6 +72,14 @@ public class TestExchangePartitions extends MetaStoreClientTest {
 
   public TestExchangePartitions(String name, AbstractMetaStoreService metaStore) {
     this.metaStore = metaStore;
+  }
+
+  @BeforeClass
+  public static void startMetaStores() {
+    Map<MetastoreConf.ConfVars, String> msConf = new HashMap<MetastoreConf.ConfVars, String>();
+    Map<String, String> extraConf = new HashMap<>();
+    extraConf.put(ConfVars.HIVE_IN_TEST.getVarname(), "true");
+    startMetaStores(msConf, extraConf);
   }
 
   @Before

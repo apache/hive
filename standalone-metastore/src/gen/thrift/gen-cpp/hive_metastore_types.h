@@ -703,6 +703,8 @@ class RuntimeStat;
 
 class GetRuntimeStatsRequest;
 
+class CreateTableRequest;
+
 class AlterPartitionsRequest;
 
 class AlterPartitionsResponse;
@@ -4194,7 +4196,7 @@ inline std::ostream& operator<<(std::ostream& out, const ColumnStatistics& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -4217,6 +4219,8 @@ typedef struct _Table__isset {
   bool isStatsCompliant :1;
   bool colStats :1;
   bool accessType :1;
+  bool requiredReadCapabilities :1;
+  bool requiredWriteCapabilities :1;
 } _Table__isset;
 
 class Table {
@@ -4252,6 +4256,8 @@ class Table {
   bool isStatsCompliant;
   ColumnStatistics colStats;
   int8_t accessType;
+  std::vector<std::string>  requiredReadCapabilities;
+  std::vector<std::string>  requiredWriteCapabilities;
 
   _Table__isset __isset;
 
@@ -4298,6 +4304,10 @@ class Table {
   void __set_colStats(const ColumnStatistics& val);
 
   void __set_accessType(const int8_t val);
+
+  void __set_requiredReadCapabilities(const std::vector<std::string> & val);
+
+  void __set_requiredWriteCapabilities(const std::vector<std::string> & val);
 
   bool operator == (const Table & rhs) const
   {
@@ -4364,6 +4374,14 @@ class Table {
     if (__isset.accessType != rhs.__isset.accessType)
       return false;
     else if (__isset.accessType && !(accessType == rhs.accessType))
+      return false;
+    if (__isset.requiredReadCapabilities != rhs.__isset.requiredReadCapabilities)
+      return false;
+    else if (__isset.requiredReadCapabilities && !(requiredReadCapabilities == rhs.requiredReadCapabilities))
+      return false;
+    if (__isset.requiredWriteCapabilities != rhs.__isset.requiredWriteCapabilities)
+      return false;
+    else if (__isset.requiredWriteCapabilities && !(requiredWriteCapabilities == rhs.requiredWriteCapabilities))
       return false;
     return true;
   }
@@ -11250,9 +11268,10 @@ inline std::ostream& operator<<(std::ostream& out, const GetTablesExtRequest& ob
 }
 
 typedef struct _ExtendedTableInfo__isset {
-  _ExtendedTableInfo__isset() : accessType(false), processorCapabilities(false) {}
+  _ExtendedTableInfo__isset() : accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false) {}
   bool accessType :1;
-  bool processorCapabilities :1;
+  bool requiredReadCapabilities :1;
+  bool requiredWriteCapabilities :1;
 } _ExtendedTableInfo__isset;
 
 class ExtendedTableInfo {
@@ -11266,7 +11285,8 @@ class ExtendedTableInfo {
   virtual ~ExtendedTableInfo() throw();
   std::string tblName;
   int32_t accessType;
-  std::vector<std::string>  processorCapabilities;
+  std::vector<std::string>  requiredReadCapabilities;
+  std::vector<std::string>  requiredWriteCapabilities;
 
   _ExtendedTableInfo__isset __isset;
 
@@ -11274,7 +11294,9 @@ class ExtendedTableInfo {
 
   void __set_accessType(const int32_t val);
 
-  void __set_processorCapabilities(const std::vector<std::string> & val);
+  void __set_requiredReadCapabilities(const std::vector<std::string> & val);
+
+  void __set_requiredWriteCapabilities(const std::vector<std::string> & val);
 
   bool operator == (const ExtendedTableInfo & rhs) const
   {
@@ -11284,9 +11306,13 @@ class ExtendedTableInfo {
       return false;
     else if (__isset.accessType && !(accessType == rhs.accessType))
       return false;
-    if (__isset.processorCapabilities != rhs.__isset.processorCapabilities)
+    if (__isset.requiredReadCapabilities != rhs.__isset.requiredReadCapabilities)
       return false;
-    else if (__isset.processorCapabilities && !(processorCapabilities == rhs.processorCapabilities))
+    else if (__isset.requiredReadCapabilities && !(requiredReadCapabilities == rhs.requiredReadCapabilities))
+      return false;
+    if (__isset.requiredWriteCapabilities != rhs.__isset.requiredWriteCapabilities)
+      return false;
+    else if (__isset.requiredWriteCapabilities && !(requiredWriteCapabilities == rhs.requiredWriteCapabilities))
       return false;
     return true;
   }
@@ -14375,6 +14401,123 @@ class GetRuntimeStatsRequest {
 void swap(GetRuntimeStatsRequest &a, GetRuntimeStatsRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetRuntimeStatsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _CreateTableRequest__isset {
+  _CreateTableRequest__isset() : envContext(false), primaryKeys(false), foreignKeys(false), uniqueConstraints(false), notNullConstraints(false), defaultConstraints(false), checkConstraints(false), processorCapabilities(false), processorIdentifier(false) {}
+  bool envContext :1;
+  bool primaryKeys :1;
+  bool foreignKeys :1;
+  bool uniqueConstraints :1;
+  bool notNullConstraints :1;
+  bool defaultConstraints :1;
+  bool checkConstraints :1;
+  bool processorCapabilities :1;
+  bool processorIdentifier :1;
+} _CreateTableRequest__isset;
+
+class CreateTableRequest {
+ public:
+
+  CreateTableRequest(const CreateTableRequest&);
+  CreateTableRequest& operator=(const CreateTableRequest&);
+  CreateTableRequest() : processorIdentifier() {
+  }
+
+  virtual ~CreateTableRequest() throw();
+  Table table;
+  EnvironmentContext envContext;
+  std::vector<SQLPrimaryKey>  primaryKeys;
+  std::vector<SQLForeignKey>  foreignKeys;
+  std::vector<SQLUniqueConstraint>  uniqueConstraints;
+  std::vector<SQLNotNullConstraint>  notNullConstraints;
+  std::vector<SQLDefaultConstraint>  defaultConstraints;
+  std::vector<SQLCheckConstraint>  checkConstraints;
+  std::vector<std::string>  processorCapabilities;
+  std::string processorIdentifier;
+
+  _CreateTableRequest__isset __isset;
+
+  void __set_table(const Table& val);
+
+  void __set_envContext(const EnvironmentContext& val);
+
+  void __set_primaryKeys(const std::vector<SQLPrimaryKey> & val);
+
+  void __set_foreignKeys(const std::vector<SQLForeignKey> & val);
+
+  void __set_uniqueConstraints(const std::vector<SQLUniqueConstraint> & val);
+
+  void __set_notNullConstraints(const std::vector<SQLNotNullConstraint> & val);
+
+  void __set_defaultConstraints(const std::vector<SQLDefaultConstraint> & val);
+
+  void __set_checkConstraints(const std::vector<SQLCheckConstraint> & val);
+
+  void __set_processorCapabilities(const std::vector<std::string> & val);
+
+  void __set_processorIdentifier(const std::string& val);
+
+  bool operator == (const CreateTableRequest & rhs) const
+  {
+    if (!(table == rhs.table))
+      return false;
+    if (__isset.envContext != rhs.__isset.envContext)
+      return false;
+    else if (__isset.envContext && !(envContext == rhs.envContext))
+      return false;
+    if (__isset.primaryKeys != rhs.__isset.primaryKeys)
+      return false;
+    else if (__isset.primaryKeys && !(primaryKeys == rhs.primaryKeys))
+      return false;
+    if (__isset.foreignKeys != rhs.__isset.foreignKeys)
+      return false;
+    else if (__isset.foreignKeys && !(foreignKeys == rhs.foreignKeys))
+      return false;
+    if (__isset.uniqueConstraints != rhs.__isset.uniqueConstraints)
+      return false;
+    else if (__isset.uniqueConstraints && !(uniqueConstraints == rhs.uniqueConstraints))
+      return false;
+    if (__isset.notNullConstraints != rhs.__isset.notNullConstraints)
+      return false;
+    else if (__isset.notNullConstraints && !(notNullConstraints == rhs.notNullConstraints))
+      return false;
+    if (__isset.defaultConstraints != rhs.__isset.defaultConstraints)
+      return false;
+    else if (__isset.defaultConstraints && !(defaultConstraints == rhs.defaultConstraints))
+      return false;
+    if (__isset.checkConstraints != rhs.__isset.checkConstraints)
+      return false;
+    else if (__isset.checkConstraints && !(checkConstraints == rhs.checkConstraints))
+      return false;
+    if (__isset.processorCapabilities != rhs.__isset.processorCapabilities)
+      return false;
+    else if (__isset.processorCapabilities && !(processorCapabilities == rhs.processorCapabilities))
+      return false;
+    if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
+      return false;
+    else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
+      return false;
+    return true;
+  }
+  bool operator != (const CreateTableRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CreateTableRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CreateTableRequest &a, CreateTableRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const CreateTableRequest& obj)
 {
   obj.printTo(out);
   return out;

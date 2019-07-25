@@ -37,6 +37,8 @@ import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
@@ -199,6 +201,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.TxnIdUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -392,6 +395,16 @@ public class Hive {
     }
     c.set("fs.scheme.class", "dfs");
     Hive newdb = new Hive(c, doRegisterAllFns);
+    if (c.get("hive.metastore.client.capabilities") != null) {
+      String[] capabilities = c.get("hive.metastore.client.capabilities").split(",");
+      newdb.setHMSClientCapabilities(capabilities);
+      String hostName = "unknown";
+      try {
+        hostName = InetAddress.getLocalHost().getCanonicalHostName();
+      } catch (UnknownHostException ue) {
+      }
+      newdb.setHMSClientIdentifier("Hiveserver2#" + HiveVersionInfo.getVersion() + "@" + hostName);
+    }
     hiveDB.set(newdb);
     return newdb;
   }

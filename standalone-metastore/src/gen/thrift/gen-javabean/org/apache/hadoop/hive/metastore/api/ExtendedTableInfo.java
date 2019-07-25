@@ -40,7 +40,8 @@ import org.slf4j.LoggerFactory;
 
   private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tblName", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField ACCESS_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("accessType", org.apache.thrift.protocol.TType.I32, (short)2);
-  private static final org.apache.thrift.protocol.TField PROCESSOR_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("processorCapabilities", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField REQUIRED_READ_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("requiredReadCapabilities", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField REQUIRED_WRITE_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("requiredWriteCapabilities", org.apache.thrift.protocol.TType.LIST, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -50,13 +51,15 @@ import org.slf4j.LoggerFactory;
 
   private String tblName; // required
   private int accessType; // optional
-  private List<String> processorCapabilities; // optional
+  private List<String> requiredReadCapabilities; // optional
+  private List<String> requiredWriteCapabilities; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TBL_NAME((short)1, "tblName"),
     ACCESS_TYPE((short)2, "accessType"),
-    PROCESSOR_CAPABILITIES((short)3, "processorCapabilities");
+    REQUIRED_READ_CAPABILITIES((short)3, "requiredReadCapabilities"),
+    REQUIRED_WRITE_CAPABILITIES((short)4, "requiredWriteCapabilities");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -75,8 +78,10 @@ import org.slf4j.LoggerFactory;
           return TBL_NAME;
         case 2: // ACCESS_TYPE
           return ACCESS_TYPE;
-        case 3: // PROCESSOR_CAPABILITIES
-          return PROCESSOR_CAPABILITIES;
+        case 3: // REQUIRED_READ_CAPABILITIES
+          return REQUIRED_READ_CAPABILITIES;
+        case 4: // REQUIRED_WRITE_CAPABILITIES
+          return REQUIRED_WRITE_CAPABILITIES;
         default:
           return null;
       }
@@ -119,7 +124,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __ACCESSTYPE_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.ACCESS_TYPE,_Fields.PROCESSOR_CAPABILITIES};
+  private static final _Fields optionals[] = {_Fields.ACCESS_TYPE,_Fields.REQUIRED_READ_CAPABILITIES,_Fields.REQUIRED_WRITE_CAPABILITIES};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -127,7 +132,10 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ACCESS_TYPE, new org.apache.thrift.meta_data.FieldMetaData("accessType", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.PROCESSOR_CAPABILITIES, new org.apache.thrift.meta_data.FieldMetaData("processorCapabilities", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.REQUIRED_READ_CAPABILITIES, new org.apache.thrift.meta_data.FieldMetaData("requiredReadCapabilities", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.REQUIRED_WRITE_CAPABILITIES, new org.apache.thrift.meta_data.FieldMetaData("requiredWriteCapabilities", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -153,9 +161,13 @@ import org.slf4j.LoggerFactory;
       this.tblName = other.tblName;
     }
     this.accessType = other.accessType;
-    if (other.isSetProcessorCapabilities()) {
-      List<String> __this__processorCapabilities = new ArrayList<String>(other.processorCapabilities);
-      this.processorCapabilities = __this__processorCapabilities;
+    if (other.isSetRequiredReadCapabilities()) {
+      List<String> __this__requiredReadCapabilities = new ArrayList<String>(other.requiredReadCapabilities);
+      this.requiredReadCapabilities = __this__requiredReadCapabilities;
+    }
+    if (other.isSetRequiredWriteCapabilities()) {
+      List<String> __this__requiredWriteCapabilities = new ArrayList<String>(other.requiredWriteCapabilities);
+      this.requiredWriteCapabilities = __this__requiredWriteCapabilities;
     }
   }
 
@@ -168,7 +180,8 @@ import org.slf4j.LoggerFactory;
     this.tblName = null;
     setAccessTypeIsSet(false);
     this.accessType = 0;
-    this.processorCapabilities = null;
+    this.requiredReadCapabilities = null;
+    this.requiredWriteCapabilities = null;
   }
 
   public String getTblName() {
@@ -216,41 +229,79 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ACCESSTYPE_ISSET_ID, value);
   }
 
-  public int getProcessorCapabilitiesSize() {
-    return (this.processorCapabilities == null) ? 0 : this.processorCapabilities.size();
+  public int getRequiredReadCapabilitiesSize() {
+    return (this.requiredReadCapabilities == null) ? 0 : this.requiredReadCapabilities.size();
   }
 
-  public java.util.Iterator<String> getProcessorCapabilitiesIterator() {
-    return (this.processorCapabilities == null) ? null : this.processorCapabilities.iterator();
+  public java.util.Iterator<String> getRequiredReadCapabilitiesIterator() {
+    return (this.requiredReadCapabilities == null) ? null : this.requiredReadCapabilities.iterator();
   }
 
-  public void addToProcessorCapabilities(String elem) {
-    if (this.processorCapabilities == null) {
-      this.processorCapabilities = new ArrayList<String>();
+  public void addToRequiredReadCapabilities(String elem) {
+    if (this.requiredReadCapabilities == null) {
+      this.requiredReadCapabilities = new ArrayList<String>();
     }
-    this.processorCapabilities.add(elem);
+    this.requiredReadCapabilities.add(elem);
   }
 
-  public List<String> getProcessorCapabilities() {
-    return this.processorCapabilities;
+  public List<String> getRequiredReadCapabilities() {
+    return this.requiredReadCapabilities;
   }
 
-  public void setProcessorCapabilities(List<String> processorCapabilities) {
-    this.processorCapabilities = processorCapabilities;
+  public void setRequiredReadCapabilities(List<String> requiredReadCapabilities) {
+    this.requiredReadCapabilities = requiredReadCapabilities;
   }
 
-  public void unsetProcessorCapabilities() {
-    this.processorCapabilities = null;
+  public void unsetRequiredReadCapabilities() {
+    this.requiredReadCapabilities = null;
   }
 
-  /** Returns true if field processorCapabilities is set (has been assigned a value) and false otherwise */
-  public boolean isSetProcessorCapabilities() {
-    return this.processorCapabilities != null;
+  /** Returns true if field requiredReadCapabilities is set (has been assigned a value) and false otherwise */
+  public boolean isSetRequiredReadCapabilities() {
+    return this.requiredReadCapabilities != null;
   }
 
-  public void setProcessorCapabilitiesIsSet(boolean value) {
+  public void setRequiredReadCapabilitiesIsSet(boolean value) {
     if (!value) {
-      this.processorCapabilities = null;
+      this.requiredReadCapabilities = null;
+    }
+  }
+
+  public int getRequiredWriteCapabilitiesSize() {
+    return (this.requiredWriteCapabilities == null) ? 0 : this.requiredWriteCapabilities.size();
+  }
+
+  public java.util.Iterator<String> getRequiredWriteCapabilitiesIterator() {
+    return (this.requiredWriteCapabilities == null) ? null : this.requiredWriteCapabilities.iterator();
+  }
+
+  public void addToRequiredWriteCapabilities(String elem) {
+    if (this.requiredWriteCapabilities == null) {
+      this.requiredWriteCapabilities = new ArrayList<String>();
+    }
+    this.requiredWriteCapabilities.add(elem);
+  }
+
+  public List<String> getRequiredWriteCapabilities() {
+    return this.requiredWriteCapabilities;
+  }
+
+  public void setRequiredWriteCapabilities(List<String> requiredWriteCapabilities) {
+    this.requiredWriteCapabilities = requiredWriteCapabilities;
+  }
+
+  public void unsetRequiredWriteCapabilities() {
+    this.requiredWriteCapabilities = null;
+  }
+
+  /** Returns true if field requiredWriteCapabilities is set (has been assigned a value) and false otherwise */
+  public boolean isSetRequiredWriteCapabilities() {
+    return this.requiredWriteCapabilities != null;
+  }
+
+  public void setRequiredWriteCapabilitiesIsSet(boolean value) {
+    if (!value) {
+      this.requiredWriteCapabilities = null;
     }
   }
 
@@ -272,11 +323,19 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case PROCESSOR_CAPABILITIES:
+    case REQUIRED_READ_CAPABILITIES:
       if (value == null) {
-        unsetProcessorCapabilities();
+        unsetRequiredReadCapabilities();
       } else {
-        setProcessorCapabilities((List<String>)value);
+        setRequiredReadCapabilities((List<String>)value);
+      }
+      break;
+
+    case REQUIRED_WRITE_CAPABILITIES:
+      if (value == null) {
+        unsetRequiredWriteCapabilities();
+      } else {
+        setRequiredWriteCapabilities((List<String>)value);
       }
       break;
 
@@ -291,8 +350,11 @@ import org.slf4j.LoggerFactory;
     case ACCESS_TYPE:
       return getAccessType();
 
-    case PROCESSOR_CAPABILITIES:
-      return getProcessorCapabilities();
+    case REQUIRED_READ_CAPABILITIES:
+      return getRequiredReadCapabilities();
+
+    case REQUIRED_WRITE_CAPABILITIES:
+      return getRequiredWriteCapabilities();
 
     }
     throw new IllegalStateException();
@@ -309,8 +371,10 @@ import org.slf4j.LoggerFactory;
       return isSetTblName();
     case ACCESS_TYPE:
       return isSetAccessType();
-    case PROCESSOR_CAPABILITIES:
-      return isSetProcessorCapabilities();
+    case REQUIRED_READ_CAPABILITIES:
+      return isSetRequiredReadCapabilities();
+    case REQUIRED_WRITE_CAPABILITIES:
+      return isSetRequiredWriteCapabilities();
     }
     throw new IllegalStateException();
   }
@@ -346,12 +410,21 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_processorCapabilities = true && this.isSetProcessorCapabilities();
-    boolean that_present_processorCapabilities = true && that.isSetProcessorCapabilities();
-    if (this_present_processorCapabilities || that_present_processorCapabilities) {
-      if (!(this_present_processorCapabilities && that_present_processorCapabilities))
+    boolean this_present_requiredReadCapabilities = true && this.isSetRequiredReadCapabilities();
+    boolean that_present_requiredReadCapabilities = true && that.isSetRequiredReadCapabilities();
+    if (this_present_requiredReadCapabilities || that_present_requiredReadCapabilities) {
+      if (!(this_present_requiredReadCapabilities && that_present_requiredReadCapabilities))
         return false;
-      if (!this.processorCapabilities.equals(that.processorCapabilities))
+      if (!this.requiredReadCapabilities.equals(that.requiredReadCapabilities))
+        return false;
+    }
+
+    boolean this_present_requiredWriteCapabilities = true && this.isSetRequiredWriteCapabilities();
+    boolean that_present_requiredWriteCapabilities = true && that.isSetRequiredWriteCapabilities();
+    if (this_present_requiredWriteCapabilities || that_present_requiredWriteCapabilities) {
+      if (!(this_present_requiredWriteCapabilities && that_present_requiredWriteCapabilities))
+        return false;
+      if (!this.requiredWriteCapabilities.equals(that.requiredWriteCapabilities))
         return false;
     }
 
@@ -372,10 +445,15 @@ import org.slf4j.LoggerFactory;
     if (present_accessType)
       list.add(accessType);
 
-    boolean present_processorCapabilities = true && (isSetProcessorCapabilities());
-    list.add(present_processorCapabilities);
-    if (present_processorCapabilities)
-      list.add(processorCapabilities);
+    boolean present_requiredReadCapabilities = true && (isSetRequiredReadCapabilities());
+    list.add(present_requiredReadCapabilities);
+    if (present_requiredReadCapabilities)
+      list.add(requiredReadCapabilities);
+
+    boolean present_requiredWriteCapabilities = true && (isSetRequiredWriteCapabilities());
+    list.add(present_requiredWriteCapabilities);
+    if (present_requiredWriteCapabilities)
+      list.add(requiredWriteCapabilities);
 
     return list.hashCode();
   }
@@ -408,12 +486,22 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetProcessorCapabilities()).compareTo(other.isSetProcessorCapabilities());
+    lastComparison = Boolean.valueOf(isSetRequiredReadCapabilities()).compareTo(other.isSetRequiredReadCapabilities());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetProcessorCapabilities()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.processorCapabilities, other.processorCapabilities);
+    if (isSetRequiredReadCapabilities()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.requiredReadCapabilities, other.requiredReadCapabilities);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetRequiredWriteCapabilities()).compareTo(other.isSetRequiredWriteCapabilities());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetRequiredWriteCapabilities()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.requiredWriteCapabilities, other.requiredWriteCapabilities);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -451,13 +539,23 @@ import org.slf4j.LoggerFactory;
       sb.append(this.accessType);
       first = false;
     }
-    if (isSetProcessorCapabilities()) {
+    if (isSetRequiredReadCapabilities()) {
       if (!first) sb.append(", ");
-      sb.append("processorCapabilities:");
-      if (this.processorCapabilities == null) {
+      sb.append("requiredReadCapabilities:");
+      if (this.requiredReadCapabilities == null) {
         sb.append("null");
       } else {
-        sb.append(this.processorCapabilities);
+        sb.append(this.requiredReadCapabilities);
+      }
+      first = false;
+    }
+    if (isSetRequiredWriteCapabilities()) {
+      if (!first) sb.append(", ");
+      sb.append("requiredWriteCapabilities:");
+      if (this.requiredWriteCapabilities == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.requiredWriteCapabilities);
       }
       first = false;
     }
@@ -526,20 +624,38 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // PROCESSOR_CAPABILITIES
+          case 3: // REQUIRED_READ_CAPABILITIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list936 = iprot.readListBegin();
-                struct.processorCapabilities = new ArrayList<String>(_list936.size);
-                String _elem937;
-                for (int _i938 = 0; _i938 < _list936.size; ++_i938)
+                org.apache.thrift.protocol.TList _list952 = iprot.readListBegin();
+                struct.requiredReadCapabilities = new ArrayList<String>(_list952.size);
+                String _elem953;
+                for (int _i954 = 0; _i954 < _list952.size; ++_i954)
                 {
-                  _elem937 = iprot.readString();
-                  struct.processorCapabilities.add(_elem937);
+                  _elem953 = iprot.readString();
+                  struct.requiredReadCapabilities.add(_elem953);
                 }
                 iprot.readListEnd();
               }
-              struct.setProcessorCapabilitiesIsSet(true);
+              struct.setRequiredReadCapabilitiesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // REQUIRED_WRITE_CAPABILITIES
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list955 = iprot.readListBegin();
+                struct.requiredWriteCapabilities = new ArrayList<String>(_list955.size);
+                String _elem956;
+                for (int _i957 = 0; _i957 < _list955.size; ++_i957)
+                {
+                  _elem956 = iprot.readString();
+                  struct.requiredWriteCapabilities.add(_elem956);
+                }
+                iprot.readListEnd();
+              }
+              struct.setRequiredWriteCapabilitiesIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -567,14 +683,28 @@ import org.slf4j.LoggerFactory;
         oprot.writeI32(struct.accessType);
         oprot.writeFieldEnd();
       }
-      if (struct.processorCapabilities != null) {
-        if (struct.isSetProcessorCapabilities()) {
-          oprot.writeFieldBegin(PROCESSOR_CAPABILITIES_FIELD_DESC);
+      if (struct.requiredReadCapabilities != null) {
+        if (struct.isSetRequiredReadCapabilities()) {
+          oprot.writeFieldBegin(REQUIRED_READ_CAPABILITIES_FIELD_DESC);
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.processorCapabilities.size()));
-            for (String _iter939 : struct.processorCapabilities)
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.requiredReadCapabilities.size()));
+            for (String _iter958 : struct.requiredReadCapabilities)
             {
-              oprot.writeString(_iter939);
+              oprot.writeString(_iter958);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.requiredWriteCapabilities != null) {
+        if (struct.isSetRequiredWriteCapabilities()) {
+          oprot.writeFieldBegin(REQUIRED_WRITE_CAPABILITIES_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.requiredWriteCapabilities.size()));
+            for (String _iter959 : struct.requiredWriteCapabilities)
+            {
+              oprot.writeString(_iter959);
             }
             oprot.writeListEnd();
           }
@@ -603,19 +733,31 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetAccessType()) {
         optionals.set(0);
       }
-      if (struct.isSetProcessorCapabilities()) {
+      if (struct.isSetRequiredReadCapabilities()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetRequiredWriteCapabilities()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetAccessType()) {
         oprot.writeI32(struct.accessType);
       }
-      if (struct.isSetProcessorCapabilities()) {
+      if (struct.isSetRequiredReadCapabilities()) {
         {
-          oprot.writeI32(struct.processorCapabilities.size());
-          for (String _iter940 : struct.processorCapabilities)
+          oprot.writeI32(struct.requiredReadCapabilities.size());
+          for (String _iter960 : struct.requiredReadCapabilities)
           {
-            oprot.writeString(_iter940);
+            oprot.writeString(_iter960);
+          }
+        }
+      }
+      if (struct.isSetRequiredWriteCapabilities()) {
+        {
+          oprot.writeI32(struct.requiredWriteCapabilities.size());
+          for (String _iter961 : struct.requiredWriteCapabilities)
+          {
+            oprot.writeString(_iter961);
           }
         }
       }
@@ -626,23 +768,36 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.accessType = iprot.readI32();
         struct.setAccessTypeIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list941 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.processorCapabilities = new ArrayList<String>(_list941.size);
-          String _elem942;
-          for (int _i943 = 0; _i943 < _list941.size; ++_i943)
+          org.apache.thrift.protocol.TList _list962 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.requiredReadCapabilities = new ArrayList<String>(_list962.size);
+          String _elem963;
+          for (int _i964 = 0; _i964 < _list962.size; ++_i964)
           {
-            _elem942 = iprot.readString();
-            struct.processorCapabilities.add(_elem942);
+            _elem963 = iprot.readString();
+            struct.requiredReadCapabilities.add(_elem963);
           }
         }
-        struct.setProcessorCapabilitiesIsSet(true);
+        struct.setRequiredReadCapabilitiesIsSet(true);
+      }
+      if (incoming.get(2)) {
+        {
+          org.apache.thrift.protocol.TList _list965 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.requiredWriteCapabilities = new ArrayList<String>(_list965.size);
+          String _elem966;
+          for (int _i967 = 0; _i967 < _list965.size; ++_i967)
+          {
+            _elem966 = iprot.readString();
+            struct.requiredWriteCapabilities.add(_elem966);
+          }
+        }
+        struct.setRequiredWriteCapabilitiesIsSet(true);
       }
     }
   }

@@ -104,6 +104,7 @@ public class TestObjectStore {
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     objectStore = new ObjectStore();

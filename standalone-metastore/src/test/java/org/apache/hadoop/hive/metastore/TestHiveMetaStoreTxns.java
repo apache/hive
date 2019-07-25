@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.junit.After;
 import org.junit.Assert;
@@ -197,6 +198,7 @@ public class TestHiveMetaStoreTxns {
 
   @Before
   public void setUp() throws Exception {
+    conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     TxnDbUtil.setConfValues(conf);
     TxnDbUtil.prepDb(conf);

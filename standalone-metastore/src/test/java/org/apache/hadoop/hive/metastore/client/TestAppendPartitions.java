@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -44,6 +45,8 @@ import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
@@ -65,6 +68,7 @@ import com.google.common.collect.Lists;
 public class TestAppendPartitions extends MetaStoreClientTest {
   private AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
+  private Configuration conf;
 
   private static final String DB_NAME = "test_append_part_db";
   private static Table tableWithPartitions;
@@ -78,6 +82,8 @@ public class TestAppendPartitions extends MetaStoreClientTest {
 
   @Before
   public void setUp() throws Exception {
+    conf = org.apache.hadoop.hive.metastore.conf.MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, ConfVars.HIVE_IN_TEST, true);
     // Get new client
     client = metaStore.getClient();
 
