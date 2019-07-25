@@ -5432,7 +5432,7 @@ public class HiveConf extends Configuration {
 
   public static void setVar(Configuration conf, ConfVars var, String val) {
     assert (var.valClass == String.class) : var.varname;
-    conf.set(var.varname, val);
+    conf.set(var.varname, val, "setVar");
   }
   public static void setVar(Configuration conf, ConfVars var, String val,
     EncoderDecoder<String, String> encoderDecoder) {
@@ -5541,7 +5541,7 @@ public class HiveConf extends Configuration {
     origProp = getAllProperties();
 
     // Overlay the ConfVars. Note that this ignores ConfVars with null values
-    addResource(getConfVarInputStream());
+    addResource(getConfVarInputStream(), "HiveConf.java");
 
     // Overlay hive-site.xml if it exists
     if (hiveSiteURL != null) {
@@ -5654,8 +5654,8 @@ public class HiveConf extends Configuration {
     if (whiteListParamsStr == null || whiteListParamsStr.trim().isEmpty()) {
       // set the default configs in whitelist
       whiteListParamsStr = getSQLStdAuthDefaultWhiteListPattern();
+      setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST, whiteListParamsStr);
     }
-    setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST, whiteListParamsStr);
   }
 
   private static String getSQLStdAuthDefaultWhiteListPattern() {
