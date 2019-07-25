@@ -2296,7 +2296,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
           PredicateLeaf leaf = predLeaves.get(pred);
           try {
-            truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, leaf, null);
+            truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, leaf, null, true);
           } catch (NoDynamicValuesException dve) {
             LOG.debug("Dynamic values are not available here {}", dve.getMessage());
             boolean hasNulls = stats.hasNull() || leaf.getOperator() != Operator.NULL_SAFE_EQUALS;
