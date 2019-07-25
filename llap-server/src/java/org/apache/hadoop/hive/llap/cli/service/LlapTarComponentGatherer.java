@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Gathers all the jar files necessary to start llap.
  */
-class LlapTarComponentGatherer {
+public class LlapTarComponentGatherer {
   private static final Logger LOG = LoggerFactory.getLogger(LlapTarComponentGatherer.class.getName());
 
   //using Callable<Void> instead of Runnable to be able to throw Exception
@@ -51,6 +51,10 @@ class LlapTarComponentGatherer {
   private final Path tezDir;
   private final Path udfDir;
   private final Path confDir;
+
+  enum TaskType {
+    TEZJARS, LOCALJARS, AUXJARS, UDFFILE, CONFIGS,
+  }
 
   LlapTarComponentGatherer(LlapServiceCommandLine cl, HiveConf conf, Properties directProperties, FileSystem fs,
       FileSystem rawFs, ExecutorService executor, Path tmpDir) {
@@ -75,6 +79,30 @@ class LlapTarComponentGatherer {
     }
     if (!rawFs.mkdirs(confDir)) {
       LOG.warn("mkdirs for " + confDir + " returned false");
+    }
+  }
+
+  void submitGatherTask(TaskType taskType) throws Exception {
+    CompletionService<Void> asyncRunner = new ExecutorCompletionService<Void>(executor);
+    switch (taskType) {
+      case TEZJARS:
+        tasks.put("downloadTezJars", asyncRunner.submit(new AsyncTaskDownloadTezJars(conf, fs, rawFs, libDir, tezDir)));
+        break;
+      case LOCALJARS:
+        tasks.put("copyLocalJars", asyncRunner.submit(new AsyncTaskCopyLocalJars(rawFs, libDir)));
+        break;
+      case AUXJARS:
+        tasks.put("copyAuxJars", asyncRunner.submit(new AsyncTaskCopyAuxJars(cl, conf, rawFs, libDir)));
+        break;
+      case UDFFILE:
+        tasks.put("createUdfFile", asyncRunner.submit(new AsyncTaskCreateUdfFile(conf, fs, rawFs, udfDir, confDir)));
+        break;
+      case CONFIGS:
+        tasks.put("copyConfigs", asyncRunner.submit(new AsyncTaskCopyConfigs(cl, conf, directProperties, rawFs,
+                confDir)));
+        break;
+      default:
+        throw new IllegalArgumentException("Unexpected download tasktype " + taskType);
     }
   }
 

@@ -161,6 +161,25 @@ class LlapServiceCommandLine {
       .hasArg()
       .create("auxhive");
 
+  private static final Option SKIP_VALIDATE_CONF = OptionBuilder
+      .withLongOpt("skipValidateConf")
+      .withDescription("Should LLAP conf setting validation be done")
+      .hasArg(false)
+      .create("skipValidateConf");
+
+  private static final Option PARTIAL_DOWNLOAD = OptionBuilder
+          .withLongOpt("partialDownload")
+          .withDescription("Use downloadType option to specify which components to download")
+          .hasArg(false)
+          .create("partialDownload");
+
+  private static final Option DOWNLOADTYPE = OptionBuilder
+          .withLongOpt("downloadType")
+          .withDescription("What to download (tezjars|localjars|auxjars|udffile|configs)")
+          .withArgName("downloadType")
+          .hasArg()
+          .create("downloadType");
+
   private static final Option HELP = OptionBuilder
       .withLongOpt("help")
       .withDescription("Print help information")
@@ -202,6 +221,9 @@ class LlapServiceCommandLine {
     OPTIONS.addOption(START);
     OPTIONS.addOption(OUTPUT);
     OPTIONS.addOption(AUXHIVE);
+    OPTIONS.addOption(SKIP_VALIDATE_CONF);
+    OPTIONS.addOption(PARTIAL_DOWNLOAD);
+    OPTIONS.addOption(DOWNLOADTYPE);
     OPTIONS.addOption(HELP);
 
     OPTIONS.addOption(OptionBuilder
@@ -327,6 +349,9 @@ class LlapServiceCommandLine {
   private boolean isStarting;
   private String output;
   private boolean isHiveAux;
+  private boolean skipValidateConf;
+  private boolean isPartialDownload;
+  private String[] downloadTypes;
   private boolean isHelp;
 
   static LlapServiceCommandLine parseArguments(String[] args) {
@@ -393,6 +418,9 @@ class LlapServiceCommandLine {
     isStarting = cl.hasOption(START.getOpt());
     output = cl.getOptionValue(OUTPUT.getLongOpt());
     isHiveAux = Boolean.parseBoolean(cl.getOptionValue(AUXHIVE.getOpt(), "true"));
+    skipValidateConf = cl.hasOption(SKIP_VALIDATE_CONF.getOpt());
+    isPartialDownload = cl.hasOption(PARTIAL_DOWNLOAD.getOpt());
+    downloadTypes = cl.getOptionValues(DOWNLOADTYPE.getOpt());
   }
 
   private static void printUsage() {
@@ -475,4 +503,8 @@ class LlapServiceCommandLine {
   String getOutput() {
     return output;
   }
+
+  boolean isSkipValidateConf() { return skipValidateConf; }
+  boolean isPartialDownload() { return isPartialDownload; }
+  String[] getDownloadTypes() { return downloadTypes; }
 }

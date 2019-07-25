@@ -117,7 +117,15 @@ public class LlapServiceDriver {
       LlapTarComponentGatherer tarComponentGatherer = new LlapTarComponentGatherer(cl, conf, propsDirectOptions,
           fs, rawFs, executor, tmpDir);
       tarComponentGatherer.createDirs();
-      tarComponentGatherer.submitTarComponentGatherTasks();
+      if (cl.isPartialDownload()) {
+        for (String downloadType : cl.getDownloadTypes()) {
+          LlapTarComponentGatherer.TaskType taskType = LlapTarComponentGatherer.TaskType.valueOf(downloadType.toUpperCase());
+          LOG.info("Adding gather task type {}", taskType);
+          tarComponentGatherer.submitGatherTask(taskType);
+        }
+      } else {
+        tarComponentGatherer.submitTarComponentGatherTasks();
+      }
 
       // TODO: need to move from Python to Java for the rest of the script.
       LlapConfigJsonCreator lcjCreator = new LlapConfigJsonCreator(conf, rawFs, tmpDir, cl.getCache(), cl.getXmx(),
@@ -152,7 +160,9 @@ public class LlapServiceDriver {
     for (String f : LlapDaemonConfiguration.DAEMON_CONFIGS) {
       conf.addResource(f);
       if (conf.getResource(f) == null) {
-        throw new Exception("Unable to find required config file: " + f);
+        if (!cl.isSkipValidateConf()) {
+          throw new Exception("Unable to find required config file: " + f);
+        }
       }
     }
     for (String f : LlapDaemonConfiguration.SSL_DAEMON_CONFIGS) {
@@ -181,25 +191,27 @@ public class LlapServiceDriver {
     String sizeStr = LlapUtil.humanReadableByteCount(cl.getSize());
     String xmxStr = LlapUtil.humanReadableByteCount(cl.getXmx());
 
-    if (cl.getSize() != -1) {
-      if (cl.getCache() != -1) {
-        if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED)) {
-          // direct heap allocations need to be safer
-          Preconditions.checkArgument(cl.getCache() < cl.getSize(), "Cache size (" + cacheStr + ") has to be smaller" +
-              " than the container sizing (" + sizeStr + ")");
-        } else if (cl.getCache() < cl.getSize()) {
-          LOG.warn("Note that this might need YARN physical memory monitoring to be turned off "
-              + "(yarn.nodemanager.pmem-check-enabled=false)");
+    if (!cl.isSkipValidateConf()) {
+      if (cl.getSize() != -1) {
+        if (cl.getCache() != -1) {
+          if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED)) {
+            // direct heap allocations need to be safer
+            Preconditions.checkArgument(cl.getCache() < cl.getSize(), "Cache size (" + cacheStr + ") has to be smaller" +
+                    " than the container sizing (" + sizeStr + ")");
+          } else if (cl.getCache() < cl.getSize()) {
+            LOG.warn("Note that this might need YARN physical memory monitoring to be turned off "
+                    + "(yarn.nodemanager.pmem-check-enabled=false)");
+          }
         }
-      }
-      if (cl.getXmx() != -1) {
-        Preconditions.checkArgument(cl.getXmx() < cl.getSize(), "Working memory (Xmx=" + xmxStr + ") has to be" +
-            " smaller than the container sizing (" + sizeStr + ")");
-      }
-      if (isDirect && !HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED)) {
-        // direct and not memory mapped
-        Preconditions.checkArgument(cl.getXmx() + cl.getCache() <= cl.getSize(), "Working memory (Xmx=" +
-            xmxStr + ") + cache size (" + cacheStr + ") has to be smaller than the container sizing (" + sizeStr + ")");
+        if (cl.getXmx() != -1) {
+          Preconditions.checkArgument(cl.getXmx() < cl.getSize(), "Working memory (Xmx=" + xmxStr + ") has to be" +
+                  " smaller than the container sizing (" + sizeStr + ")");
+        }
+        if (isDirect && !HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED)) {
+          // direct and not memory mapped
+          Preconditions.checkArgument(cl.getXmx() + cl.getCache() <= cl.getSize(), "Working memory (Xmx=" +
+                  xmxStr + ") + cache size (" + cacheStr + ") has to be smaller than the container sizing (" + sizeStr + ")");
+        }
       }
     }
 
@@ -244,8 +256,10 @@ public class LlapServiceDriver {
     long containerSizeMB = containerSize / (1024 * 1024);
     long minAllocMB = conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1);
     String containerSizeStr = LlapUtil.humanReadableByteCount(containerSize);
-    Preconditions.checkArgument(containerSizeMB >= minAllocMB, "Container size (" + containerSizeStr + ") should be " +
-        "greater than minimum allocation(" + LlapUtil.humanReadableByteCount(minAllocMB * 1024L * 1024L) + ")");
+    if (!cl.isSkipValidateConf()) {
+      Preconditions.checkArgument(containerSizeMB >= minAllocMB, "Container size (" + containerSizeStr + ") should be " +
+              "greater than minimum allocation(" + LlapUtil.humanReadableByteCount(minAllocMB * 1024L * 1024L) + ")");
+    }
     conf.setLong(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSizeMB);
     propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, String.valueOf(containerSizeMB));
 
