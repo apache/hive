@@ -27,3 +27,5 @@ insert into table change_allowincompatible_vectorization_false_date partition (s
 
 select ts from change_allowincompatible_vectorization_false_date where ts='2038-03-22 07:26:48.0' and s='aaa';
 
+set hive.vectorized.execution.enabled=true;
+select ts from change_allowincompatible_vectorization_false_date where ts='2038-03-22 07:26:48.0' and s='aaa';

@@ -204,6 +204,9 @@ public class ConvertAstToSearchArg {
         }
         return fl.doubleValue();
       case TIMESTAMP:
+        if (lit instanceof org.apache.hadoop.hive.common.type.Timestamp) {
+          return ((org.apache.hadoop.hive.common.type.Timestamp) lit).toSqlTimestamp();
+        }
         return Timestamp.valueOf(lit.toString());
       case DATE:
         return Date.valueOf(lit.toString());
