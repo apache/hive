@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.reexec;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,7 +87,7 @@ public class ReExecDriver implements IDriver {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReExecDriver.class);
   private boolean explainReOptimization;
-  private Driver coreDriver;
+  protected Driver coreDriver;
   private QueryState queryState;
   private String currentQuery;
   private int executionIndex;
@@ -98,7 +99,7 @@ public class ReExecDriver implements IDriver {
     return queryState.getConf();
   }
 
-  private boolean firstExecution() {
+  public boolean firstExecution() {
     return executionIndex == 0;
   }
 
@@ -114,8 +115,9 @@ public class ReExecDriver implements IDriver {
     }
   }
 
-  public int compile(String command, boolean resetTaskIds) {
-    return coreDriver.compile(command, resetTaskIds);
+  @Override
+  public int compile(String string) {
+    return coreDriver.compile(string);
   }
 
   @Override
@@ -221,7 +223,7 @@ public class ReExecDriver implements IDriver {
     return run();
   }
 
-  private void prepareToReExecute() {
+  protected void prepareToReExecute() {
     for (IReExecutionPlugin p : plugins) {
       p.prepareToReExecute();
     }
