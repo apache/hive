@@ -31,12 +31,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Add Partition
-      db name: default
-      partitions:
-          Partition
-            location: hdfs://### HDFS PATH ###
-            partition spec: {day=20110102}
-      table name: supply
+#### A masked pattern was here ####
+      Spec: {day=20110102}
 
   Stage: Stage-1
     Move Operator
