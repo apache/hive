@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveKey;
-import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -78,7 +77,7 @@ public class TestSparkPlan {
       driver = DriverFactory.newDriver(conf);
       Assert.assertEquals(0, driver.run("create table test (col int)").getResponseCode());
 
-      ((ReExecDriver)driver).compile("select * from test order by col", true);
+      driver.compile("select * from test order by col");
       List<SparkTask> sparkTasks = Utilities.getSparkTasks(driver.getPlan().getRootTasks());
       Assert.assertEquals(1, sparkTasks.size());
 
