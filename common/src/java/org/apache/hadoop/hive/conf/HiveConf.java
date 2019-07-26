@@ -2904,6 +2904,11 @@ public class HiveConf extends Configuration {
     HIVE_HBASE_SNAPSHOT_RESTORE_DIR("hive.hbase.snapshot.restoredir", "/tmp", "The directory in which to " +
         "restore the HBase table snapshot."),
 
+    // For Kudu storage handler
+    HIVE_KUDU_MASTER_ADDRESSES_DEFAULT("hive.kudu.master.addresses.default", "localhost:7050",
+        "Comma-separated list of all of the Kudu master addresses.\n" +
+            "This value is only used for a given table if the kudu.master_addresses table property is not set."),
+
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false, "Whether archiving operations are permitted"),
 
