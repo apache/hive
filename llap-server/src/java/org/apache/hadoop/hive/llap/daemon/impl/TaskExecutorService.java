@@ -222,6 +222,20 @@ public class TaskExecutorService extends AbstractService
     waitQueue.setWaitQueueSize(newWaitQueueSize);
     metrics.setNumExecutors(newNumExecutors);
     metrics.setWaitQueueSize(newWaitQueueSize);
+    // If there is no executor left so the queued tasks can not be finished anyway, kill them all.
+    if (newNumExecutors == 0) {
+      synchronized (lock) {
+        TaskWrapper task = waitQueue.peek();
+        while (task != null) {
+          LOG.info("Killing task [" + task + "], since no executor left.");
+          task.getTaskRunnerCallable().killTask();
+          if (waitQueue.remove(task)) {
+            metrics.setExecutorNumQueuedRequests(waitQueue.size());
+          }
+          task = waitQueue.peek();
+        }
+      }
+    }
     LOG.info("TaskExecutorService is setting capacity to: numExecutors=" + newNumExecutors
         + ", waitQueueSize=" + newWaitQueueSize);
   }

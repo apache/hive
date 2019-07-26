@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
@@ -84,8 +85,8 @@ public final class DDLUtils {
    * @return {@code true} if item was added
    */
   public static boolean addIfAbsentByName(WriteEntity newWriteEntity, Set<WriteEntity> outputs) {
-    for(WriteEntity writeEntity : outputs) {
-      if(writeEntity.getName().equalsIgnoreCase(newWriteEntity.getName())) {
+    for (WriteEntity writeEntity : outputs) {
+      if (writeEntity.getName().equalsIgnoreCase(newWriteEntity.getName())) {
         LOG.debug("Ignoring request to add {} because {} is present", newWriteEntity.toStringDetail(),
             writeEntity.toStringDetail());
         return false;
@@ -153,12 +154,12 @@ public final class DDLUtils {
     return false;
   }
 
-  public static String propertiesToString(Map<String, String> props, List<String> exclude) {
+  public static String propertiesToString(Map<String, String> props, Set<String> exclude) {
     if (props.isEmpty()) {
       return "";
     }
 
-    Map<String, String> sortedProperties = new TreeMap<String, String>(props);
+    SortedMap<String, String> sortedProperties = new TreeMap<String, String>(props);
     List<String> realProps = new ArrayList<String>();
     for (Map.Entry<String, String> e : sortedProperties.entrySet()) {
       if (e.getValue() != null && (exclude == null || !exclude.contains(e.getKey()))) {

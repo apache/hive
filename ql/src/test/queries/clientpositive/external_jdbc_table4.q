@@ -124,6 +124,11 @@ SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1
 
 SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b;
 
+EXPLAIN
+SELECT db1_ext_auth1.ikey FROM db1_ext_auth1 LIMIT 10;
+
+SELECT db1_ext_auth1.ikey FROM db1_ext_auth1 LIMIT 10;
+
 DROP TABLE db1_ext_auth1;
 DROP TABLE db2_ext_auth2;
 DROP TABLE db1_ext_auth2;

@@ -1,18 +1,26 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.hadoop.hive.llap.registry.impl;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.curator.framework.recipes.atomic.AtomicValue;
+import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 
 import com.google.common.collect.Sets;
@@ -67,6 +75,8 @@ public class LlapZookeeperRegistryImpl
   private final static String NAMESPACE_PREFIX = "llap-";
   private static final String SLOT_PREFIX = "slot-";
   private static final String SASL_LOGIN_CONTEXT_NAME = "LlapZooKeeperClient";
+  private static final String CONFIG_CHANGE_PATH = "config-change";
+  private static final String CONFIG_CHANGE_NODE = "window-end";
 
 
   private SlotZnode slotZnode;
@@ -74,6 +84,8 @@ public class LlapZookeeperRegistryImpl
 
   // to be used by clients of ServiceRegistry TODO: this is unnecessary
   private DynamicServiceInstanceSet instances;
+
+  private DistributedAtomicLong lockWindowEnd;
 
   public LlapZookeeperRegistryImpl(String instanceName, Configuration conf) {
     super(instanceName, conf,
@@ -186,7 +198,12 @@ public class LlapZookeeperRegistryImpl
     // Nothing for the zkCreate models
   }
 
-  private class DynamicServiceInstance
+  /**
+   * A dynamically changing instance in an Llap Service. Can become inactive if failing or can be
+   * blacklisted (set to 0 capacity) if too slow (See: BlacklistingLlapMetricsListener).
+   */
+  @VisibleForTesting
+  public class DynamicServiceInstance
       extends ServiceInstanceBase implements LlapServiceInstance {
     private final int mngPort;
     private final int shufflePort;
@@ -432,5 +449,75 @@ public class LlapZookeeperRegistryImpl
     // External LLAP clients would need to set LLAP_ZK_REGISTRY_USER to the LLAP daemon user (hive),
     // rather than relying on RegistryUtils.currentUser().
     return HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, RegistryUtils.currentUser());
+  }
+
+  /**
+   * Locks the Llap Cluster for configuration change for the given time window.
+   * @param windowStart The beginning of the time window when no other configuration change is allowed.
+   * @param windowEnd The end of the time window when no other configuration change is allowed.
+   * @return The result of the change (success if the lock is succeeded, and the next possible
+   * configuration change time
+   */
+  public ConfigChangeLockResult lockForConfigChange(long windowStart, long windowEnd) {
+    if (windowEnd < windowStart) {
+      throw new IllegalArgumentException(
+          "WindowStart=" + windowStart + " can not be smaller than WindowEnd=" + windowEnd);
+    }
+    try {
+      if (lockWindowEnd == null) {
+        // Create the node with the /llap-sasl/hiveuser/hostname/config-change/next-change path without retry
+        lockWindowEnd = new DistributedAtomicLong(zooKeeperClient,
+            String.join("/", workersPath.substring(0, workersPath.lastIndexOf('/')), CONFIG_CHANGE_PATH,
+                CONFIG_CHANGE_NODE), (i, j, sleeper) -> false);
+        lockWindowEnd.initialize(0L);
+      }
+      AtomicValue<Long> current = lockWindowEnd.get();
+      if (!current.succeeded()) {
+        LOG.debug("Can not get the current configuration lock time");
+        return new ConfigChangeLockResult(false, -1L);
+      }
+      if (current.postValue() > windowStart) {
+        LOG.debug("Can not lock window {}-{}. Current value is {}.", windowStart, windowEnd, current.postValue());
+        return new ConfigChangeLockResult(false, current.postValue());
+      }
+      current = lockWindowEnd.compareAndSet(current.postValue(), windowEnd);
+      if (!current.succeeded()) {
+        LOG.debug("Can not lock window {}-{}. Current value is changed to {}.", windowStart, windowEnd,
+            current.postValue());
+        return new ConfigChangeLockResult(false, current.postValue());
+      }
+      return new ConfigChangeLockResult(true, current.postValue());
+    } catch (Throwable t) {
+      LOG.info("Can not reserve configuration change lock", t);
+      return new ConfigChangeLockResult(false, -1L);
+    }
+  }
+
+  /**
+   * The return data of a config change. Successful or not successful and the next time a config
+   * change can be attempted.
+   */
+  public static class ConfigChangeLockResult {
+    private final boolean success;
+    private final long nextConfigChangeTime;
+
+    @VisibleForTesting
+    public ConfigChangeLockResult(boolean success, long nextConfigChangeTime) {
+      this.success = success;
+      this.nextConfigChangeTime = nextConfigChangeTime;
+    }
+
+    public boolean isSuccess() {
+      return success;
+    }
+
+    public long getNextConfigChangeTime() {
+      return nextConfigChangeTime;
+    }
+
+    @Override
+    public String toString() {
+      return "ConfigChangeLockResult [" + success + "," + nextConfigChangeTime + "]";
+    }
   }
 }

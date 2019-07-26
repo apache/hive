@@ -26,19 +26,23 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Map.Entry;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol;
 import org.apache.hadoop.io.BytesWritable;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * TestDynamicSerDe.
  *
  */
-public class TestDynamicSerDe extends TestCase {
+public class TestDynamicSerDe {
 
   public static HashMap<String, String> makeHashMap(String... params) {
     HashMap<String, String> r = new HashMap<String, String>();
@@ -48,6 +52,7 @@ public class TestDynamicSerDe extends TestCase {
     return r;
   }
 
+  @Test
   public void testDynamicSerDe() throws Throwable {
     try {
 
@@ -284,6 +289,7 @@ public class TestDynamicSerDe extends TestCase {
     }
   }
 
+  @Test
   public void testTBinarySortableProtocol() throws Throwable {
     try {
 
@@ -402,6 +408,7 @@ public class TestDynamicSerDe extends TestCase {
     }
   }
 
+  @Test
   public void testConfigurableTCTLSeparated() throws Throwable {
     try {
 
@@ -481,6 +488,7 @@ public class TestDynamicSerDe extends TestCase {
    * Tests a single null list within a struct with return nulls on.
    */
 
+  @Test
   public void testNulls1() throws Throwable {
     try {
 
@@ -533,6 +541,7 @@ public class TestDynamicSerDe extends TestCase {
    * Tests all elements of a struct being null with return nulls on.
    */
 
+  @Test
   public void testNulls2() throws Throwable {
     try {
 
@@ -591,6 +600,7 @@ public class TestDynamicSerDe extends TestCase {
    * Tests map and list being empty with return nulls on.
    */
 
+  @Test
   public void testNulls3() throws Throwable {
     try {
 
@@ -649,6 +659,7 @@ public class TestDynamicSerDe extends TestCase {
    * Tests map and list null/empty with return nulls *off*.
    */
 
+  @Test
   public void testNulls4() throws Throwable {
     try {
 
@@ -709,6 +720,7 @@ public class TestDynamicSerDe extends TestCase {
    * Tests map and list null/empty with return nulls *off*.
    */
 
+  @Test
   public void testStructsinStructs() throws Throwable {
     try {
 
@@ -775,6 +787,7 @@ public class TestDynamicSerDe extends TestCase {
 
   }
 
+  @Test
   public void testSkip() throws Throwable {
     try {
 

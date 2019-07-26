@@ -533,6 +533,51 @@ POSTHOOK: Input: default@db1_ext_auth1
 44	200
 44	40
 44	88
+PREHOOK: query: EXPLAIN
+SELECT db1_ext_auth1.ikey FROM db1_ext_auth1 LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT db1_ext_auth1.ikey FROM db1_ext_auth1 LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: db1_ext_auth1
+          properties:
+            hive.sql.query SELECT "ikey"
+FROM (SELECT "IKEY" AS "ikey"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
+FETCH NEXT 10 ROWS ONLY) AS "t0"
+            hive.sql.query.fieldNames ikey
+            hive.sql.query.fieldTypes int
+            hive.sql.query.split false
+          Select Operator
+            expressions: ikey (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT db1_ext_auth1.ikey FROM db1_ext_auth1 LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT db1_ext_auth1.ikey FROM db1_ext_auth1 LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+-20
+100
+20
+44
 PREHOOK: query: DROP TABLE db1_ext_auth1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@db1_ext_auth1

@@ -47,6 +47,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.BlockingService;
 
+import javax.annotation.Nullable;
+
 public class LlapUtil {
   private static final Logger LOG = LoggerFactory.getLogger(LlapUtil.class);
 
@@ -372,7 +374,7 @@ public class LlapUtil {
   }
 
 
-  public static ThreadMXBean initThreadMxBean() {
+  @Nullable public static ThreadMXBean initThreadMxBean() {
     ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
     if (mxBean != null) {
       if (!mxBean.isCurrentThreadCpuTimeSupported()) {

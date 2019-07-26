@@ -1676,4 +1676,25 @@ public class TestJdbcWithMiniHS2 {
     }
     return extendedDescription;
   }
+
+  @Test
+  public void testCustomPathsForCTLV() throws Exception {
+    try (Statement stmt = conTestDb.createStatement()) {
+      // Initialize
+      stmt.execute("CREATE TABLE emp_table (id int, name string, salary int)");
+      stmt.execute("insert into emp_table values(1,'aaaaa',20000)");
+      stmt.execute("CREATE VIEW emp_view AS SELECT * FROM emp_table WHERE salary>10000");
+      String customPath = System.getProperty("test.tmp.dir") + "/custom";
+
+      //Test External CTLV
+      String extPath = customPath + "/emp_ext_table";
+      stmt.execute("CREATE EXTERNAL TABLE emp_ext_table like emp_view STORED AS PARQUET LOCATION '" + extPath + "'");
+      assertTrue(getDetailedTableDescription(stmt, "emp_ext_table").contains(extPath));
+
+      //Test Managed CTLV
+      String mndPath = customPath + "/emp_mm_table";
+      stmt.execute("CREATE TABLE emp_mm_table like emp_view STORED AS ORC LOCATION '" + mndPath + "'");
+      assertTrue(getDetailedTableDescription(stmt, "emp_mm_table").contains(mndPath));
+    }
+  }
 }

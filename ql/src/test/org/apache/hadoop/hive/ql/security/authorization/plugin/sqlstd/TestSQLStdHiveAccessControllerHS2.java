@@ -81,7 +81,7 @@ public class TestSQLStdHiveAccessControllerHS2 {
   private List<String> getSettableParams() throws SecurityException, NoSuchFieldException,
       IllegalArgumentException, IllegalAccessException {
     // get all the variable names being converted to regex in HiveConf, using reflection
-    Field varNameField = HiveConf.class.getDeclaredField("sqlStdAuthSafeVarNames");
+    Field varNameField = HiveConf.class.getDeclaredField("SQL_STD_AUTH_SAFE_VAR_NAMES");
     varNameField.setAccessible(true);
     List<String> confVarList = Arrays.asList((String[]) varNameField.get(null));
 

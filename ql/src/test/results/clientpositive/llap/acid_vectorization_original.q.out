@@ -551,12 +551,12 @@ POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 42
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed
 #### A masked pattern was here ####
-{"writeid":0,"bucketid":536870912,"rowid":104}	5	501	65585
-{"writeid":0,"bucketid":536870912,"rowid":420}	5	501	65585
-{"writeid":0,"bucketid":536936448,"rowid":37}	-3	344	65733
-{"writeid":0,"bucketid":536936448,"rowid":295}	-3	344	65733
-{"writeid":0,"bucketid":537067520,"rowid":173}	35	463	65646
-{"writeid":0,"bucketid":537067520,"rowid":406}	35	463	65646
+{"writeid":0,"bucketid":536870912,"rowid":294}	5	501	65585
+{"writeid":0,"bucketid":536870912,"rowid":610}	5	501	65585
+{"writeid":0,"bucketid":536936448,"rowid":101}	-3	344	65733
+{"writeid":0,"bucketid":536936448,"rowid":359}	-3	344	65733
+{"writeid":0,"bucketid":537067520,"rowid":190}	35	463	65646
+{"writeid":0,"bucketid":537067520,"rowid":423}	35	463	65646
 PREHOOK: query: explain update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed

@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.junit.Assert;
@@ -32,7 +32,7 @@ import org.junit.Test;
  * Test {@link DynamicMultiDimeContainer}
  *
  */
-public class TestDynamicMultiDimeCollection extends TestCase {
+public class TestDynamicMultiDimeCollection {
   private static String DEF_DIR = "default";
 
   @Test

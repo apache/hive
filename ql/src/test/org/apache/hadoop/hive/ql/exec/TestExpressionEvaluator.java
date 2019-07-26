@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.util.ArrayList;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -40,12 +40,15 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * TestExpressionEvaluator.
  *
  */
-public class TestExpressionEvaluator extends TestCase {
+public class TestExpressionEvaluator {
 
   // this is our row to test expressions on
   protected InspectableObject r;
@@ -97,10 +100,11 @@ public class TestExpressionEvaluator extends TestCase {
     }
   }
 
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
   }
 
+  @Test
   public void testExprNodeColumnEvaluator() throws Throwable {
     try {
       // get a evaluator for a simple field expression
@@ -136,6 +140,7 @@ public class TestExpressionEvaluator extends TestCase {
         children);
   }
 
+  @Test
   public void testExprNodeFuncEvaluator() throws Throwable {
     try {
       // get a evaluator for a string concatenation expression
@@ -161,6 +166,7 @@ public class TestExpressionEvaluator extends TestCase {
     }
   }
 
+  @Test
   public void testExprNodeConversionEvaluator() throws Throwable {
     try {
       // get a evaluator for a string concatenation expression
@@ -204,6 +210,7 @@ public class TestExpressionEvaluator extends TestCase {
         + " seconds/million call.");
   }
 
+  @Test
   public void testExprNodeSpeed() throws Throwable {
     try {
       int basetimes = 100000;

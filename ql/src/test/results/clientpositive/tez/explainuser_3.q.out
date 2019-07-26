@@ -522,7 +522,7 @@ PREHOOK: type: DROPVIEW
 POSTHOOK: query: explain drop view v_n1
 POSTHOOK: type: DROPVIEW
 Stage-0
-  Drop Table{"table:":"v_n1"}
+  Drop View{"view name:":"v_n1"}
 
 PREHOOK: query: explain create view v_n1 as with cte as (select * from src  order by key limit 5)
 select * from cte

@@ -19,10 +19,14 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+import java.nio.charset.Charset;
+
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import com.google.common.io.Files;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestParseDriver {
@@ -40,7 +44,7 @@ public class TestParseDriver {
     String whereStr = "field5=1 and field6 in ('a', 'b')";
     String havingStr = "sum(field7) > 11";
     ASTNode tree = parseDriver.parse(selectStr + " from table1 where " + whereStr
-      + " group by field1, field2 having  " + havingStr);
+        + " group by field1, field2 having  " + havingStr);
     assertEquals(tree.getType(), 0);
     assertEquals(tree.getChildCount(), 2);
     ASTNode queryTree = (ASTNode) tree.getChild(0);
@@ -106,7 +110,7 @@ public class TestParseDriver {
     assertTree((ASTNode) sumNode.getChild(1), plusNode);
 
     ASTNode tree = parseDriver.parseExpression("case when field1 = 1 then sum(field3 + field4) when field1 != 2 then " +
-      "sum(field3-field4) else sum(field3 * field4) end");
+        "sum(field3-field4) else sum(field3 * field4) end");
     assertEquals(tree.getChildCount(), 6);
     assertEquals(tree.getChild(0).getType(), HiveParser.KW_WHEN);
     assertEquals(tree.getChild(1).getType(), HiveParser.EQUAL);
@@ -212,6 +216,92 @@ public class TestParseDriver {
         "  ,'a','a'))\n" +
         "      )))))))))))))))))))))))\n" +
         "AS test_comp_exp");
+  }
+
+  static class ExoticQueryBuilder {
+    StringBuilder sb = new StringBuilder();
+
+    public void recursiveSJS(int depth) {
+      sb.append("select ");
+      addColumns(30);
+      sb.append(" from \n");
+      tablePart(depth);
+      sb.append(" join \n");
+      tablePart(depth);
+      sb.append(" on ( ");
+      wherePart(10);
+      sb.append(" ) ");
+      sb.append(" where ");
+      wherePart(10);
+
+    }
+
+    private void tablePart(int depth) {
+      if (depth == 0) {
+        sb.append(" baseTable ");
+      } else {
+        sb.append("(");
+        recursiveSJS(depth - 1);
+        sb.append(") aa");
+      }
+    }
+
+    private void wherePart(int num) {
+      for (int i = 0; i < num - 1; i++) {
+        sb.append("x = ");
+        sb.append(i);
+        sb.append(" or ");
+      }
+      sb.append("x = -1");
+
+    }
+
+    private void addColumns(int num) {
+      for (int i = 0; i < num - 1; i++) {
+        sb.append("c");
+        sb.append(i);
+        sb.append(" + 2*sqrt(11)+");
+        sb.append(i);
+        sb.append(",");
+      }
+      sb.append("cE");
+    }
+
+    public String getQuery() {
+      return sb.toString();
+    }
+  }
+
+  @Test(timeout = 10000)
+  public void testExoticSJSSubQuery() throws Exception {
+    ExoticQueryBuilder eqb = new ExoticQueryBuilder();
+    eqb.recursiveSJS(10);
+    String q = eqb.getQuery();
+    System.out.println(q);
+    parseDriver.parse(q);
+  }
+
+  @Test
+  public void testJoinResulInBraces() throws Exception {
+    String q =
+        "explain select a.key, b.value from"
+            + "( (select key from src)a join (select value from src)b on a.key=b.value)";
+    System.out.println(q);
+
+    ASTNode root = parseDriver.parse(q);
+    System.out.println(root.dump());
+
+  }
+
+  @Test
+  public void testFromSubqueryIsSetop() throws Exception {
+    String q =
+        "explain select key from ((select key from src) union (select key from src))subq ";
+    System.out.println(q);
+
+    ASTNode root = parseDriver.parse(q);
+    System.out.println(root.dump());
+
   }
 
 }

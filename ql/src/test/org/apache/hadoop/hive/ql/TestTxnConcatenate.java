@@ -56,13 +56,13 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(5,6),(8,8)");
     String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDTBL + " order by a, b";
     String[][] expected = new String[][] {
-        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t1\t4",
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\t4",
             "acidtbl/delta_0000002_0000002_0000/bucket_00001"},
-        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t4\t4",
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t4\t4",
             "acidtbl/delta_0000002_0000002_0000/bucket_00001"},
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t5\t6",
+        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t5\t6",
             "acidtbl/delta_0000003_0000003_0000/bucket_00001"},
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
+        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t8\t8",
             "acidtbl/delta_0000003_0000003_0000/bucket_00001"}};
     checkResult(expected, testQuery, false, "check data", LOG);
 
@@ -80,13 +80,13 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, rsp.getCompactsSize());
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t1\t4",
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\t4",
             "acidtbl/base_0000003_v0000019/bucket_00001"},
-        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t4\t4",
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t4\t4",
             "acidtbl/base_0000003_v0000019/bucket_00001"},
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t5\t6",
+        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t5\t6",
             "acidtbl/base_0000003_v0000019/bucket_00001"},
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
+        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t8\t8",
             "acidtbl/base_0000003_v0000019/bucket_00001"}};
     checkResult(expected2, testQuery, false, "check data after concatenate", LOG);
   }

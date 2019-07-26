@@ -22,6 +22,8 @@ import static org.apache.hadoop.fs.permission.AclEntryType.GROUP;
 import static org.apache.hadoop.fs.permission.AclEntryType.OTHER;
 import static org.apache.hadoop.fs.permission.AclEntryType.USER;
 
+import org.junit.After;
+
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
@@ -107,8 +109,8 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
     return userUgi.getShortUserName();
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     super.tearDown();
 
     if (dfs != null) {

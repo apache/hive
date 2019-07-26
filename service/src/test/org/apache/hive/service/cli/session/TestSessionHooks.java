@@ -36,7 +36,10 @@ import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestSessionHooks extends TestCase {
+/**
+ * TestSessionHooks.
+ */
+public class TestSessionHooks {
 
   private static String sessionUserName = "user1";
   private EmbeddedThriftBinaryCLIService service;
@@ -56,10 +59,9 @@ public class TestSessionHooks extends TestCase {
     }
   }
 
-  @Override
   @Before
   public void setUp() throws Exception {
-    super.setUp();
+
     SessionHookTest.runCount.set(0);
     System.setProperty(ConfVars.HIVE_SERVER2_SESSION_HOOK.varname,
         TestSessionHooks.SessionHookTest.class.getName());

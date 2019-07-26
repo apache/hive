@@ -28,7 +28,6 @@ import java.util.UUID;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -197,7 +196,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     // Now make a task to drop temp table
     // {@link DDLSemanticAnalyzer#analyzeDropTable(ASTNode ast, TableType expectedType)
     ReplicationSpec replicationSpec = new ReplicationSpec();
-    DropTableDesc dropTblDesc = new DropTableDesc(newTableName, TableType.MANAGED_TABLE, false, true, replicationSpec);
+    DropTableDesc dropTblDesc = new DropTableDesc(newTableName, false, true, replicationSpec);
     Task<DDLWork> dropTask = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc), conf);
     exportTask.addDependentTask(dropTask);
     markReadEntityForUpdate();

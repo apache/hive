@@ -6845,7 +6845,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Operator genBucketingSortingDest(String dest, Operator input, QB qb,
-                                           TableDesc table_desc, Table dest_tab, SortBucketRSCtx ctx) throws SemanticException {
+      TableDesc table_desc, Table dest_tab, SortBucketRSCtx ctx) throws SemanticException {
 
     // If the table is bucketed, and bucketing is enforced, do the following:
     // If the number of buckets is smaller than the number of maximum reducers,
@@ -6854,10 +6854,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // spray the data into multiple buckets. That way, we can support a very large
     // number of buckets without needing a very large number of reducers.
     boolean enforceBucketing = false;
-    ArrayList<ExprNodeDesc> partnCols = new ArrayList<ExprNodeDesc>();
-    ArrayList<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
-    ArrayList<Integer> sortOrders = new ArrayList<Integer>();
-    ArrayList<Integer> nullSortOrders = new ArrayList<Integer>();
+    ArrayList<ExprNodeDesc> partnCols = new ArrayList<>();
+    ArrayList<ExprNodeDesc> sortCols = new ArrayList<>();
+    ArrayList<Integer> sortOrders = new ArrayList<>();
     boolean multiFileSpray = false;
     int numFiles = 1;
     int totalFiles = 1;
@@ -6869,8 +6868,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         partnCols = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, true);
       }
-    }
-    else {
+    } else {
       if(updating(dest) || deleting(dest)) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
         enforceBucketing = true;
@@ -6883,6 +6881,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       sortOrders = getSortOrders(dest, qb, dest_tab, input);
       if (!enforceBucketing) {
         throw new SemanticException(ErrorMsg.TBL_SORTED_NOT_BUCKETED.getErrorCodedMsg(dest_tab.getCompleteName()));
+      }
+    } else if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SORT_WHEN_BUCKETING) &&
+        enforceBucketing && !updating(dest) && !deleting(dest)) {
+      sortCols = new ArrayList<>();
+      for (ExprNodeDesc expr : partnCols) {
+        sortCols.add(expr.clone());
+      }
+      sortOrders = new ArrayList<>();
+      for (int i = 0; i < sortCols.size(); i++) {
+        sortOrders.add(DirectionUtils.ASCENDING_CODE);
       }
     }
 
@@ -13350,13 +13358,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * defined in {@link SemanticAnalyzer#UPDATED_TBL_PROPS}.
    * @param source properties of source table, must be not null.
    * @param target properties of target table.
+   * @param skipped a list of properties which should be not overwritten. It can be null or empty.
    */
-  private void updateDefaultTblProps(Map<String, String> source, Map<String, String> target) {
+  private void updateDefaultTblProps(Map<String, String> source, Map<String, String> target, List<String> skipped) {
     if (source == null || target == null) {
       return;
     }
     for (String property : UPDATED_TBL_PROPS) {
-      if (source.containsKey(property)) {
+      if ((skipped == null || !skipped.contains(property)) && source.containsKey(property)) {
         target.put(property, source.get(property));
       }
     }
@@ -13571,16 +13580,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (child.getChildCount() > 0) {
           likeTableName = getUnescapedName((ASTNode) child.getChild(0));
           if (likeTableName != null) {
-            Table likeTable = getTable(likeTableName, false);
-            if (likeTable != null) {
-              Map<String, String> likeTableProps = likeTable.getParameters();
-              if (likeTableProps.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
-                isTransactional = true;
-              }
-              if (likeTable.isTemporary()) {
-                isTemporary = true;
-              }
-            }
             if (command_type == CTAS) {
               throw new SemanticException(ErrorMsg.CTAS_CTLT_COEXISTENCE
                   .getMsg());
@@ -13802,14 +13801,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
 
       Table likeTable = getTable(likeTableName, false);
-      if (isTemporary) {
-        if (likeTable != null && likeTable.getPartCols().size() > 0) {
-          throw new SemanticException("Partition columns are not supported on temporary tables "
-              + "and source table in CREATE TABLE LIKE is partitioned.");
-        }
-      }
       if (likeTable != null) {
-        updateDefaultTblProps(likeTable.getParameters(), tblProps);
+        if (isTemporary) {
+          if (likeTable.getPartCols().size() > 0) {
+            throw new SemanticException("Partition columns are not supported on temporary tables "
+                + "and source table in CREATE TABLE LIKE is partitioned.");
+          }
+          updateDefaultTblProps(likeTable.getParameters(), tblProps,
+              new ArrayList<>(Arrays.asList(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL,
+                  hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)));
+        } else {
+          updateDefaultTblProps(likeTable.getParameters(), tblProps, null);
+        }
       }
       CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(dbDotTab, isExt, isTemporary,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location,

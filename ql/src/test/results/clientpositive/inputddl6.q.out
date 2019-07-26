@@ -95,6 +95,7 @@ STAGE PLANS:
       partition:
         ds 2008-04-09
       table: INPUTDDL6
+      extended: true
 
   Stage: Stage-1
     Fetch Operator

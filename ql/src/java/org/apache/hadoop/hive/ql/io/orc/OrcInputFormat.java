@@ -1273,7 +1273,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
       //todo: shouldn't ignoreEmptyFiles be set based on ExecutionEngine?
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(
-          fs, dir, context.conf, context.writeIdList, useFileIds, true, null);
+          fs, dir, context.conf, context.writeIdList, useFileIds, true, null, false);
       // find the base files (original or new style)
       List<AcidBaseFileInfo> baseFiles = new ArrayList<>();
       if (dirInfo.getBaseDirectory() == null) {
@@ -2313,7 +2313,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
           PredicateLeaf leaf = predLeaves.get(pred);
           try {
-            truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, leaf, null);
+            truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, leaf, null, true);
           } catch (NoDynamicValuesException dve) {
             LOG.debug("Dynamic values are not available here {}", dve.getMessage());
             boolean hasNulls = stats.hasNull() || leaf.getOperator() != Operator.NULL_SAFE_EQUALS;
@@ -2463,7 +2463,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       //it may also be null if there is no base - only deltas
       mergerOptions.baseDir(baseDirectory);
       if (baseDirectory.getName().startsWith(AcidUtils.BASE_PREFIX)) {
-        isOriginal = AcidUtils.MetaDataFile.isRawFormat(baseDirectory, baseDirectory.getFileSystem(conf));
+        isOriginal = AcidUtils.MetaDataFile.isRawFormat(baseDirectory, baseDirectory.getFileSystem(conf), null);
         mergerOptions.rootPath(baseDirectory.getParent());
       } else {
         isOriginal = true;

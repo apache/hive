@@ -35,8 +35,12 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.junit.Test;
 
-public class TestHCatRecordSerDe extends TestCase {
+/**
+ * TestHCatRecordSerDe.
+ */
+public class TestHCatRecordSerDe {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatRecordSerDe.class);
 
@@ -115,6 +119,7 @@ public class TestHCatRecordSerDe extends TestCase {
     return data;
   }
 
+  @Test
   public void testRW() throws Exception {
 
     Configuration conf = new Configuration();

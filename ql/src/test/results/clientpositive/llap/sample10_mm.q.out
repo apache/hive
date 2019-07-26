@@ -49,45 +49,45 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-5	val_5	2008-04-08	11
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
 2	val_2	2008-04-08	11
 5	val_5	2008-04-08	11
 5	val_5	2008-04-08	11
-0	val_0	2008-04-08	11
-0	val_0	2008-04-08	11
-0	val_0	2008-04-08	11
-9	val_9	2008-04-08	11
+5	val_5	2008-04-08	11
 8	val_8	2008-04-08	11
+9	val_9	2008-04-08	11
 4	val_4	2008-04-08	11
-5	val_5	2008-04-08	12
+0	val_0	2008-04-08	12
+0	val_0	2008-04-08	12
+0	val_0	2008-04-08	12
 2	val_2	2008-04-08	12
 5	val_5	2008-04-08	12
 5	val_5	2008-04-08	12
-0	val_0	2008-04-08	12
-0	val_0	2008-04-08	12
-0	val_0	2008-04-08	12
-9	val_9	2008-04-08	12
+5	val_5	2008-04-08	12
 8	val_8	2008-04-08	12
+9	val_9	2008-04-08	12
 4	val_4	2008-04-08	12
-5	val_5	2008-04-09	11
+0	val_0	2008-04-09	11
+0	val_0	2008-04-09	11
+0	val_0	2008-04-09	11
 2	val_2	2008-04-09	11
 5	val_5	2008-04-09	11
 5	val_5	2008-04-09	11
-0	val_0	2008-04-09	11
-0	val_0	2008-04-09	11
-0	val_0	2008-04-09	11
-9	val_9	2008-04-09	11
+5	val_5	2008-04-09	11
 8	val_8	2008-04-09	11
+9	val_9	2008-04-09	11
 4	val_4	2008-04-09	11
-5	val_5	2008-04-09	12
+0	val_0	2008-04-09	12
+0	val_0	2008-04-09	12
+0	val_0	2008-04-09	12
 2	val_2	2008-04-09	12
 5	val_5	2008-04-09	12
 5	val_5	2008-04-09	12
-0	val_0	2008-04-09	12
-0	val_0	2008-04-09	12
-0	val_0	2008-04-09	12
-9	val_9	2008-04-09	12
+5	val_5	2008-04-09	12
 8	val_8	2008-04-09	12
+9	val_9	2008-04-09	12
 4	val_4	2008-04-09	12
 PREHOOK: query: explain select key from srcpartbucket tablesample (bucket 2 out of 4 on key)
 PREHOOK: type: QUERY
@@ -154,34 +154,34 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-5
+0
+0
+0
 2
 5
 5
-0
-0
-0
 5
+0
+0
+0
 2
 5
 5
-0
-0
-0
 5
+0
+0
+0
 2
 5
 5
-0
-0
-0
 5
+0
+0
+0
 2
 5
 5
-0
-0
-0
+5
 PREHOOK: query: select key from srcpartbucket tablesample (bucket 3 out of 4 on key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpartbucket
@@ -198,7 +198,6 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-9
 8
 9
 8
@@ -206,6 +205,7 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 8
 9
 8
+9
 PREHOOK: query: select key from srcpartbucket tablesample (bucket 4 out of 4 on key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpartbucket

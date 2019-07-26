@@ -68,7 +68,7 @@ public class TestMacroSemanticAnalyzer {
   }
   @Test
   public void testDropMacroExistsDoNotIgnoreErrors() throws Exception {
-    conf.setBoolVar(ConfVars.DROPIGNORESNONEXISTENT, false);
+    conf.setBoolVar(ConfVars.DROP_IGNORES_NON_EXISTENT, false);
     FunctionRegistry.registerTemporaryUDF("SOME_MACRO", GenericUDFMacro.class);
     analyze(parse("DROP TEMPORARY MACRO SOME_MACRO"));
   }
@@ -79,7 +79,7 @@ public class TestMacroSemanticAnalyzer {
   }
   @Test(expected = SemanticException.class)
   public void testDropMacroNonExistent() throws Exception {
-    conf.setBoolVar(ConfVars.DROPIGNORESNONEXISTENT, false);
+    conf.setBoolVar(ConfVars.DROP_IGNORES_NON_EXISTENT, false);
     analyze(parse("DROP TEMPORARY MACRO SOME_MACRO"));
   }
   @Test
@@ -88,7 +88,7 @@ public class TestMacroSemanticAnalyzer {
   }
   @Test
   public void testDropMacroNonExistentWithIfExistsDoNotIgnoreNonExistent() throws Exception {
-    conf.setBoolVar(ConfVars.DROPIGNORESNONEXISTENT, false);
+    conf.setBoolVar(ConfVars.DROP_IGNORES_NON_EXISTENT, false);
     analyze(parse("DROP TEMPORARY MACRO IF EXISTS SOME_MACRO"));
   }
   @Test

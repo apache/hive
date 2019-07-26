@@ -18,12 +18,18 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-public class TestUDFHex extends TestCase {
+/**
+ * TestUDFHex.
+ */
+public class TestUDFHex {
+  @Test
   public void testHexConversion(){
     byte[] bytes = "string".getBytes();
     // Let's make sure we only read the relevant part of the writable in case of reuse

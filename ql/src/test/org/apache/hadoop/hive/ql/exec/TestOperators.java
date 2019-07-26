@@ -62,23 +62,26 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.junit.Assert;
-import org.junit.Test;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.when;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * TestOperators.
  *
  */
-public class TestOperators extends TestCase {
+public class TestOperators {
 
   // this is our row to test expressions on
   protected InspectableObject[] r;
 
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     r = new InspectableObject[5];
     ArrayList<String> names = new ArrayList<String>(3);
     names.add("col0");
@@ -108,7 +111,7 @@ public class TestOperators extends TestCase {
     }
   }
 
-  private void testTaskIds(String [] taskIds, String expectedAttemptId, String expectedTaskId) {
+  private void testTaskIds(String[] taskIds, String expectedAttemptId, String expectedTaskId) {
     Configuration conf = new JobConf(TestOperators.class);
     for (String one: taskIds) {
       conf.set("mapred.task.id", one);
@@ -116,8 +119,8 @@ public class TestOperators extends TestCase {
       assertEquals(expectedAttemptId, attemptId);
       assertEquals(Utilities.getTaskIdFromFilename(attemptId), expectedTaskId);
       assertEquals(Utilities.getTaskIdFromFilename(attemptId + ".gz"), expectedTaskId);
-      assertEquals(Utilities.getTaskIdFromFilename
-                   (Utilities.toTempPath(new Path(attemptId + ".gz")).toString()), expectedTaskId);
+      assertEquals(Utilities.getTaskIdFromFilename(
+                   Utilities.toTempPath(new Path(attemptId + ".gz")).toString()), expectedTaskId);
     }
   }
 
@@ -126,26 +129,27 @@ public class TestOperators extends TestCase {
    * file naming libraries
    * The old test was deactivated as part of hive-405
    */
+  @Test
   public void testFileSinkOperator() throws Throwable {
 
     try {
-      testTaskIds (new String [] {
+      testTaskIds(new String[] {
           "attempt_200707121733_0003_m_000005_0",
           "attempt_local_0001_m_000005_0",
           "task_200709221812_0001_m_000005_0",
           "task_local_0001_m_000005_0"
-        }, "000005_0", "000005");
+          }, "000005_0", "000005");
 
-      testTaskIds (new String [] {
+      testTaskIds(new String[] {
           "job_local_0001_map_000005",
           "job_local_0001_reduce_000005",
-        }, "000005", "000005");
+          }, "000005", "000005");
 
-      testTaskIds (new String [] {"1234567"},
+      testTaskIds(new String[] {"1234567"},
                    "1234567", "1234567");
 
-      assertEquals(Utilities.getTaskIdFromFilename
-                   ("/mnt/dev005/task_local_0001_m_000005_0"),
+      assertEquals(Utilities.getTaskIdFromFilename(
+                   "/mnt/dev005/task_local_0001_m_000005_0"),
                    "000005");
 
       System.out.println("FileSink Operator ok");
@@ -160,6 +164,7 @@ public class TestOperators extends TestCase {
    *  variables. But environment variables have some system limitations and we have to check
    *  job configuration properties firstly. This test checks that staff.
    */
+  @Test
   public void testScriptOperatorEnvVarsProcessing() throws Throwable {
     try {
       ScriptOperator scriptOperator = new ScriptOperator(new CompilationOpContext());
@@ -173,7 +178,7 @@ public class TestOperators extends TestCase {
       assertEquals("value", scriptOperator.safeEnvVarValue("value", "name", true));
 
       //Environment Variables long values
-      char [] array = new char[20*1024+1];
+      char[] array = new char[20*1024+1];
       Arrays.fill(array, 'a');
       String hugeEnvVar = new String(array);
       assertEquals(20*1024+1, hugeEnvVar.length());
@@ -200,6 +205,7 @@ public class TestOperators extends TestCase {
     }
   }
 
+  @Test
   public void testScriptOperatorBlacklistedEnvVarsProcessing() {
     ScriptOperator scriptOperator = new ScriptOperator(new CompilationOpContext());
 
@@ -215,6 +221,7 @@ public class TestOperators extends TestCase {
     Assert.assertTrue(env.containsKey("barfoo"));
   }
 
+  @Test
   public void testScriptOperator() throws Throwable {
     try {
       System.out.println("Testing Script Operator");
@@ -289,6 +296,7 @@ public class TestOperators extends TestCase {
     }
   }
 
+  @Test
   public void testMapOperator() throws Throwable {
     try {
       System.out.println("Testing Map Operator");
@@ -310,7 +318,7 @@ public class TestOperators extends TestCase {
       TableDesc td = Utilities.defaultTd;
       PartitionDesc pd = new PartitionDesc(td, null);
       LinkedHashMap<Path, org.apache.hadoop.hive.ql.plan.PartitionDesc> pathToPartitionInfo =
-        new LinkedHashMap<>();
+          new LinkedHashMap<>();
       pathToPartitionInfo.put(new Path("hdfs:///testDir"), pd);
 
       // initialize aliasToWork
@@ -323,7 +331,7 @@ public class TestOperators extends TestCase {
           .get(ctx, CollectDesc.class);
       cdop2.setConf(cd);
       LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork =
-        new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
+          new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
       aliasToWork.put("a", cdop1);
       aliasToWork.put("b", cdop2);
 

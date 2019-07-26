@@ -140,18 +140,8 @@ PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: desc formatted UserVisits_web_text_none sourceIP
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
-col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
-distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
+sourceIP            	string              	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 PREHOOK: type: ANALYZE_TABLE
@@ -482,18 +472,8 @@ PREHOOK: Input: default@empty_tab
 POSTHOOK: query: desc formatted empty_tab a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@empty_tab
-col_name            	a                   	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
-distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
+a                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain
 analyze table empty_tab compute statistics for columns a,b,c,d,e
@@ -678,36 +658,16 @@ PREHOOK: Input: test@uservisits_web_text_none
 POSTHOOK: query: desc formatted UserVisits_web_text_none sourceIP
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: test@uservisits_web_text_none
-col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
-distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
+sourceIP            	string              	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted test.UserVisits_web_text_none sourceIP
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test@uservisits_web_text_none
 POSTHOOK: query: desc formatted test.UserVisits_web_text_none sourceIP
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: test@uservisits_web_text_none
-col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
-distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
+sourceIP            	string              	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted default.UserVisits_web_text_none sourceIP
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none

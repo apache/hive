@@ -595,7 +595,7 @@ public class TestOrcRawRecordMerger {
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testEmpty:200:" + Long.MAX_VALUE);
-    AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, writeIdList);
+    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, false, null, false);
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
         BUCKET);
@@ -666,7 +666,8 @@ public class TestOrcRawRecordMerger {
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testNewBaseAndDelta:200:" + Long.MAX_VALUE);
-    AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, writeIdList);
+    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, use130Format, null,
+        use130Format);
 
     assertEquals(new Path(root, "base_0000100"), directory.getBaseDirectory());
     assertEquals(new Path(root, use130Format ?

@@ -658,7 +658,7 @@ public class HiveConf extends Configuration {
     LOCALMODEMAXINPUTFILES("hive.exec.mode.local.auto.input.files.max", 4,
         "When hive.exec.mode.local.auto is true, the number of tasks should less than this for local mode."),
 
-    DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true,
+    DROP_IGNORES_NON_EXISTENT("hive.exec.drop.ignorenonexistent", true,
         "Do not report an error if DROP TABLE/VIEW/Index/Function specifies a non-existent table/view/function"),
 
     HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true, "Ignore the mapjoin hint"),
@@ -2209,6 +2209,10 @@ public class HiveConf extends Configuration {
         "should the query fail or not ? For example, if the buckets in the tables being joined are\n" +
         "not a multiple of each other, bucketed map-side join cannot be performed, and the\n" +
         "query will fail if hive.enforce.bucketmapjoin is set to true."),
+
+    HIVE_SORT_WHEN_BUCKETING("hive.optimize.clustered.sort", true,
+        "When this option is true, when a Hive table was created with a clustered by clause, we will also\n" +
+        "sort by same value (if sort columns were not specified)"),
 
     HIVE_ENFORCE_NOT_NULL_CONSTRAINT("hive.constraint.notnull.enforce", true,
         "Should \"IS NOT NULL \" constraint be enforced?"),
@@ -4146,13 +4150,16 @@ public class HiveConf extends Configuration {
         "MR LineRecordRedader into LLAP cache, if this feature is enabled. Safety flag."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
-    LLAP_IO_VRB_QUEUE_LIMIT_BASE("hive.llap.io.vrb.queue.limit.base", 50000,
-        "The default queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
+    LLAP_IO_VRB_QUEUE_LIMIT_MAX("hive.llap.io.vrb.queue.limit.max", 50000,
+        "The maximum queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
         "slower than the IO. The actual queue size is set per fragment, and is adjusted down\n" +
-        "from the base, depending on the schema."),
-    LLAP_IO_VRB_QUEUE_LIMIT_MIN("hive.llap.io.vrb.queue.limit.min", 10,
+        "from the base, depending on the schema see LLAP_IO_CVB_BUFFERED_SIZE."),
+    LLAP_IO_VRB_QUEUE_LIMIT_MIN("hive.llap.io.vrb.queue.limit.min", 1,
         "The minimum queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
         "slower than the IO (used when determining the size from base size)."),
+    LLAP_IO_CVB_BUFFERED_SIZE("hive.llap.io.cvb.memory.consumption.", 1L << 30,
+        "The amount of bytes used to buffer CVB between IO and Processor Threads default to 1GB, "
+            + "this will be used to compute a best effort queue size for VRBs produced by a LLAP IO thread."),
     LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
         "Whether to used shared object pools in LLAP IO. A safety flag."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
@@ -4358,6 +4365,32 @@ public class HiveConf extends Configuration {
       "The listener which is called when new Llap Daemon statistics is received on AM side.\n" +
       "The listener should implement the " +
       "org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsListener interface."),
+    LLAP_NODEHEALTHCHECKS_MINTASKS(
+      "hive.llap.nodehealthchecks.mintasks", 2000,
+      "Specifies the minimum amount of tasks, executed by a particular LLAP daemon, before the health\n" +
+      "status of the node is examined."),
+    LLAP_NODEHEALTHCHECKS_MININTERVALDURATION(
+      "hive.llap.nodehealthckecks.minintervalduration", "300s",
+      new TimeValidator(TimeUnit.SECONDS),
+      "The minimum time that needs to elapse between two actions that are the correcting results of identifying\n" +
+      "an unhealthy node. Even if additional nodes are considered to be unhealthy, no action is performed until\n" +
+      "this time interval has passed since the last corrective action."),
+    LLAP_NODEHEALTHCHECKS_TASKTIMERATIO(
+      "hive.llap.nodehealthckecks.tasktimeratio", 1.5f,
+      "LLAP daemons are considered unhealthy, if their average (Map-) task execution time is significantly larger\n" +
+      "than the average task execution time of other nodes. This value specifies the ratio of a node to other\n" +
+      "nodes, which is considered as threshold for unhealthy. A value of 1.5 for example considers a node to be\n" +
+      "unhealthy if its average task execution time is 50% larger than the average of other nodes."),
+    LLAP_NODEHEALTHCHECKS_EXECUTORRATIO(
+      "hive.llap.nodehealthckecks.executorratio", 2.0f,
+      "If an unhealthy node is identified, it is blacklisted only where there is enough free executors to execute\n" +
+      "the tasks. This value specifies the ratio of the free executors compared to the blacklisted ones.\n" +
+      "A value of 2.0 for example defines that we blacklist an unhealthy node only if we have 2 times more\n" +
+      "free executors on the remaining nodes than the unhealthy node."),
+    LLAP_NODEHEALTHCHECKS_MAXNODES(
+      "hive.llap.nodehealthckecks.maxnodes", 1,
+      "The maximum number of blacklisted nodes. If there are at least this number of blacklisted nodes\n" +
+      "the listener will not blacklist further nodes even if all the conditions are met."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME("hive.llap.task.scheduler.am.registry", "llap",
       "AM registry name for LLAP task scheduler plugin to register with."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_PRINCIPAL("hive.llap.task.scheduler.am.registry.principal", "",
@@ -5399,7 +5432,7 @@ public class HiveConf extends Configuration {
 
   public static void setVar(Configuration conf, ConfVars var, String val) {
     assert (var.valClass == String.class) : var.varname;
-    conf.set(var.varname, val);
+    conf.set(var.varname, val, "setVar");
   }
   public static void setVar(Configuration conf, ConfVars var, String val,
     EncoderDecoder<String, String> encoderDecoder) {
@@ -5508,7 +5541,7 @@ public class HiveConf extends Configuration {
     origProp = getAllProperties();
 
     // Overlay the ConfVars. Note that this ignores ConfVars with null values
-    addResource(getConfVarInputStream());
+    addResource(getConfVarInputStream(), "HiveConf.java");
 
     // Overlay hive-site.xml if it exists
     if (hiveSiteURL != null) {
@@ -5621,14 +5654,14 @@ public class HiveConf extends Configuration {
     if (whiteListParamsStr == null || whiteListParamsStr.trim().isEmpty()) {
       // set the default configs in whitelist
       whiteListParamsStr = getSQLStdAuthDefaultWhiteListPattern();
+      setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST, whiteListParamsStr);
     }
-    setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST, whiteListParamsStr);
   }
 
   private static String getSQLStdAuthDefaultWhiteListPattern() {
     // create the default white list from list of safe config params
     // and regex list
-    String confVarPatternStr = Joiner.on("|").join(convertVarsToRegex(sqlStdAuthSafeVarNames));
+    String confVarPatternStr = Joiner.on("|").join(convertVarsToRegex(SQL_STD_AUTH_SAFE_VAR_NAMES));
     String regexPatternStr = Joiner.on("|").join(sqlStdAuthSafeVarNameRegexes);
     return regexPatternStr + "|" + confVarPatternStr;
   }
@@ -5657,75 +5690,75 @@ public class HiveConf extends Configuration {
    * Default list of modifiable config parameters for sql standard authorization
    * For internal use only.
    */
-  private static final String [] sqlStdAuthSafeVarNames = new String [] {
-    ConfVars.AGGR_JOIN_TRANSPOSE.varname,
-    ConfVars.BYTESPERREDUCER.varname,
-    ConfVars.CLIENT_STATS_COUNTERS.varname,
-    ConfVars.DEFAULTPARTITIONNAME.varname,
-    ConfVars.DROPIGNORESNONEXISTENT.varname,
-    ConfVars.HIVECOUNTERGROUP.varname,
-    ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT.varname,
-    ConfVars.HIVEENFORCEBUCKETMAPJOIN.varname,
-    ConfVars.HIVEENFORCESORTMERGEBUCKETMAPJOIN.varname,
-    ConfVars.HIVEEXPREVALUATIONCACHE.varname,
-    ConfVars.HIVEQUERYRESULTFILEFORMAT.varname,
-    ConfVars.HIVEHASHTABLELOADFACTOR.varname,
-    ConfVars.HIVEHASHTABLETHRESHOLD.varname,
-    ConfVars.HIVEIGNOREMAPJOINHINT.varname,
-    ConfVars.HIVELIMITMAXROWSIZE.varname,
-    ConfVars.HIVEMAPREDMODE.varname,
-    ConfVars.HIVEMAPSIDEAGGREGATE.varname,
-    ConfVars.HIVEOPTIMIZEMETADATAQUERIES.varname,
-    ConfVars.HIVEROWOFFSET.varname,
-    ConfVars.HIVEVARIABLESUBSTITUTE.varname,
-    ConfVars.HIVEVARIABLESUBSTITUTEDEPTH.varname,
-    ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME.varname,
-    ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL.varname,
-    ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
-    ConfVars.HIVE_CLI_TEZ_SESSION_ASYNC.varname,
-    ConfVars.HIVE_COMPAT.varname,
-    ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY.varname,
-    ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION.varname,
-    ConfVars.HIVE_EXECUTION_ENGINE.varname,
-    ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname,
-    ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname,
-    ConfVars.HIVE_FILE_MAX_FOOTER.varname,
-    ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS.varname,
-    ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
-    ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES.varname,
-    ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED.varname,
-    ConfVars.HIVE_QUERY_RESULTS_CACHE_WAIT_FOR_PENDING_RESULTS.varname,
-    ConfVars.HIVE_QUOTEDID_SUPPORT.varname,
-    ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES.varname,
-    ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS.varname,
-    ConfVars.HIVE_SCHEMA_EVOLUTION.varname,
-    ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname,
-    ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS.varname,
-    ConfVars.HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES.varname,
-    ConfVars.JOB_DEBUG_CAPTURE_STACKTRACES.varname,
-    ConfVars.JOB_DEBUG_TIMEOUT.varname,
-    ConfVars.LLAP_IO_ENABLED.varname,
-    ConfVars.LLAP_IO_USE_FILEID_PATH.varname,
-    ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname,
-    ConfVars.LLAP_EXECUTION_MODE.varname,
-    ConfVars.LLAP_AUTO_ALLOW_UBER.varname,
-    ConfVars.LLAP_AUTO_ENFORCE_TREE.varname,
-    ConfVars.LLAP_AUTO_ENFORCE_VECTORIZED.varname,
-    ConfVars.LLAP_AUTO_ENFORCE_STATS.varname,
-    ConfVars.LLAP_AUTO_MAX_INPUT.varname,
-    ConfVars.LLAP_AUTO_MAX_OUTPUT.varname,
-    ConfVars.LLAP_SKIP_COMPILE_UDF_CHECK.varname,
-    ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS.varname,
-    ConfVars.LLAP_ENABLE_GRACE_JOIN_IN_LLAP.varname,
-    ConfVars.LLAP_ALLOW_PERMANENT_FNS.varname,
-    ConfVars.MAXCREATEDFILES.varname,
-    ConfVars.MAXREDUCERS.varname,
-    ConfVars.NWAYJOINREORDER.varname,
-    ConfVars.OUTPUT_FILE_EXTENSION.varname,
-    ConfVars.SHOW_JOB_FAIL_DEBUG_INFO.varname,
-    ConfVars.TASKLOG_DEBUG_TIMEOUT.varname,
-    ConfVars.HIVEQUERYID.varname,
-    ConfVars.HIVEQUERYTAG.varname,
+  private static final String[] SQL_STD_AUTH_SAFE_VAR_NAMES = new String[] {
+      ConfVars.AGGR_JOIN_TRANSPOSE.varname,
+      ConfVars.BYTESPERREDUCER.varname,
+      ConfVars.CLIENT_STATS_COUNTERS.varname,
+      ConfVars.DEFAULTPARTITIONNAME.varname,
+      ConfVars.DROP_IGNORES_NON_EXISTENT.varname,
+      ConfVars.HIVECOUNTERGROUP.varname,
+      ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT.varname,
+      ConfVars.HIVEENFORCEBUCKETMAPJOIN.varname,
+      ConfVars.HIVEENFORCESORTMERGEBUCKETMAPJOIN.varname,
+      ConfVars.HIVEEXPREVALUATIONCACHE.varname,
+      ConfVars.HIVEQUERYRESULTFILEFORMAT.varname,
+      ConfVars.HIVEHASHTABLELOADFACTOR.varname,
+      ConfVars.HIVEHASHTABLETHRESHOLD.varname,
+      ConfVars.HIVEIGNOREMAPJOINHINT.varname,
+      ConfVars.HIVELIMITMAXROWSIZE.varname,
+      ConfVars.HIVEMAPREDMODE.varname,
+      ConfVars.HIVEMAPSIDEAGGREGATE.varname,
+      ConfVars.HIVEOPTIMIZEMETADATAQUERIES.varname,
+      ConfVars.HIVEROWOFFSET.varname,
+      ConfVars.HIVEVARIABLESUBSTITUTE.varname,
+      ConfVars.HIVEVARIABLESUBSTITUTEDEPTH.varname,
+      ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME.varname,
+      ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL.varname,
+      ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
+      ConfVars.HIVE_CLI_TEZ_SESSION_ASYNC.varname,
+      ConfVars.HIVE_COMPAT.varname,
+      ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY.varname,
+      ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION.varname,
+      ConfVars.HIVE_EXECUTION_ENGINE.varname,
+      ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname,
+      ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname,
+      ConfVars.HIVE_FILE_MAX_FOOTER.varname,
+      ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS.varname,
+      ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
+      ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES.varname,
+      ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED.varname,
+      ConfVars.HIVE_QUERY_RESULTS_CACHE_WAIT_FOR_PENDING_RESULTS.varname,
+      ConfVars.HIVE_QUOTEDID_SUPPORT.varname,
+      ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES.varname,
+      ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS.varname,
+      ConfVars.HIVE_SCHEMA_EVOLUTION.varname,
+      ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname,
+      ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS.varname,
+      ConfVars.HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES.varname,
+      ConfVars.JOB_DEBUG_CAPTURE_STACKTRACES.varname,
+      ConfVars.JOB_DEBUG_TIMEOUT.varname,
+      ConfVars.LLAP_IO_ENABLED.varname,
+      ConfVars.LLAP_IO_USE_FILEID_PATH.varname,
+      ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname,
+      ConfVars.LLAP_EXECUTION_MODE.varname,
+      ConfVars.LLAP_AUTO_ALLOW_UBER.varname,
+      ConfVars.LLAP_AUTO_ENFORCE_TREE.varname,
+      ConfVars.LLAP_AUTO_ENFORCE_VECTORIZED.varname,
+      ConfVars.LLAP_AUTO_ENFORCE_STATS.varname,
+      ConfVars.LLAP_AUTO_MAX_INPUT.varname,
+      ConfVars.LLAP_AUTO_MAX_OUTPUT.varname,
+      ConfVars.LLAP_SKIP_COMPILE_UDF_CHECK.varname,
+      ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS.varname,
+      ConfVars.LLAP_ENABLE_GRACE_JOIN_IN_LLAP.varname,
+      ConfVars.LLAP_ALLOW_PERMANENT_FNS.varname,
+      ConfVars.MAXCREATEDFILES.varname,
+      ConfVars.MAXREDUCERS.varname,
+      ConfVars.NWAYJOINREORDER.varname,
+      ConfVars.OUTPUT_FILE_EXTENSION.varname,
+      ConfVars.SHOW_JOB_FAIL_DEBUG_INFO.varname,
+      ConfVars.TASKLOG_DEBUG_TIMEOUT.varname,
+      ConfVars.HIVEQUERYID.varname,
+      ConfVars.HIVEQUERYTAG.varname,
   };
 
   /**

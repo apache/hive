@@ -137,6 +137,7 @@ public class TestAccumuloDefaultIndexScanner {
     assertTrue("does not contain row3", ranges.contains(new Range("row3")));
   }
 
+  @Test
   public void testTooManyMatches() {
     AccumuloDefaultIndexScanner handler = buildMockHandler(2);
     List<Range> ranges = handler.getIndexRowRanges("age", new Range("10", "50"));

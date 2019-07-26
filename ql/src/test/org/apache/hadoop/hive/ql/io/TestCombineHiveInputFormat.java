@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io;
 
-import junit.framework.TestCase;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -35,42 +35,44 @@ import org.apache.hadoop.util.ReflectionUtils;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * Unittest for CombineHiveInputFormat.
  */
-public class TestCombineHiveInputFormat extends TestCase {
-    public void testAvoidSplitCombination() throws Exception {
-        Configuration conf = new Configuration();
-        JobConf job = new JobConf(conf);
+public class TestCombineHiveInputFormat {
+  @Test
+  public void testAvoidSplitCombination() throws Exception {
+    Configuration conf = new Configuration();
+    JobConf job = new JobConf(conf);
 
-        TableDesc tblDesc = Utilities.defaultTd;
-        tblDesc.setInputFileFormatClass(TestSkipCombineInputFormat.class);
-        PartitionDesc partDesc = new PartitionDesc(tblDesc, null);
-        LinkedHashMap<Path, PartitionDesc> pt = new LinkedHashMap<>();
-        pt.put(new Path("/tmp/testfolder1"), partDesc);
-        pt.put(new Path("/tmp/testfolder2"), partDesc);
-        MapredWork mrwork = new MapredWork();
-        mrwork.getMapWork().setPathToPartitionInfo(pt);
-        Path mapWorkPath = new Path("/tmp/" + System.getProperty("user.name"), "hive");
-        Utilities.setMapRedWork(conf, mrwork,
-            mapWorkPath);
+    TableDesc tblDesc = Utilities.defaultTd;
+    tblDesc.setInputFileFormatClass(TestSkipCombineInputFormat.class);
+    PartitionDesc partDesc = new PartitionDesc(tblDesc, null);
+    LinkedHashMap<Path, PartitionDesc> pt = new LinkedHashMap<>();
+    pt.put(new Path("/tmp/testfolder1"), partDesc);
+    pt.put(new Path("/tmp/testfolder2"), partDesc);
+    MapredWork mrwork = new MapredWork();
+    mrwork.getMapWork().setPathToPartitionInfo(pt);
+    Path mapWorkPath = new Path("/tmp/" + System.getProperty("user.name"), "hive");
+    Utilities.setMapRedWork(conf, mrwork, mapWorkPath);
 
-        try {
-            Path[] paths = new Path[2];
-            paths[0] = new Path("/tmp/testfolder1");
-            paths[1] = new Path("/tmp/testfolder2");
-            CombineHiveInputFormat combineInputFormat =
-                ReflectionUtils.newInstance(CombineHiveInputFormat.class, conf);
-            combineInputFormat.pathToPartitionInfo =
-                Utilities.getMapWork(conf).getPathToPartitionInfo();
-            Set results = combineInputFormat.getNonCombinablePathIndices(job, paths, 2);
-            assertEquals("Should have both path indices in the results set", 2, results.size());
-        } finally {
-            // Cleanup the mapwork path
-            FileSystem.get(conf).delete(mapWorkPath, true);
-        }
+    try {
+      Path[] paths = new Path[2];
+      paths[0] = new Path("/tmp/testfolder1");
+      paths[1] = new Path("/tmp/testfolder2");
+      CombineHiveInputFormat combineInputFormat =
+          ReflectionUtils.newInstance(CombineHiveInputFormat.class, conf);
+      combineInputFormat.pathToPartitionInfo =
+          Utilities.getMapWork(conf).getPathToPartitionInfo();
+      Set results = combineInputFormat.getNonCombinablePathIndices(job, paths, 2);
+      assertEquals("Should have both path indices in the results set", 2, results.size());
+    } finally {
+      // Cleanup the mapwork path
+      FileSystem.get(conf).delete(mapWorkPath, true);
     }
+  }
 
     public static class TestSkipCombineInputFormat extends FileInputFormat
         implements CombineHiveInputFormat.AvoidSplitCombination {

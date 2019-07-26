@@ -568,12 +568,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     boolean allowOriginals = HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS);
     for (Path dir : dirs) {
-      processForWriteIds(
+      processForWriteIdsForMmRead(
           dir, conf, validWriteIdList, allowOriginals, finalPaths, pathsWithFileOriginals);
     }
   }
 
-  private static void processForWriteIds(Path dir, Configuration conf,
+  private static void processForWriteIdsForMmRead(Path dir, Configuration conf,
       ValidWriteIdList validWriteIdList, boolean allowOriginals, List<Path> finalPaths,
       List<Path> pathsWithFileOriginals) throws IOException {
     FileSystem fs = dir.getFileSystem(conf);
@@ -605,7 +605,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     if (hasAcidDirs) {
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(
-          fs, dir, conf, validWriteIdList, Ref.from(false), true, null);
+          fs, dir, conf, validWriteIdList, Ref.from(false), true, null, false);
 
       // Find the base, created for IOW.
       Path base = dirInfo.getBaseDirectory();

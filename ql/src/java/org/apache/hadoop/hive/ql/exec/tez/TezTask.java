@@ -174,8 +174,10 @@ public class TezTask extends Task<TezWork> {
           ss.getHiveVariables().get("wmpool"), ss.getHiveVariables().get("wmapp"));
 
       WmContext wmContext = ctx.getWmContext();
-      // jobConf will hold all the configuration for hadoop, tez, and hive
-      JobConf jobConf = utils.createConfiguration(conf);
+      // jobConf will hold all the configuration for hadoop, tez, and hive, which are not set in AM defaults
+      JobConf jobConf = utils.createConfiguration(conf, true);
+
+
       // Get all user jars from work (e.g. input format stuff).
       String[] allNonConfFiles = work.configureJobConfAndExtractJars(jobConf);
       // DAG scratch dir. We get a session from the pool so it may be different from Tez one.
@@ -217,7 +219,7 @@ public class TezTask extends Task<TezWork> {
         if (this.isShutdown) {
           throw new HiveException("Operation cancelled");
         }
-        DAGClient dagClient = submit(jobConf, dag, sessionRef);
+        DAGClient dagClient = submit(dag, sessionRef);
         session = sessionRef.value;
         boolean wasShutdown = false;
         synchronized (dagClientLock) {
@@ -532,7 +534,7 @@ public class TezTask extends Task<TezWork> {
     return newSession;
   }
 
-  DAGClient submit(JobConf conf, DAG dag, Ref<TezSessionState> sessionStateRef) throws Exception {
+  DAGClient submit(DAG dag, Ref<TezSessionState> sessionStateRef) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     DAGClient dagClient = null;
     TezSessionState sessionState = sessionStateRef.value;

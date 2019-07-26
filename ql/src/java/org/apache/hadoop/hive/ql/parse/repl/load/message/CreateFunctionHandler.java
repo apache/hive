@@ -129,9 +129,9 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       // and not do them lazily. The reason being the function class used for transformations additionally
       // also creates the corresponding replCopyTasks, which cannot be evaluated lazily. since the query
       // plan needs to be complete before we execute and not modify it while execution in the driver.
-      List<ResourceUri> transformedUris = ImmutableList.copyOf(
-          Lists.transform(metadata.function.getResourceUris(), conversionFunction)
-      );
+      List<ResourceUri> transformedUris = (metadata.function.getResourceUris() == null)
+              ? null
+              : ImmutableList.copyOf(Lists.transform(metadata.function.getResourceUris(), conversionFunction));
       replCopyTasks.addAll(conversionFunction.replCopyTasks);
       String fullQualifiedFunctionName = FunctionUtils.qualifyFunctionName(
           metadata.function.getFunctionName(), destinationDbName

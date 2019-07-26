@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -55,7 +54,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
-import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.codehaus.jackson.JsonGenerator;
@@ -186,13 +184,9 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    * Describe table.
    */
   @Override
-  public void describeTable(DataOutputStream out, String colPath,
-      String tableName, Table tbl, Partition part, List<FieldSchema> cols,
-      boolean isFormatted, boolean isExt,
-      boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
-      PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo,
-      CheckConstraint cInfo, StorageHandlerInfo storageHandlerInfo) throws HiveException {
+  public void describeTable(DataOutputStream out, String colPath, String tableName, Table tbl, Partition part,
+      List<FieldSchema> cols, boolean isFormatted, boolean isExt, boolean isOutputPadded,
+      List<ColumnStatisticsObj> colStats) throws HiveException {
     MapBuilder builder = MapBuilder.create();
     builder.put("columns", makeColsUnformatted(cols));
 
@@ -203,26 +197,26 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       else {
         builder.put("tableInfo", tbl.getTTable());
       }
-      if (pkInfo != null && !pkInfo.getColNames().isEmpty()) {
-        builder.put("primaryKeyInfo", pkInfo);
+      if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(tbl.getPrimaryKeyInfo())) {
+        builder.put("primaryKeyInfo", tbl.getPrimaryKeyInfo());
       }
-      if (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) {
-        builder.put("foreignKeyInfo", fkInfo);
+      if (ForeignKeyInfo.isForeignKeyInfoNotEmpty(tbl.getForeignKeyInfo())) {
+        builder.put("foreignKeyInfo", tbl.getForeignKeyInfo());
       }
-      if (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) {
-        builder.put("uniqueConstraintInfo", ukInfo);
+      if (UniqueConstraint.isUniqueConstraintNotEmpty(tbl.getUniqueKeyInfo())) {
+        builder.put("uniqueConstraintInfo", tbl.getUniqueKeyInfo());
       }
-      if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
-        builder.put("notNullConstraintInfo", nnInfo);
+      if (NotNullConstraint.isNotNullConstraintNotEmpty(tbl.getNotNullConstraint())) {
+        builder.put("notNullConstraintInfo", tbl.getNotNullConstraint());
       }
-      if (dInfo != null && !dInfo.getDefaultConstraints().isEmpty()) {
-        builder.put("defaultConstraintInfo", dInfo);
+      if (DefaultConstraint.isCheckConstraintNotEmpty(tbl.getDefaultConstraint())) {
+        builder.put("defaultConstraintInfo", tbl.getDefaultConstraint());
       }
-      if (cInfo != null && !cInfo.getCheckConstraints().isEmpty()) {
-        builder.put("checkConstraintInfo", cInfo);
+      if (CheckConstraint.isCheckConstraintNotEmpty(tbl.getCheckConstraint())) {
+        builder.put("checkConstraintInfo", tbl.getCheckConstraint());
       }
-      if(storageHandlerInfo != null) {
-        builder.put("storageHandlerInfo", storageHandlerInfo.toString());
+      if (tbl.getStorageHandlerInfo() != null) {
+        builder.put("storageHandlerInfo", tbl.getStorageHandlerInfo().toString());
       }
     }
 

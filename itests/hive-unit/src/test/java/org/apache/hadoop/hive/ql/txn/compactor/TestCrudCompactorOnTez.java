@@ -166,15 +166,15 @@ public class TestCrudCompactorOnTez {
       Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
     }
     List<String> expectedRsBucket0 = new ArrayList<>();
-    expectedRsBucket0.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t2\t4");
     expectedRsBucket0.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t2\t3");
-    expectedRsBucket0.add("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t3\t4");
+    expectedRsBucket0.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t2\t4");
     expectedRsBucket0.add("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t3");
+    expectedRsBucket0.add("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":2}\t3\t4");
     List<String> expectedRsBucket1 = new ArrayList<>();
-    expectedRsBucket1.add("{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t1\t4");
     expectedRsBucket1.add("{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t1\t3");
-    expectedRsBucket1.add("{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t4\t4");
+    expectedRsBucket1.add("{\"writeid\":1,\"bucketid\":536936448,\"rowid\":2}\t1\t4");
     expectedRsBucket1.add("{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t4\t3");
+    expectedRsBucket1.add("{\"writeid\":2,\"bucketid\":536936448,\"rowid\":2}\t4\t4");
     // Bucket 0
     List<String> rsBucket0 = executeStatementOnDriverAndReturnResults("select ROW__ID, * from " + tblName
         + " where ROW__ID.bucketid = 536870912 order by ROW__ID", driver);

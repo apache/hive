@@ -24,12 +24,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
 
 /**
  * Tests for ArrayWritableObjectInspector. At the moment only behavior related to HIVE-21796 covered.
  */
-public class TestArrayWritableObjectInspector extends TestCase {
+public class TestArrayWritableObjectInspector {
 
   private StructTypeInfo nestOnce(TypeInfo nestedType) {
     return (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(Arrays.asList("value"), Arrays.asList(nestedType));
@@ -44,6 +45,7 @@ public class TestArrayWritableObjectInspector extends TestCase {
   }
 
   /** Regression tests for HIVE-21796: equals and hash takes forever if HIVE-21796 is reverted / reintroduced. */
+  @Test
   public void testIdenticalInspectorsEquals() {
     StructTypeInfo nestedStruct = createNestedStruct(TypeInfoFactory.getPrimitiveTypeInfo("int"), 1000);
     ArrayWritableObjectInspector inspectorX = new ArrayWritableObjectInspector(true, nestedStruct, null);
@@ -53,6 +55,7 @@ public class TestArrayWritableObjectInspector extends TestCase {
   }
 
   /** Regression tests for HIVE-21796: equals and hash takes forever if HIVE-21796 is reverted / reintroduced. */
+  @Test
   public void testEqualInspectorsEquals() {
     StructTypeInfo nestedStructX = createNestedStruct(TypeInfoFactory.getPrimitiveTypeInfo("int"), 100);
     StructTypeInfo nestedStructY = createNestedStruct(TypeInfoFactory.getPrimitiveTypeInfo("int"), 100);
@@ -63,6 +66,7 @@ public class TestArrayWritableObjectInspector extends TestCase {
   }
 
   /** Regression tests for HIVE-21796: equals and hash takes forever if HIVE-21796 is reverted / reintroduced. */
+  @Test
   public void testDifferentInspectorsEquals() {
     StructTypeInfo nestedStructX = createNestedStruct(TypeInfoFactory.getPrimitiveTypeInfo("int"), 100);
     StructTypeInfo nestedStructY = createNestedStruct(TypeInfoFactory.getPrimitiveTypeInfo("bigint"), 100);
