@@ -132,24 +132,32 @@ public class SharedWorkOptimizer extends Transform {
       return pctx;
     }
 
+    // Map of dbName.TblName -> TSOperator
+    ArrayListMultimap<String, TableScanOperator> tableNameToOps = splitTableScanOpsByTable(pctx);
+
+    // Check whether all tables in the plan are unique
+    boolean tablesReferencedOnlyOnce =
+        tableNameToOps.asMap().entrySet().stream().noneMatch(e -> e.getValue().size() > 1);
+    if (tablesReferencedOnlyOnce) {
+      // Nothing to do, bail out
+      return pctx;
+    }
+
     if (LOG.isDebugEnabled()) {
       LOG.debug("Before SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
     }
-
-    // Cache to use during optimization
-    SharedWorkOptimizerCache optimizerCache = new SharedWorkOptimizerCache();
-
-    // Gather information about the DPP table scans and store it in the cache
-    gatherDPPTableScanOps(pctx, optimizerCache);
-
-    // Map of dbName.TblName -> TSOperator
-    ArrayListMultimap<String, TableScanOperator> tableNameToOps = splitTableScanOpsByTable(pctx);
 
     // We enforce a certain order when we do the reutilization.
     // In particular, we use size of table x number of reads to
     // rank the tables.
     List<Entry<String, Long>> sortedTables = rankTablesByAccumulatedSize(pctx);
     LOG.debug("Sorted tables by size: {}", sortedTables);
+
+    // Cache to use during optimization
+    SharedWorkOptimizerCache optimizerCache = new SharedWorkOptimizerCache();
+
+    // Gather information about the DPP table scans and store it in the cache
+    gatherDPPTableScanOps(pctx, optimizerCache);
 
     // Execute shared work optimization
     sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, false);
