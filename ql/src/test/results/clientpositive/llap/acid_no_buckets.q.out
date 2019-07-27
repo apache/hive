@@ -2596,7 +2596,7 @@ STAGE PLANS:
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 3 (SIMPLE_EDGE)
         Reducer 6 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 7 <- Reducer 3 (SIMPLE_EDGE)
         Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
       Vertices:
         Map 1 

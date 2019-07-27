@@ -983,9 +983,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
      Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
      Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
      Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
-     Reducer 5 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+     Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
      Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
-     Reducer 7 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+     Reducer 7 <- Reducer 2 (SIMPLE_EDGE)
      */
     for(int i = 0; i < explain.size(); i++) {
       if(explain.get(i).contains("Edges:")) {
@@ -996,11 +996,11 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         Assert.assertTrue("At i+1=" + (i+3) + explain.get(i + 3),
             explain.get(i + 3).contains("Reducer 4 <- Reducer 2 (SIMPLE_EDGE)"));
         Assert.assertTrue("At i+1=" + (i+4) + explain.get(i + 4),
-            explain.get(i + 4).contains("Reducer 5 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)"));
+            explain.get(i + 4).contains("Reducer 5 <- Reducer 2 (SIMPLE_EDGE)"));
         Assert.assertTrue("At i+1=" + (i+5) + explain.get(i + 5),
             explain.get(i + 5).contains("Reducer 6 <- Reducer 2 (SIMPLE_EDGE)"));
-        Assert.assertTrue("At i+1=" + (i+5) + explain.get(i + 5),
-            explain.get(i + 6).contains("Reducer 7 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+6) + explain.get(i + 6),
+            explain.get(i + 6).contains("Reducer 7 <- Reducer 2 (SIMPLE_EDGE)"));
         break;
       }
     }
@@ -1157,8 +1157,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     String query = "select ROW__ID, a, b" + (isVectorized ? " from  " : ", INPUT__FILE__NAME from ") +  Table.NONACIDORCTBL + " order by ROW__ID";
     String[][] expected = new String[][] {
       {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/000001_0"},
-      {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5", "nonacidorctbl/000001_0_copy_1"},
-      {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12", "nonacidorctbl/000001_0_copy_1"},
+      {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/000001_0_copy_1"},
+      {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/000001_0_copy_1"},
       {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/delta_10000001_10000001_0000/bucket_00001"}
     };
     checkResult(expected, query, isVectorized, "before compact", LOG);
@@ -1176,8 +1176,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         + Table.NONACIDORCTBL + " order by ROW__ID";
     String[][] expected2 = new String[][] {
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
         {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000020/bucket_00001"}
     };
     checkResult(expected2, query, isVectorized, "after major compact", LOG);

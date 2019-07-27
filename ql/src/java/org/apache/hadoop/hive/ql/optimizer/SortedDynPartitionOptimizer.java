@@ -27,8 +27,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import java.util.stream.Collectors;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -226,6 +228,11 @@ public class SortedDynPartitionOptimizer extends Transform {
           // Sort columns specified by table
           sortPositions = getSortPositions(destTable.getSortCols(), destTable.getCols());
           sortOrder = getSortOrders(destTable.getSortCols(), destTable.getCols());
+        } else if (HiveConf.getBoolVar(this.parseCtx.getConf(), HiveConf.ConfVars.HIVE_SORT_WHEN_BUCKETING) &&
+            !bucketPositions.isEmpty()) {
+          // We use clustered columns as sort columns
+          sortPositions = new ArrayList<>(bucketPositions);
+          sortOrder = sortPositions.stream().map(e -> 1).collect(Collectors.toList());
         } else {
           // Infer sort columns from operator tree
           sortPositions = Lists.newArrayList();

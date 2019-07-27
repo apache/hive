@@ -2187,6 +2187,10 @@ public class HiveConf extends Configuration {
         "not a multiple of each other, bucketed map-side join cannot be performed, and the\n" +
         "query will fail if hive.enforce.bucketmapjoin is set to true."),
 
+    HIVE_SORT_WHEN_BUCKETING("hive.optimize.clustered.sort", true,
+        "When this option is true, when a Hive table was created with a clustered by clause, we will also\n" +
+        "sort by same value (if sort columns were not specified)"),
+
     HIVE_ENFORCE_NOT_NULL_CONSTRAINT("hive.constraint.notnull.enforce", true,
         "Should \"IS NOT NULL \" constraint be enforced?"),
 
