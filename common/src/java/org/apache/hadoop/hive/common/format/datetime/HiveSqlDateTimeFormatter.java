@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 
 import java.io.Serializable;
 import java.time.DateTimeException;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -38,13 +37,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * Formatter using SQL:2016 datetime patterns.
  *
  * For all tokens:
- * - Patterns are case-insensitive, except AM/PM and T/Z. See these sections for more details.
+ * - Patterns are case-insensitive, except AM/PM, T/Z and nested strings. See these sections for more
+ *   details.
  * - For string to datetime conversion, no duplicate format tokens are allowed, including tokens
  *   that have the same meaning but different lengths ("Y" and "YY" conflict) or different
  *   behaviors ("RR" and "YY" conflict).
@@ -54,12 +53,16 @@ import java.util.TimeZone;
  *   "Y": 1, and so on), with some exceptions (see map SPECIAL_LENGTHS).
  * - For string to datetime conversion, inputs of fewer digits than expected are accepted if
  *   followed by a delimiter, e.g. format="YYYY-MM-DD", input="19-1-1", output=2019-01-01 00:00:00.
+ *   This is modified by format modifier FX (format exact). See FX for details.
  * - For datetime to string conversion, output is left padded with zeros, e.g. format="DD SSSSS",
  *   input=2019-01-01 00:00:03, output="01 00003".
+ *   This is modified by format modifier FM (fill mode). See FM for details.
  *
  *
  * Accepted format tokens:
- * Note: "|" means "or". "Delimiter" means a separator, tokens T or Z, or end of input.
+ * Note: - "|" means "or".
+ *       - "Delimiter" for numeric tokens means any non-numeric character or end of input.
+ *       - The words token and pattern are used interchangeably.
  *
  * A. Temporal tokens
  * YYYY
@@ -67,7 +70,6 @@ import java.util.TimeZone;
  * - For string to datetime conversion, prefix digits for 1, 2, and 3-digit inputs are obtained
  *   from current date
  *   E.g. input=‘9-01-01’, pattern =‘YYYY-MM-DD’, current year=2020, output=2029-01-01 00:00:00
- *
  *
  * YYY
  * Last 3 digits of a year
@@ -149,23 +151,22 @@ import java.util.TimeZone;
  * - In string to datetime conversion, fewer digits than expected are accepted if followed by a
  *   delimiter. "FF" acts like "FF9".
  *
- * AM|A.M.
- * Meridiem indicator or AM/PM
+ * AM|A.M.|PM|P.M.
+ * Meridiem indicator (or AM/PM)
  * - Datetime to string conversion:
  *   - AM and PM mean the exact same thing in the pattern.
  *     e.g. input=2019-01-01 20:00, format=“AM”, output=“PM”.
  *   - Retains the exact format (capitalization and length) provided in the pattern string. If p.m.
  *     is in the pattern, we expect a.m. or p.m. in the output; if AM is in the pattern, we expect
- *     AM or PM in the output.
+ *     AM or PM in the output. If the case is mixed (Am or aM) then the output case will match the
+ *     case of the pattern's first character (Am => AM, aM => am).
  * - String to datetime conversion:
  *   - Conflicts with HH24 and SSSSS.
- *   - It doesn’t matter which meridian indicator is in the pattern.
+ *   - It doesn't matter which meridian indicator is in the pattern.
  *     E.g. input="2019-01-01 11:00 p.m.", pattern="YYYY-MM-DD HH12:MI AM",
  *          output=2019-01-01 23:00:00
- *
- * PM|P.M.
- * Meridiem indicator
- * See AM|A.M.
+ *   - If FX is enabled, input length has to match the pattern's length. e.g. pattern=AM input=A.M.
+ *     is not accepted, but input=pm is.
  *
  * B. Time zone tokens
  * TZH
@@ -198,30 +199,69 @@ import java.util.TimeZone;
  *   by a time zone hour (tzh) token, it's a negative sign and not counted as a separator, UNLESS
  *   this is the only possible separator character in the separator substring (in which case it is
  *   not counted as the tzh's negative sign).
+ * - If the whole pattern string is delimited by single quotes (''), then the apostrophe separator
+ *   (') must be escaped with a single backslash: (\').
  *
  * D. ISO 8601 delimiters
- * T
+ * T|Z
  * ISO 8601 delimiter
  * - Serves as a delimiter.
  * - Function is to support formats like “YYYY-MM-DDTHH24:MI:SS.FF9Z”, “YYYY-MM-DD-HH24:MI:SSZ”
  * - For datetime to string conversion, output is always capitalized ("T"), even if lowercase ("t")
  *   is provided in the pattern.
+ * - For string to datetime conversion, case of input and pattern may differ.
  *
- * Z
- * ISO 8601 delimiter
- * See T.
+ * E. Nested strings (Text)
+ * – Surround with double quotes (") in the pattern. Note, if the whole pattern string is delimited
+ *   by double quotes, then the double quotes must be escaped with a single backslash: (\").
+ * - In order to include a literal double quote character within the nested string, the double
+ *   quote character must be escaped with a double backslash: (\\”). If the whole pattern string is
+ *   delimited by double quotes, then escape with a triple backslash: (\\\")
+ * - If the whole pattern string is delimited by single quotes, literal single
+ *   quotes/apostrophes (') in the nested string must be escaped with a single backslash: (\')
+ * - For datetime to string conversion, we simply include the string in the output, preserving the
+ *   characters' case.
+ * - For string to datetime conversion, the information is lost as the nested string won’t be part
+ *   of the resulting datetime object. However, the nested string has to match the related part of
+ *   the input string, except case may differ.
+ *
+ * F. Format modifier tokens
+ * FM
+ * Fill mode modifier
+ * - Default for string to datetime conversion. Inputs of fewer digits than expected are accepted
+ *   if followed by a delimiter:
+ *   e.g. format="YYYY-MM-DD", input="19-1-1", output=2019-01-01 00:00:00
+ * - For datetime to string conversion, padding (trailing spaces for text data and leading zeroes
+ *   for numeric data) is omitted for the temporal element immediately following an "FM" in the
+ *   pattern string. If the element following is not a temporal element (for example, if "FM"
+ *   precedes a separator), an error will be thrown.
+ *   e.g. pattern=FMHH12:MI:FMSS, input=2019-01-01 01:01:01, output=1:01:1
+ * - Modifies FX so that lack of leading zeroes are accepted for the element immediately following
+ *   an "FM" in the pattern string.
+ *
+ * FX
+ * Format exact modifier
+ * - Default for datetime to string conversion. Numeric output is left padded with zeros, and
+ *   non-numeric output except for AM/PM is right padded with spaces up to expected length.
+ * - Applies to the whole pattern.
+ * - Rules applied at string to datetime conversion:
+ *   - Separators must match exactly, down to the character.
+ *   - Numeric input can't omit leading zeroes. This rule does not apply to elements (tokens)
+ *     immediately preceded by an "FM."
+ *   - AM/PM input length has to match the pattern's length. e.g. pattern=AM input=A.M. is not
+ *     accepted, but input=pm is.
  */
 
 public class HiveSqlDateTimeFormatter implements Serializable {
 
   private static final int LONGEST_TOKEN_LENGTH = 5;
   private static final int LONGEST_ACCEPTED_PATTERN = 100; // for sanity's sake
-  private static final long MINUTES_PER_HOUR = 60;
   private static final int NANOS_MAX_LENGTH = 9;
   public static final int AM = 0;
   public static final int PM = 1;
   private String pattern;
   private List<Token> tokens = new ArrayList<>();
+  private boolean formatExact = false;
 
   private static final Map<String, TemporalField> TEMPORAL_TOKENS =
       ImmutableMap.<String, TemporalField>builder()
@@ -256,6 +296,9 @@ public class HiveSqlDateTimeFormatter implements Serializable {
   private static final List<String> VALID_SEPARATORS =
       ImmutableList.of("-", ":", " ", ".", "/", ";", "\'", ",");
 
+  private static final List<String> VALID_FORMAT_MODIFIERS =
+      ImmutableList.of("fm", "fx");
+
   private static final Map<String, Integer> SPECIAL_LENGTHS = ImmutableMap.<String, Integer>builder()
       .put("hh12", 2).put("hh24", 2).put("tzm", 2).put("am", 4).put("pm", 4)
       .put("ff1", 1).put("ff2", 2).put("ff3", 3).put("ff4", 4).put("ff5", 5)
@@ -269,7 +312,8 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     TEMPORAL,
     SEPARATOR,
     TIMEZONE,
-    ISO_8601_DELIMITER
+    ISO_8601_DELIMITER,
+    TEXT
   }
 
   /**
@@ -281,29 +325,31 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     TemporalUnit temporalUnit; // for type TIMEZONE e.g. ChronoUnit.HOURS
     String string; // pattern string, e.g. "yyy"
     int length; // length (e.g. YYY: 3, FF8: 8)
+    boolean fillMode; //FM, applies to type TEMPORAL only (later should apply to TIMEZONE as well)
 
-    public Token(TemporalField temporalField, String string, int length) {
-      this(TokenType.TEMPORAL, temporalField, null, string, length);
+    public Token(TemporalField temporalField, String string, int length, boolean fillMode) {
+      this(TokenType.TEMPORAL, temporalField, null, string, length, fillMode);
     }
 
-    public Token(TemporalUnit temporalUnit, String string, int length) {
-      this(TokenType.TIMEZONE, null, temporalUnit, string, length);
+    public Token(TemporalUnit temporalUnit, String string, int length, boolean fillMode) {
+      this(TokenType.TIMEZONE, null, temporalUnit, string, length, fillMode);
     }
 
     public Token(TokenType tokenType, String string) {
-      this(tokenType, null, null, string, string.length());
+      this(tokenType, null, null, string, string.length(), false);
     }
 
     public Token(TokenType tokenType, TemporalField temporalField, TemporalUnit temporalUnit,
-        String string, int length) {
+        String string, int length, boolean fillMode) {
       this.type = tokenType;
       this.temporalField = temporalField;
       this.temporalUnit = temporalUnit;
       this.string = string;
       this.length = length;
+      this.fillMode = fillMode;
     }
 
-    public String toString() {
+    @Override public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append(string);
       sb.append(" type: ");
@@ -316,6 +362,11 @@ public class HiveSqlDateTimeFormatter implements Serializable {
         sb.append(temporalUnit);
       }
       return sb.toString();
+    }
+
+    public void removeBackslashes() {
+      string = string.replaceAll("\\\\", "");
+      length = string.length();
     }
   }
 
@@ -343,7 +394,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
   /**
    * Parse pattern to list of tokens.
    */
-  private String parsePatternToTokens(String pattern) {
+  private void parsePatternToTokens(String pattern) {
     tokens.clear();
     String originalPattern = pattern;
     pattern = pattern.toLowerCase();
@@ -352,6 +403,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     int begin=0, end=0;
     String candidate;
     Token lastAddedToken = null;
+    boolean fillMode = false;
 
     while (begin < pattern.length()) {
       // if begin hasn't progressed, then pattern is not parsable
@@ -368,28 +420,44 @@ public class HiveSqlDateTimeFormatter implements Serializable {
         }
         candidate = pattern.substring(begin, end);
         if (isSeparator(candidate)) {
-          lastAddedToken = parseSeparatorToken(candidate, lastAddedToken);
+          lastAddedToken = parseSeparatorToken(candidate, lastAddedToken, fillMode, begin);
           begin = end;
           break;
         }
         if (isIso8601Delimiter(candidate)) {
-          lastAddedToken = parseIso8601DelimiterToken(candidate);
+          lastAddedToken = parseIso8601DelimiterToken(candidate, fillMode, begin);
           begin = end;
           break;
         }
         if (isTemporalToken(candidate)) {
-          lastAddedToken = parseTemporalToken(originalPattern, begin, candidate);
+          lastAddedToken = parseTemporalToken(originalPattern, candidate, fillMode, begin);
+          fillMode = false;
           begin = end;
           break;
         }
         if (isTimeZoneToken(candidate)) {
-          lastAddedToken = parseTimeZoneToken(candidate);
+          lastAddedToken = parseTimeZoneToken(candidate, fillMode, begin);
+          begin = end;
+          break;
+        }
+        if (isTextToken(candidate)) {
+          lastAddedToken = parseTextToken(originalPattern, fillMode, begin);
+          end = begin + lastAddedToken.length + 2; // skip 2 quotation marks
+          lastAddedToken.removeBackslashes();
+          begin = end;
+          break;
+        }
+        if (isFormatModifierToken(candidate)) {
+          checkFillModeOff(fillMode, begin);
+          fillMode = isFm(candidate);
+          if (!fillMode) {
+            formatExact = true;
+          }
           begin = end;
           break;
         }
       }
     }
-    return pattern;
   }
 
   private boolean isSeparator(String candidate) {
@@ -408,7 +476,21 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     return TIME_ZONE_TOKENS.containsKey(pattern);
   }
 
-  private Token parseSeparatorToken(String candidate, Token lastAddedToken) {
+  private boolean isTextToken(String candidate) {
+    return candidate.startsWith("\"");
+  }
+
+  private boolean isFormatModifierToken(String candidate) {
+    return candidate.length() == 2 && VALID_FORMAT_MODIFIERS.contains(candidate);
+  }
+
+  private boolean isFm(String candidate) {
+    return "fm".equals(candidate);
+  }
+
+  private Token parseSeparatorToken(String candidate, Token lastAddedToken, boolean fillMode,
+      int begin) {
+    checkFillModeOff(fillMode, begin);
     // try to clump separator with immediately preceding separators (e.g. "---" counts as one
     // separator)
     if (lastAddedToken != null && lastAddedToken.type == TokenType.SEPARATOR) {
@@ -421,37 +503,61 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     return lastAddedToken;
   }
 
-  private Token parseIso8601DelimiterToken(String candidate) {
+  private Token parseIso8601DelimiterToken(String candidate, boolean fillMode, int begin) {
+    checkFillModeOff(fillMode, begin);
     Token lastAddedToken;
     lastAddedToken = new Token(TokenType.ISO_8601_DELIMITER, candidate.toUpperCase());
     tokens.add(lastAddedToken);
     return lastAddedToken;
   }
 
-  private Token parseTemporalToken(String originalPattern, int begin, String candidate) {
-    Token lastAddedToken;
-
+  private Token parseTemporalToken(String originalPattern, String candidate, boolean fillMode,
+      int begin) {
     // for AM/PM, keep original case
     if (TEMPORAL_TOKENS.get(candidate) == ChronoField.AMPM_OF_DAY) {
       int subStringEnd = begin + candidate.length();
       candidate = originalPattern.substring(begin, subStringEnd);
     }
-    lastAddedToken = new Token(TEMPORAL_TOKENS.get(candidate.toLowerCase()), candidate,
-        getTokenStringLength(candidate.toLowerCase()));
+    Token lastAddedToken = new Token(TEMPORAL_TOKENS.get(candidate.toLowerCase()), candidate,
+        getTokenStringLength(candidate), fillMode);
     tokens.add(lastAddedToken);
     return lastAddedToken;
   }
 
-  private Token parseTimeZoneToken(String candidate) {
-    Token lastAddedToken;
-    lastAddedToken = new Token(TIME_ZONE_TOKENS.get(candidate), candidate,
-        getTokenStringLength(candidate));
+  private Token parseTimeZoneToken(String candidate, boolean fillMode, int begin) {
+    checkFillModeOff(fillMode, begin);
+    Token lastAddedToken = new Token(TIME_ZONE_TOKENS.get(candidate), candidate,
+        getTokenStringLength(candidate), false);
     tokens.add(lastAddedToken);
     return lastAddedToken;
+  }
+
+  private Token parseTextToken(String fullPattern, boolean fillMode, int begin) {
+    checkFillModeOff(fillMode, begin);
+    int end = begin;
+    do {
+      end = fullPattern.indexOf('\"', end + 1);
+      if (end == -1) {
+        throw new IllegalArgumentException(
+            "Missing closing double quote (\") opened at index " + begin);
+      }
+    // if double quote is escaped with a backslash, keep looking for the closing quotation mark
+    } while ("\\".equals(fullPattern.substring(end - 1, end)));
+    Token lastAddedToken = new Token(TokenType.TEXT, fullPattern.substring(begin + 1, end));
+    tokens.add(lastAddedToken);
+    return lastAddedToken;
+  }
+
+  private void checkFillModeOff(boolean fillMode, int index) {
+    if (fillMode) {
+      throw new IllegalArgumentException("Bad date/time conversion pattern: " + pattern +
+          ". Error at index " + index + ": Fill mode modifier (FM) must "
+          + "be followed by a temporal token.");
+    }
   }
 
   private int getTokenStringLength(String candidate) {
-    Integer length = SPECIAL_LENGTHS.get(candidate);
+    Integer length = SPECIAL_LENGTHS.get(candidate.toLowerCase());
     if (length != null) {
       return length;
     }
@@ -566,6 +672,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
         throw new IllegalArgumentException(token.string.toUpperCase() + " not a valid format for "
             + "timestamp or date.");
       case SEPARATOR:
+      case TEXT:
         outputString = token.string;
         break;
       case ISO_8601_DELIMITER:
@@ -608,47 +715,34 @@ public class HiveSqlDateTimeFormatter implements Serializable {
 
   /**
    * To match token.length, pad left with zeroes or truncate.
+   * Omit padding if fill mode (FM) modifier on.
    */
   private String padOrTruncateNumericTemporal(Token token, String output) {
-    if (output.length() < token.length) {
-      output = StringUtils.leftPad(output, token.length, '0'); // pad left
-    } else if (output.length() > token.length) {
-      if (token.temporalField == ChronoField.NANO_OF_SECOND) {
-        output = output.substring(0, token.length); // truncate right
-      } else {
+    //exception
+    if (token.temporalField == ChronoField.NANO_OF_SECOND) {
+      output = StringUtils.leftPad(output, 9, '0'); // pad left to length 9
+      if (output.length() > token.length) {
+        output = output.substring(0, token.length); // truncate right to size
+      }
+      if (token.string.equalsIgnoreCase("ff")) {
+        output = output.replaceAll("0*$", ""); //truncate trailing 0's
+      }
+
+      // the rule
+    } else {
+      if (output.length() < token.length && !token.fillMode) {
+        output = StringUtils.leftPad(output, token.length, '0'); // pad left
+      } else if (output.length() > token.length) {
         output = output.substring(output.length() - token.length); // truncate left
       }
-    }
-    if (token.temporalField == ChronoField.NANO_OF_SECOND
-        && token.string.equalsIgnoreCase("ff")) {
-      output = output.replaceAll("0*$", ""); //truncate trailing 0's
-      if (output.isEmpty()) {
-        output = "0";
+      if (token.fillMode) {
+        output = output.replaceAll("^0*", ""); //truncate leading 0's
       }
+    }
+    if (output.isEmpty()) {
+      output = "0";
     }
     return output;
-  }
-
-  /**
-   * Left here for timestamp with local time zone.
-   */
-  private String formatTimeZone(TimeZone timeZone, LocalDateTime localDateTime, Token token) {
-    ZoneOffset offset = timeZone.toZoneId().getRules().getOffset(localDateTime);
-    Duration seconds = Duration.of(offset.get(ChronoField.OFFSET_SECONDS), ChronoUnit.SECONDS);
-    if (token.string.equals("tzh")) {
-      long hours = seconds.toHours();
-      String s = (hours >= 0) ? "+" : "-";
-      s += (Math.abs(hours) < 10) ? "0" : "";
-      s += String.valueOf(Math.abs(hours));
-      return s;
-    } else {
-      long minutes = Math.abs(seconds.toMinutes() % MINUTES_PER_HOUR);
-      String s = String.valueOf(minutes);
-      if (s.length() == 1) {
-        s = "0" + s;
-      }
-      return s;
-    }
   }
 
   public Timestamp parseTimestamp(String fullInput){
@@ -661,7 +755,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     for (Token token : tokens) {
       switch (token.type) {
       case TEMPORAL:
-        substring = getNextSubstring(fullInput, index, token); // e.g. yy-m -> yy
+        substring = getNextNumericSubstring(fullInput, index, token); // e.g. yy-m -> yy
         value = parseTemporal(substring, token); // e.g. 18->2018, July->07
         try {
           ldt = ldt.with(token.temporalField, value);
@@ -679,7 +773,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
             index++;
           }
           // parse next two digits
-          substring = getNextSubstring(fullInput, index, index + 2, token);
+          substring = getNextNumericSubstring(fullInput, index, index + 2, token);
           try {
             timeZoneHours = Integer.parseInt(substring);
           } catch (NumberFormatException e) {
@@ -691,7 +785,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
                 "\" to TZH because TZH range is -15 to +15. Pattern is " + pattern);
           }
         } else { // time zone minutes
-          substring = getNextSubstring(fullInput, index, token);
+          substring = getNextNumericSubstring(fullInput, index, token);
           try {
             timeZoneMinutes = Integer.parseInt(substring);
           } catch (NumberFormatException e) {
@@ -709,7 +803,8 @@ public class HiveSqlDateTimeFormatter implements Serializable {
         index = parseSeparator(fullInput, index, token);
         break;
       case ISO_8601_DELIMITER:
-        index = parseIso8601Delimiter(fullInput, index, token);
+      case TEXT:
+        index = parseText(fullInput, index, token);
       default:
         //do nothing
       }
@@ -733,11 +828,11 @@ public class HiveSqlDateTimeFormatter implements Serializable {
    * "YYYY" we expect the next 4 characters to be 4 numbers. However, if it is "976/" then we
    * return "976" because a separator cuts it short.)
    */
-  private String getNextSubstring(String s, int begin, Token token) {
-    return getNextSubstring(s, begin, begin + token.length, token);
+  private String getNextNumericSubstring(String s, int begin, Token token) {
+    return getNextNumericSubstring(s, begin, begin + token.length, token);
   }
 
-  private String getNextSubstring(String s, int begin, int end, Token token) {
+  private String getNextNumericSubstring(String s, int begin, int end, Token token) {
     if (end > s.length()) {
       end = s.length();
     }
@@ -749,16 +844,11 @@ public class HiveSqlDateTimeFormatter implements Serializable {
         return s;
       }
     }
-    for (String sep : VALID_SEPARATORS) {
-      if (s.contains(sep)) {
-        s = s.substring(0, s.indexOf(sep));
-      }
-    }
-    // TODO this will cause problems with DAY (for example, Thursday starts with T)
-    for (String delimiter : VALID_ISO_8601_DELIMITERS) {
-      if (s.toLowerCase().contains(delimiter)) {
-        s = s.substring(0, s.toLowerCase().indexOf(delimiter));
-      }
+    // next non-numeric character is a delimiter. Don't worry about AM/PM since we've already
+    // handled that case.
+    if ((token.type == TokenType.TEMPORAL || token.type == TokenType.TIMEZONE)
+        && s.matches(".*\\D.*")) {
+      s = s.split("\\D", 2)[0];
     }
 
     return s;
@@ -768,6 +858,8 @@ public class HiveSqlDateTimeFormatter implements Serializable {
    * Get the integer value of a temporal substring.
    */
   private int parseTemporal(String substring, Token token){
+    checkFormatExact(substring, token);
+
     // exceptions to the rule
     if (token.temporalField == ChronoField.AMPM_OF_DAY) {
       return substring.toLowerCase().startsWith("a") ? AM : PM;
@@ -807,6 +899,23 @@ public class HiveSqlDateTimeFormatter implements Serializable {
   }
 
   /**
+   * @throws IllegalArgumentException if input length doesn't match expected (token) length
+   */
+  private void checkFormatExact(String substring, Token token) {
+    // AM/PM defaults to length 4 but make it 2 for FX check if the pattern actually has length 2
+    if (formatExact && token.temporalField == ChronoField.AMPM_OF_DAY) {
+      token.length = token.string.length();
+    }
+    if (formatExact
+        && !(token.fillMode || token.temporalField == ChronoField.NANO_OF_SECOND)
+        && token.length != substring.length()) {
+      throw new IllegalArgumentException(
+          "FX on and expected token length " + token.length + " for token " + token.toString()
+              + " does not match substring (" + substring + ") length " + substring.length());
+    }
+  }
+
+  /**
    * Parse the next separator(s). At least one separator character is expected. Separator
    * characters are interchangeable.
    *
@@ -815,38 +924,45 @@ public class HiveSqlDateTimeFormatter implements Serializable {
    *     separator, UNLESS this is the only separator character in the separator substring (in
    *     which case it is not counted as the negative sign).
    *
-   * @throws IllegalArgumentException if separator is missing
+   * @throws IllegalArgumentException if separator is missing or if FX is on and separator doesn't
+   * match the expected separator pattern exactly
    */
-  private int parseSeparator(String fullInput, int index, Token token){
-    int separatorsFound = 0;
+  private int parseSeparator(String fullInput, int index, Token token) {
     int begin = index;
+    String s;
+    StringBuilder separatorsFound = new StringBuilder();
 
     while (index < fullInput.length() &&
         VALID_SEPARATORS.contains(fullInput.substring(index, index + 1))) {
+      s = fullInput.substring(index, index + 1);
       if (!isLastCharacterOfSeparator(index, fullInput)
-          || !("-".equals(fullInput.substring(index, index + 1)) && (nextTokenIs("tzh", token)))
-          || separatorsFound == 0) {
-        separatorsFound++;
+          || !("-".equals(s) && (nextTokenIs("tzh", token)))
+          || separatorsFound.length() == 0) {
+        separatorsFound.append(s);
       }
       index++;
     }
 
-    if (separatorsFound == 0) {
+    if (separatorsFound.length() == 0) {
       throw new IllegalArgumentException("Missing separator at index " + index);
     }
-    return begin + separatorsFound;
+    if (formatExact && !token.string.equals(separatorsFound.toString())) {
+      throw new IllegalArgumentException("FX on and separator found: " + separatorsFound.toString()
+          + " doesn't match expected separator: " + token.string);
+    }
+
+    return begin + separatorsFound.length();
   }
 
-  private int parseIso8601Delimiter(String fullInput, int index, Token token) {
+  private int parseText(String fullInput, int index, Token token) {
     String substring;
-    substring = fullInput.substring(index, index + 1);
-    if (token.string.equalsIgnoreCase(substring)) {
-      index++;
-    } else {
+    substring = fullInput.substring(index, index + token.length);
+    if (!token.string.equalsIgnoreCase(substring)) {
       throw new IllegalArgumentException(
-          "Missing ISO 8601 delimiter " + token.string.toUpperCase());
+          "Wrong input at index " + index + ": Expected: \"" + token.string + "\" but got: \""
+              + substring + "\" for token: " + token);
     }
-    return index;
+    return index + token.length;
   }
 
   /**
