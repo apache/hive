@@ -44,6 +44,7 @@ public class ProxyLocalFileSystem extends LocalFileSystem {
     OFF, TRACK, BOOM,
   }
   public ProxyLocalFileSystem() {
+	if(false)
     synchronized (ProxyLocalFileSystem.class) {
       try (PrintStream fos = new PrintStream("/tmp/stack/" + stackIdx)) {
         RuntimeException ex = new RuntimeException("c");
