@@ -23,6 +23,7 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.registry.client.types.Endpoint;
@@ -118,7 +119,7 @@ public class TezAmRegistryImpl extends ZkRegistryBase<TezAmInstance> {
   @Override
   protected String getZkPathUser(Configuration conf) {
     // We assume that AMs and HS2 run under the same user.
-    return RegistryUtils.currentUser();
+    return LlapRegistryService.currentUser();
   }
 
   public String getRegistryName() {
