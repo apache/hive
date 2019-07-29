@@ -40,9 +40,9 @@ import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.registry.impl.ZkRegistryBase;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
-import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.registry.client.types.Endpoint;
 import org.apache.hadoop.registry.client.types.ServiceRecord;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hive.service.ServiceException;
 import org.slf4j.Logger;
@@ -201,7 +201,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
 
   @Override
   protected String getZkPathUser(final Configuration conf) {
-    return RegistryUtils.currentUser();
+    return currentUser();
   }
 
   private boolean hasLeadership() {

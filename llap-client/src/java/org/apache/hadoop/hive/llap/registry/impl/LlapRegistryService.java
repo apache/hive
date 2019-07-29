@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
 import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.slf4j.Logger;
@@ -81,7 +82,11 @@ public class LlapRegistryService extends AbstractService {
   }
 
   public static String currentUser() {
-    return RegistryUtils.currentUser();
+    try {
+      return UserGroupInformation.getCurrentUser().getShortUserName();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
