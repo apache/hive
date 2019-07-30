@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
@@ -1393,6 +1394,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    static boolean isDbReplicationTarget(Database db) {
+      if (db.getParameters() == null) {
+        return false;
+      }
+
+      if (!db.getParameters().containsKey(ReplConst.REPL_TARGET_DB_PROPERTY)) {
+        return false;
+      }
+
+      return !db.getParameters().get(ReplConst.REPL_TARGET_DB_PROPERTY).trim().isEmpty();
+    }
 
     // Assumes that the catalog has already been set.
     private void create_database_core(RawStore ms, final Database db)
@@ -1414,6 +1426,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       db.setCreateTime((int) time);
       boolean success = false;
       boolean madeDir = false;
+      boolean isReplicated = isDbReplicationTarget(db);
       Map<String, String> transactionalListenersResponses = Collections.emptyMap();
       try {
         firePreEvent(new PreCreateDatabaseEvent(db, this));
@@ -1433,7 +1446,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           transactionalListenersResponses =
               MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                                                     EventType.CREATE_DATABASE,
-                                                    new CreateDatabaseEvent(db, true, this));
+                                                    new CreateDatabaseEvent(db, true, this, isReplicated));
         }
 
         success = ms.commitTransaction();
@@ -1448,7 +1461,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!listeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(listeners,
                                                 EventType.CREATE_DATABASE,
-                                                new CreateDatabaseEvent(db, success, this),
+                                                new CreateDatabaseEvent(db, success, this, isReplicated),
                                                 null,
                                                 transactionalListenersResponses, ms);
         }
@@ -1545,6 +1558,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       String[] parsedDbName = parseDbName(dbName, conf);
 
+      // We can replicate into an empty database, in which case newDB will have indication that
+      // it's target of replication but not oldDB. But replication flow will never alter a
+      // database so that oldDB indicates that it's target or replication but not the newDB. So,
+      // relying solely on newDB to check whether the database is target of replication works.
+      boolean isReplicated = isDbReplicationTarget(newDB);
       try {
         oldDB = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
         if (oldDB == null) {
@@ -1560,7 +1578,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           transactionalListenersResponses =
               MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventType.ALTER_DATABASE,
-                  new AlterDatabaseEvent(oldDB, newDB, true, this));
+                  new AlterDatabaseEvent(oldDB, newDB, true, this, isReplicated));
         }
 
         success = ms.commitTransaction();
@@ -1575,7 +1593,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if ((null != oldDB) && (!listeners.isEmpty())) {
           MetaStoreListenerNotifier.notifyEvent(listeners,
               EventType.ALTER_DATABASE,
-              new AlterDatabaseEvent(oldDB, newDB, success, this),
+              new AlterDatabaseEvent(oldDB, newDB, success, this, isReplicated),
               null,
               transactionalListenersResponses, ms);
         }
@@ -1595,9 +1613,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (name == null) {
         throw new MetaException("Database name cannot be null.");
       }
+      boolean isReplicated = false;
       try {
         ms.openTransaction();
         db = ms.getDatabase(catName, name);
+        isReplicated = isDbReplicationTarget(db);
 
         if (!isInTest && ReplChangeManager.isSourceOfReplication(db)) {
           throw new InvalidOperationException("can not drop a database which is a source of replication");
@@ -1728,7 +1748,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             transactionalListenerResponses =
                 MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                                                       EventType.DROP_DATABASE,
-                                                      new DropDatabaseEvent(db, true, this));
+                                                      new DropDatabaseEvent(db, true, this, isReplicated));
           }
 
           success = ms.commitTransaction();
@@ -1756,7 +1776,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!listeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(listeners,
                                                 EventType.DROP_DATABASE,
-                                                new DropDatabaseEvent(db, success, this),
+                                                new DropDatabaseEvent(db, success, this, isReplicated),
                                                 null,
                                                 transactionalListenerResponses, ms);
         }
@@ -1985,6 +2005,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Path tblPath = null;
       boolean success = false, madeDir = false;
       Database db = null;
+      boolean isReplicated = false;
       try {
         if (!tbl.isSetCatName()) {
           tbl.setCatName(getDefaultCatalog(conf));
@@ -1994,6 +2015,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.openTransaction();
 
         db = ms.getDatabase(tbl.getCatName(), tbl.getDbName());
+        isReplicated = isDbReplicationTarget(db);
 
         // get_table checks whether database exists, it should be moved here
         if (is_table_exists(ms, tbl.getCatName(), tbl.getDbName(), tbl.getTableName())) {
@@ -2128,7 +2150,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         if (!transactionalListeners.isEmpty()) {
           transactionalListenerResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-              EventType.CREATE_TABLE, new CreateTableEvent(tbl, true, this), envContext);
+              EventType.CREATE_TABLE, new CreateTableEvent(tbl, true, this, isReplicated), envContext);
           if (primaryKeys != null && !primaryKeys.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_PRIMARYKEY,
                 new AddPrimaryKeyEvent(primaryKeys, true, this), envContext);
@@ -2158,7 +2180,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         if (!listeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(listeners, EventType.CREATE_TABLE,
-              new CreateTableEvent(tbl, success, this), envContext, transactionalListenerResponses, ms);
+              new CreateTableEvent(tbl, success, this, isReplicated), envContext,
+                  transactionalListenerResponses, ms);
           if (primaryKeys != null && !primaryKeys.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_PRIMARYKEY,
                 new AddPrimaryKeyEvent(primaryKeys, success, this), envContext);
@@ -2643,9 +2666,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean ifPurge = false;
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
       Database db = null;
+      boolean isReplicated = false;
       try {
         ms.openTransaction();
         db = ms.getDatabase(catName, dbname);
+        isReplicated = isDbReplicationTarget(db);
 
         // drop any partitions
         tbl = get_table_core(catName, dbname, name);
@@ -2686,7 +2711,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             transactionalListenerResponses =
                 MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                                                       EventType.DROP_TABLE,
-                                                      new DropTableEvent(tbl, true, deleteData, this),
+                                                      new DropTableEvent(tbl, true, deleteData,
+                                                              this, isReplicated),
                                                       envContext);
           }
           success = ms.commitTransaction();
@@ -2706,7 +2732,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!listeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(listeners,
                                                 EventType.DROP_TABLE,
-                                                new DropTableEvent(tbl, success, deleteData, this),
+                                                new DropTableEvent(tbl, success, deleteData, this, isReplicated),
                                                 envContext,
                                                 transactionalListenerResponses, ms);
         }
@@ -2924,18 +2950,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           EnvironmentContext environmentContext = new EnvironmentContext();
           updateStatsForTruncate(table.getParameters(), environmentContext);
 
+          boolean isReplicated = isDbReplicationTarget(ms.getDatabase(catName, dbName));
           if (!transactionalListeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                     EventType.ALTER_TABLE,
                     new AlterTableEvent(table, table, true, true,
-                            writeId, this));
+                            writeId, this, isReplicated));
           }
 
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                     EventType.ALTER_TABLE,
                     new AlterTableEvent(table, table, true, true,
-                            writeId, this));
+                            writeId, this, isReplicated));
           }
 
           // TODO: this should actually pass thru and set writeId for txn stats.
