@@ -412,7 +412,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	2                   
-	totalSize           	1071                
+	totalSize           	1075                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -997,7 +997,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n3
-                  Statistics: Num rows: 91 Data size: 10556 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 90 Data size: 10440 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((ROW__ID.writeid > 4) and (c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 10 Data size: 1160 Basic stats: COMPLETE Column stats: COMPLETE
