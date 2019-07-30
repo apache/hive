@@ -228,6 +228,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     //    can get out of sync when stats are updated. That can cause consistency issues.
     String replTrgtParam = table.getParameters().get(ReplConst.REPL_TARGET_TABLE_PROPERTY);
     if (replTrgtParam != null && !replTrgtParam.isEmpty()) {
+      LOG.debug("Skipping table {} since it is being replicated into", table);
       return null;
     }
 
