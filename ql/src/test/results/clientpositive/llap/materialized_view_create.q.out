@@ -50,7 +50,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1025                
-	totalSize           	501                 
+	totalSize           	509                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -112,7 +112,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	580                 
-	totalSize           	345                 
+	totalSize           	354                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -250,7 +250,7 @@ numFiles	1
 numFilesErasureCoded	0
 numRows	5
 rawDataSize	1605
-totalSize	703
+totalSize	725
 #### A masked pattern was here ####
 PREHOOK: query: drop materialized view cmv_mat_view_n4
 PREHOOK: type: DROP_MATERIALIZED_VIEW

@@ -325,7 +325,7 @@ Stage-3
                       Output:["_col0","_col1","_col3"]
                       Filter Operator [FIL_9] (rows=2/2 width=226)
                         predicate:(de) IN (109.23, 119.23)
-                        TableScan [TS_0] (rows=4/4 width=226)
+                        TableScan [TS_0] (rows=4/2 width=226)
                           default@acid_uami_n2,acid_uami_n2, ACID table,Tbl:COMPLETE,Col:COMPLETE,Output:["i","de","vc"]
 
 PREHOOK: query: select * from acid_uami_n2 order by de
