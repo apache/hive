@@ -97,4 +97,12 @@ public class MScheduledQuery {
     return new ScheduledQueryKey(scheduleName, clusterNamespace);
   }
 
+  public Set<MScheduledExecution>  getExecutions() {
+    return executions;
+  }
+
+  public void setExecutions(Set<MScheduledExecution>  e) {
+    executions=e;
+  }
+
 }

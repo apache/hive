@@ -652,7 +652,7 @@
         <version>4.0.5</version>
         <configuration>
           <api>JDO</api>
-          <verbose>false</verbose>
+          <verbose>true</verbose>
           <log4jConfiguration>${basedir}/src/main/resources/datanucleus-log4j.properties
           </log4jConfiguration>
           <metadataIncludes>**/*.jdo</metadataIncludes>
