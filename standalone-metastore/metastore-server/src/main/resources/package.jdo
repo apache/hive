@@ -1451,7 +1451,7 @@
         <column name="SCHEDULE_NAME" jdbc-type="varchar" length="256" allows-null="true"/>
       </field>
       <field name="enabled">
-        <column name="ENABLED"/> <!-- FIXME: any boolean type? -->
+        <column name="ENABLED" jdbc-type="boolean"/>
       </field>
       <field name="clusterNamespace">
         <column name="CLUSTER_NAMESPACE" jdbc-type="varchar" length="256" allows-null="true"/>
