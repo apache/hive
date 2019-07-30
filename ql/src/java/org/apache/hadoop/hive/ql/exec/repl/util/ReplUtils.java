@@ -64,7 +64,7 @@ import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.TableMig
 public class ReplUtils {
 
   public static final String LAST_REPL_ID_KEY = "hive.repl.last.repl.id";
-  public static final String REPL_CHECKPOINT_KEY = "hive.repl.ckpt.key";
+  public static final String REPL_CHECKPOINT_KEY = ReplConst.REPL_TARGET_DB_PROPERTY;
   public static final String REPL_FIRST_INC_PENDING_FLAG = "hive.repl.first.inc.pending";
 
   // write id allocated in the current execution context which will be passed through config to be used by different
