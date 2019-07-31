@@ -20,12 +20,15 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_NONE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READWRITE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_TRANSACTIONAL;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.EXTERNAL_TABLE_PURGE;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -141,14 +144,14 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             ret.put(newTable, generated);
             break;
           case "MANAGED_TABLE":
-            String txnal = params.get("transactional");
+            String txnal = params.get(TABLE_IS_TRANSACTIONAL);
             if (txnal == null || txnal.equalsIgnoreCase("FALSE")) { // non-ACID MANAGED table
               table.setAccessType(ACCESSTYPE_READWRITE);
               generated.addAll(acidWriteList);
             }
 
             if (txnal != null && txnal.equalsIgnoreCase("TRUE")) { // ACID table
-              String txntype = params.get("transactional_properties");
+              String txntype = params.get(TABLE_TRANSACTIONAL_PROPERTIES);
               if (txntype != null && txntype.equalsIgnoreCase("insert_only")) { // MICRO_MANAGED Tables
                 // MGD table is insert only, not full ACID
                 if (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) || processorCapabilities.contains(CONNECTORWRITE)) {
@@ -297,7 +300,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             continue;
           }
 
-          String txnal = params.get("transactional");
+          String txnal = params.get(TABLE_IS_TRANSACTIONAL);
           if (txnal == null || txnal.equalsIgnoreCase("FALSE")) { // non-ACID MANAGED table
             LOG.info("Table is non ACID, accesstype is RO");
             table.setAccessType(ACCESSTYPE_READONLY);
@@ -308,7 +311,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           }
 
           if (txnal != null && txnal.equalsIgnoreCase("TRUE")) { // ACID table
-            String txntype = params.get("transactional_properties");
+            String txntype = params.get(TABLE_TRANSACTIONAL_PROPERTIES);
             List<String> hintList = new ArrayList<>();
             if (txntype != null && txntype.equalsIgnoreCase("insert_only")) { // MICRO_MANAGED Tables
               LOG.info("Table is INSERTONLY ACID");
@@ -445,7 +448,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             }
             break;
 	  case "MANAGED_TABLE":
-            String txnal = params.get("transactional");
+            String txnal = params.get(TABLE_IS_TRANSACTIONAL);
             if (txnal == null || txnal.equalsIgnoreCase("FALSE")) { // non-ACID MANAGED table
               if (partBuckets > 0 && !processorCapabilities.contains(HIVEBUCKET2)) {
                 Partition newPartition = new Partition(partition);
@@ -483,7 +486,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
               break;
             }
           case "MANAGED_TABLE":
-            String txnal = params.get("transactional");
+            String txnal = params.get(TABLE_IS_TRANSACTIONAL);
             if (txnal == null || txnal.equalsIgnoreCase("FALSE")) { // non-ACID MANAGED table
               if (!processorCapabilities.contains(HIVEBUCKET2)) {
                 Partition newPartition = new Partition(partition);
@@ -519,25 +522,34 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
     if (TableType.MANAGED_TABLE.name().equals(tableType)) {
       LOG.info("Table is a MANAGED_TABLE");
-      txnal = params.get("transactional");
+      txnal = params.get(TABLE_IS_TRANSACTIONAL);
       if (txnal == null || txnal.equalsIgnoreCase("FALSE")) { // non-ACID MANAGED TABLE
         if (processorCapabilities == null || (!processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) &&
             !processorCapabilities.contains(HIVEFULLACIDWRITE))) {
           LOG.info("Converting " + newTable.getTableName() + " to EXTERNAL tableType for " + processorId);
           newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
-          params.remove("transactional");
-          params.remove("transactional_properties");
+          params.remove(TABLE_IS_TRANSACTIONAL);
+          params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
           params.put("EXTERNAL", "TRUE");
-          params.put("external.table.purge", "TRUE");
+          params.put(EXTERNAL_TABLE_PURGE, "TRUE");
           params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
           newTable.setParameters(params);
           LOG.info("Modified table params are:" + params.toString());
+          if (table.getSd().getLocation() == null) {
+            try {
+              Path newPath = hmsHandler.getWh().getDefaultTablePath(table.getDbName(), table.getTableName(), true);
+              newTable.getSd().setLocation(newPath.toString());
+              LOG.info("Modified location from " + table.getSd().getLocation() + " to " + newPath);
+            } catch (Exception e) {
+              LOG.warn("Exception determining external table location:" + e.getMessage());
+            }
+          }
         }
       } else { // ACID table
         if (processorCapabilities == null || processorCapabilities.isEmpty()) {
           throw new MetaException("Processor has no capabilities, cannot create an ACID table.");
         }
-        String txntype = params.get("transactional_properties");
+        String txntype = params.get(TABLE_TRANSACTIONAL_PROPERTIES);
         if (txntype != null && txntype.equalsIgnoreCase("insert_only")) { // MICRO_MANAGED Tables
           if (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE)) {
             LOG.info("Processor has required capabilities to be able to create INSERT-only tables");

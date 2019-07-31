@@ -395,8 +395,8 @@ public class Hive {
     }
     c.set("fs.scheme.class", "dfs");
     Hive newdb = new Hive(c, doRegisterAllFns);
-    if (c.get("hive.metastore.client.capabilities") != null) {
-      String[] capabilities = c.get("hive.metastore.client.capabilities").split(",");
+    if (c.get(HiveConf.ConfVars.METASTORE_CLIENT_CAPABILITIES.varname) != null) {
+      String[] capabilities = c.get(HiveConf.ConfVars.METASTORE_CLIENT_CAPABILITIES.varname).split(",");
       newdb.setHMSClientCapabilities(capabilities);
       String hostName = "unknown";
       try {
