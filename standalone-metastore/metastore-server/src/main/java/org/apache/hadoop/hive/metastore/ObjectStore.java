@@ -9685,7 +9685,7 @@ public class ObjectStore implements RawStore, Configurable {
       throw new InvalidObjectException("Database " + func.getDbName() + " doesn't exist.");
     }
 
-    MFunction mfunc = new MFunction(func.getFunctionName(),
+    MFunction mfunc = new MFunction(normalizeIdentifier(func.getFunctionName()),
         mdb,
         func.getClassName(),
         func.getOwnerName(),
