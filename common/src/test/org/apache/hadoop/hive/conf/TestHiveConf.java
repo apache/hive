@@ -151,7 +151,8 @@ public class TestHiveConf {
         "fs.s3.awsSecretAccessKey",
         "fs.s3n.awsSecretAccessKey",
         "dfs.adls.oauth2.credential",
-        "fs.adl.oauth2.credential"
+        "fs.adl.oauth2.credential",
+        "fs.azure.account.oauth2.client.secret"
     );
 
     for (String hiddenConfig : hiddenList) {

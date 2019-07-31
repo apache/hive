@@ -669,4 +669,12 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       LOG.info("Connection state change notification received. State: {}", connectionState);
     }
   }
+
+  public String currentUser() {
+    try {
+      return UserGroupInformation.getCurrentUser().getShortUserName();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

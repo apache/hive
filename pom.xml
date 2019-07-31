@@ -59,6 +59,7 @@
     <module>shims</module>
     <module>spark-client</module>
     <module>kryo-registrator</module>
+    <module>kudu-handler</module>
     <module>testutils</module>
     <module>packaging</module>
     <module>standalone-metastore</module>
@@ -183,12 +184,13 @@
     <json.version>1.8</json.version>
     <junit.version>4.11</junit.version>
     <kryo.version>4.0.2</kryo.version>
+    <kudu.version>1.10.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3-1</libthrift.version>
     <log4j2.version>2.10.0</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.5.4</orc.version>
+    <orc.version>1.5.6</orc.version>
     <mockito-core.version>1.10.19</mockito-core.version>
     <powermock.version>1.7.4</powermock.version>
     <mina.version>2.0.0-M5</mina.version>

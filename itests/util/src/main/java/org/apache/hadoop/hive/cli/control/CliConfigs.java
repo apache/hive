@@ -778,4 +778,50 @@ public class CliConfigs {
     }
   }
 
+  /**
+   * The CliConfig implementation for Kudu.
+   */
+  public static class KuduCliConfig extends AbstractCliConfig {
+    public KuduCliConfig() {
+      super(CoreKuduCliDriver.class);
+      try {
+        setQueryDir("kudu-handler/src/test/queries/positive");
+
+        setResultsDir("kudu-handler/src/test/results/positive");
+        setLogDir("itests/qtest/target/qfile-results/kudu/positive");
+
+        setInitScript("q_test_init_src.sql");
+        setCleanupScript("q_test_cleanup_src.sql");
+
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.TEZ_LOCAL);
+        setMetastoreType(MetastoreType.sql);
+        setFsType(QTestMiniClusters.FsType.LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class KuduNegativeCliConfig extends AbstractCliConfig {
+    public KuduNegativeCliConfig() {
+      super(CoreKuduNegativeCliDriver.class);
+      try {
+        setQueryDir("kudu-handler/src/test/queries/negative");
+
+        setResultsDir("kudu-handler/src/test/results/negative");
+        setLogDir("itests/qtest/target/qfile-results/kudu/negative");
+
+        setInitScript("q_test_init_src.sql");
+        setCleanupScript("q_test_cleanup_src.sql");
+
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.TEZ_LOCAL);
+        setMetastoreType(MetastoreType.sql);
+        setFsType(QTestMiniClusters.FsType.LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
 }

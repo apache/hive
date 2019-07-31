@@ -120,7 +120,8 @@ public class QTestMiniClusters {
     DRUID_LOCAL(CoreClusterType.TEZ, FsType.LOCAL),
     DRUID(CoreClusterType.TEZ, FsType.HDFS),
     DRUID_KAFKA(CoreClusterType.TEZ, FsType.HDFS),
-    KAFKA(CoreClusterType.TEZ, FsType.HDFS);
+    KAFKA(CoreClusterType.TEZ, FsType.HDFS),
+    KUDU(CoreClusterType.TEZ, FsType.LOCAL);
 
     private final CoreClusterType coreClusterType;
     private final FsType defaultFsType;
@@ -162,6 +163,8 @@ public class QTestMiniClusters {
         return DRUID_KAFKA;
       } else if (type.equals("kafka")) {
         return KAFKA;
+      } else if (type.equals("kudu")) {
+        return KUDU;
       } else {
         throw new RuntimeException(String.format("cannot recognize MiniClusterType from '%s'", type));
       }

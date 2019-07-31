@@ -103,6 +103,7 @@ public class HiveAlterHandler implements AlterHandler {
 
     final boolean cascade;
     final boolean replDataLocationChanged;
+    final boolean isReplicated;
     if ((environmentContext != null) && environmentContext.isSetProperties()) {
       cascade = StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(StatsSetupConst.CASCADE));
       replDataLocationChanged = ReplConst.TRUE.equals(environmentContext.getProperties().get(ReplConst.REPL_DATA_LOCATION_CHANGED));
@@ -173,6 +174,9 @@ public class HiveAlterHandler implements AlterHandler {
 
       validateTableChangesOnReplSource(olddb, oldt, newt, environmentContext);
 
+      // On a replica this alter table will be executed only if old and new both the databases are
+      // available and being replicated into. Otherwise, it will be either create or drop of table.
+      isReplicated = HiveMetaStore.HMSHandler.isDbReplicationTarget(olddb);
       if (oldt.getPartitionKeysSize() != 0) {
         isPartitionedTable = true;
       }
@@ -240,6 +244,7 @@ public class HiveAlterHandler implements AlterHandler {
 
             // get new location
             Database db = msdb.getDatabase(catName, newDbName);
+            assert(isReplicated == HiveMetaStore.HMSHandler.isDbReplicationTarget(db));
             Path databasePath = constructRenamedPath(wh.getDatabasePath(db), srcPath);
             destPath = new Path(databasePath, newTblName);
             destFs = wh.getFs(destPath);
@@ -346,6 +351,7 @@ public class HiveAlterHandler implements AlterHandler {
         if (MetaStoreServerUtils.requireCalStats(null, null, newt, environmentContext) &&
             !isPartitionedTable) {
           Database db = msdb.getDatabase(catName, newDbName);
+          assert(isReplicated == HiveMetaStore.HMSHandler.isDbReplicationTarget(db));
           // Update table stats. For partitioned table, we update stats in alterPartition()
           MetaStoreServerUtils.updateTableStatsSlow(db, newt, wh, false, true, environmentContext);
         }
@@ -388,7 +394,7 @@ public class HiveAlterHandler implements AlterHandler {
         txnAlterTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventMessage.EventType.ALTER_TABLE,
                   new AlterTableEvent(oldt, newt, false, true,
-                          newt.getWriteId(), handler),
+                          newt.getWriteId(), handler, isReplicated),
                   environmentContext);
       }
       // commit the changes
@@ -452,7 +458,7 @@ public class HiveAlterHandler implements AlterHandler {
       // make this call whether the event failed or succeeded. To make this behavior consistent,
       // this call is made for failed events also.
       MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_TABLE,
-          new AlterTableEvent(oldt, newt, false, success, newt.getWriteId(), handler),
+          new AlterTableEvent(oldt, newt, false, success, newt.getWriteId(), handler, isReplicated),
           environmentContext, txnAlterTableEventResponses, msdb);
     }
   }

@@ -2904,6 +2904,11 @@ public class HiveConf extends Configuration {
     HIVE_HBASE_SNAPSHOT_RESTORE_DIR("hive.hbase.snapshot.restoredir", "/tmp", "The directory in which to " +
         "restore the HBase table snapshot."),
 
+    // For Kudu storage handler
+    HIVE_KUDU_MASTER_ADDRESSES_DEFAULT("hive.kudu.master.addresses.default", "localhost:7050",
+        "Comma-separated list of all of the Kudu master addresses.\n" +
+            "This value is only used for a given table if the kudu.master_addresses table property is not set."),
+
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false, "Whether archiving operations are permitted"),
 
@@ -4257,6 +4262,9 @@ public class HiveConf extends Configuration {
       "Port to use for LLAP plugin rpc server"),
     LLAP_PLUGIN_RPC_NUM_HANDLERS("hive.llap.plugin.rpc.num.handlers", 1,
       "Number of RPC handlers for AM LLAP plugin endpoint."),
+    LLAP_HDFS_PACKAGE_DIR("hive.llap.hdfs.package.dir", ".yarn",
+      "Package directory on HDFS used for holding collected configuration and libraries" +
+      " required for YARN launch. Note: this should be set to the same as yarn.service.base.path"),
     LLAP_DAEMON_WORK_DIRS("hive.llap.daemon.work.dirs", "",
         "Working directories for the daemon. This should not be set if running as a YARN\n" +
         "Service. It must be set when not running on YARN. If the value is set when\n" +
@@ -4707,7 +4715,8 @@ public class HiveConf extends Configuration {
         + ",fs.s3a.secret.key"
         + ",fs.s3a.proxy.password"
         + ",dfs.adls.oauth2.credential"
-        + ",fs.adl.oauth2.credential",
+        + ",fs.adl.oauth2.credential"
+        + ",fs.azure.account.oauth2.client.secret",
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
