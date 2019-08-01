@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.thrift.TException;
@@ -68,7 +69,8 @@ public class TestPartitionManagement {
     conf.setClass(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
       MsckPartitionExpressionProxy.class, PartitionExpressionProxy.class);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    conf.setBoolean(MetastoreConf.ConfVars.MULTITHREADED.getVarname(), false);
+    conf.setBoolean(ConfVars.MULTITHREADED.getVarname(), false);
+    conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
     MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
     TxnDbUtil.setConfValues(conf);
     TxnDbUtil.prepDb(conf);

@@ -1944,18 +1944,60 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final EnvironmentContext envContext)
             throws AlreadyExistsException, MetaException,
             InvalidObjectException, NoSuchObjectException, InvalidInputException {
-      create_table_core(ms, tbl, envContext, null, null, null, null, null, null);
+      CreateTableRequest req = new CreateTableRequest(tbl);
+      req.setEnvContext(envContext);
+      create_table_core(ms, req);
     }
 
     private void create_table_core(final RawStore ms, final Table tbl,
         final EnvironmentContext envContext, List<SQLPrimaryKey> primaryKeys,
         List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
         List<SQLNotNullConstraint> notNullConstraints, List<SQLDefaultConstraint> defaultConstraints,
-                                   List<SQLCheckConstraint> checkConstraints)
+                                   List<SQLCheckConstraint> checkConstraints,
+                                   List<String> processorCapabilities, String processorIdentifier)
         throws AlreadyExistsException, MetaException,
         InvalidObjectException, NoSuchObjectException, InvalidInputException {
+      CreateTableRequest req = new CreateTableRequest(tbl);
+      if (envContext != null)
+        req.setEnvContext(envContext);
+      if (primaryKeys != null)
+        req.setPrimaryKeys(primaryKeys);
+      if (foreignKeys != null)
+        req.setForeignKeys(foreignKeys);
+      if (uniqueConstraints != null)
+        req.setUniqueConstraints(uniqueConstraints);
+      if (notNullConstraints != null)
+        req.setNotNullConstraints(notNullConstraints);
+      if (defaultConstraints != null)
+        req.setDefaultConstraints(defaultConstraints);
+      if (checkConstraints != null)
+        req.setCheckConstraints(checkConstraints);
+      if (processorCapabilities != null) {
+        req.setProcessorCapabilities(processorCapabilities);
+        req.setProcessorIdentifier(processorIdentifier);
+      }
+      create_table_core(ms, req);
+    }
 
+    private void create_table_core(final RawStore ms, final CreateTableRequest req)
+        throws AlreadyExistsException, MetaException,
+              InvalidObjectException, NoSuchObjectException, InvalidInputException {
       ColumnStatistics colStats = null;
+      Table tbl = req.getTable();
+      EnvironmentContext envContext = req.getEnvContext();
+      List<SQLPrimaryKey> primaryKeys = req.getPrimaryKeys();
+      List<SQLForeignKey> foreignKeys = req.getForeignKeys();
+      List<SQLUniqueConstraint> uniqueConstraints = req.getUniqueConstraints();
+      List<SQLNotNullConstraint> notNullConstraints = req.getNotNullConstraints();
+      List<SQLDefaultConstraint> defaultConstraints = req.getDefaultConstraints();
+      List<SQLCheckConstraint> checkConstraints = req.getCheckConstraints();
+      List<String> processorCapabilities = req.getProcessorCapabilities();
+      String processorId = req.getProcessorIdentifier();
+
+      if (transformer != null && !isInTest) {
+        tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
+      }
+
       // If the given table has column statistics, save it here. We will update it later.
       // We don't want it to be part of the Table object being created, lest the create table
       // event will also have the col stats which we don't want.
@@ -2254,6 +2296,32 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public void create_table_req(final CreateTableRequest req)
+            throws AlreadyExistsException, MetaException, InvalidObjectException,
+            InvalidInputException {
+      Table tbl = req.getTable();
+      startFunction("create_table_req", ": " + tbl.toString());
+      boolean success = false;
+      Exception ex = null;
+      try {
+        create_table_core(getMS(), req);
+        success = true;
+      } catch (NoSuchObjectException e) {
+        LOG.warn("create_table_req got ", e);
+        ex = e;
+        throw new InvalidObjectException(e.getMessage());
+      } catch (MetaException | InvalidObjectException | AlreadyExistsException | InvalidInputException e) {
+        ex = e;
+        throw e;
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("create_table_req", success, ex, tbl.getTableName());
+      }
+    }
+
+    @Override
     public void create_table_with_constraints(final Table tbl,
         final List<SQLPrimaryKey> primaryKeys, final List<SQLForeignKey> foreignKeys,
         List<SQLUniqueConstraint> uniqueConstraints,
@@ -2266,12 +2334,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false;
       Exception ex = null;
       try {
-        create_table_core(getMS(), tbl, null, primaryKeys, foreignKeys,
-            uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
+        CreateTableRequest req = new CreateTableRequest(tbl);
+        req.setPrimaryKeys(primaryKeys);
+        req.setForeignKeys(foreignKeys);
+        req.setUniqueConstraints(uniqueConstraints);
+        req.setNotNullConstraints(notNullConstraints);
+        req.setDefaultConstraints(defaultConstraints);
+        req.setCheckConstraints(checkConstraints);
+        create_table_req(req);
         success = true;
-      } catch (NoSuchObjectException e) {
-        ex = e;
-        throw new InvalidObjectException(e.getMessage());
       } catch (MetaException | InvalidObjectException | AlreadyExistsException |
               InvalidInputException e) {
         ex = e;
@@ -2280,7 +2351,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ex = e;
         throw newMetaException(e);
       } finally {
-        endFunction("create_table", success, ex, tbl.getTableName());
+        endFunction("create_table_with_constraints", success, ex, tbl.getTableName());
       }
     }
 
@@ -3152,8 +3223,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         extTable.setAccessType(table.getAccessType());
 
       if ((mask & GetTablesExtRequestFields.PROCESSOR_CAPABILITIES.getValue())
-             == GetTablesExtRequestFields.PROCESSOR_CAPABILITIES.getValue())
-        extTable.setProcessorCapabilities(processorCapabilities);
+             == GetTablesExtRequestFields.PROCESSOR_CAPABILITIES.getValue()) {
+        extTable.setRequiredReadCapabilities(table.getRequiredReadCapabilities());
+        extTable.setRequiredWriteCapabilities(table.getRequiredWriteCapabilities());
+      }
 
       return extTable;
     }
@@ -3205,7 +3278,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               throw new MetaException("Unexpected result from metadata transformer:return list size is " + ret.size());
             }
             t = (Table)(ret.keySet().iterator().next());
-            LOG.debug("Table " + t.getTableName() + " requires " + Arrays.toString((ret.get(t)).toArray()));
           }
         }
 
@@ -5085,7 +5157,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           LOG.info("Skipping translation for processor with " + processorId);
         } else {
           if (transformer != null) {
-            partitions = transformer.transformPartitions(partitions, processorCapabilities, processorId);
+            partitions = transformer.transformPartitions(partitions, table, processorCapabilities, processorId);
           }
         }
         List<PartitionSpec> partitionSpecs =
@@ -6636,6 +6708,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String parsedCatName = dbNameParts[CAT_NAME];
       String parsedDbName = dbNameParts[DB_NAME];
       List<Partition> ret = null;
+      Table table = null;
       Exception ex = null;
       boolean success = false;
       startTableFunction("get_partitions_by_names", parsedCatName, parsedDbName,
@@ -6648,10 +6721,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         ret = getMS().getPartitionsByNames(parsedCatName, parsedDbName, tblName, partNames);
         ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
+        table = getTable(parsedCatName, parsedDbName, tblName);
 
         // If requested add column statistics in each of the partition objects
         if (getColStats) {
-          Table table = getTable(parsedCatName, parsedDbName, tblName);
           // Since each partition may have stats collected for different set of columns, we
           // request them separately.
           for (Partition part: ret) {
@@ -6674,7 +6747,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           LOG.info("Skipping translation for processor with " + processorId);
         } else {
           if (transformer != null) {
-            ret = transformer.transformPartitions(ret, processorCapabilities, processorId);
+            ret = transformer.transformPartitions(ret, table, processorCapabilities, processorId);
           }
         }
         success = getMS().commitTransaction();

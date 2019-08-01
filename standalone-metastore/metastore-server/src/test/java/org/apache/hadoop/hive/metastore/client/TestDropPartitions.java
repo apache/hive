@@ -568,9 +568,14 @@ public class TestDropPartitions extends MetaStoreClientTest {
 
   private Table createTable(String tableName, List<FieldSchema> partCols,
       Map<String, String> tableParams) throws Exception {
+    String type = "MANAGED_TABLE";
+    if (tableParams != null)
+      type = (tableParams.getOrDefault("EXTERNAL", "FALSE").equalsIgnoreCase("TRUE")) ?
+        "EXTERNAL_TABLE" : "MANAGED_TABLE";
     Table table = new TableBuilder()
         .setDbName(DB_NAME)
         .setTableName(tableName)
+        .setType(type)
         .addCol("test_id", "int", "test col id")
         .addCol("test_value", "string", "test col value")
         .setPartCols(partCols)
