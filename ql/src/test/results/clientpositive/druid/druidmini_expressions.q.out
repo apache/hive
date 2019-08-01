@@ -2012,11 +2012,11 @@ POSTHOOK: query: select `timets_with_tz` from (select `__time` as timets_with_tz
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2019-07-13 07:53:00.0 US/Pacific
-2019-07-13 07:53:00.0 US/Pacific
-2019-07-13 07:53:00.0 US/Pacific
-2019-07-13 07:53:00.0 US/Pacific
-2019-07-13 07:53:00.0 US/Pacific
+2019-08-01 16:22:00.0 US/Pacific
+2019-08-01 16:22:00.0 US/Pacific
+2019-08-01 16:22:00.0 US/Pacific
+2019-08-01 16:22:00.0 US/Pacific
+2019-08-01 16:22:00.0 US/Pacific
 PREHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_n1
@@ -2025,8 +2025,8 @@ POSTHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as ti
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2019-07-13 07:53:00
-2019-07-13 07:53:00
-2019-07-13 07:53:00
-2019-07-13 07:53:00
-2019-07-13 07:53:00
+2019-08-01 16:22:00
+2019-08-01 16:22:00
+2019-08-01 16:22:00
+2019-08-01 16:22:00
+2019-08-01 16:22:00

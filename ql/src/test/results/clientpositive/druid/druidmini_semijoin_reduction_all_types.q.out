@@ -199,6 +199,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: cstring1 is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 6969 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cstring1 is not null (type: boolean)
@@ -232,11 +233,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (cstring1 BETWEEN DynamicValue(RS_4_alltypesorc_small_cstring1_min) AND DynamicValue(RS_4_alltypesorc_small_cstring1_max) and in_bloom_filter(cstring1, DynamicValue(RS_4_alltypesorc_small_cstring1_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames cstring1
                     druid.fieldTypes string
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":{"type":"and","fields":[{"type":"and","fields":[{"type":"bound","dimension":"cstring1","lower":"DynamicValue(RS_4_alltypesorc_small_cstring1_min)","upper":"DynamicValue(RS_4_alltypesorc_small_cstring1_max)","lowerStrict":false,"upperStrict":false,"extractionFn":null,"ordering":{"type":"lexicographic"}},{"type":"bloom","dimension":"cstring1","bloomKFilter":"BAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","extractionFn":null}]},{"type":"not","field":{"type":"selector","dimension":"cstring1","value":null,"extractionFn":null}}]},"columns":["cstring1"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"cstring1","value":null}},"columns":["cstring1"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -354,6 +354,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: ctinyint is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ctinyint is not null (type: boolean)
@@ -387,11 +388,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (ctinyint BETWEEN DynamicValue(RS_4_alltypesorc_small_ctinyint_min) AND DynamicValue(RS_4_alltypesorc_small_ctinyint_max) and in_bloom_filter(ctinyint, DynamicValue(RS_4_alltypesorc_small_ctinyint_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames ctinyint
                     druid.fieldTypes tinyint
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":{"type":"and","fields":[{"type":"and","fields":[{"type":"bound","dimension":"ctinyint","lower":"DynamicValue(RS_4_alltypesorc_small_ctinyint_min)","upper":"DynamicValue(RS_4_alltypesorc_small_ctinyint_max)","lowerStrict":false,"upperStrict":false,"extractionFn":null,"ordering":{"type":"numeric"}},{"type":"bloom","dimension":"ctinyint","bloomKFilter":"BAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","extractionFn":null}]},{"type":"not","field":{"type":"selector","dimension":"ctinyint","value":null,"extractionFn":null}}]},"columns":["ctinyint"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"ctinyint","value":null}},"columns":["ctinyint"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -509,6 +509,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: csmallint is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: csmallint is not null (type: boolean)
@@ -542,11 +543,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (csmallint BETWEEN DynamicValue(RS_4_alltypesorc_small_csmallint_min) AND DynamicValue(RS_4_alltypesorc_small_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_4_alltypesorc_small_csmallint_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames csmallint
                     druid.fieldTypes smallint
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":{"type":"and","fields":[{"type":"and","fields":[{"type":"bound","dimension":"csmallint","lower":"DynamicValue(RS_4_alltypesorc_small_csmallint_min)","upper":"DynamicValue(RS_4_alltypesorc_small_csmallint_max)","lowerStrict":false,"upperStrict":false,"extractionFn":null,"ordering":{"type":"numeric"}},{"type":"bloom","dimension":"csmallint","bloomKFilter":"BAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","extractionFn":null}]},{"type":"not","field":{"type":"selector","dimension":"csmallint","value":null,"extractionFn":null}}]},"columns":["csmallint"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"csmallint","value":null}},"columns":["csmallint"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -664,6 +664,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: cint is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint is not null (type: boolean)
@@ -697,11 +698,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (cint BETWEEN DynamicValue(RS_4_alltypesorc_small_cint_min) AND DynamicValue(RS_4_alltypesorc_small_cint_max) and in_bloom_filter(cint, DynamicValue(RS_4_alltypesorc_small_cint_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames cint
                     druid.fieldTypes int
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":{"type":"and","fields":[{"type":"and","fields":[{"type":"bound","dimension":"cint","lower":"DynamicValue(RS_4_alltypesorc_small_cint_min)","upper":"DynamicValue(RS_4_alltypesorc_small_cint_max)","lowerStrict":false,"upperStrict":false,"extractionFn":null,"ordering":{"type":"numeric"}},{"type":"bloom","dimension":"cint","bloomKFilter":"BAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","extractionFn":null}]},{"type":"not","field":{"type":"selector","dimension":"cint","value":null,"extractionFn":null}}]},"columns":["cint"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"cint","value":null}},"columns":["cint"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -819,6 +819,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: cbigint is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cbigint is not null (type: boolean)
@@ -852,11 +853,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (cbigint BETWEEN DynamicValue(RS_4_alltypesorc_small_cbigint_min) AND DynamicValue(RS_4_alltypesorc_small_cbigint_max) and in_bloom_filter(cbigint, DynamicValue(RS_4_alltypesorc_small_cbigint_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames cbigint
                     druid.fieldTypes bigint
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":{"type":"and","fields":[{"type":"and","fields":[{"type":"bound","dimension":"cbigint","lower":"DynamicValue(RS_4_alltypesorc_small_cbigint_min)","upper":"DynamicValue(RS_4_alltypesorc_small_cbigint_max)","lowerStrict":false,"upperStrict":false,"extractionFn":null,"ordering":{"type":"numeric"}},{"type":"bloom","dimension":"cbigint","bloomKFilter":"BAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","extractionFn":null}]},{"type":"not","field":{"type":"selector","dimension":"cbigint","value":null,"extractionFn":null}}]},"columns":["cbigint"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"cbigint","value":null}},"columns":["cbigint"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 69728 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -974,6 +974,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: cfloat is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cfloat is not null (type: boolean)
@@ -1007,11 +1008,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (cfloat BETWEEN DynamicValue(RS_4_alltypesorc_small_cfloat_min) AND DynamicValue(RS_4_alltypesorc_small_cfloat_max) and in_bloom_filter(cfloat, DynamicValue(RS_4_alltypesorc_small_cfloat_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames cfloat
                     druid.fieldTypes float
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":{"type":"not","field":{"type":"selector","dimension":"cfloat","value":null,"extractionFn":null}},"columns":["cfloat"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"cfloat","value":null}},"columns":["cfloat"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1129,6 +1129,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: cdouble is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cdouble is not null (type: boolean)
@@ -1162,11 +1163,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (cdouble BETWEEN DynamicValue(RS_4_alltypesorc_small_cdouble_min) AND DynamicValue(RS_4_alltypesorc_small_cdouble_max) and in_bloom_filter(cdouble, DynamicValue(RS_4_alltypesorc_small_cdouble_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames cdouble
                     druid.fieldTypes double
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":{"type":"and","fields":[{"type":"and","fields":[{"type":"bound","dimension":"cdouble","lower":"DynamicValue(RS_4_alltypesorc_small_cdouble_min)","upper":"DynamicValue(RS_4_alltypesorc_small_cdouble_max)","lowerStrict":false,"upperStrict":false,"extractionFn":null,"ordering":{"type":"numeric"}},{"type":"bloom","dimension":"cdouble","bloomKFilter":"BAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","extractionFn":null}]},{"type":"not","field":{"type":"selector","dimension":"cdouble","value":null,"extractionFn":null}}]},"columns":["cdouble"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"cdouble","value":null}},"columns":["cdouble"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 69728 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1284,6 +1284,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: CAST( ctimestamp1 AS timestamp with local time zone) is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: CAST( ctimestamp1 AS timestamp with local time zone) is not null (type: boolean)
@@ -1317,15 +1318,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (vc BETWEEN DynamicValue(RS_4_alltypesorc_small_ctimestamp1_min) AND DynamicValue(RS_4_alltypesorc_small_ctimestamp1_max) and in_bloom_filter(vc, DynamicValue(RS_4_alltypesorc_small_ctimestamp1_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames vc
                     druid.fieldTypes timestamp with local time zone
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":null,"columns":["vc"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (in_bloom_filter(vc, DynamicValue(RS_4_alltypesorc_small_ctimestamp1_bloom_filter)) and vc BETWEEN DynamicValue(RS_4_alltypesorc_small_ctimestamp1_min) AND DynamicValue(RS_4_alltypesorc_small_ctimestamp1_max)) (type: boolean)
+                    predicate: (vc BETWEEN DynamicValue(RS_4_alltypesorc_small_ctimestamp1_min) AND DynamicValue(RS_4_alltypesorc_small_ctimestamp1_max) and in_bloom_filter(vc, DynamicValue(RS_4_alltypesorc_small_ctimestamp1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: vc (type: timestamp with local time zone)
@@ -1439,6 +1439,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: cboolean1 is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cboolean1 is not null (type: boolean)
@@ -1472,11 +1473,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (cboolean1 BETWEEN DynamicValue(RS_4_alltypesorc_small_cboolean1_min) AND DynamicValue(RS_4_alltypesorc_small_cboolean1_max) and in_bloom_filter(cboolean1, DynamicValue(RS_4_alltypesorc_small_cboolean1_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames cboolean1
                     druid.fieldTypes boolean
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":{"type":"not","field":{"type":"selector","dimension":"cboolean1","value":null,"extractionFn":null}},"columns":["cboolean1"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"cboolean1","value":null}},"columns":["cboolean1"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1594,6 +1594,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: UDFToDouble(cint) is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: UDFToDouble(cint) is not null (type: boolean)
@@ -1627,11 +1628,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (UDFToDouble(cintstring) BETWEEN DynamicValue(RS_4_alltypesorc_small_cint_min) AND DynamicValue(RS_4_alltypesorc_small_cint_max) and in_bloom_filter(UDFToDouble(cintstring), DynamicValue(RS_4_alltypesorc_small_cint_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames cintstring
                     druid.fieldTypes string
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[{"type":"expression","name":"vc","expression":"CAST(cintstring, 'DOUBLE')","outputType":"DOUBLE"}],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":{"type":"and","fields":[{"type":"and","fields":[{"type":"bound","dimension":"vc","lower":"DynamicValue(RS_4_alltypesorc_small_cint_min)","upper":"DynamicValue(RS_4_alltypesorc_small_cint_max)","lowerStrict":false,"upperStrict":false,"extractionFn":null,"ordering":{"type":"numeric"}},{"type":"bloom","dimension":"vc","bloomKFilter":"BAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","extractionFn":null}]},{"type":"not","field":{"type":"selector","dimension":"cintstring","value":null,"extractionFn":null}}]},"columns":["cintstring"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"cintstring","value":null}},"columns":["cintstring"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1749,6 +1749,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: cdouble is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cdouble is not null (type: boolean)
@@ -1782,11 +1783,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (UDFToDouble(cdoublestring) BETWEEN DynamicValue(RS_4_alltypesorc_small_cdouble_min) AND DynamicValue(RS_4_alltypesorc_small_cdouble_max) and in_bloom_filter(UDFToDouble(cdoublestring), DynamicValue(RS_4_alltypesorc_small_cdouble_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames cdoublestring
                     druid.fieldTypes string
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[{"type":"expression","name":"vc","expression":"CAST(cdoublestring, 'DOUBLE')","outputType":"DOUBLE"}],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":{"type":"and","fields":[{"type":"and","fields":[{"type":"bound","dimension":"vc","lower":"DynamicValue(RS_4_alltypesorc_small_cdouble_min)","upper":"DynamicValue(RS_4_alltypesorc_small_cdouble_max)","lowerStrict":false,"upperStrict":false,"extractionFn":null,"ordering":{"type":"numeric"}},{"type":"bloom","dimension":"vc","bloomKFilter":"BAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","extractionFn":null}]},{"type":"not","field":{"type":"selector","dimension":"cdoublestring","value":null,"extractionFn":null}}]},"columns":["cdoublestring"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"cdoublestring","value":null}},"columns":["cdoublestring"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1904,6 +1904,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_small
+                  filterExpr: UDFToDouble(cfloat) is not null (type: boolean)
                   Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: UDFToDouble(cfloat) is not null (type: boolean)
@@ -1937,11 +1938,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: druid_table_alltypesorc
-                  filterExpr: (UDFToDouble(cfloatstring) BETWEEN DynamicValue(RS_4_alltypesorc_small_cfloat_min) AND DynamicValue(RS_4_alltypesorc_small_cfloat_max) and in_bloom_filter(UDFToDouble(cfloatstring), DynamicValue(RS_4_alltypesorc_small_cfloat_bloom_filter))) (type: boolean)
                   properties:
                     druid.fieldNames cfloatstring
                     druid.fieldTypes string
-                    druid.query.json {"queryType":"scan","dataSource":{"type":"table","name":"default.druid_table_alltypesorc"},"intervals":{"type":"LegacySegmentSpec","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]},"virtualColumns":[{"type":"expression","name":"vc","expression":"CAST(cfloatstring, 'DOUBLE')","outputType":"DOUBLE"}],"resultFormat":"compactedList","batchSize":20480,"limit":9223372036854775807,"filter":{"type":"and","fields":[{"type":"and","fields":[{"type":"bound","dimension":"vc","lower":"DynamicValue(RS_4_alltypesorc_small_cfloat_min)","upper":"DynamicValue(RS_4_alltypesorc_small_cfloat_max)","lowerStrict":false,"upperStrict":false,"extractionFn":null,"ordering":{"type":"numeric"}},{"type":"bloom","dimension":"vc","bloomKFilter":"BAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","extractionFn":null}]},{"type":"not","field":{"type":"selector","dimension":"cfloatstring","value":null,"extractionFn":null}}]},"columns":["cfloatstring"],"legacy":null,"context":null,"descending":false,"granularity":{"type":"all"}}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"cfloatstring","value":null}},"columns":["cfloatstring"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
