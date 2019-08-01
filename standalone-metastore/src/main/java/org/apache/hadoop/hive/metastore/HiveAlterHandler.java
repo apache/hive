@@ -21,6 +21,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -167,7 +170,7 @@ public class HiveAlterHandler implements AlterHandler {
       oldt = msdb.getTable(catName, dbname, name, null);
       if (oldt == null) {
         throw new InvalidOperationException("table " +
-            Warehouse.getCatalogQualifiedTableName(catName, dbname, name) + " doesn't exist");
+            TableName.getQualified(catName, dbname, name) + " doesn't exist");
       }
 
       validateTableChangesOnReplSource(olddb, oldt, newt, environmentContext);
@@ -261,7 +264,7 @@ public class HiveAlterHandler implements AlterHandler {
             try {
               if (destFs.exists(destPath)) {
                 throw new InvalidOperationException("New location for this table " +
-                        Warehouse.getCatalogQualifiedTableName(catName, newDbName, newTblName) +
+                        TableName.getQualified(catName, newDbName, newTblName) +
                         " already exists : " + destPath);
               }
               // check that src exists and also checks permissions necessary, rename src to dest
@@ -277,12 +280,12 @@ public class HiveAlterHandler implements AlterHandler {
             }
 
             if (!HiveMetaStore.isRenameAllowed(olddb, db)) {
-              LOG.error("Alter Table operation for " + Warehouse.getCatalogQualifiedTableName(catName, dbname, name) +
-                    "to new table = " + Warehouse.getCatalogQualifiedTableName(catName, newDbName, newTblName) +
+              LOG.error("Alter Table operation for " + TableName.getQualified(catName, dbname, name) +
+                    "to new table = " + TableName.getQualified(catName, newDbName, newTblName) +
                     " failed ");
               throw new MetaException("Alter table not allowed for table " +
-                    Warehouse.getCatalogQualifiedTableName(catName, dbname, name) +
-                    "to new table = " + Warehouse.getCatalogQualifiedTableName(catName, newDbName, newTblName));
+                    TableName.getQualified(catName, dbname, name) +
+                    "to new table = " + TableName.getQualified(catName, newDbName, newTblName));
             }
           }
         }
@@ -435,7 +438,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
       } else {
         LOG.error("Failed to alter table " +
-            Warehouse.getCatalogQualifiedTableName(catName, dbname, name));
+            TableName.getQualified(catName, dbname, name));
         msdb.rollbackTransaction();
         if (!replDataLocationChanged && dataWasMoved) {
           try {
@@ -835,7 +838,7 @@ public class HiveAlterHandler implements AlterHandler {
       if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION) &&
               tbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
         throw new InvalidOperationException("Cannot change location of a managed table " +
-                Warehouse.getCatalogQualifiedTableName(tbl.getCatName(),
+                TableName.getQualified(tbl.getCatName(),
                         tbl.getDbName(), tbl.getTableName()) + " as it is enabled for replication.");
       }
     }
@@ -858,7 +861,7 @@ public class HiveAlterHandler implements AlterHandler {
         if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION) &&
             oldTbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
           throw new InvalidOperationException("Cannot change location of a managed table " +
-                  Warehouse.getCatalogQualifiedTableName(oldTbl.getCatName(),
+              TableName.getQualified(oldTbl.getCatName(),
                           oldTbl.getDbName(), oldTbl.getTableName()) + " as it is enabled for replication.");
         }
     }
@@ -878,7 +881,7 @@ public class HiveAlterHandler implements AlterHandler {
     if (!oldTbl.getTableType().equalsIgnoreCase(newTbl.getTableType())) {
       throw new InvalidOperationException("Table type cannot be changed from " + oldTbl.getTableType()
               + " to " + newTbl.getTableType() + " for the table " +
-              Warehouse.getCatalogQualifiedTableName(oldTbl.getCatName(), oldTbl.getDbName(), oldTbl.getTableName())
+          TableName.getQualified(oldTbl.getCatName(), oldTbl.getDbName(), oldTbl.getTableName())
               + " as it is enabled for replication.");
     }
 
@@ -888,7 +891,7 @@ public class HiveAlterHandler implements AlterHandler {
     // property of table on source can conflict with resultant change in the target.
     if (!TxnUtils.isTransactionalTable(oldTbl) && TxnUtils.isTransactionalTable(newTbl)) {
       throw new InvalidOperationException("A non-Acid table cannot be converted to an Acid " +
-              "table for the table " + Warehouse.getCatalogQualifiedTableName(oldTbl.getCatName(),
+              "table for the table " + TableName.getQualified(oldTbl.getCatName(),
               oldTbl.getDbName(), oldTbl.getTableName()) + " as it is enabled for replication.");
     }
   }

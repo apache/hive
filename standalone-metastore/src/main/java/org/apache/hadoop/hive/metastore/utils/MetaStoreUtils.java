@@ -17,6 +17,58 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import org.apache.commons.collections.ListUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.security.SaslRpcServer;
+import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
+import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hadoop.util.MachineList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -273,7 +325,7 @@ public class MetaStoreUtils {
     }
     if (colStatsMap.size() < 1) {
       LOG.debug("No stats data found for: tblName= {}, partNames= {}, colNames= {}",
-          Warehouse.getCatalogQualifiedTableName(catName, dbName, tableName), partNames, colNames);
+          TableName.getQualified(catName, dbName, tableName), partNames, colNames);
       return new ArrayList<ColumnStatisticsObj>();
     }
     return aggrPartitionStats(colStatsMap, partNames, areAllPartsFound,
@@ -1831,41 +1883,6 @@ public class MetaStoreUtils {
     String catName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
     if (catName == null || "".equals(catName)) catName = Warehouse.DEFAULT_CATALOG_NAME;
     return catName;
-  }
-
-
-  public static class FullTableName {
-    public final String catalog, db, table;
-
-    public FullTableName(String catalog, String db, String table) {
-      assert catalog != null && db != null && table != null : catalog + ", " + db + ", " + table;
-      this.catalog = catalog;
-      this.db = db;
-      this.table = table;
-    }
-
-    @Override
-    public String toString() {
-      return catalog + MetaStoreUtils.CATALOG_DB_SEPARATOR + db + "." + table;
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      return prime * (prime * (prime + catalog.hashCode()) + db.hashCode()) + table.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) return true;
-      if (obj == null || getClass() != obj.getClass()) return false;
-      FullTableName other = (FullTableName) obj;
-      return catalog.equals(other.catalog) && db.equals(other.db) && table.equals(other.table);
-    }
-
-    public String getDbTable() {
-      return db + "." + table;
-    }
   }
 
   // Some util methods from Hive.java, this is copied so as to avoid circular dependency with hive ql
