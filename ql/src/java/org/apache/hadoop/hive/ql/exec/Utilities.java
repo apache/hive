@@ -1524,17 +1524,28 @@ public final class Utilities {
     //       3) Rename/move the temp directory to specPath
 
     FileSystem fs = specPath.getFileSystem(hconf);
-    boolean isBlobStorage = BlobStorageUtils.isBlobStorageFileSystem(hconf, fs);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    boolean isBlobStorage = BlobStorageUtils.isBlobStorageFileSystem(hconf, fs);
+    boolean avoidRename = false;
+    boolean shouldAvoidRename = shouldAvoidRename(conf, hconf);
+
+    if(isBlobStorage && (shouldAvoidRename|| ((conf != null) && conf.isCTASorCM()))
+        || (!isBlobStorage && shouldAvoidRename)) {
+      avoidRename = true;
+    }
     if (success) {
-      if (!shouldAvoidRename(conf, hconf) && fs.exists(tmpPath) && !isBlobStorage) {
+      if (!avoidRename && fs.exists(tmpPath)) {
         //   1) Rename tmpPath to a new directory name to prevent additional files
         //      from being added by runaway processes.
+        // this is only done for all statements except SELECT, CTAS and Create MV
         Path tmpPathOriginal = tmpPath;
         tmpPath = new Path(tmpPath.getParent(), tmpPath.getName() + ".moved");
-        LOG.debug("Moving/Renaming " + tmpPathOriginal + " to " + tmpPath);
+        LOG.debug("shouldAvoidRename is false therefore moving/renaming " + tmpPathOriginal + " to " + tmpPath);
+        perfLogger.PerfLogBegin("FileSinkOperator", "rename");
         Utilities.rename(fs, tmpPathOriginal, tmpPath);
+        perfLogger.PerfLogEnd("FileSinkOperator", "rename");
       }
 
       // Remove duplicates from tmpPath
@@ -1542,7 +1553,6 @@ public final class Utilities {
           tmpPath, ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
       FileStatus[] statuses = statusList.toArray(new FileStatus[statusList.size()]);
       if(statuses != null && statuses.length > 0) {
-        PerfLogger perfLogger = SessionState.getPerfLogger();
         Set<FileStatus> filesKept = new HashSet<>();
         perfLogger.PerfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // remove any tmp file or double-committed output files
@@ -1564,12 +1574,19 @@ public final class Utilities {
         // move to the file destination
         Utilities.FILE_OP_LOGGER.trace("Moving tmp dir: {} to: {}", tmpPath, specPath);
         if(shouldAvoidRename(conf, hconf)){
+          // for SELECT statements
           LOG.debug("Skipping rename/move files. Files to be kept are: " + filesKept.toString());
           conf.getFilesToFetch().addAll(filesKept);
-        } else if (isBlobStorage) {
+        } else if (conf !=null && conf.isCTASorCM() && isBlobStorage) {
+          // for CTAS or Create MV statements
+          perfLogger.PerfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
+          LOG.debug("CTAS/Create MV: Files being renamed:  " + filesKept.toString());
           Utilities.moveSpecifiedFileStatus(fs, tmpPath, specPath, filesKept);
+          perfLogger.PerfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
         } else {
-        perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
+          // for rest of the statement e.g. INSERT, LOAD etc
+          perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
+          LOG.debug("Final renaming/moving. Source: " + tmpPath + " .Destination: " + specPath);
           Utilities.renameOrMoveFiles(fs, tmpPath, specPath);
           perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
         }
