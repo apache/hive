@@ -4474,14 +4474,52 @@ public class ObjectStore implements RawStore, Configurable {
     // Convert the MFieldSchema's to their thrift object counterparts, because we maintain
     // datastore identity (i.e., identity of the model objects are managed by JDO,
     // not the application).
-    if (!(oldSd != null && oldSd.getCD() != null &&
-         oldSd.getCD().getCols() != null &&
-         newSd != null && newSd.getCD() != null &&
-         newSd.getCD().getCols() != null &&
-         convertToFieldSchemas(newSd.getCD().getCols()).
-         equals(convertToFieldSchemas(oldSd.getCD().getCols()))
-       )) {
-        oldSd.setCD(newSd.getCD());
+    List<FieldSchema> oldCols = oldSd != null && oldSd.getCD() != null && oldSd.getCD().getCols() != null ?
+        convertToFieldSchemas(oldSd.getCD().getCols()) : null;
+    List<FieldSchema> newCols = newSd != null && newSd.getCD() != null && newSd.getCD().getCols() != null ?
+        convertToFieldSchemas(newSd.getCD().getCols()) : null;
+    if (oldCols == null || !oldCols.equals(newCols)) {
+      // First replace any constraints that may be associated with this CD
+      // Create mapping from old col indexes to new col indexes
+      if (oldCols != null && newCols != null) {
+        Map<Integer, Integer> mapping = new HashMap<>();
+        for (int i = 0; i < oldCols.size(); i++) {
+          FieldSchema oldCol = oldCols.get(i);
+          for (int j = 0; j < newCols.size(); j++) {
+            FieldSchema newCol = newCols.get(j);
+            if (oldCol.equals(newCol)) {
+              mapping.put(i, j);
+              break;
+            }
+          }
+        }
+        // If we find it, we will change the reference for the CD.
+        // If we do not find it, i.e., the column will be deleted, we do not change it
+        // and we let the logic in removeUnusedColumnDescriptor take care of it
+        Query query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
+        query.declareParameters("MColumnDescriptor inCD");
+        List<MConstraint> mConstraintsList = (List<MConstraint>) query.execute(oldSd.getCD());
+        pm.retrieveAll(mConstraintsList);
+        for (MConstraint mConstraint : mConstraintsList) {
+          if (oldSd.getCD().equals(mConstraint.getParentColumn())) {
+            Integer newIdx = mapping.get(mConstraint.getParentIntegerIndex());
+            if (newIdx != null) {
+              mConstraint.setParentColumn(newSd.getCD());
+              mConstraint.setParentIntegerIndex(newIdx);
+            }
+          }
+          if (oldSd.getCD().equals(mConstraint.getChildColumn())) {
+            Integer newIdx = mapping.get(mConstraint.getChildIntegerIndex());
+            if (newIdx != null) {
+              mConstraint.setChildColumn(newSd.getCD());
+              mConstraint.setChildIntegerIndex(newIdx);
+            }
+          }
+        }
+        pm.makePersistentAll(mConstraintsList);
+      }
+      // Finally replace CD
+      oldSd.setCD(newSd.getCD());
     }
 
     oldSd.setBucketCols(newSd.getBucketCols());
@@ -4525,6 +4563,14 @@ public class ObjectStore implements RawStore, Configurable {
 
       //if no other SD references this CD, we can throw it out.
       if (count == 0) {
+        // First remove any constraints that may be associated with this CD
+        query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
+        query.declareParameters("MColumnDescriptor inCD");
+        List<MConstraint> mConstraintsList = (List<MConstraint>) query.execute(oldCD);
+        if (CollectionUtils.isNotEmpty(mConstraintsList)) {
+          pm.deletePersistentAll(mConstraintsList);
+        }
+        // Finally remove CD
         pm.retrieve(oldCD);
         pm.deletePersistent(oldCD);
       }
