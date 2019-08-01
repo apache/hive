@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -103,6 +104,8 @@ public class TestHive {
     // enable trash so it can be tested
     hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
     hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
+    hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     SessionState.start(hiveConf);
     try {
       return Hive.get(hiveConf);
@@ -354,6 +357,11 @@ public class TestHive {
         // No need to compare this field.
         ft.getTTable().setWriteId(0);
         tbl.getTTable().setWriteId(0);
+      }
+      // accessType set by HMS Transformer
+      if (tbl.getTTable().isSetAccessType() != ft.getTTable().isSetAccessType()) {
+        // No need to compare this field.
+        tbl.getTTable().setAccessType(ft.getTTable().getAccessType());
       }
 
       tbl.getTTable().unsetId();

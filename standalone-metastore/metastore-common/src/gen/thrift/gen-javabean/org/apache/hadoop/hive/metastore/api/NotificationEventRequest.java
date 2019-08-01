@@ -525,13 +525,13 @@ import org.slf4j.LoggerFactory;
           case 3: // EVENT_TYPE_SKIP_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list764 = iprot.readListBegin();
-                struct.eventTypeSkipList = new ArrayList<String>(_list764.size);
-                String _elem765;
-                for (int _i766 = 0; _i766 < _list764.size; ++_i766)
+                org.apache.thrift.protocol.TList _list780 = iprot.readListBegin();
+                struct.eventTypeSkipList = new ArrayList<String>(_list780.size);
+                String _elem781;
+                for (int _i782 = 0; _i782 < _list780.size; ++_i782)
                 {
-                  _elem765 = iprot.readString();
-                  struct.eventTypeSkipList.add(_elem765);
+                  _elem781 = iprot.readString();
+                  struct.eventTypeSkipList.add(_elem781);
                 }
                 iprot.readListEnd();
               }
@@ -566,9 +566,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(EVENT_TYPE_SKIP_LIST_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.eventTypeSkipList.size()));
-            for (String _iter767 : struct.eventTypeSkipList)
+            for (String _iter783 : struct.eventTypeSkipList)
             {
-              oprot.writeString(_iter767);
+              oprot.writeString(_iter783);
             }
             oprot.writeListEnd();
           }
@@ -607,9 +607,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetEventTypeSkipList()) {
         {
           oprot.writeI32(struct.eventTypeSkipList.size());
-          for (String _iter768 : struct.eventTypeSkipList)
+          for (String _iter784 : struct.eventTypeSkipList)
           {
-            oprot.writeString(_iter768);
+            oprot.writeString(_iter784);
           }
         }
       }
@@ -627,13 +627,13 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list769 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.eventTypeSkipList = new ArrayList<String>(_list769.size);
-          String _elem770;
-          for (int _i771 = 0; _i771 < _list769.size; ++_i771)
+          org.apache.thrift.protocol.TList _list785 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.eventTypeSkipList = new ArrayList<String>(_list785.size);
+          String _elem786;
+          for (int _i787 = 0; _i787 < _list785.size; ++_i787)
           {
-            _elem770 = iprot.readString();
-            struct.eventTypeSkipList.add(_elem770);
+            _elem786 = iprot.readString();
+            struct.eventTypeSkipList.add(_elem786);
           }
         }
         struct.setEventTypeSkipListIsSet(true);

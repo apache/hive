@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -38,6 +39,8 @@ import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
@@ -62,6 +65,7 @@ import static org.junit.Assert.assertTrue;
 @Category(MetastoreCheckinTest.class)
 public class TestGetTableMeta extends MetaStoreClientTest {
   private AbstractMetaStoreService metaStore;
+  private Configuration conf;
   private IMetaStoreClient client;
 
   private static final String DB_NAME = "testpartdb";
@@ -75,6 +79,11 @@ public class TestGetTableMeta extends MetaStoreClientTest {
 
   @Before
   public void setUp() throws Exception {
+    conf = MetastoreConf.newMetastoreConf();
+    org.apache.hadoop.hive.metastore.conf.MetastoreConf
+        .setBoolVar(this.conf, ConfVars.HIVE_IN_TEST, true);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+
     // Get new client
     client = metaStore.getClient();
 
@@ -153,7 +162,8 @@ public class TestGetTableMeta extends MetaStoreClientTest {
     Table table  = createTable(dbName, tableName, type);
     table.getParameters().put("comment", comment);
     client.createTable(table);
-    TableMeta tableMeta = new TableMeta(dbName, tableName, type.name());
+    table = client.getTable(dbName, tableName);
+    TableMeta tableMeta = new TableMeta(dbName, tableName, table.getTableType());
     tableMeta.setComments(comment);
     tableMeta.setCatName("hive");
     return tableMeta;
@@ -163,7 +173,8 @@ public class TestGetTableMeta extends MetaStoreClientTest {
           throws Exception {
     Table table  = createTable(dbName, tableName, type);
     client.createTable(table);
-    TableMeta tableMeta = new TableMeta(dbName, tableName, type.name());
+    table = client.getTable(dbName, tableName);
+    TableMeta tableMeta = new TableMeta(dbName, tableName, table.getTableType());
     tableMeta.setCatName("hive");
     return tableMeta;
   }
@@ -221,11 +232,11 @@ public class TestGetTableMeta extends MetaStoreClientTest {
 
     tableMetas = client.getTableMeta("testpartdb*", "*", Lists.newArrayList(
             TableType.EXTERNAL_TABLE.name()));
-    assertTableMetas(new int[]{0}, tableMetas);
+    assertTableMetas(new int[]{0, 1, 3}, tableMetas);
 
     tableMetas = client.getTableMeta("testpartdb*", "*", Lists.newArrayList(
             TableType.EXTERNAL_TABLE.name(), TableType.MATERIALIZED_VIEW.name()));
-    assertTableMetas(new int[]{0, 4}, tableMetas);
+    assertTableMetas(new int[]{0, 1, 3, 4}, tableMetas);
 
     tableMetas = client.getTableMeta("*one", "*", Lists.newArrayList("*TABLE"));
     assertTableMetas(new int[]{}, tableMetas);
@@ -306,12 +317,15 @@ public class TestGetTableMeta extends MetaStoreClientTest {
           .addCol("id", "int")
           .addCol("name", "string")
           .build(metaStore.getConf()));
-      TableMeta tableMeta = new TableMeta(dbName, tableNames[i], TableType.MANAGED_TABLE.name());
+      Table table = client.getTable(catName, dbName, tableNames[i]);
+      TableMeta tableMeta = new TableMeta(dbName, tableNames[i], table.getTableType());
       tableMeta.setCatName(catName);
       expected.add(tableMeta);
     }
 
-    List<String> types = Collections.singletonList(TableType.MANAGED_TABLE.name());
+    List<String> typesList = Lists.newArrayList(TableType.MANAGED_TABLE.name(),
+        TableType.EXTERNAL_TABLE.name());
+    List<String> types = Collections.unmodifiableList(typesList);
     List<TableMeta> actual = client.getTableMeta(catName, dbName, "*", types);
     assertTableMetas(expected, actual, 0, 1, 2);
 
@@ -333,5 +347,4 @@ public class TestGetTableMeta extends MetaStoreClientTest {
     List<TableMeta> tableMetas = client.getTableMeta("h*", "*", "*", Lists.newArrayList());
     Assert.assertEquals(0, tableMetas.size());
   }
-
 }
