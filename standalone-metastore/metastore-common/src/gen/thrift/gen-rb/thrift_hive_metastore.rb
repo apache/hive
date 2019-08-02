@@ -420,6 +420,24 @@ module ThriftHiveMetastore
       return
     end
 
+    def create_table_req(request)
+      send_create_table_req(request)
+      recv_create_table_req()
+    end
+
+    def send_create_table_req(request)
+      send_message('create_table_req', Create_table_req_args, :request => request)
+    end
+
+    def recv_create_table_req()
+      result = receive_message(Create_table_req_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      return
+    end
+
     def drop_constraint(req)
       send_drop_constraint(req)
       recv_drop_constraint()
@@ -4082,6 +4100,23 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'create_table_with_constraints', seqid)
     end
 
+    def process_create_table_req(seqid, iprot, oprot)
+      args = read_args(iprot, Create_table_req_args)
+      result = Create_table_req_result.new()
+      begin
+        @handler.create_table_req(args.request)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      rescue ::NoSuchObjectException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'create_table_req', seqid)
+    end
+
     def process_drop_constraint(seqid, iprot, oprot)
       args = read_args(iprot, Drop_constraint_args)
       result = Drop_constraint_result.new()
@@ -7422,6 +7457,44 @@ module ThriftHiveMetastore
   end
 
   class Create_table_with_constraints_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_table_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::CreateTableRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_table_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
     O2 = 2

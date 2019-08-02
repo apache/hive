@@ -769,11 +769,21 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void createTable(Table tbl) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException {
-    createTable(tbl, null);
+    CreateTableRequest request = new CreateTableRequest(tbl);
+    createTable(request);
   }
 
   public void createTable(Table tbl, EnvironmentContext envContext) throws AlreadyExistsException,
+          InvalidObjectException, MetaException, NoSuchObjectException, TException {
+    CreateTableRequest request = new CreateTableRequest(tbl);
+    request.setEnvContext(envContext);
+    createTable(request);
+  }
+
+
+  public void createTable(CreateTableRequest request) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException {
+    Table tbl = request.getTable();
     HiveMetaHook hook = getHook(tbl);
     if (hook != null) {
       hook.preCreateTable(tbl);
@@ -781,7 +791,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     boolean success = false;
     try {
       // Subclasses can override this step (for example, for temporary tables)
-      create_table_with_environment_context(tbl, envContext);
+      client.create_table_req(request);
       if (hook != null) {
         hook.commitCreateTable(tbl);
       }

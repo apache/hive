@@ -1534,8 +1534,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void checkTruncateEligibility(ASTNode ast, ASTNode root, String tableName, Table table)
       throws SemanticException {
     boolean isForce = ast.getFirstChildWithType(HiveParser.TOK_FORCE) != null;
-    if (!isForce && table.getTableType() != TableType.MANAGED_TABLE) {
-      throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
+    if (!isForce) {
+      if (table.getTableType() != TableType.MANAGED_TABLE &&
+          (table.getParameters().getOrDefault(MetaStoreUtils.EXTERNAL_TABLE_PURGE, "FALSE"))
+              .equalsIgnoreCase("FALSE")) {
+        throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
+      }
     }
     if (table.isNonNative()) {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_NATIVE_TABLE.format(tableName)); //TODO

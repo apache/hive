@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
@@ -51,11 +52,11 @@ public class ReplicationSpec {
   private boolean isMigratingToExternalTable = false;
   private boolean needDupCopyCheck = false;
 
-  // Key definitions related to replication
+  // Key definitions related to replication.
   public enum KEY {
     REPL_SCOPE("repl.scope"),
     EVENT_ID("repl.event.id"),
-    CURR_STATE_ID("repl.last.id"),
+    CURR_STATE_ID(ReplConst.REPL_TARGET_TABLE_PROPERTY),
     NOOP("repl.noop"),
     LAZY("repl.lazy"),
     IS_REPLACE("repl.is.replace"),
