@@ -99,7 +99,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("show tables like 't1'")
         .verifyFailure(new String[] { "t1" })
         .run("show tables like 't2'")
-        .verifyFailure(new String[] { "t2" });
+        .verifyFailure(new String[] { "t2" })
+        .verifyReplTargetProperty(replicatedDbName);
 
     tuple = primary.run("use " + primaryDbName)
         .run("create external table t3 (id int)")
@@ -114,7 +115,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
         .run("use " + replicatedDbName)
         .run("show tables like 't3'")
-        .verifyFailure(new String[] { "t3" });
+        .verifyFailure(new String[] { "t3" })
+        .verifyReplTargetProperty(replicatedDbName);
   }
 
   @Test
@@ -300,7 +302,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("show tables like 't2'")
         .verifyResults(new String[] { "t2" })
         .run("select place from t2")
-        .verifyResults(new String[] { "bangalore" });
+        .verifyResults(new String[] { "bangalore" })
+        .verifyReplTargetProperty(replicatedDbName);
 
     assertTablePartitionLocation(primaryDbName + ".t2", replicatedDbName + ".t2");
 
@@ -325,7 +328,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("select place from t2 where country='india'")
         .verifyResults(new String[] { "bangalore", "pune", "mumbai" })
         .run("select place from t2 where country='australia'")
-        .verifyResults(new String[] { "sydney" });
+        .verifyResults(new String[] { "sydney" })
+        .verifyReplTargetProperty(replicatedDbName);
 
     Path customPartitionLocation =
         new Path("/" + testName.getMethodName() + "/partition_data/t2/country=france");
@@ -345,7 +349,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
         .run("use " + replicatedDbName)
         .run("select place from t2 where country='france'")
-        .verifyResults(new String[] { "paris" });
+        .verifyResults(new String[] { "paris" })
+        .verifyReplTargetProperty(replicatedDbName);
 
     // change the location of the partition via alter command
     String tmpLocation = "/tmp/" + System.nanoTime();
@@ -358,7 +363,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
         .run("use " + replicatedDbName)
         .run("select place from t2 where country='france'")
-        .verifyResults(new String[] {});
+        .verifyResults(new String[] {})
+        .verifyReplTargetProperty(replicatedDbName);
 
     // Changing location of one of the partitions shouldn't result in changing location of other
     // partitions as well as that of the table.
@@ -418,7 +424,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("show partitions t1")
         .verifyResults(new String[] { "country=india", "country=us" })
         .run("select place from t1 order by place")
-        .verifyResults(new String[] { "bangalore", "mumbai", "pune" });
+        .verifyResults(new String[] { "bangalore", "mumbai", "pune" })
+        .verifyReplTargetProperty(replicatedDbName);
 
     // Delete one of the file and update another one.
     fs.delete(new Path(partitionDir, "file.txt"), true);
@@ -438,7 +445,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("show partitions t1")
             .verifyResults(new String[] { "country=india", "country=us" })
             .run("select place from t1 order by place")
-            .verifyResults(new String[] { "chennai" });
+            .verifyResults(new String[] { "chennai" })
+            .verifyReplTargetProperty(replicatedDbName);
 
     Hive hive = Hive.get(replica.getConf());
     Set<Partition> partitions =
@@ -453,7 +461,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     replica.load(replicatedDbName, tuple.dumpLocation)
         .run("select * From t1")
-        .verifyResults(new String[] {});
+        .verifyResults(new String[] {})
+        .verifyReplTargetProperty(replicatedDbName);
 
     for (String path : paths) {
       assertTrue(replica.miniDFSCluster.getFileSystem().exists(new Path(path)));
@@ -489,7 +498,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("show tables like 't1'")
             .verifyFailure(new String[] {"t1" })
             .run("show tables like 't2'")
-            .verifyFailure(new String[] {"t2" });
+            .verifyFailure(new String[] {"t2" })
+            .verifyReplTargetProperty(replicatedDbName);
 
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
                                    "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
@@ -532,7 +542,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("show tables like 't3'")
             .verifyResult("t3")
             .run("show tables like 't4'")
-            .verifyResult("t4");
+            .verifyResult("t4")
+            .verifyReplTargetProperty(replicatedDbName);
 
     // Ckpt should be set on bootstrapped tables.
     replica.verifyIfCkptSetForTables(replicatedDbName, Arrays.asList("t2", "t3"), tuple.dumpLocation);
@@ -551,7 +562,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("select id from t3 order by id")
             .verifyResults(Arrays.asList("10", "20"))
             .run("select id from t4 order by id")
-            .verifyResults(Arrays.asList("10", "20"));
+            .verifyResults(Arrays.asList("10", "20"))
+            .verifyReplTargetProperty(replicatedDbName);
   }
 
   @Test
@@ -580,7 +592,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .run("show tables")
             .verifyResult("t3")
             .run("select id from t3")
-            .verifyResult("1");
+            .verifyResult("1")
+            .verifyReplTargetProperty(replicatedDbName);
 
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
@@ -648,7 +661,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
               .run("select id from t4")
               .verifyResults(Arrays.asList("10", "20"))
               .run("select id from t5")
-              .verifyResult("10");
+              .verifyResult("10")
+              .verifyReplTargetProperty(replicatedDbName);
 
       // Once the REPL LOAD is successful, the this config should be unset or else, the subsequent REPL LOAD
       // will also drop those tables which will cause data loss.
