@@ -165,7 +165,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(expectedTables);
+            .verifyResults(expectedTables)
+            .verifyReplTargetProperty(replicatedDbName);
 
     if (records == null) {
       records = new String[] {"1"};
@@ -459,7 +460,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(replicatedTables);
+            .verifyResults(replicatedTables)
+            .verifyReplTargetProperty(replicatedDbName);
   }
 
   @Test
@@ -497,7 +499,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(incrementalReplicatedTables);
+            .verifyResults(incrementalReplicatedTables)
+            .verifyReplTargetProperty(replicatedDbName);
   }
 
   @Test
@@ -648,7 +651,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(incrementalReplicatedTables);
+            .verifyResults(incrementalReplicatedTables)
+            .verifyReplTargetProperty(replicatedDbName);
   }
 
   @Test

@@ -192,7 +192,8 @@ public class BaseReplicationScenariosAcidTables {
             .run("show tables")
             .verifyResults(tableNames)
             .run("repl status " + replicatedDbName)
-            .verifyResult(lastReplId);
+            .verifyResult(lastReplId)
+            .verifyReplTargetProperty(replicatedDbName);
     verifyNonAcidTableLoad(replicatedDbName);
     if (includeAcid) {
       verifyAcidTableLoad(replicatedDbName);
@@ -295,7 +296,8 @@ public class BaseReplicationScenariosAcidTables {
             .run("show tables")
             .verifyResults(tableNames)
             .run("repl status " + dbName)
-            .verifyResult(lastReplId);
+            .verifyResult(lastReplId)
+            .verifyReplTargetProperty(replicatedDbName);
     verifyIncNonAcidLoad(dbName);
     verifyIncAcidLoad(dbName);
   }
@@ -308,7 +310,8 @@ public class BaseReplicationScenariosAcidTables {
             .run("show tables")
             .verifyResults(tableNames)
             .run("repl status " + dbName)
-            .verifyResult(lastReplId);
+            .verifyResult(lastReplId)
+            .verifyReplTargetProperty(replicatedDbName);
     verifyInc2NonAcidLoad(dbName);
     verifyInc2AcidLoad(dbName);
   }

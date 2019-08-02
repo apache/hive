@@ -579,7 +579,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(new String[] { "t1" })
         .run("use " + dbTwo)
         .run("show tables")
-        .verifyResults(new String[] { "t1" });
+        .verifyResults(new String[] { "t1" })
+        .verifyReplTargetProperty(primaryDbName)
+        .verifyReplTargetProperty(dbOne)
+        .verifyReplTargetProperty(dbTwo);
 
     /*
        Start of cleanup
@@ -646,7 +649,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(new String[] { "t1" })
         .run("use " + dbOne)
         .run("show tables")
-        .verifyResults(new String[] { "t1" });
+        .verifyResults(new String[] { "t1" })
+        .verifyReplTargetProperty(primaryDbName)
+        .verifyReplTargetProperty(dbOne)
+        .verifyReplTargetProperty(dbTwo);
 
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase("default").getParameters()));
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(primaryDbName).getParameters()));
@@ -660,7 +666,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(new String[] { "t1" })
         .run("use " + dbOne)
         .run("show tables")
-        .verifyResults(new String[] { "t1", "t2" });
+        .verifyResults(new String[] { "t1", "t2" })
+        .verifyReplTargetProperty(primaryDbName)
+        .verifyReplTargetProperty(dbOne)
+        .verifyReplTargetProperty(dbTwo);
 
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase("default").getParameters()));
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(primaryDbName).getParameters()));
@@ -706,7 +715,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("show tables")
             .verifyResults(new String[] { "table1", "table2" })
             .run("select * from table1")
-            .verifyResults(new String[]{ "1" });
+            .verifyResults(new String[]{ "1" })
+            .verifyReplTargetProperty(replicatedDbName);
 
     ////////////  First Incremental ////////////
     WarehouseInstance.Tuple incrementalOneTuple = primary
@@ -736,7 +746,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("select * from table3")
             .verifyResults(new String[] { "10" })
             .run("show functions like '" + replicatedDbName + "%'")
-            .verifyResult(replicatedDbName + ".testFunctionOne");
+            .verifyResult(replicatedDbName + ".testFunctionOne")
+            .verifyReplTargetProperty(replicatedDbName);
 
     ////////////  Second Incremental ////////////
     WarehouseInstance.Tuple secondIncremental = primary
@@ -774,7 +785,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("select * from table3")
             .verifyResults(Collections.emptyList())
             .run("show functions like '" + replicatedDbName + "%'")
-            .verifyResult(null);
+            .verifyResult(null)
+            .verifyReplTargetProperty(replicatedDbName);
   }
 
   @Test

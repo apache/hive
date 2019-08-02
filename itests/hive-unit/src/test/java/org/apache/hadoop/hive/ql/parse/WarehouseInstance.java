@@ -27,6 +27,7 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -445,6 +446,23 @@ public class WarehouseInstance implements Closeable {
         }
       }
     }
+  }
+
+  // Make sure that every table in the target database is marked as target of the replication.
+  // Stats updater task and partition management task skip processing tables being replicated into.
+  private void verifyReplTargetProperty(Map<String, String> props) {
+    assertTrue(props.containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY));
+  }
+
+  public WarehouseInstance verifyReplTargetProperty(String dbName, List<String> tblNames) throws Exception {
+    for (String tblName : tblNames) {
+      verifyReplTargetProperty(getTable(dbName, tblName).getParameters());
+    }
+    return this;
+  }
+
+  public WarehouseInstance verifyReplTargetProperty(String dbName) throws Exception {
+    return verifyReplTargetProperty(dbName, getAllTables(dbName));
   }
 
   public Database getDatabase(String dbName) throws Exception {
