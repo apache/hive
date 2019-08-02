@@ -142,6 +142,7 @@ public class RexNodeConverter {
   private final RowResolver             outerRR;
   private final ImmutableMap<String, Integer> outerNameToPosMap;
   private int correlatedId;
+  private final int maxNodesForInToOrTransformation;
 
   //Constructor used by HiveRexExecutorImpl
   public RexNodeConverter(RelOptCluster cluster) {
@@ -151,13 +152,15 @@ public class RexNodeConverter {
   //subqueries will need outer query's row resolver
   public RexNodeConverter(RelOptCluster cluster, RelDataType inpDataType,
       ImmutableMap<String, Integer> outerNameToPosMap,
-      ImmutableMap<String, Integer> nameToPosMap, RowResolver hiveRR, RowResolver outerRR, int offset, boolean flattenExpr, int correlatedId) {
+      ImmutableMap<String, Integer> nameToPosMap, RowResolver hiveRR, RowResolver outerRR,
+      int maxNodesForInToOrTransformation, int offset, boolean flattenExpr, int correlatedId) {
     this.cluster = cluster;
     this.inputCtxs = ImmutableList.of(new InputCtx(inpDataType, nameToPosMap, hiveRR, offset));
     this.flattenExpr = flattenExpr;
     this.outerRR = outerRR;
     this.outerNameToPosMap = outerNameToPosMap;
     this.correlatedId = correlatedId;
+    this.maxNodesForInToOrTransformation = maxNodesForInToOrTransformation;
   }
 
   public RexNodeConverter(RelOptCluster cluster, RelDataType inpDataType,
@@ -167,6 +170,7 @@ public class RexNodeConverter {
     this.flattenExpr = flattenExpr;
     this.outerRR = null;
     this.outerNameToPosMap = null;
+    this.maxNodesForInToOrTransformation = 0;
   }
 
   public RexNodeConverter(RelOptCluster cluster, List<InputCtx> inpCtxLst, boolean flattenExpr) {
@@ -175,6 +179,7 @@ public class RexNodeConverter {
     this.flattenExpr = flattenExpr;
     this.outerRR  = null;
     this.outerNameToPosMap = null;
+    this.maxNodesForInToOrTransformation = 0;
   }
 
   public RexNode convert(ExprNodeDesc expr) throws SemanticException {
@@ -423,12 +428,22 @@ public class RexNodeConverter {
           // from IN [A,B] => EQUALS [A,B]
           // except complex types
           calciteOp = SqlStdOperatorTable.EQUALS;
-        } else if (RexUtil.isReferenceOrAccess(childRexNodeLst.get(0), true)) {
+        } else if (RexUtil.isReferenceOrAccess(childRexNodeLst.get(0), true)){
           // if it is more than an single item in an IN clause,
           // transform from IN [A,B,C] => OR [EQUALS [A,B], EQUALS [A,C]]
           // except complex types
-          childRexNodeLst = rewriteInClauseChildren(calciteOp, childRexNodeLst);
-          calciteOp = SqlStdOperatorTable.OR;
+          // Rewrite to OR is done only if number of operands are less than
+          // the threshold configured
+          boolean rewriteToOr = true;
+          if(this.maxNodesForInToOrTransformation != 0) {
+            if(childRexNodeLst.size() > this.maxNodesForInToOrTransformation) {
+              rewriteToOr = false;
+            }
+          }
+          if(rewriteToOr) {
+            childRexNodeLst = rewriteInClauseChildren(calciteOp, childRexNodeLst);
+            calciteOp = SqlStdOperatorTable.OR;
+          }
         }
       } else if (calciteOp.getKind() == SqlKind.COALESCE &&
           childRexNodeLst.size() > 1) {
@@ -576,7 +591,7 @@ public class RexNodeConverter {
       RexNode node = nodes.get(i);
       if ((i % 2 == 1 || i == nodes.size() - 1)
           && !node.getType().getSqlTypeName().equals(retType.getSqlTypeName())) {
-          newNodes.add(cluster.getRexBuilder().makeCast(retType, node));
+        newNodes.add(cluster.getRexBuilder().makeCast(retType, node));
       } else {
         newNodes.add(node);
       }
