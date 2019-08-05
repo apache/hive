@@ -3160,7 +3160,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         NoSuchObjectException {
       String[] parsedDbName = parseDbName(dbname, conf);
       return getTableInternal(
-            parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null, false, null);
+            parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null, false, null, null, null);
     }
 
     @Override
@@ -3240,16 +3240,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           req.getProcessorCapabilities(), req.getProcessorIdentifier()));
     }
 
-    private Table getTableInternal(String catName, String dbname, String name,
-        ClientCapabilities capabilities, String writeIdList, boolean getColumnStats, String engine)
-        throws MetaException, NoSuchObjectException {
-      return getTableInternal(catName, dbname, name, capabilities, writeIdList, getColumnStats, engine, null, null);
-    }
-
+    /**
+     * This function retrieves table from metastore. If getColumnStats flag is true,
+     * then engine should be specified so the table is retrieve with the column stats
+     * for that engine.
+     */
     private Table getTableInternal(String catName, String dbname, String name,
         ClientCapabilities capabilities, String writeIdList, boolean getColumnStats, String engine,
         List<String> processorCapabilities, String processorId)
         throws MetaException, NoSuchObjectException {
+      Preconditions.checkArgument(!getColumnStats || engine != null,
+          "To retrieve column statistics with a table, engine parameter cannot be null");
+
       if (isInTest) {
         assertClientHasCapability(capabilities, ClientCapability.TEST_CAPABILITY,
             "Hive tests", "get_table_req");
@@ -3330,12 +3332,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return get_table_core(catName, dbname, name, writeIdList, false, null);
     }
 
+    /**
+     * This function retrieves table from metastore. If getColumnStats flag is true,
+     * then engine should be specified so the table is retrieve with the column stats
+     * for that engine.
+     */
     public Table get_table_core(final String catName,
         final String dbname,
         final String name,
         final String writeIdList,
         boolean getColumnStats, String engine)
         throws MetaException, NoSuchObjectException {
+      Preconditions.checkArgument(!getColumnStats || engine != null,
+          "To retrieve column statistics with a table, engine parameter cannot be null");
+
       Table t = null;
       try {
         t = getMS().getTable(catName, dbname, name, writeIdList);
