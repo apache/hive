@@ -4703,7 +4703,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void deleteParentRecursive(Path parent, int depth, boolean mustPurge, boolean needRecycle)
             throws IOException, MetaException {
       if (depth > 0 && parent != null && wh.isWritable(parent)) {
-        if (wh.isDir(parent) && wh.isEmpty(parent)) {
+        if (wh.isDir(parent) && wh.isEmptyDir(parent)) {
           wh.deleteDir(parent, true, mustPurge, needRecycle);
         }
         deleteParentRecursive(parent.getParent(), depth - 1, mustPurge, needRecycle);
