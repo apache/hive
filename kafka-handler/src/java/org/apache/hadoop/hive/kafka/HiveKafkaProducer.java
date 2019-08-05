@@ -39,12 +39,11 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
-
+import java.util.concurrent.TimeUnit;
 
 /**
  * Kafka Producer with public methods to extract the producer state then resuming transaction in another process.
@@ -108,8 +107,8 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
     kafkaProducer.close();
   }
 
-  @Override public void close(Duration duration) {
-    kafkaProducer.close(duration);
+  @Override public void close(long timeout, TimeUnit unit) {
+    kafkaProducer.close(timeout, unit);
   }
 
   @Override public void flush() {
