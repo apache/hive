@@ -160,6 +160,7 @@ public class TypeConverter {
       convertedType = convert((UnionTypeInfo) type, dtFactory);
       break;
     }
+    // hive does not have concept of not nullable types
     return dtFactory.createTypeWithNullability(convertedType, true);
   }
 

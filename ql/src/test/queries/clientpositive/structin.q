@@ -29,6 +29,11 @@ CREATE TABLE test_struct
   datestr string
 );
 
-explain select * from test_struct where datestr='2019-01-01' and demo_struct is not null;
+insert into test_struct values('s1', named_struct('f1','1', 'f2','2', 'f3','3'), '02-02-2020');
+insert into test_struct values('s2', named_struct('f1',cast(null as string),'f2', cast(null as string),'f3', cast(null as string)), '02-02-2020');
+insert into test_struct values('s4', named_struct('f1','100', 'f2','200', 'f3','300'), '02-02-2020');
+
+explain select * from test_struct where datestr='02-02-2020' and demo_struct is not null;
+select * from test_struct where datestr='02-02-2020' and demo_struct is not null;
 
 DROP TABLE test_struct;
