@@ -17,6 +17,8 @@
  */
 package org.apache.hive.service.cli.thrift;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
@@ -24,6 +26,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 final class ThreadPoolExecutorWithOomHook extends ThreadPoolExecutor {
+
+  public static final Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutorWithOomHook.class.getName());
+
   private final Runnable oomHook;
 
   public ThreadPoolExecutorWithOomHook(int corePoolSize, int maximumPoolSize, long keepAliveTime,
@@ -49,6 +54,7 @@ final class ThreadPoolExecutorWithOomHook extends ThreadPoolExecutor {
       }
     }
     if (t instanceof OutOfMemoryError) {
+      LOG.error("Stopping HiveServer2 due to OOM", t);
       oomHook.run();
     }
   }
