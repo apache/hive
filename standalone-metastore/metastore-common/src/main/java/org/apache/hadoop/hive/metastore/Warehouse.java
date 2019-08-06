@@ -373,9 +373,14 @@ public class Warehouse {
   }
 
   public boolean isEmptyDir(Path path) throws IOException, MetaException {
-    int listCount = getFs(path).listStatus(path).length;
-    if (listCount == 0) {
-      return true;
+    try {
+      int listCount = getFs(path).listStatus(path).length;
+      if (listCount == 0) {
+        return true;
+      }
+    } catch (FileNotFoundException fnfe) {
+      // File named by path doesn't exist; nothing to validate.
+      return false;
     }
     return false;
   }
