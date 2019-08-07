@@ -106,6 +106,7 @@ import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
 import org.apache.hive.service.servlet.HS2LeadershipStatus;
 import org.apache.hive.service.servlet.HS2Peers;
+import org.apache.hive.service.servlet.QueriesRESTfulAPIServlet;
 import org.apache.hive.service.servlet.QueryProfileServlet;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -168,6 +169,11 @@ public class HiveServer2 extends CompositeService {
     super(HiveServer2.class.getSimpleName());
     HiveConf.setLoadHiveServer2Config(true);
     this.pamAuthenticator = pamAuthenticator;
+  }
+
+  @VisibleForTesting
+  public CLIService getCliService() {
+    return this.cliService;
   }
 
   @VisibleForTesting
@@ -403,6 +409,7 @@ public class HiveServer2 extends CompositeService {
 
           webServer = builder.build();
           webServer.addServlet("query_page", "/query_page", QueryProfileServlet.class);
+          webServer.addServlet("api", "/api/*", QueriesRESTfulAPIServlet.class);
         }
       }
     } catch (IOException ie) {
