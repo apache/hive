@@ -106,7 +106,9 @@ select insert_num,part,c1,c2,c3,b from part_change_string_group_double_n0;
 select insert_num,part,c1,c2,c3,b from part_change_string_group_double_n0;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
+--** set hive.metastore.disallow.incompatible.col.type.changes=false;
 --** alter table part_change_string_group_double_n0 replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING);
+--** set hive.metastore.disallow.incompatible.col.type.changes=true;
 
 --** insert into table part_change_string_group_double_n0 partition(part=1) SELECT insert_num, double1, double1, double1, 'new' FROM schema_evolution_data_n3 WHERE insert_num = 111;
 

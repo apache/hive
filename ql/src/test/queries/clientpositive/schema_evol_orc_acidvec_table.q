@@ -93,7 +93,9 @@ CREATE TABLE table_change_string_group_double(insert_num int, c1 STRING, c2 CHAR
 insert into table table_change_string_group_double SELECT insert_num, double_str, double_str, double_str, 'original' FROM schema_evolution_data_n1;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 alter table table_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING);
+set hive.metastore.disallow.incompatible.col.type.changes=true;
 
 insert into table table_change_string_group_double VALUES (111, 789.321, 789.321, 789.321, 'new');
 

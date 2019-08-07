@@ -1,5 +1,5 @@
 
-set hive.metastore.disallow.incompatible.col.type.changes=true;
+set hive.metastore.disallow.incompatible.col.type.changes=false;
 
 create external table new_char_decimal (c1 char(20));
 alter table new_char_decimal change c1 c1 decimal(31,0);
