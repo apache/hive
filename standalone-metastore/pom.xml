@@ -22,7 +22,7 @@
 
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-standalone-metastore</artifactId>
-  <version>3.1.0.7.0.0.0-SNAPSHOT</version>
+  <version>3.1.0.7.1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Hive Standalone Metastore</name>
 
@@ -78,10 +78,10 @@
     <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.8.2</log4j2.version>
     <mockito-all.version>1.10.19</mockito-all.version>
-    <orc.version>1.5.1.7.0.0.0-SNAPSHOT</orc.version>
+    <orc.version>1.5.1.7.1.0.0-SNAPSHOT</orc.version>
     <protobuf.version>2.5.0</protobuf.version>
     <sqlline.version>1.3.0</sqlline.version>
-    <storage-api.version>2.3.0.7.0.0.0-SNAPSHOT</storage-api.version>
+    <storage-api.version>2.3.0.7.1.0.0-SNAPSHOT</storage-api.version>
     <curator.version>2.12.0</curator.version>
 
     <!-- Thrift properties -->
