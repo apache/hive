@@ -161,7 +161,9 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
     synchronized (this) {
       super.currentTokens.put(id,  tokenInfo);
       try {
-        return super.renewToken(token, renewer);
+        long res = super.renewToken(token, renewer);
+        this.tokenStore.removeToken(id);
+        this.tokenStore.addToken(id, super.currentTokens.get(id));
       } finally {
         super.currentTokens.remove(id);
       }
