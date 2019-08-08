@@ -464,17 +464,17 @@ select * from parquet_types_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n2
 POSTHOOK: Output: default@parquet_type_nodict
-POSTHOOK: Lineage: parquet_type_nodict.cbinary SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cbinary, type:binary, comment:null), ]
-POSTHOOK: Lineage: parquet_type_nodict.cchar SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cchar, type:char(5), comment:null), ]
-POSTHOOK: Lineage: parquet_type_nodict.cdecimal SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cdecimal, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: parquet_type_nodict.cdouble SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: parquet_type_nodict.cfloat SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: parquet_type_nodict.cint SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_type_nodict.csmallint SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: parquet_type_nodict.cstring1 SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: parquet_type_nodict.ctinyint SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: parquet_type_nodict.cvarchar SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cvarchar, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: parquet_type_nodict.t SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:t, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: parquet_type_nodict.cbinary SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cbinary, type:binary, comment:), ]
+POSTHOOK: Lineage: parquet_type_nodict.cchar SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cchar, type:char(5), comment:), ]
+POSTHOOK: Lineage: parquet_type_nodict.cdecimal SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cdecimal, type:decimal(4,2), comment:), ]
+POSTHOOK: Lineage: parquet_type_nodict.cdouble SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cdouble, type:double, comment:), ]
+POSTHOOK: Lineage: parquet_type_nodict.cfloat SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cfloat, type:float, comment:), ]
+POSTHOOK: Lineage: parquet_type_nodict.cint SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cint, type:int, comment:), ]
+POSTHOOK: Lineage: parquet_type_nodict.csmallint SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:csmallint, type:smallint, comment:), ]
+POSTHOOK: Lineage: parquet_type_nodict.cstring1 SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cstring1, type:string, comment:), ]
+POSTHOOK: Lineage: parquet_type_nodict.ctinyint SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:ctinyint, type:tinyint, comment:), ]
+POSTHOOK: Lineage: parquet_type_nodict.cvarchar SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:cvarchar, type:varchar(10), comment:), ]
+POSTHOOK: Lineage: parquet_type_nodict.t SIMPLE [(parquet_types_n2)parquet_types_n2.FieldSchema(name:t, type:timestamp, comment:), ]
 PREHOOK: query: explain vectorization expression
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_type_nodict

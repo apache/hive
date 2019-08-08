@@ -13,6 +13,8 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.serde;
 
+import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,6 +25,11 @@ import java.util.Properties;
 import com.google.common.base.Preconditions;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.parquet.convert.ParquetSchemaReader;
+import org.apache.hadoop.hive.ql.io.parquet.convert.ParquetToHiveSchemaConverter;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.FieldNode;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -44,6 +51,8 @@ import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -53,6 +62,8 @@ import org.apache.parquet.hadoop.ParquetOutputFormat;
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
         ParquetOutputFormat.COMPRESSION})
 public class ParquetHiveSerDe extends AbstractSerDe {
+  public static final Logger LOG = LoggerFactory.getLogger(ParquetHiveSerDe.class.getName());
+
   public static final Text MAP_KEY = new Text("key");
   public static final Text MAP_VALUE = new Text("value");
   public static final Text MAP = new Text("map");
@@ -78,28 +89,68 @@ public class ParquetHiveSerDe extends AbstractSerDe {
 
   @Override
   public final void initialize(final Configuration conf, final Properties tbl) throws SerDeException {
-    final List<String> columnNames;
-    final List<TypeInfo> columnTypes;
+    List<String> columnNames;
+    List<TypeInfo> columnTypes;
     // Get column names and sort order
     final String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     final String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
         .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
-    if (columnNameProperty.length() == 0) {
-      columnNames = new ArrayList<String>();
+    if (columnNameProperty.length() == 0 && columnTypeProperty.length() == 0) {
+      final String locationProperty = tbl.getProperty("location", null);
+      Path parquetFile = locationProperty != null ? getParquetFile(conf,
+          new Path(locationProperty)) : null;
+      if (parquetFile == null) {
+        /**
+         * Attempt to determine hive schema failed, but can not throw
+         * an exception, as Hive calls init on the serde during
+         * any call, including calls to update the serde properties, meaning
+         * if the serde is in a bad state, there is no way to update that state.
+         */
+        LOG.error("Failed to create hive schema for the parquet backed table.\n" +
+            "Either provide schema for table,\n" +
+            "OR make sure that external table's path has at least one parquet file with required " +
+            "metadata");
+        columnNames = new ArrayList<String>();
+        columnTypes = new ArrayList<TypeInfo>();
+      } else {
+        StructTypeInfo structTypeInfo = null;
+        try {
+          structTypeInfo = new ParquetToHiveSchemaConverter(tbl).convert(
+              ParquetSchemaReader.read(parquetFile));
+        } catch (IOException ioe) {
+          LOG.error(ioe.getMessage(), ioe);
+        } catch (UnsupportedOperationException ue) {
+          LOG.error(ue.getMessage(), ue);
+        } catch (RuntimeException ex) {
+          LOG.error(ex.getMessage(), ex);
+        }
+        if (structTypeInfo == null) {
+          columnNames = new ArrayList<String>();
+          columnTypes = new ArrayList<TypeInfo>();
+        } else {
+          columnNames = structTypeInfo.getAllStructFieldNames();
+          columnTypes = structTypeInfo.getAllStructFieldTypeInfos();
+        }
+      }
     } else {
-      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-    }
-    if (columnTypeProperty.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
-    } else {
-      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
+      if (columnNameProperty.length() == 0) {
+        columnNames = new ArrayList<String>();
+      } else {
+        columnNames = Arrays.asList(columnNameProperty.split(","));
+      }
+      if (columnTypeProperty.length() == 0) {
+        columnTypes = new ArrayList<TypeInfo>();
+      } else {
+        columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
+      }
     }
 
     if (columnNames.size() != columnTypes.size()) {
-      throw new IllegalArgumentException("ParquetHiveSerde initialization failed. Number of column " +
-        "name and column type differs. columnNames = " + columnNames + ", columnTypes = " +
-        columnTypes);
+      LOG.error("ParquetHiveSerde initialization failed. Number of column name and column type " +
+          "differs. columnNames = " + columnNames + ", columnTypes = " + columnTypes);
+      columnNames = new ArrayList<String>();
+      columnTypes = new ArrayList<TypeInfo>();
     }
     // Create row related objects
     StructTypeInfo completeTypeInfo =
@@ -267,5 +318,47 @@ public class ParquetHiveSerDe extends AbstractSerDe {
       }
       return (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(newNames, newTypes);
     }
+  }
+
+  private Path getParquetFile(Configuration conf, Path loc) {
+    if (loc == null) {
+      return null;
+    }
+
+    Path parquetFile;
+    try {
+      parquetFile = getAFile(FileSystem.get(new URI(loc.toString()), conf), loc);
+    } catch (Exception e) {
+      LOG.error("Unable to read file from " + loc + ": " + e, e);
+      parquetFile = null;
+    }
+
+    return parquetFile;
+  }
+
+  private Path getAFile(FileSystem fs, Path path) throws IOException {
+    FileStatus status = fs.getFileStatus(path);
+
+    if (status.isFile()) {
+      if (status.getLen() > 0) {
+        return path;
+      } else {
+        return null;
+      }
+    }
+
+    for(FileStatus childStatus: fs.listStatus(path)) {
+      Path file = getAFile(fs, childStatus.getPath());
+
+      if (file != null) {
+        return file;
+      }
+    }
+
+    return null;
+  }
+
+  @Override public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
+    return true;
   }
 }

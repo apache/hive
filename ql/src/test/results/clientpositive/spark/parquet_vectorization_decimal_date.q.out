@@ -8,10 +8,10 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesparquet
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_decimal_test_parquet
-POSTHOOK: Lineage: date_decimal_test_parquet.cdate EXPRESSION [(alltypesparquet)alltypesparquet.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: date_decimal_test_parquet.cdecimal EXPRESSION [(alltypesparquet)alltypesparquet.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: date_decimal_test_parquet.cdouble SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: date_decimal_test_parquet.cint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: date_decimal_test_parquet.cdate EXPRESSION [(alltypesparquet)alltypesparquet.FieldSchema(name:cint, type:int, comment:), ]
+POSTHOOK: Lineage: date_decimal_test_parquet.cdecimal EXPRESSION [(alltypesparquet)alltypesparquet.FieldSchema(name:cdouble, type:double, comment:), ]
+POSTHOOK: Lineage: date_decimal_test_parquet.cdouble SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cdouble, type:double, comment:), ]
+POSTHOOK: Lineage: date_decimal_test_parquet.cint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cint, type:int, comment:), ]
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdate, cdecimal from date_decimal_test_parquet where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_decimal_test_parquet

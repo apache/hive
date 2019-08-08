@@ -4310,6 +4310,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       boolean result = false;
       if (partLocation != null) {
+        if (part.getSd() == null) {
+          // If partition does not have a storage descriptor, get one from table
+          // Using deepCopy as different partitions of a table
+          // can have different storage descriptors.
+          part.setSd(tbl.getSd().deepCopy());
+        }
         part.getSd().setLocation(partLocation.toString());
 
         // Check to see if the directory already exists before calling

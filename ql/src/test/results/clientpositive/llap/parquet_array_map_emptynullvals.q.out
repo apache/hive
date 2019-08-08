@@ -57,9 +57,9 @@ POSTHOOK: query: insert into table testSets2 select * from testSets
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testsets
 POSTHOOK: Output: default@testsets2
-POSTHOOK: Lineage: testsets2.arrayvalues SIMPLE [(testsets)testsets.FieldSchema(name:arrayvalues, type:array<string>, comment:null), ]
-POSTHOOK: Lineage: testsets2.key SIMPLE [(testsets)testsets.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: testsets2.mapvalues SIMPLE [(testsets)testsets.FieldSchema(name:mapvalues, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: testsets2.arrayvalues SIMPLE [(testsets)testsets.FieldSchema(name:arrayvalues, type:array<string>, comment:), ]
+POSTHOOK: Lineage: testsets2.key SIMPLE [(testsets)testsets.FieldSchema(name:key, type:string, comment:), ]
+POSTHOOK: Lineage: testsets2.mapvalues SIMPLE [(testsets)testsets.FieldSchema(name:mapvalues, type:map<string,string>, comment:), ]
 PREHOOK: query: select * from testSets2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testsets2

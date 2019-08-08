@@ -1,0 +1,84 @@
+PREHOOK: query: CREATE TABLE parquet_decimal_gen_schema
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_decimal_gen_schema
+POSTHOOK: query: CREATE TABLE parquet_decimal_gen_schema
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_decimal_gen_schema
+PREHOOK: query: DESCRIBE FORMATTED parquet_decimal_gen_schema
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_decimal_gen_schema
+POSTHOOK: query: DESCRIBE FORMATTED parquet_decimal_gen_schema
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_decimal_gen_schema
+# col_name            	data_type           	comment             
+name                	string              	                    
+value               	decimal(5,2)        	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+	numFiles            	1                   
+	totalSize           	335                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: SELECT * FROM parquet_decimal_gen_schema
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_decimal_gen_schema
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_decimal_gen_schema
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_decimal_gen_schema
+#### A masked pattern was here ####
+Tom	234.79
+Beck	77.34
+Snow	55.71
+Mary	4.33
+Cluck	5.96
+Tom	12.25
+Mary	33.33
+Tom	0.19
+Beck	3.15
+Beck	7.99
+PREHOOK: query: DROP TABLE parquet_decimal_gen_schema
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_decimal_gen_schema
+PREHOOK: Output: default@parquet_decimal_gen_schema
+POSTHOOK: query: DROP TABLE parquet_decimal_gen_schema
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_decimal_gen_schema
+POSTHOOK: Output: default@parquet_decimal_gen_schema

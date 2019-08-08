@@ -1,0 +1,43 @@
+PREHOOK: query: CREATE TABLE parquet_ambiguous_array_of_single_field_structs_gen_schema
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_ambiguous_array_of_single_field_structs_gen_schema
+POSTHOOK: query: CREATE TABLE parquet_ambiguous_array_of_single_field_structs_gen_schema
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_ambiguous_array_of_single_field_structs_gen_schema
+PREHOOK: query: SELECT * FROM parquet_ambiguous_array_of_single_field_structs_gen_schema
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_ambiguous_array_of_single_field_structs_gen_schema
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_ambiguous_array_of_single_field_structs_gen_schema
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_ambiguous_array_of_single_field_structs_gen_schema
+#### A masked pattern was here ####
+[1234,2345]
+PREHOOK: query: DROP TABLE parquet_ambiguous_array_of_single_field_structs_gen_schema
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_ambiguous_array_of_single_field_structs_gen_schema
+PREHOOK: Output: default@parquet_ambiguous_array_of_single_field_structs_gen_schema
+POSTHOOK: query: DROP TABLE parquet_ambiguous_array_of_single_field_structs_gen_schema
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_ambiguous_array_of_single_field_structs_gen_schema
+POSTHOOK: Output: default@parquet_ambiguous_array_of_single_field_structs_gen_schema

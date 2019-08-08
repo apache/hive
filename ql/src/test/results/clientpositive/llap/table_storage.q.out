@@ -393,8 +393,8 @@ POSTHOOK: query: SHOW CREATE TABLE t
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@t
 CREATE TABLE `t`(
-  `key` string, 
-  `val` string)
+  `key` string COMMENT '', 
+  `val` string COMMENT '')
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe' 
 STORED AS INPUTFORMAT 
@@ -439,8 +439,8 @@ POSTHOOK: query: SHOW CREATE TABLE t
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@t
 CREATE TABLE `t`(
-  `key` string, 
-  `val` string)
+  `key` string COMMENT '', 
+  `val` string COMMENT '')
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe' 
 STORED AS INPUTFORMAT 
@@ -484,8 +484,8 @@ POSTHOOK: query: SHOW CREATE TABLE t
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@t
 CREATE TABLE `t`(
-  `key` string, 
-  `val` string)
+  `key` string COMMENT '', 
+  `val` string COMMENT '')
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
 STORED AS INPUTFORMAT 
@@ -531,8 +531,8 @@ POSTHOOK: query: SHOW CREATE TABLE t
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@t
 CREATE TABLE `t`(
-  `key` string, 
-  `val` string)
+  `key` string COMMENT '', 
+  `val` string COMMENT '')
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
 WITH SERDEPROPERTIES ( 
