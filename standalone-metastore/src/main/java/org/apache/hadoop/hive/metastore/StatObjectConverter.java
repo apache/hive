@@ -59,7 +59,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 public class StatObjectConverter {
   // JDO
   public static MTableColumnStatistics convertToMTableColumnStatistics(MTable table,
-      ColumnStatisticsDesc statsDesc, ColumnStatisticsObj statsObj, String engine)
+      ColumnStatisticsDesc statsDesc, ColumnStatisticsObj statsObj)
           throws NoSuchObjectException, MetaException, InvalidObjectException {
      if (statsObj == null || statsDesc == null) {
        throw new InvalidObjectException("Invalid column stats object");
@@ -128,7 +128,6 @@ public class StatObjectConverter {
            dateStats.isSetLowValue() ? dateStats.getLowValue().getDaysSinceEpoch() : null,
            dateStats.isSetHighValue() ? dateStats.getHighValue().getDaysSinceEpoch() : null);
      }
-     mColStats.setEngine(engine);
      return mColStats;
   }
 
@@ -173,7 +172,6 @@ public class StatObjectConverter {
     if (mStatsObj.getNumNulls() != null) {
       oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
     }
-    oldStatsObj.setEngine(mStatsObj.getEngine());
     oldStatsObj.setLastAnalyzed(mStatsObj.getLastAnalyzed());
   }
 
@@ -219,7 +217,6 @@ public class StatObjectConverter {
     if (mStatsObj.getNumNulls() != null) {
       oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
     }
-    oldStatsObj.setEngine(mStatsObj.getEngine());
   }
 
   public static ColumnStatisticsObj getTableColumnStatisticsObj(
@@ -326,7 +323,7 @@ public class StatObjectConverter {
   }
 
   public static MPartitionColumnStatistics convertToMPartitionColumnStatistics(
-      MPartition partition, ColumnStatisticsDesc statsDesc, ColumnStatisticsObj statsObj, String engine)
+      MPartition partition, ColumnStatisticsDesc statsDesc, ColumnStatisticsObj statsObj)
           throws MetaException, NoSuchObjectException {
     if (statsDesc == null || statsObj == null) {
       return null;
@@ -396,7 +393,6 @@ public class StatObjectConverter {
           dateStats.isSetLowValue() ? dateStats.getLowValue().getDaysSinceEpoch() : null,
           dateStats.isSetHighValue() ? dateStats.getHighValue().getDaysSinceEpoch() : null);
     }
-    mColStats.setEngine(engine);
     return mColStats;
   }
 

@@ -4147,14 +4147,13 @@ class ColumnStatistics {
 
   ColumnStatistics(const ColumnStatistics&);
   ColumnStatistics& operator=(const ColumnStatistics&);
-  ColumnStatistics() : isStatsCompliant(0), engine() {
+  ColumnStatistics() : isStatsCompliant(0) {
   }
 
   virtual ~ColumnStatistics() throw();
   ColumnStatisticsDesc statsDesc;
   std::vector<ColumnStatisticsObj>  statsObj;
   bool isStatsCompliant;
-  std::string engine;
 
   _ColumnStatistics__isset __isset;
 
@@ -4163,8 +4162,6 @@ class ColumnStatistics {
   void __set_statsObj(const std::vector<ColumnStatisticsObj> & val);
 
   void __set_isStatsCompliant(const bool val);
-
-  void __set_engine(const std::string& val);
 
   bool operator == (const ColumnStatistics & rhs) const
   {
@@ -4175,8 +4172,6 @@ class ColumnStatistics {
     if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
       return false;
     else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
-      return false;
-    if (!(engine == rhs.engine))
       return false;
     return true;
   }
@@ -4876,7 +4871,7 @@ class SetPartitionsStatsRequest {
 
   SetPartitionsStatsRequest(const SetPartitionsStatsRequest&);
   SetPartitionsStatsRequest& operator=(const SetPartitionsStatsRequest&);
-  SetPartitionsStatsRequest() : needMerge(0), writeId(-1LL), validWriteIdList(), engine() {
+  SetPartitionsStatsRequest() : needMerge(0), writeId(-1LL), validWriteIdList() {
   }
 
   virtual ~SetPartitionsStatsRequest() throw();
@@ -4884,7 +4879,6 @@ class SetPartitionsStatsRequest {
   bool needMerge;
   int64_t writeId;
   std::string validWriteIdList;
-  std::string engine;
 
   _SetPartitionsStatsRequest__isset __isset;
 
@@ -4895,8 +4889,6 @@ class SetPartitionsStatsRequest {
   void __set_writeId(const int64_t val);
 
   void __set_validWriteIdList(const std::string& val);
-
-  void __set_engine(const std::string& val);
 
   bool operator == (const SetPartitionsStatsRequest & rhs) const
   {
@@ -4913,8 +4905,6 @@ class SetPartitionsStatsRequest {
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
-      return false;
-    if (!(engine == rhs.engine))
       return false;
     return true;
   }
@@ -6190,7 +6180,7 @@ class TableStatsRequest {
 
   TableStatsRequest(const TableStatsRequest&);
   TableStatsRequest& operator=(const TableStatsRequest&);
-  TableStatsRequest() : dbName(), tblName(), catName(), validWriteIdList(), engine() {
+  TableStatsRequest() : dbName(), tblName(), catName(), validWriteIdList() {
   }
 
   virtual ~TableStatsRequest() throw();
@@ -6199,7 +6189,6 @@ class TableStatsRequest {
   std::vector<std::string>  colNames;
   std::string catName;
   std::string validWriteIdList;
-  std::string engine;
 
   _TableStatsRequest__isset __isset;
 
@@ -6212,8 +6201,6 @@ class TableStatsRequest {
   void __set_catName(const std::string& val);
 
   void __set_validWriteIdList(const std::string& val);
-
-  void __set_engine(const std::string& val);
 
   bool operator == (const TableStatsRequest & rhs) const
   {
@@ -6230,8 +6217,6 @@ class TableStatsRequest {
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
-      return false;
-    if (!(engine == rhs.engine))
       return false;
     return true;
   }
@@ -6266,7 +6251,7 @@ class PartitionsStatsRequest {
 
   PartitionsStatsRequest(const PartitionsStatsRequest&);
   PartitionsStatsRequest& operator=(const PartitionsStatsRequest&);
-  PartitionsStatsRequest() : dbName(), tblName(), catName(), validWriteIdList(), engine() {
+  PartitionsStatsRequest() : dbName(), tblName(), catName(), validWriteIdList() {
   }
 
   virtual ~PartitionsStatsRequest() throw();
@@ -6276,7 +6261,6 @@ class PartitionsStatsRequest {
   std::vector<std::string>  partNames;
   std::string catName;
   std::string validWriteIdList;
-  std::string engine;
 
   _PartitionsStatsRequest__isset __isset;
 
@@ -6291,8 +6275,6 @@ class PartitionsStatsRequest {
   void __set_catName(const std::string& val);
 
   void __set_validWriteIdList(const std::string& val);
-
-  void __set_engine(const std::string& val);
 
   bool operator == (const PartitionsStatsRequest & rhs) const
   {
@@ -6311,8 +6293,6 @@ class PartitionsStatsRequest {
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
-      return false;
-    if (!(engine == rhs.engine))
       return false;
     return true;
   }
@@ -6916,12 +6896,11 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionValuesResponse
 }
 
 typedef struct _GetPartitionsByNamesRequest__isset {
-  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false), engine(false) {}
+  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false) {}
   bool names :1;
   bool get_col_stats :1;
   bool processorCapabilities :1;
   bool processorIdentifier :1;
-  bool engine :1;
 } _GetPartitionsByNamesRequest__isset;
 
 class GetPartitionsByNamesRequest {
@@ -6929,7 +6908,7 @@ class GetPartitionsByNamesRequest {
 
   GetPartitionsByNamesRequest(const GetPartitionsByNamesRequest&);
   GetPartitionsByNamesRequest& operator=(const GetPartitionsByNamesRequest&);
-  GetPartitionsByNamesRequest() : db_name(), tbl_name(), get_col_stats(0), processorIdentifier(), engine() {
+  GetPartitionsByNamesRequest() : db_name(), tbl_name(), get_col_stats(0), processorIdentifier() {
   }
 
   virtual ~GetPartitionsByNamesRequest() throw();
@@ -6939,7 +6918,6 @@ class GetPartitionsByNamesRequest {
   bool get_col_stats;
   std::vector<std::string>  processorCapabilities;
   std::string processorIdentifier;
-  std::string engine;
 
   _GetPartitionsByNamesRequest__isset __isset;
 
@@ -6954,8 +6932,6 @@ class GetPartitionsByNamesRequest {
   void __set_processorCapabilities(const std::vector<std::string> & val);
 
   void __set_processorIdentifier(const std::string& val);
-
-  void __set_engine(const std::string& val);
 
   bool operator == (const GetPartitionsByNamesRequest & rhs) const
   {
@@ -6978,10 +6954,6 @@ class GetPartitionsByNamesRequest {
     if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
       return false;
     else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
-      return false;
-    if (__isset.engine != rhs.__isset.engine)
-      return false;
-    else if (__isset.engine && !(engine == rhs.engine))
       return false;
     return true;
   }
@@ -10936,14 +10908,13 @@ inline std::ostream& operator<<(std::ostream& out, const ClientCapabilities& obj
 }
 
 typedef struct _GetTableRequest__isset {
-  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false), processorCapabilities(false), processorIdentifier(false), engine(false) {}
+  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false), processorCapabilities(false), processorIdentifier(false) {}
   bool capabilities :1;
   bool catName :1;
   bool validWriteIdList :1;
   bool getColumnStats :1;
   bool processorCapabilities :1;
   bool processorIdentifier :1;
-  bool engine :1;
 } _GetTableRequest__isset;
 
 class GetTableRequest {
@@ -10951,7 +10922,7 @@ class GetTableRequest {
 
   GetTableRequest(const GetTableRequest&);
   GetTableRequest& operator=(const GetTableRequest&);
-  GetTableRequest() : dbName(), tblName(), catName(), validWriteIdList(), getColumnStats(0), processorIdentifier(), engine() {
+  GetTableRequest() : dbName(), tblName(), catName(), validWriteIdList(), getColumnStats(0), processorIdentifier() {
   }
 
   virtual ~GetTableRequest() throw();
@@ -10963,7 +10934,6 @@ class GetTableRequest {
   bool getColumnStats;
   std::vector<std::string>  processorCapabilities;
   std::string processorIdentifier;
-  std::string engine;
 
   _GetTableRequest__isset __isset;
 
@@ -10982,8 +10952,6 @@ class GetTableRequest {
   void __set_processorCapabilities(const std::vector<std::string> & val);
 
   void __set_processorIdentifier(const std::string& val);
-
-  void __set_engine(const std::string& val);
 
   bool operator == (const GetTableRequest & rhs) const
   {
@@ -11014,10 +10982,6 @@ class GetTableRequest {
     if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
       return false;
     else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
-      return false;
-    if (__isset.engine != rhs.__isset.engine)
-      return false;
-    else if (__isset.engine && !(engine == rhs.engine))
       return false;
     return true;
   }

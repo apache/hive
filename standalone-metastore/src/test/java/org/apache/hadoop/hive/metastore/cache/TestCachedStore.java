@@ -458,7 +458,6 @@ public class TestCachedStore {
 
     stats.setStatsDesc(statsDesc);
     stats.setStatsObj(colStatObjs);
-    stats.setEngine(CacheUtils.HIVE_ENGINE);
 
     // Save to DB
     objectStore.updateTableColumnStatistics(stats, null, -1);
@@ -470,7 +469,7 @@ public class TestCachedStore {
     // Read table stats via CachedStore
     ColumnStatistics newStats =
         cachedStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, dbName, tblName,
-            Arrays.asList(col1.getName(), col2.getName(), col3.getName()), CacheUtils.HIVE_ENGINE);
+            Arrays.asList(col1.getName(), col2.getName(), col3.getName()));
     Assert.assertEquals(stats, newStats);
 
     // Clean up
@@ -725,7 +724,6 @@ public class TestCachedStore {
 
     stats.setStatsDesc(statsDesc);
     stats.setStatsObj(colStatObjs);
-    stats.setEngine(CacheUtils.HIVE_ENGINE);
 
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, null, -1);
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2, null, -1);
@@ -735,9 +733,9 @@ public class TestCachedStore {
     List<String> aggrPartVals = new ArrayList<>();
     aggrPartVals.add("1");
     aggrPartVals.add("2");
-    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
+    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
-    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
+    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
   }
 
@@ -796,7 +794,6 @@ public class TestCachedStore {
 
     stats.setStatsDesc(statsDesc);
     stats.setStatsObj(colStatObjs);
-    stats.setEngine(CacheUtils.HIVE_ENGINE);
 
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, null, -1);
 
@@ -808,10 +805,10 @@ public class TestCachedStore {
     List<String> aggrPartVals = new ArrayList<>();
     aggrPartVals.add("1");
     aggrPartVals.add("2");
-    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
+    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 40);
-    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
+    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 40);
   }
@@ -878,7 +875,6 @@ public class TestCachedStore {
 
     stats.setStatsDesc(statsDesc);
     stats.setStatsObj(colStatObjs);
-    stats.setEngine(CacheUtils.HIVE_ENGINE);
 
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, null, -1);
 
@@ -897,10 +893,10 @@ public class TestCachedStore {
     List<String> aggrPartVals = new ArrayList<>();
     aggrPartVals.add("1");
     aggrPartVals.add("2");
-    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
+    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 5);
-    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
+    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
     Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 5);
   }

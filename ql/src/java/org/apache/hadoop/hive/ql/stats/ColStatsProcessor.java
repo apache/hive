@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -146,7 +145,6 @@ public class ColStatsProcessor implements IStatsProcessor {
         ColumnStatistics colStats = new ColumnStatistics();
         colStats.setStatsDesc(statsDesc);
         colStats.setStatsObj(statsObjs);
-        colStats.setEngine(Constants.HIVE_ENGINE);
         stats.add(colStats);
       }
     }
@@ -179,7 +177,7 @@ public class ColStatsProcessor implements IStatsProcessor {
     if (colStats.isEmpty()) {
       return 0;
     }
-    SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats, Constants.HIVE_ENGINE);
+    SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
     request.setNeedMerge(colStatDesc.isNeedMerge());
     HiveTxnManager txnMgr = AcidUtils.isTransactionalTable(tbl)
         ? SessionState.get().getTxnMgr() : null;

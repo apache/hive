@@ -64,8 +64,6 @@ public class TestOldSchema {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestOldSchema.class.getName());
 
-  private static final String ENGINE = "hive";
-
   public static class MockPartitionExpressionProxy implements PartitionExpressionProxy {
     @Override
     public String convertExprToFilter(byte[] expr, String defaultPartitionName) throws MetaException {
@@ -178,7 +176,6 @@ public class TestOldSchema {
       data.setLongStats(dcsd);
       obj.setStatsData(data);
       cs.addToStatsObj(obj);
-      cs.setEngine(ENGINE);
       store.updatePartitionColumnStatistics(cs, partVal, null, -1);
 
     }
@@ -203,7 +200,7 @@ public class TestOldSchema {
       partNames.add("ds=" + i);
     }
     AggrStats aggrStats = store.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tableName, partNames,
-        Arrays.asList("col1"), ENGINE);
+        Arrays.asList("col1"));
     statChecker.checkStats(aggrStats);
 
   }

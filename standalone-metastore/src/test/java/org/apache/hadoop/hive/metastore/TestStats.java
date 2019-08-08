@@ -69,7 +69,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 public class TestStats {
   private static final Logger LOG = LoggerFactory.getLogger(TestStats.class);
 
-  private static final String ENGINE = "hive";
   private static final String NO_CAT = "DO_NOT_USE_A_CATALOG!";
 
   private IMetaStoreClient client;
@@ -180,7 +179,6 @@ public class TestStats {
         partNames.add(partName);
       }
     }
-    rqst.setEngine(ENGINE);
     client.setPartitionColumnStatistics(rqst);
     return partNames;
   }
@@ -196,7 +194,7 @@ public class TestStats {
 
     for (Column col : cols) objs.add(col.generate());
 
-    return new ColumnStatistics(desc, objs, ENGINE);
+    return new ColumnStatistics(desc, objs);
   }
 
   private void dropStats(String catName, String dbName, String tableName, String partName,
@@ -204,11 +202,11 @@ public class TestStats {
       throws TException {
     for (String colName : colNames) {
       if (partName == null) {
-        if (NO_CAT.equals(catName)) client.deleteTableColumnStatistics(dbName, tableName, colName, ENGINE);
-        else client.deleteTableColumnStatistics(catName, dbName, tableName, colName, ENGINE);
+        if (NO_CAT.equals(catName)) client.deleteTableColumnStatistics(dbName, tableName, colName);
+        else client.deleteTableColumnStatistics(catName, dbName, tableName, colName);
       } else {
-        if (NO_CAT.equals(catName)) client.deletePartitionColumnStatistics(dbName, tableName, partName, colName, ENGINE);
-        else client.deletePartitionColumnStatistics(catName, dbName, tableName, partName, colName, ENGINE);
+        if (NO_CAT.equals(catName)) client.deletePartitionColumnStatistics(dbName, tableName, partName, colName);
+        else client.deletePartitionColumnStatistics(catName, dbName, tableName, partName, colName);
       }
     }
   }
@@ -216,21 +214,21 @@ public class TestStats {
   private void compareStatsForTable(String catName, String dbName, String tableName,
                                     Map<String, Column> colMap) throws TException {
     List<ColumnStatisticsObj> objs = catName.equals(NO_CAT) ?
-        client.getTableColumnStatistics(dbName, tableName, new ArrayList<>(colMap.keySet()), ENGINE) :
-        client.getTableColumnStatistics(catName, dbName, tableName, new ArrayList<>(colMap.keySet()), ENGINE);
+        client.getTableColumnStatistics(dbName, tableName, new ArrayList<>(colMap.keySet())) :
+        client.getTableColumnStatistics(catName, dbName, tableName, new ArrayList<>(colMap.keySet()));
     compareStatsForOneTableOrPartition(objs, 0, colMap);
 
     // Test the statistics obtained through getTable call.
     Table table = catName.equals(NO_CAT) ?
-            client.getTable(dbName, tableName, true, ENGINE) :
-            client.getTable(catName, dbName, tableName, null, true, ENGINE);
+            client.getTable(dbName, tableName, true) :
+            client.getTable(catName, dbName, tableName, null, true);
     Assert.assertTrue(table.isSetColStats());
     compareStatsForOneTableOrPartition(table.getColStats().getStatsObj(), 0, colMap);
 
     // Test that getTable call doesn't get the statistics when not explicitly requested.
     table = catName.equals(NO_CAT) ?
-            client.getTable(dbName, tableName, false, null) :
-            client.getTable(catName, dbName, tableName, null, false, null);
+            client.getTable(dbName, tableName, false) :
+            client.getTable(catName, dbName, tableName, null, false);
     Assert.assertFalse(table.isSetColStats());
   }
 
@@ -238,14 +236,14 @@ public class TestStats {
                                          List<String> partNames, final Map<String, Column> colMap)
       throws TException {
     Map<String, List<ColumnStatisticsObj>> partObjs = catName.equals(NO_CAT) ?
-        client.getPartitionColumnStatistics(dbName, tableName, partNames, new ArrayList<>(colMap.keySet()), ENGINE) :
-        client.getPartitionColumnStatistics(catName, dbName, tableName, partNames, new ArrayList<>(colMap.keySet()), ENGINE);
+        client.getPartitionColumnStatistics(dbName, tableName, partNames, new ArrayList<>(colMap.keySet())) :
+        client.getPartitionColumnStatistics(catName, dbName, tableName, partNames, new ArrayList<>(colMap.keySet()));
     for (int i = 0; i < partNames.size(); i++) {
       compareStatsForOneTableOrPartition(partObjs.get(partNames.get(i)), i, colMap);
     }
     AggrStats aggr = catName.equals(NO_CAT) ?
-        client.getAggrColStatsFor(dbName, tableName, new ArrayList<>(colMap.keySet()), partNames, ENGINE) :
-        client.getAggrColStatsFor(catName, dbName, tableName, new ArrayList<>(colMap.keySet()), partNames, ENGINE);
+        client.getAggrColStatsFor(dbName, tableName, new ArrayList<>(colMap.keySet()), partNames) :
+        client.getAggrColStatsFor(catName, dbName, tableName, new ArrayList<>(colMap.keySet()), partNames);
     Assert.assertEquals(partNames.size(), aggr.getPartsFound());
     Assert.assertEquals(colMap.size(), aggr.getColStatsSize());
     aggr.getColStats().forEach(cso -> colMap.get(cso.getColName()).compareAggr(cso));
@@ -255,18 +253,18 @@ public class TestStats {
       String partName = partNames.get(i);
       List<Partition> partitions = catName.equals(NO_CAT) ?
               client.getPartitionsByNames(dbName, tableName, Collections.singletonList(partName),
-                      true, ENGINE) :
+                      true) :
               client.getPartitionsByNames(catName, dbName, tableName,
-                      Collections.singletonList(partName), true, ENGINE);
+                      Collections.singletonList(partName), true);
       Partition partition = partitions.get(0);
       compareStatsForOneTableOrPartition(partition.getColStats().getStatsObj(), i, colMap);
 
       // Also test that we do not get statistics when not requested
       partitions = catName.equals(NO_CAT) ?
               client.getPartitionsByNames(dbName, tableName, Collections.singletonList(partName),
-                      true, ENGINE) :
+                      true) :
               client.getPartitionsByNames(catName, dbName, tableName,
-                      Collections.singletonList(partName), true, ENGINE);
+                      Collections.singletonList(partName), true);
       partition = partitions.get(0);
       Assert.assertFalse(partition.isSetColStats());
     }

@@ -714,28 +714,22 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<ColumnStatistics> getTableColumnStatistics(String catName, String dbName, String tableName,
-      List<String> colName) throws MetaException, NoSuchObjectException {
-    return null;
-  }
-
-  @Override
   public  ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tableName,
-      List<String> colName, String engine) throws MetaException, NoSuchObjectException {
+      List<String> colName) throws MetaException, NoSuchObjectException {
     return null;
   }
 
   @Override
   public ColumnStatistics getTableColumnStatistics(
       String catName, String dbName, String tableName, List<String> colName,
-      String engine, String  writeIdList)
+      String  writeIdList)
       throws MetaException, NoSuchObjectException {
     return null;
   }
 
   @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-      String colName, String engine)
+                                             String colName)
       throws NoSuchObjectException, MetaException, InvalidObjectException {
     return false;
   }
@@ -743,7 +737,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-    String partName, List<String> partVals, String colName, String engine)
+    String partName, List<String> partVals, String colName)
     throws NoSuchObjectException, MetaException, InvalidObjectException,
     InvalidInputException {
     return false;
@@ -786,16 +780,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<List<ColumnStatistics>> getPartitionColumnStatistics(String catName, String dbName,
+  public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName,
       String tblName, List<String> colNames, List<String> partNames)
-      throws MetaException, NoSuchObjectException {
-    return Collections.emptyList();
-  }
-
-  @Override
-  public List<ColumnStatistics> getPartitionColumnStatistics(
-      String catName, String dbName, String tblName, List<String> partNames,
-      List<String> colNames, String engine, String  writeIdList)
       throws MetaException, NoSuchObjectException {
     return Collections.emptyList();
   }
@@ -857,8 +843,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName,
-      String tblName, List<String> partNames, List<String> colNames,
-      String engine)
+      String tblName, List<String> partNames, List<String> colNames)
       throws MetaException {
     return null;
   }
@@ -866,7 +851,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public AggrStats get_aggr_stats_for(
       String catName, String dbName, String tblName, List<String> partNames,
-      List<String> colNames, String engine, String  writeIdList)
+      List<String> colNames, String  writeIdList)
       throws MetaException, NoSuchObjectException {
     return null;
   }

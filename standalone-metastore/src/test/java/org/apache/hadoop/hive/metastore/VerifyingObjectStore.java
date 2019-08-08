@@ -101,23 +101,23 @@ public class VerifyingObjectStore extends ObjectStore {
 
   @Override
   public ColumnStatistics getTableColumnStatistics(String catName, String dbName,
-      String tableName, List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
+      String tableName, List<String> colNames) throws MetaException, NoSuchObjectException {
     ColumnStatistics sqlResult = getTableColumnStatisticsInternal(
-        catName, dbName, tableName, colNames, engine, true, false);
+        catName, dbName, tableName, colNames, true, false);
     ColumnStatistics jdoResult = getTableColumnStatisticsInternal(
-        catName, dbName, tableName, colNames, engine, false, true);
+        catName, dbName, tableName, colNames, false, true);
     verifyObjects(sqlResult, jdoResult, ColumnStatistics.class);
     return sqlResult;
   }
 
   @Override
   public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName,
-      String tableName, List<String> partNames, List<String> colNames, String engine)
+      String tableName, List<String> partNames, List<String> colNames)
       throws MetaException, NoSuchObjectException {
     List<ColumnStatistics> sqlResult = getPartitionColumnStatisticsInternal(
-        catName, dbName, tableName, partNames, colNames, engine, true, false);
+        catName, dbName, tableName, partNames, colNames, true, false);
     List<ColumnStatistics> jdoResult = getPartitionColumnStatisticsInternal(
-        catName, dbName, tableName, partNames, colNames, engine, false, true);
+        catName, dbName, tableName, partNames, colNames,  false, true);
     verifyLists(sqlResult, jdoResult, ColumnStatistics.class);
     return sqlResult;
   }

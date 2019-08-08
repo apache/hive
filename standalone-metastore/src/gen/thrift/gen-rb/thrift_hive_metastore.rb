@@ -1989,13 +1989,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'set_aggr_stats_for failed: unknown result')
     end
 
-    def delete_partition_column_statistics(db_name, tbl_name, part_name, col_name, engine)
-      send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name, engine)
+    def delete_partition_column_statistics(db_name, tbl_name, part_name, col_name)
+      send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name)
       return recv_delete_partition_column_statistics()
     end
 
-    def send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name, engine)
-      send_message('delete_partition_column_statistics', Delete_partition_column_statistics_args, :db_name => db_name, :tbl_name => tbl_name, :part_name => part_name, :col_name => col_name, :engine => engine)
+    def send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name)
+      send_message('delete_partition_column_statistics', Delete_partition_column_statistics_args, :db_name => db_name, :tbl_name => tbl_name, :part_name => part_name, :col_name => col_name)
     end
 
     def recv_delete_partition_column_statistics()
@@ -2008,13 +2008,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'delete_partition_column_statistics failed: unknown result')
     end
 
-    def delete_table_column_statistics(db_name, tbl_name, col_name, engine)
-      send_delete_table_column_statistics(db_name, tbl_name, col_name, engine)
+    def delete_table_column_statistics(db_name, tbl_name, col_name)
+      send_delete_table_column_statistics(db_name, tbl_name, col_name)
       return recv_delete_table_column_statistics()
     end
 
-    def send_delete_table_column_statistics(db_name, tbl_name, col_name, engine)
-      send_message('delete_table_column_statistics', Delete_table_column_statistics_args, :db_name => db_name, :tbl_name => tbl_name, :col_name => col_name, :engine => engine)
+    def send_delete_table_column_statistics(db_name, tbl_name, col_name)
+      send_message('delete_table_column_statistics', Delete_table_column_statistics_args, :db_name => db_name, :tbl_name => tbl_name, :col_name => col_name)
     end
 
     def recv_delete_table_column_statistics()
@@ -5334,7 +5334,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Delete_partition_column_statistics_args)
       result = Delete_partition_column_statistics_result.new()
       begin
-        result.success = @handler.delete_partition_column_statistics(args.db_name, args.tbl_name, args.part_name, args.col_name, args.engine)
+        result.success = @handler.delete_partition_column_statistics(args.db_name, args.tbl_name, args.part_name, args.col_name)
       rescue ::NoSuchObjectException => o1
         result.o1 = o1
       rescue ::MetaException => o2
@@ -5351,7 +5351,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Delete_table_column_statistics_args)
       result = Delete_table_column_statistics_result.new()
       begin
-        result.success = @handler.delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name, args.engine)
+        result.success = @handler.delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name)
       rescue ::NoSuchObjectException => o1
         result.o1 = o1
       rescue ::MetaException => o2
@@ -11036,14 +11036,12 @@ module ThriftHiveMetastore
     TBL_NAME = 2
     PART_NAME = 3
     COL_NAME = 4
-    ENGINE = 5
 
     FIELDS = {
       DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
       TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
       PART_NAME => {:type => ::Thrift::Types::STRING, :name => 'part_name'},
-      COL_NAME => {:type => ::Thrift::Types::STRING, :name => 'col_name'},
-      ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine'}
+      COL_NAME => {:type => ::Thrift::Types::STRING, :name => 'col_name'}
     }
 
     def struct_fields; FIELDS; end
@@ -11083,13 +11081,11 @@ module ThriftHiveMetastore
     DB_NAME = 1
     TBL_NAME = 2
     COL_NAME = 3
-    ENGINE = 4
 
     FIELDS = {
       DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
       TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-      COL_NAME => {:type => ::Thrift::Types::STRING, :name => 'col_name'},
-      ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine'}
+      COL_NAME => {:type => ::Thrift::Types::STRING, :name => 'col_name'}
     }
 
     def struct_fields; FIELDS; end

@@ -81,7 +81,6 @@ public class TestObjectStore {
   private ObjectStore objectStore = null;
   private Configuration conf;
 
-  private static final String ENGINE = "hive";
   private static final String DB1 = "testobjectstoredb1";
   private static final String DB2 = "testobjectstoredb2";
   private static final String TABLE1 = "testobjectstoretable1";
@@ -341,7 +340,7 @@ public class TestObjectStore {
     objectStore.dropDatabase(db1.getCatalogName(), DB1);
   }
 
-  /*
+  /**
    * Test master keys operation
    */
   @Test

@@ -1714,7 +1714,6 @@ PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
- `ENGINE` string,
   CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1740,8 +1739,7 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\",
- \"ENGINE\"
+ \"LAST_ANALYZED\"
 FROM
   \"TAB_COL_STATS\""
 )
@@ -1768,7 +1766,6 @@ POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
- `ENGINE` string,
   CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1794,8 +1791,7 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\",
- \"ENGINE\"
+ \"LAST_ANALYZED\"
 FROM
   \"TAB_COL_STATS\""
 )
@@ -1823,7 +1819,6 @@ PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
- `ENGINE` string,
   CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1850,8 +1845,7 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\",
- \"ENGINE\"
+ \"LAST_ANALYZED\"
 FROM
   \"PART_COL_STATS\""
 )
@@ -1879,7 +1873,6 @@ POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
- `ENGINE` string,
   CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1906,8 +1899,7 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\",
- \"ENGINE\"
+ \"LAST_ANALYZED\"
 FROM
   \"PART_COL_STATS\""
 )
@@ -3476,9 +3468,10 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
+                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 0:bigint
+                            valueColumnNums: [0]
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
@@ -3778,11 +3771,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
-{"BASIC_STATS":"true","COLUMN_STATS":{"authorizer":"true","create_time":"true","db_grant_id":"true","db_id":"true","db_priv":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"authorizer":"true","create_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","user_grant_id":"true","user_priv":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"cd_id":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"entity_name":"true","entity_type":"true","ordering":"true","pool_path":"true","rp_name":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"integer_idx":"true","part_id":"true","part_key_val":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"create_time":"true","last_access_time":"true","part_id":"true","part_name":"true","sd_id":"true","tbl_id":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true"}}	0	0	0	0
 PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -3823,7 +3816,6 @@ max_col_len         	bigint              	from deserializer
 num_trues           	bigint              	from deserializer   
 num_falses          	bigint              	from deserializer   
 last_analyzed       	bigint              	from deserializer   
-engine              	string              	from deserializer   
 PREHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tab_col_stats
@@ -3902,8 +3894,7 @@ PREHOOK: Input: database:information_schema
 POSTHOOK: query: use INFORMATION_SCHEMA
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:information_schema
-Warning: Shuffle Join MERGEJOIN[22][tables = [d, t]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[23][tables = [d, t, p]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[20][tables = [d, t, p]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from SCHEMATA
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@schemata

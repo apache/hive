@@ -8849,10 +8849,6 @@ void ColumnStatistics::__set_isStatsCompliant(const bool val) {
 __isset.isStatsCompliant = true;
 }
 
-void ColumnStatistics::__set_engine(const std::string& val) {
-  this->engine = val;
-}
-
 uint32_t ColumnStatistics::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -8867,7 +8863,6 @@ uint32_t ColumnStatistics::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   bool isset_statsDesc = false;
   bool isset_statsObj = false;
-  bool isset_engine = false;
 
   while (true)
   {
@@ -8913,14 +8908,6 @@ uint32_t ColumnStatistics::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->engine);
-          isset_engine = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -8933,8 +8920,6 @@ uint32_t ColumnStatistics::read(::apache::thrift::protocol::TProtocol* iprot) {
   if (!isset_statsDesc)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_statsObj)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_engine)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
@@ -8965,10 +8950,6 @@ uint32_t ColumnStatistics::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeBool(this->isStatsCompliant);
     xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldBegin("engine", ::apache::thrift::protocol::T_STRING, 4);
-  xfer += oprot->writeString(this->engine);
-  xfer += oprot->writeFieldEnd();
-
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -8979,7 +8960,6 @@ void swap(ColumnStatistics &a, ColumnStatistics &b) {
   swap(a.statsDesc, b.statsDesc);
   swap(a.statsObj, b.statsObj);
   swap(a.isStatsCompliant, b.isStatsCompliant);
-  swap(a.engine, b.engine);
   swap(a.__isset, b.__isset);
 }
 
@@ -8987,14 +8967,12 @@ ColumnStatistics::ColumnStatistics(const ColumnStatistics& other285) {
   statsDesc = other285.statsDesc;
   statsObj = other285.statsObj;
   isStatsCompliant = other285.isStatsCompliant;
-  engine = other285.engine;
   __isset = other285.__isset;
 }
 ColumnStatistics& ColumnStatistics::operator=(const ColumnStatistics& other286) {
   statsDesc = other286.statsDesc;
   statsObj = other286.statsObj;
   isStatsCompliant = other286.isStatsCompliant;
-  engine = other286.engine;
   __isset = other286.__isset;
   return *this;
 }
@@ -9004,7 +8982,6 @@ void ColumnStatistics::printTo(std::ostream& out) const {
   out << "statsDesc=" << to_string(statsDesc);
   out << ", " << "statsObj=" << to_string(statsObj);
   out << ", " << "isStatsCompliant="; (__isset.isStatsCompliant ? (out << to_string(isStatsCompliant)) : (out << "<null>"));
-  out << ", " << "engine=" << to_string(engine);
   out << ")";
 }
 
@@ -10902,10 +10879,6 @@ void SetPartitionsStatsRequest::__set_validWriteIdList(const std::string& val) {
 __isset.validWriteIdList = true;
 }
 
-void SetPartitionsStatsRequest::__set_engine(const std::string& val) {
-  this->engine = val;
-}
-
 uint32_t SetPartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -10919,7 +10892,6 @@ uint32_t SetPartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* 
   using ::apache::thrift::protocol::TProtocolException;
 
   bool isset_colStats = false;
-  bool isset_engine = false;
 
   while (true)
   {
@@ -10973,14 +10945,6 @@ uint32_t SetPartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* 
           xfer += iprot->skip(ftype);
         }
         break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->engine);
-          isset_engine = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -10991,8 +10955,6 @@ uint32_t SetPartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* 
   xfer += iprot->readStructEnd();
 
   if (!isset_colStats)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_engine)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
@@ -11029,10 +10991,6 @@ uint32_t SetPartitionsStatsRequest::write(::apache::thrift::protocol::TProtocol*
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldBegin("engine", ::apache::thrift::protocol::T_STRING, 5);
-  xfer += oprot->writeString(this->engine);
-  xfer += oprot->writeFieldEnd();
-
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11044,7 +11002,6 @@ void swap(SetPartitionsStatsRequest &a, SetPartitionsStatsRequest &b) {
   swap(a.needMerge, b.needMerge);
   swap(a.writeId, b.writeId);
   swap(a.validWriteIdList, b.validWriteIdList);
-  swap(a.engine, b.engine);
   swap(a.__isset, b.__isset);
 }
 
@@ -11053,7 +11010,6 @@ SetPartitionsStatsRequest::SetPartitionsStatsRequest(const SetPartitionsStatsReq
   needMerge = other380.needMerge;
   writeId = other380.writeId;
   validWriteIdList = other380.validWriteIdList;
-  engine = other380.engine;
   __isset = other380.__isset;
 }
 SetPartitionsStatsRequest& SetPartitionsStatsRequest::operator=(const SetPartitionsStatsRequest& other381) {
@@ -11061,7 +11017,6 @@ SetPartitionsStatsRequest& SetPartitionsStatsRequest::operator=(const SetPartiti
   needMerge = other381.needMerge;
   writeId = other381.writeId;
   validWriteIdList = other381.validWriteIdList;
-  engine = other381.engine;
   __isset = other381.__isset;
   return *this;
 }
@@ -11072,7 +11027,6 @@ void SetPartitionsStatsRequest::printTo(std::ostream& out) const {
   out << ", " << "needMerge="; (__isset.needMerge ? (out << to_string(needMerge)) : (out << "<null>"));
   out << ", " << "writeId="; (__isset.writeId ? (out << to_string(writeId)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
-  out << ", " << "engine=" << to_string(engine);
   out << ")";
 }
 
@@ -14324,10 +14278,6 @@ void TableStatsRequest::__set_validWriteIdList(const std::string& val) {
 __isset.validWriteIdList = true;
 }
 
-void TableStatsRequest::__set_engine(const std::string& val) {
-  this->engine = val;
-}
-
 uint32_t TableStatsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -14343,7 +14293,6 @@ uint32_t TableStatsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
   bool isset_dbName = false;
   bool isset_tblName = false;
   bool isset_colNames = false;
-  bool isset_engine = false;
 
   while (true)
   {
@@ -14405,14 +14354,6 @@ uint32_t TableStatsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 6:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->engine);
-          isset_engine = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -14427,8 +14368,6 @@ uint32_t TableStatsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
   if (!isset_tblName)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_colNames)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_engine)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
@@ -14468,10 +14407,6 @@ uint32_t TableStatsRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldBegin("engine", ::apache::thrift::protocol::T_STRING, 6);
-  xfer += oprot->writeString(this->engine);
-  xfer += oprot->writeFieldEnd();
-
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -14484,7 +14419,6 @@ void swap(TableStatsRequest &a, TableStatsRequest &b) {
   swap(a.colNames, b.colNames);
   swap(a.catName, b.catName);
   swap(a.validWriteIdList, b.validWriteIdList);
-  swap(a.engine, b.engine);
   swap(a.__isset, b.__isset);
 }
 
@@ -14494,7 +14428,6 @@ TableStatsRequest::TableStatsRequest(const TableStatsRequest& other560) {
   colNames = other560.colNames;
   catName = other560.catName;
   validWriteIdList = other560.validWriteIdList;
-  engine = other560.engine;
   __isset = other560.__isset;
 }
 TableStatsRequest& TableStatsRequest::operator=(const TableStatsRequest& other561) {
@@ -14503,7 +14436,6 @@ TableStatsRequest& TableStatsRequest::operator=(const TableStatsRequest& other56
   colNames = other561.colNames;
   catName = other561.catName;
   validWriteIdList = other561.validWriteIdList;
-  engine = other561.engine;
   __isset = other561.__isset;
   return *this;
 }
@@ -14515,7 +14447,6 @@ void TableStatsRequest::printTo(std::ostream& out) const {
   out << ", " << "colNames=" << to_string(colNames);
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
-  out << ", " << "engine=" << to_string(engine);
   out << ")";
 }
 
@@ -14550,10 +14481,6 @@ void PartitionsStatsRequest::__set_validWriteIdList(const std::string& val) {
 __isset.validWriteIdList = true;
 }
 
-void PartitionsStatsRequest::__set_engine(const std::string& val) {
-  this->engine = val;
-}
-
 uint32_t PartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -14570,7 +14497,6 @@ uint32_t PartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* ipr
   bool isset_tblName = false;
   bool isset_colNames = false;
   bool isset_partNames = false;
-  bool isset_engine = false;
 
   while (true)
   {
@@ -14652,14 +14578,6 @@ uint32_t PartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* ipr
           xfer += iprot->skip(ftype);
         }
         break;
-      case 7:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->engine);
-          isset_engine = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -14676,8 +14594,6 @@ uint32_t PartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* ipr
   if (!isset_colNames)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_partNames)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_engine)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
@@ -14729,10 +14645,6 @@ uint32_t PartitionsStatsRequest::write(::apache::thrift::protocol::TProtocol* op
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldBegin("engine", ::apache::thrift::protocol::T_STRING, 7);
-  xfer += oprot->writeString(this->engine);
-  xfer += oprot->writeFieldEnd();
-
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -14746,7 +14658,6 @@ void swap(PartitionsStatsRequest &a, PartitionsStatsRequest &b) {
   swap(a.partNames, b.partNames);
   swap(a.catName, b.catName);
   swap(a.validWriteIdList, b.validWriteIdList);
-  swap(a.engine, b.engine);
   swap(a.__isset, b.__isset);
 }
 
@@ -14757,7 +14668,6 @@ PartitionsStatsRequest::PartitionsStatsRequest(const PartitionsStatsRequest& oth
   partNames = other574.partNames;
   catName = other574.catName;
   validWriteIdList = other574.validWriteIdList;
-  engine = other574.engine;
   __isset = other574.__isset;
 }
 PartitionsStatsRequest& PartitionsStatsRequest::operator=(const PartitionsStatsRequest& other575) {
@@ -14767,7 +14677,6 @@ PartitionsStatsRequest& PartitionsStatsRequest::operator=(const PartitionsStatsR
   partNames = other575.partNames;
   catName = other575.catName;
   validWriteIdList = other575.validWriteIdList;
-  engine = other575.engine;
   __isset = other575.__isset;
   return *this;
 }
@@ -14780,7 +14689,6 @@ void PartitionsStatsRequest::printTo(std::ostream& out) const {
   out << ", " << "partNames=" << to_string(partNames);
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
-  out << ", " << "engine=" << to_string(engine);
   out << ")";
 }
 
@@ -16342,11 +16250,6 @@ void GetPartitionsByNamesRequest::__set_processorIdentifier(const std::string& v
 __isset.processorIdentifier = true;
 }
 
-void GetPartitionsByNamesRequest::__set_engine(const std::string& val) {
-  this->engine = val;
-__isset.engine = true;
-}
-
 uint32_t GetPartitionsByNamesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -16442,14 +16345,6 @@ uint32_t GetPartitionsByNamesRequest::read(::apache::thrift::protocol::TProtocol
           xfer += iprot->skip(ftype);
         }
         break;
-      case 7:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->engine);
-          this->__isset.engine = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -16515,11 +16410,6 @@ uint32_t GetPartitionsByNamesRequest::write(::apache::thrift::protocol::TProtoco
     xfer += oprot->writeString(this->processorIdentifier);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.engine) {
-    xfer += oprot->writeFieldBegin("engine", ::apache::thrift::protocol::T_STRING, 7);
-    xfer += oprot->writeString(this->engine);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -16533,7 +16423,6 @@ void swap(GetPartitionsByNamesRequest &a, GetPartitionsByNamesRequest &b) {
   swap(a.get_col_stats, b.get_col_stats);
   swap(a.processorCapabilities, b.processorCapabilities);
   swap(a.processorIdentifier, b.processorIdentifier);
-  swap(a.engine, b.engine);
   swap(a.__isset, b.__isset);
 }
 
@@ -16544,7 +16433,6 @@ GetPartitionsByNamesRequest::GetPartitionsByNamesRequest(const GetPartitionsByNa
   get_col_stats = other660.get_col_stats;
   processorCapabilities = other660.processorCapabilities;
   processorIdentifier = other660.processorIdentifier;
-  engine = other660.engine;
   __isset = other660.__isset;
 }
 GetPartitionsByNamesRequest& GetPartitionsByNamesRequest::operator=(const GetPartitionsByNamesRequest& other661) {
@@ -16554,7 +16442,6 @@ GetPartitionsByNamesRequest& GetPartitionsByNamesRequest::operator=(const GetPar
   get_col_stats = other661.get_col_stats;
   processorCapabilities = other661.processorCapabilities;
   processorIdentifier = other661.processorIdentifier;
-  engine = other661.engine;
   __isset = other661.__isset;
   return *this;
 }
@@ -16567,7 +16454,6 @@ void GetPartitionsByNamesRequest::printTo(std::ostream& out) const {
   out << ", " << "get_col_stats="; (__isset.get_col_stats ? (out << to_string(get_col_stats)) : (out << "<null>"));
   out << ", " << "processorCapabilities="; (__isset.processorCapabilities ? (out << to_string(processorCapabilities)) : (out << "<null>"));
   out << ", " << "processorIdentifier="; (__isset.processorIdentifier ? (out << to_string(processorIdentifier)) : (out << "<null>"));
-  out << ", " << "engine="; (__isset.engine ? (out << to_string(engine)) : (out << "<null>"));
   out << ")";
 }
 
@@ -26751,11 +26637,6 @@ void GetTableRequest::__set_processorIdentifier(const std::string& val) {
 __isset.processorIdentifier = true;
 }
 
-void GetTableRequest::__set_engine(const std::string& val) {
-  this->engine = val;
-__isset.engine = true;
-}
-
 uint32_t GetTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -26855,14 +26736,6 @@ uint32_t GetTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 10:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->engine);
-          this->__isset.engine = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -26930,11 +26803,6 @@ uint32_t GetTableRequest::write(::apache::thrift::protocol::TProtocol* oprot) co
     xfer += oprot->writeString(this->processorIdentifier);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.engine) {
-    xfer += oprot->writeFieldBegin("engine", ::apache::thrift::protocol::T_STRING, 10);
-    xfer += oprot->writeString(this->engine);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -26950,7 +26818,6 @@ void swap(GetTableRequest &a, GetTableRequest &b) {
   swap(a.getColumnStats, b.getColumnStats);
   swap(a.processorCapabilities, b.processorCapabilities);
   swap(a.processorIdentifier, b.processorIdentifier);
-  swap(a.engine, b.engine);
   swap(a.__isset, b.__isset);
 }
 
@@ -26963,7 +26830,6 @@ GetTableRequest::GetTableRequest(const GetTableRequest& other1057) {
   getColumnStats = other1057.getColumnStats;
   processorCapabilities = other1057.processorCapabilities;
   processorIdentifier = other1057.processorIdentifier;
-  engine = other1057.engine;
   __isset = other1057.__isset;
 }
 GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other1058) {
@@ -26975,7 +26841,6 @@ GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other1058) {
   getColumnStats = other1058.getColumnStats;
   processorCapabilities = other1058.processorCapabilities;
   processorIdentifier = other1058.processorIdentifier;
-  engine = other1058.engine;
   __isset = other1058.__isset;
   return *this;
 }
@@ -26990,7 +26855,6 @@ void GetTableRequest::printTo(std::ostream& out) const {
   out << ", " << "getColumnStats="; (__isset.getColumnStats ? (out << to_string(getColumnStats)) : (out << "<null>"));
   out << ", " << "processorCapabilities="; (__isset.processorCapabilities ? (out << to_string(processorCapabilities)) : (out << "<null>"));
   out << ", " << "processorIdentifier="; (__isset.processorIdentifier ? (out << to_string(processorIdentifier)) : (out << "<null>"));
-  out << ", " << "engine="; (__isset.engine ? (out << to_string(engine)) : (out << "<null>"));
   out << ")";
 }
 

@@ -140,8 +140,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)')
   print('  AggrStats get_aggr_stats_for(PartitionsStatsRequest request)')
   print('  bool set_aggr_stats_for(SetPartitionsStatsRequest request)')
-  print('  bool delete_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name, string engine)')
-  print('  bool delete_table_column_statistics(string db_name, string tbl_name, string col_name, string engine)')
+  print('  bool delete_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name)')
+  print('  bool delete_table_column_statistics(string db_name, string tbl_name, string col_name)')
   print('  void create_function(Function func)')
   print('  void drop_function(string dbName, string funcName)')
   print('  void alter_function(string dbName, string funcName, Function newFunc)')
@@ -1015,16 +1015,16 @@ elif cmd == 'set_aggr_stats_for':
   pp.pprint(client.set_aggr_stats_for(eval(args[0]),))
 
 elif cmd == 'delete_partition_column_statistics':
-  if len(args) != 5:
-    print('delete_partition_column_statistics requires 5 args')
+  if len(args) != 4:
+    print('delete_partition_column_statistics requires 4 args')
     sys.exit(1)
-  pp.pprint(client.delete_partition_column_statistics(args[0],args[1],args[2],args[3],args[4],))
+  pp.pprint(client.delete_partition_column_statistics(args[0],args[1],args[2],args[3],))
 
 elif cmd == 'delete_table_column_statistics':
-  if len(args) != 4:
-    print('delete_table_column_statistics requires 4 args')
+  if len(args) != 3:
+    print('delete_table_column_statistics requires 3 args')
     sys.exit(1)
-  pp.pprint(client.delete_table_column_statistics(args[0],args[1],args[2],args[3],))
+  pp.pprint(client.delete_table_column_statistics(args[0],args[1],args[2],))
 
 elif cmd == 'create_function':
   if len(args) != 1:

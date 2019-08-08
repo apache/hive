@@ -659,7 +659,6 @@ public interface IMetaStoreClient {
    *          Name of the table to fetch.
    * @param getColumnStats
    *          get the column stats, if available, when true
-   * @param engine engine sending the request
    * @return An object representing the table.
    * @throws MetaException
    *           Could not fetch the table
@@ -668,7 +667,7 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    *           In case the table wasn't found.
    */
-  Table getTable(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
+  Table getTable(String dbName, String tableName, boolean getColumnStats) throws MetaException,
           TException, NoSuchObjectException;
   /**
    * Get a table object.
@@ -701,13 +700,12 @@ public interface IMetaStoreClient {
    * @param tableName table name.
    * @param validWriteIdList applicable snapshot
    * @param getColumnStats get the column stats, if available, when true
-   * @param engine engine sending the request
    * @return table object.
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
   Table getTable(String catName, String dbName, String tableName,
-                 String validWriteIdList, boolean getColumnStats, String engine) throws TException;
+                 String validWriteIdList, boolean getColumnStats) throws TException;
 
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
@@ -1411,14 +1409,13 @@ public interface IMetaStoreClient {
    * @param tbl_name table name
    * @param part_names list of partition names
    * @param getColStats if true include statistics in the Partition object
-   * @param engine engine sending the request
    * @return list of Partition objects
    * @throws NoSuchObjectException No such partitions
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
    */
   List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      boolean getColStats, String engine) throws NoSuchObjectException, MetaException, TException;
+      boolean getColStats) throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get partitions by a list of partition names.
@@ -1442,14 +1439,13 @@ public interface IMetaStoreClient {
      * @param tbl_name table name
      * @param part_names list of partition names
      * @param getColStats if true, column statistics is added to the Partition objects
-     * @param engine engine sending the request
      * @return list of Partition objects
      * @throws NoSuchObjectException No such partitions
      * @throws MetaException error accessing the RDBMS.
      * @throws TException thrift transport error
      */
     List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-            List<String> part_names, boolean getColStats, String engine)
+                                         List<String> part_names, boolean getColStats)
             throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -2389,17 +2385,17 @@ public interface IMetaStoreClient {
    * @param dbName database name
    * @param tableName table name
    * @param colNames list of column names
-   * @param engine engine sending the request
    * @return list of column statistics objects, one per column
    * @throws NoSuchObjectException no such table
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
   List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
+      List<String> colNames) throws NoSuchObjectException, MetaException, TException;
 
   List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-      List<String> colNames, String engine, String validWriteIdList)
+                                                     List<String> colNames,
+                                                     String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -2410,17 +2406,18 @@ public interface IMetaStoreClient {
    * @param dbName database name
    * @param tableName table name
    * @param colNames list of column names
-   * @param engine engine sending the request
    * @return list of column statistics objects, one per column
    * @throws NoSuchObjectException no such table
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
   List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
-      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
+                                                     List<String> colNames)
+      throws NoSuchObjectException, MetaException, TException;
 
   List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
-      List<String> colNames, String engine, String validWriteIdList)
+                                                     List<String> colNames,
+                                                     String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
   /**
    * Get the column statistics for a set of columns in a partition.
@@ -2429,19 +2426,18 @@ public interface IMetaStoreClient {
    * @param partNames partition names.  Since these are names they should be of the form
    *                  "key1=value1[/key2=value2...]"
    * @param colNames list of column names
-   * @param engine engine sending the request
    * @return map of columns to statistics
    * @throws NoSuchObjectException no such partition
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
-      String tableName,  List<String> partNames, List<String> colNames, String engine)
+      String tableName,  List<String> partNames, List<String> colNames)
           throws NoSuchObjectException, MetaException, TException;
 
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
       String tableName,  List<String> partNames, List<String> colNames,
-      String engine, String validWriteIdList)
+      String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -2452,20 +2448,19 @@ public interface IMetaStoreClient {
    * @param partNames partition names.  Since these are names they should be of the form
    *                  "key1=value1[/key2=value2...]"
    * @param colNames list of column names
-   * @param engine engine sending the request
    * @return map of columns to statistics
    * @throws NoSuchObjectException no such partition
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
-      String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames,
-      String engine) throws NoSuchObjectException, MetaException, TException;
+      String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames)
+      throws NoSuchObjectException, MetaException, TException;
 
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames,
-      String engine, String validWriteIdList)
+      String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName, or
@@ -2474,7 +2469,6 @@ public interface IMetaStoreClient {
    * @param tableName table name.
    * @param partName partition name.
    * @param colName column name, or null for all columns
-   * @param engine engine, or null for all engines
    * @return boolean indicating outcome of the operation
    * @throws NoSuchObjectException no such partition exists
    * @throws InvalidObjectException error dropping the stats data
@@ -2483,7 +2477,7 @@ public interface IMetaStoreClient {
    * @throws InvalidInputException input is invalid or null.
    */
   boolean deletePartitionColumnStatistics(String dbName, String tableName,
-    String partName, String colName, String engine) throws NoSuchObjectException, MetaException,
+    String partName, String colName) throws NoSuchObjectException, MetaException,
     InvalidObjectException, TException, InvalidInputException;
 
   /**
@@ -2494,7 +2488,6 @@ public interface IMetaStoreClient {
    * @param tableName table name.
    * @param partName partition name.
    * @param colName column name, or null for all columns
-   * @param engine engine, or null for all engines
    * @return boolean indicating outcome of the operation
    * @throws NoSuchObjectException no such partition exists
    * @throws InvalidObjectException error dropping the stats data
@@ -2503,7 +2496,7 @@ public interface IMetaStoreClient {
    * @throws InvalidInputException input is invalid or null.
    */
   boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-      String partName, String colName, String engine)
+                                          String partName, String colName)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
@@ -2512,7 +2505,6 @@ public interface IMetaStoreClient {
    * @param dbName database name
    * @param tableName table name
    * @param colName column name, or null to drop stats for all columns
-   * @param engine engine, or null for all engines
    * @return boolean indicating the outcome of the operation
    * @throws NoSuchObjectException No such table
    * @throws MetaException error accessing the RDBMS
@@ -2520,7 +2512,7 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error
    * @throws InvalidInputException bad input, like a null table name.
    */
-   boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine) throws
+   boolean deleteTableColumnStatistics(String dbName, String tableName, String colName) throws
     NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
@@ -2530,7 +2522,6 @@ public interface IMetaStoreClient {
    * @param dbName database name
    * @param tableName table name
    * @param colName column name, or null to drop stats for all columns
-   * @param engine engine, or null for all engines
    * @return boolean indicating the outcome of the operation
    * @throws NoSuchObjectException No such table
    * @throws MetaException error accessing the RDBMS
@@ -2538,7 +2529,7 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error
    * @throws InvalidInputException bad input, like a null table name.
    */
-  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
+  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
@@ -3321,18 +3312,17 @@ public interface IMetaStoreClient {
    * @param tblName table name
    * @param colNames list of column names
    * @param partName list of partition names (not values).
-   * @param engine engine sending the request
    * @return aggregated stats for requested partitions
    * @throws NoSuchObjectException no such table
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport exception
    */
   AggrStats getAggrColStatsFor(String dbName, String tblName,
-      List<String> colNames, List<String> partName, String engine)  throws NoSuchObjectException, MetaException, TException;
+      List<String> colNames, List<String> partName)  throws NoSuchObjectException, MetaException, TException;
 
   AggrStats getAggrColStatsFor(String dbName, String tblName,
       List<String> colNames, List<String> partName,
-      String engine, String writeIdList)  throws NoSuchObjectException, MetaException, TException;
+      String writeIdList)  throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get aggregated column stats for a set of partitions.
@@ -3341,20 +3331,18 @@ public interface IMetaStoreClient {
    * @param tblName table name
    * @param colNames list of column names
    * @param partNames list of partition names (not values).
-   * @param engine engine sending the request
    * @return aggregated stats for requested partitions
    * @throws NoSuchObjectException no such table
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport exception
    */
   AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
-                               List<String> colNames, List<String> partNames,
-                               String engine)
+                               List<String> colNames, List<String> partNames)
       throws NoSuchObjectException, MetaException, TException;
 
   AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
                                List<String> colNames, List<String> partNames,
-                               String engine, String writeIdList)
+                               String writeIdList)
       throws NoSuchObjectException, MetaException, TException;
   /**
    * Set table or partition column statistics.

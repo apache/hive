@@ -30,7 +30,6 @@ import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -264,7 +263,7 @@ public class TestStatsUpdaterThread {
     // We expect two partitions to be updated.
     Map<String, List<ColumnStatisticsObj>> stats = msClient.getPartitionColumnStatistics(
         dbName, tblName, Lists.newArrayList("p=1", "p=2", "p=3"),
-        Lists.newArrayList("s"), Constants.HIVE_ENGINE, currentWriteIds);
+        Lists.newArrayList("s"), currentWriteIds);
     assertEquals(1, stats.size());
 
     assertTrue(su.runOneIteration());
@@ -272,14 +271,14 @@ public class TestStatsUpdaterThread {
     // Analyze treats stats like data (new write ID), so stats still should not be valid.
     stats = msClient.getPartitionColumnStatistics(
         dbName, tblName, Lists.newArrayList("p=1", "p=2", "p=3"),
-        Lists.newArrayList("s"), Constants.HIVE_ENGINE, currentWriteIds);
+        Lists.newArrayList("s"), currentWriteIds);
     assertEquals(1, stats.size());
 
     // New reader.
     currentWriteIds = msClient.getValidWriteIds(fqName).toString();
     stats = msClient.getPartitionColumnStatistics(
         dbName, tblName, Lists.newArrayList("p=1", "p=2", "p=3"),
-        Lists.newArrayList("s"), Constants.HIVE_ENGINE, currentWriteIds);
+        Lists.newArrayList("s"), currentWriteIds);
     assertEquals(3, stats.size());
 
     msClient.close();

@@ -92,7 +92,6 @@ import org.apache.hadoop.hive.common.*;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
@@ -1394,9 +1393,9 @@ public class Hive {
               dbName, tableName);
         }
         tTable = getMSC().getTable(getDefaultCatalog(conf), dbName, tableName,
-            validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats, Constants.HIVE_ENGINE);
+            validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats);
       } else {
-        tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE);
+        tTable = getMSC().getTable(dbName, tableName, getColumnStats);
       }
     } catch (NoSuchObjectException e) {
       if (throwException) {
@@ -3604,7 +3603,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (int i = 0; i < nBatches; ++i) {
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
           getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-            partNames.subList(i*batchSize, (i+1)*batchSize), getColStats, Constants.HIVE_ENGINE);
+            partNames.subList(i*batchSize, (i+1)*batchSize), getColStats);
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
@@ -3615,7 +3614,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (nParts > nBatches * batchSize) {
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
           getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-            partNames.subList(nBatches*batchSize, nParts), getColStats, Constants.HIVE_ENGINE);
+            partNames.subList(nBatches*batchSize, nParts), getColStats);
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
@@ -4957,10 +4956,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (checkTransactional) {
         Table tbl = getTable(dbName, tableName);
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
-        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE,
+        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames,
             tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
       } else {
-        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE);
+        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames);
       }
       return retv;
     } catch (Exception e) {
@@ -4982,7 +4981,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       return getMSC().getPartitionColumnStatistics(
-          dbName, tableName, partNames, colNames, Constants.HIVE_ENGINE, writeIdList);
+          dbName, tableName, partNames, colNames, writeIdList);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -4998,7 +4997,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
         writeIdList = tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null;
       }
-      return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName, Constants.HIVE_ENGINE, writeIdList);
+      return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName, writeIdList);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);
@@ -5008,7 +5007,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
     throws HiveException {
     try {
-      return getMSC().deleteTableColumnStatistics(dbName, tableName, colName, Constants.HIVE_ENGINE);
+      return getMSC().deleteTableColumnStatistics(dbName, tableName, colName);
     } catch(Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -5018,7 +5017,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
     String colName) throws HiveException {
       try {
-        return getMSC().deletePartitionColumnStatistics(dbName, tableName, partName, colName, Constants.HIVE_ENGINE);
+        return getMSC().deletePartitionColumnStatistics(dbName, tableName, partName, colName);
       } catch(Exception e) {
         LOG.debug(StringUtils.stringifyException(e));
         throw new HiveException(e);
