@@ -530,8 +530,9 @@ struct ColumnStatisticsDesc {
 struct ColumnStatistics {
 1: required ColumnStatisticsDesc statsDesc,
 2: required list<ColumnStatisticsObj> statsObj,
-3: optional bool isStatsCompliant // Are the stats isolation-level-compliant with the
+3: optional bool isStatsCompliant, // Are the stats isolation-level-compliant with the
                                                       // the calling query?
+4: optional string engine
 }
 
 // table information
@@ -616,7 +617,8 @@ struct SetPartitionsStatsRequest {
 1: required list<ColumnStatistics> colStats,
 2: optional bool needMerge, //stats need to be merged with the existing stats
 3: optional i64 writeId=-1,         // writeId for the current query that updates the stats
-4: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
+4: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
+5: optional string engine //engine creating the current request
 }
 
 struct SetPartitionsStatsResponse {
@@ -763,7 +765,8 @@ struct TableStatsRequest {
  2: required string tblName,
  3: required list<string> colNames
  4: optional string catName,
- 5: optional string validWriteIdList  // valid write id list for the table for which this struct is being sent
+ 5: optional string validWriteIdList,  // valid write id list for the table for which this struct is being sent
+ 6: optional string engine //engine creating the current request
 }
 
 struct PartitionsStatsRequest {
@@ -772,7 +775,8 @@ struct PartitionsStatsRequest {
  3: required list<string> colNames,
  4: required list<string> partNames,
  5: optional string catName,
- 6: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
+ 6: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
+ 7: optional string engine //engine creating the current request
 }
 
 // Return type for add_partitions_req
@@ -847,7 +851,8 @@ struct GetPartitionsByNamesRequest {
   3: optional list<string> names,
   4: optional bool get_col_stats,
   5: optional list<string> processorCapabilities,
-  6: optional string processorIdentifier
+  6: optional string processorIdentifier,
+  7: optional string engine
 }
 
 struct GetPartitionsByNamesResult {
@@ -1337,7 +1342,8 @@ struct GetTableRequest {
   6: optional string validWriteIdList,
   7: optional bool getColumnStats,
   8: optional list<string> processorCapabilities,
-  9: optional string processorIdentifier
+  9: optional string processorIdentifier,
+  10: optional string engine
 }
 
 struct GetTableResult {

@@ -855,6 +855,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(String dbName,
+      String tableName,  List<String> partNames, List<String> colNames,
+      String engine, String validWriteIdList)
+      throws NoSuchObjectException, MetaException, TException {
+    return getPartitionColumnStatistics(dbName, tableName, partNames, colNames, validWriteIdList);
+  }
+
+  @Override
   public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName, List<String> partNames,
       List<String> colNames, String validWriteIdList)
@@ -867,11 +875,28 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(
+      String catName, String dbName, String tableName,
+      List<String> partNames, List<String> colNames,
+      String engine, String validWriteIdList)
+      throws NoSuchObjectException, MetaException, TException {
+    return getPartitionColumnStatistics(catName, dbName, tableName, partNames,
+        colNames, validWriteIdList);
+  }
+
+  @Override
   public AggrStats getAggrColStatsFor(String dbName, String tblName, List<String> colNames,
       List<String> partNames, String writeIdList)
       throws NoSuchObjectException, MetaException, TException {
     return getAggrColStatsFor(getDefaultCatalog(conf), dbName, tblName, colNames,
         partNames, writeIdList);
+  }
+
+  @Override
+  public AggrStats getAggrColStatsForV2(String dbName, String tblName,
+      List<String> colNames, List<String> partNames,
+      String engine, String writeIdList)  throws NoSuchObjectException, MetaException, TException {
+    return getAggrColStatsFor(dbName, tblName, colNames, partNames, writeIdList);
   }
 
   @Override
@@ -886,6 +911,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setCatName(catName);
     req.setValidWriteIdList(writeIdList);
     return client.get_aggr_stats_for(req);
+  }
+
+  @Override
+  public AggrStats getAggrColStatsForV2(String catName, String dbName, String tblName,
+      List<String> colNames, List<String> partNames,
+      String engine, String writeIdList)
+      throws NoSuchObjectException, MetaException, TException {
+    return getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, writeIdList);
   }
 
   @Override
@@ -1718,6 +1751,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<Partition> getPartitionsByNamesV2(String db_name, String tbl_name, List<String> part_names,
+          boolean getColStats, String engine) throws NoSuchObjectException, MetaException, TException {
+    return getPartitionsByNames(db_name, tbl_name, part_names, getColStats);
+  }
+
+  @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
                                               List<String> part_names) throws TException {
     return getPartitionsByNames(catName, db_name, tbl_name, part_names, false);
@@ -1738,6 +1777,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     List<Partition> parts = client.get_partitions_by_names_req(gpbnr).getPartitions();
     return deepCopyPartitions(filterHook.filterPartitions(parts));
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNamesV2(String catName, String db_name, String tbl_name,
+      List<String> part_names, boolean getColStats, String engine)
+      throws NoSuchObjectException, MetaException, TException {
+    return getPartitionsByNames(catName, db_name, tbl_name, part_names, getColStats);
   }
 
   @Override
@@ -1774,6 +1820,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Table getTable(String dbname, String name, boolean getColumnStats) throws TException {
     return getTable(getDefaultCatalog(conf), dbname, name, getColumnStats);
+  }
+
+  @Override
+  public Table getTableV2(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
+      TException, NoSuchObjectException {
+    return getTable(dbName, tableName, getColumnStats);
   }
 
   @Override
@@ -1816,6 +1868,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     Table t = client.get_table_req(req).getTable();
     return deepCopy(filterHook.filterTable(t));
+  }
+
+  @Override
+  public Table getTableV2(String catName, String dbName, String tableName,
+                   String validWriteIdList, boolean getColumnStats, String engine) throws TException {
+    return getTable(catName, dbName, tableName, validWriteIdList, getColumnStats);
   }
 
   @Override
@@ -2261,6 +2319,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<ColumnStatisticsObj> getTableColumnStatisticsV2(String dbName, String tableName,
+      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException {
+    return getTableColumnStatistics(dbName, tableName, colNames);
+  }
+
+  @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
                                                             String tableName,
                                                             List<String> colNames) throws TException {
@@ -2270,11 +2334,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<ColumnStatisticsObj> getTableColumnStatisticsV2(String catName, String dbName, String tableName,
+      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException {
+    return getTableColumnStatistics(catName, dbName, tableName, colNames);
+  }
+
+  @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
                                                             List<String> colNames,
                                                             String validWriteIdList) throws TException {
     return getTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colNames,
         validWriteIdList);
+  }
+
+  @Override
+  public List<ColumnStatisticsObj> getTableColumnStatisticsV2(String dbName, String tableName,
+      List<String> colNames, String engine, String validWriteIdList)
+      throws NoSuchObjectException, MetaException, TException {
+    return getTableColumnStatistics(dbName, tableName, colNames, validWriteIdList);
   }
 
   @Override
@@ -2289,10 +2366,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<ColumnStatisticsObj> getTableColumnStatisticsV2(String catName, String dbName, String tableName,
+      List<String> colNames, String engine, String validWriteIdList)
+      throws NoSuchObjectException, MetaException, TException {
+    return getTableColumnStatistics(catName, dbName, tableName, colNames, validWriteIdList);
+  }
+
+  @Override
   public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String dbName, String tableName, List<String> partNames, List<String> colNames)
           throws TException {
     return getPartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName, partNames, colNames);
+  }
+
+  @Override
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(String dbName,
+      String tableName,  List<String> partNames, List<String> colNames, String engine)
+      throws NoSuchObjectException, MetaException, TException {
+    return getPartitionColumnStatistics(dbName, tableName, partNames, colNames);
   }
 
   @Override
@@ -2306,10 +2397,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(
+      String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames,
+      String engine) throws NoSuchObjectException, MetaException, TException {
+    return getPartitionColumnStatistics(catName, dbName, tableName, partNames, colNames);
+  }
+
+  @Override
   public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
       String colName) throws TException {
     return deletePartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName, partName,
         colName);
+  }
+
+  @Override
+  public boolean deletePartitionColumnStatisticsV2(String dbName, String tableName,
+      String partName, String colName, String engine) throws NoSuchObjectException, MetaException,
+      InvalidObjectException, TException, InvalidInputException {
+    return deletePartitionColumnStatistics(dbName, tableName, partName, colName);
   }
 
   @Override
@@ -2321,9 +2426,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public boolean deletePartitionColumnStatisticsV2(String catName, String dbName, String tableName,
+      String partName, String colName, String engine)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException {
+    return deletePartitionColumnStatistics(catName, dbName, tableName, partName, colName);
+  }
+
+  @Override
   public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
       throws TException {
     return deleteTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colName);
+  }
+
+  @Override
+  public boolean deleteTableColumnStatisticsV2(String dbName, String tableName, String colName, String engine) throws
+      NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException {
+    return deleteTableColumnStatistics(dbName, tableName, colName);
   }
 
   @Override
@@ -2331,6 +2449,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                              String colName) throws TException {
     return client.delete_table_column_statistics(prependCatalogToDbName(catName, dbName, conf),
         tableName, colName);
+  }
+
+  @Override
+  public boolean deleteTableColumnStatisticsV2(String catName, String dbName, String tableName, String colName, String engine)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException {
+    return deleteTableColumnStatistics(catName, dbName, tableName, colName);
   }
 
   @Override
@@ -3240,6 +3364,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public AggrStats getAggrColStatsForV2(String dbName, String tblName,
+    List<String> colNames, List<String> partNames, String engine)  throws NoSuchObjectException, MetaException, TException {
+    return getAggrColStatsFor(dbName, tblName, colNames, partNames);
+  }
+
+  @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
                                       List<String> colNames, List<String> partNames) throws TException {
     if (colNames.isEmpty() || partNames.isEmpty()) {
@@ -3249,6 +3379,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
     req.setCatName(catName);
     return client.get_aggr_stats_for(req);
+  }
+
+  @Override
+  public AggrStats getAggrColStatsForV2(String catName, String dbName, String tblName,
+      List<String> colNames, List<String> partNames,
+      String engine)
+      throws NoSuchObjectException, MetaException, TException {
+    return getAggrColStatsFor(catName, dbName, tblName, colNames, partNames);
   }
 
   @Override
