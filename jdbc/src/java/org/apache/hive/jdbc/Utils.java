@@ -710,12 +710,17 @@ public class Utils {
    */
   public static String getCanonicalHostName(String hostName) {
     try {
-      return InetAddress.getByName(hostName).getCanonicalHostName();
+      InetAddress addr = InetAddress.getByName(hostName);
+      String canonicalHostname = addr.getCanonicalHostName();
+      if(canonicalHostname.equals(addr.getHostAddress())){
+        return hostName;
+      } else {
+        return canonicalHostname;
+      }
     }
     catch(UnknownHostException exception) {
       LOG.warn("Could not retrieve canonical hostname for " + hostName, exception);
       return hostName;
     }
   }
-
 }
