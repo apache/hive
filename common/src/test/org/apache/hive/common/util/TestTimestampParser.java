@@ -18,167 +18,181 @@
 
 package org.apache.hive.common.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Test suite for parsing timestamps.
+ */
 public class TestTimestampParser {
-  public static class ValidTimestampCase {
-    String strValue;
-    Timestamp expectedValue;
 
-    public ValidTimestampCase(String strValue, Timestamp expectedValue) {
-      this.strValue = strValue;
-      this.expectedValue = expectedValue;
-    }
-  }
-
-  static void testValidCases(TimestampParser tp, ValidTimestampCase[] validCases) {
-    for (ValidTimestampCase validCase : validCases) {
-      Timestamp ts = tp.parseTimestamp(validCase.strValue);
-      assertEquals("Parsing " + validCase.strValue, validCase.expectedValue, ts);
-    }
-  }
-
-  static void testInvalidCases(TimestampParser tp, String[] invalidCases) {
-    for (String invalidString : invalidCases) {
-      try {
-        Timestamp ts = tp.parseTimestamp(invalidString);
-        fail("Expected exception parsing " + invalidString + ", but parsed value to " + ts);
-      } catch (IllegalArgumentException err) {
-        // Exception expected
-      }
-    }
-  }
-
+  /**
+   * No timestamp patterns, should default to normal timestamp format.
+   *
+   * @see Timestamp#valueOf(String)
+   */
   @Test
   public void testDefault() {
-    // No timestamp patterns, should default to normal timestamp format
-    TimestampParser tp = new TimestampParser();
-    ValidTimestampCase[] validCases = {
-        new ValidTimestampCase("1945-12-31 23:59:59.0",
-            Timestamp.valueOf("1945-12-31 23:59:59.0")),
-        new ValidTimestampCase("1945-12-31 23:59:59.1234",
-            Timestamp.valueOf("1945-12-31 23:59:59.1234")),
-        new ValidTimestampCase("1970-01-01 00:00:00",
-            Timestamp.valueOf("1970-01-01 00:00:00")),
-        new ValidTimestampCase("1945-12-31T23:59:59",
-            Timestamp.valueOf("1945-12-31 23:59:59")),
-    };
+    final TimestampParser tsp = new TimestampParser();
 
-    String[] invalidCases = {
-        "12345",
-    };
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59.0"),
+        tsp.parseTimestamp("1945-12-31 23:59:59.0"));
 
-    testValidCases(tp, validCases);
-    testInvalidCases(tp, invalidCases);
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59.1234"),
+        tsp.parseTimestamp("1945-12-31 23:59:59.1234"));
+
+    Assert.assertEquals(Timestamp.valueOf("1970-01-01 00:00:00"),
+        tsp.parseTimestamp("1970-01-01 00:00:00"));
+
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31T23:59:59"),
+        tsp.parseTimestamp("1945-12-31 23:59:59"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testDefaultInvalid() {
+    final TimestampParser tsp = new TimestampParser();
+    tsp.parseTimestamp("12345");
   }
 
   @Test
   public void testPattern1() {
-    // Joda pattern matching expects fractional seconds length to match
+    // Timestamp pattern matching expects fractional seconds length to match
     // the number of 'S' in the pattern. So if you want to match .1, .12, .123,
     // you need 3 different patterns with .S, .SS, .SSS
-    String[] patterns = {
-        // ISO-8601 timestamps
-        "yyyy-MM-dd'T'HH:mm:ss",
-        "yyyy-MM-dd'T'HH:mm:ss.S",
-        "yyyy-MM-dd'T'HH:mm:ss.SS",
-        "yyyy-MM-dd'T'HH:mm:ss.SSS",
-        "yyyy-MM-dd'T'HH:mm:ss.SSSS",
-    };
-    TimestampParser tp = new TimestampParser(patterns);
+    // ISO-8601 timestamps
+    final String[] patterns = {"yyyy-MM-dd'T'HH:mm:ss",
+        "yyyy-MM-dd'T'HH:mm:ss.S", "yyyy-MM-dd'T'HH:mm:ss.SS",
+        "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss.SSSS"};
 
-    ValidTimestampCase[] validCases = {
-        new ValidTimestampCase("1945-12-31T23:59:59.0",
-            Timestamp.valueOf("1945-12-31 23:59:59.0")),
-        new ValidTimestampCase("2001-01-01 00:00:00.100",
-            Timestamp.valueOf("2001-01-01 00:00:00.100")),
-        new ValidTimestampCase("2001-01-01 00:00:00.001",
-            Timestamp.valueOf("2001-01-01 00:00:00.001")),
-        // Joda parsing only supports up to millisecond precision
-        new ValidTimestampCase("1945-12-31T23:59:59.1234",
-            Timestamp.valueOf("1945-12-31 23:59:59.123")),
-        new ValidTimestampCase("1970-01-01T00:00:00",
-            Timestamp.valueOf("1970-01-01 00:00:00")),
-        new ValidTimestampCase("1970-4-5T6:7:8",
-             Timestamp.valueOf("1970-04-05 06:07:08")),
+    final TimestampParser tsp = new TimestampParser(patterns);
 
-        // Default timestamp format still works?
-        new ValidTimestampCase("2001-01-01 00:00:00",
-            Timestamp.valueOf("2001-01-01 00:00:00")),
-        new ValidTimestampCase("1945-12-31 23:59:59.1234",
-            Timestamp.valueOf("1945-12-31 23:59:59.1234")),
-        new ValidTimestampCase("1945-12-31T23:59:59.12345",
-            Timestamp.valueOf("1945-12-31 23:59:59.12345"))
-    };
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59.0"),
+        tsp.parseTimestamp("1945-12-31T23:59:59.0"));
 
-    String[] invalidCases = {
-        "1945-12-31-23:59:59",
-        "12345",
-    };
+    Assert.assertEquals(Timestamp.valueOf("2001-01-01 00:00:00.100"),
+        tsp.parseTimestamp("2001-01-01T00:00:00.100"));
 
-    testValidCases(tp, validCases);
-    testInvalidCases(tp, invalidCases);
+    Assert.assertEquals(Timestamp.valueOf("2001-01-01 00:00:00.001"),
+        tsp.parseTimestamp("2001-01-01T00:00:00.001"));
+
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31T23:59:59.123"),
+        tsp.parseTimestamp("1945-12-31T23:59:59.123"));
+
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31T23:59:59.123"),
+        tsp.parseTimestamp("1945-12-31T23:59:59.1234"));
+
+    Assert.assertEquals(Timestamp.valueOf("1970-01-01 00:00:00"),
+        tsp.parseTimestamp("1970-01-01T00:00:00"));
+
+    /** Default timestamp format still works? */
+
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59.1234"),
+        tsp.parseTimestamp("1945-12-31 23:59:59.1234"));
+
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59.12345"),
+        tsp.parseTimestamp("1945-12-31T23:59:59.12345"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testPatternInvalid1() {
+    final String[] patterns = {"yyyy-MM-dd'T'HH:mm:ss",
+        "yyyy-MM-dd'T'HH:mm:ss.S", "yyyy-MM-dd'T'HH:mm:ss.SS",
+        "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss.SSSS"};
+
+    final TimestampParser tsp = new TimestampParser(patterns);
+    tsp.parseTimestamp("1945-12-31-23:59:59");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testPatternInvalid2() {
+    final String[] patterns = {"yyyy-MM-dd'T'HH:mm:ss",
+        "yyyy-MM-dd'T'HH:mm:ss.S", "yyyy-MM-dd'T'HH:mm:ss.SS",
+        "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss.SSSS"};
+
+    final TimestampParser tsp = new TimestampParser(patterns);
+    tsp.parseTimestamp("12345");
   }
 
   @Test
   public void testMillisParser() {
-    String[] patterns = {
-        "millis",
-        // Also try other patterns
-        "yyyy-MM-dd'T'HH:mm:ss",
-    };
-    TimestampParser tp = new TimestampParser(patterns);
+    // Also try other patterns
+    final String[] patterns = {"millis", "yyyy-MM-dd'T'HH:mm:ss"};
 
-    ValidTimestampCase[] validCases = {
-        new ValidTimestampCase("0", Timestamp.ofEpochMilli(0)),
-        new ValidTimestampCase("-1000000", Timestamp.ofEpochMilli(-1000000)),
-        new ValidTimestampCase("1420509274123", Timestamp.ofEpochMilli(1420509274123L)),
-        new ValidTimestampCase("1420509274123.456789", Timestamp.ofEpochMilli(1420509274123L)),
+    final TimestampParser tsp = new TimestampParser(patterns);
 
-        // Other format pattern should also work
-        new ValidTimestampCase("1945-12-31T23:59:59",
-            Timestamp.valueOf("1945-12-31 23:59:59")),
-        new ValidTimestampCase("1945-12-31T23:59:59.12345",
-            Timestamp.valueOf("1945-12-31 23:59:59.12345")),
-    };
+    Assert.assertEquals(Timestamp.ofEpochMilli(0L), tsp.parseTimestamp("0"));
 
-    String[] invalidCases = {
-        "1945-12-31-23:59:59",
-        "1420509274123-",
-    };
+    Assert.assertEquals(Timestamp.ofEpochMilli(-1000000L),
+        tsp.parseTimestamp("-1000000"));
 
-    testValidCases(tp, validCases);
-    testInvalidCases(tp, invalidCases);
+    Assert.assertEquals(Timestamp.ofEpochMilli(1420509274123L),
+        tsp.parseTimestamp("1420509274123"));
+
+    Assert.assertEquals(Timestamp.ofEpochMilli(1420509274123L),
+        tsp.parseTimestamp("1420509274123.456789"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testMillisParserInvalid1() {
+    final String[] patterns = {"millis", "yyyy-MM-dd'T'HH:mm:ss"};
+
+    final TimestampParser tsp = new TimestampParser(patterns);
+    tsp.parseTimestamp("1420509274123-");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testMillisParserInvalid2() {
+    // Also try other patterns
+    final String[] patterns = {"millis", "yyyy-MM-dd'T'HH:mm:ss"};
+
+    final TimestampParser tsp = new TimestampParser(patterns);
+    tsp.parseTimestamp("1945-12-31-23:59:59");
+  }
+
+  /**
+   * Test for pattern that does not contain all date fields.
+   */
+  @Test
+  public void testPatternShort() {
+    final String[] patterns = {"MM:dd:ss", "HH:mm"};
+
+    final TimestampParser tsp = new TimestampParser(patterns);
+
+    Assert.assertEquals(Timestamp.valueOf("1970-01-01 05:06:00"),
+        tsp.parseTimestamp("05:06"));
+
+    Assert.assertEquals(Timestamp.valueOf("1970-05-06 00:00:07"),
+        tsp.parseTimestamp("05:06:07"));
+
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59"),
+        tsp.parseTimestamp("1945-12-31T23:59:59"));
   }
 
   @Test
-  public void testPattern2() {
-    // Pattern does not contain all date fields
-    String[] patterns = {
-        "HH:mm",
-        "MM:dd:ss",
-    };
-    TimestampParser tp = new TimestampParser(patterns);
+  public void testPatternTimeZone() {
+    final String[] patterns = {"yyyy-MM-dd'T'HH:mm:ssX"};
 
-    ValidTimestampCase[] validCases = {
-        new ValidTimestampCase("05:06",
-            Timestamp.valueOf("1970-01-01 05:06:00")),
-        new ValidTimestampCase("05:06:07",
-            Timestamp.valueOf("1970-05-06 00:00:07")),
-        new ValidTimestampCase("1945-12-31T23:59:59",
-            Timestamp.valueOf("1945-12-31 23:59:59")),
-    };
+    final TimestampParser tsp = new TimestampParser(patterns);
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59"),
+        tsp.parseTimestamp("1945-12-31T23:59:59Z"));
+  }
 
-    String[] invalidCases = {
-        "1945:12:31-",
-        "12345",
-    };
+  @Test
+  public void testPatternISO8601() {
+    final String[] patterns = {"iso8601"};
 
-    testValidCases(tp, validCases);
-    testInvalidCases(tp, invalidCases);
+    final TimestampParser tsp = new TimestampParser(patterns);
+    Assert.assertEquals(Timestamp.valueOf("1945-12-31 23:59:59"),
+        tsp.parseTimestamp("1945-12-31T23:59:59Z"));
+  }
+
+  @Test
+  public void testPatternRFC1123() {
+    final String[] patterns = {"rfc1123"};
+
+    final TimestampParser tsp = new TimestampParser(patterns);
+    Assert.assertEquals(Timestamp.valueOf("2008-06-03 11:05:30"),
+        tsp.parseTimestamp("Tue, 3 Jun 2008 11:05:30 GMT"));
   }
 }
