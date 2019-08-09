@@ -34,6 +34,9 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -47,6 +50,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG;
@@ -57,6 +61,7 @@ import static org.junit.Assert.assertTrue;
 public class TestReplicationScenariosExternalTables extends BaseReplicationAcrossInstances {
 
   private static final String REPLICA_EXTERNAL_BASE = "/replica_external_base";
+  String extraPrimaryDb;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -69,6 +74,18 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         UserGroupInformation.getCurrentUser().getUserName());
 
     internalBeforeClassSetup(overrides, TestReplicationScenarios.class);
+  }
+
+  @Before
+  public void setup() throws Throwable {
+    super.setup();
+    extraPrimaryDb = "extra_" + primaryDbName;
+  }
+
+  @After
+  public void tearDown() throws Throwable {
+    primary.run("drop database if exists " + extraPrimaryDb + " cascade");
+    super.tearDown();
   }
 
   @Test
@@ -748,6 +765,40 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyResult("1")
             .run("select id from t2 order by id")
             .verifyResults(Arrays.asList("1", "2"));
+  }
+
+  @Test
+  public void testIncrementalDumpEmptyDumpDirectory() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("insert into table t1 values (2)")
+            .dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(tuple.lastReplicationId);
+
+    WarehouseInstance.Tuple incTuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+
+    replica.load(replicatedDbName, incTuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(incTuple.lastReplicationId);
+
+    // create events for some other database and then dump the primaryDbName to dump an empty directory.
+    primary.run("create database " + extraPrimaryDb + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')");
+    WarehouseInstance.Tuple inc2Tuple = primary.run("use " + extraPrimaryDb)
+            .run("create table tbl (fld int)")
+            .run("use " + primaryDbName)
+            .dump(primaryDbName, incTuple.lastReplicationId);
+    Assert.assertEquals(primary.getCurrentNotificationEventId().getEventId(),
+                        Long.valueOf(inc2Tuple.lastReplicationId).longValue());
+
+    // Incremental load to existing database with empty dump directory should set the repl id to the last event at src.
+    replica.load(replicatedDbName, inc2Tuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(inc2Tuple.lastReplicationId);
   }
 
   private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {

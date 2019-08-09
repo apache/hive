@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -604,6 +605,10 @@ public class WarehouseInstance implements Closeable {
     if (miniDFSCluster != null && miniDFSCluster.isClusterUp()) {
       miniDFSCluster.shutdown();
     }
+  }
+
+  CurrentNotificationEventId getCurrentNotificationEventId() throws Exception {
+    return client.getCurrentNotificationEventId();
   }
 
   List<Path> copyToHDFS(List<URI> localUris) throws IOException, SemanticException {
