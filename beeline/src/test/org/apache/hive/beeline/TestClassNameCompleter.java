@@ -40,7 +40,7 @@ public class TestClassNameCompleter {
     String fileName = "empty.file.jar";
     File p = tmpFolder.newFile(fileName);
 
-    URLClassLoader classLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try {
       URLClassLoader newClassLoader = new URLClassLoader(new URL[] { p.toURL() }, classLoader);
 
@@ -62,7 +62,7 @@ public class TestClassNameCompleter {
     String fileName = "empty.file";
     File p = tmpFolder.newFile(fileName);
 
-    URLClassLoader classLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try {
       URLClassLoader newClassLoader = new URLClassLoader(new URL[] { p.toURL() }, classLoader);
 
