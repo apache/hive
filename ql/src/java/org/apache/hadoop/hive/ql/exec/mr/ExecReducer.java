@@ -19,11 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -96,17 +92,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector keyObjectInspector;
 
-    if (isInfoEnabled) {
-      try {
-        LOG.info("conf classpath = "
-            + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
-        LOG.info("thread classpath = "
-            + Arrays.asList(((URLClassLoader) Thread.currentThread()
-            .getContextClassLoader()).getURLs()));
-      } catch (Exception e) {
-        LOG.info("cannot get classpath: " + e.getMessage());
-      }
-    }
+    Utilities.tryLoggingClassPaths(job, LOG);
     jc = job;
 
     ReduceWork gWork = Utilities.getReduceWork(job);
