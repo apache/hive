@@ -2018,12 +2018,12 @@ public class ObjectStore implements RawStore, Configurable {
     // accordingly
     String tableType = tbl.getTableType();
     boolean isExternal = Boolean.parseBoolean(tbl.getParameters().get("EXTERNAL"));
-    if (TableType.MANAGED_TABLE.toString().equals(tableType)) {
+    if (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(tableType)) {
       if (isExternal) {
         tableType = TableType.EXTERNAL_TABLE.toString();
       }
     }
-    if (TableType.EXTERNAL_TABLE.toString().equals(tableType)) {
+    if (TableType.EXTERNAL_TABLE.toString().equalsIgnoreCase(tableType)) {
       if (!isExternal) {
         tableType = TableType.MANAGED_TABLE.toString();
       }
