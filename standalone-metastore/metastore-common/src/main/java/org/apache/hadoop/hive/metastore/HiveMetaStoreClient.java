@@ -733,6 +733,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     processorIdentifier = id;
   }
 
+  public static String[] getProcessorCapabilities() {
+    return processorCapabilities;
+  }
+
+  public static String getProcessorIdentifier() {
+    return processorIdentifier;
+  }
+
   @Override
   public void setMetaConf(String key, String value) throws TException {
     client.setMetaConf(key, value);
