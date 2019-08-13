@@ -342,15 +342,17 @@ public class Hive {
     }
     c.set("fs.scheme.class", "dfs");
     Hive newdb = new Hive(c, doRegisterAllFns);
-    if (c.get(HiveConf.ConfVars.METASTORE_CLIENT_CAPABILITIES.varname) != null) {
-      String[] capabilities = c.get(HiveConf.ConfVars.METASTORE_CLIENT_CAPABILITIES.varname).split(",");
-      newdb.setHMSClientCapabilities(capabilities);
-      String hostName = "unknown";
-      try {
-        hostName = InetAddress.getLocalHost().getCanonicalHostName();
-      } catch (UnknownHostException ue) {
+    if (newdb.getHMSClientCapabilities() == null || newdb.getHMSClientCapabilities().length == 0) {
+      if (c.get(HiveConf.ConfVars.METASTORE_CLIENT_CAPABILITIES.varname) != null) {
+        String[] capabilities = c.get(HiveConf.ConfVars.METASTORE_CLIENT_CAPABILITIES.varname).split(",");
+        newdb.setHMSClientCapabilities(capabilities);
+        String hostName = "unknown";
+        try {
+          hostName = InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException ue) {
+        }
+        newdb.setHMSClientIdentifier("Hiveserver2#" + HiveVersionInfo.getVersion() + "@" + hostName);
       }
-      newdb.setHMSClientIdentifier("Hiveserver2#" + HiveVersionInfo.getVersion() + "@" + hostName);
     }
     hiveDB.set(newdb);
     return newdb;
@@ -367,6 +369,14 @@ public class Hive {
 
   public void setHMSClientIdentifier(final String id) {
     HiveMetaStoreClient.setProcessorIdentifier(id);
+  }
+
+  public String[] getHMSClientCapabilities() {
+    return HiveMetaStoreClient.getProcessorCapabilities();
+  }
+
+  public String getHMSClientIdentifier() {
+    return HiveMetaStoreClient.getProcessorIdentifier();
   }
 
   private static boolean isCompatible(Hive db, HiveConf c, boolean isFastCheck) {
