@@ -199,7 +199,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
       // id is appended since there could be multiple scalar subqueries and FILTER
       // is created using field name
-      String indicator = "alwaysTrue" + e.rel.getId();
+      String indicator = "trueLiteral";
       parentQueryFields.add(builder.alias(builder.literal(true), indicator));
       builder.project(parentQueryFields);
       builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
@@ -283,7 +283,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       //   end as v
       // from emp as e
       // left outer join (
-      //   select max(deptno) as m, count(*) as c, count(deptno) as d, "alwaysTrue" as indicator
+      //   select max(deptno) as m, count(*) as c, count(deptno) as d, "trueLiteral" as indicator
       //   group by name from emp) as q on e.name = q.name
       subqueryRestriction(e.rel);
       builder.push(e.rel);
@@ -294,7 +294,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
       final List<RexNode> parentQueryFields = new ArrayList<>();
       parentQueryFields.addAll(builder.fields());
-      String indicator = "alwaysTrue" + e.rel.getId();
+      String indicator = "trueLiteral" ;
       parentQueryFields.add(builder.alias(builder.literal(true), indicator));
       builder.project(parentQueryFields).as("q");
       builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
@@ -432,10 +432,11 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     }
 
     // Now the left join
+    String trueLiteral = "literalTrue";
     switch (logic) {
     case TRUE:
       if (fields.isEmpty()) {
-        builder.project(builder.alias(builder.literal(true), "i" + e.rel.getId()));
+        builder.project(builder.alias(builder.literal(true), trueLiteral));
         if (!variablesSet.isEmpty() && (e.getKind() == SqlKind.EXISTS
             || e.getKind() == SqlKind.IN)) {
           // avoid adding group by for correlated IN/EXISTS queries
@@ -456,7 +457,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       }
       break;
     default:
-      fields.add(builder.alias(builder.literal(true), "i" + e.rel.getId()));
+      fields.add(builder.alias(builder.literal(true), trueLiteral));
       builder.project(fields);
       builder.distinct();
     }
@@ -494,7 +495,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       break;
     }
     operands
-        .add(builder.isNotNull(builder.field("dt", "i" + e.rel.getId())), builder.literal(true));
+        .add(builder.isNotNull(builder.field("dt",trueLiteral)), builder.literal(true));
     if (!keyIsNulls.isEmpty()) {
       //Calcite creates null literal with Null type here but
       // because HIVE doesn't support null type it is appropriately typed boolean

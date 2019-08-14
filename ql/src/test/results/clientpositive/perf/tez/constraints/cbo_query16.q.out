@@ -72,8 +72,8 @@ POSTHOOK: Input: default@date_dim
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count(DISTINCT $4)], agg#1=[sum($5)], agg#2=[sum($6)])
-  HiveFilter(condition=[IS NULL($14)])
-    HiveJoin(condition=[=($4, $13)], joinType=[left], algorithm=[none], cost=[not available])
+  HiveFilter(condition=[IS NULL($13)])
+    HiveJoin(condition=[=($4, $14)], joinType=[left], algorithm=[none], cost=[not available])
       HiveSemiJoin(condition=[AND(<>($3, $13), =($4, $14))], joinType=[inner])
         HiveProject(cs_ship_date_sk=[$2], cs_ship_addr_sk=[$3], cs_call_center_sk=[$4], cs_warehouse_sk=[$5], cs_order_number=[$6], cs_ext_ship_cost=[$7], cs_net_profit=[$8], d_date_sk=[$9], d_date=[$10], ca_address_sk=[$0], ca_state=[$1], cc_call_center_sk=[$11], cc_county=[$12])
           HiveJoin(condition=[=($4, $11)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -94,7 +94,7 @@ HiveAggregate(group=[{}], agg#0=[count(DISTINCT $4)], agg#1=[sum($5)], agg#2=[su
         HiveProject(cs_warehouse_sk=[$14], cs_order_number=[$17])
           HiveFilter(condition=[IS NOT NULL($14)])
             HiveTableScan(table=[[default, catalog_sales]], table:alias=[cs2])
-      HiveProject(cr_order_number0=[$0], $f1=[true])
+      HiveProject(literalTrue=[true], cr_order_number0=[$0])
         HiveAggregate(group=[{16}])
           HiveTableScan(table=[[default, catalog_returns]], table:alias=[cr1])
 
