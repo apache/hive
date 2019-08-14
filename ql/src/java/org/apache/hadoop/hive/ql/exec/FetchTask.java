@@ -51,6 +51,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   private ListSinkOperator sink;
   private int totalRows;
   private static transient final Logger LOG = LoggerFactory.getLogger(FetchTask.class);
+  JobConf job = null;
 
   public FetchTask() {
     super();
@@ -68,7 +69,11 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
 
     try {
       // Create a file system handle
-      JobConf job = new JobConf(conf);
+      if (job == null) {
+        // The job config should be initilaized once per fetch task. In case of refetch, we should use the
+        // same config.
+        job = new JobConf(conf);
+      }
 
       Operator<?> source = work.getSource();
       if (source instanceof TableScanOperator) {
