@@ -948,6 +948,42 @@
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
+            <!--this 'execution' will produce a hive-exec-$version-core-shaded.jar which has
+             all classes from ql module, with esotericsoftware and objenesis jars shaded into it. This can be
+             used where hive guava dependency conflicts with hadoop version of guava. This will make hive to use
+             the guava version used by hadoop. The guava jar is not included or shaded as exec module uses some of
+             the classes from common module with guava dependency. This is causing method not found exception as
+             the relocated guava classes is not getting detected by hive common module, which is using original
+             guava namesapce as its not relocated.
+             -->
+            <id>build-exec-core-shaded-bundle</id>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>core-shaded</shadedClassifierName>
+              <artifactSet>
+              <includes>
+                <include>com.esotericsoftware:kryo-shaded</include>
+                <include>com.esotericsoftware:minlog</include>
+                <include>org.objenesis:objenesis</include>
+              </includes>
+              </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>com.esotericsoftware</pattern>
+                  <shadedPattern>org.apache.hive.com.esotericsoftware</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.objenesis</pattern>
+                  <shadedPattern>org.apache.hive.org.objenesis</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+          <execution>
             <id>build-exec-bundle</id>
             <phase>package</phase>
             <goals>

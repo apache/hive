@@ -132,6 +132,17 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>re-shaded</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-exec</artifactId>
+          <version>${project.version}</version>
+          <classifier>core-shaded</classifier>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 
 
