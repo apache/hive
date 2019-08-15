@@ -81,6 +81,8 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.junit.rules.TestName;
 
+import static java.sql.ResultSet.CONCUR_READ_ONLY;
+import static java.sql.ResultSet.TYPE_SCROLL_INSENSITIVE;
 import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
 import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
 import static org.junit.Assert.assertEquals;
@@ -3208,6 +3210,39 @@ public class TestJdbcDriver2 {
     stmt.execute("drop database query_id_test");
     stmt.close();
     stmt1.close();
+  }
+
+  @Test
+  public void testResultNextAcidTable() throws Exception {
+    Statement stmt = con.createStatement(TYPE_SCROLL_INSENSITIVE, CONCUR_READ_ONLY);
+    try {
+      stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
+      stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
+              "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+      stmt.execute("create table tbl (fld int) tblproperties(" +
+              "'transactional'='true','transactional_properties'='insert_only')");
+      stmt.execute("insert into tbl values (1)");
+      stmt.execute("insert into tbl values (2)");
+      stmt.execute("insert into tbl values (3)");
+      ResultSet res = stmt.executeQuery("select * from tbl");
+      assertNotNull(res);
+      int numRows = 0;
+      while (res.next()) {
+        numRows++;
+      }
+      assertEquals(numRows, 3);
+      res.beforeFirst();
+      while (res.next()) {
+        numRows--;
+      }
+      assertEquals(numRows, 0);
+      stmt.execute("drop table tbl");
+    } finally {
+      stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=false");
+      stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
+              "=org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+      stmt.close();
+    }
   }
 
   // Test that opening a JDBC connection to a non-existent database throws a HiveSQLException

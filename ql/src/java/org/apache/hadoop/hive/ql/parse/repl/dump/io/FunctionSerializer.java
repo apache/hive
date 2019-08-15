@@ -57,8 +57,6 @@ public class FunctionSerializer implements JsonWriter.Serializer {
         if ("hdfs".equals(inputPath.toUri().getScheme())) {
           FileSystem fileSystem = inputPath.getFileSystem(hiveConf);
           Path qualifiedUri = PathBuilder.fullyQualifiedHDFSUri(inputPath, fileSystem);
-          // Initialize ReplChangeManager instance since we will require it to encode file URI.
-          ReplChangeManager.getInstance(hiveConf);
           String checkSum = ReplChangeManager.checksumFor(qualifiedUri, fileSystem);
           String newFileUri = ReplChangeManager.encodeFileUri(qualifiedUri.toString(), checkSum, null);
           resourceUris.add(new ResourceUri(uri.getResourceType(), newFileUri));

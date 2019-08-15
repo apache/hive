@@ -229,10 +229,6 @@ public class ColumnType {
         return NumericCastOrder.get(from) < NumericCastOrder.get(to);
       }
 
-      // Allow string to double/decimal conversion
-      if (StringTypes.contains(from) &&
-          (to.equals(DOUBLE_TYPE_NAME) || to.equals(DECIMAL_TYPE_NAME))) return true;
-
       // Void can go to anything
       if (from.equals(VOID_TYPE_NAME)) return true;
 

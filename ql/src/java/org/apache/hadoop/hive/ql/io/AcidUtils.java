@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
 import static org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
@@ -2403,7 +2404,21 @@ public class AcidUtils {
           baseOrDeltaDir.getName().startsWith(DELTA_PREFIX))) {
         throw new IllegalArgumentException(baseOrDeltaDir + " is not a base/delta");
       }
-      FileStatus[] dataFiles = fs.listStatus(new Path[] {baseOrDeltaDir}, originalBucketFilter);
+      FileStatus[] dataFiles;
+      try {
+        dataFiles = fs.listStatus(new Path[]{baseOrDeltaDir}, originalBucketFilter);
+      } catch (FileNotFoundException e) {
+        // HIVE-22001: If the file was not found, this means that baseOrDeltaDir (which was listed
+        // earlier during AcidUtils.getAcidState()) was removed sometime between the FS list call
+        // and now. In the case of ACID tables the file would only have been removed by the transactional
+        // cleaner thread, in which case this is currently an old base/delta which has already been
+        // compacted. So a new set of base files from the compaction should exist which
+        // the current call to AcidUtils.getAcidState() would use rather than this old baes/delta.
+        // It should be ok to ignore this FileNotFound error and skip processing of this file - the list
+        // of files for this old base/delta will be incomplete, but it will not matter since this base/delta
+        // would be ignored (in favor of the new base files) by the selection logic in AcidUtils.getAcidState().
+        dataFiles = null;
+      }
       return dataFiles != null && dataFiles.length > 0 ? dataFiles[0].getPath() : null;
     }
 

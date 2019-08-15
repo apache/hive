@@ -67,6 +67,53 @@ POSTHOOK: query: drop table dmp.mp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: dmp@mp
 POSTHOOK: Output: dmp@mp
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:dmp
+PREHOOK: Output: dmp@delete_parent_path
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:dmp
+POSTHOOK: Output: dmp@delete_parent_path
+PREHOOK: query: alter table dmp.delete_parent_path add partition (year='2019', month='07', day='01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: dmp@delete_parent_path
+POSTHOOK: query: alter table dmp.delete_parent_path add partition (year='2019', month='07', day='01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: dmp@delete_parent_path
+POSTHOOK: Output: dmp@delete_parent_path@year=2019/month=07/day=01
+PREHOOK: query: show partitions dmp.delete_parent_path
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: dmp@delete_parent_path
+POSTHOOK: query: show partitions dmp.delete_parent_path
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: dmp@delete_parent_path
+year=2019/month=07/day=01
+#### A masked pattern was here ####
+PREHOOK: query: alter table dmp.delete_parent_path drop partition (year='2019', month='07', day='01')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: dmp@delete_parent_path
+PREHOOK: Output: dmp@delete_parent_path@year=2019/month=07/day=01
+POSTHOOK: query: alter table dmp.delete_parent_path drop partition (year='2019', month='07', day='01')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: dmp@delete_parent_path
+POSTHOOK: Output: dmp@delete_parent_path@year=2019/month=07/day=01
+PREHOOK: query: show partitions dmp.delete_parent_path
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: dmp@delete_parent_path
+POSTHOOK: query: show partitions dmp.delete_parent_path
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: dmp@delete_parent_path
+PREHOOK: query: drop table dmp.delete_parent_path
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: dmp@delete_parent_path
+PREHOOK: Output: dmp@delete_parent_path
+POSTHOOK: query: drop table dmp.delete_parent_path
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: dmp@delete_parent_path
+POSTHOOK: Output: dmp@delete_parent_path
 PREHOOK: query: drop database dmp
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:dmp

@@ -1345,11 +1345,11 @@ public class StatsUtils {
     if (oi instanceof WritableStringObjectInspector) {
       WritableStringObjectInspector woi = (WritableStringObjectInspector) oi;
       return JavaDataModel.get().lengthForStringOfLength(
-          woi.getPrimitiveWritableObject(value).getLength());
+        value == null ? 0 : woi.getPrimitiveWritableObject(value).getLength());
     } else if (oi instanceof WritableBinaryObjectInspector) {
       WritableBinaryObjectInspector woi = (WritableBinaryObjectInspector) oi;
       return JavaDataModel.get().lengthForByteArrayOfSize(
-          woi.getPrimitiveWritableObject(value).getLength());
+        value == null ? 0 : woi.getPrimitiveWritableObject(value).getLength());
     } else if (oi instanceof WritableBooleanObjectInspector) {
       return JavaDataModel.get().primitive1();
     } else if (oi instanceof WritableByteObjectInspector) {
