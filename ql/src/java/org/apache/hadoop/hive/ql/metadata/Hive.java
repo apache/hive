@@ -956,7 +956,8 @@ public class Hive {
         }
       }
 
-      getMSC().renamePartition(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), pvals,
+      String catName = (tbl.getCatalogName() != null) ? tbl.getCatalogName() : getDefaultCatalog(conf);
+      getMSC().renamePartition(catName, tbl.getDbName(), tbl.getTableName(), pvals,
           newPart.getTPartition(), validWriteIds);
 
     } catch (InvalidOperationException e){
