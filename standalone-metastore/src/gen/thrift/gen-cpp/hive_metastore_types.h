@@ -587,6 +587,8 @@ class GetTablesExtRequest;
 
 class ExtendedTableInfo;
 
+class GetDatabaseRequest;
+
 class CmRecycleRequest;
 
 class CmRecycleResponse;
@@ -11379,6 +11381,78 @@ class ExtendedTableInfo {
 void swap(ExtendedTableInfo &a, ExtendedTableInfo &b);
 
 inline std::ostream& operator<<(std::ostream& out, const ExtendedTableInfo& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetDatabaseRequest__isset {
+  _GetDatabaseRequest__isset() : name(false), catalogName(false), processorCapabilities(false), processorIdentifier(false) {}
+  bool name :1;
+  bool catalogName :1;
+  bool processorCapabilities :1;
+  bool processorIdentifier :1;
+} _GetDatabaseRequest__isset;
+
+class GetDatabaseRequest {
+ public:
+
+  GetDatabaseRequest(const GetDatabaseRequest&);
+  GetDatabaseRequest& operator=(const GetDatabaseRequest&);
+  GetDatabaseRequest() : name(), catalogName(), processorIdentifier() {
+  }
+
+  virtual ~GetDatabaseRequest() throw();
+  std::string name;
+  std::string catalogName;
+  std::vector<std::string>  processorCapabilities;
+  std::string processorIdentifier;
+
+  _GetDatabaseRequest__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_catalogName(const std::string& val);
+
+  void __set_processorCapabilities(const std::vector<std::string> & val);
+
+  void __set_processorIdentifier(const std::string& val);
+
+  bool operator == (const GetDatabaseRequest & rhs) const
+  {
+    if (__isset.name != rhs.__isset.name)
+      return false;
+    else if (__isset.name && !(name == rhs.name))
+      return false;
+    if (__isset.catalogName != rhs.__isset.catalogName)
+      return false;
+    else if (__isset.catalogName && !(catalogName == rhs.catalogName))
+      return false;
+    if (__isset.processorCapabilities != rhs.__isset.processorCapabilities)
+      return false;
+    else if (__isset.processorCapabilities && !(processorCapabilities == rhs.processorCapabilities))
+      return false;
+    if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
+      return false;
+    else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
+      return false;
+    return true;
+  }
+  bool operator != (const GetDatabaseRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetDatabaseRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetDatabaseRequest &a, GetDatabaseRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetDatabaseRequest& obj)
 {
   obj.printTo(out);
   return out;
