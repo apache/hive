@@ -1791,21 +1791,7 @@ public class AcidUtils {
   public static void findOriginals(FileSystem fs, Path dir,
       List<HdfsFileStatusWithId> original, Ref<Boolean> useFileIds,
       boolean ignoreEmptyFiles, boolean recursive) throws IOException {
-    List<HdfsFileStatusWithId> childrenWithId = null;
-    Boolean val = useFileIds.value;
-    if (val == null || val) {
-      try {
-        childrenWithId = SHIMS.listLocatedHdfsStatus(fs, dir, hiddenFileFilter);
-        if (val == null) {
-          useFileIds.value = true;
-        }
-      } catch (Throwable t) {
-        LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
-        if (val == null && t instanceof UnsupportedOperationException) {
-          useFileIds.value = false;
-        }
-      }
-    }
+    List<HdfsFileStatusWithId> childrenWithId = tryListLocatedHdfsStatus(useFileIds, fs, dir);
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
         if (child.getFileStatus().isDirectory()) {
