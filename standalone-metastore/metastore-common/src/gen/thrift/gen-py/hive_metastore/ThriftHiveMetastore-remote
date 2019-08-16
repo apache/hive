@@ -33,6 +33,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void drop_catalog(DropCatalogRequest catName)')
   print('  void create_database(Database database)')
   print('  Database get_database(string name)')
+  print('  Database get_database_req(GetDatabaseRequest request)')
   print('  void drop_database(string name, bool deleteData, bool cascade)')
   print('   get_databases(string pattern)')
   print('   get_all_databases()')
@@ -372,6 +373,12 @@ elif cmd == 'get_database':
     print('get_database requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_database(args[0],))
+
+elif cmd == 'get_database_req':
+  if len(args) != 1:
+    print('get_database_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_database_req(eval(args[0]),))
 
 elif cmd == 'drop_database':
   if len(args) != 3:
