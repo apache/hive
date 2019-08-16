@@ -380,9 +380,16 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
             // If the task hasn't started - inform about fragment completion immediately. It's possible for
             // the callable to never run.
             fragmentCompletionHanler.fragmentComplete(fragmentInfo);
-            this.amReporter
-                .unregisterTask(request.getAmHost(), request.getAmPort(),
-                    fragmentInfo.getQueryInfo().getQueryIdentifier(), ta);
+
+            try {
+              this.amReporter
+                  .unregisterTask(request.getAmHost(), request.getAmPort(),
+                      fragmentInfo.getQueryInfo().getQueryIdentifier(), ta);
+            } catch (Throwable thr) {
+              // unregisterTask can throw a RuntimeException (i.e. if task attempt not found)
+              // this brings down LLAP daemon if exception is not caught here
+              LOG.error("Unregistering task from AMReporter failed", thr);
+            }
           }
         }
       } else {
