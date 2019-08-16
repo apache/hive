@@ -525,25 +525,41 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       // bootstrap of tables if exist.
       if (builder.hasMoreWork() || work.getPathsToCopyIterator().hasNext() || work.hasBootstrapLoadTasks()) {
         DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
-      } else if (work.dbNameToLoadIn != null && StringUtils.isNotBlank(work.dbNameToLoadIn)) {
+      } else {
         // Nothing to be done for repl load now. Add a task to update the last.repl.id of the
         // target database to the event id of the last event considered by the dump. Next
         // incremental cycle if starts from this id, the events considered for this dump, won't
-        // be considered again. If we are replicating to multiple databases at a time, it's not
+        // be considered again.
+
+        // The name of the database to be loaded into is either specified directly or is
+        // available from the dump metadata.
+        String dbName = work.dbNameToLoadIn;
+        if (dbName == null || StringUtils.isNotBlank(dbName)) {
+          if (work.currentReplScope != null) {
+            String replScopeDbName = work.currentReplScope.getDbName();
+            if (replScopeDbName != null && !replScopeDbName.equals("*")) {
+              dbName = replScopeDbName;
+            }
+          }
+        }
+
+        // If we are replicating to multiple databases at a time, it's not
         // possible to know which all databases we are replicating into and hence we can not
         // update repl id in all those databases.
-        String lastEventid = builder.eventTo().toString();
-        HashMap<String, String> mapProp = new HashMap<>();
-        mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), lastEventid);
+        if (dbName != null && StringUtils.isNotBlank(dbName)) {
+          String lastEventid = builder.eventTo().toString();
+          HashMap<String, String> mapProp = new HashMap<>();
+          mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), lastEventid);
 
-        AlterDatabaseSetPropertiesDesc alterDbDesc =
-                new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, mapProp,
-                new ReplicationSpec(lastEventid, lastEventid));
-        Task<? extends Serializable> updateReplIdTask =
-                TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc), conf);
+          AlterDatabaseSetPropertiesDesc alterDbDesc =
+                  new AlterDatabaseSetPropertiesDesc(dbName, mapProp,
+                          new ReplicationSpec(lastEventid, lastEventid));
+          Task<? extends Serializable> updateReplIdTask =
+                  TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc), conf);
 
-        DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(updateReplIdTask));
-        LOG.debug("Added task to set last repl id of db " + work.dbNameToLoadIn + " to " + lastEventid);
+          DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(updateReplIdTask));
+          LOG.debug("Added task to set last repl id of db " + dbName + " to " + lastEventid);
+        }
       }
       this.childTasks = childTasks;
       return 0;
