@@ -4231,8 +4231,8 @@ public final class Utilities {
 
     Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
     AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
-    if (isMmCtas && !fs.exists(specPath)) {
-      Utilities.FILE_OP_LOGGER.info("Creating table directory for CTAS with no output at {}", specPath);
+    if (!fs.exists(specPath)) {
+      Utilities.FILE_OP_LOGGER.info("Creating directory with no output at {}", specPath);
       FileUtils.mkdir(fs, specPath, hconf);
     }
     Path[] files = getMmDirectoryCandidates(
