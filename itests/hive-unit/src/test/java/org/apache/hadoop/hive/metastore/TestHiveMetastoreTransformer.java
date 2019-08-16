@@ -18,12 +18,16 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.io.File;
+import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient.GetTablesRequestBuilder;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ExtendedTableInfo;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetTablesExtRequestFields;
@@ -44,6 +48,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCES
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READWRITE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -64,16 +69,27 @@ public class TestHiveMetastoreTransformer {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetastoreTransformer.class);
   protected static HiveMetaStoreClient client;
   protected static Configuration conf;
+  File ext_wh = null;
+  File wh = null;
 
-  protected static boolean isThriftClient = false;
+  protected static boolean isThriftClient = true;
   private static final String CAPABILITIES_KEY = "OBJCAPABILITIES";
 
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
+    wh = new File(System.getProperty("java.io.tmpdir") + File.separator +
+        "hive" + File.separator + "warehouse" + File.separator + "managed" + File.separator);
+    wh.mkdirs();
 
-    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer");
+    ext_wh = new File(System.getProperty("java.io.tmpdir") + File.separator +
+        "hive" + File.separator + "warehouse" + File.separator + "external" + File.separator);
+    ext_wh.mkdirs();
+
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS,
+        "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer");
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_IN_TEST, false);
+    MetastoreConf.setVar(conf, ConfVars.WAREHOUSE_EXTERNAL, ext_wh.getAbsolutePath());
     client = new HiveMetaStoreClient(conf);
   }
 
@@ -1110,6 +1126,152 @@ public class TestHiveMetastoreTransformer {
     }
   }
 
+  @Test
+  public void testTransformerDatabase() throws Exception {
+    try {
+      resetHMSClient();
+
+      final String dbName = "testdb";
+      try {
+        silentDropDatabase(dbName);
+      } catch (Exception e) {
+        LOG.info("Drop database failed for " + dbName);
+      }
+
+      new DatabaseBuilder()
+          .setName(dbName)
+          .create(client, conf);
+
+      List<String> capabilities = new ArrayList<>();
+      capabilities.add("EXTWRITE");
+      setHMSClient("TestGetDatabaseEXTWRITE", (String[])(capabilities.toArray(new String[0])));
+      Database db = client.getDatabase(dbName);
+      assertTrue("Database location not as expected:actual=" + db.getLocationUri(),
+          db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+
+      capabilities = new ArrayList<>();
+      capabilities.add("HIVEFULLACIDWRITE");
+      setHMSClient("TestGetDatabaseACIDWRITE", (String[])(capabilities.toArray(new String[0])));
+
+      db = client.getDatabase(dbName);
+      assertFalse("Database location not expected to be external warehouse:actual=" + db.getLocationUri(),
+          db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+      resetHMSClient();
+
+      capabilities = new ArrayList<>();
+      capabilities.add("HIVEMANAGEDINSERTWRITE");
+      setHMSClient("TestGetDatabaseINSERTWRITE", (String[])(capabilities.toArray(new String[0])));
+
+      db = client.getDatabase(dbName);
+      assertFalse("Database location not expected to be external warehouse:actual=" + db.getLocationUri(),
+          db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+      resetHMSClient();
+    } catch (Exception e) {
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      System.err.println("testTransformerDatabase() failed.");
+      fail("testTransformerDatabase failed:" + e.getMessage());
+    } finally {
+      resetHMSClient();
+    }
+  }
+
+  @Test
+  public void testTransformerMultiTable() throws Exception {
+    try {
+      resetHMSClient();
+
+      final String dbName = "testdb";
+      final String ext_table = "ext_table";
+      final String acidTable = "managed_table";
+      final String part_ext = "part_ext";
+
+      try {
+        silentDropDatabase(dbName);
+      } catch (Exception e) {
+        LOG.info("Drop database failed for " + dbName);
+      }
+
+      new DatabaseBuilder()
+          .setName(dbName)
+          .create(client, conf);
+
+      List<String> capabilities = new ArrayList<>();
+      capabilities.add("HIVEFULLACIDWRITE");
+      setHMSClient("TestTransformerMultiTable", (String[])(capabilities.toArray(new String[0])));
+
+      Map<String, Object> tProps = new HashMap<>();
+      tProps.put("DBNAME", dbName);
+      tProps.put("TBLNAME", ext_table);
+      tProps.put("TBLTYPE", TableType.EXTERNAL_TABLE);
+      tProps.put("DROPDB", Boolean.FALSE);
+      StringBuilder properties = new StringBuilder();
+      properties.append("EXTERNAL").append("=").append("TRUE");
+      tProps.put("PROPERTIES", properties.toString());
+      Table tbl = createTableWithCapabilities(tProps);
+
+      tProps.put("TBLNAME", acidTable);
+      tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
+      properties = new StringBuilder();
+      properties.append("transactional").append("=").append("true");
+      tProps.put("PROPERTIES", properties.toString());
+      tProps.put("DROPDB", Boolean.FALSE);
+      tbl = createTableWithCapabilities(tProps);
+
+      tProps = new HashMap<>();
+      tProps.put("DBNAME", dbName);
+      tProps.put("TBLNAME", part_ext);
+      tProps.put("TBLTYPE", TableType.EXTERNAL_TABLE);
+      tProps.put("DROPDB", Boolean.FALSE);
+      properties = new StringBuilder();
+      properties.append("EXTERNAL").append("=").append("TRUE");
+      tProps.put("PROPERTIES", properties.toString());
+      tProps.put("PARTITIONS", 10);
+      tbl = createTableWithCapabilities(tProps);
+
+      resetHMSClient();
+      capabilities = new ArrayList<>();
+      capabilities.add("EXTWRITE");
+      capabilities.add("EXTREAD");
+      setHMSClient("TestTransformerMultiTable", (String[])(capabilities.toArray(new String[0])));
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+
+      tbl = client.getTable(dbName, ext_table);
+      assertEquals("AccessType does not match", ACCESSTYPE_READWRITE, tbl.getAccessType());
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+      resetHMSClient();
+
+      capabilities = new ArrayList<>();
+      capabilities.add("EXTWRITE");
+      capabilities.add("EXTREAD");
+      capabilities.add("HIVESQL");
+      capabilities.add("SPARKSQL");
+      capabilities.add("HIVEBUCKET2");
+      setHMSClient("TestTransformerMultiTable", (String[])(capabilities.toArray(new String[0])));
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+
+      tbl = client.getTable(dbName, part_ext);
+      assertEquals("AccessType does not match", ACCESSTYPE_READWRITE, tbl.getAccessType());
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+      resetHMSClient();
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      System.err.println("testTransformerDatabase() failed.");
+      fail("testTransformerDatabase failed:" + e.getMessage());
+    } finally {
+      resetHMSClient();
+    }
+  }
+
   private List<String> createTables(Map<String, Object> props) throws Exception {
     int count = ((Integer)props.get("TABLECOUNT")).intValue();
     String tblName  = (String)props.get("TBLNAME");
@@ -1132,7 +1294,6 @@ public class TestHiveMetastoreTransformer {
     } catch (Exception e) {
       LOG.warn("Create table failed for " + newtblName);
     }
-
     return ret;
   }
 

@@ -161,6 +161,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_database failed: unknown result')
     end
 
+    def get_database_req(request)
+      send_get_database_req(request)
+      return recv_get_database_req()
+    end
+
+    def send_get_database_req(request)
+      send_message('get_database_req', Get_database_req_args, :request => request)
+    end
+
+    def recv_get_database_req()
+      result = receive_message(Get_database_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_database_req failed: unknown result')
+    end
+
     def drop_database(name, deleteData, cascade)
       send_drop_database(name, deleteData, cascade)
       recv_drop_database()
@@ -3887,6 +3904,19 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_database', seqid)
     end
 
+    def process_get_database_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_database_req_args)
+      result = Get_database_req_result.new()
+      begin
+        result.success = @handler.get_database_req(args.request)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_database_req', seqid)
+    end
+
     def process_drop_database(seqid, iprot, oprot)
       args = read_args(iprot, Drop_database_args)
       result = Drop_database_result.new()
@@ -6880,6 +6910,42 @@ module ThriftHiveMetastore
   end
 
   class Get_database_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Database},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_database_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::GetDatabaseRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_database_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1
