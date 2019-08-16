@@ -37,11 +37,3 @@ select count(*) from a_merge;
 alter table a_merge concatenate;
 select count(*) from a_merge;
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/a_merge/;
-
-insert into table a_merge select * from alltypesorc;
-dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/a_merge/;
-
-select count(*) from a_merge;
-alter table a_merge concatenate;
-select count(*) from a_merge;
-dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/a_merge/;
