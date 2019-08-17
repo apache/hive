@@ -139,8 +139,8 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_partitions_statistics_req(PartitionsStatsResult& _return, const PartitionsStatsRequest& request) = 0;
   virtual void get_aggr_stats_for(AggrStats& _return, const PartitionsStatsRequest& request) = 0;
   virtual bool set_aggr_stats_for(const SetPartitionsStatsRequest& request) = 0;
-  virtual bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) = 0;
-  virtual bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name) = 0;
+  virtual bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine) = 0;
+  virtual bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) = 0;
   virtual void create_function(const Function& func) = 0;
   virtual void drop_function(const std::string& dbName, const std::string& funcName) = 0;
   virtual void alter_function(const std::string& dbName, const std::string& funcName, const Function& newFunc) = 0;
@@ -642,11 +642,11 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     bool _return = false;
     return _return;
   }
-  bool delete_partition_column_statistics(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* part_name */, const std::string& /* col_name */) {
+  bool delete_partition_column_statistics(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* part_name */, const std::string& /* col_name */, const std::string& /* engine */) {
     bool _return = false;
     return _return;
   }
-  bool delete_table_column_statistics(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* col_name */) {
+  bool delete_table_column_statistics(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* col_name */, const std::string& /* engine */) {
     bool _return = false;
     return _return;
   }
@@ -16031,11 +16031,12 @@ class ThriftHiveMetastore_set_aggr_stats_for_presult {
 };
 
 typedef struct _ThriftHiveMetastore_delete_partition_column_statistics_args__isset {
-  _ThriftHiveMetastore_delete_partition_column_statistics_args__isset() : db_name(false), tbl_name(false), part_name(false), col_name(false) {}
+  _ThriftHiveMetastore_delete_partition_column_statistics_args__isset() : db_name(false), tbl_name(false), part_name(false), col_name(false), engine(false) {}
   bool db_name :1;
   bool tbl_name :1;
   bool part_name :1;
   bool col_name :1;
+  bool engine :1;
 } _ThriftHiveMetastore_delete_partition_column_statistics_args__isset;
 
 class ThriftHiveMetastore_delete_partition_column_statistics_args {
@@ -16043,7 +16044,7 @@ class ThriftHiveMetastore_delete_partition_column_statistics_args {
 
   ThriftHiveMetastore_delete_partition_column_statistics_args(const ThriftHiveMetastore_delete_partition_column_statistics_args&);
   ThriftHiveMetastore_delete_partition_column_statistics_args& operator=(const ThriftHiveMetastore_delete_partition_column_statistics_args&);
-  ThriftHiveMetastore_delete_partition_column_statistics_args() : db_name(), tbl_name(), part_name(), col_name() {
+  ThriftHiveMetastore_delete_partition_column_statistics_args() : db_name(), tbl_name(), part_name(), col_name(), engine() {
   }
 
   virtual ~ThriftHiveMetastore_delete_partition_column_statistics_args() throw();
@@ -16051,6 +16052,7 @@ class ThriftHiveMetastore_delete_partition_column_statistics_args {
   std::string tbl_name;
   std::string part_name;
   std::string col_name;
+  std::string engine;
 
   _ThriftHiveMetastore_delete_partition_column_statistics_args__isset __isset;
 
@@ -16062,6 +16064,8 @@ class ThriftHiveMetastore_delete_partition_column_statistics_args {
 
   void __set_col_name(const std::string& val);
 
+  void __set_engine(const std::string& val);
+
   bool operator == (const ThriftHiveMetastore_delete_partition_column_statistics_args & rhs) const
   {
     if (!(db_name == rhs.db_name))
@@ -16071,6 +16075,8 @@ class ThriftHiveMetastore_delete_partition_column_statistics_args {
     if (!(part_name == rhs.part_name))
       return false;
     if (!(col_name == rhs.col_name))
+      return false;
+    if (!(engine == rhs.engine))
       return false;
     return true;
   }
@@ -16095,6 +16101,7 @@ class ThriftHiveMetastore_delete_partition_column_statistics_pargs {
   const std::string* tbl_name;
   const std::string* part_name;
   const std::string* col_name;
+  const std::string* engine;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -16188,10 +16195,11 @@ class ThriftHiveMetastore_delete_partition_column_statistics_presult {
 };
 
 typedef struct _ThriftHiveMetastore_delete_table_column_statistics_args__isset {
-  _ThriftHiveMetastore_delete_table_column_statistics_args__isset() : db_name(false), tbl_name(false), col_name(false) {}
+  _ThriftHiveMetastore_delete_table_column_statistics_args__isset() : db_name(false), tbl_name(false), col_name(false), engine(false) {}
   bool db_name :1;
   bool tbl_name :1;
   bool col_name :1;
+  bool engine :1;
 } _ThriftHiveMetastore_delete_table_column_statistics_args__isset;
 
 class ThriftHiveMetastore_delete_table_column_statistics_args {
@@ -16199,13 +16207,14 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
 
   ThriftHiveMetastore_delete_table_column_statistics_args(const ThriftHiveMetastore_delete_table_column_statistics_args&);
   ThriftHiveMetastore_delete_table_column_statistics_args& operator=(const ThriftHiveMetastore_delete_table_column_statistics_args&);
-  ThriftHiveMetastore_delete_table_column_statistics_args() : db_name(), tbl_name(), col_name() {
+  ThriftHiveMetastore_delete_table_column_statistics_args() : db_name(), tbl_name(), col_name(), engine() {
   }
 
   virtual ~ThriftHiveMetastore_delete_table_column_statistics_args() throw();
   std::string db_name;
   std::string tbl_name;
   std::string col_name;
+  std::string engine;
 
   _ThriftHiveMetastore_delete_table_column_statistics_args__isset __isset;
 
@@ -16215,6 +16224,8 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
 
   void __set_col_name(const std::string& val);
 
+  void __set_engine(const std::string& val);
+
   bool operator == (const ThriftHiveMetastore_delete_table_column_statistics_args & rhs) const
   {
     if (!(db_name == rhs.db_name))
@@ -16222,6 +16233,8 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
     if (!(tbl_name == rhs.tbl_name))
       return false;
     if (!(col_name == rhs.col_name))
+      return false;
+    if (!(engine == rhs.engine))
       return false;
     return true;
   }
@@ -16245,6 +16258,7 @@ class ThriftHiveMetastore_delete_table_column_statistics_pargs {
   const std::string* db_name;
   const std::string* tbl_name;
   const std::string* col_name;
+  const std::string* engine;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -28792,11 +28806,11 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool set_aggr_stats_for(const SetPartitionsStatsRequest& request);
   void send_set_aggr_stats_for(const SetPartitionsStatsRequest& request);
   bool recv_set_aggr_stats_for();
-  bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name);
-  void send_delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name);
+  bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine);
+  void send_delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine);
   bool recv_delete_partition_column_statistics();
-  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
-  void send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
+  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine);
+  void send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine);
   bool recv_delete_table_column_statistics();
   void create_function(const Function& func);
   void send_create_function(const Function& func);
@@ -30743,22 +30757,22 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return ifaces_[i]->set_aggr_stats_for(request);
   }
 
-  bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) {
+  bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->delete_partition_column_statistics(db_name, tbl_name, part_name, col_name);
+      ifaces_[i]->delete_partition_column_statistics(db_name, tbl_name, part_name, col_name, engine);
     }
-    return ifaces_[i]->delete_partition_column_statistics(db_name, tbl_name, part_name, col_name);
+    return ifaces_[i]->delete_partition_column_statistics(db_name, tbl_name, part_name, col_name, engine);
   }
 
-  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
+  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name);
+      ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name, engine);
     }
-    return ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name);
+    return ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name, engine);
   }
 
   void create_function(const Function& func) {
@@ -32158,11 +32172,11 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   bool set_aggr_stats_for(const SetPartitionsStatsRequest& request);
   int32_t send_set_aggr_stats_for(const SetPartitionsStatsRequest& request);
   bool recv_set_aggr_stats_for(const int32_t seqid);
-  bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name);
-  int32_t send_delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name);
+  bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine);
+  int32_t send_delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine);
   bool recv_delete_partition_column_statistics(const int32_t seqid);
-  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
-  int32_t send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
+  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine);
+  int32_t send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine);
   bool recv_delete_table_column_statistics(const int32_t seqid);
   void create_function(const Function& func);
   int32_t send_create_function(const Function& func);

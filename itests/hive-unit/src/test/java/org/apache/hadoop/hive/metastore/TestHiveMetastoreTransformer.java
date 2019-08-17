@@ -835,7 +835,7 @@ public class TestHiveMetastoreTransformer {
       for (int i = 1; i <= pCount; i++) {
         partValues.add("partcol=" + i);
       }
-      List<Partition> parts = client.getPartitionsByNames(dbName, tblName, partValues, false);
+      List<Partition> parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
       assertEquals("Return list size does not match expected size", pCount, parts.size());
 
       tblName = "test_gp_ext_bucketed_wc";
@@ -849,7 +849,7 @@ public class TestHiveMetastoreTransformer {
       tProps.put("PROPERTIES", properties.toString());
       table = createTableWithCapabilities(tProps);
 
-      parts = client.getPartitionsByNames(dbName, tblName, partValues, false);
+      parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
       LOG.debug("Return list size=" + parts.size());
 
       for (Partition part : parts) {
@@ -860,7 +860,7 @@ public class TestHiveMetastoreTransformer {
       capabilities.clear();
       capabilities.add("HIVEBUCKET2");
       setHMSClient("TestGetPartitionByNames#2", (String[])(capabilities.toArray(new String[0])));
-      parts = client.getPartitionsByNames(dbName, tblName, partValues, false);
+      parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
 
       for (Partition part : parts) {
         assertEquals("Partition bucket count does not match", -1, part.getSd().getNumBuckets());
@@ -883,7 +883,7 @@ public class TestHiveMetastoreTransformer {
       capabilities.clear();
       capabilities.add("CONNECTORREAD");
       setHMSClient("TestGetPartitionByNames#3", (String[])(capabilities.toArray(new String[0])));
-      parts = client.getPartitionsByNames(dbName, tblName, partValues, false);
+      parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
       assertEquals("Partition count does not match", pCount, parts.size());
 
       LOG.info("Test execution complete:testGetPartitionsByNames");

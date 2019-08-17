@@ -550,7 +550,8 @@ CREATE TABLE "TAB_COL_STATS" (
  "MAX_COL_LEN" bigint,
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
- "LAST_ANALYZED" bigint NOT NULL
+ "LAST_ANALYZED" bigint NOT NULL,
+ "ENGINE" character varying(128) NOT NULL
 );
 
 --
@@ -588,7 +589,8 @@ CREATE TABLE "PART_COL_STATS" (
  "MAX_COL_LEN" bigint,
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
- "LAST_ANALYZED" bigint NOT NULL
+ "LAST_ANALYZED" bigint NOT NULL,
+ "ENGINE" character varying(128) NOT NULL
 );
 
 --

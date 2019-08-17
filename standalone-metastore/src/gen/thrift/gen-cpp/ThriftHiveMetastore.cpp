@@ -30812,6 +30812,14 @@ uint32_t ThriftHiveMetastore_delete_partition_column_statistics_args::read(::apa
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->engine);
+          this->__isset.engine = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -30845,6 +30853,10 @@ uint32_t ThriftHiveMetastore_delete_partition_column_statistics_args::write(::ap
   xfer += oprot->writeString(this->col_name);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("engine", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->engine);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -30874,6 +30886,10 @@ uint32_t ThriftHiveMetastore_delete_partition_column_statistics_pargs::write(::a
 
   xfer += oprot->writeFieldBegin("col_name", ::apache::thrift::protocol::T_STRING, 4);
   xfer += oprot->writeString((*(this->col_name)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("engine", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString((*(this->engine)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -31119,6 +31135,14 @@ uint32_t ThriftHiveMetastore_delete_table_column_statistics_args::read(::apache:
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->engine);
+          this->__isset.engine = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -31148,6 +31172,10 @@ uint32_t ThriftHiveMetastore_delete_table_column_statistics_args::write(::apache
   xfer += oprot->writeString(this->col_name);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("engine", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->engine);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -31173,6 +31201,10 @@ uint32_t ThriftHiveMetastore_delete_table_column_statistics_pargs::write(::apach
 
   xfer += oprot->writeFieldBegin("col_name", ::apache::thrift::protocol::T_STRING, 3);
   xfer += oprot->writeString((*(this->col_name)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("engine", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString((*(this->engine)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -61864,13 +61896,13 @@ bool ThriftHiveMetastoreClient::recv_set_aggr_stats_for()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "set_aggr_stats_for failed: unknown result");
 }
 
-bool ThriftHiveMetastoreClient::delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name)
+bool ThriftHiveMetastoreClient::delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine)
 {
-  send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name);
+  send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name, engine);
   return recv_delete_partition_column_statistics();
 }
 
-void ThriftHiveMetastoreClient::send_delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name)
+void ThriftHiveMetastoreClient::send_delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("delete_partition_column_statistics", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -61880,6 +61912,7 @@ void ThriftHiveMetastoreClient::send_delete_partition_column_statistics(const st
   args.tbl_name = &tbl_name;
   args.part_name = &part_name;
   args.col_name = &col_name;
+  args.engine = &engine;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -61937,13 +61970,13 @@ bool ThriftHiveMetastoreClient::recv_delete_partition_column_statistics()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "delete_partition_column_statistics failed: unknown result");
 }
 
-bool ThriftHiveMetastoreClient::delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name)
+bool ThriftHiveMetastoreClient::delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine)
 {
-  send_delete_table_column_statistics(db_name, tbl_name, col_name);
+  send_delete_table_column_statistics(db_name, tbl_name, col_name, engine);
   return recv_delete_table_column_statistics();
 }
 
-void ThriftHiveMetastoreClient::send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name)
+void ThriftHiveMetastoreClient::send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("delete_table_column_statistics", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -61952,6 +61985,7 @@ void ThriftHiveMetastoreClient::send_delete_table_column_statistics(const std::s
   args.db_name = &db_name;
   args.tbl_name = &tbl_name;
   args.col_name = &col_name;
+  args.engine = &engine;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -75654,7 +75688,7 @@ void ThriftHiveMetastoreProcessor::process_delete_partition_column_statistics(in
 
   ThriftHiveMetastore_delete_partition_column_statistics_result result;
   try {
-    result.success = iface_->delete_partition_column_statistics(args.db_name, args.tbl_name, args.part_name, args.col_name);
+    result.success = iface_->delete_partition_column_statistics(args.db_name, args.tbl_name, args.part_name, args.col_name, args.engine);
     result.__isset.success = true;
   } catch (NoSuchObjectException &o1) {
     result.o1 = o1;
@@ -75720,7 +75754,7 @@ void ThriftHiveMetastoreProcessor::process_delete_table_column_statistics(int32_
 
   ThriftHiveMetastore_delete_table_column_statistics_result result;
   try {
-    result.success = iface_->delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name);
+    result.success = iface_->delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name, args.engine);
     result.__isset.success = true;
   } catch (NoSuchObjectException &o1) {
     result.o1 = o1;
@@ -92811,13 +92845,13 @@ bool ThriftHiveMetastoreConcurrentClient::recv_set_aggr_stats_for(const int32_t 
   } // end while(true)
 }
 
-bool ThriftHiveMetastoreConcurrentClient::delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name)
+bool ThriftHiveMetastoreConcurrentClient::delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine)
 {
-  int32_t seqid = send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name);
+  int32_t seqid = send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name, engine);
   return recv_delete_partition_column_statistics(seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name)
+int32_t ThriftHiveMetastoreConcurrentClient::send_delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
@@ -92828,6 +92862,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_delete_partition_column_statis
   args.tbl_name = &tbl_name;
   args.part_name = &part_name;
   args.col_name = &col_name;
+  args.engine = &engine;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -92914,13 +92949,13 @@ bool ThriftHiveMetastoreConcurrentClient::recv_delete_partition_column_statistic
   } // end while(true)
 }
 
-bool ThriftHiveMetastoreConcurrentClient::delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name)
+bool ThriftHiveMetastoreConcurrentClient::delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine)
 {
-  int32_t seqid = send_delete_table_column_statistics(db_name, tbl_name, col_name);
+  int32_t seqid = send_delete_table_column_statistics(db_name, tbl_name, col_name, engine);
   return recv_delete_table_column_statistics(seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name)
+int32_t ThriftHiveMetastoreConcurrentClient::send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
@@ -92930,6 +92965,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_delete_table_column_statistics
   args.db_name = &db_name;
   args.tbl_name = &tbl_name;
   args.col_name = &col_name;
+  args.engine = &engine;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();

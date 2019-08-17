@@ -1003,6 +1003,9 @@
       <field name="lastAnalyzed">
         <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
       </field>
+      <field name="engine">
+        <column name="ENGINE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
     </class>
 
     <class name="MPartitionColumnStatistics" table="PART_COL_STATS" identity-type="datastore" detachable="true">
@@ -1073,7 +1076,11 @@
       <field name="lastAnalyzed">
         <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
       </field>
+      <field name="engine">
+        <column name="ENGINE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
     </class>
+
     <class name="MVersionTable" table="VERSION" identity-type="datastore" detachable="true">
       <datastore-identity>
         <column name="VER_ID"/>

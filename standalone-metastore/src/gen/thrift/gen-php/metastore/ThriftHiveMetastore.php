@@ -989,24 +989,26 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    * @param string $tbl_name
    * @param string $part_name
    * @param string $col_name
+   * @param string $engine
    * @return bool
    * @throws \metastore\NoSuchObjectException
    * @throws \metastore\MetaException
    * @throws \metastore\InvalidObjectException
    * @throws \metastore\InvalidInputException
    */
-  public function delete_partition_column_statistics($db_name, $tbl_name, $part_name, $col_name);
+  public function delete_partition_column_statistics($db_name, $tbl_name, $part_name, $col_name, $engine);
   /**
    * @param string $db_name
    * @param string $tbl_name
    * @param string $col_name
+   * @param string $engine
    * @return bool
    * @throws \metastore\NoSuchObjectException
    * @throws \metastore\MetaException
    * @throws \metastore\InvalidObjectException
    * @throws \metastore\InvalidInputException
    */
-  public function delete_table_column_statistics($db_name, $tbl_name, $col_name);
+  public function delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine);
   /**
    * @param \metastore\Function $func
    * @throws \metastore\AlreadyExistsException
@@ -8508,19 +8510,20 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     throw new \Exception("set_aggr_stats_for failed: unknown result");
   }
 
-  public function delete_partition_column_statistics($db_name, $tbl_name, $part_name, $col_name)
+  public function delete_partition_column_statistics($db_name, $tbl_name, $part_name, $col_name, $engine)
   {
-    $this->send_delete_partition_column_statistics($db_name, $tbl_name, $part_name, $col_name);
+    $this->send_delete_partition_column_statistics($db_name, $tbl_name, $part_name, $col_name, $engine);
     return $this->recv_delete_partition_column_statistics();
   }
 
-  public function send_delete_partition_column_statistics($db_name, $tbl_name, $part_name, $col_name)
+  public function send_delete_partition_column_statistics($db_name, $tbl_name, $part_name, $col_name, $engine)
   {
     $args = new \metastore\ThriftHiveMetastore_delete_partition_column_statistics_args();
     $args->db_name = $db_name;
     $args->tbl_name = $tbl_name;
     $args->part_name = $part_name;
     $args->col_name = $col_name;
+    $args->engine = $engine;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -8574,18 +8577,19 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     throw new \Exception("delete_partition_column_statistics failed: unknown result");
   }
 
-  public function delete_table_column_statistics($db_name, $tbl_name, $col_name)
+  public function delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine)
   {
-    $this->send_delete_table_column_statistics($db_name, $tbl_name, $col_name);
+    $this->send_delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine);
     return $this->recv_delete_table_column_statistics();
   }
 
-  public function send_delete_table_column_statistics($db_name, $tbl_name, $col_name)
+  public function send_delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine)
   {
     $args = new \metastore\ThriftHiveMetastore_delete_table_column_statistics_args();
     $args->db_name = $db_name;
     $args->tbl_name = $tbl_name;
     $args->col_name = $col_name;
+    $args->engine = $engine;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -43515,6 +43519,10 @@ class ThriftHiveMetastore_delete_partition_column_statistics_args {
    * @var string
    */
   public $col_name = null;
+  /**
+   * @var string
+   */
+  public $engine = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -43535,6 +43543,10 @@ class ThriftHiveMetastore_delete_partition_column_statistics_args {
           'var' => 'col_name',
           'type' => TType::STRING,
           ),
+        5 => array(
+          'var' => 'engine',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -43549,6 +43561,9 @@ class ThriftHiveMetastore_delete_partition_column_statistics_args {
       }
       if (isset($vals['col_name'])) {
         $this->col_name = $vals['col_name'];
+      }
+      if (isset($vals['engine'])) {
+        $this->engine = $vals['engine'];
       }
     }
   }
@@ -43600,6 +43615,13 @@ class ThriftHiveMetastore_delete_partition_column_statistics_args {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->engine);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -43631,6 +43653,11 @@ class ThriftHiveMetastore_delete_partition_column_statistics_args {
     if ($this->col_name !== null) {
       $xfer += $output->writeFieldBegin('col_name', TType::STRING, 4);
       $xfer += $output->writeString($this->col_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->engine !== null) {
+      $xfer += $output->writeFieldBegin('engine', TType::STRING, 5);
+      $xfer += $output->writeString($this->engine);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -43830,6 +43857,10 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
    * @var string
    */
   public $col_name = null;
+  /**
+   * @var string
+   */
+  public $engine = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -43846,6 +43877,10 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
           'var' => 'col_name',
           'type' => TType::STRING,
           ),
+        4 => array(
+          'var' => 'engine',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -43857,6 +43892,9 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
       }
       if (isset($vals['col_name'])) {
         $this->col_name = $vals['col_name'];
+      }
+      if (isset($vals['engine'])) {
+        $this->engine = $vals['engine'];
       }
     }
   }
@@ -43901,6 +43939,13 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->engine);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -43927,6 +43972,11 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
     if ($this->col_name !== null) {
       $xfer += $output->writeFieldBegin('col_name', TType::STRING, 3);
       $xfer += $output->writeString($this->col_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->engine !== null) {
+      $xfer += $output->writeFieldBegin('engine', TType::STRING, 4);
+      $xfer += $output->writeString($this->engine);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

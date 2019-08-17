@@ -651,13 +651,6 @@ public interface IMetaStoreClient {
       TException, NoSuchObjectException;
 
   /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  Table getTable(String dbName, String tableName, boolean getColumnStats) throws MetaException,
-      TException, NoSuchObjectException;
-
-  /**
    * Get a table object in the default catalog.
    *
    * @param dbName
@@ -675,8 +668,11 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    *           In case the table wasn't found.
    */
+  Table getTable(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
+      TException, NoSuchObjectException;
+
   Table getTableV2(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
-          TException, NoSuchObjectException;
+      TException, NoSuchObjectException;
 
   /**
    * Get a table object.
@@ -703,13 +699,6 @@ public interface IMetaStoreClient {
                         String validWriteIdList) throws TException;
 
   /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  Table getTable(String catName, String dbName, String tableName,
-                   String validWriteIdList, boolean getColumnStats) throws TException;
-
-  /**
    * Get a table object.
    * @param catName catalog the table is in.
    * @param dbName database the table is in.
@@ -721,8 +710,11 @@ public interface IMetaStoreClient {
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
+  Table getTable(String catName, String dbName, String tableName,
+         String validWriteIdList, boolean getColumnStats, String engine) throws TException;
+
   Table getTableV2(String catName, String dbName, String tableName,
-                 String validWriteIdList, boolean getColumnStats, String engine) throws TException;
+         String validWriteIdList, boolean getColumnStats, String engine) throws TException;
 
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
@@ -1421,13 +1413,6 @@ public interface IMetaStoreClient {
       List<String> part_names) throws NoSuchObjectException, MetaException, TException;
 
   /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      boolean getColStats) throws NoSuchObjectException, MetaException, TException;
-
-  /**
    * Get partitions by a list of partition names.
    * @param db_name database name
    * @param tbl_name table name
@@ -1439,6 +1424,9 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
    */
+  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
+      boolean getColStats, String engine) throws NoSuchObjectException, MetaException, TException;
+
   List<Partition> getPartitionsByNamesV2(String db_name, String tbl_name, List<String> part_names,
       boolean getColStats, String engine) throws NoSuchObjectException, MetaException, TException;
 
@@ -1458,14 +1446,6 @@ public interface IMetaStoreClient {
       throws NoSuchObjectException, MetaException, TException;
 
   /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-      List<String> part_names, boolean getColStats)
-      throws NoSuchObjectException, MetaException, TException;
-
-  /**
    * Get partitions by a list of partition names.
    * @param catName catalog name
    * @param db_name database name
@@ -1478,9 +1458,13 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
    */
-  List<Partition> getPartitionsByNamesV2(String catName, String db_name, String tbl_name,
+  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine)
           throws NoSuchObjectException, MetaException, TException;
+
+  List<Partition> getPartitionsByNamesV2(String catName, String db_name, String tbl_name,
+      List<String> part_names, boolean getColStats, String engine)
+      throws NoSuchObjectException, MetaException, TException;
 
   /**
    * List partitions along with privilege information for a user or groups
@@ -2413,13 +2397,6 @@ public interface IMetaStoreClient {
    InvalidInputException;
 
   /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-      List<String> colNames) throws NoSuchObjectException, MetaException, TException;
-
-  /**
    * Get the column statistics for a set of columns in a table.  This should only be used for
    * non-partitioned tables.  For partitioned tables use
    * {@link #getPartitionColumnStatistics(String, String, List, List)}.
@@ -2432,27 +2409,19 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
+      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
+
   List<ColumnStatisticsObj> getTableColumnStatisticsV2(String dbName, String tableName,
       List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
 
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
   List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-      List<String> colNames, String validWriteIdList)
+      List<String> colNames, String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
   List<ColumnStatisticsObj> getTableColumnStatisticsV2(String dbName, String tableName,
       List<String> colNames, String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
-      List<String> colNames) throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get the column statistics for a set of columns in a table.  This should only be used for
@@ -2468,27 +2437,18 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
+      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
+
   List<ColumnStatisticsObj> getTableColumnStatisticsV2(String catName, String dbName, String tableName,
       List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
 
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
   List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
-      List<String> colNames, String validWriteIdList)
+      List<String> colNames, String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
   List<ColumnStatisticsObj> getTableColumnStatisticsV2(String catName, String dbName, String tableName,
       List<String> colNames, String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
-      String tableName,  List<String> partNames, List<String> colNames)
       throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -2504,30 +2464,22 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(String dbName,
+  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
       String tableName,  List<String> partNames, List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, TException;
 
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
+  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(String dbName,
+      String tableName,  List<String> partNames, List<String> colNames, String engine)
+      throws NoSuchObjectException, MetaException, TException;
+
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
       String tableName,  List<String> partNames, List<String> colNames,
-      String validWriteIdList)
+      String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(String dbName,
       String tableName,  List<String> partNames, List<String> colNames,
       String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
-      String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames)
       throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -2544,18 +2496,18 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
+      String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames,
+      String engine) throws NoSuchObjectException, MetaException, TException;
+
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(
       String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames,
       String engine) throws NoSuchObjectException, MetaException, TException;
 
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames,
-      String validWriteIdList)
+      String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(
@@ -2563,14 +2515,6 @@ public interface IMetaStoreClient {
       List<String> partNames, List<String> colNames,
       String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  boolean deletePartitionColumnStatistics(String dbName, String tableName,
-      String partName, String colName) throws NoSuchObjectException, MetaException,
-      InvalidObjectException, TException, InvalidInputException;
 
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName, or
@@ -2587,17 +2531,13 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error
    * @throws InvalidInputException input is invalid or null.
    */
+  boolean deletePartitionColumnStatistics(String dbName, String tableName,
+      String partName, String colName, String engine) throws NoSuchObjectException, MetaException,
+      InvalidObjectException, TException, InvalidInputException;
+
   boolean deletePartitionColumnStatisticsV2(String dbName, String tableName,
     String partName, String colName, String engine) throws NoSuchObjectException, MetaException,
     InvalidObjectException, TException, InvalidInputException;
-
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-      String partName, String colName)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName, or
@@ -2615,16 +2555,13 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error
    * @throws InvalidInputException input is invalid or null.
    */
-  boolean deletePartitionColumnStatisticsV2(String catName, String dbName, String tableName,
+  boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
       String partName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  boolean deleteTableColumnStatistics(String dbName, String tableName, String colName) throws
-      NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
+  boolean deletePartitionColumnStatisticsV2(String catName, String dbName, String tableName,
+      String partName, String colName, String engine)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
    * Delete table level column statistics given dbName, tableName and colName, or all columns in
@@ -2640,15 +2577,11 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error
    * @throws InvalidInputException bad input, like a null table name.
    */
-   boolean deleteTableColumnStatisticsV2(String dbName, String tableName, String colName, String engine) throws
-    NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
+  boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine) throws
+      NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
+  boolean deleteTableColumnStatisticsV2(String dbName, String tableName, String colName, String engine) throws
+      NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
    * Delete table level column statistics given dbName, tableName and colName, or all columns in
@@ -2665,6 +2598,9 @@ public interface IMetaStoreClient {
    * @throws TException thrift transport error
    * @throws InvalidInputException bad input, like a null table name.
    */
+  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
+
   boolean deleteTableColumnStatisticsV2(String catName, String dbName, String tableName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
@@ -3443,13 +3379,6 @@ public interface IMetaStoreClient {
       GetRoleGrantsForPrincipalRequest getRolePrincReq) throws MetaException, TException;
 
   /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  AggrStats getAggrColStatsFor(String dbName, String tblName,
-      List<String> colNames, List<String> partName)  throws NoSuchObjectException, MetaException, TException;
-
-  /**
    * Get aggregated column stats for a set of partitions.
    * @param dbName database name
    * @param tblName table name
@@ -3461,28 +3390,19 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport exception
    */
+  AggrStats getAggrColStatsFor(String dbName, String tblName,
+      List<String> colNames, List<String> partName, String engine)  throws NoSuchObjectException, MetaException, TException;
+
   AggrStats getAggrColStatsForV2(String dbName, String tblName,
       List<String> colNames, List<String> partName, String engine)  throws NoSuchObjectException, MetaException, TException;
 
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
   AggrStats getAggrColStatsFor(String dbName, String tblName,
       List<String> colNames, List<String> partName,
-      String writeIdList)  throws NoSuchObjectException, MetaException, TException;
+      String engine, String writeIdList)  throws NoSuchObjectException, MetaException, TException;
 
   AggrStats getAggrColStatsForV2(String dbName, String tblName,
       List<String> colNames, List<String> partName,
       String engine, String writeIdList)  throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
-  AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
-      List<String> colNames, List<String> partNames)
-      throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get aggregated column stats for a set of partitions.
@@ -3497,18 +3417,19 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport exception
    */
+  AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
+      List<String> colNames, List<String> partNames,
+      String engine)
+      throws NoSuchObjectException, MetaException, TException;
+
   AggrStats getAggrColStatsForV2(String catName, String dbName, String tblName,
       List<String> colNames, List<String> partNames,
       String engine)
       throws NoSuchObjectException, MetaException, TException;
 
-  /**
-   * @Deprecated to be removed in cdpd 1.0
-   */
-  @Deprecated
   AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
       List<String> colNames, List<String> partNames,
-      String writeIdList)
+      String engine, String writeIdList)
       throws NoSuchObjectException, MetaException, TException;
 
   AggrStats getAggrColStatsForV2(String catName, String dbName, String tblName,
