@@ -681,11 +681,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_orc_bucketed
-                  Statistics: Num rows: 1234 Data size: 706090 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1235 Data size: 706970 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: ROW__ID
-                    Statistics: Num rows: 1234 Data size: 706090 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1235 Data size: 706970 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       keys: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
