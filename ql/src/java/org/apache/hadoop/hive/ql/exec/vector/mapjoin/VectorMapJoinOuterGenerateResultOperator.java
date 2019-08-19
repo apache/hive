@@ -708,6 +708,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
         if (inputSelectedInUse) {
           System.arraycopy(inputSelected, 0, batch.selected, 0, inputLogicalSize);
         }
+        batch.selectedInUse = inputSelectedInUse;
         batch.size = inputLogicalSize;
       }
 
