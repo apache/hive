@@ -628,23 +628,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       filterHook = isServerFilterEnabled ? loadFilterHooks() : null;
 
       String className = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS);
-      Class<?> clazz;
-      try {
-        clazz = conf.getClassByName(className);
-      } catch (ClassNotFoundException e) {
-        LOG.error("Unable to load class " + className, e);
-        throw new IllegalArgumentException(e);
-      }
-      Constructor<?> constructor;
-      try {
-        constructor = clazz.getConstructor(IHMSHandler.class);
-        if (Modifier.isPrivate(constructor.getModifiers()))
-          throw new IllegalArgumentException("Illegal implementation for metadata transformer. Constructor is private");
-        transformer = (IMetaStoreMetadataTransformer) constructor.newInstance(this);
-      } catch (NoSuchMethodException | InstantiationException | IllegalAccessException
-          | IllegalArgumentException | InvocationTargetException e) {
-        LOG.error("Unable to create instance of class " + className, e);
-        throw new IllegalArgumentException(e);
+      if (className != null && !className.trim().isEmpty()) {
+        Class<?> clazz;
+        try {
+          clazz = conf.getClassByName(className);
+        } catch (ClassNotFoundException e) {
+          LOG.error("Unable to load class " + className, e);
+          throw new IllegalArgumentException(e);
+        }
+        Constructor<?> constructor;
+        try {
+          constructor = clazz.getConstructor(IHMSHandler.class);
+          if (Modifier.isPrivate(constructor.getModifiers()))
+            throw new IllegalArgumentException("Illegal implementation for metadata transformer. Constructor is private");
+          transformer = (IMetaStoreMetadataTransformer) constructor.newInstance(this);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+          LOG.error("Unable to create instance of class " + className, e);
+          throw new IllegalArgumentException(e);
+        }
       }
     }
 
@@ -1508,21 +1509,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public Database get_database(final String name) throws NoSuchObjectException, MetaException {
-      startFunction("get_database", ": " + name);
-      Database db = null;
-      Exception ex = null;
-      try {
-        String[] parsedDbName = parseDbName(name, conf);
-        db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-        firePreEvent(new PreReadDatabaseEvent(db, this));
-      } catch (MetaException|NoSuchObjectException e) {
-        ex = e;
-        throw e;
-      } finally {
-        endFunction("get_database", db != null, ex);
-      }
-      return db;
+    public Database get_database(final String name)
+        throws NoSuchObjectException, MetaException {
+      GetDatabaseRequest request = new GetDatabaseRequest();
+      String[] parsedDbName = parseDbName(name, conf);
+      request.setName(parsedDbName[DB_NAME]);
+      if (parsedDbName[CAT_NAME] != null)
+          request.setCatalogName(parsedDbName[CAT_NAME]);
+        return get_database_req(request);
     }
 
     @Override
@@ -1538,6 +1532,34 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (Exception e) {
         assert (e instanceof RuntimeException);
         throw (RuntimeException) e;
+      }
+      return db;
+    }
+
+    @Override
+    public Database get_database_req(GetDatabaseRequest request) throws NoSuchObjectException, MetaException {
+      startFunction("get_database", ": " + request.getName());
+      Database db = null;
+      Exception ex = null;
+      if (request.getName() == null) {
+        throw new MetaException("Database name cannot be null.");
+      }
+      List<String> processorCapabilities = request.getProcessorCapabilities();
+      String processorId = request.getProcessorIdentifier();
+      try {
+        db = getMS().getDatabase(request.getCatalogName(), request.getName());
+        firePreEvent(new PreReadDatabaseEvent(db, this));
+        if (processorCapabilities != null && transformer != null) {
+          db = transformer.transformDatabase(db, processorCapabilities, processorId);
+        }
+      } catch (MetaException | NoSuchObjectException e) {
+        ex = e;
+        throw e;
+      } catch (Exception e) {
+        assert (e instanceof RuntimeException);
+        throw (RuntimeException) e;
+      } finally {
+        endFunction("get_database", db != null, ex);
       }
       return db;
     }
