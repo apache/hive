@@ -68,7 +68,9 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     Table                     table = event.getTable();
     String                    uri   = getSdLocation(table.getSd());
 
-    ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, table.getDbName(), null));
+    ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, table.getDbName(), null, null, null,
+        HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
+        table.getOwner(), table.getOwnerType()));
     ret.add(getHivePrivilegeObject(table));
 
     if (StringUtils.isNotEmpty(uri)) {
