@@ -52,11 +52,15 @@ public abstract class HiveMetaStoreAuthorizableEvent {
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(Database database) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE, database.getName(), null);
+    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE, database.getName(),
+        null, null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
+        database.getOwnerName(), database.getOwnerType());
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(Table table) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, table.getDbName(), table.getTableName());
+    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, table.getDbName(),
+        table.getTableName(), null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
+        table.getOwner(), table.getOwnerType());
   }
 
   protected HivePrivilegeObject getHivePrivilegeObjectDfsUri(String uri) {
