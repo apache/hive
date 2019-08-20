@@ -73,7 +73,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	580                 
-	totalSize           	345                 
+	totalSize           	354                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -101,7 +101,7 @@ key	foo
 numFiles	1
 numRows	5
 rawDataSize	580
-totalSize	345
+totalSize	354
 #### A masked pattern was here ####
 PREHOOK: query: select a, c from cmv_mat_view_n8
 PREHOOK: type: QUERY
@@ -244,7 +244,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1025                
-	totalSize           	501                 
+	totalSize           	509                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

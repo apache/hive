@@ -690,7 +690,7 @@ PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 -- BEGIN ORC FILE DUMP --
 Structure for hdfs://### HDFS PATH ###
-File Version: 0.12 with ORC_135
+File Version: 0.12 with ORC_517
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
@@ -779,7 +779,7 @@ PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 -- BEGIN ORC FILE DUMP --
 Structure for hdfs://### HDFS PATH ###
-File Version: 0.12 with ORC_135
+File Version: 0.12 with ORC_517
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096

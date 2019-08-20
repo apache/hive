@@ -128,55 +128,5 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_merge
 #### A masked pattern was here ####
 24576
-Found 1 items
-#### A masked pattern was here ####
-PREHOOK: query: insert into table a_merge select * from alltypesorc
-PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@a_merge
-POSTHOOK: query: insert into table a_merge select * from alltypesorc
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@a_merge
-POSTHOOK: Lineage: a_merge.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: a_merge.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: a_merge.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-POSTHOOK: Lineage: a_merge.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: a_merge.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: a_merge.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: a_merge.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: a_merge.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: a_merge.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
-POSTHOOK: Lineage: a_merge.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: a_merge.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: a_merge.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 Found 2 items
-#### A masked pattern was here ####
-PREHOOK: query: select count(*) from a_merge
-PREHOOK: type: QUERY
-PREHOOK: Input: default@a_merge
-#### A masked pattern was here ####
-POSTHOOK: query: select count(*) from a_merge
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a_merge
-#### A masked pattern was here ####
-36864
-PREHOOK: query: alter table a_merge concatenate
-PREHOOK: type: ALTER_TABLE_MERGE
-PREHOOK: Input: default@a_merge
-PREHOOK: Output: default@a_merge
-POSTHOOK: query: alter table a_merge concatenate
-POSTHOOK: type: ALTER_TABLE_MERGE
-POSTHOOK: Input: default@a_merge
-POSTHOOK: Output: default@a_merge
-PREHOOK: query: select count(*) from a_merge
-PREHOOK: type: QUERY
-PREHOOK: Input: default@a_merge
-#### A masked pattern was here ####
-POSTHOOK: query: select count(*) from a_merge
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a_merge
-#### A masked pattern was here ####
-36864
-Found 1 items
 #### A masked pattern was here ####
