@@ -520,21 +520,15 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         childTasks.add(builder.build(driverContext, getHive(), LOG, tracker));
       }
 
-      // Either the incremental has more work or the external table file copy has more paths to process.
-      // Once all the incremental events are applied and external tables file copies are done, enable
-      // bootstrap of tables if exist.
-      if (builder.hasMoreWork() || work.getPathsToCopyIterator().hasNext() || work.hasBootstrapLoadTasks()) {
-        DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
-      } else {
-        // Nothing to be done for repl load now. Add a task to update the last.repl.id of the
-        // target database to the event id of the last event considered by the dump. Next
-        // incremental cycle if starts from this id, the events considered for this dump, won't
-        // be considered again.
-
-        // The name of the database to be loaded into is either specified directly or is
-        // available from the dump metadata.
+      // If there are no more events to be applied, add a task to update the last.repl.id of the
+      // target database to the event id of the last event considered by the dump. Next
+      // incremental cycle won't consider the events in this dump again if it starts from this id.
+      if (!builder.hasMoreWork() && !work.getPathsToCopyIterator().hasNext()) {
+        // The name of the database to be loaded into is either specified directly in REPL LOAD
+        // command i.e. when dbNameToLoadIn has a valid dbname or is available through dump
+        // metadata during table level replication.
         String dbName = work.dbNameToLoadIn;
-        if (dbName == null || StringUtils.isNotBlank(dbName)) {
+        if (dbName == null || StringUtils.isBlank(dbName)) {
           if (work.currentReplScope != null) {
             String replScopeDbName = work.currentReplScope.getDbName();
             if (replScopeDbName != null && !replScopeDbName.equals("*")) {
@@ -560,6 +554,13 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(updateReplIdTask));
           LOG.debug("Added task to set last repl id of db " + dbName + " to " + lastEventid);
         }
+      }
+
+      // Either the incremental has more work or the external table file copy has more paths to process.
+      // Once all the incremental events are applied and external tables file copies are done, enable
+      // bootstrap of tables if exist.
+      if (builder.hasMoreWork() || work.getPathsToCopyIterator().hasNext() || work.hasBootstrapLoadTasks()) {
+        DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
       }
       this.childTasks = childTasks;
       return 0;
