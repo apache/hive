@@ -955,8 +955,6 @@ public class HiveStatement implements java.sql.Statement {
       }
     } catch (SQLException e) {
       throw e;
-    } catch (TException e) {
-      throw new SQLException("Error when getting query log: " + e, e);
     } catch (Exception e) {
       throw new SQLException("Error when getting query log: " + e, e);
     }

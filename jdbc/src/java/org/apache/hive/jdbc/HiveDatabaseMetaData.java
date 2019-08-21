@@ -597,7 +597,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public String getProcedureTerm() throws SQLException {
-    return new String("UDF");
+    return "UDF";
   }
 
   public ResultSet getProcedures(String catalog, String schemaPattern,

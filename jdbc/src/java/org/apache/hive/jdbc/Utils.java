@@ -576,7 +576,6 @@ public class Utils {
    * host:port pairs.
    *
    * @param uri
-   * @param connParams
    * @return
    * @throws JdbcUriParseException
    */

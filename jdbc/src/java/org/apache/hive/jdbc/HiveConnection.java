@@ -564,19 +564,16 @@ public class HiveConnection implements java.sql.Connection {
     }
     // In case the server's idletimeout is set to a lower value, it might close it's side of
     // connection. However we retry one more time on NoHttpResponseException
-    httpClientBuilder.setRetryHandler(new HttpRequestRetryHandler() {
-      @Override
-      public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
-        if (executionCount > 1) {
-          LOG.info("Retry attempts to connect to server exceeded.");
-          return false;
-        }
-        if (exception instanceof org.apache.http.NoHttpResponseException) {
-          LOG.info("Could not connect to the server. Retrying one more time.");
-          return true;
-        }
+    httpClientBuilder.setRetryHandler((exception, executionCount, context) -> {
+      if (executionCount > 1) {
+        LOG.info("Retry attempts to connect to server exceeded.");
         return false;
       }
+      if (exception instanceof org.apache.http.NoHttpResponseException) {
+        LOG.info("Could not connect to the server. Retrying one more time.");
+        return true;
+      }
+      return false;
     });
 
     // Add the request interceptor to the client builder
@@ -910,10 +907,7 @@ public class HiveConnection implements java.sql.Connection {
 
   private boolean isHttpTransportMode() {
     String transportMode = sessConfMap.get(JdbcConnectionParams.TRANSPORT_MODE);
-    if(transportMode != null && (transportMode.equalsIgnoreCase("http"))) {
-      return true;
-    }
-    return false;
+    return transportMode != null && (transportMode.equalsIgnoreCase("http"));
   }
 
   private void logZkDiscoveryMessage(String message) {

@@ -87,18 +87,18 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
       }
       // Add custom cookies if passed to the jdbc driver
       if (customCookies != null) {
-        String cookieHeaderKeyValues = "";
+        StringBuilder cookieHeaderKeyValues = new StringBuilder();
         Header cookieHeaderServer = httpRequest.getFirstHeader("Cookie");
         if ((cookieHeaderServer != null) && (cookieHeaderServer.getValue() != null)) {
-          cookieHeaderKeyValues = cookieHeaderServer.getValue();
+          cookieHeaderKeyValues = new StringBuilder(cookieHeaderServer.getValue());
         }
         for (Map.Entry<String, String> entry : customCookies.entrySet()) {
-          cookieHeaderKeyValues += ";" + entry.getKey() + "=" + entry.getValue();
+          cookieHeaderKeyValues.append(";").append(entry.getKey()).append("=").append(entry.getValue());
         }
-        if (cookieHeaderKeyValues.startsWith(";")) {
-          cookieHeaderKeyValues = cookieHeaderKeyValues.substring(1);
+        if (cookieHeaderKeyValues.toString().startsWith(";")) {
+          cookieHeaderKeyValues = new StringBuilder(cookieHeaderKeyValues.substring(1));
         }
-        httpRequest.addHeader("Cookie", cookieHeaderKeyValues);
+        httpRequest.addHeader("Cookie", cookieHeaderKeyValues.toString());
       }
     } catch (Exception e) {
       throw new HttpException(e.getMessage(), e);

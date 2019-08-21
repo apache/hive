@@ -273,7 +273,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   @Override
   public void close() throws SQLException {
-    if (this.statement != null && (this.statement instanceof HiveStatement)) {
+    if ((this.statement instanceof HiveStatement)) {
       HiveStatement s = (HiveStatement) this.statement;
       s.closeClientOperation();
     } else {

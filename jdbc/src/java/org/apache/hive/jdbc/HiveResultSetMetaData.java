@@ -112,11 +112,7 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     // TODO: this would be better handled in an enum
     String type = columnTypes.get(toZeroIndex(column));
 
-    if("string".equalsIgnoreCase(type)) {
-      return true;
-    } else {
-      return false;
-    }
+    return "string".equalsIgnoreCase(type);
   }
 
   public boolean isCurrency(int column) throws SQLException {
