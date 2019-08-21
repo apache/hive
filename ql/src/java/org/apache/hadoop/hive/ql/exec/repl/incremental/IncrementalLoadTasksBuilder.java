@@ -151,13 +151,6 @@ public class IncrementalLoadTasksBuilder {
     }
 
     if (!hasMoreWork()) {
-      // if no events were replayed, then add a task to update the last repl id of the database/table to last event id.
-      if (taskChainTail == evTaskRoot) {
-        String lastEventid = eventTo.toString();
-        taskChainTail = dbUpdateReplStateTask(dbName, lastEventid, taskChainTail);
-        this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " + lastEventid);
-      }
-
       ReplRemoveFirstIncLoadPendFlagDesc desc = new ReplRemoveFirstIncLoadPendFlagDesc(dbName);
       Task<? extends Serializable> updateIncPendTask = TaskFactory.get(new DDLWork(inputs, outputs, desc), conf);
       taskChainTail.addDependentTask(updateIncPendTask);
