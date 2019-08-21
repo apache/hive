@@ -378,15 +378,15 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 79201469 Data size: 10769109250 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), true (type: boolean)
+                  expressions: true (type: boolean), _col0 (type: int)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 79201469 Data size: 10769109250 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int)
+                    key expressions: _col1 (type: int)
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
+                    Map-reduce partition columns: _col1 (type: int)
                     Statistics: Num rows: 79201469 Data size: 10769109250 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: boolean)
+                    value expressions: _col0 (type: boolean)
         Reducer 17 
             Reduce Operator Tree:
               Join Operator
@@ -417,15 +417,15 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 158394413 Data size: 21449785388 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), true (type: boolean)
+                  expressions: true (type: boolean), _col0 (type: int)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 158394413 Data size: 21449785388 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int)
+                    key expressions: _col1 (type: int)
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
+                    Map-reduce partition columns: _col1 (type: int)
                     Statistics: Num rows: 158394413 Data size: 21449785388 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: boolean)
+                    value expressions: _col0 (type: boolean)
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -472,12 +472,12 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                  2 _col0 (type: int)
-                  3 _col0 (type: int)
-                outputColumnNames: _col4, _col6, _col7, _col8, _col9, _col10, _col12, _col14
+                  2 _col1 (type: int)
+                  3 _col1 (type: int)
+                outputColumnNames: _col4, _col6, _col7, _col8, _col9, _col10, _col11, _col13
                 Statistics: Num rows: 2090864244 Data size: 184456650574 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (_col12 is not null or _col14 is not null) (type: boolean)
+                  predicate: (_col11 is not null or _col13 is not null) (type: boolean)
                   Statistics: Num rows: 2090864244 Data size: 184456650574 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int)

@@ -68,8 +68,8 @@ POSTHOOK: Input: default@web_site
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count(DISTINCT $4)], agg#1=[sum($5)], agg#2=[sum($6)])
-  HiveFilter(condition=[IS NULL($14)])
-    HiveJoin(condition=[=($4, $13)], joinType=[left], algorithm=[none], cost=[not available])
+  HiveFilter(condition=[IS NULL($13)])
+    HiveJoin(condition=[=($4, $14)], joinType=[left], algorithm=[none], cost=[not available])
       HiveSemiJoin(condition=[AND(<>($3, $13), =($4, $14))], joinType=[inner])
         HiveProject(ws_ship_date_sk=[$2], ws_ship_addr_sk=[$3], ws_web_site_sk=[$4], ws_warehouse_sk=[$5], ws_order_number=[$6], ws_ext_ship_cost=[$7], ws_net_profit=[$8], d_date_sk=[$9], d_date=[$10], ca_address_sk=[$0], ca_state=[$1], web_site_sk=[$11], web_company_name=[$12])
           HiveJoin(condition=[=($4, $11)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -90,7 +90,7 @@ HiveAggregate(group=[{}], agg#0=[count(DISTINCT $4)], agg#1=[sum($5)], agg#2=[su
         HiveProject(ws_warehouse_sk=[$15], ws_order_number=[$17])
           HiveFilter(condition=[IS NOT NULL($15)])
             HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
-      HiveProject(wr_order_number0=[$0], $f1=[true])
+      HiveProject(literalTrue=[true], wr_order_number0=[$0])
         HiveAggregate(group=[{13}])
           HiveTableScan(table=[[default, web_returns]], table:alias=[wr1])
 
