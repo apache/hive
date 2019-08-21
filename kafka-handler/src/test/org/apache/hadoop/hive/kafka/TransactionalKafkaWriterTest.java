@@ -145,7 +145,7 @@ public class TransactionalKafkaWriterTest {
 
   @After public void tearAfterTest() {
     KAFKA_BROKER_RESOURCE.deleteTopic(TOPIC);
-    consumer.close();
+    consumer.close(Duration.ZERO);
     consumer = null;
   }
 
@@ -229,7 +229,7 @@ public class TransactionalKafkaWriterTest {
     long numRecords = 0;
     boolean emptyPoll = false;
     while (numRecords < RECORD_NUMBER && !emptyPoll) {
-      ConsumerRecords<byte[], byte[]> records = consumer.poll(Duration.ofMillis(1000));
+      ConsumerRecords<byte[], byte[]> records = consumer.poll(Duration.ofMillis(10000));
 
       Assert.assertFalse(records.records(new TopicPartition(TOPIC, 0))
           .stream()

@@ -45,7 +45,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
-
 /**
  * Kafka Producer with public methods to extract the producer state then resuming transaction in another process.
  * This Producer is to be used only if you need to extract the transaction state and resume it from a different process.
@@ -133,15 +132,11 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
 
     Object transactionManager = getValue(kafkaProducer, "transactionManager");
 
-    Object nextSequence = getValue(transactionManager, "nextSequence");
-    Object lastAckedSequence = getValue(transactionManager, "lastAckedSequence");
-
+    Object topicPartitionBookkeeper = getValue(transactionManager, "topicPartitionBookkeeper");
     invoke(transactionManager,
         "transitionTo",
         getEnum("org.apache.kafka.clients.producer.internals.TransactionManager$State.INITIALIZING"));
-    invoke(nextSequence, "clear");
-    invoke(lastAckedSequence, "clear");
-
+    invoke(topicPartitionBookkeeper, "reset");
     Object producerIdAndEpoch = getValue(transactionManager, "producerIdAndEpoch");
     setValue(producerIdAndEpoch, "producerId", producerId);
     setValue(producerIdAndEpoch, "epoch", epoch);
