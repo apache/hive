@@ -55,7 +55,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), true (type: boolean)
+            expressions: true (type: boolean), _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 83 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
@@ -82,22 +82,22 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string)
+              key expressions: _col1 (type: string), _col2 (type: string)
               sort order: ++
-              Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+              Map-reduce partition columns: _col1 (type: string), _col2 (type: string)
               Statistics: Num rows: 83 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
-              value expressions: _col2 (type: boolean)
+              value expressions: _col0 (type: boolean)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join 0 to 1
           keys:
             0 _col0 (type: string), _col1 (type: string)
-            1 _col0 (type: string), _col1 (type: string)
-          outputColumnNames: _col0, _col1, _col4
+            1 _col1 (type: string), _col2 (type: string)
+          outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 631 Data size: 112846 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
-            predicate: _col4 is null (type: boolean)
+            predicate: _col2 is null (type: boolean)
             Statistics: Num rows: 500 Data size: 89420 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string)
@@ -322,7 +322,7 @@ STAGE PLANS:
               outputColumnNames: _col0
               Statistics: Num rows: 83 Data size: 7553 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: _col0 (type: string), true (type: boolean)
+                expressions: true (type: boolean), _col0 (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -350,22 +350,22 @@ STAGE PLANS:
                 value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: string)
+              key expressions: _col1 (type: string)
               sort order: +
-              Map-reduce partition columns: _col0 (type: string)
+              Map-reduce partition columns: _col1 (type: string)
               Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
-              value expressions: _col1 (type: boolean)
+              value expressions: _col0 (type: boolean)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join 0 to 1
           keys:
             0 _col1 (type: string)
-            1 _col0 (type: string)
-          outputColumnNames: _col0, _col1, _col3
+            1 _col1 (type: string)
+          outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 635 Data size: 113574 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
-            predicate: _col3 is null (type: boolean)
+            predicate: _col2 is null (type: boolean)
             Statistics: Num rows: 500 Data size: 89428 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string)
@@ -582,7 +582,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), true (type: boolean)
+            expressions: true (type: boolean), _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 83 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
@@ -610,7 +610,7 @@ STAGE PLANS:
             Reduce Output Operator
               sort order: 
               Statistics: Num rows: 83 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: boolean)
+              value expressions: _col0 (type: boolean), _col1 (type: string), _col2 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -619,10 +619,10 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          residual filter predicates: {(_col2 > _col0)} {(_col1 <> _col3)}
+          residual filter predicates: {(_col3 > _col0)} {(_col1 <> _col4)}
           Statistics: Num rows: 41500 Data size: 14940000 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
-            predicate: _col4 is null (type: boolean)
+            predicate: _col2 is null (type: boolean)
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string)
@@ -740,22 +740,22 @@ STAGE PLANS:
               value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: string)
+              key expressions: _col1 (type: string)
               sort order: +
-              Map-reduce partition columns: _col0 (type: string)
+              Map-reduce partition columns: _col1 (type: string)
               Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
-              value expressions: _col1 (type: boolean)
+              value expressions: _col0 (type: boolean)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join 0 to 1
           keys:
             0 _col1 (type: string)
-            1 _col0 (type: string)
-          outputColumnNames: _col0, _col3
+            1 _col1 (type: string)
+          outputColumnNames: _col0, _col2
           Statistics: Num rows: 1014 Data size: 124050 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
-            predicate: _col3 is null (type: boolean)
+            predicate: _col2 is null (type: boolean)
             Statistics: Num rows: 676 Data size: 82700 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string)
@@ -909,7 +909,7 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 12 Data size: 1248 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: _col0 (type: string), true (type: boolean)
+            expressions: true (type: boolean), _col0 (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
@@ -1613,3 +1613,63 @@ almond antique burnished rose metallic
 almond aquamarine rose maroon antique
 almond aquamarine sandy cyan gainsboro
 almond antique salmon chartreuse burlywood
+PREHOOK: query: create table tschema(id int, name string,dept string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tschema
+POSTHOOK: query: create table tschema(id int, name string,dept string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tschema
+PREHOOK: query: insert into tschema values(1,'a','it'),(2,'b','eee'),(NULL, 'c', 'cse')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tschema
+POSTHOOK: query: insert into tschema values(1,'a','it'),(2,'b','eee'),(NULL, 'c', 'cse')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tschema
+POSTHOOK: Lineage: tschema.dept SCRIPT []
+POSTHOOK: Lineage: tschema.id SCRIPT []
+POSTHOOK: Lineage: tschema.name SCRIPT []
+PREHOOK: query: explain cbo select distinct 'empno' as eid, a.id from tschema a
+    where NOT EXISTS (select c.id from tschema c where a.id=c.id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tschema
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select distinct 'empno' as eid, a.id from tschema a
+    where NOT EXISTS (select c.id from tschema c where a.id=c.id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tschema
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(eid=[_UTF-16LE'empno'], id=[$0])
+  HiveAggregate(group=[{0}])
+    HiveFilter(condition=[IS NULL($1)])
+      HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[not available])
+        HiveProject(id=[$0])
+          HiveTableScan(table=[[default, tschema]], table:alias=[a])
+        HiveProject(literalTrue=[true], id0=[$0])
+          HiveAggregate(group=[{0}])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, tschema]], table:alias=[c])
+
+PREHOOK: query: select distinct 'empno' as eid, a.id from tschema a
+    where NOT EXISTS (select c.id from tschema c where a.id=c.id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tschema
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct 'empno' as eid, a.id from tschema a
+    where NOT EXISTS (select c.id from tschema c where a.id=c.id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tschema
+#### A masked pattern was here ####
+empno	NULL
+PREHOOK: query: drop table tschema
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tschema
+PREHOOK: Output: default@tschema
+POSTHOOK: query: drop table tschema
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tschema
+POSTHOOK: Output: default@tschema
