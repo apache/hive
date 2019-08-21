@@ -531,7 +531,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         if (dbName == null || StringUtils.isBlank(dbName)) {
           if (work.currentReplScope != null) {
             String replScopeDbName = work.currentReplScope.getDbName();
-            if (replScopeDbName != null && !replScopeDbName.equals("*")) {
+            if (replScopeDbName != null && !"*".equals(replScopeDbName)) {
               dbName = replScopeDbName;
             }
           }
@@ -540,9 +540,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         // If we are replicating to multiple databases at a time, it's not
         // possible to know which all databases we are replicating into and hence we can not
         // update repl id in all those databases.
-        if (dbName != null && StringUtils.isNotBlank(dbName)) {
+        if (StringUtils.isNotBlank(dbName)) {
           String lastEventid = builder.eventTo().toString();
-          HashMap<String, String> mapProp = new HashMap<>();
+          Map<String, String> mapProp = new HashMap<>();
           mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), lastEventid);
 
           AlterDatabaseSetPropertiesDesc alterDbDesc =
