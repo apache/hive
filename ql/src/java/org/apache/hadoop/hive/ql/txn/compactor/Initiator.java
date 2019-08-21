@@ -51,11 +51,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
@@ -66,6 +68,8 @@ public class Initiator extends MetaStoreCompactorThread {
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
+  Map<String, String> tblNameOwnersCache = new HashMap<>();
+
 
   private long checkInterval;
 
@@ -93,7 +97,8 @@ public class Initiator extends MetaStoreCompactorThread {
           startedAt = System.currentTimeMillis();
           //todo: add method to only get current i.e. skip history - more efficient
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
-          Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold);
+          Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold)
+                  .stream().filter(ci -> checkCompactionElig(ci)).collect(Collectors.toSet());
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
           for (CompactionInfo ci : potentials) {
@@ -105,40 +110,8 @@ public class Initiator extends MetaStoreCompactorThread {
             }
             LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
             try {
-              if (replIsCompactionDisabledForDatabase(ci.dbname)) {
-                // Compaction is disabled for replicated database until after first successful incremental load.
-                LOG.info("Compaction is disabled for database " + ci.dbname);
-                continue;
-              }
 
               Table t = resolveTable(ci);
-              if (t == null) {
-                // Most likely this means it's a temp table
-                LOG.info("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
-                    "table or has been dropped and moving on.");
-                continue;
-              }
-
-              // check if no compaction set for this table
-              if (noAutoCompactSet(t)) {
-                LOG.info("Table " + tableName(t) + " marked " + hive_metastoreConstants.TABLE_NO_AUTO_COMPACT + "=true so we will not compact it.");
-                continue;
-              }
-
-              if (replIsCompactionDisabledForTable(t)) {
-                // Compaction is disabled for replicated table until after first successful incremental load.
-                LOG.info("Compaction is disabled for table " + ci.getFullTableName());
-                continue;
-              }
-
-              // Check to see if this is a table level request on a partitioned table.  If so,
-              // then it's a dynamic partitioning case and we shouldn't check the table itself.
-              if (t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
-                  ci.partName  == null) {
-                LOG.debug("Skipping entry for " + ci.getFullTableName() + " as it is from dynamic" +
-                    " partitioning");
-                continue;
-              }
 
               // Check if we already have initiated or are working on a compaction for this partition
               // or table.  If so, skip it.  If we are just waiting on cleaning we can still check,
@@ -176,7 +149,13 @@ public class Initiator extends MetaStoreCompactorThread {
                       txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
 
               StorageDescriptor sd = resolveStorageDescriptor(t, p);
-              String runAs = findUserToRunAs(sd.getLocation(), t);
+              String runAs = tblNameOwnersCache.get(fullTableName);
+              if (runAs == null) {
+                LOG.debug("unable to find the table owner in the cache for table "+ fullTableName + " " +
+                            "will determine user based on table location");
+                runAs = findUserToRunAs(sd.getLocation(), t);
+                tblNameOwnersCache.put(fullTableName, runAs);
+              }
               /*Future thought: checkForCompaction will check a lot of file metadata and may be expensive.
               * Long term we should consider having a thread pool here and running checkForCompactionS
               * in parallel*/
@@ -219,6 +198,7 @@ public class Initiator extends MetaStoreCompactorThread {
           StringUtils.stringifyException(t));
     }
   }
+
 
   @Override
   public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
@@ -397,5 +377,48 @@ public class Initiator extends MetaStoreCompactorThread {
           t.getParameters().get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT.toUpperCase());
     }
     return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
+  }
+
+  // Check to see if this is a table level request on a partitioned table.  If so,
+  // then it's a dynamic partitioning case and we shouldn't check the table itself.
+  private static boolean checkDynPartitioning(Table t, CompactionInfo ci){
+    if (t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
+            ci.partName  == null) {
+      LOG.debug("Skipping entry for " + ci.getFullTableName() + " as it is from dynamic" +
+              " partitioning");
+      return  true;
+    }
+    return false;
+  }
+
+  private boolean checkCompactionElig(CompactionInfo ci){
+    Table t = null;
+    try {
+      t = resolveTable(ci);
+      if (t == null) {
+        LOG.info("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
+                "table or has been dropped and moving on.");
+        return false;
+      }
+
+      if (replIsCompactionDisabledForDatabase(ci.dbname)) {
+        return false;
+      }
+
+      if (noAutoCompactSet(t)) {
+        LOG.info("Table " + tableName(t) + " marked " + hive_metastoreConstants.TABLE_NO_AUTO_COMPACT +
+                "=true so we will not compact it.");
+        return false;
+      } else if (replIsCompactionDisabledForTable(t)) {
+        return false;
+      } else if (checkDynPartitioning(t, ci)) {
+        return false;
+      }
+
+    } catch (Throwable e) {
+      LOG.error("Caught Exception while checking compactiton eligibility " +
+              StringUtils.stringifyException(e));
+    }
+    return true;
   }
 }
