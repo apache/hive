@@ -26,3 +26,8 @@ Release Notes - Hive - Version 3.1.2
     * [HIVE-21808] - Backport HIVE-21786 to branch-3.1
     * [HIVE-21821] - Backport HIVE-21739 to branch-3.1
     * [HIVE-22105] - Update ORC to 1.5.6.
+** Improvement
+    * [HIVE-21980] - Parsing time can be high in case of deeply nested subqueries
+** Task
+    * [HIVE-19667] - Remove distribution management tag from pom.xml
+
