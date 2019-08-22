@@ -60,7 +60,7 @@
     <antlr.version>3.5.2</antlr.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
-    <commons-lang3.version>3.2</commons-lang3.version>
+    <commons-lang3.version>3.9</commons-lang3.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
