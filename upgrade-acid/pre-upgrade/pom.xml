@@ -19,14 +19,14 @@
     <parent>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-upgrade-acid</artifactId>
-        <version>3.1.0.7.1.0.0-SNAPSHOT</version>
+        <version>3.1.2000.7.1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
 
     <modelVersion>4.0.0</modelVersion>
     <!--this module is added to parent pom so that it builds and releases with the reset of Hive-->
-    <version>3.1.0.7.1.0.0-SNAPSHOT</version>
+    <version>3.1.2000.7.1.0.0-SNAPSHOT</version>
     <artifactId>hive-pre-upgrade</artifactId>
     <name>Hive Pre Upgrade Acid</name>
     <packaging>jar</packaging>
