@@ -24,6 +24,8 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.EXTERNAL_TABLE_PURGE;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -57,6 +59,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   private static final String HIVEONLYMQTWRITE = "HIVEONLYMQTWRITE".intern();
   private static final String HIVESQL = "HIVESQL".intern();
   private static final String OBJCAPABILITIES = "OBJCAPABILITIES".intern();
+  private static final String MANAGERAWMETADATA = "MANAGE_RAW_METADATA".intern();
 
   private static final List<String> ACIDCOMMONWRITELIST = new ArrayList(Arrays.asList(
       HIVEMANAGESTATS,
@@ -114,8 +117,10 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             if (numBuckets > 0) {
               generated.add(HIVEBUCKET2);
               if (processorCapabilities.contains(HIVEBUCKET2)) {
+                LOG.debug("External bucketed table with HB2 capability:RW");
                 newTable.setAccessType(ACCESSTYPE_READWRITE);
               } else {
+                LOG.debug("External bucketed table without HB2 capability:RO");
                 newTable.setAccessType(ACCESSTYPE_READONLY);
                 requiredWrites.add(HIVEBUCKET2);
                 StorageDescriptor newSd = new StorageDescriptor(table.getSd());
@@ -126,12 +131,15 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
               }
             } else { // Unbucketed
               if (processorCapabilities.contains(EXTWRITE) && processorCapabilities.contains(EXTREAD)) {
+                LOG.debug("External unbucketed table with EXTREAD/WRITE capability:RW");
                 newTable.setAccessType(ACCESSTYPE_READWRITE);
               } else if (processorCapabilities.contains(EXTREAD)) {
+                LOG.debug("External unbucketed table with EXTREAD capability:RO");
                 newTable.setAccessType(ACCESSTYPE_READONLY);
                 requiredWrites.add(EXTWRITE);
                 newTable.setRequiredWriteCapabilities(requiredWrites);
               } else {
+                LOG.debug("External unbucketed table without EXTREAD/WRITE capability:NONE");
                 newTable.setAccessType(ACCESSTYPE_NONE);
                 requiredReads.add(EXTREAD);
                 requiredWrites.add(EXTWRITE);
@@ -145,6 +153,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           case "MANAGED_TABLE":
             String txnal = params.get(TABLE_IS_TRANSACTIONAL);
             if (txnal == null || txnal.equalsIgnoreCase("FALSE")) { // non-ACID MANAGED table
+              LOG.debug("Managed non-acid table:RW");
               table.setAccessType(ACCESSTYPE_READWRITE);
               generated.addAll(acidWriteList);
             }
@@ -154,11 +163,13 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
               if (txntype != null && txntype.equalsIgnoreCase("insert_only")) { // MICRO_MANAGED Tables
                 // MGD table is insert only, not full ACID
                 if (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) || processorCapabilities.contains(CONNECTORWRITE)) {
+                  LOG.debug("Managed acid table with INSERTWRITE or CONNECTORWRITE capability:RW");
                   table.setAccessType(ACCESSTYPE_READWRITE); // clients have RW access to INSERT-ONLY ACID tables
                   processorCapabilities.retainAll(insertOnlyWriteList);
                   generated.addAll(processorCapabilities);
                   LOG.info("Processor has one of the write capabilities on insert-only, granting RW");
                 } else if (processorCapabilities.contains(HIVEMANAGEDINSERTREAD) || processorCapabilities.contains(CONNECTORREAD)) {
+                  LOG.debug("Managed acid table with INSERTREAD or CONNECTORREAD capability:RO");
                   table.setAccessType(ACCESSTYPE_READONLY); // clients have RO access to INSERT-ONLY ACID tables
                   generated.addAll(insertOnlyWriteList);
                   table.setRequiredWriteCapabilities(insertOnlyWriteList);
@@ -175,16 +186,19 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                 }
               } else { // FULL ACID MANAGED TABLE
                 if (processorCapabilities.contains(HIVEFULLACIDWRITE) || processorCapabilities.contains(CONNECTORWRITE)) {
+                  LOG.debug("Full acid table with ACIDWRITE or CONNECTORWRITE capability:RW");
                   table.setAccessType(ACCESSTYPE_READWRITE); // clients have RW access to IUD ACID tables
                   processorCapabilities.retainAll(acidWriteList);
                   generated.addAll(processorCapabilities);
                 } else if (processorCapabilities.contains(HIVEFULLACIDREAD) || processorCapabilities.contains(CONNECTORREAD)) {
+                  LOG.debug("Full acid table with ACIDREAD or CONNECTORREAD capability:RO");
                   table.setAccessType(ACCESSTYPE_READONLY); // clients have RO access to IUD ACID tables
                   generated.addAll(acidWriteList);
                   table.setRequiredWriteCapabilities(acidWriteList);
                   processorCapabilities.retainAll(getReads(acidList));
                   generated.addAll(processorCapabilities);
                 } else {
+                  LOG.debug("Full acid table without ACIDREAD/WRITE or CONNECTORREAD/WRITE capability:NONE");
                   table.setAccessType(ACCESSTYPE_NONE); // clients have NO access to IUD ACID tables
                   table.setRequiredWriteCapabilities(acidWriteList);
                   table.setRequiredReadCapabilities(Arrays.asList(CONNECTORREAD, HIVEFULLACIDREAD));
@@ -250,7 +264,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             newTable.setSd(newSd);
             removedBucketing = true;
             newTable.setAccessType(ACCESSTYPE_READONLY);
-            LOG.info("Adding HIVEBUCKET2 to requiredWrites");
+            LOG.debug("Adding HIVEBUCKET2 to requiredWrites");
             requiredWrites.add(HIVEBUCKET2);
             LOG.info("Removed bucketing information from table");
           }
@@ -265,7 +279,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           }
 
           if (requiredCapabilities.contains(EXTREAD) && processorCapabilities.contains(EXTREAD)) {
-            LOG.debug("EXTREAD Matches, accessType=" + ACCESSTYPE_READONLY);
+            LOG.info("EXTREAD Matches, accessType=" + ACCESSTYPE_READONLY);
             newTable.setAccessType(ACCESSTYPE_READONLY);
             requiredWrites.add(EXTWRITE);
             newTable.setRequiredWriteCapabilities(requiredWrites);
@@ -324,6 +338,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
               }
 
               if (processorCapabilities.contains(CONNECTORWRITE)) {
+                LOG.debug("Managed acid table with CONNECTORWRITE capability:RW");
                 table.setAccessType(ACCESSTYPE_READWRITE); // clients have RW access to INSERT-ONLY ACID tables with CONNWRITE
                 hintList.add(CONNECTORWRITE);
                 hintList.addAll(getReads(requiredCapabilities));
@@ -331,6 +346,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                 continue;
               } else if (processorCapabilities.containsAll(getReads(requiredCapabilities))
                       || processorCapabilities.contains(HIVEMANAGEDINSERTREAD)) {
+                LOG.debug("Managed acid table with MANAGEDREAD capability:RO");
                 table.setAccessType(ACCESSTYPE_READONLY);
                 table.setRequiredWriteCapabilities(diff(getWrites(requiredCapabilities), getWrites(processorCapabilities)));
                 hintList.add(HIVEMANAGEDINSERTWRITE);
@@ -338,6 +354,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                 ret.put(table, hintList);
                 continue;
               } else if (processorCapabilities.contains(CONNECTORREAD)) {
+                LOG.debug("Managed acid table with CONNECTORREAD capability:RO");
                 table.setAccessType(ACCESSTYPE_READONLY);
                 table.setRequiredWriteCapabilities(diff(getWrites(requiredCapabilities), getWrites(processorCapabilities)));
                 hintList.add(CONNECTORREAD);
@@ -345,6 +362,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                 ret.put(table, hintList);
                 continue;
               } else {
+                LOG.debug("Managed acid table without any READ capability:NONE");
                 table.setAccessType(ACCESSTYPE_NONE);
                 ret.put(table, requiredCapabilities);
                 table.setRequiredWriteCapabilities(diff(getWrites(requiredCapabilities), getWrites(processorCapabilities)));
@@ -363,6 +381,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
               }
 
               if(processorCapabilities.contains(CONNECTORWRITE)) {
+                LOG.debug("Full acid table with CONNECTORWRITE capability:RW");
                 table.setAccessType(ACCESSTYPE_READWRITE); // clients have RW access to IUD ACID tables
                 hintList.add(CONNECTORWRITE);
                 hintList.addAll(getReads(requiredCapabilities));
@@ -370,6 +389,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                 continue;
               } else if (processorCapabilities.contains(HIVEFULLACIDREAD)
                      || (processorCapabilities.contains(CONNECTORREAD) )) {
+                LOG.debug("Full acid table with CONNECTORREAD/ACIDREAD capability:RO");
                 table.setAccessType(ACCESSTYPE_READONLY); // clients have RO access to IUD ACID tables
                 table.setRequiredWriteCapabilities(diff(getWrites(requiredCapabilities), getWrites(processorCapabilities)));
                 hintList.add(CONNECTORREAD);
@@ -377,6 +397,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                 ret.put(table, hintList);
                 continue;
               } else {
+                LOG.debug("Full acid table without READ capability:RO");
                 table.setAccessType(ACCESSTYPE_NONE); // clients have NO access to IUD ACID tables
                 table.setRequiredWriteCapabilities(diff(getWrites(requiredCapabilities), getWrites(processorCapabilities)));
                 table.setRequiredReadCapabilities(diff(getReads(requiredCapabilities), getReads(processorCapabilities)));
@@ -413,6 +434,10 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
   @Override
   public List<Partition> transformPartitions(List<Partition> objects, Table table, List<String> processorCapabilities, String processorId) throws MetaException {
+    if (processorCapabilities != null && processorCapabilities.contains(MANAGERAWMETADATA)) {
+      return objects;
+    }
+
     LOG.info("Starting translation for partition for processor " + processorId + " on list " + objects.size());
     List<Partition> ret = new ArrayList<>();
     int partBuckets = 0;
@@ -534,6 +559,15 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
           newTable.setParameters(params);
           LOG.info("Modified table params are:" + params.toString());
+          if (table.getSd().getLocation() == null) {
+            try {
+              Path newPath = hmsHandler.getWh().getDefaultTablePath(table.getDbName(), table.getTableName(), true);
+              newTable.getSd().setLocation(newPath.toString());
+              LOG.info("Modified location from to " + newPath);
+            } catch (Exception e) {
+              LOG.warn("Exception determining external table location:" + e.getMessage());
+            }
+          }
         }
       } else { // ACID table
         if (processorCapabilities == null || processorCapabilities.isEmpty()) {
@@ -563,6 +597,30 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     }
     LOG.info("Transformer returning table:" + newTable.toString());
     return newTable;
+  }
+
+  /**
+   * Alter location of the database depending on whether or not the processor has ACID capabilities.
+   */
+  @Override
+  public Database transformDatabase(Database db, List<String> processorCapabilities, String processorId) throws MetaException {
+    if (processorCapabilities != null && processorCapabilities.contains(MANAGERAWMETADATA)) {
+      return db;
+    }
+
+    LOG.info("Starting translation for transformDatabase for processor " + processorId + " with " + processorCapabilities
+        + " on database " + db.getName());
+
+    if (processorCapabilities == null || (!processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) &&
+            !processorCapabilities.contains(HIVEFULLACIDWRITE))) {
+      LOG.info("Processor does not have any of ACID write capabilities, changing current location from " +
+              db.getLocationUri() + " to external warehouse location");
+      Path extWhLocation = hmsHandler.getWh().getDefaultExternalDatabasePath(db.getName());
+      LOG.debug("Setting DBLocation to " + extWhLocation.toString());
+      db.setLocationUri(extWhLocation.toString());
+    }
+    LOG.info("Transformer returning database:" + db.toString());
+    return db;
   }
 
   // returns the elements contained in list1 but missing in list2

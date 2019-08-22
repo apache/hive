@@ -302,7 +302,7 @@ import java.util.function.Predicate;
       RetryUtils.retry(buildProducersTask, isRetrayable, cleanUpTheMap, maxTries, "Error while Builing Producers");
     } catch (Exception e) {
       // Can not go further
-      LOG.error("Can not fetch build produces due [{}]", e.getMessage());
+      LOG.error("Can not fetch build produces due [{}]", e);
       throw new MetaException(e.getMessage());
     }
 
