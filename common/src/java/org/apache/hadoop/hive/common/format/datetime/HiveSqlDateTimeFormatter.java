@@ -74,7 +74,7 @@ import java.util.regex.Pattern;
  *       - "Delimiter" for numeric tokens means any non-numeric character or end of input.
  *       - The words token and pattern are used interchangeably.
  *
- * A. Temporal tokens
+ * A.1. Numeric temporal tokens
  * YYYY
  * 4-digit year
  * - For string to datetime conversion, prefix digits for 1, 2, and 3-digit inputs are obtained
@@ -199,6 +199,48 @@ import java.util.regex.Pattern;
  * - 1st week starts on the 1st of the month and ends on the 7th, and so on.
  * - Not allowed in string to datetime conversion.
  *
+ * IYYY
+ * 4-digit ISO 8601 week-numbering year
+ * - Returns the year relating to the ISO week number (IW), which is the full week (Monday to
+ *   Sunday) which contains January 4 of the Gregorian year.
+ * - Behaves similarly to YYYY in that for datetime to string conversion, prefix digits for 1, 2,
+ *   and 3-digit inputs are obtained from current week-numbering year.
+ * - For string to datetime conversion, requires IW and ID|DAY|DY. Conflicts with all other date
+ *   patterns (see "List of Date-Based Patterns").
+ *
+ * IYY
+ * Last 3 digits of ISO 8601 week-numbering year
+ * - See IYYY.
+ * - Behaves similarly to YYY in that for datetime to string conversion, prefix digit is obtained
+ *   from current week-numbering year and can accept 1 or 2-digit input.
+ *
+ * IY
+ * Last 2 digits of ISO 8601 week-numbering year
+ * - See IYYY.
+ * - Behaves similarly to YY in that for datetime to string conversion, prefix digits are obtained
+ *   from current week-numbering year and can accept 1-digit input.
+ *
+ * I
+ * Last digit of ISO 8601 week-numbering year
+ * - See IYYY.
+ * - Behaves similarly to Y in that for datetime to string conversion, prefix digits are obtained
+ *   from current week-numbering year.
+ *
+ * IW
+ * ISO 8601 week of year (1-53)
+ * - Begins on the Monday closest to January 1 of the year.
+ * - For string to datetime conversion, if the input week does not exist in the input year, an
+ *   error will be thrown. e.g. the 2019 week-year has 52 weeks; with pattern="iyyy-iw-id"
+ *   input="2019-53-2" is not accepted.
+ * - For string to datetime conversion, requires IYYY|IYY|IY|I and ID|DAY|DY. Conflicts with all other
+ *   date patterns (see "List of Date-Based Patterns").
+ *
+ * ID
+ * ISO 8601 day of week (1-7)
+ * - 1 is Monday, and so on.
+ * - For string to datetime conversion, requires IYYY|IYY|IY|I and IW. Conflicts with all other
+ *   date patterns (see "List of Date-Based Patterns").
+ *
  * A.2. Character temporals
  * Temporal elements, but spelled out.
  * - For datetime to string conversion, the pattern's case must match one of the listed formats
@@ -241,7 +283,7 @@ import java.util.regex.Pattern;
  *   - day = sunday
  * - For string to datetime conversion, neither the case of the pattern nor the case of the input
  *   are taken into account.
- * - Not allowed in string to datetime conversion.
+ * - Not allowed in string to datetime conversion except with IYYY|IYY|IY|I and IW.
  *
  * DY|Dy|dy
  * Abbreviated name of day of week
@@ -252,7 +294,7 @@ import java.util.regex.Pattern;
  *   - dy = sun
  * - For string to datetime conversion, neither the case of the pattern nor the case of the input
  *   are taken into account.
- * - Not allowed in string to datetime conversion.
+ * - Not allowed in string to datetime conversion except with IYYY|IYY|IY|I and IW.
  *
  * B. Time zone tokens
  * TZH
@@ -346,6 +388,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
   public static final int AM = 0;
   public static final int PM = 1;
   private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("MMM");
+  public static final DateTimeFormatter DAY_OF_WEEK_FORMATTER = DateTimeFormatter.ofPattern("EEE");
   private String pattern;
   private List<Token> tokens = new ArrayList<>();
   private boolean formatExact = false;
@@ -374,6 +417,9 @@ public class HiveSqlDateTimeFormatter implements Serializable {
           .put("p.m.", ChronoField.AMPM_OF_DAY).put("pm", ChronoField.AMPM_OF_DAY)
           .put("ww", ChronoField.ALIGNED_WEEK_OF_YEAR).put("w", ChronoField.ALIGNED_WEEK_OF_MONTH)
           .put("q", IsoFields.QUARTER_OF_YEAR)
+          .put("iyyy", IsoFields.WEEK_BASED_YEAR).put("iyy", IsoFields.WEEK_BASED_YEAR)
+          .put("iy", IsoFields.WEEK_BASED_YEAR).put("i", IsoFields.WEEK_BASED_YEAR)
+          .put("iw", IsoFields.WEEK_OF_WEEK_BASED_YEAR).put("id", ChronoField.DAY_OF_WEEK)
           .build();
 
   private static final Map<String, TemporalField> CHARACTER_TEMPORAL_TOKENS =
@@ -403,6 +449,11 @@ public class HiveSqlDateTimeFormatter implements Serializable {
       .put("ff6", 6).put("ff7", 7).put("ff8", 8).put("ff9", 9).put("ff", 9)
       .put("month", 9).put("day", 9).put("dy", 3)
       .build();
+
+  private static final List<TemporalField> ISO_8601_TEMPORAL_FIELDS =
+      ImmutableList.of(ChronoField.DAY_OF_WEEK,
+          IsoFields.WEEK_OF_WEEK_BASED_YEAR,
+          IsoFields.WEEK_BASED_YEAR);
 
   /**
    * Represents broad categories of tokens.
@@ -697,6 +748,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     ArrayList<TemporalField> temporalFields = new ArrayList<>();
     ArrayList<TemporalUnit> timeZoneTemporalUnits = new ArrayList<>();
     int roundYearCount=0, yearCount=0;
+    boolean containsIsoFields=false, containsGregorianFields=false;
     for (Token token : tokens) {
       if (token.temporalField != null) {
         temporalFields.add(token.temporalField);
@@ -705,6 +757,13 @@ public class HiveSqlDateTimeFormatter implements Serializable {
             roundYearCount += 1;
           } else {
             yearCount += 1;
+          }
+        }
+        if (token.temporalField.isDateBased() && token.temporalField != ChronoField.DAY_OF_WEEK) {
+          if (ISO_8601_TEMPORAL_FIELDS.contains(token.temporalField)) {
+            containsIsoFields = true;
+          } else {
+            containsGregorianFields = true;
           }
         }
       } else if (token.temporalUnit != null) {
@@ -719,7 +778,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     if (temporalFields.contains(WeekFields.SUNDAY_START.dayOfWeek())) {
       throw new IllegalArgumentException("Illegal field: d (" + WeekFields.SUNDAY_START.dayOfWeek() + ")");
     }
-    if (temporalFields.contains(ChronoField.DAY_OF_WEEK)) {
+    if (temporalFields.contains(ChronoField.DAY_OF_WEEK) && containsGregorianFields) {
       throw new IllegalArgumentException("Illegal field: dy/day (" + ChronoField.DAY_OF_WEEK + ")");
     }
     if (temporalFields.contains(ChronoField.ALIGNED_WEEK_OF_MONTH)) {
@@ -729,14 +788,24 @@ public class HiveSqlDateTimeFormatter implements Serializable {
       throw new IllegalArgumentException("Illegal field: ww (" + ChronoField.ALIGNED_WEEK_OF_YEAR + ")");
     }
 
-    if (!(temporalFields.contains(ChronoField.YEAR))) {
+    if (containsGregorianFields && containsIsoFields) {
+      throw new IllegalArgumentException("Pattern cannot contain both ISO and Gregorian tokens");
+    }
+    if (!(temporalFields.contains(ChronoField.YEAR)
+        || temporalFields.contains(IsoFields.WEEK_BASED_YEAR))) {
       throw new IllegalArgumentException("Missing year token.");
     }
-    if (!(temporalFields.contains(ChronoField.MONTH_OF_YEAR) &&
+    if (containsGregorianFields &&
+        !(temporalFields.contains(ChronoField.MONTH_OF_YEAR) &&
             temporalFields.contains(ChronoField.DAY_OF_MONTH) ||
             temporalFields.contains(ChronoField.DAY_OF_YEAR))) {
       throw new IllegalArgumentException("Missing day of year or (month of year + day of month)"
           + " tokens.");
+    }
+    if (containsIsoFields &&
+        !(temporalFields.contains(IsoFields.WEEK_OF_WEEK_BASED_YEAR) &&
+            temporalFields.contains(ChronoField.DAY_OF_WEEK))) {
+      throw new IllegalArgumentException("Missing week of year (iw) or day of week (id) tokens.");
     }
     if (roundYearCount > 0 && yearCount > 0) {
       throw new IllegalArgumentException("Invalid duplication of format element: Both year and"
@@ -934,6 +1003,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     int index = 0;
     int value;
     int timeZoneSign = 0, timeZoneHours = 0, timeZoneMinutes = 0;
+    int iyyy = 0, iw = 0;
 
     for (Token token : tokens) {
       switch (token.type) {
@@ -952,6 +1022,15 @@ public class HiveSqlDateTimeFormatter implements Serializable {
           throw new IllegalArgumentException(
               "Value " + value + " not valid for token " + token.toString());
         }
+
+        //update IYYY and IW if necessary
+        if (token.temporalField == IsoFields.WEEK_BASED_YEAR) {
+          iyyy = value;
+        }
+        if (token.temporalField == IsoFields.WEEK_OF_WEEK_BASED_YEAR) {
+          iw = value;
+        }
+
         index += substring.length();
         break;
       case TIMEZONE:
@@ -1004,8 +1083,26 @@ public class HiveSqlDateTimeFormatter implements Serializable {
       throw new IllegalArgumentException("Leftover input after parsing: " +
           fullInput.substring(index) + " in string " + fullInput);
     }
+    checkForInvalidIsoWeek(iyyy, iw);
 
     return Timestamp.ofEpochSecond(ldt.toEpochSecond(ZoneOffset.UTC), ldt.getNano());
+  }
+
+  /**
+   * Check for WEEK_OF_WEEK_BASED_YEAR (iw) value 53 when WEEK_BASED_YEAR (iyyy) does not have 53
+   * weeks.
+   */
+  private void checkForInvalidIsoWeek(int iyyy, int iw) {
+    if (iyyy == 0) {
+      return;
+    }
+
+    LocalDateTime ldt = LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
+    ldt = ldt.with(IsoFields.WEEK_BASED_YEAR, iyyy);
+    ldt = ldt.with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, iw);
+    if (ldt.getYear() != iyyy) {
+      throw new IllegalArgumentException("ISO year " + iyyy + " does not have " + iw + " weeks.");
+    }
   }
 
   public Date parseDate(String input){
@@ -1060,8 +1157,16 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     } else if (token.temporalField == ChronoField.HOUR_OF_AMPM && "12".equals(substring)) {
       substring = "0";
 
-    } else if (token.temporalField == ChronoField.YEAR) {
-      String currentYearString = String.valueOf(LocalDateTime.now().getYear());
+    } else if (token.temporalField == ChronoField.YEAR
+        || token.temporalField == IsoFields.WEEK_BASED_YEAR) {
+
+      String currentYearString;
+      if (token.temporalField == ChronoField.YEAR) {
+        currentYearString = String.valueOf(LocalDateTime.now().getYear());
+      } else {
+        currentYearString =  String.valueOf(LocalDateTime.now().get(IsoFields.WEEK_BASED_YEAR));
+      }
+
       //deal with round years
       if (token.string.startsWith("r") && substring.length() == 2) {
         int currFirst2Digits = Integer.parseInt(currentYearString.substring(0, 2));
@@ -1092,6 +1197,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
   }
 
   private static final String MONTH_REGEX;
+  private static final String DAY_OF_WEEK_REGEX;
   static {
     StringBuilder sb = new StringBuilder();
     String or = "";
@@ -1100,6 +1206,13 @@ public class HiveSqlDateTimeFormatter implements Serializable {
       or = "|";
     }
     MONTH_REGEX = sb.toString();
+    sb = new StringBuilder();
+    or = "";
+    for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
+      sb.append(or).append(dayOfWeek);
+      or = "|";
+    }
+    DAY_OF_WEEK_REGEX = sb.toString();
   }
 
   private String getNextCharacterSubstring(String fullInput, int index, Token token) {
@@ -1112,7 +1225,17 @@ public class HiveSqlDateTimeFormatter implements Serializable {
       return substring;
     }
 
-    Matcher matcher = Pattern.compile(MONTH_REGEX, Pattern.CASE_INSENSITIVE).matcher(substring);
+    // patterns day, month
+    String regex;
+    if (token.temporalField == ChronoField.MONTH_OF_YEAR) {
+      regex = MONTH_REGEX;
+    } else if (token.temporalField == ChronoField.DAY_OF_WEEK) {
+      regex = DAY_OF_WEEK_REGEX;
+    } else {
+      throw new IllegalArgumentException("Error at index " + index + ": " + token + " not a "
+          + "character temporal with length not 3");
+    }
+    Matcher matcher = Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(substring);
     if (matcher.find()) {
       return substring.substring(0, matcher.end());
     }
@@ -1127,6 +1250,12 @@ public class HiveSqlDateTimeFormatter implements Serializable {
           return Month.from(MONTH_FORMATTER.parse(capitalize(substring))).getValue();
         } else {
           return Month.valueOf(substring.toUpperCase()).getValue();
+        }
+      } else if (token.temporalField == ChronoField.DAY_OF_WEEK) {
+        if (token.length == 3) {
+          return DayOfWeek.from(DAY_OF_WEEK_FORMATTER.parse(capitalize(substring))).getValue();
+        } else {
+          return DayOfWeek.valueOf(substring.toUpperCase()).getValue();
         }
       }
     } catch (Exception e) {
