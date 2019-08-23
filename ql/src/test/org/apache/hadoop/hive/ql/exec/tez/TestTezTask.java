@@ -233,9 +233,10 @@ public class TestTezTask {
 
   @Test
   public void testExistingSessionGetsStorageHandlerResources() throws Exception {
-    final String[] inputOutputJars = new String[] {"file:///tmp/foo.jar"};
+    final String jarFilePath = "file:///tmp/foo.jar";
+    final String[] inputOutputJars = new String[] {jarFilePath};
     LocalResource res = createResource(inputOutputJars[0]);
-    final List<LocalResource> resources = Collections.singletonList(res);
+    final Map<String, LocalResource> resources = Collections.singletonMap(jarFilePath, res);
 
     when(utils.localizeTempFiles(anyString(), any(Configuration.class), eq(inputOutputJars),
         any(String[].class))).thenReturn(resources);
