@@ -3289,6 +3289,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           .get(srcRel);
       RexNode convertedFilterExpr = new RexNodeConverter(cluster, srcRel.getRowType(),
           outerNameToPosMap, hiveColNameCalcitePosMap, relToHiveRR.get(srcRel), outerRR,
+      HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES),
               0, true, subqueryId).convert(filterCondn);
       RexNode factoredFilterExpr = RexUtil
           .pullFactors(cluster.getRexBuilder(), convertedFilterExpr);
@@ -3566,8 +3567,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ImmutableMap<String, Integer> hiveColNameCalcitePosMap = this.relToHiveColNameCalcitePosMap
                 .get(srcRel);
         RexNode convertedFilterLHS = new RexNodeConverter(cluster, srcRel.getRowType(),
-                outerNameToPosMap, hiveColNameCalcitePosMap, relToHiveRR.get(srcRel),
-                outerRR, 0, true, subqueryId).convert(subQueryExpr);
+            outerNameToPosMap, hiveColNameCalcitePosMap, relToHiveRR.get(srcRel),
+            outerRR, HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES),
+            0, true, subqueryId).convert(subQueryExpr);
 
         RelNode filterRel = new HiveFilter(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
                 srcRel, convertedFilterLHS);
@@ -4895,8 +4897,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       List<RexNode> calciteColLst = new ArrayList<RexNode>();
 
       RexNodeConverter rexNodeConv = new RexNodeConverter(cluster, srcRel.getRowType(),
-              outerNameToPosMap, buildHiveColNameToInputPosMap(col_list, inputRR), relToHiveRR.get(srcRel),
-              outerRR, 0, false, subqueryId);
+          outerNameToPosMap, buildHiveColNameToInputPosMap(col_list, inputRR), relToHiveRR.get(srcRel),
+          outerRR, HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES),
+          0, false, subqueryId);
       for (ExprNodeDesc colExpr : col_list) {
         calciteColLst.add(rexNodeConv.convert(colExpr));
       }
