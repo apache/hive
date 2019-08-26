@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -208,6 +209,11 @@ public final class SemanticAnalyzerFactory {
     } else {
       HiveOperation opType = commandType.get(tree.getType());
       queryState.setCommandType(opType);
+
+      if (DDLSemanticAnalyzerFactory.handles(tree.getType())) {
+        return DDLSemanticAnalyzerFactory.getAnalyzer(tree, queryState);
+      }
+
       switch (tree.getType()) {
       case HiveParser.TOK_EXPLAIN:
         return new ExplainSemanticAnalyzer(queryState);
@@ -290,22 +296,16 @@ public final class SemanticAnalyzerFactory {
         queryState.setCommandType(null);
         return new DDLSemanticAnalyzer(queryState);
       }
-      case HiveParser.TOK_CREATEDATABASE:
-      case HiveParser.TOK_DROPDATABASE:
-      case HiveParser.TOK_SWITCHDATABASE:
       case HiveParser.TOK_DROPTABLE:
       case HiveParser.TOK_DROPVIEW:
       case HiveParser.TOK_DROP_MATERIALIZED_VIEW:
-      case HiveParser.TOK_DESCDATABASE:
       case HiveParser.TOK_DESCTABLE:
       case HiveParser.TOK_DESCFUNCTION:
       case HiveParser.TOK_MSCK:
-      case HiveParser.TOK_SHOWDATABASES:
       case HiveParser.TOK_SHOWTABLES:
       case HiveParser.TOK_SHOWCOLUMNS:
       case HiveParser.TOK_SHOW_TABLESTATUS:
       case HiveParser.TOK_SHOW_TBLPROPERTIES:
-      case HiveParser.TOK_SHOW_CREATEDATABASE:
       case HiveParser.TOK_SHOW_CREATETABLE:
       case HiveParser.TOK_SHOWFUNCTIONS:
       case HiveParser.TOK_SHOWPARTITIONS:
@@ -320,8 +320,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
       case HiveParser.TOK_LOCKTABLE:
       case HiveParser.TOK_UNLOCKTABLE:
-      case HiveParser.TOK_LOCKDB:
-      case HiveParser.TOK_UNLOCKDB:
       case HiveParser.TOK_CREATEROLE:
       case HiveParser.TOK_DROPROLE:
       case HiveParser.TOK_GRANT:
@@ -332,9 +330,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOW_ROLE_GRANT:
       case HiveParser.TOK_SHOW_ROLE_PRINCIPALS:
       case HiveParser.TOK_SHOW_ROLES:
-      case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
-      case HiveParser.TOK_ALTERDATABASE_OWNER:
-      case HiveParser.TOK_ALTERDATABASE_LOCATION:
       case HiveParser.TOK_TRUNCATETABLE:
       case HiveParser.TOK_SHOW_SET_ROLE:
       case HiveParser.TOK_CACHE_METADATA:
