@@ -1779,4 +1779,6 @@ public interface RawStore extends Configurable {
    */
   void scheduledQueryProgress(ScheduledQueryProgressInfo info)
       throws MetaException, NoSuchObjectException, InvalidOperationException;
+
+  int deleteScheduledExecutions(int maxRetainSecs);
 }

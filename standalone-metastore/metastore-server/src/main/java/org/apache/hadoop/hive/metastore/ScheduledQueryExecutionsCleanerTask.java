@@ -35,7 +35,7 @@ public class ScheduledQueryExecutionsCleanerTask implements MetastoreTaskThread 
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_CLEAN_FREQUENCY, unit);
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXECUTION_CLEAN_FREQUENCY, unit);
   }
 
   @Override
@@ -53,8 +53,8 @@ public class ScheduledQueryExecutionsCleanerTask implements MetastoreTaskThread 
 
     try {
       RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
-      int maxRetainSecs=(int) MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_AGE, TimeUnit.SECONDS);
-      int deleteCnt = ms.deleteRuntimeStats(maxRetainSecs);
+      int maxRetainSecs=(int) MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXECUTION_MAX_AGE, TimeUnit.SECONDS);
+      int deleteCnt = ms.deleteScheduledExecutions(maxRetainSecs);
 
       if (deleteCnt > 0L){
         LOG.info("Number of deleted entries: " + deleteCnt);

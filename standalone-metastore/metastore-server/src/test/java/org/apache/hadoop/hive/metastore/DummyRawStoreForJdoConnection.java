@@ -1287,4 +1287,9 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) {
     throw new RuntimeException("unimplemented");
   }
+
+  @Override
+  public int deleteScheduledExecutions(int maxRetainSecs) {
+    throw new RuntimeException("unimplemented");
+  }
 }

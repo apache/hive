@@ -1306,4 +1306,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws NoSuchObjectException {
     return objectStore.getScheduledQuery(scheduleKey);
   }
+
+  @Override
+  public int deleteScheduledExecutions(int maxRetainSecs) {
+    return objectStore.deleteScheduledExecutions(maxRetainSecs);
+  }
 }
