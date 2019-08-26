@@ -25,8 +25,10 @@ import java.util.function.Predicate;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.tez.dag.api.TezConfiguration;
 
 public class TezConfigurationFactory {
+  private static TezConfiguration defaultConf = new TezConfiguration();
 
   public static Configuration copyInto(Configuration target, Configuration src,
       Predicate<String> sourceFilter) {
@@ -57,6 +59,7 @@ public class TezConfigurationFactory {
 
   public static JobConf wrapWithJobConf(Configuration conf, Predicate<String> sourceFilter) {
     JobConf jc = new JobConf(false);
+    copyInto(jc, defaultConf, sourceFilter);
     copyInto(jc, conf, sourceFilter);
     return jc;
   }
