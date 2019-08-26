@@ -22,15 +22,18 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.ObjectStoreTestHook;
 import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
@@ -339,6 +342,42 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     request.setClusterNamespace("polltestSomethingElse");
     pollResult = client.scheduledQueryPoll(request);
     assertFalse(pollResult.isSetQuery());
+  }
+
+  @Test
+  public void testCleanup() throws Exception {
+    String namespace = "cleanup";
+    ObjectStore objStore = new ObjectStore();
+    objStore.setConf(metaStore.getConf());
+    objStore.deleteScheduledExecutions(0);
+
+    ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", namespace));
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setScheduledQuery(schq);
+    objStore.scheduledQueryMaintenance(r);
+
+    Thread.sleep(1000);
+    ScheduledQueryPollRequest request = new ScheduledQueryPollRequest(namespace);
+    ScheduledQueryPollResponse pollResult = objStore.scheduledQueryPoll(request);
+    // will add q1 as a query being executed
+
+    try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
+      MScheduledExecution q = pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
+      assertEquals(QueryState.INITED, q.getState());
+    }
+
+    Thread.sleep(1000);
+    objStore.deleteScheduledExecutions(0);
+
+    try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
+      try {
+        pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
+        fail("The execution is expected to be deleted at this point...");
+      }catch(JDOObjectNotFoundException e) {
+        // expected
+      }
+    }
   }
 
   private int getEpochSeconds() {
