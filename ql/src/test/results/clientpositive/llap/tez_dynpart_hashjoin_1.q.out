@@ -519,7 +519,6 @@ STAGE PLANS:
                   1 Map 4
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                 DynamicPartitionHashJoin: true
-                HybridGraceHashJoin: true
                 Select Operator
                   expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean), _col13 (type: tinyint), _col14 (type: smallint), _col15 (type: int), _col16 (type: bigint), _col17 (type: float), _col18 (type: double), _col19 (type: string), _col20 (type: string), _col21 (type: timestamp), _col22 (type: timestamp), _col23 (type: boolean), _col24 (type: boolean)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
@@ -667,7 +666,6 @@ STAGE PLANS:
                   1 Map 4
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                 DynamicPartitionHashJoin: true
-                HybridGraceHashJoin: true
                 Reduce Output Operator
                   key expressions: _col2 (type: int)
                   sort order: +
@@ -806,7 +804,6 @@ STAGE PLANS:
                   1 Map 4
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                 DynamicPartitionHashJoin: true
-                HybridGraceHashJoin: true
                 Group By Operator
                   aggregations: count()
                   minReductionHashAggr: 0.99
@@ -947,7 +944,6 @@ STAGE PLANS:
                   1 Map 5
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                 DynamicPartitionHashJoin: true
-                HybridGraceHashJoin: true
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: smallint)
