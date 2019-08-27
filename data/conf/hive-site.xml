@@ -353,5 +353,10 @@
   <name>hive.query.reexecution.stats.persist.scope</name>
   <value>query</value>
 </property>
+   
+<property>
+   <name>hive.exec.post.hooks</name>
+   <value>org.apache.atlas.hive.hook.HiveHook</value>
+ </property>
 
 </configuration>
