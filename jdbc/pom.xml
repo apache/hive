@@ -155,7 +155,6 @@
                   <shadedClassifierName>${hive.jdbc.driver.classifier}</shadedClassifierName>
                   <artifactSet>
                     <excludes>
-                      <exclude>org.apache.commons:commons-compress</exclude>
                       <exclude>org.apache.hadoop:hadoop-hdfs</exclude>
                       <exclude>org.apache.hadoop:hadoop-client</exclude>
                       <exclude>org.apache.hadoop:hadoop-hdfs-client</exclude>
@@ -195,12 +194,16 @@
                       <exclude>antlr:*</exclude>
                       <exclude>aopalliance:*</exclude>
                       <exclude>asm:*</exclude>
+                      <exclude>com.fasterxml.jackson.core:*</exclude>
                       <exclude>com.google.code.gson:*</exclude>
+                      <exclude>com.google.code.findbugs:*</exclude>
                       <exclude>com.google.inject:*</exclude>
                       <exclude>com.google.inject.extensions:*</exclude>
+                      <exclude>com.google.protobuf:*</exclude>
                       <exclude>com.jamesmurty.utils:*</exclude>
                       <exclude>com.jcraft:*</exclude>
                       <exclude>com.jolbox:*</exclude>
+                      <exclude>com.microsoft.sqlserver:mssql-jdbc</exclude>
                       <exclude>commons-beanutils:*</exclude>
                       <exclude>commons-cli:*</exclude>
                       <exclude>commons-dbcp:*</exclude>
@@ -210,13 +213,11 @@
                       <exclude>commons-io:*</exclude>
                       <exclude>commons-net:*</exclude>
                       <exclude>commons-pool:*</exclude>
-                      <exclude>com.google.code.findbugs:*</exclude>
-                      <exclude>com.google.protobuf:*</exclude>
                       <exclude>com.sun.xml.bind:*</exclude>
+                      <exclude>com.tdunning:*</exclude>
                       <exclude>com.thoughtworks.paranamer:*</exclude>
                       <exclude>com.twitter:*</exclude>
                       <exclude>com.zaxxer:*</exclude>
-                      <exclude>com.fasterxml.jackson.core:*</exclude>
                       <exclude>io.netty:*</exclude>
                       <exclude>javax.activation:*</exclude>
                       <exclude>javax.inject:*</exclude>
@@ -229,6 +230,7 @@
                       <exclude>jline:*</exclude>
                       <exclude>joda-time:*</exclude>
                       <exclude>net.java.dev.jets3t:*</exclude>
+                      <exclude>org.apache.commons:commons-compress</exclude>
                       <exclude>org.apache.commons:commons-math3</exclude>
                       <exclude>org.apache.derby:*</exclude>
                       <exclude>org.apache.directory.api:*</exclude>
@@ -239,13 +241,13 @@
                       <exclude>org.codehaus.jettison:*</exclude>
                       <exclude>org.datanucleus:*</exclude>
                       <exclude>org.fusesource.leveldbjni:*</exclude>
+                      <exclude>org.glassfish.jersey*:*</exclude>
                       <exclude>org.htrace:*</exclude>
                       <exclude>org.mortbay.jetty:*</exclude>
                       <exclude>org.xerial.snappy:*</exclude>
-                      <exclude>com.tdunning:*</exclude>
                       <exclude>tomcat:*</exclude>
-                      <exclude>xmlenc:*</exclude>
                       <exclude>xerces:*</exclude>
+                      <exclude>xmlenc:*</exclude>
                       <exclude>xml-apis:*</exclude>
                     </excludes>
                   </artifactSet>
