@@ -117,7 +117,6 @@ STAGE PLANS:
                   1 Map 4
                 Statistics: Num rows: 32 Data size: 2848 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
-                HybridGraceHashJoin: true
                 Group By Operator
                   keys: _col0 (type: string)
                   minReductionHashAggr: 0.5
@@ -156,7 +155,6 @@ STAGE PLANS:
                   0 Reducer 3
                 Statistics: Num rows: 26 Data size: 6942 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
-                HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 26 Data size: 6942 Basic stats: COMPLETE Column stats: COMPLETE
@@ -199,47 +197,47 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
+val_238	238	val_238
 val_311	311	val_311
+val_27	27	val_27
 val_165	165	val_165
 val_409	409	val_409
+val_255	255	val_255
+val_278	278	val_278
 val_98	98	val_98
 val_484	484	val_484
+val_265	265	val_265
+val_193	193	val_193
+val_401	401	val_401
+val_150	150	val_150
+val_273	273	val_273
+val_66	66	val_66
+val_213	213	val_213
+val_146	146	val_146
+val_406	406	val_406
+val_193	193	val_193
 val_311	311	val_311
+val_213	213	val_213
+val_278	278	val_278
 val_311	311	val_311
 val_165	165	val_165
 val_98	98	val_98
 val_409	409	val_409
+val_238	238	val_238
+val_273	273	val_273
+val_401	401	val_401
+val_401	401	val_401
+val_193	193	val_193
+val_406	406	val_406
 val_409	409	val_409
-val_27	27	val_27
-val_146	146	val_146
-val_146	146	val_146
-val_238	238	val_238
-val_238	238	val_238
-val_193	193	val_193
-val_273	273	val_273
-val_193	193	val_193
-val_273	273	val_273
-val_193	193	val_193
-val_273	273	val_273
 val_406	406	val_406
-val_406	406	val_406
-val_406	406	val_406
-val_406	406	val_406
-val_66	66	val_66
-val_213	213	val_213
-val_213	213	val_213
-val_278	278	val_278
 val_401	401	val_401
-val_278	278	val_278
-val_401	401	val_401
-val_401	401	val_401
-val_401	401	val_401
-val_401	401	val_401
-val_150	150	val_150
 val_255	255	val_255
 val_265	265	val_265
-val_255	255	val_255
-val_265	265	val_265
+val_406	406	val_406
+val_401	401	val_401
+val_146	146	val_146
+val_273	273	val_273
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM src
@@ -359,7 +357,6 @@ STAGE PLANS:
                   1 Reducer 5
                 Statistics: Num rows: 26 Data size: 6942 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
-                HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 26 Data size: 6942 Basic stats: COMPLETE Column stats: COMPLETE
@@ -381,7 +378,6 @@ STAGE PLANS:
                   1 Map 6
                 Statistics: Num rows: 32 Data size: 2848 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
-                HybridGraceHashJoin: true
                 Group By Operator
                   keys: _col0 (type: string)
                   minReductionHashAggr: 0.5
@@ -441,44 +437,44 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
+238	val_238	val_238
 311	val_311	val_311
+27	val_27	val_27
 165	val_165	val_165
 409	val_409	val_409
+255	val_255	val_255
+278	val_278	val_278
 98	val_98	val_98
 484	val_484	val_484
+265	val_265	val_265
+193	val_193	val_193
+401	val_401	val_401
+150	val_150	val_150
+273	val_273	val_273
+66	val_66	val_66
+213	val_213	val_213
+146	val_146	val_146
+406	val_406	val_406
+193	val_193	val_193
 311	val_311	val_311
+213	val_213	val_213
+278	val_278	val_278
 311	val_311	val_311
 165	val_165	val_165
 98	val_98	val_98
 409	val_409	val_409
+238	val_238	val_238
+273	val_273	val_273
+401	val_401	val_401
+401	val_401	val_401
+193	val_193	val_193
+406	val_406	val_406
 409	val_409	val_409
-27	val_27	val_27
-146	val_146	val_146
-146	val_146	val_146
-238	val_238	val_238
-238	val_238	val_238
-193	val_193	val_193
-273	val_273	val_273
-193	val_193	val_193
-273	val_273	val_273
-193	val_193	val_193
-273	val_273	val_273
 406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-66	val_66	val_66
-213	val_213	val_213
-213	val_213	val_213
-278	val_278	val_278
 401	val_401	val_401
-278	val_278	val_278
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-150	val_150	val_150
 255	val_255	val_255
 265	val_265	val_265
-255	val_255	val_255
-265	val_265	val_265
+406	val_406	val_406
+401	val_401	val_401
+146	val_146	val_146
+273	val_273	val_273

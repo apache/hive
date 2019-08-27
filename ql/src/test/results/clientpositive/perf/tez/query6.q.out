@@ -109,7 +109,7 @@ Stage-0
                             Filter Operator [FIL_213] (rows=153611 width=227)
                               predicate:(_col4 > (1.2 * CAST( _col0 AS decimal(16,6))))
                               Map Join Operator [MAPJOIN_212] (rows=460833 width=227)
-                                Conds:RS_209._col1=SEL_211._col2(Inner),HybridGraceHashJoin:true,Output:["_col0","_col3","_col4"]
+                                Conds:RS_209._col1=SEL_211._col2(Inner),Output:["_col0","_col3","_col4"]
                               <-Reducer 15 [BROADCAST_EDGE] vectorized
                                 BROADCAST [RS_209]
                                   PartitionCols:_col1
@@ -170,12 +170,12 @@ Stage-0
                             SHUFFLE [RS_224]
                               PartitionCols:_col5
                               Map Join Operator [MAPJOIN_223] (rows=7192227 width=4)
-                                Conds:RS_193._col0=SEL_222._col0(Inner),HybridGraceHashJoin:true,Output:["_col4","_col5"]
+                                Conds:RS_193._col0=SEL_222._col0(Inner),Output:["_col4","_col5"]
                               <-Map 1 [BROADCAST_EDGE] vectorized
                                 BROADCAST [RS_193]
                                   PartitionCols:_col0
                                   Map Join Operator [MAPJOIN_192] (rows=660 width=4)
-                                    Conds:SEL_191._col1=RS_189._col0(Inner),HybridGraceHashJoin:true,Output:["_col0"]
+                                    Conds:SEL_191._col1=RS_189._col0(Inner),Output:["_col0"]
                                   <-Reducer 3 [BROADCAST_EDGE] vectorized
                                     BROADCAST [RS_189]
                                       PartitionCols:_col0
