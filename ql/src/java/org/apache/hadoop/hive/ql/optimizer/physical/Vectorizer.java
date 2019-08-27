@@ -26,6 +26,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -1380,7 +1381,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         List<TypeInfo> allTypeInfoList,
         Set<String> inputFileFormatClassNameSet,
         Map<VectorPartitionDesc, VectorPartitionDesc> vectorPartitionDescMap,
-        Set<String> enabledConditionsMetSet, ArrayList<String> enabledConditionsNotMetList,
+        Set<String> enabledConditionsMetSet, List<String> enabledConditionsNotMetList,
         Set<Support> newSupportSet, List<TypeInfo> dataTypeInfoList) {
 
       Class<? extends InputFormat> inputFileFormatClass = pd.getInputFileFormatClass();
@@ -1677,12 +1678,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     private void setValidateInputFormatAndSchemaEvolutionExplain(MapWork mapWork,
         Set<String> inputFileFormatClassNameSet,
         Map<VectorPartitionDesc, VectorPartitionDesc> vectorPartitionDescMap,
-        Set<String> enabledConditionsMetSet, ArrayList<String> enabledConditionsNotMetList) {
+        Collection<String> enabledConditionsMetSet, Collection<String> enabledConditionsNotMetList) {
       mapWork.setVectorizationInputFileFormatClassNameSet(inputFileFormatClassNameSet);
       ArrayList<VectorPartitionDesc> vectorPartitionDescList = new ArrayList<VectorPartitionDesc>();
       vectorPartitionDescList.addAll(vectorPartitionDescMap.keySet());
       mapWork.setVectorPartitionDescList(vectorPartitionDescList);
-      mapWork.setVectorizationEnabledConditionsMet(new ArrayList(enabledConditionsMetSet));
+      mapWork.setVectorizationEnabledConditionsMet(enabledConditionsMetSet);
       mapWork.setVectorizationEnabledConditionsNotMet(enabledConditionsNotMetList);
     }
 
@@ -1726,7 +1727,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       Map<VectorPartitionDesc, VectorPartitionDesc> vectorPartitionDescMap =
           new LinkedHashMap<VectorPartitionDesc, VectorPartitionDesc>();
       Set<String> enabledConditionsMetSet = new HashSet<String>();
-      ArrayList<String> enabledConditionsNotMetList = new ArrayList<String>();
+      List<String> enabledConditionsNotMetList = new ArrayList<String>();
       Set<Support> inputFormatSupportSet = new TreeSet<Support>();
       boolean outsideLoopIsFirstPartition = true;
 
@@ -1938,7 +1939,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       ArrayList<VectorPartitionDesc> vectorPartitionDescList = new ArrayList<VectorPartitionDesc>();
       vectorPartitionDescList.addAll(vectorPartitionDescMap.keySet());
       mapWork.setVectorPartitionDescList(vectorPartitionDescList);
-      mapWork.setVectorizationEnabledConditionsMet(new ArrayList(enabledConditionsMetSet));
+      mapWork.setVectorizationEnabledConditionsMet(enabledConditionsMetSet);
       mapWork.setVectorizationEnabledConditionsNotMet(enabledConditionsNotMetList);
 
       return new ImmutablePair<Boolean,Boolean>(true, false);
@@ -1955,7 +1956,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       if (onlyOneTableScanPair == null) {
         VectorizerReason notVectorizedReason = currentBaseWork.getNotVectorizedReason();
         Preconditions.checkState(notVectorizedReason != null);
-        mapWork.setVectorizationEnabledConditionsNotMet(Arrays.asList(new String[] {notVectorizedReason.toString()}));
+        mapWork.setVectorizationEnabledConditionsNotMet(Collections.singleton(notVectorizedReason.toString()));
         return;
       }
       String alias = onlyOneTableScanPair.left;
@@ -1972,7 +1973,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         if (!validateInputFormatAndSchemaEvolutionPair.right) {
           VectorizerReason notVectorizedReason = currentBaseWork.getNotVectorizedReason();
           Preconditions.checkState(notVectorizedReason != null);
-          mapWork.setVectorizationEnabledConditionsNotMet(Arrays.asList(new String[] {notVectorizedReason.toString()}));
+          mapWork.setVectorizationEnabledConditionsNotMet(Collections.singleton(notVectorizedReason.toString()));
         }
         return;
       }
@@ -4144,7 +4145,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       vectorReduceSinkInfo.setReduceSinkKeyExpressions(reduceSinkKeyExpressions);
     }
 
-    ArrayList<ExprNodeDesc> valueDescs = desc.getValueCols();
+    List<ExprNodeDesc> valueDescs = desc.getValueCols();
     final boolean isEmptyValue = (valueDescs.size() == 0);
     if (!isEmptyValue) {
       VectorExpression[] allValueExpressions = vContext.getVectorExpressions(valueDescs);

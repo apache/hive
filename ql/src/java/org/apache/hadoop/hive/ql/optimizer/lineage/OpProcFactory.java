@@ -609,7 +609,7 @@ public class OpProcFactory {
         RowSchema schema = rop.getSchema();
         ReduceSinkDesc desc = rop.getConf();
         List<ExprNodeDesc> keyCols = desc.getKeyCols();
-        ArrayList<String> keyColNames = desc.getOutputKeyColumnNames();
+        List<String> keyColNames = desc.getOutputKeyColumnNames();
         for (int i = 0; i < keyCols.size(); i++) {
           // order-bys, joins
           ColumnInfo column = schema.getColumnInfo(Utilities.ReduceField.KEY + "." + keyColNames.get(i));
@@ -620,7 +620,7 @@ public class OpProcFactory {
               ExprProcFactory.getExprDependency(lCtx, inpOp, keyCols.get(i), outputMap));
         }
         List<ExprNodeDesc> valCols = desc.getValueCols();
-        ArrayList<String> valColNames = desc.getOutputValueColumnNames();
+        List<String> valColNames = desc.getOutputValueColumnNames();
         for (int i = 0; i < valCols.size(); i++) {
           // todo: currently, bucketing,etc. makes RS differently with those for order-bys or joins
           ColumnInfo column = schema.getColumnInfo(valColNames.get(i));

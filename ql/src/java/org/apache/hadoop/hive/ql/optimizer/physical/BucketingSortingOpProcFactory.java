@@ -545,7 +545,7 @@ public class BucketingSortingOpProcFactory {
   static List<SortCol> extractSortCols(ReduceSinkOperator rop, List<ExprNodeDesc> outputValues) {
     String sortOrder = rop.getConf().getOrder();
     List<SortCol> sortCols = new ArrayList<SortCol>();
-    ArrayList<ExprNodeDesc> keyCols = rop.getConf().getKeyCols();
+    List<ExprNodeDesc> keyCols = rop.getConf().getKeyCols();
     for (int i = 0; i < keyCols.size(); i++) {
       ExprNodeDesc keyCol = keyCols.get(i);
       if (!(keyCol instanceof ExprNodeColumnDesc)) {
