@@ -245,11 +245,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: strings
-          Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: CAST( s AS timestamp FORMAT 'yyy.mm.dd' ) (type: timestamp)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: explain from strings    select cast (s as date        format "yyy.mm.dd")
@@ -270,11 +270,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: strings
-          Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: CAST( s AS date FORMAT 'yyy.mm.dd' ) (type: date)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: explain from timestamp1 select cast (t as string      format "yyyy")
@@ -295,11 +295,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: timestamp1
-          Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: CAST( t AS string FORMAT 'yyyy' ) (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: explain from timestamp1 select cast (t as varchar(12) format "yyyy")
@@ -320,10 +320,10 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: timestamp1
-          Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: CAST( t AS varchar(12) FORMAT 'yyyy' ) (type: varchar(12))
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             ListSink
 

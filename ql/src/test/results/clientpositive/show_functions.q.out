@@ -479,6 +479,7 @@ bround
 bucket_number
 cardinality_violation
 case
+cast_format
 cbrt
 ceil
 ceiling
