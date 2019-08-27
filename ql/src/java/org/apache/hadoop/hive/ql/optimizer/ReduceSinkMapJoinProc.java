@@ -177,7 +177,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
         keyCount = rowCount = Long.MAX_VALUE;
       }
       tableSize = stats.getDataSize();
-      ArrayList<String> keyCols = parentRS.getConf().getOutputKeyColumnNames();
+      List<String> keyCols = parentRS.getConf().getOutputKeyColumnNames();
       if (keyCols != null && !keyCols.isEmpty()) {
         // See if we can arrive at a smaller number using distinct stats from key columns.
         long maxKeyCount = 1;
@@ -334,7 +334,6 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
 
     // create an new operator: HashTableDummyOperator, which share the table desc
     HashTableDummyDesc desc = new HashTableDummyDesc();
-    @SuppressWarnings("unchecked")
     HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(
         parentRS.getCompilationOpContext(), desc);
     TableDesc tbl;
