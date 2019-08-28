@@ -139,7 +139,7 @@
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.6</commons-lang.version>
-    <commons-lang3.version>3.2</commons-lang3.version>
+    <commons-lang3.version>3.9</commons-lang3.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <commons-pool2.version>2.6.1</commons-pool2.version>

@@ -1029,14 +1029,22 @@ public class DagUtils {
       // reference HDFS based resource directly, to use distribute cache efficiently.
       addHdfsResource(conf, tmpResources, LocalResourceType.FILE, getHdfsTempFilesFromConf(conf));
       // local resources are session based.
-      addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getLocalTempFilesFromConf(conf), null);
+      tmpResources.addAll(
+          addTempResources(conf, hdfsDirPathStr, LocalResourceType.FILE,
+              getLocalTempFilesFromConf(conf), null).values()
+      );
     } else {
       // all resources including HDFS are session based.
-      addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getTempFilesFromConf(conf), null);
+      tmpResources.addAll(
+          addTempResources(conf, hdfsDirPathStr, LocalResourceType.FILE,
+              getTempFilesFromConf(conf), null).values()
+      );
     }
 
-    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.ARCHIVE,
-        getTempArchivesFromConf(conf), null);
+    tmpResources.addAll(
+        addTempResources(conf, hdfsDirPathStr, LocalResourceType.ARCHIVE,
+            getTempArchivesFromConf(conf), null).values()
+    );
     return tmpResources;
   }
 
@@ -1102,26 +1110,22 @@ public class DagUtils {
    * @param hdfsDirPathStr Destination directory in HDFS.
    * @param conf Configuration.
    * @param inputOutputJars The file names to localize.
-   * @return List&lt;LocalResource&gt; local resources to add to execution
+   * @return Map&lt;String, LocalResource&gt; (srcPath, local resources) to add to execution
    * @throws IOException when hdfs operation fails.
    * @throws LoginException when getDefaultDestDir fails with the same exception
    */
-  public List<LocalResource> localizeTempFiles(String hdfsDirPathStr, Configuration conf,
-      String[] inputOutputJars, String[] skipJars) throws IOException, LoginException {
+  public Map<String, LocalResource> localizeTempFiles(String hdfsDirPathStr, Configuration conf,
+      String[] inputOutputJars, String[] skipJars) throws IOException {
     if (inputOutputJars == null) {
       return null;
     }
-    List<LocalResource> tmpResources = new ArrayList<LocalResource>();
-    addTempResources(conf, tmpResources, hdfsDirPathStr,
-        LocalResourceType.FILE, inputOutputJars, skipJars);
-    return tmpResources;
+    return addTempResources(conf, hdfsDirPathStr, LocalResourceType.FILE, inputOutputJars, skipJars);
   }
 
-  private void addTempResources(Configuration conf,
-      List<LocalResource> tmpResources, String hdfsDirPathStr,
-      LocalResourceType type,
-      String[] files, String[] skipFiles) throws IOException {
+  private Map<String, LocalResource> addTempResources(Configuration conf, String hdfsDirPathStr,
+      LocalResourceType type, String[] files, String[] skipFiles) throws IOException {
     HashSet<Path> skipFileSet = null;
+    Map<String, LocalResource> tmpResourcesMap = new HashMap<>();
     if (skipFiles != null) {
       skipFileSet = new HashSet<>();
       for (String skipFile : skipFiles) {
@@ -1142,8 +1146,9 @@ public class DagUtils {
       Path hdfsFilePath = new Path(hdfsDirPathStr, getResourceBaseName(new Path(file)));
       LocalResource localResource = localizeResource(new Path(file),
           hdfsFilePath, type, conf);
-      tmpResources.add(localResource);
+      tmpResourcesMap.put(file, localResource);
     }
+    return tmpResourcesMap;
   }
 
   public FileStatus getHiveJarDirectory(Configuration conf) throws IOException, LoginException {

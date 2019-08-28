@@ -82,17 +82,17 @@ class KafkaBrokerResource extends ExternalResource {
    */
   @Override protected void after() {
     super.after();
-    try {
-      FileUtils.deleteDirectory(new File(tmpLogDir.toString()));
-    } catch (IOException e) {
-      LOG.error("Error cleaning " + tmpLogDir.toString(), e);
-    }
     if (kafkaServer != null) {
       kafkaServer.shutdown();
       kafkaServer.awaitShutdown();
     }
     if (zkServer != null) {
       zkServer.shutdown();
+    }
+    try {
+     FileUtils.deleteDirectory(new File(tmpLogDir.toString()));
+    } catch (IOException e) {
+      LOG.warn("did not clean " + tmpLogDir.toString(), e);
     }
   }
 

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -60,7 +59,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   // bucketed or sorted table/partition they cannot be merged.
   private boolean canBeMerged;
   private int     totalFiles;
-  private ArrayList<ExprNodeDesc> partitionCols;
+  private List<ExprNodeDesc> partitionCols;
   private int     numFiles;
   private DynamicPartitionCtx dpCtx;
   private String staticSpec; // static partition spec ends with a '/'
@@ -126,7 +125,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
       final boolean compressed, final int destTableId, final boolean multiFileSpray,
       final boolean canBeMerged, final int numFiles, final int totalFiles,
-      final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath,
+      final List<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath,
       Long mmWriteId, boolean isMmCtas, boolean isInsertOverwrite, boolean isQuery, boolean isCTASorCM) {
 
     this.dirName = dirName;
@@ -379,14 +378,14 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   /**
    * @return the partitionCols
    */
-  public ArrayList<ExprNodeDesc> getPartitionCols() {
+  public List<ExprNodeDesc> getPartitionCols() {
     return partitionCols;
   }
 
   /**
    * @param partitionCols the partitionCols to set
    */
-  public void setPartitionCols(ArrayList<ExprNodeDesc> partitionCols) {
+  public void setPartitionCols(List<ExprNodeDesc> partitionCols) {
     this.partitionCols = partitionCols;
   }
 

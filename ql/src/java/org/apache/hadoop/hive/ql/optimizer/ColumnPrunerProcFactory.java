@@ -575,7 +575,7 @@ public final class ColumnPrunerProcFactory {
       ReduceSinkDesc conf = op.getConf();
 
       List<FieldNode> colLists = new ArrayList<>();
-      ArrayList<ExprNodeDesc> keys = conf.getKeyCols();
+      List<ExprNodeDesc> keys = conf.getKeyCols();
       LOG.debug("Reduce Sink Operator " + op.getIdentifier() + " key:" + keys);
       for (ExprNodeDesc key : keys) {
         colLists = mergeFieldNodesWithDesc(colLists, key);
@@ -874,8 +874,7 @@ public final class ColumnPrunerProcFactory {
   private static boolean[] getPruneReduceSinkOpRetainFlags(
       List<String> retainedParentOpOutputCols, ReduceSinkOperator reduce) {
     ReduceSinkDesc reduceConf = reduce.getConf();
-    java.util.ArrayList<ExprNodeDesc> originalValueEval = reduceConf
-        .getValueCols();
+    List<ExprNodeDesc> originalValueEval = reduceConf.getValueCols();
     boolean[] flags = new boolean[originalValueEval.size()];
     for (int i = 0; i < originalValueEval.size(); i++) {
       flags[i] = false;
