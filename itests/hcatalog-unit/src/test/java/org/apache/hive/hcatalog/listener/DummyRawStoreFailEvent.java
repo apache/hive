@@ -1353,4 +1353,9 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
     throw new RuntimeException("unimplemented");
   }
 
+  @Override
+  public int deleteScheduledExecutions(int maxRetainSecs) {
+    return objectStore.deleteScheduledExecutions(maxRetainSecs);
+  }
+
 }
