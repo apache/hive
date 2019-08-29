@@ -94,6 +94,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
+import org.apache.hadoop.mapreduce.security.TokenCache;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -778,6 +779,15 @@ public class CompactorMR {
     job.set(DIRS_TO_SEARCH, dirsToSearch.toString());
     job.setLong(MIN_TXN, minTxn);
     job.setLong(MAX_TXN, maxTxn);
+
+    // Add tokens for all the file system in the input path.
+    ArrayList<Path> dirs = new ArrayList<>();
+    if (baseDir != null) {
+      dirs.add(baseDir);
+    }
+    dirs.addAll(deltaDirs);
+    dirs.addAll(dirsToSearch);
+    TokenCache.obtainTokensForNamenodes(job.getCredentials(), dirs.toArray(new Path[]{}), job);
 
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
       mrJob = job;
