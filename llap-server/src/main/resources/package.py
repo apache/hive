@@ -73,7 +73,7 @@ def construct_service_site_global_string(kvs):
 def main(args):
 	version = os.getenv("HIVE_VERSION")
 	if not version:
-		version = strftime("%d%b%Y", gmtime()) 
+		version = strftime("%d%b%Y", gmtime())
 	home = os.getenv("HIVE_HOME")
 	output = "llap-yarn-%(version)s" % ({"version": version})
 	parser = argparse.ArgumentParser()
@@ -116,10 +116,12 @@ def main(args):
 	service_keytab_dir = args.service_keytab_dir
 	service_keytab = args.service_keytab
 	service_principal = args.service_principal
+
+	config = json_parse(open(join(input, "config.json")).read())
 	# set the defaults only if the defaults are enabled
 	if args.service_default_keytab:
 		if not service_keytab_dir:
-			service_keytab_dir = ".yarn/keytabs/llap"
+			service_keytab_dir = config["hive.llap.hdfs.package.dir"] + "/keytabs/llap"
 		if not service_keytab:
 			service_keytab = "llap.keytab"
 		if not service_principal:
@@ -135,7 +137,6 @@ def main(args):
 		print "Cannot find input files"
 		sys.exit(1)
 		return
-	config = json_parse(open(join(input, "config.json")).read())
 	java_home = config["java.home"]
 	max_direct_memory = config["max_direct_memory"]
 
@@ -167,12 +168,13 @@ def main(args):
 		"placement" : args.service_placement,
 		"health_percent": args.health_percent,
 		"health_time_window": args.health_time_window_secs,
-		"health_init_delay": args.health_init_delay_secs
+		"health_init_delay": args.health_init_delay_secs,
+		"hdfs_package_dir": config["hive.llap.hdfs.package.dir"]
 	}
-	
+
 	if not exists(output):
 		os.makedirs(output)
-	
+
 	src = join(home, "scripts", "llap", "bin")
 	dst = join(input, "bin")
 	if exists(dst):

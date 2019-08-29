@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -60,7 +59,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   // bucketed or sorted table/partition they cannot be merged.
   private boolean canBeMerged;
   private int     totalFiles;
-  private ArrayList<ExprNodeDesc> partitionCols;
+  private List<ExprNodeDesc> partitionCols;
   private int     numFiles;
   private DynamicPartitionCtx dpCtx;
   private String staticSpec; // static partition spec ends with a '/'
@@ -115,6 +114,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   private boolean isQuery = false;
 
+  private boolean isCTASorCM = false;
+
   public FileSinkDesc() {
   }
 
@@ -124,8 +125,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
       final boolean compressed, final int destTableId, final boolean multiFileSpray,
       final boolean canBeMerged, final int numFiles, final int totalFiles,
-      final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath,
-      Long mmWriteId, boolean isMmCtas, boolean isInsertOverwrite, boolean isQuery) {
+      final List<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath,
+      Long mmWriteId, boolean isMmCtas, boolean isInsertOverwrite, boolean isQuery, boolean isCTASorCM) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
@@ -143,6 +144,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     this.isMmCtas = isMmCtas;
     this.isInsertOverwrite = isInsertOverwrite;
     this.isQuery = isQuery;
+    this.isCTASorCM = isCTASorCM;
   }
 
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
@@ -164,7 +166,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed,
         destTableId, multiFileSpray, canBeMerged, numFiles, totalFiles,
-        partitionCols, dpCtx, destPath, mmWriteId, isMmCtas, isInsertOverwrite, isQuery);
+        partitionCols, dpCtx, destPath, mmWriteId, isMmCtas, isInsertOverwrite, isQuery, isCTASorCM);
     ret.setCompressCodec(compressCodec);
     ret.setCompressType(compressType);
     ret.setGatherStats(gatherStats);
@@ -181,11 +183,16 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     ret.setIsMerge(isMerge);
     ret.setFilesToFetch(filesToFetch);
     ret.setIsQuery(isQuery);
+    ret.setIsCTASorCM(isCTASorCM);
     return ret;
   }
 
   public void setFilesToFetch(Set<FileStatus> filesToFetch) {
     this.filesToFetch = filesToFetch;
+  }
+
+  public void setIsCTASorCM(boolean isCTASorCM) {
+    this.isCTASorCM = isCTASorCM;
   }
 
   public void setIsQuery(boolean isQuery) {
@@ -371,14 +378,14 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   /**
    * @return the partitionCols
    */
-  public ArrayList<ExprNodeDesc> getPartitionCols() {
+  public List<ExprNodeDesc> getPartitionCols() {
     return partitionCols;
   }
 
   /**
    * @param partitionCols the partitionCols to set
    */
-  public void setPartitionCols(ArrayList<ExprNodeDesc> partitionCols) {
+  public void setPartitionCols(List<ExprNodeDesc> partitionCols) {
     this.partitionCols = partitionCols;
   }
 
@@ -589,6 +596,15 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   public boolean isMmCtas() {
     return isMmCtas;
+  }
+
+  /**
+   * Whether this is CREATE TABLE SELECT or CREATE MATERIALIZED VIEW statemet
+   * Set by semantic analyzer this is required because CTAS/CM requires some special logic
+   * in mvFileToFinalPath
+   */
+  public boolean isCTASorCM() {
+    return isCTASorCM;
   }
 
   public class FileSinkOperatorExplainVectorization extends OperatorExplainVectorization {

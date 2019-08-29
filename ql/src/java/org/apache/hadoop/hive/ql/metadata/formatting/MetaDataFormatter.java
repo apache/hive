@@ -31,17 +31,10 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
-import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
-import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
-import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
-import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 
 /**
  * Interface to format table and index information.  We can format it
@@ -53,83 +46,58 @@ public interface MetaDataFormatter {
    * Write an error message.
    * @param sqlState if {@code null}, will be ignored
    */
-  public void error(OutputStream out, String msg, int errorCode, String sqlState)
+  void error(OutputStream out, String msg, int errorCode, String sqlState)
       throws HiveException;
 
   /**
    * @param sqlState if {@code null}, will be skipped in output
    * @param errorDetail usually string version of some Exception, if {@code null}, will be ignored
    */
-  public void error(OutputStream out, String errorMessage, int errorCode, String sqlState, String errorDetail)
+  void error(OutputStream out, String errorMessage, int errorCode, String sqlState, String errorDetail)
       throws HiveException;
 
   /**
    * Show a list of tables.
    */
-  public void showTables(DataOutputStream out, Set<String> tables)
+  void showTables(DataOutputStream out, Set<String> tables)
       throws HiveException;
 
   /**
    * Show a list of tables including table types.
    */
-  public void showTablesExtended(DataOutputStream out, List<Table> tables)
+  void showTablesExtended(DataOutputStream out, List<Table> tables)
       throws HiveException;
 
   /**
    * Show a list of materialized views.
    */
-  public void showMaterializedViews(DataOutputStream out, List<Table> materializedViews)
+  void showMaterializedViews(DataOutputStream out, List<Table> materializedViews)
       throws HiveException;
 
   /**
    * Describe table.
-   * @param out
-   * @param colPath
-   * @param tableName
-   * @param tbl
-   * @param part
-   * @param cols
-   * @param isFormatted - describe with formatted keyword
-   * @param isExt
-   * @param isOutputPadded - if true, add spacing and indentation
-   * @param colStats
-   * @param fkInfo  foreign keys information
-   * @param pkInfo  primary key information
-   * @param ukInfo  unique constraint information
-   * @param nnInfo  not null constraint information
-   * @throws HiveException
    */
-  public void describeTable(DataOutputStream out, String colPath,
-      String tableName, Table tbl, Partition part, List<FieldSchema> cols,
-      boolean isFormatted, boolean isExt,
-      boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
-      PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo, CheckConstraint cInfo,
-      StorageHandlerInfo storageHandlerInfo)
-          throws HiveException;
+  void describeTable(DataOutputStream out, String colPath, String tableName, Table tbl, Partition part,
+      List<FieldSchema> cols, boolean isFormatted, boolean isExtended, boolean isOutputPadded,
+      List<ColumnStatisticsObj> colStats) throws HiveException;
 
   /**
    * Show the table status.
    */
-  public void showTableStatus(DataOutputStream out,
-      Hive db,
-      HiveConf conf,
-      List<Table> tbls,
-      Map<String, String> part,
+  void showTableStatus(DataOutputStream out, Hive db, HiveConf conf, List<Table> tbls, Map<String, String> part,
       Partition par)
           throws HiveException;
 
   /**
    * Show the table partitions.
    */
-  public void showTablePartitions(DataOutputStream out,
-      List<String> parts)
+  void showTablePartitions(DataOutputStream out, List<String> parts)
           throws HiveException;
 
   /**
-   * Show the databases
+   * Show the databases.
    */
-  public void showDatabases(DataOutputStream out, List<String> databases)
+  void showDatabases(DataOutputStream out, List<String> databases)
       throws HiveException;
 
   /**

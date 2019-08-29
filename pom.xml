@@ -59,6 +59,7 @@
     <module>shims</module>
     <module>spark-client</module>
     <module>kryo-registrator</module>
+    <module>kudu-handler</module>
     <module>testutils</module>
     <module>packaging</module>
     <module>standalone-metastore</module>
@@ -138,7 +139,7 @@
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.6</commons-lang.version>
-    <commons-lang3.version>3.2</commons-lang3.version>
+    <commons-lang3.version>3.9</commons-lang3.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <commons-pool2.version>2.6.1</commons-pool2.version>
@@ -163,7 +164,7 @@
     <httpcomponents.client.version>4.5.6</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.10</httpcomponents.core.version>
     <ivy.version>2.4.0</ivy.version>
-    <jackson.version>2.9.8</jackson.version>
+    <jackson.version>2.9.9</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.3.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
@@ -171,7 +172,7 @@
     <javax-servlet-jsp.version>2.3.1</javax-servlet-jsp.version>
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.1</jettison.version>
-    <jetty.version>9.3.25.v20180904</jetty.version>
+    <jetty.version>9.3.27.v20190418</jetty.version>
     <jersey.version>1.19</jersey.version>
     <!-- Glassfish jersey is included for Spark client test only -->
     <glassfish.jersey.version>2.22.2</glassfish.jersey.version>
@@ -182,11 +183,13 @@
     <json.version>1.8</json.version>
     <junit.version>4.11</junit.version>
     <kryo.version>4.0.2</kryo.version>
+    <kudu.version>1.10.0</kudu.version>
+    <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.9.3</libthrift.version>
+    <libthrift.version>0.9.3-1</libthrift.version>
     <log4j2.version>2.10.0</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.5.4</orc.version>
+    <orc.version>1.5.6</orc.version>
     <mockito-core.version>1.10.19</mockito-core.version>
     <powermock.version>1.7.4</powermock.version>
     <mina.version>2.0.0-M5</mina.version>

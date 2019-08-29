@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
@@ -1028,14 +1029,22 @@ public class DagUtils {
       // reference HDFS based resource directly, to use distribute cache efficiently.
       addHdfsResource(conf, tmpResources, LocalResourceType.FILE, getHdfsTempFilesFromConf(conf));
       // local resources are session based.
-      addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getLocalTempFilesFromConf(conf), null);
+      tmpResources.addAll(
+          addTempResources(conf, hdfsDirPathStr, LocalResourceType.FILE,
+              getLocalTempFilesFromConf(conf), null).values()
+      );
     } else {
       // all resources including HDFS are session based.
-      addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getTempFilesFromConf(conf), null);
+      tmpResources.addAll(
+          addTempResources(conf, hdfsDirPathStr, LocalResourceType.FILE,
+              getTempFilesFromConf(conf), null).values()
+      );
     }
 
-    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.ARCHIVE,
-        getTempArchivesFromConf(conf), null);
+    tmpResources.addAll(
+        addTempResources(conf, hdfsDirPathStr, LocalResourceType.ARCHIVE,
+            getTempArchivesFromConf(conf), null).values()
+    );
     return tmpResources;
   }
 
@@ -1101,26 +1110,22 @@ public class DagUtils {
    * @param hdfsDirPathStr Destination directory in HDFS.
    * @param conf Configuration.
    * @param inputOutputJars The file names to localize.
-   * @return List&lt;LocalResource&gt; local resources to add to execution
+   * @return Map&lt;String, LocalResource&gt; (srcPath, local resources) to add to execution
    * @throws IOException when hdfs operation fails.
    * @throws LoginException when getDefaultDestDir fails with the same exception
    */
-  public List<LocalResource> localizeTempFiles(String hdfsDirPathStr, Configuration conf,
-      String[] inputOutputJars, String[] skipJars) throws IOException, LoginException {
+  public Map<String, LocalResource> localizeTempFiles(String hdfsDirPathStr, Configuration conf,
+      String[] inputOutputJars, String[] skipJars) throws IOException {
     if (inputOutputJars == null) {
       return null;
     }
-    List<LocalResource> tmpResources = new ArrayList<LocalResource>();
-    addTempResources(conf, tmpResources, hdfsDirPathStr,
-        LocalResourceType.FILE, inputOutputJars, skipJars);
-    return tmpResources;
+    return addTempResources(conf, hdfsDirPathStr, LocalResourceType.FILE, inputOutputJars, skipJars);
   }
 
-  private void addTempResources(Configuration conf,
-      List<LocalResource> tmpResources, String hdfsDirPathStr,
-      LocalResourceType type,
-      String[] files, String[] skipFiles) throws IOException {
+  private Map<String, LocalResource> addTempResources(Configuration conf, String hdfsDirPathStr,
+      LocalResourceType type, String[] files, String[] skipFiles) throws IOException {
     HashSet<Path> skipFileSet = null;
+    Map<String, LocalResource> tmpResourcesMap = new HashMap<>();
     if (skipFiles != null) {
       skipFileSet = new HashSet<>();
       for (String skipFile : skipFiles) {
@@ -1141,8 +1146,9 @@ public class DagUtils {
       Path hdfsFilePath = new Path(hdfsDirPathStr, getResourceBaseName(new Path(file)));
       LocalResource localResource = localizeResource(new Path(file),
           hdfsFilePath, type, conf);
-      tmpResources.add(localResource);
+      tmpResourcesMap.put(file, localResource);
     }
+    return tmpResourcesMap;
   }
 
   public FileStatus getHiveJarDirectory(Configuration conf) throws IOException, LoginException {
@@ -1344,9 +1350,27 @@ public class DagUtils {
    * @throws IOException
    */
   public JobConf createConfiguration(HiveConf hiveConf) throws IOException {
+    return createConfiguration(hiveConf, false);
+  }
+
+  /**
+   * Creates and initializes a JobConf object that can be used to execute
+   * the DAG. This can skip the configs which are already included in AM configs.
+   * @param hiveConf Current conf for the execution
+   * @param skipAMConf Skip the configs where are already set across all DAGs 
+   * @return JobConf base configuration for job execution
+   * @throws IOException
+   */
+  public JobConf createConfiguration(HiveConf hiveConf, boolean skipAMConf) throws IOException {
     hiveConf.setBoolean("mapred.mapper.new-api", false);
 
-    JobConf conf = new JobConf(new TezConfiguration(hiveConf));
+    Predicate<String> findDefaults =
+        (s) -> ((s != null) && (s.endsWith(".xml") || (s.endsWith(".java") && !"HiveConf.java".equals(s))));
+
+    // since this is an inclusion filter, negate the predicate
+    JobConf conf =
+        TezConfigurationFactory
+            .wrapWithJobConf(hiveConf, skipAMConf ? findDefaults.negate() : null);
 
     conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
 
@@ -1364,6 +1388,7 @@ public class DagUtils {
     // Removing job credential entry/ cannot be set on the tasks
     conf.unset("mapreduce.job.credentials.binary");
 
+    // TODO: convert this to a predicate too
     hiveConf.stripHiddenConfigurations(conf);
     return conf;
   }

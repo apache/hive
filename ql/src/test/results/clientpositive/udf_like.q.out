@@ -84,3 +84,29 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true	true	false	true	false
+PREHOOK: query: CREATE TEMPORARY TABLE SplitLines(`id` string) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@SplitLines
+POSTHOOK: query: CREATE TEMPORARY TABLE SplitLines(`id` string) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@SplitLines
+PREHOOK: query: INSERT INTO SplitLines SELECT 'withdraw\ncash'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@splitlines
+POSTHOOK: query: INSERT INTO SplitLines SELECT 'withdraw\ncash'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@splitlines
+POSTHOOK: Lineage: splitlines.id SIMPLE []
+PREHOOK: query: SELECT `id` LIKE '%withdraw%cash' FROM SplitLines
+PREHOOK: type: QUERY
+PREHOOK: Input: default@splitlines
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT `id` LIKE '%withdraw%cash' FROM SplitLines
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@splitlines
+#### A masked pattern was here ####
+true

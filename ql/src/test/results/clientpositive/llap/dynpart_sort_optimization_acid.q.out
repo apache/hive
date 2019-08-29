@@ -1416,7 +1416,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part_sdpo
                   filterExpr: (value = 'bar') (type: boolean)
-                  Statistics: Num rows: 4200 Data size: 1253037 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 4200 Data size: 1247197 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1375 Basic stats: COMPLETE Column stats: PARTIAL

@@ -64,7 +64,7 @@ public class GenericUDFRegExp extends GenericUDF {
   @Override
   public void configure(MapredContext context) {
     if (context != null) {
-      if(context.getJobConf().get("hive.use.googleregex.engine").equals("true")){
+      if(HiveConf.getBoolVar(context.getJobConf(), HiveConf.ConfVars.HIVEUSEGOOGLEREGEXENGINE)){
         this.useGoogleRegexEngine=true;
       }
     }

@@ -57,7 +57,7 @@ import java.util.concurrent.Executors;
 public class LlapServiceDriver {
   private static final Logger LOG = LoggerFactory.getLogger(LlapServiceDriver.class.getName());
 
-  private static final String LLAP_PACKAGE_DIR = ".yarn/package/LLAP/";
+  private static final String LLAP_RELATIVE_PACKAGE_DIR = "/package/LLAP/";
   private static final String OUTPUT_DIR_PREFIX = "llap-yarn-";
 
   /**
@@ -356,8 +356,10 @@ public class LlapServiceDriver {
       }
       LOG.info("Uploading the app tarball");
       CoreFileSystem fs = new CoreFileSystem(conf);
-      fs.createWithPermissions(new Path(LLAP_PACKAGE_DIR), FsPermission.getDirDefault());
-      fs.copyLocalFileToHdfs(new File(packageDir.toString(), packageName), new Path(LLAP_PACKAGE_DIR),
+      String llapPackageDir = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_HDFS_PACKAGE_DIR)
+              + LLAP_RELATIVE_PACKAGE_DIR;
+      fs.createWithPermissions(new Path(llapPackageDir), FsPermission.getDirDefault());
+      fs.copyLocalFileToHdfs(new File(packageDir.toString(), packageName), new Path(llapPackageDir),
           new FsPermission("755"));
 
       LOG.info("Executing the launch command");

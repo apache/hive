@@ -124,7 +124,7 @@ import com.google.common.collect.Maps;
 public class SessionState {
   private static final Logger LOG = LoggerFactory.getLogger(SessionState.class);
 
-  private static final String TMP_PREFIX = "_tmp_space.db";
+  public static final String TMP_PREFIX = "_tmp_space.db";
   private static final String LOCAL_SESSION_PATH_KEY = "_hive.local.session.path";
   private static final String HDFS_SESSION_PATH_KEY = "_hive.hdfs.session.path";
   private static final String TMP_TABLE_SPACE_KEY = "_hive.tmp_table_space";
@@ -458,7 +458,7 @@ public class SessionState {
     final String currThreadName = Thread.currentThread().getName();
     if (!currThreadName.contains(logPrefix)) {
       final String newThreadName = logPrefix + " " + currThreadName;
-      LOG.info("Updating thread name to {}", newThreadName);
+      LOG.debug("Updating thread name to {}", newThreadName);
       Thread.currentThread().setName(newThreadName);
     }
   }
@@ -469,7 +469,7 @@ public class SessionState {
     final String currThreadName = Thread.currentThread().getName();
     if (currThreadName.contains(logPrefix)) {
       final String[] names = currThreadName.split(logPrefix);
-      LOG.info("Resetting thread name to {}", names[names.length - 1]);
+      LOG.debug("Resetting thread name to {}", names[names.length - 1]);
       Thread.currentThread().setName(names[names.length - 1].trim());
     }
   }

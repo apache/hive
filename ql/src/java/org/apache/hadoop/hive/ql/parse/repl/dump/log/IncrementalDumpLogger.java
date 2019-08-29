@@ -28,17 +28,25 @@ public class IncrementalDumpLogger extends ReplLogger {
   private String dumpDir;
   private long estimatedNumEvents;
   private long eventSeqNo;
+  private Long fromEventId;
+  private Long toEventId;
+  private int maxEvents;
 
-  public IncrementalDumpLogger(String dbName, String dumpDir, long estimatedNumEvents) {
+  public IncrementalDumpLogger(String dbName, String dumpDir, long estimatedNumEvents,
+                               Long fromEventId, Long toEventId, int maxEvents) {
     this.dbName = dbName;
     this.dumpDir = dumpDir;
     this.estimatedNumEvents = estimatedNumEvents;
     this.eventSeqNo = 0;
+    this.fromEventId = fromEventId;
+    this.toEventId = toEventId;
+    this.maxEvents = maxEvents;
   }
 
   @Override
   public void startLog() {
-    (new IncrementalDumpBegin(dbName, estimatedNumEvents)).log(LogTag.START);
+    (new IncrementalDumpBegin(dbName, estimatedNumEvents, fromEventId, toEventId,
+            Long.valueOf(maxEvents))).log(LogTag.START);
   }
 
   @Override

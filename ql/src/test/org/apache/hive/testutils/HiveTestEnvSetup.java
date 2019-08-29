@@ -64,6 +64,11 @@ import com.google.common.collect.Sets;
  */
 public class HiveTestEnvSetup extends ExternalResource {
 
+  private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
+    File.separator + HiveTestEnvSetup.class.getCanonicalName()
+    + "-" + System.currentTimeMillis()
+  ).getPath().replaceAll("\\\\", "/");
+
   static interface IHiveTestRule {
     default void beforeClass(HiveTestEnvContext ctx) throws Exception {
     }
@@ -222,11 +227,24 @@ public class HiveTestEnvSetup extends ExternalResource {
       HadoopShims shims = ShimLoader.getHadoopShims();
       mr1 = shims.getLocalMiniTezCluster(ctx.hiveConf, true);
       mr1.setupConfiguration(ctx.hiveConf);
+      setupTez(ctx.hiveConf);
     }
 
     @Override
     public void afterClass(HiveTestEnvContext ctx) throws Exception {
       mr1.shutdown();
+    }
+
+    private void setupTez(HiveConf conf) {
+      conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
+      conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, TEST_DATA_DIR);
+      conf.set("tez.am.resource.memory.mb", "128");
+      conf.set("tez.am.dag.scheduler.class", "org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled");
+      conf.setBoolean("tez.local.mode", true);
+      conf.set("fs.defaultFS", "file:///");
+      conf.setBoolean("tez.runtime.optimize.local.fetch", true);
+      conf.set("tez.staging-dir", TEST_DATA_DIR);
+      conf.setBoolean("tez.ignore.lib.uris", true);
     }
   }
 

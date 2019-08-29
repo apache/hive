@@ -29,7 +29,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -50,10 +50,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          sort order: 
+                          key expressions: _col0 (type: int)
+                          sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: int)
             Execution mode: llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -66,19 +66,19 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: 
-                reduceColumnSortOrder: 
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 1
-                    dataColumns: VALUE._col0:int
+                    dataColumns: KEY.reducesinkkey0:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
                 Select Vectorization:
                     className: VectorSelectOperator
@@ -132,9 +132,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
 2	000000_0
-9	000001_0
-4	000001_0
 1	000001_0
+4	000001_0
+9	000001_0
 3	000002_0
 PREHOOK: query: drop table foo
 PREHOOK: type: DROPTABLE

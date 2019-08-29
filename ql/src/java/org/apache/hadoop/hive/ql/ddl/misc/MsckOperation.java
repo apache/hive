@@ -60,8 +60,8 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
       try (HiveMetaStoreClient msc = new HiveMetaStoreClient(context.getConf())) {
         Table table = msc.getTable(SessionState.get().getCurrentCatalog(), names[0], names[1]);
         String qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
-        boolean msckEnablePartitionRetention = context.getConf().getBoolean(
-            MetastoreConf.ConfVars.MSCK_REPAIR_ENABLE_PARTITION_RETENTION.getHiveName(), false);
+        boolean msckEnablePartitionRetention = MetastoreConf.getBoolVar(context.getConf(),
+            MetastoreConf.ConfVars.MSCK_REPAIR_ENABLE_PARTITION_RETENTION);
         if (msckEnablePartitionRetention) {
           partitionExpirySeconds = PartitionManagementTask.getRetentionPeriodInSeconds(table);
           LOG.info("{} - Retention period ({}s) for partition is enabled for MSCK REPAIR..", qualifiedTableName,

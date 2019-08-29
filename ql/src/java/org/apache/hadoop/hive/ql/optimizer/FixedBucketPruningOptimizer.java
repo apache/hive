@@ -120,6 +120,7 @@ public class FixedBucketPruningOptimizer extends Transform {
       for (StructField fs : tbl.getFields()) {
         if(fs.getFieldName().equals(bucketCol)) {
           bucketField = fs;
+          break;
         }
       }
       Preconditions.checkArgument(bucketField != null);
@@ -195,6 +196,9 @@ public class FixedBucketPruningOptimizer extends Transform {
             return;
           }
         }
+      } else if (expr.getOperator() == Operator.NOT) {
+        // TODO: think we can handle NOT IS_NULL?
+        return;
       }
       // invariant: bucket-col IN literals of type bucketField
       BitSet bs = new BitSet(numBuckets);
@@ -251,7 +255,8 @@ public class FixedBucketPruningOptimizer extends Transform {
       if (o instanceof java.sql.Date) {
         return Date.valueOf(o.toString());
       } else if (o instanceof java.sql.Timestamp) {
-        return Timestamp.valueOf(o.toString());
+        java.sql.Timestamp sqlTimestamp = (java.sql.Timestamp)o;
+        return Timestamp.ofEpochMilli(sqlTimestamp.getTime(), sqlTimestamp.getNanos());
       }
       return o;
     }

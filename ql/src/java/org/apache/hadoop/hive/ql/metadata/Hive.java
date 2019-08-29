@@ -38,6 +38,8 @@ import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
@@ -92,6 +94,7 @@ import org.apache.hadoop.hive.common.*;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
@@ -145,6 +148,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.TxnIdUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -240,10 +244,14 @@ public class Hive {
     try {
       reloadFunctions();
       didRegisterAllFuncs.compareAndSet(REG_FUNCS_PENDING, REG_FUNCS_DONE);
-    } catch (Exception e) {
+    } catch (Exception | Error e) {
       LOG.warn("Failed to register all functions.", e);
       didRegisterAllFuncs.compareAndSet(REG_FUNCS_PENDING, REG_FUNCS_NO);
-      throw new HiveException(e);
+      if (e instanceof Exception) {
+        throw new HiveException(e);
+      } else {
+        throw e;
+      }
     } finally {
       synchronized (didRegisterAllFuncs) {
         didRegisterAllFuncs.notifyAll();
@@ -338,6 +346,18 @@ public class Hive {
     }
     c.set("fs.scheme.class", "dfs");
     Hive newdb = new Hive(c, doRegisterAllFns);
+    if (newdb.getHMSClientCapabilities() == null || newdb.getHMSClientCapabilities().length == 0) {
+      if (c.get(HiveConf.ConfVars.METASTORE_CLIENT_CAPABILITIES.varname) != null) {
+        String[] capabilities = c.get(HiveConf.ConfVars.METASTORE_CLIENT_CAPABILITIES.varname).split(",");
+        newdb.setHMSClientCapabilities(capabilities);
+        String hostName = "unknown";
+        try {
+          hostName = InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException ue) {
+        }
+        newdb.setHMSClientIdentifier("Hiveserver2#" + HiveVersionInfo.getVersion() + "@" + hostName);
+      }
+    }
     hiveDB.set(newdb);
     return newdb;
   }
@@ -353,6 +373,14 @@ public class Hive {
 
   public void setHMSClientIdentifier(final String id) {
     HiveMetaStoreClient.setProcessorIdentifier(id);
+  }
+
+  public String[] getHMSClientCapabilities() {
+    return HiveMetaStoreClient.getProcessorCapabilities();
+  }
+
+  public String getHMSClientIdentifier() {
+    return HiveMetaStoreClient.getProcessorIdentifier();
   }
 
   private static boolean isCompatible(Hive db, HiveConf c, boolean isFastCheck) {
@@ -932,7 +960,8 @@ public class Hive {
         }
       }
 
-      getMSC().renamePartition(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), pvals,
+      String catName = (tbl.getCatalogName() != null) ? tbl.getCatalogName() : getDefaultCatalog(conf);
+      getMSC().renamePartition(catName, tbl.getDbName(), tbl.getTableName(), pvals,
           newPart.getTPartition(), validWriteIds);
 
     } catch (InvalidOperationException e){
@@ -1321,9 +1350,9 @@ public class Hive {
               dbName, tableName);
         }
         tTable = getMSC().getTable(getDefaultCatalog(conf), dbName, tableName,
-            validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats);
+            validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats, Constants.HIVE_ENGINE);
       } else {
-        tTable = getMSC().getTable(dbName, tableName, getColumnStats);
+        tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE);
       }
     } catch (NoSuchObjectException e) {
       if (throwException) {
@@ -3773,7 +3802,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (int i = 0; i < nBatches; ++i) {
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
           getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-            partNames.subList(i*batchSize, (i+1)*batchSize), getColStats);
+            partNames.subList(i*batchSize, (i+1)*batchSize), getColStats, Constants.HIVE_ENGINE);
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
@@ -3784,7 +3813,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (nParts > nBatches * batchSize) {
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
           getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-            partNames.subList(nBatches*batchSize, nParts), getColStats);
+            partNames.subList(nBatches*batchSize, nParts), getColStats, Constants.HIVE_ENGINE);
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
@@ -5166,10 +5195,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (checkTransactional) {
         Table tbl = getTable(dbName, tableName);
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
-        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames,
+        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE,
             tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
       } else {
-        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames);
+        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE);
       }
       return retv;
     } catch (Exception e) {
@@ -5191,7 +5220,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       return getMSC().getPartitionColumnStatistics(
-          dbName, tableName, partNames, colNames, writeIdList);
+          dbName, tableName, partNames, colNames, Constants.HIVE_ENGINE, writeIdList);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -5207,7 +5236,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
         writeIdList = tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null;
       }
-      return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName, writeIdList);
+      return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName, Constants.HIVE_ENGINE, writeIdList);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);
@@ -5217,7 +5246,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
     throws HiveException {
     try {
-      return getMSC().deleteTableColumnStatistics(dbName, tableName, colName);
+      return getMSC().deleteTableColumnStatistics(dbName, tableName, colName, Constants.HIVE_ENGINE);
     } catch(Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -5227,7 +5256,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
     String colName) throws HiveException {
       try {
-        return getMSC().deletePartitionColumnStatistics(dbName, tableName, partName, colName);
+        return getMSC().deletePartitionColumnStatistics(dbName, tableName, partName, colName, Constants.HIVE_ENGINE);
       } catch(Exception e) {
         LOG.debug(StringUtils.stringifyException(e));
         throw new HiveException(e);

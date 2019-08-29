@@ -21,11 +21,12 @@ package org.apache.hadoop.hive.llap.io.api.impl;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -74,11 +75,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-class LlapRecordReader
-    implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
+class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapRecordReader.class);
   private static final Object DONE_OBJECT = new Object();
@@ -91,7 +90,7 @@ class LlapRecordReader
   private VectorizedOrcAcidRowBatchReader acidReader;
   private final Object[] partitionValues;
 
-  private final LinkedBlockingQueue<Object> queue;
+  private final ArrayBlockingQueue<Object> queue;
   private final AtomicReference<Throwable> pendingError = new AtomicReference<>(null);
 
   /** Vector that is currently being processed by our user. */
@@ -160,14 +159,22 @@ class LlapRecordReader
     TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
         job, isAcidScan, Integer.MAX_VALUE);
 
+    int queueLimitBase = getQueueVar(ConfVars.LLAP_IO_VRB_QUEUE_LIMIT_MAX, job, daemonConf);
+    int queueLimitMin = getQueueVar(ConfVars.LLAP_IO_VRB_QUEUE_LIMIT_MIN, job, daemonConf);
+    long bestEffortSize = getLongQueueVar(ConfVars.LLAP_IO_CVB_BUFFERED_SIZE, job, daemonConf);
 
-    int queueLimitBase = getQueueVar(ConfVars.LLAP_IO_VRB_QUEUE_LIMIT_BASE, job, daemonConf);
-    int queueLimitMin =  getQueueVar(ConfVars.LLAP_IO_VRB_QUEUE_LIMIT_MIN, job, daemonConf);
-    final boolean decimal64Support = HiveConf.getVar(job, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
-      .equalsIgnoreCase("decimal_64");
-    int limit = determineQueueLimit(queueLimitBase, queueLimitMin, rbCtx.getRowColumnTypeInfos(), decimal64Support);
+    final boolean
+        decimal64Support =
+        HiveConf.getVar(job, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+    int
+        limit =
+        determineQueueLimit(bestEffortSize,
+            queueLimitBase,
+            queueLimitMin,
+            rbCtx.getRowColumnTypeInfos(),
+            decimal64Support);
     LOG.info("Queue limit for LlapRecordReader is " + limit);
-    this.queue = new LinkedBlockingQueue<>(limit);
+    this.queue = new ArrayBlockingQueue<>(limit);
 
 
     int partitionColumnCount = rbCtx.getPartitionColumnCount();
@@ -197,30 +204,75 @@ class LlapRecordReader
     return (jobVal != -1) ? jobVal : HiveConf.getIntVar(daemonConf, var);
   }
 
+  private static long getLongQueueVar(ConfVars var, JobConf jobConf, Configuration daemonConf) {
+    // Check job config for overrides, otherwise use the default server value.
+    long jobVal = jobConf.getLong(var.varname, -1);
+    return (jobVal != -1) ? jobVal : HiveConf.getLongVar(daemonConf, var);
+  }
+
   // For queue size estimation purposes, we assume all columns have weight one, and the following
   // types are counted as multiple columns. This is very primitive; if we wanted to make it better,
   // we'd increase the base limit, and adjust dynamically based on IO and processing perf delays.
-  private static final int COL_WEIGHT_COMPLEX = 16, COL_WEIGHT_HIVEDECIMAL = 4,
+  private static final int COL_WEIGHT_COMPLEX = 16, COL_WEIGHT_HIVEDECIMAL = 10,
       COL_WEIGHT_STRING = 8;
-  private static int determineQueueLimit(
-    int queueLimitBase, int queueLimitMin, TypeInfo[] typeInfos, final boolean decimal64Support) {
+
+  @VisibleForTesting
+  static int determineQueueLimit(long maxBufferedSize,
+      int queueLimitMax,
+      int queueLimitMin,
+      TypeInfo[] typeInfos,
+      final boolean decimal64Support) {
+    assert queueLimitMax >= queueLimitMin;
     // If the values are equal, the queue limit is fixed.
-    if (queueLimitBase == queueLimitMin) return queueLimitBase;
+    if (queueLimitMax == queueLimitMin) return queueLimitMax;
     // If there are no columns (projection only join?) just assume no weight.
-    if (typeInfos == null || typeInfos.length == 0) return queueLimitBase;
+    if (typeInfos == null || typeInfos.length == 0) return queueLimitMax;
+    // total weight as bytes
     double totalWeight = 0;
-    for (TypeInfo ti : typeInfos) {
+    int numberOfProjectedColumns = typeInfos.length;
+    double scale = Math.max(Math.log(numberOfProjectedColumns), 1);
+
+    // Assuming that an empty Column Vector is about 96 bytes the object
+    // org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector object internals:
+    // OFFSET  SIZE                                                      TYPE DESCRIPTION
+    // VALUE
+    //      0    16                                                           (object header)
+    //     16     1                                                   boolean ColumnVector.noNulls
+    //     17     1                                                   boolean ColumnVector.isRepeating
+    //     18     1                                                   boolean ColumnVector.preFlattenIsRepeating
+    //     19     1                                                   boolean ColumnVector.preFlattenNoNulls
+    //     20     4                                                           (alignment/padding gap)
+    //     24     8   org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type ColumnVector.type
+    //     32     8                                                 boolean[] ColumnVector.isNull
+    //     40     4                                                       int BytesColumnVector.nextFree
+    //     44     4                                                       int BytesColumnVector.smallBufferNextFree
+    //     48     4                                                       int BytesColumnVector.bufferAllocationCount
+    //     52     4                                                           (alignment/padding gap)
+    //     56     8                                                  byte[][] BytesColumnVector.vector
+    //     64     8                                                     int[] BytesColumnVector.start
+    //     72     8                                                     int[] BytesColumnVector.length
+    //     80     8                                                    byte[] BytesColumnVector.buffer
+    //     88     8                                                    byte[] BytesColumnVector.smallBuffer
+    long columnVectorBaseSize = (long) (96 * numberOfProjectedColumns * scale);
+
+    for (int i = 0; i < typeInfos.length; i++) {
+      TypeInfo ti = typeInfos[i];
       int colWeight;
       if (ti.getCategory() != Category.PRIMITIVE) {
         colWeight = COL_WEIGHT_COMPLEX;
       } else {
-        PrimitiveTypeInfo pti = (PrimitiveTypeInfo)ti;
+        PrimitiveTypeInfo pti = (PrimitiveTypeInfo) ti;
         switch (pti.getPrimitiveCategory()) {
         case BINARY:
         case CHAR:
         case VARCHAR:
         case STRING:
           colWeight = COL_WEIGHT_STRING;
+          break;
+          //Timestamp column vector uses an int and long arrays
+        case TIMESTAMP:
+        case INTERVAL_DAY_TIME:
+          colWeight = 2;
           break;
         case DECIMAL:
           boolean useDecimal64 = false;
@@ -241,9 +293,13 @@ class LlapRecordReader
           colWeight = 1;
         }
       }
-      totalWeight += colWeight;
+      totalWeight += colWeight * 8 * scale;
     }
-    return Math.max(queueLimitMin, (int)(queueLimitBase / totalWeight));
+    //default batch size is 1024
+    totalWeight *= 1024;
+    totalWeight +=  columnVectorBaseSize;
+    int bestEffortSize = Math.min((int) (maxBufferedSize / totalWeight), queueLimitMax);
+    return Math.max(bestEffortSize, queueLimitMin);
   }
 
 
@@ -271,7 +327,7 @@ class LlapRecordReader
       work = Utilities.getMergeWork(job, inputName);
     }
 
-    if (work == null || !(work instanceof MapWork)) {
+    if (!(work instanceof MapWork)) {
       work = Utilities.getMapWork(job);
     }
     return (MapWork) work;
@@ -325,7 +381,7 @@ class LlapRecordReader
       }
       isFirst = false;
     }
-    ColumnVectorBatch cvb = null;
+    ColumnVectorBatch cvb;
     try {
       cvb = nextCvb();
     } catch (InterruptedException e) {
@@ -347,10 +403,10 @@ class LlapRecordReader
         // TODO: relying everywhere on the magical constants and columns being together means ACID
         //       columns are going to be super hard to change in a backward compat manner. I can
         //       foresee someone cursing while refactoring all the magic for prefix schema changes.
-        /**
-         * Acid meta cols are always either all included or all excluded the
-         * the width of 'cvb' changes accordingly so 'acidColCount' and
-         * 'ixInVrb' need to be adjusted. See {@link IncludesImpl} comments.
+        /*
+          Acid meta cols are always either all included or all excluded the
+          the width of 'cvb' changes accordingly so 'acidColCount' and
+          'ixInVrb' need to be adjusted. See {@link IncludesImpl} comments.
          */
         // Exclude the row column.
         int acidColCount = acidReader.includeAcidColumns() ?
@@ -467,7 +523,7 @@ class LlapRecordReader
     // If the structure is replaced with smth that doesn't, we MUST check interrupt here because
     // Hive operators rely on recordreader to handle task interruption, and unlike most RRs we
     // do not do any blocking IO ops on this thread.
-    Object next = null;
+    Object next;
     do {
       rethrowErrorIfAny(pendingError.get()); // Best-effort check; see the comment in the method.
       next = queue.poll(100, TimeUnit.MILLISECONDS);
@@ -624,7 +680,7 @@ class LlapRecordReader
       List<Integer> filePhysicalColumnIds = readerLogicalColumnIds;
       if (isAcidScan) {
         int rootCol = OrcInputFormat.getRootColumn(false);
-        filePhysicalColumnIds = new ArrayList<Integer>(filePhysicalColumnIds.size() + rootCol);
+        filePhysicalColumnIds = new ArrayList<>(filePhysicalColumnIds.size() + rootCol);
         this.acidStructColumnId = rootCol - 1; // OrcRecordUpdater.ROW. This is somewhat fragile...
         // Note: this guarantees that physical column IDs are in order.
         for (int i = 0; i < rootCol; ++i) {
@@ -632,12 +688,12 @@ class LlapRecordReader
           // struct to get read without projection.
           if (acidStructColumnId == i) continue;
           if(!includeAcidColumns) {
-            /**
-             * if not including acid columns, we still want to number the
-             * physical columns as if acid columns are included becase
-             * {@link #generateFileIncludes(TypeDescription)} takes the file
-             * schema as input
-             * (eg <op, owid, writerId, rowid, cwid, <f1, ... fn>>)
+            /*
+              if not including acid columns, we still want to number the
+              physical columns as if acid columns are included becase
+              {@link #generateFileIncludes(TypeDescription)} takes the file
+              schema as input
+              (eg <op, owid, writerId, rowid, cwid, <f1, ... fn>>)
              */
             continue;
           }

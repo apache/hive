@@ -608,7 +608,7 @@ public class TezSessionState {
     }
 
     // Localize the non-conf resources that are missing from the current list.
-    List<LocalResource> newResources = null;
+    Map<String, LocalResource> newResources = null;
     if (newFilesNotFromConf != null && newFilesNotFromConf.length > 0) {
       boolean hasResources = !resources.additionalFilesNotFromConf.isEmpty();
       if (hasResources) {
@@ -623,10 +623,8 @@ public class TezSessionState {
         String[] skipFilesFromConf = DagUtils.getTempFilesFromConf(conf);
         newResources = utils.localizeTempFiles(dir, conf, newFilesNotFromConf, skipFilesFromConf);
         if (newResources != null) {
-          resources.localizedResources.addAll(newResources);
-        }
-        for (int i=0;i<newFilesNotFromConf.length;i++) {
-          resources.additionalFilesNotFromConf.put(newFilesNotFromConf[i], newResources.get(i));
+          resources.localizedResources.addAll(newResources.values());
+          resources.additionalFilesNotFromConf.putAll(newResources);
         }
       } else {
         resources.localizedResources.addAll(resources.additionalFilesNotFromConf.values());
@@ -640,7 +638,7 @@ public class TezSessionState {
     // TODO: Do we really need all this nonsense?
     if (session != null) {
       if (newResources != null && !newResources.isEmpty()) {
-        session.addAppMasterLocalFiles(DagUtils.createTezLrMap(null, newResources));
+        session.addAppMasterLocalFiles(DagUtils.createTezLrMap(null, newResources.values()));
       }
       if (!resources.localizedResources.isEmpty()) {
         session.addAppMasterLocalFiles(

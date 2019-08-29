@@ -1534,8 +1534,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void checkTruncateEligibility(ASTNode ast, ASTNode root, String tableName, Table table)
       throws SemanticException {
     boolean isForce = ast.getFirstChildWithType(HiveParser.TOK_FORCE) != null;
-    if (!isForce && table.getTableType() != TableType.MANAGED_TABLE) {
-      throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
+    if (!isForce) {
+      if (table.getTableType() != TableType.MANAGED_TABLE &&
+          (table.getParameters().getOrDefault(MetaStoreUtils.EXTERNAL_TABLE_PURGE, "FALSE"))
+              .equalsIgnoreCase("FALSE")) {
+        throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
+      }
     }
     if (table.isNonNative()) {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_NATIVE_TABLE.format(tableName)); //TODO
@@ -2363,7 +2367,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // if this ast has only one child, then no column name specified.
       if (node.getChildCount() == 1) {
-        return tableName;
+        return null;
       }
 
       ASTNode columnNode = null;
@@ -2384,7 +2388,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
               QualifiedNameUtil.getFullyQualifiedName(columnNode);
         }
       } else {
-        return tableName;
+        return null;
       }
     }
 
@@ -2543,7 +2547,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // will contain tablename.column_name. If column_name is not specified
       // colPath will be equal to tableName. This is how we can differentiate
       // if we are describing a table or column
-      if (!colPath.equalsIgnoreCase(tableName) && isFormatted) {
+      if (colPath != null && isFormatted) {
         showColStats = true;
       }
     }

@@ -92,6 +92,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
@@ -1101,6 +1102,43 @@ public final class Utilities {
     }
   }
 
+  /**
+   * Moves files from src to dst if it is within the specified set of paths
+   * @param fs
+   * @param src
+   * @param dst
+   * @param filesToMove
+   * @throws IOException
+   * @throws HiveException
+   */
+  private static void moveSpecifiedFiles(FileSystem fs, Path src, Path dst, Set<Path> filesToMove)
+      throws IOException, HiveException {
+    if (!fs.exists(dst)) {
+      fs.mkdirs(dst);
+    }
+
+    FileStatus[] files = fs.listStatus(src);
+    for (FileStatus file : files) {
+      if (filesToMove.contains(file.getPath())) {
+        Utilities.moveFile(fs, file, dst);
+      } else if (file.isDir()) {
+        // Traverse directory contents.
+        // Directory nesting for dst needs to match src.
+        Path nestedDstPath = new Path(dst, file.getPath().getName());
+        Utilities.moveSpecifiedFiles(fs, file.getPath(), nestedDstPath, filesToMove);
+      }
+    }
+  }
+
+  private static void moveSpecifiedFileStatus(FileSystem fs, Path src, Path dst,
+      Set<FileStatus> filesToMove) throws IOException, HiveException {
+    Set<Path> filePaths = new HashSet<>();
+    for (FileStatus fstatus : filesToMove) {
+      filePaths.add(fstatus.getPath());
+    }
+    moveSpecifiedFiles(fs, src, dst, filePaths);
+  }
+
   private static void moveFile(FileSystem fs, FileStatus file, Path dst) throws IOException,
       HiveException {
     Path srcFilePath = file.getPath();
@@ -1356,7 +1394,6 @@ public final class Utilities {
   private static boolean shouldAvoidRename(FileSinkDesc conf, Configuration hConf) {
     // we are avoiding rename/move only if following conditions are met
     //  * execution engine is tez
-    //  * query cache is disabled
     //  * if it is select query
     if (conf != null && conf.getIsQuery() && conf.getFilesToFetch() != null
         && HiveConf.getVar(hConf, ConfVars.HIVE_EXECUTION_ENGINE).equalsIgnoreCase("tez")){
@@ -1396,14 +1433,26 @@ public final class Utilities {
     FileSystem fs = specPath.getFileSystem(hconf);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    boolean isBlobStorage = BlobStorageUtils.isBlobStorageFileSystem(hconf, fs);
+    boolean avoidRename = false;
+    boolean shouldAvoidRename = shouldAvoidRename(conf, hconf);
+
+    if(isBlobStorage && (shouldAvoidRename|| ((conf != null) && conf.isCTASorCM()))
+        || (!isBlobStorage && shouldAvoidRename)) {
+      avoidRename = true;
+    }
     if (success) {
-      if (!shouldAvoidRename(conf, hconf) && fs.exists(tmpPath)) {
+      if (!avoidRename && fs.exists(tmpPath)) {
         //   1) Rename tmpPath to a new directory name to prevent additional files
         //      from being added by runaway processes.
+        // this is only done for all statements except SELECT, CTAS and Create MV
         Path tmpPathOriginal = tmpPath;
         tmpPath = new Path(tmpPath.getParent(), tmpPath.getName() + ".moved");
-        LOG.debug("Moving/Renaming " + tmpPathOriginal + " to " + tmpPath);
+        LOG.debug("shouldAvoidRename is false therefore moving/renaming " + tmpPathOriginal + " to " + tmpPath);
+        perfLogger.PerfLogBegin("FileSinkOperator", "rename");
         Utilities.rename(fs, tmpPathOriginal, tmpPath);
+        perfLogger.PerfLogEnd("FileSinkOperator", "rename");
       }
 
       // Remove duplicates from tmpPath
@@ -1411,7 +1460,6 @@ public final class Utilities {
           tmpPath, ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
       FileStatus[] statuses = statusList.toArray(new FileStatus[statusList.size()]);
       if(statuses != null && statuses.length > 0) {
-        PerfLogger perfLogger = SessionState.getPerfLogger();
         Set<FileStatus> filesKept = new HashSet<>();
         perfLogger.PerfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // remove any tmp file or double-committed output files
@@ -1433,10 +1481,19 @@ public final class Utilities {
         // move to the file destination
         Utilities.FILE_OP_LOGGER.trace("Moving tmp dir: {} to: {}", tmpPath, specPath);
         if(shouldAvoidRename(conf, hconf)){
+          // for SELECT statements
           LOG.debug("Skipping rename/move files. Files to be kept are: " + filesKept.toString());
           conf.getFilesToFetch().addAll(filesKept);
+        } else if (conf !=null && conf.isCTASorCM() && isBlobStorage) {
+          // for CTAS or Create MV statements
+          perfLogger.PerfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
+          LOG.debug("CTAS/Create MV: Files being renamed:  " + filesKept.toString());
+          Utilities.moveSpecifiedFileStatus(fs, tmpPath, specPath, filesKept);
+          perfLogger.PerfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
         } else {
+          // for rest of the statement e.g. INSERT, LOAD etc
           perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
+          LOG.debug("Final renaming/moving. Source: " + tmpPath + " .Destination: " + specPath);
           Utilities.renameOrMoveFiles(fs, tmpPath, specPath);
           perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
         }
@@ -4174,8 +4231,8 @@ public final class Utilities {
 
     Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
     AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
-    if (isMmCtas && !fs.exists(specPath)) {
-      Utilities.FILE_OP_LOGGER.info("Creating table directory for CTAS with no output at {}", specPath);
+    if (!fs.exists(specPath)) {
+      Utilities.FILE_OP_LOGGER.info("Creating directory with no output at {}", specPath);
       FileUtils.mkdir(fs, specPath, hconf);
     }
     Path[] files = getMmDirectoryCandidates(

@@ -370,10 +370,10 @@ POSTHOOK: Lineage: over10k_orc_bucketed_n0.si SIMPLE [(over10k_n9)over10k_n9.Fie
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.t SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.ts SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 4 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8903 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7698 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7273 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7180 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8715 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7499 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7141 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7023 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: insert into over10k_orc_bucketed_n0 select * from over10k_n9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_n9
@@ -394,14 +394,14 @@ POSTHOOK: Lineage: over10k_orc_bucketed_n0.si SIMPLE [(over10k_n9)over10k_n9.Fie
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.t SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.ts SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 8 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8903 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8903 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7698 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7698 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7273 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7273 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7180 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7180 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8715 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8715 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7499 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7499 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7141 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7141 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7023 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7023 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed_n0
@@ -567,12 +567,12 @@ POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b =
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"writeid":0,"bucketid":536870912,"rowid":104}	5	501	65585
-{"writeid":0,"bucketid":536870912,"rowid":420}	5	501	65585
-{"writeid":0,"bucketid":536936448,"rowid":37}	-3	344	65733
-{"writeid":0,"bucketid":536936448,"rowid":295}	-3	344	65733
-{"writeid":0,"bucketid":537067520,"rowid":173}	35	463	65646
-{"writeid":0,"bucketid":537067520,"rowid":406}	35	463	65646
+{"writeid":0,"bucketid":536870912,"rowid":294}	5	501	65585
+{"writeid":0,"bucketid":536870912,"rowid":610}	5	501	65585
+{"writeid":0,"bucketid":536936448,"rowid":101}	-3	344	65733
+{"writeid":0,"bucketid":536936448,"rowid":359}	-3	344	65733
+{"writeid":0,"bucketid":537067520,"rowid":190}	35	463	65646
+{"writeid":0,"bucketid":537067520,"rowid":423}	35	463	65646
 PREHOOK: query: explain update over10k_orc_bucketed_n0 set i = 0 where b = 4294967363 and t < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed_n0

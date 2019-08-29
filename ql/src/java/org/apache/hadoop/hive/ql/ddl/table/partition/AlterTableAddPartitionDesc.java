@@ -329,8 +329,8 @@ public class AlterTableAddPartitionDesc implements DDLDesc, Serializable {
    * @return what kind of replication scope this drop is running under.
    * This can result in a "CREATE/REPLACE IF NEWER THAN" kind of semantic
    */
-  public ReplicationSpec getReplicationSpec(){
-    if (replicationSpec == null){
+  public ReplicationSpec getReplicationSpec() {
+    if (replicationSpec == null) {
       this.replicationSpec = new ReplicationSpec();
     }
     return this.replicationSpec;

@@ -462,7 +462,9 @@ struct Table {
   20: optional i64 writeId=-1,
   21: optional bool isStatsCompliant,
   22: optional ColumnStatistics colStats, // column statistics for table
-  23: optional byte accessType
+  23: optional byte accessType,
+  24: optional list<string> requiredReadCapabilities,
+  25: optional list<string> requiredWriteCapabilities
 }
 
 struct Partition {
@@ -588,8 +590,9 @@ struct ColumnStatisticsDesc {
 struct ColumnStatistics {
 1: required ColumnStatisticsDesc statsDesc,
 2: required list<ColumnStatisticsObj> statsObj,
-3: optional bool isStatsCompliant // Are the stats isolation-level-compliant with the
+3: optional bool isStatsCompliant, // Are the stats isolation-level-compliant with the
                                                       // the calling query?
+4: required string engine
 }
 
 struct PartitionListComposingSpec {
@@ -617,7 +620,8 @@ struct SetPartitionsStatsRequest {
 1: required list<ColumnStatistics> colStats,
 2: optional bool needMerge, //stats need to be merged with the existing stats
 3: optional i64 writeId=-1,         // writeId for the current query that updates the stats
-4: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
+4: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
+5: required string engine //engine creating the current request
 }
 
 struct SetPartitionsStatsResponse {
@@ -764,7 +768,8 @@ struct TableStatsRequest {
  2: required string tblName,
  3: required list<string> colNames
  4: optional string catName,
- 5: optional string validWriteIdList  // valid write id list for the table for which this struct is being sent
+ 5: optional string validWriteIdList,  // valid write id list for the table for which this struct is being sent
+ 6: required string engine //engine creating the current request
 }
 
 struct PartitionsStatsRequest {
@@ -773,7 +778,8 @@ struct PartitionsStatsRequest {
  3: required list<string> colNames,
  4: required list<string> partNames,
  5: optional string catName,
- 6: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
+ 6: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
+ 7: required string engine //engine creating the current request
 }
 
 // Return type for add_partitions_req
@@ -848,7 +854,8 @@ struct GetPartitionsByNamesRequest {
   3: optional list<string> names,
   4: optional bool get_col_stats,
   5: optional list<string> processorCapabilities,
-  6: optional string processorIdentifier
+  6: optional string processorIdentifier,
+  7: optional string engine
 }
 
 struct GetPartitionsByNamesResult {
@@ -1356,7 +1363,8 @@ struct GetTableRequest {
   6: optional string validWriteIdList,
   7: optional bool getColumnStats,
   8: optional list<string> processorCapabilities,
-  9: optional string processorIdentifier
+  9: optional string processorIdentifier,
+  10: optional string engine
 }
 
 struct GetTableResult {
@@ -1389,9 +1397,17 @@ struct GetTablesExtRequest {
 
 // response to GetTablesExtRequest call
 struct ExtendedTableInfo {
- 1: required string tblName,                     // always returned
- 2: optional i32 accessType,              // if AccessType set
- 3: optional list<string> processorCapabilities  // if ProcessorCapabilities set
+ 1: required string tblName,                    // always returned
+ 2: optional i32 accessType,                    // if AccessType set
+ 3: optional list<string> requiredReadCapabilities  // capabilities required for read access
+ 4: optional list<string> requiredWriteCapabilities // capabilities required for write access
+}
+
+struct GetDatabaseRequest {
+ 1: optional string name,
+ 2: optional string catalogName,
+ 3: optional list<string> processorCapabilities,
+ 4: optional string processorIdentifier
 }
 
 // Request type for cm_recycle
@@ -1725,6 +1741,19 @@ struct GetRuntimeStatsRequest {
   2: required i32 maxCreateTime
 }
 
+struct CreateTableRequest {
+   1: required Table table,
+   2: optional EnvironmentContext envContext,
+   3: optional list<SQLPrimaryKey> primaryKeys,
+   4: optional list<SQLForeignKey> foreignKeys,
+   5: optional list<SQLUniqueConstraint> uniqueConstraints,
+   6: optional list<SQLNotNullConstraint> notNullConstraints,
+   7: optional list<SQLDefaultConstraint> defaultConstraints,
+   8: optional list<SQLCheckConstraint> checkConstraints,
+   9: optional list<string> processorCapabilities,
+   10: optional string processorIdentifier
+}
+
 struct ScheduledQueryPollRequest {
   1: required string clusterNamespace
 }
@@ -1956,6 +1985,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   void create_database(1:Database database) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  Database get_database_req(1:GetDatabaseRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
@@ -1992,11 +2022,14 @@ service ThriftHiveMetastore extends fb303.FacebookService
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
   void create_table_with_constraints(1:Table tbl, 2: list<SQLPrimaryKey> primaryKeys, 3: list<SQLForeignKey> foreignKeys,
-  4: list<SQLUniqueConstraint> uniqueConstraints, 5: list<SQLNotNullConstraint> notNullConstraints,
-  6: list<SQLDefaultConstraint> defaultConstraints, 7: list<SQLCheckConstraint> checkConstraints)
+      4: list<SQLUniqueConstraint> uniqueConstraints, 5: list<SQLNotNullConstraint> notNullConstraints,
+      6: list<SQLDefaultConstraint> defaultConstraints, 7: list<SQLCheckConstraint> checkConstraints)
       throws (1:AlreadyExistsException o1,
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
+  void create_table_req(1:CreateTableRequest request) throws (1:AlreadyExistsException o1,
+        2:InvalidObjectException o2, 3:MetaException o3,
+        4:NoSuchObjectException o4)
   void drop_constraint(1:DropConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o3)
   void add_primary_key(1:AddPrimaryKeyRequest req)
@@ -2320,10 +2353,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // delete APIs attempt to delete column statistics, if found, associated with a given db_name, tbl_name, [part_name]
   // and col_name. If the delete API doesn't find the statistics record in the metastore, throws NoSuchObjectException
   // Delete API validates the input and if the input is invalid throws InvalidInputException/InvalidObjectException.
-  bool delete_partition_column_statistics(1:string db_name, 2:string tbl_name, 3:string part_name, 4:string col_name) throws
+  bool delete_partition_column_statistics(1:string db_name, 2:string tbl_name, 3:string part_name, 4:string col_name, 5:string engine) throws
               (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
                4:InvalidInputException o4)
-  bool delete_table_column_statistics(1:string db_name, 2:string tbl_name, 3:string col_name) throws
+  bool delete_table_column_statistics(1:string db_name, 2:string tbl_name, 3:string col_name, 4:string engine) throws
               (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
                4:InvalidInputException o4)
 

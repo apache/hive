@@ -30,7 +30,7 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <kafka.version>2.2.0</kafka.version>
+    <kafka.version>2.3.0</kafka.version>
   </properties>
 
   <artifactId>kafka-handler</artifactId>

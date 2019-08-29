@@ -213,47 +213,10 @@
                   </filters>
                   <artifactSet>
                     <excludes>
-                      <exclude>org.apache.commons:commons-compress</exclude>
-                      <exclude>org.apache.hadoop:hadoop-hdfs</exclude>
-                      <exclude>org.apache.hadoop:hadoop-client</exclude>
-                      <exclude>org.apache.hadoop:hadoop-hdfs-client</exclude>
-                      <exclude>org.apache.hadoop:hadoop-mapreduce-client-jobclient</exclude>
-                      <exclude>org.apache.hadoop:hadoop-mapreduce-client-common</exclude>
-                      <exclude>org.apache.hadoop:hadoop-mapreduce-client-core</exclude>
-                      <exclude>org.apache.hadoop:hadoop-yarn-client</exclude>
-                      <exclude>org.apache.hadoop:hadoop-distcp</exclude>
-                      <exclude>org.apache.hadoop:hadoop-yarn-server-resourcemanager</exclude>
-                      <exclude>org.apache.hadoop:hadoop-yarn-common</exclude>
-                      <exclude>org.apache.hadoop:hadoop-yarn-server-common</exclude>
-                      <exclude>org.apache.hadoop:hadoop-yarn-server-applicationhistoryservice</exclude>
-                      <exclude>org.apache.hadoop:hadoop-yarn-server-web-proxy</exclude>
-                      <exclude>org.apache.hadoop:hadoop-annotations</exclude>
-                      <exclude>org.apache.hadoop:hadoop-auth</exclude>
-                      <exclude>org.apache.hbase*:*</exclude>
-                      <exclude>org.apache.hive:hive-vector-code-gen</exclude>
-                      <exclude>org.apache.ant:*</exclude>
-                      <exclude>junit:*</exclude>
-                      <exclude>org.hamcrest:*</exclude>
-                      <exclude>org.ow2.asm:*</exclude>
-                      <exclude>javax.jms:*</exclude>
-                      <exclude>com.sun.jersey:*</exclude>
-                      <exclude>com.sun.jersey.contribs:*</exclude>
-                      <exclude>org.eclipse.jetty.aggregate:*</exclude>
-                      <exclude>org.tukaani:*</exclude>
-                      <exclude>io.airlift:*</exclude>
-                      <exclude>io.dropwizard.metrics:*</exclude>
-                      <exclude>org.apache.velocity:*</exclude>
-                      <exclude>net.sf.jpam:*</exclude>
-                      <exclude>org.apache.avro:*</exclude>
-                      <exclude>org.apache.orc:*</exclude>
-                      <exclude>net.sf.opencsv:*</exclude>
-                      <exclude>org.antlr:*</exclude>
-                      <exclude>org.slf4j:slf4j-log4j12</exclude>
-                      <exclude>log4j:*</exclude>
-                      <exclude>org.apache.logging.log4j:*</exclude>
                       <exclude>antlr:*</exclude>
                       <exclude>aopalliance:*</exclude>
                       <exclude>asm:*</exclude>
+                      <exclude>com.fasterxml.jackson.core:*</exclude>
                       <exclude>com.google.code.gson:*</exclude>
                       <exclude>com.google.inject:*</exclude>
                       <exclude>com.google.inject.extensions:*</exclude>
@@ -271,15 +234,21 @@
                       <exclude>commons-pool:*</exclude>
                       <exclude>com.google.code.findbugs:*</exclude>
                       <exclude>com.google.protobuf:*</exclude>
+                      <exclude>com.microsoft.sqlserver:mssql-jdbc</exclude>
+                      <exclude>com.sun.jersey:*</exclude>
+                      <exclude>com.sun.jersey.contribs:*</exclude>
                       <exclude>com.sun.xml.bind:*</exclude>
+                      <exclude>com.tdunning:*</exclude>
                       <exclude>com.thoughtworks.paranamer:*</exclude>
                       <exclude>com.twitter:*</exclude>
                       <exclude>com.zaxxer:*</exclude>
-                      <exclude>com.fasterxml.jackson.core:*</exclude>
+                      <exclude>io.airlift:*</exclude>
+                      <exclude>io.dropwizard.metrics:*</exclude>
                       <exclude>io.netty:*</exclude>
                       <exclude>javax.activation:*</exclude>
                       <exclude>javax.inject:*</exclude>
                       <exclude>javax.jdo:*</exclude>
+                      <exclude>javax.jms:*</exclude>
                       <exclude>javax.mail:*</exclude>
                       <exclude>javax.servlet:*</exclude>
                       <exclude>javax.servlet.jsp:*</exclude>
@@ -287,23 +256,56 @@
                       <exclude>javax.xml.*:*</exclude>
                       <exclude>jline:*</exclude>
                       <exclude>joda-time:*</exclude>
+                      <exclude>junit:*</exclude>
+                      <exclude>log4j:*</exclude>
                       <exclude>net.java.dev.jets3t:*</exclude>
+                      <exclude>net.sf.jpam:*</exclude>
+                      <exclude>net.sf.opencsv:*</exclude>
+                      <exclude>org.antlr:*</exclude>
+                      <exclude>org.apache.ant:*</exclude>
+                      <exclude>org.apache.avro:*</exclude>
+                      <exclude>org.apache.commons:commons-compress</exclude>
                       <exclude>org.apache.commons:commons-math3</exclude>
                       <exclude>org.apache.derby:*</exclude>
                       <exclude>org.apache.directory.api:*</exclude>
                       <exclude>org.apache.directory.server:*</exclude>
                       <exclude>org.apache.geronimo.specs:*</exclude>
+                      <exclude>org.apache.hadoop:hadoop-hdfs</exclude>
+                      <exclude>org.apache.hadoop:hadoop-client</exclude>
+                      <exclude>org.apache.hadoop:hadoop-hdfs-client</exclude>
+                      <exclude>org.apache.hadoop:hadoop-mapreduce-client-jobclient</exclude>
+                      <exclude>org.apache.hadoop:hadoop-mapreduce-client-common</exclude>
+                      <exclude>org.apache.hadoop:hadoop-mapreduce-client-core</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-client</exclude>
+                      <exclude>org.apache.hadoop:hadoop-distcp</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-server-resourcemanager</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-common</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-server-common</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-server-applicationhistoryservice</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-server-web-proxy</exclude>
+                      <exclude>org.apache.hadoop:hadoop-annotations</exclude>
+                      <exclude>org.apache.hadoop:hadoop-auth</exclude>
+                      <exclude>org.apache.hbase*:*</exclude>
+                      <exclude>org.apache.hive:hive-vector-code-gen</exclude>
                       <exclude>org.apache.htrace:*</exclude>
+                      <exclude>org.apache.logging.log4j:*</exclude>
+                      <exclude>org.apache.orc:*</exclude>
+                      <exclude>org.apache.velocity:*</exclude>
                       <exclude>org.codehaus.jackson:*</exclude>
                       <exclude>org.codehaus.jettison:*</exclude>
                       <exclude>org.datanucleus:*</exclude>
+                      <exclude>org.eclipse.jetty.aggregate:*</exclude>
                       <exclude>org.fusesource.leveldbjni:*</exclude>
+                      <exclude>org.glassfish.jersey*:*</exclude>
+                      <exclude>org.hamcrest:*</exclude>
                       <exclude>org.htrace:*</exclude>
+                      <exclude>org.ow2.asm:*</exclude>
+                      <exclude>org.slf4j:slf4j-log4j12</exclude>
+                      <exclude>org.tukaani:*</exclude>
                       <exclude>org.xerial.snappy:*</exclude>
-                      <exclude>com.tdunning:*</exclude>
                       <exclude>tomcat:*</exclude>
-                      <exclude>xmlenc:*</exclude>
                       <exclude>xerces:*</exclude>
+                      <exclude>xmlenc:*</exclude>
                       <exclude>xml-apis:*</exclude>
                     </excludes>
                   </artifactSet>

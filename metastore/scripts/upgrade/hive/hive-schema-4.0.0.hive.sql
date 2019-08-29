@@ -739,6 +739,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
+ `ENGINE` string,
   CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -764,7 +765,8 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\"
+ \"LAST_ANALYZED\",
+ \"ENGINE\"
 FROM
   \"TAB_COL_STATS\""
 );
@@ -790,6 +792,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
+ `ENGINE` string,
   CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -816,7 +819,8 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\"
+ \"LAST_ANALYZED\",
+ \"ENGINE\"
 FROM
   \"PART_COL_STATS\""
 );

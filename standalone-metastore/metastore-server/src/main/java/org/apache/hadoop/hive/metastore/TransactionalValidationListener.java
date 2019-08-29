@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -28,11 +29,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InitializeTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -455,16 +457,63 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
    */
   private void validateTableStructure(IHMSHandler hmsHandler, Table table)
     throws MetaException {
-    Path tablePath;
+    Warehouse wh = hmsHandler.getWh();
+    if (isPartitionedTable(table)) {
+      // Validate each partition directory
+      List<Partition> partitions = getTablePartitions(hmsHandler, table);
+      for (Partition partition : partitions) {
+        Path partPath = wh.getDnsPath(new Path(partition.getSd().getLocation()));
+        validateTableStructureForPath(hmsHandler, wh, table, partPath);
+      }
+    } else {
+      // Non-partitioned - only need to worry about the base table directory
+      Path tablePath = getTablePath(hmsHandler, wh, table);
+      validateTableStructureForPath(hmsHandler, wh, table, tablePath);
+    }
+  }
+
+  private List<Partition> getTablePartitions(IHMSHandler hmsHandler, Table table) throws MetaException {
     try {
-      Warehouse wh = hmsHandler.getWh();
+      RawStore rawStore = hmsHandler.getMS();
+      String catName = getTableCatalog(table);
+      List<Partition> partitions = rawStore.getPartitions(catName, table.getDbName(), table.getTableName(), -1);
+      return partitions;
+    } catch (Exception err) {
+      String msg = "Error getting partitions for " + Warehouse.getQualifiedName(table);
+      LOG.error(msg, err);
+      MetaException e1 = new MetaException(msg);
+      e1.initCause(err);
+      throw e1;
+    }
+  }
+
+  private Path getTablePath(IHMSHandler hmsHandler, Warehouse wh, Table table) throws MetaException {
+    Path tablePath = null;
+    try {
       if (table.getSd().getLocation() == null || table.getSd().getLocation().isEmpty()) {
         String catName = getTableCatalog(table);
         tablePath = wh.getDefaultTablePath(hmsHandler.getMS().getDatabase(
-            catName, table.getDbName()), table);
+                catName, table.getDbName()), table);
       } else {
         tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
       }
+    } catch (Exception err) {
+      MetaException e1 = new MetaException("Error getting table path for " + Warehouse.getQualifiedName(table));
+      e1.initCause(err);
+    }
+    return tablePath;
+  }
+
+  private static boolean isPartitionedTable(Table tableObj) {
+    List<FieldSchema> partKeys = tableObj.getPartitionKeys();
+    if (partKeys != null && partKeys.size() > 0) {
+      return true;
+    }
+    return false;
+  }
+
+  private void validateTableStructureForPath(IHMSHandler hmsHandler, Warehouse wh, Table table, Path tablePath) throws MetaException {
+    try {
       FileSystem fs = wh.getFs(tablePath);
       //FileSystem fs = FileSystem.get(getConf());
       FileUtils.RemoteIteratorWithFilter iterator =
@@ -485,7 +534,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
             + fileStatus.getPath());
         }
       }
-    } catch (IOException|NoSuchObjectException e) {
+    } catch (IOException e) {
       String msg = "Unable to list files for " + Warehouse.getQualifiedName(table);
       LOG.error(msg, e);
       MetaException e1 = new MetaException(msg);

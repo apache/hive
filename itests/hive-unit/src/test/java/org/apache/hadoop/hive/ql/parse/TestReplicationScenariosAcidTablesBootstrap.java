@@ -233,11 +233,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     HiveConf replicaConf = replica.getConf();
     LOG.info(testName.getMethodName() + ": loading incremental dump with ACID bootstrap.");
     replica.load(replicatedDbName, incDump.dumpLocation);
-    // During incremental dump with ACID bootstrap we do not dump ALLOC_WRITE_ID events. So the
-    // two ALLOC_WRITE_ID events corresponding aborted transactions on t1 and t2 will not be
-    // repliaced. Discount those.
-    verifyIncLoad(replicatedDbName,
-            (new Long(Long.valueOf(incDump.lastReplicationId) - 2)).toString());
+    verifyIncLoad(replicatedDbName, incDump.lastReplicationId);
     // Verify if HWM is properly set after REPL LOAD
     verifyNextId(tables, replicatedDbName, replicaConf);
 

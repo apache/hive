@@ -29,16 +29,11 @@ import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
-import org.apache.hadoop.io.retry.RetryPolicies;
-import org.apache.hadoop.io.retry.RetryPolicy;
-import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.service.Service;
 import org.apache.hadoop.service.ServiceStateChangeListener;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.SocketFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -95,7 +90,7 @@ public class LlapMetricsCollector implements ServiceStateChangeListener,
             HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS, TimeUnit.MILLISECONDS);
     String listenerClass = HiveConf.getVar(conf,
         HiveConf.ConfVars.LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER);
-    if (Strings.isBlank(listenerClass)) {
+    if (listenerClass == null || listenerClass.isEmpty()) {
       listener = null;
     } else {
       try {
@@ -211,52 +206,34 @@ public class LlapMetricsCollector implements ServiceStateChangeListener,
   }
 
   /**
-   * Creates a LlapManagementProtocolClientImpl from a given LlapServiceInstance.
-   */
-  public static class LlapManagementProtocolClientImplFactory {
-    private final Configuration conf;
-    private final RetryPolicy retryPolicy;
-    private final SocketFactory socketFactory;
-
-    public LlapManagementProtocolClientImplFactory(Configuration conf, RetryPolicy retryPolicy,
-                                                   SocketFactory socketFactory) {
-      this.conf = conf;
-      this.retryPolicy = retryPolicy;
-      this.socketFactory = socketFactory;
-    }
-
-    private static LlapManagementProtocolClientImplFactory basicInstance(Configuration conf) {
-      return new LlapManagementProtocolClientImplFactory(
-              conf,
-              RetryPolicies.retryUpToMaximumCountWithFixedSleep(5, 3000L, TimeUnit.MILLISECONDS),
-              NetUtils.getDefaultSocketFactory(conf));
-    }
-
-    public LlapManagementProtocolClientImpl create(LlapServiceInstance serviceInstance) {
-      LlapManagementProtocolClientImpl client = new LlapManagementProtocolClientImpl(conf, serviceInstance.getHost(),
-              serviceInstance.getManagementPort(), retryPolicy,
-              socketFactory);
-      return client;
-    }
-  }
-
-  /**
    * Stores the metrics retrieved from the llap daemons, along with the retrieval timestamp.
    */
   public static class LlapMetrics {
     private final long timestamp;
-    private final LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto metrics;
+    private final Map<String, Long> metrics;
+
+    @VisibleForTesting
+    LlapMetrics(long timestamp, Map<String, Long> metrics) {
+      this.timestamp = timestamp;
+      this.metrics = metrics;
+    }
 
     public LlapMetrics(LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto metrics) {
       this.timestamp = System.currentTimeMillis();
-      this.metrics = metrics;
+      this.metrics = new HashMap<String, Long>(metrics.getMetricsCount());
+      metrics.getMetricsList().forEach(entry -> this.metrics.put(entry.getKey(), entry.getValue()));
     }
 
     public long getTimestamp() {
       return timestamp;
     }
 
-    public LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto getMetrics() {
+    /**
+     * The metric values in the map. The keys are the enum names (See: LlapDaemonExecutorInfo), and
+     * the values are the actual values.
+     * @return The metric map
+     */
+    public Map<String, Long> getMetrics() {
       return metrics;
     }
   }

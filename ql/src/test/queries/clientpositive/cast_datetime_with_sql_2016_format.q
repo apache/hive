@@ -47,6 +47,11 @@ explain from strings    select cast (s as date        format "yyy.mm.dd");
 explain from timestamp1 select cast (t as string      format "yyyy");
 explain from timestamp1 select cast (t as varchar(12) format "yyyy");
 
+--quotation marks, apostrophes, and literal quotation marks are handled correctly
+select
+cast ("2019\' \' '' 01-01" as timestamp format "yyyy\'' \'' mm-dd"),
+cast ("2019\"01-01" as timestamp format "yyyy\"\\\"\"mm-dd"),
+cast ('2019\' " \' 01-01' as timestamp format 'yyyy\' "\\" \'" mm-dd');
 
 --vectorized
 set hive.vectorized.execution.enabled=true;

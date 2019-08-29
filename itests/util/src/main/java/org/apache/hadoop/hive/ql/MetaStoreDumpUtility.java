@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -218,6 +219,9 @@ public class MetaStoreDumpUtility {
 
       s.execute("ALTER TABLE APP.TAB_COL_STATS ADD COLUMN CAT_NAME VARCHAR(256)");
       s.execute("update APP.TAB_COL_STATS set CAT_NAME = '" + Warehouse.DEFAULT_CATALOG_NAME + "'");
+
+      s.execute("ALTER TABLE APP.TAB_COL_STATS ADD COLUMN ENGINE VARCHAR(128)");
+      s.execute("update APP.TAB_COL_STATS set ENGINE = '" + Constants.HIVE_ENGINE + "'");
 
       s.close();
 

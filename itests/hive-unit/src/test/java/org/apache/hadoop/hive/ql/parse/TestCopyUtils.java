@@ -89,7 +89,7 @@ public class TestCopyUtils {
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
     HashMap<String, String> overridesForHiveConf = new HashMap<String, String>() {{
-      put(ConfVars.HIVE_IN_TEST.varname, "false");
+      put(ConfVars.HIVE_IN_TEST.varname, "true");
       put(ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname, "1");
       put(ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
       put(ConfVars.HIVE_DISTCP_DOAS_USER.varname, currentUser);

@@ -19,27 +19,14 @@
 package org.apache.hadoop.hive.common.format.datetime;
 
 import com.sun.tools.javac.util.List;
-import junit.framework.TestCase;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.ResolverStyle;
-import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalField;
 import java.util.ArrayList;
-
-import static java.time.temporal.ChronoField.DAY_OF_MONTH;
-import static java.time.temporal.ChronoField.HOUR_OF_DAY;
-import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
-import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
-import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
-import static java.time.temporal.ChronoField.YEAR;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -80,6 +67,7 @@ public class TestHiveSqlDateTimeFormatter {
 
   @Test
   public void testSetPatternWithBadPatterns() {
+    verifyBadPattern("", true);
     verifyBadPattern("eyyyy-ddd", true);
     verifyBadPattern("1yyyy-mm-dd", true);
 
@@ -103,9 +91,31 @@ public class TestHiveSqlDateTimeFormatter {
     verifyBadPattern("yyyy-mm-dd SSSSS AM", true);
     verifyBadPattern("yyyy-mm-dd MI SSSSS", true);
     verifyBadPattern("yyyy-mm-dd SS SSSSS", true);
+    verifyBadPattern("yyyy mm-MON dd", true);
+    verifyBadPattern("yyyy mm-MONTH dd", true);
+    verifyBadPattern("yyyy MON, month dd", true);
+
+    verifyBadPattern("iyyy-mm-dd", true); // can't mix iso and Gregorian
+    verifyBadPattern("iyyy-id", true); // missing iyyy, iw, or id
+    verifyBadPattern("iyyy-iw", true);
+    verifyBadPattern("iw-id", true);
 
     verifyBadPattern("tzm", false);
     verifyBadPattern("tzh", false);
+
+    //ambiguous case for formatting
+    verifyBadPattern("MOnth", false);
+    verifyBadPattern("DaY", false);
+    verifyBadPattern("dAy", false);
+    verifyBadPattern("dY", false);
+
+    //illegal for parsing
+    verifyBadPattern("yyyy-mm-dd q", true);
+    verifyBadPattern("yyyy-mm-dd d", true);
+    verifyBadPattern("yyyy-mm-dd dy", true);
+    verifyBadPattern("yyyy-mm-dd day", true);
+    verifyBadPattern("yyyy-mm-dd w", true);
+    verifyBadPattern("yyyy-mm-dd ww", true);
   }
 
   @Test
@@ -118,11 +128,51 @@ public class TestHiveSqlDateTimeFormatter {
     checkFormatTs("HH12 P.M.", "2019-01-01 00:15:10", "12 A.M.");
     checkFormatTs("HH12 AM", "2019-01-01 12:15:10", "12 PM");
     checkFormatTs("YYYY-MM-DD HH12PM", "2017-05-05 00:00:00", "2017-05-05 12AM");
+
+    checkFormatTs("YYYY-MONTH-DD", "2019-01-01 00:00:00", "2019-JANUARY  -01"); //fill to length 9
+    checkFormatTs("YYYY-Month-DD", "2019-01-01 00:00:00", "2019-January  -01");
+    checkFormatTs("YYYY-month-DD", "2019-01-01 00:00:00", "2019-january  -01");
+    checkFormatTs("YYYY-MON-DD", "2019-01-01 00:00:00", "2019-JAN-01");
+    checkFormatTs("YYYY-Mon-DD", "2019-01-01 00:00:00", "2019-Jan-01");
+    checkFormatTs("YYYY-mon-DD", "2019-01-01 00:00:00", "2019-jan-01");
+
+    checkFormatTs("D: DAY", "2019-01-01 00:00:00", "3: TUESDAY  "); //fill to length 9
+    checkFormatTs("D: Day", "2019-01-02 00:00:00", "4: Wednesday");
+    checkFormatTs("D: day", "2019-01-03 00:00:00", "5: thursday ");
+    checkFormatTs("D: DY", "2019-01-04 00:00:00", "6: FRI");
+    checkFormatTs("D: Dy", "2019-01-05 00:00:00", "7: Sat");
+    checkFormatTs("D: dy", "2019-01-06 00:00:00", "1: sun");
+    checkFormatTs("D: DAY", "2019-01-07 00:00:00", "2: MONDAY   ");
+
+    checkFormatTs("YYYY-mm-dd: Q WW W", "2019-01-01 00:00:00", "2019-01-01: 1 01 1");
+    checkFormatTs("YYYY-mm-dd: Q WW W", "2019-01-07 00:00:00", "2019-01-07: 1 01 1");
+    checkFormatTs("YYYY-mm-dd: Q WW W", "2019-01-08 00:00:00", "2019-01-08: 1 02 2");
+    checkFormatTs("YYYY-mm-dd: Q WW W", "2019-03-31 00:00:00", "2019-03-31: 1 13 5");
+    checkFormatTs("YYYY-mm-dd: Q WW W", "2019-04-01 00:00:00", "2019-04-01: 2 13 1");
+    checkFormatTs("YYYY-mm-dd: Q WW W", "2019-12-31 00:00:00", "2019-12-31: 4 53 5");
+
+    //ISO 8601
+    checkFormatTs("YYYY-MM-DD : IYYY-IW-ID", "2018-12-31 00:00:00", "2018-12-31 : 2019-01-01");
+    checkFormatTs("YYYY-MM-DD : IYYY-IW-ID", "2019-01-06 00:00:00", "2019-01-06 : 2019-01-07");
+    checkFormatTs("YYYY-MM-DD : IYYY-IW-ID", "2019-01-07 00:00:00", "2019-01-07 : 2019-02-01");
+    checkFormatTs("YYYY-MM-DD : IYYY-IW-ID", "2019-12-29 00:00:00", "2019-12-29 : 2019-52-07");
+    checkFormatTs("YYYY-MM-DD : IYYY-IW-ID", "2019-12-30 00:00:00", "2019-12-30 : 2020-01-01");
+    checkFormatTs("YYYY-MM-DD : IYY-IW-ID", "2019-12-30 00:00:00", "2019-12-30 : 020-01-01");
+    checkFormatTs("YYYY-MM-DD : IY-IW-ID", "2019-12-30 00:00:00", "2019-12-30 : 20-01-01");
+    checkFormatTs("YYYY-MM-DD : I-IW-ID", "2019-12-30 00:00:00", "2019-12-30 : 0-01-01");
+    checkFormatTs("id: Day", "2018-12-31 00:00:00", "01: Monday   ");
+    checkFormatTs("id: Day", "2019-01-01 00:00:00", "02: Tuesday  ");
+    checkFormatTs("id: Day", "2019-01-02 00:00:00", "03: Wednesday");
+    checkFormatTs("id: Day", "2019-01-03 00:00:00", "04: Thursday ");
+    checkFormatTs("id: Day", "2019-01-04 00:00:00", "05: Friday   ");
+    checkFormatTs("id: Day", "2019-01-05 00:00:00", "06: Saturday ");
+    checkFormatTs("id: Day", "2019-01-06 00:00:00", "07: Sunday   ");
   }
 
   private void checkFormatTs(String pattern, String input, String expectedOutput) {
     formatter = new HiveSqlDateTimeFormatter(pattern, false);
-    assertEquals(expectedOutput, formatter.format(toTimestamp(input)));
+    assertEquals("Format timestamp to string failed with pattern: " + pattern,
+        expectedOutput, formatter.format(Timestamp.valueOf(input)));
   }
 
   @Test
@@ -138,7 +188,8 @@ public class TestHiveSqlDateTimeFormatter {
 
   private void checkFormatDate(String pattern, String input, String expectedOutput) {
     formatter = new HiveSqlDateTimeFormatter(pattern, false);
-    assertEquals(expectedOutput, formatter.format(toDate(input)));
+    assertEquals("Format date to string failed with pattern: " + pattern,
+        expectedOutput, formatter.format(Date.valueOf(input)));
   }
 
   @Test
@@ -198,6 +249,42 @@ public class TestHiveSqlDateTimeFormatter {
     checkParseTimestamp("YYYYMMDDHH12MIA.M.TZHTZM", "201812310800AM+0515", "2018-12-31 08:00:00");
     checkParseTimestamp("YYYYMMDDHH12MIA.M.TZHTZM", "201812310800AM0515", "2018-12-31 08:00:00");
     checkParseTimestamp("YYYYMMDDHH12MIA.M.TZHTZM", "201812310800AM-0515", "2018-12-31 08:00:00");
+
+    //MONTH, MON : case really doesn't matter
+    checkParseTimestamp("yyyy-MONTH-dd", "2018-FEBRUARY-28", "2018-02-28 00:00:00");
+    checkParseTimestamp("yyyy-Month-dd", "2018-february-28", "2018-02-28 00:00:00");
+    checkParseTimestamp("yyyy-month-dd", "2018-FEBRUARY-28", "2018-02-28 00:00:00");
+    checkParseTimestamp("yyyy-montH-dd", "2018-febRuary-28", "2018-02-28 00:00:00");
+    checkParseTimestamp("yyyy-MON-dd", "2018-FEB-28", "2018-02-28 00:00:00");
+    checkParseTimestamp("yyyy-moN-dd", "2018-FeB-28", "2018-02-28 00:00:00");
+    checkParseTimestamp("yyyy-mon-dd", "2018-FEB-28", "2018-02-28 00:00:00");
+    verifyBadParseString("yyyy-MON-dd", "2018-FEBRUARY-28");
+    verifyBadParseString("yyyy-MON-dd", "2018-FEBR-28");
+    verifyBadParseString("yyyy-MONTH-dd", "2018-FEB-28");
+    //letters and numbers are delimiters to each other, respectively
+    checkParseDate("yyyy-ddMONTH", "2018-4March", "2018-03-04");
+    checkParseDate("yyyy-MONTHdd", "2018-March4", "2018-03-04");
+    //ISO 8601
+    checkParseTimestamp("IYYY-IW-ID", "2019-01-01", "2018-12-31 00:00:00");
+    checkParseTimestamp("IYYY-IW-ID", "2019-01-07", "2019-01-06 00:00:00");
+    checkParseTimestamp("IYYY-IW-ID", "2019-02-01", "2019-01-07 00:00:00");
+    checkParseTimestamp("IYYY-IW-ID", "2019-52-07", "2019-12-29 00:00:00");
+    checkParseTimestamp("IYYY-IW-ID", "2020-01-01", "2019-12-30 00:00:00");
+    checkParseTimestamp("IYYY-IW-ID", "020-01-04", thisYearString.substring(0, 1) + "020-01-02 00:00:00");
+    checkParseTimestamp("IYY-IW-ID", "020-01-04", thisYearString.substring(0, 1) + "020-01-02 00:00:00");
+    checkParseTimestamp("IYY-IW-ID", "20-01-04", thisYearString.substring(0, 2) + "20-01-02 00:00:00");
+    checkParseTimestamp("IY-IW-ID", "20-01-04", thisYearString.substring(0, 2) + "20-01-02 00:00:00");
+    checkParseTimestamp("IYYY-IW-DAY", "2019-01-monday", "2018-12-31 00:00:00");
+    checkParseTimestamp("IYYY-IW-Day", "2019-01-Sunday", "2019-01-06 00:00:00");
+    checkParseTimestamp("IYYY-IW-Dy", "2019-02-MON", "2019-01-07 00:00:00");
+    checkParseTimestamp("IYYY-IW-DY", "2019-52-sun", "2019-12-29 00:00:00");
+    checkParseTimestamp("IYYY-IW-dy", "2020-01-Mon", "2019-12-30 00:00:00");
+    //Tests for these patterns would need changing every decade if done in the above way.
+    //Thursday of the first week in an ISO year always matches the Gregorian year.
+    checkParseTimestampIso("IY-IW-ID", "0-01-04", "iw, yyyy", "01, " + thisYearString.substring(0, 3) + "0");
+    checkParseTimestampIso("I-IW-ID", "0-01-04", "iw, yyyy", "01, " + thisYearString.substring(0, 3) + "0");
+    //time patterns are allowed; date patterns are not
+    checkParseTimestamp("IYYY-IW-ID hh24:mi:ss", "2019-01-01 01:02:03", "2018-12-31 01:02:03");
   }
 
   private int getFirstTwoDigits() {
@@ -211,7 +298,16 @@ public class TestHiveSqlDateTimeFormatter {
 
   private void checkParseTimestamp(String pattern, String input, String expectedOutput) {
     formatter = new HiveSqlDateTimeFormatter(pattern, true);
-    assertEquals(toTimestamp(expectedOutput), formatter.parseTimestamp(input));
+    assertEquals("Parse string to timestamp failed. Pattern: " + pattern,
+        Timestamp.valueOf(expectedOutput), formatter.parseTimestamp(input));
+  }
+
+  private void checkParseTimestampIso(String parsePattern, String input, String formatPattern,
+      String expectedOutput) {
+    formatter = new HiveSqlDateTimeFormatter(parsePattern, true);
+    Timestamp ts = formatter.parseTimestamp(input);
+    formatter = new HiveSqlDateTimeFormatter(formatPattern, false);
+    assertEquals(expectedOutput, formatter.format(ts));
   }
 
   @Test
@@ -238,33 +334,162 @@ public class TestHiveSqlDateTimeFormatter {
     checkParseDate("rrrr-mm-dd", "99-02-03", firstTwoDigits + "99-02-03");
 
     checkParseDate("yyyy-mm-dd hh mi ss.ff7", "2018/01/01 2.2.2.55", "2018-01-01");
+
+    checkParseDate("dd/MonthT/yyyy", "31/AugustT/2020", "2020-08-31");
+    checkParseDate("dd/MonthT/yyyy", "31/MarchT/2020", "2020-03-31");
+
+    //ISO 8601
+    checkParseDate("IYYY-IW-ID", "2019-01-01", "2018-12-31");
+    checkParseDate("IW-ID-IYYY", "01-02-2019", "2019-01-01");
+    checkParseDate("ID-IW-IYYY", "02-01-2019", "2019-01-01");
+    checkParseDate("IYYY-IW-ID", "2019-01-07", "2019-01-06");
+    checkParseDate("IYYY-IW-ID", "2019-02-01", "2019-01-07");
+    checkParseDate("IYYY-IW-ID", "2019-52-07", "2019-12-29");
+    checkParseDate("IYYY-IW-ID", "2020-01-01", "2019-12-30");
   }
 
   private void checkParseDate(String pattern, String input, String expectedOutput) {
     formatter = new HiveSqlDateTimeFormatter(pattern, true);
-    assertEquals(toDate(expectedOutput), formatter.parseDate(input));
+    assertEquals("Parse string to date failed. Pattern: " + pattern,
+        Date.valueOf(expectedOutput), formatter.parseDate(input));
   }
 
   @Test
   public void testParseTimestampError() {
-    verifyBadParseString("yyyy", "2019-02-03");
     verifyBadParseString("yyyy-mm-dd  ", "2019-02-03"); //separator missing
     verifyBadParseString("yyyy-mm-dd", "2019-02-03..."); //extra separators
     verifyBadParseString("yyyy-mm-dd hh12:mi:ss", "2019-02-03 14:00:00"); //hh12 out of range
-    verifyBadParseString("yyyy-dddsssss", "2019-912345");
+    verifyBadParseString("yyyy-dddsssss", "2019-912345"); //ddd out of range
     verifyBadParseString("yyyy-mm-dd", "2019-13-23"); //mm out of range
     verifyBadParseString("yyyy-mm-dd tzh:tzm", "2019-01-01 +16:00"); //tzh out of range
     verifyBadParseString("yyyy-mm-dd tzh:tzm", "2019-01-01 +14:60"); //tzm out of range
     verifyBadParseString("YYYY DDD", "2000 367"); //ddd out of range
+    verifyBadParseString("yyyy-month-dd", "2019-merch-23"); //invalid month of year
+    verifyBadParseString("yyyy-mon-dd", "2019-mer-23"); //invalid month of year
+    verifyBadParseString("yyyy-MON-dd", "2018-FEBRUARY-28"); // can't mix and match mon and month
+    verifyBadParseString("yyyy-MON-dd", "2018-FEBR-28");
+    verifyBadParseString("yyyy-MONTH-dd", "2018-FEB-28");
+    verifyBadParseString("iyyy-iw-id", "2019-00-01"); //ISO 8601 week number out of range for year
+    verifyBadParseString("iyyy-iw-id", "2019-53-01"); //ISO 8601 week number out of range for year
+    verifyBadParseString("iw-iyyy-id", "53-2019-01"); //ISO 8601 week number out of range for year
+    verifyBadParseString("iw-iyyy-id", "54-2019-01"); //ISO 8601 week number out of range
+    verifyBadParseString("iyyy-iw-id", "2019-52-00"); //ISO 8601 day of week out of range
+    verifyBadParseString("iyyy-iw-id", "2019-52-08"); //ISO 8601 day of week out of range
   }
 
   private void verifyBadPattern(String string, boolean forParsing) {
     try {
       formatter = new HiveSqlDateTimeFormatter(string, forParsing);
-      fail();
+      fail("Bad pattern " + string + " should have thrown IllegalArgumentException but didn't");
     } catch (Exception e) {
-      assertEquals(e.getClass().getName(), IllegalArgumentException.class.getName());
+      assertEquals("Expected IllegalArgumentException, got another exception.",
+          e.getClass().getName(), IllegalArgumentException.class.getName());
     }
+  }
+
+  @Test
+  public void testFm() {
+    //year (019) becomes 19 even if pattern is yyy
+    checkFormatTs("FMyyy-FMmm-dd FMHH12:MI:FMSS", "2019-01-01 01:01:01", "19-1-01 1:01:1");
+    checkFormatTs("FMiyy-FMiw-id FMHH12:MI:FMSS", "2018-12-31 01:01:01", "19-1-01 1:01:1");
+    //ff[1-9] shouldn't be affected, because leading zeroes hold information
+    checkFormatTs("FF5/FMFF5", "2019-01-01 01:01:01.0333", "03330/03330");
+    checkFormatTs("FF/FMFF", "2019-01-01 01:01:01.0333", "0333/0333");
+    //omit trailing spaces from character temporal elements
+    checkFormatTs("YYYY-fmMonth-DD", "2019-01-01 00:00:00", "2019-January-01");
+    checkFormatTs("D: fmDAY", "2019-01-01 00:00:00", "3: TUESDAY");
+    checkFormatTs("D: fmDay", "2019-01-02 00:00:00", "4: Wednesday");
+
+    //only affects temporals that immediately follow
+    verifyBadPattern("yyy-mm-dd FM,HH12", false);
+    verifyBadPattern("yyy-mm-dd FM,HH12", true);
+    verifyBadPattern("yyy-mm-dd HH12 tzh:fmtzm", true);
+    verifyBadPattern("FMFMyyy-mm-dd", true);
+    verifyBadPattern("FMFXDD-MM-YYYY ff2", true);
+  }
+
+  @Test
+  public void testFx() {
+    checkParseDate("FXDD-MM-YYYY", "01-01-1998", "1998-01-01");
+    checkParseTimestamp("FXDD-MM-YYYY hh12:mi:ss.ff", "15-01-1998 11:12:13.0", "1998-01-15 11:12:13");
+    //ff[1-9] are exempt
+    checkParseTimestamp("FXDD-MM-YYYY hh12:mi:ss.ff6", "01-01-1998 00:00:00.4440", "1998-01-01 00:00:00.444");
+    //fx can be anywhere in the pattern string
+    checkParseTimestamp("DD-MM-YYYYFX", "01-01-1998", "1998-01-01 00:00:00");
+    verifyBadParseString("DD-MM-YYYYFX", "1-01-1998");
+    //same separators required
+    verifyBadParseString("FXDD-MM-YYYY", "15/01/1998");
+    //no filling in zeroes or year digits
+    verifyBadParseString("FXDD-MM-YYYY", "1-01-1998");
+    verifyBadParseString("FXDD-MM-YYYY", "01-01-98");
+    //no leading or trailing whitespace
+    verifyBadParseString("FXDD-MM-YYYY", "   01-01-1998   ");
+    //enforce correct amount of leading zeroes
+    verifyBadParseString("FXyyyy-mm-dd hh24:miss", "2018-01-01 17:005");
+    verifyBadParseString("FXyyyy-mm-dd sssss", "2019-01-01 003");
+    verifyBadParseString("FXiyyy-iw-id hh24:mi:ss", "019-01-02 17:00:05");
+    //text case does not matter
+    checkParseTimestamp("\"the DATE is\" yyyy-mm-dd", "the date is 2018-01-01", "2018-01-01 00:00:00");
+    //AM/PM length has to match, but case doesn't
+    checkParseTimestamp("FXDD-MM-YYYY hh12 am", "01-01-1998 12 PM", "1998-01-01 12:00:00");
+    checkParseTimestamp("FXDD-MM-YYYY hh12 A.M.", "01-01-1998 12 p.m.", "1998-01-01 12:00:00");
+    verifyBadParseString("FXDD-MM-YYYY hh12 am", "01-01-1998 12 p.m.");
+    verifyBadParseString("FXDD-MM-YYYY hh12 a.m.", "01-01-1998 12 pm");
+    //character temporals shouldn't have trailing spaces
+    checkParseTimestamp("FXDD-month-YYYY", "15-March-1998", "1998-03-15 00:00:00");
+  }
+
+  @Test
+  public void testFmFx() {
+    checkParseTimestamp("FXDD-FMMM-YYYY hh12 am", "01-1-1998 12 PM", "1998-01-01 12:00:00");
+    checkParseTimestamp("FXFMDD-MM-YYYY hh12 am", "1-01-1998 12 PM", "1998-01-01 12:00:00");
+    checkParseTimestamp("FXFMiyyy-iw-id hh24:mi:ss", "019-01-02 17:00:05", "2019-01-01 17:00:05");
+    verifyBadParseString("FXFMiyyy-iw-id hh24:mi:ss", "019-01-02 17:0:05");
+    //ff[1-9] unaffected
+    checkParseTimestamp("FXFMDD-MM-YYYY FMff2", "1-01-1998 4", "1998-01-01 00:00:00.4");
+    checkParseTimestamp("FXFMDD-MM-YYYY ff2", "1-01-1998 4", "1998-01-01 00:00:00.4");
+  }
+
+  @Test
+  public void testText() {
+    // keep exact text upon format
+    checkFormatTs("hh24:mi \" Is \" hh12 PM\".\"", "2008-01-01 17:00:00", "17:00  Is  05 PM.");
+    checkFormatDate("\" `the _year_ is` \" yyyy\".\"", "2008-01-01", " `the _year_ is`  2008.");
+    // empty text strings work
+    checkParseTimestamp("\"\"yyyy\"\"-mm-dd\"\"", "2019-01-01", "2019-01-01 00:00:00");
+    checkParseDate("\"\"yyyy\"\"-mm-dd\"\"", "2019-01-01", "2019-01-01");
+    // Case doesn't matter upon parsing
+    checkParseTimestamp("\"Year \"YYYY \"month\" MM \"day\" DD.\"!\"",
+        "YEaR 3000 mOnTh 3 DaY 1...!", "3000-03-01 00:00:00");
+    checkParseDate("\"Year \"YYYY \"month\" MM \"day\" DD.\"!\"",
+        "YEaR 3000 mOnTh 3 DaY 1...!", "3000-03-01");
+    // Characters matter upon parsing
+    verifyBadParseString("\"Year! \"YYYY \"m\" MM \"d\" DD.\"!\"", "Year 3000 m 3 d 1,!");
+    // non-numeric characters in text counts as a delimiter
+    checkParseDate("yyyy\"m\"mm\"d\"dd", "19m1d1", LocalDate.now().getYear() / 100 + "19-01-01");
+    checkParseDate("yyyy\"[\"mm\"]\"dd", "19[1]1", LocalDate.now().getYear() / 100 + "19-01-01");
+    // parse character temporals correctly
+    checkParseDate("dd/Month\"arch\"/yyyy", "31/Marcharch/2020", "2020-03-31");
+    checkParseDate("dd/Month\"ember\"/yyyy", "31/Decemberember/2020", "2020-12-31");
+
+    // single quotes are separators and not text delimiters
+    checkParseTimestamp("\"Y\'ear \"YYYY \' \"month\" MM \"day\" DD.\"!\"",
+        "Y'EaR 3000 ' mOnTh 3 DaY 1...!", "3000-03-01 00:00:00");
+    checkParseDate("\"Y\'ear \"YYYY \' \"month\" MM \"day\" DD.\"!\"",
+        "Y'EaR 3000 ' mOnTh 3 DaY 1...!", "3000-03-01");
+    // literal double quotes are escaped
+    checkFormatTs("\"the \\\"DATE\\\" is\" yyyy-mm-dd",
+        "2018-01-01 00:00:00", "the \"DATE\" is 2018-01-01");
+    checkFormatTs("\"\\\"\\\"\\\"\"", "2018-01-01 00:00:00", "\"\"\"");
+    checkParseTimestamp("\"the \\\"DATE\\\" is\" yyyy-mm-dd",
+        "the \"date\" is 2018-01-01", "2018-01-01 00:00:00");
+    // Check variations of apostrophes, literal and non-literal double quotes
+    checkParseTimestamp("yyyy'\"\"mm-dd", "2019\'01-01", "2019-01-01 00:00:00");
+    checkParseTimestamp("yyyy\'\"\"mm-dd", "2019\'01-01", "2019-01-01 00:00:00");
+    checkParseTimestamp("yyyy'\"\"mm-dd", "2019'01-01", "2019-01-01 00:00:00");
+    checkParseTimestamp("yyyy\'\"\"mm-dd", "2019'01-01", "2019-01-01 00:00:00");
+    checkParseTimestamp("yyyy\'\"\\\"\"mm-dd", "2019'\"01-01", "2019-01-01 00:00:00");
+    checkParseTimestamp("yyyy\'\"\\\"\"mm-dd", "2019\'\"01-01", "2019-01-01 00:00:00");
   }
 
   /**
@@ -279,7 +504,7 @@ public class TestHiveSqlDateTimeFormatter {
   }
 
   private void verifyPatternParsing(String pattern, int expectedPatternLength,
-      String expectedPattern, ArrayList<TemporalField> temporalFields)  {
+      String expectedPattern, ArrayList<TemporalField> temporalFields) {
     formatter = new HiveSqlDateTimeFormatter(pattern, false);
     assertEquals(temporalFields.size(), formatter.getTokens().size());
     StringBuilder sb = new StringBuilder();
@@ -296,46 +521,14 @@ public class TestHiveSqlDateTimeFormatter {
   }
 
   private void verifyBadParseString(String pattern, String string) {
+    formatter = new HiveSqlDateTimeFormatter(pattern, true);
     try {
-      formatter = new HiveSqlDateTimeFormatter(pattern, true);
-      formatter.parseTimestamp(string);
-      fail();
+      Timestamp output = formatter.parseTimestamp(string);
+      fail("Parse string to timestamp should have failed.\nString: " + string + "\nPattern: "
+          + pattern + ", output = " + output);
     } catch (Exception e) {
-      assertEquals(e.getClass().getName(), IllegalArgumentException.class.getName());
+      assertEquals("Expected IllegalArgumentException, got another exception.",
+          e.getClass().getName(), IllegalArgumentException.class.getName());
     }
-  }
-
-
-  // Methods that construct datetime objects using java.time.DateTimeFormatter.
-
-  public static Date toDate(String s) {
-    LocalDate localDate = LocalDate.parse(s, DATE_FORMATTER);
-    return Date.ofEpochDay((int) localDate.toEpochDay());
-  }
-
-  /**
-   * This is effectively the old Timestamp.valueOf method.
-   */
-  public static Timestamp toTimestamp(String s) {
-    LocalDateTime localDateTime = LocalDateTime.parse(s.trim(), TIMESTAMP_FORMATTER);
-    return Timestamp.ofEpochSecond(
-        localDateTime.toEpochSecond(ZoneOffset.UTC), localDateTime.getNano());
-  }
-
-  private static final DateTimeFormatter DATE_FORMATTER =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd");
-  private static final DateTimeFormatter TIMESTAMP_FORMATTER;
-  static {
-    DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
-    builder.appendValue(YEAR, 1, 10, SignStyle.NORMAL).appendLiteral('-')
-        .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL).appendLiteral('-')
-        .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL)
-        .optionalStart().appendLiteral(" ")
-        .appendValue(HOUR_OF_DAY, 1, 2, SignStyle.NORMAL).appendLiteral(':')
-        .appendValue(MINUTE_OF_HOUR, 1, 2, SignStyle.NORMAL).appendLiteral(':')
-        .appendValue(SECOND_OF_MINUTE, 1, 2, SignStyle.NORMAL)
-        .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).optionalEnd()
-        .optionalEnd();
-    TIMESTAMP_FORMATTER = builder.toFormatter().withResolverStyle(ResolverStyle.LENIENT);
   }
 }
