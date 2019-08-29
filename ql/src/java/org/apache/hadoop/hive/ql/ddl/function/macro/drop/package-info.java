@@ -16,18 +16,5 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.function;
-
-import java.io.Serializable;
-
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.plan.Explain;
-
-/**
- * DDL task description for RELOAD FUNCTIONS commands.
- * Due to backward compatibility reasons we also accept the RELOAD FUNCTION command.
- */
-@Explain(displayName = "Reload Functions")
-public class ReloadFunctionsDesc implements DDLDesc, Serializable {
-  private static final long serialVersionUID = 1L;
-}
+/** Macro dropping DDL operation. */
+package org.apache.hadoop.hive.ql.ddl.function.macro.drop;

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.function;
+package org.apache.hadoop.hive.ql.ddl.function.desc;
 
 import java.io.Serializable;
 
@@ -34,18 +34,18 @@ public class DescFunctionDesc implements DDLDesc, Serializable {
 
   public static final String SCHEMA = "tab_name#string";
 
-  private final String resFile;
+  private final Path resFile;
   private final String name;
   private final boolean isExtended;
 
   public DescFunctionDesc(Path resFile, String name, boolean isExtended) {
-    this.resFile = resFile.toString();
+    this.resFile = resFile;
     this.name = name;
     this.isExtended = isExtended;
   }
 
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
-  public String getResFile() {
+  public Path getResFile() {
     return resFile;
   }
 

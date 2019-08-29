@@ -16,29 +16,5 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.function;
-
-import org.apache.hadoop.hive.ql.ddl.DDLOperation;
-import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-
-/**
- * Operation process of dropping a macro.
- */
-public class DropMacroOperation extends DDLOperation<DropMacroDesc> {
-  public DropMacroOperation(DDLOperationContext context, DropMacroDesc desc) {
-    super(context, desc);
-  }
-
-  @Override
-  public int execute() throws HiveException {
-    try {
-      FunctionRegistry.unregisterTemporaryUDF(desc.getName());
-      return 0;
-    } catch (HiveException e) {
-      LOG.info("drop macro: ", e);
-      return 1;
-    }
-  }
-}
+/** Function describing DDL operation. */
+package org.apache.hadoop.hive.ql.ddl.function.desc;

@@ -16,30 +16,5 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.function;
-
-import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLOperation;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-
-/**
- * Operation process of reloading the functions.
- */
-public class ReloadFunctionsOperation extends DDLOperation<ReloadFunctionsDesc> {
-  public ReloadFunctionsOperation(DDLOperationContext context, ReloadFunctionsDesc desc) {
-    super(context, desc);
-  }
-
-  @Override
-  public int execute() throws HiveException {
-    try {
-      Hive.get().reloadFunctions();
-      return 0;
-    } catch (Exception e) {
-      context.getTask().setException(e);
-      LOG.error("Failed to reload functions", e);
-      return 1;
-    }
-  }
-}
+/** Macro creation DDL operation. */
+package org.apache.hadoop.hive.ql.ddl.function.macro.create;

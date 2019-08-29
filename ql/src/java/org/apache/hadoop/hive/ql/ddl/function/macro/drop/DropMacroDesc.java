@@ -16,48 +16,29 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.function;
+package org.apache.hadoop.hive.ql.ddl.function.macro.drop;
 
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for DROP [TEMPORARY] FUNCTION commands.
+ * DDL task description for DROP TEMPORARY MACRO commands.
  */
-@Explain(displayName = "Drop Function", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class DropFunctionDesc implements DDLDesc, Serializable {
+@Explain(displayName = "Drop Macro", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class DropMacroDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   private final String name;
-  private final boolean isTemporary;
-  private final ReplicationSpec replicationSpec;
 
-  public DropFunctionDesc(String name, boolean isTemporary, ReplicationSpec replicationSpec) {
+  public DropMacroDesc(String name) {
     this.name = name;
-    this.isTemporary = isTemporary;
-    this.replicationSpec = replicationSpec == null ? new ReplicationSpec() : replicationSpec;
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getName() {
     return name;
-  }
-
-  @Explain(displayName = "temporary", displayOnlyOnTrue = true,
-      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public boolean isTemporary() {
-    return isTemporary;
-  }
-
-  /**
-   * @return what kind of replication scope this create is running under.
-   * This can result in a "DROP IF NEWER THAN" kind of semantic
-   */
-  public ReplicationSpec getReplicationSpec() {
-    return this.replicationSpec;
   }
 }
