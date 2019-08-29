@@ -244,10 +244,14 @@ public class Hive {
     try {
       reloadFunctions();
       didRegisterAllFuncs.compareAndSet(REG_FUNCS_PENDING, REG_FUNCS_DONE);
-    } catch (Exception e) {
+    } catch (Exception | Error e) {
       LOG.warn("Failed to register all functions.", e);
       didRegisterAllFuncs.compareAndSet(REG_FUNCS_PENDING, REG_FUNCS_NO);
-      throw new HiveException(e);
+      if (e instanceof Exception) {
+        throw new HiveException(e);
+      } else {
+        throw e;
+      }
     } finally {
       synchronized (didRegisterAllFuncs) {
         didRegisterAllFuncs.notifyAll();
