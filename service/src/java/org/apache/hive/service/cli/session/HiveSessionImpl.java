@@ -82,6 +82,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+
 /**
  * HiveSession
  *
@@ -311,7 +313,8 @@ public class HiveSessionImpl implements HiveSession {
         }
       } else if (key.startsWith("use:")) {
         try {
-          if (sessionHive.getDatabase(entry.getValue()) == null) {
+          if (!(StringUtils.equals(DEFAULT_DATABASE_NAME, entry.getValue()))
+              && sessionHive.getDatabase(entry.getValue()) == null) {
             throw new HiveSQLException("Database " + entry.getValue() + " does not exist");
           }
         } catch (HiveException e) {
