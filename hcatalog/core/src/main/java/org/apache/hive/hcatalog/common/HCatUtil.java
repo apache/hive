@@ -661,15 +661,14 @@ public class HCatUtil {
       // Must set this key even if differences is empty otherwise client and AM will attempt
       // to set this multiple times.
       conf.set(HCatConstants.HCAT_KEY_HIVE_CONF, HCatUtil.serialize(differences));
-    } else {
-      // Called one or more times on the client and AM.
-      LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " is set. Applying configuration differences.");
-
-      Properties properties = (Properties) HCatUtil.deserialize(
-          conf.get(HCatConstants.HCAT_KEY_HIVE_CONF));
-
-      storePropertiesToHiveConf(properties, hiveConf);
     }
+    // Called one or more times on the client and AM.
+    LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " is set. Applying configuration differences.");
+
+    Properties properties = (Properties) HCatUtil.deserialize(
+        conf.get(HCatConstants.HCAT_KEY_HIVE_CONF));
+
+    storePropertiesToHiveConf(properties, hiveConf);
 
     if (conf.get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE) != null) {
       hiveConf.setVar(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE,
