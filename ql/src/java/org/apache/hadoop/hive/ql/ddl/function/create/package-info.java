@@ -15,23 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.ql.ddl.function.macro.drop.DropMacroDesc;
-import org.junit.Assert;
-
-import org.junit.Before;
-import org.junit.Test;
-
-public class TestDropMacroDesc {
-  private String name;
-  @Before
-  public void setup() throws Exception {
-    name = "fixed_number";
-  }
-  @Test
-  public void testCreateMacroDesc() throws Exception {
-    DropMacroDesc desc = new DropMacroDesc(name);
-    Assert.assertEquals(name, desc.getName());
-  }
-}
+/** Function creation DDL operation. */
+package org.apache.hadoop.hive.ql.ddl.function.create;

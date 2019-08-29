@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -35,7 +36,6 @@ import org.junit.Assert;
 
 public class TestMacroSemanticAnalyzer {
 
-  private MacroSemanticAnalyzer analyzer;
   private QueryState queryState;
   private HiveConf conf;
   private Context context;
@@ -46,13 +46,14 @@ public class TestMacroSemanticAnalyzer {
     conf = queryState.getConf();
     SessionState.start(conf);
     context = new Context(conf);
-    analyzer = new MacroSemanticAnalyzer(queryState);
   }
 
   private ASTNode parse(String command) throws Exception {
     return ParseUtils.parse(command);
   }
+
   private void analyze(ASTNode ast) throws Exception {
+    BaseSemanticAnalyzer analyzer = DDLSemanticAnalyzerFactory.getAnalyzer(ast, queryState);
     analyzer.analyze(ast, context);
     List<Task<?>> rootTasks = analyzer.getRootTasks();
     Assert.assertEquals(1, rootTasks.size());
@@ -66,71 +67,87 @@ public class TestMacroSemanticAnalyzer {
   public void testDropMacroDoesNotExist() throws Exception {
     analyze(parse("DROP TEMPORARY MACRO SOME_MACRO"));
   }
+
   @Test
   public void testDropMacroExistsDoNotIgnoreErrors() throws Exception {
     conf.setBoolVar(ConfVars.DROP_IGNORES_NON_EXISTENT, false);
     FunctionRegistry.registerTemporaryUDF("SOME_MACRO", GenericUDFMacro.class);
     analyze(parse("DROP TEMPORARY MACRO SOME_MACRO"));
   }
+
   @Test
   public void testDropMacro() throws Exception {
     FunctionRegistry.registerTemporaryUDF("SOME_MACRO", GenericUDFMacro.class);
     analyze(parse("DROP TEMPORARY MACRO SOME_MACRO"));
   }
+
   @Test(expected = SemanticException.class)
   public void testDropMacroNonExistent() throws Exception {
     conf.setBoolVar(ConfVars.DROP_IGNORES_NON_EXISTENT, false);
     analyze(parse("DROP TEMPORARY MACRO SOME_MACRO"));
   }
+
   @Test
   public void testDropMacroNonExistentWithIfExists() throws Exception {
     analyze(parse("DROP TEMPORARY MACRO IF EXISTS SOME_MACRO"));
   }
+
   @Test
   public void testDropMacroNonExistentWithIfExistsDoNotIgnoreNonExistent() throws Exception {
     conf.setBoolVar(ConfVars.DROP_IGNORES_NON_EXISTENT, false);
     analyze(parse("DROP TEMPORARY MACRO IF EXISTS SOME_MACRO"));
   }
+
   @Test
   public void testZeroInputParamters() throws Exception {
     analyze(parse("CREATE TEMPORARY MACRO FIXED_NUMBER() 1"));
   }
+
   @Test
   public void testOneInputParamters() throws Exception {
     analyze(parse("CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))"));
   }
+
   @Test
   public void testTwoInputParamters() throws Exception {
     analyze(parse("CREATE TEMPORARY MACRO DUMB_ADD (x INT, y INT) x + y"));
   }
+
   @Test
   public void testThreeInputParamters() throws Exception {
     analyze(parse("CREATE TEMPORARY MACRO DUMB_ADD (x INT, y INT, z INT) x + y + z"));
   }
+
   @Test(expected = ParseException.class)
   public void testCannotUseReservedWordAsName() throws Exception {
     parse("CREATE TEMPORARY MACRO DOUBLE (x DOUBLE) 1.0 / (1.0 + EXP(-x))");
   }
+
   @Test(expected = ParseException.class)
   public void testNoBody() throws Exception {
     parse("CREATE TEMPORARY MACRO DUMB_MACRO()");
   }
+
   @Test(expected = SemanticException.class)
   public void testUnknownInputParameter() throws Exception {
     analyze(parse("CREATE TEMPORARY MACRO BAD_MACRO (x INT, y INT) x + y + z"));
   }
+
   @Test(expected = SemanticException.class)
   public void testOneUnusedParameterName() throws Exception {
     analyze(parse("CREATE TEMPORARY MACRO BAD_MACRO (x INT, y INT) x"));
   }
+
   @Test(expected = SemanticException.class)
   public void testTwoUnusedParameterNames() throws Exception {
     analyze(parse("CREATE TEMPORARY MACRO BAD_MACRO (x INT, y INT, z INT) x"));
   }
+
   @Test(expected = SemanticException.class)
   public void testTwoDuplicateParameterNames() throws Exception {
     analyze(parse("CREATE TEMPORARY MACRO BAD_MACRO (x INT, x INT) x + x"));
   }
+
   @Test(expected = SemanticException.class)
   public void testThreeDuplicateParameters() throws Exception {
     analyze(parse("CREATE TEMPORARY MACRO BAD_MACRO (x INT, x INT, x INT) x + x + x"));

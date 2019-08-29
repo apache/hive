@@ -70,8 +70,6 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.function.DescFunctionDesc;
-import org.apache.hadoop.hive.ql.ddl.function.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.MsckDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.ShowConfDesc;
@@ -409,10 +407,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowTableProperties(ast);
       break;
-    case HiveParser.TOK_SHOWFUNCTIONS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowFunctions(ast);
-      break;
     case HiveParser.TOK_SHOWLOCKS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowLocks(ast);
@@ -446,10 +440,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOWMATERIALIZEDVIEWS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowMaterializedViews(ast);
-      break;
-    case HiveParser.TOK_DESCFUNCTION:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeDescFunction(ast);
       break;
     case HiveParser.TOK_MSCK:
       ctx.setResFile(ctx.getLocalTmpPath());
@@ -2546,29 +2536,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * Add the task according to the parsed command tree. This is used for the CLI
-   * command "SHOW FUNCTIONS;".
-   *
-   * @param ast
-   *          The parsed command tree.
-   * @throws SemanticException
-   *           Parsin failed
-   */
-  private void analyzeShowFunctions(ASTNode ast) throws SemanticException {
-    ShowFunctionsDesc showFuncsDesc;
-    if (ast.getChildCount() > 0) {
-      assert (ast.getChildCount() == 2);
-      assert (ast.getChild(0).getType() == HiveParser.KW_LIKE);
-      String funcNames = stripQuotes(ast.getChild(1).getText());
-      showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile(), funcNames);
-    } else {
-      showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile());
-    }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showFuncsDesc)));
-    setFetchTask(createFetchTask(ShowFunctionsDesc.SCHEMA));
-  }
-
-  /**
-   * Add the task according to the parsed command tree. This is used for the CLI
    * command "SHOW LOCKS;".
    *
    * @param ast
@@ -2854,35 +2821,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);
   }
-
-  /**
-   * Add the task according to the parsed command tree. This is used for the CLI
-   * command "DESCRIBE FUNCTION;".
-   *
-   * @param ast
-   *          The parsed command tree.
-   * @throws SemanticException
-   *           Parsing failed
-   */
-  private void analyzeDescFunction(ASTNode ast) throws SemanticException {
-    String funcName;
-    boolean isExtended;
-
-    if (ast.getChildCount() == 1) {
-      funcName = stripQuotes(ast.getChild(0).getText());
-      isExtended = false;
-    } else if (ast.getChildCount() == 2) {
-      funcName = stripQuotes(ast.getChild(0).getText());
-      isExtended = true;
-    } else {
-      throw new SemanticException("Unexpected Tokens at DESCRIBE FUNCTION");
-    }
-
-    DescFunctionDesc descFuncDesc = new DescFunctionDesc(ctx.getResFile(), funcName, isExtended);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), descFuncDesc)));
-    setFetchTask(createFetchTask(DescFunctionDesc.SCHEMA));
-  }
-
 
   private void analyzeAlterTableRename(String[] source, ASTNode ast, boolean expectView)
       throws SemanticException {
