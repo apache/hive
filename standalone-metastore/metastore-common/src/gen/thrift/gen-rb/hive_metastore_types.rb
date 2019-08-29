@@ -5460,14 +5460,6 @@ class GetRuntimeStatsRequest
   ::Thrift::Struct.generate_accessors self
 end
 
-<<<<<<< HEAD
-class ScheduledQueryPollRequest
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  CLUSTERNAMESPACE = 1
-
-  FIELDS = {
-    CLUSTERNAMESPACE => {:type => ::Thrift::Types::STRING, :name => 'clusterNamespace'}
-=======
 class CreateTableRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TABLE = 1
@@ -5492,13 +5484,28 @@ class CreateTableRequest
     CHECKCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'checkConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLCheckConstraint}, :optional => true},
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true}
->>>>>>> asf/master
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-<<<<<<< HEAD
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table is unset!') unless @table
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ScheduledQueryPollRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CLUSTERNAMESPACE = 1
+
+  FIELDS = {
+    CLUSTERNAMESPACE => {:type => ::Thrift::Types::STRING, :name => 'clusterNamespace'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field clusterNamespace is unset!') unless @clusterNamespace
   end
 
@@ -5618,9 +5625,6 @@ class ScheduledQueryProgressInfo
     unless @state.nil? || ::QueryState::VALID_VALUES.include?(@state)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
     end
-=======
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table is unset!') unless @table
->>>>>>> asf/master
   end
 
   ::Thrift::Struct.generate_accessors self

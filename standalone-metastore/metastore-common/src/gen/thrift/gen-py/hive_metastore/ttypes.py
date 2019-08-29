@@ -24340,12 +24340,6 @@ class GetRuntimeStatsRequest:
   def __ne__(self, other):
     return not (self == other)
 
-<<<<<<< HEAD
-class ScheduledQueryPollRequest:
-  """
-  Attributes:
-   - clusterNamespace
-=======
 class CreateTableRequest:
   """
   Attributes:
@@ -24359,12 +24353,249 @@ class CreateTableRequest:
    - checkConstraints
    - processorCapabilities
    - processorIdentifier
->>>>>>> asf/master
   """
 
   thrift_spec = (
     None, # 0
-<<<<<<< HEAD
+    (1, TType.STRUCT, 'table', (Table, Table.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'envContext', (EnvironmentContext, EnvironmentContext.thrift_spec), None, ), # 2
+    (3, TType.LIST, 'primaryKeys', (TType.STRUCT,(SQLPrimaryKey, SQLPrimaryKey.thrift_spec)), None, ), # 3
+    (4, TType.LIST, 'foreignKeys', (TType.STRUCT,(SQLForeignKey, SQLForeignKey.thrift_spec)), None, ), # 4
+    (5, TType.LIST, 'uniqueConstraints', (TType.STRUCT,(SQLUniqueConstraint, SQLUniqueConstraint.thrift_spec)), None, ), # 5
+    (6, TType.LIST, 'notNullConstraints', (TType.STRUCT,(SQLNotNullConstraint, SQLNotNullConstraint.thrift_spec)), None, ), # 6
+    (7, TType.LIST, 'defaultConstraints', (TType.STRUCT,(SQLDefaultConstraint, SQLDefaultConstraint.thrift_spec)), None, ), # 7
+    (8, TType.LIST, 'checkConstraints', (TType.STRUCT,(SQLCheckConstraint, SQLCheckConstraint.thrift_spec)), None, ), # 8
+    (9, TType.LIST, 'processorCapabilities', (TType.STRING,None), None, ), # 9
+    (10, TType.STRING, 'processorIdentifier', None, None, ), # 10
+  )
+
+  def __init__(self, table=None, envContext=None, primaryKeys=None, foreignKeys=None, uniqueConstraints=None, notNullConstraints=None, defaultConstraints=None, checkConstraints=None, processorCapabilities=None, processorIdentifier=None,):
+    self.table = table
+    self.envContext = envContext
+    self.primaryKeys = primaryKeys
+    self.foreignKeys = foreignKeys
+    self.uniqueConstraints = uniqueConstraints
+    self.notNullConstraints = notNullConstraints
+    self.defaultConstraints = defaultConstraints
+    self.checkConstraints = checkConstraints
+    self.processorCapabilities = processorCapabilities
+    self.processorIdentifier = processorIdentifier
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.table = Table()
+          self.table.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.envContext = EnvironmentContext()
+          self.envContext.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.LIST:
+          self.primaryKeys = []
+          (_etype931, _size928) = iprot.readListBegin()
+          for _i932 in xrange(_size928):
+            _elem933 = SQLPrimaryKey()
+            _elem933.read(iprot)
+            self.primaryKeys.append(_elem933)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.LIST:
+          self.foreignKeys = []
+          (_etype937, _size934) = iprot.readListBegin()
+          for _i938 in xrange(_size934):
+            _elem939 = SQLForeignKey()
+            _elem939.read(iprot)
+            self.foreignKeys.append(_elem939)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.LIST:
+          self.uniqueConstraints = []
+          (_etype943, _size940) = iprot.readListBegin()
+          for _i944 in xrange(_size940):
+            _elem945 = SQLUniqueConstraint()
+            _elem945.read(iprot)
+            self.uniqueConstraints.append(_elem945)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.LIST:
+          self.notNullConstraints = []
+          (_etype949, _size946) = iprot.readListBegin()
+          for _i950 in xrange(_size946):
+            _elem951 = SQLNotNullConstraint()
+            _elem951.read(iprot)
+            self.notNullConstraints.append(_elem951)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.LIST:
+          self.defaultConstraints = []
+          (_etype955, _size952) = iprot.readListBegin()
+          for _i956 in xrange(_size952):
+            _elem957 = SQLDefaultConstraint()
+            _elem957.read(iprot)
+            self.defaultConstraints.append(_elem957)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.LIST:
+          self.checkConstraints = []
+          (_etype961, _size958) = iprot.readListBegin()
+          for _i962 in xrange(_size958):
+            _elem963 = SQLCheckConstraint()
+            _elem963.read(iprot)
+            self.checkConstraints.append(_elem963)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.LIST:
+          self.processorCapabilities = []
+          (_etype967, _size964) = iprot.readListBegin()
+          for _i968 in xrange(_size964):
+            _elem969 = iprot.readString()
+            self.processorCapabilities.append(_elem969)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.STRING:
+          self.processorIdentifier = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('CreateTableRequest')
+    if self.table is not None:
+      oprot.writeFieldBegin('table', TType.STRUCT, 1)
+      self.table.write(oprot)
+      oprot.writeFieldEnd()
+    if self.envContext is not None:
+      oprot.writeFieldBegin('envContext', TType.STRUCT, 2)
+      self.envContext.write(oprot)
+      oprot.writeFieldEnd()
+    if self.primaryKeys is not None:
+      oprot.writeFieldBegin('primaryKeys', TType.LIST, 3)
+      oprot.writeListBegin(TType.STRUCT, len(self.primaryKeys))
+      for iter970 in self.primaryKeys:
+        iter970.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.foreignKeys is not None:
+      oprot.writeFieldBegin('foreignKeys', TType.LIST, 4)
+      oprot.writeListBegin(TType.STRUCT, len(self.foreignKeys))
+      for iter971 in self.foreignKeys:
+        iter971.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.uniqueConstraints is not None:
+      oprot.writeFieldBegin('uniqueConstraints', TType.LIST, 5)
+      oprot.writeListBegin(TType.STRUCT, len(self.uniqueConstraints))
+      for iter972 in self.uniqueConstraints:
+        iter972.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.notNullConstraints is not None:
+      oprot.writeFieldBegin('notNullConstraints', TType.LIST, 6)
+      oprot.writeListBegin(TType.STRUCT, len(self.notNullConstraints))
+      for iter973 in self.notNullConstraints:
+        iter973.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.defaultConstraints is not None:
+      oprot.writeFieldBegin('defaultConstraints', TType.LIST, 7)
+      oprot.writeListBegin(TType.STRUCT, len(self.defaultConstraints))
+      for iter974 in self.defaultConstraints:
+        iter974.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.checkConstraints is not None:
+      oprot.writeFieldBegin('checkConstraints', TType.LIST, 8)
+      oprot.writeListBegin(TType.STRUCT, len(self.checkConstraints))
+      for iter975 in self.checkConstraints:
+        iter975.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.processorCapabilities is not None:
+      oprot.writeFieldBegin('processorCapabilities', TType.LIST, 9)
+      oprot.writeListBegin(TType.STRING, len(self.processorCapabilities))
+      for iter976 in self.processorCapabilities:
+        oprot.writeString(iter976)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.processorIdentifier is not None:
+      oprot.writeFieldBegin('processorIdentifier', TType.STRING, 10)
+      oprot.writeString(self.processorIdentifier)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.table is None:
+      raise TProtocol.TProtocolException(message='Required field table is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.table)
+    value = (value * 31) ^ hash(self.envContext)
+    value = (value * 31) ^ hash(self.primaryKeys)
+    value = (value * 31) ^ hash(self.foreignKeys)
+    value = (value * 31) ^ hash(self.uniqueConstraints)
+    value = (value * 31) ^ hash(self.notNullConstraints)
+    value = (value * 31) ^ hash(self.defaultConstraints)
+    value = (value * 31) ^ hash(self.checkConstraints)
+    value = (value * 31) ^ hash(self.processorCapabilities)
+    value = (value * 31) ^ hash(self.processorIdentifier)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ScheduledQueryPollRequest:
+  """
+  Attributes:
+   - clusterNamespace
+  """
+
+  thrift_spec = (
+    None, # 0
     (1, TType.STRING, 'clusterNamespace', None, None, ), # 1
   )
 
@@ -24443,31 +24674,6 @@ class ScheduledQueryPollResponse:
     self.scheduleKey = scheduleKey
     self.executionId = executionId
     self.query = query
-=======
-    (1, TType.STRUCT, 'table', (Table, Table.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'envContext', (EnvironmentContext, EnvironmentContext.thrift_spec), None, ), # 2
-    (3, TType.LIST, 'primaryKeys', (TType.STRUCT,(SQLPrimaryKey, SQLPrimaryKey.thrift_spec)), None, ), # 3
-    (4, TType.LIST, 'foreignKeys', (TType.STRUCT,(SQLForeignKey, SQLForeignKey.thrift_spec)), None, ), # 4
-    (5, TType.LIST, 'uniqueConstraints', (TType.STRUCT,(SQLUniqueConstraint, SQLUniqueConstraint.thrift_spec)), None, ), # 5
-    (6, TType.LIST, 'notNullConstraints', (TType.STRUCT,(SQLNotNullConstraint, SQLNotNullConstraint.thrift_spec)), None, ), # 6
-    (7, TType.LIST, 'defaultConstraints', (TType.STRUCT,(SQLDefaultConstraint, SQLDefaultConstraint.thrift_spec)), None, ), # 7
-    (8, TType.LIST, 'checkConstraints', (TType.STRUCT,(SQLCheckConstraint, SQLCheckConstraint.thrift_spec)), None, ), # 8
-    (9, TType.LIST, 'processorCapabilities', (TType.STRING,None), None, ), # 9
-    (10, TType.STRING, 'processorIdentifier', None, None, ), # 10
-  )
-
-  def __init__(self, table=None, envContext=None, primaryKeys=None, foreignKeys=None, uniqueConstraints=None, notNullConstraints=None, defaultConstraints=None, checkConstraints=None, processorCapabilities=None, processorIdentifier=None,):
-    self.table = table
-    self.envContext = envContext
-    self.primaryKeys = primaryKeys
-    self.foreignKeys = foreignKeys
-    self.uniqueConstraints = uniqueConstraints
-    self.notNullConstraints = notNullConstraints
-    self.defaultConstraints = defaultConstraints
-    self.checkConstraints = checkConstraints
-    self.processorCapabilities = processorCapabilities
-    self.processorIdentifier = processorIdentifier
->>>>>>> asf/master
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -24480,7 +24686,6 @@ class ScheduledQueryPollResponse:
         break
       if fid == 1:
         if ftype == TType.STRUCT:
-<<<<<<< HEAD
           self.scheduleKey = ScheduledQueryKey()
           self.scheduleKey.read(iprot)
         else:
@@ -24891,97 +25096,6 @@ class ScheduledQueryProgressInfo:
       elif fid == 4:
         if ftype == TType.STRING:
           self.errorMessage = iprot.readString()
-=======
-          self.table = Table()
-          self.table.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRUCT:
-          self.envContext = EnvironmentContext()
-          self.envContext.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.LIST:
-          self.primaryKeys = []
-          (_etype931, _size928) = iprot.readListBegin()
-          for _i932 in xrange(_size928):
-            _elem933 = SQLPrimaryKey()
-            _elem933.read(iprot)
-            self.primaryKeys.append(_elem933)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.LIST:
-          self.foreignKeys = []
-          (_etype937, _size934) = iprot.readListBegin()
-          for _i938 in xrange(_size934):
-            _elem939 = SQLForeignKey()
-            _elem939.read(iprot)
-            self.foreignKeys.append(_elem939)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 5:
-        if ftype == TType.LIST:
-          self.uniqueConstraints = []
-          (_etype943, _size940) = iprot.readListBegin()
-          for _i944 in xrange(_size940):
-            _elem945 = SQLUniqueConstraint()
-            _elem945.read(iprot)
-            self.uniqueConstraints.append(_elem945)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 6:
-        if ftype == TType.LIST:
-          self.notNullConstraints = []
-          (_etype949, _size946) = iprot.readListBegin()
-          for _i950 in xrange(_size946):
-            _elem951 = SQLNotNullConstraint()
-            _elem951.read(iprot)
-            self.notNullConstraints.append(_elem951)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 7:
-        if ftype == TType.LIST:
-          self.defaultConstraints = []
-          (_etype955, _size952) = iprot.readListBegin()
-          for _i956 in xrange(_size952):
-            _elem957 = SQLDefaultConstraint()
-            _elem957.read(iprot)
-            self.defaultConstraints.append(_elem957)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 8:
-        if ftype == TType.LIST:
-          self.checkConstraints = []
-          (_etype961, _size958) = iprot.readListBegin()
-          for _i962 in xrange(_size958):
-            _elem963 = SQLCheckConstraint()
-            _elem963.read(iprot)
-            self.checkConstraints.append(_elem963)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 9:
-        if ftype == TType.LIST:
-          self.processorCapabilities = []
-          (_etype967, _size964) = iprot.readListBegin()
-          for _i968 in xrange(_size964):
-            _elem969 = iprot.readString()
-            self.processorCapabilities.append(_elem969)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 10:
-        if ftype == TType.STRING:
-          self.processorIdentifier = iprot.readString()
->>>>>>> asf/master
         else:
           iprot.skip(ftype)
       else:
@@ -24993,7 +25107,6 @@ class ScheduledQueryProgressInfo:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-<<<<<<< HEAD
     oprot.writeStructBegin('ScheduledQueryProgressInfo')
     if self.scheduledExecutionId is not None:
       oprot.writeFieldBegin('scheduledExecutionId', TType.I64, 1)
@@ -25010,107 +25123,26 @@ class ScheduledQueryProgressInfo:
     if self.errorMessage is not None:
       oprot.writeFieldBegin('errorMessage', TType.STRING, 4)
       oprot.writeString(self.errorMessage)
-=======
-    oprot.writeStructBegin('CreateTableRequest')
-    if self.table is not None:
-      oprot.writeFieldBegin('table', TType.STRUCT, 1)
-      self.table.write(oprot)
-      oprot.writeFieldEnd()
-    if self.envContext is not None:
-      oprot.writeFieldBegin('envContext', TType.STRUCT, 2)
-      self.envContext.write(oprot)
-      oprot.writeFieldEnd()
-    if self.primaryKeys is not None:
-      oprot.writeFieldBegin('primaryKeys', TType.LIST, 3)
-      oprot.writeListBegin(TType.STRUCT, len(self.primaryKeys))
-      for iter970 in self.primaryKeys:
-        iter970.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.foreignKeys is not None:
-      oprot.writeFieldBegin('foreignKeys', TType.LIST, 4)
-      oprot.writeListBegin(TType.STRUCT, len(self.foreignKeys))
-      for iter971 in self.foreignKeys:
-        iter971.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.uniqueConstraints is not None:
-      oprot.writeFieldBegin('uniqueConstraints', TType.LIST, 5)
-      oprot.writeListBegin(TType.STRUCT, len(self.uniqueConstraints))
-      for iter972 in self.uniqueConstraints:
-        iter972.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.notNullConstraints is not None:
-      oprot.writeFieldBegin('notNullConstraints', TType.LIST, 6)
-      oprot.writeListBegin(TType.STRUCT, len(self.notNullConstraints))
-      for iter973 in self.notNullConstraints:
-        iter973.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.defaultConstraints is not None:
-      oprot.writeFieldBegin('defaultConstraints', TType.LIST, 7)
-      oprot.writeListBegin(TType.STRUCT, len(self.defaultConstraints))
-      for iter974 in self.defaultConstraints:
-        iter974.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.checkConstraints is not None:
-      oprot.writeFieldBegin('checkConstraints', TType.LIST, 8)
-      oprot.writeListBegin(TType.STRUCT, len(self.checkConstraints))
-      for iter975 in self.checkConstraints:
-        iter975.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.processorCapabilities is not None:
-      oprot.writeFieldBegin('processorCapabilities', TType.LIST, 9)
-      oprot.writeListBegin(TType.STRING, len(self.processorCapabilities))
-      for iter976 in self.processorCapabilities:
-        oprot.writeString(iter976)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.processorIdentifier is not None:
-      oprot.writeFieldBegin('processorIdentifier', TType.STRING, 10)
-      oprot.writeString(self.processorIdentifier)
->>>>>>> asf/master
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
   def validate(self):
-<<<<<<< HEAD
     if self.scheduledExecutionId is None:
       raise TProtocol.TProtocolException(message='Required field scheduledExecutionId is unset!')
     if self.state is None:
       raise TProtocol.TProtocolException(message='Required field state is unset!')
     if self.executorQueryId is None:
       raise TProtocol.TProtocolException(message='Required field executorQueryId is unset!')
-=======
-    if self.table is None:
-      raise TProtocol.TProtocolException(message='Required field table is unset!')
->>>>>>> asf/master
     return
 
 
   def __hash__(self):
     value = 17
-<<<<<<< HEAD
     value = (value * 31) ^ hash(self.scheduledExecutionId)
     value = (value * 31) ^ hash(self.state)
     value = (value * 31) ^ hash(self.executorQueryId)
     value = (value * 31) ^ hash(self.errorMessage)
-=======
-    value = (value * 31) ^ hash(self.table)
-    value = (value * 31) ^ hash(self.envContext)
-    value = (value * 31) ^ hash(self.primaryKeys)
-    value = (value * 31) ^ hash(self.foreignKeys)
-    value = (value * 31) ^ hash(self.uniqueConstraints)
-    value = (value * 31) ^ hash(self.notNullConstraints)
-    value = (value * 31) ^ hash(self.defaultConstraints)
-    value = (value * 31) ^ hash(self.checkConstraints)
-    value = (value * 31) ^ hash(self.processorCapabilities)
-    value = (value * 31) ^ hash(self.processorIdentifier)
->>>>>>> asf/master
     return value
 
   def __repr__(self):
