@@ -15,23 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.ql.ddl.function.macro.drop.DropMacroDesc;
-import org.junit.Assert;
+package org.apache.hadoop.hive.ql.ddl.function.reload;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-public class TestDropMacroDesc {
-  private String name;
-  @Before
-  public void setup() throws Exception {
-    name = "fixed_number";
+/**
+ * Operation process of reloading the functions.
+ */
+public class ReloadFunctionsOperation extends DDLOperation<ReloadFunctionsDesc> {
+  public ReloadFunctionsOperation(DDLOperationContext context, ReloadFunctionsDesc desc) {
+    super(context, desc);
   }
-  @Test
-  public void testCreateMacroDesc() throws Exception {
-    DropMacroDesc desc = new DropMacroDesc(name);
-    Assert.assertEquals(name, desc.getName());
+
+  @Override
+  public int execute() throws HiveException {
+    try {
+      Hive.get().reloadFunctions();
+      return 0;
+    } catch (Exception e) {
+      context.getTask().setException(e);
+      LOG.error("Failed to reload functions", e);
+      return 1;
+    }
   }
 }

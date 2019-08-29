@@ -300,14 +300,12 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_DROPVIEW:
       case HiveParser.TOK_DROP_MATERIALIZED_VIEW:
       case HiveParser.TOK_DESCTABLE:
-      case HiveParser.TOK_DESCFUNCTION:
       case HiveParser.TOK_MSCK:
       case HiveParser.TOK_SHOWTABLES:
       case HiveParser.TOK_SHOWCOLUMNS:
       case HiveParser.TOK_SHOW_TABLESTATUS:
       case HiveParser.TOK_SHOW_TBLPROPERTIES:
       case HiveParser.TOK_SHOW_CREATETABLE:
-      case HiveParser.TOK_SHOWFUNCTIONS:
       case HiveParser.TOK_SHOWPARTITIONS:
       case HiveParser.TOK_SHOWLOCKS:
       case HiveParser.TOK_SHOWDBLOCKS:
@@ -349,17 +347,8 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_DROP_MAPPING:
         return new DDLSemanticAnalyzer(queryState);
 
-      case HiveParser.TOK_CREATEFUNCTION:
-      case HiveParser.TOK_DROPFUNCTION:
-      case HiveParser.TOK_RELOADFUNCTIONS:
-        return new FunctionSemanticAnalyzer(queryState);
-
       case HiveParser.TOK_ANALYZE:
         return new ColumnStatsSemanticAnalyzer(queryState);
-
-      case HiveParser.TOK_CREATEMACRO:
-      case HiveParser.TOK_DROPMACRO:
-        return new MacroSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_UPDATE_TABLE:
       case HiveParser.TOK_DELETE_FROM:

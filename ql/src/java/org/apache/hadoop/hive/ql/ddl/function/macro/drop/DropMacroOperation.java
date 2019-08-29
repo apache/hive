@@ -15,23 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.ql.ddl.function.macro.drop.DropMacroDesc;
-import org.junit.Assert;
+package org.apache.hadoop.hive.ql.ddl.function.macro.drop;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-public class TestDropMacroDesc {
-  private String name;
-  @Before
-  public void setup() throws Exception {
-    name = "fixed_number";
+/**
+ * Operation process of dropping a macro.
+ */
+public class DropMacroOperation extends DDLOperation<DropMacroDesc> {
+  public DropMacroOperation(DDLOperationContext context, DropMacroDesc desc) {
+    super(context, desc);
   }
-  @Test
-  public void testCreateMacroDesc() throws Exception {
-    DropMacroDesc desc = new DropMacroDesc(name);
-    Assert.assertEquals(name, desc.getName());
+
+  @Override
+  public int execute() throws HiveException {
+    try {
+      FunctionRegistry.unregisterTemporaryUDF(desc.getName());
+      return 0;
+    } catch (HiveException e) {
+      LOG.info("drop macro: ", e);
+      return 1;
+    }
   }
 }

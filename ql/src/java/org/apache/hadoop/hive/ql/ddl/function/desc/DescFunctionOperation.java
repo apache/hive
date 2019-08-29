@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.function;
+package org.apache.hadoop.hive.ql.ddl.function.desc;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -32,7 +32,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Set;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -48,7 +47,7 @@ public class DescFunctionOperation extends DDLOperation<DescFunctionDesc> {
 
   @Override
   public int execute() throws HiveException {
-    try (DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
+    try (DataOutputStream outStream = DDLUtils.getOutputStream(desc.getResFile(), context)) {
       String funcName = desc.getName();
       FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(funcName);
       Class<?> funcClass = functionInfo == null ? null : functionInfo.getFunctionClass();

@@ -16,43 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.function;
+package org.apache.hadoop.hive.ql.ddl.function.reload;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for SHOW FUNCTIONS commands.
+ * DDL task description for RELOAD FUNCTIONS commands.
+ * Due to backward compatibility reasons we also accept the RELOAD FUNCTION command.
  */
-@Explain(displayName = "Show Functions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ShowFunctionsDesc implements DDLDesc, Serializable {
+@Explain(displayName = "Reload Functions")
+public class ReloadFunctionsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  public static final String SCHEMA = "tab_name#string";
-
-  private final String resFile;
-  private final String pattern;
-
-  public ShowFunctionsDesc(Path resFile) {
-    this(resFile, null);
-  }
-
-  public ShowFunctionsDesc(Path resFile, String pattern) {
-    this.resFile = resFile.toString();
-    this.pattern = pattern;
-  }
-
-  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
-  public String getResFile() {
-    return resFile;
-  }
-
-  @Explain(displayName = "pattern")
-  public String getPattern() {
-    return pattern;
-  }
 }
