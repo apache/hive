@@ -218,7 +218,6 @@ STAGE PLANS:
                   1 Map 4
                 Statistics: Num rows: 2 Data size: 620 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
-                HybridGraceHashJoin: true
                 Limit
                   Number of rows: 1
                   Statistics: Num rows: 1 Data size: 310 Basic stats: COMPLETE Column stats: COMPLETE
@@ -336,7 +335,6 @@ STAGE PLANS:
                   1 Map 4
                 Statistics: Num rows: 2 Data size: 620 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
-                HybridGraceHashJoin: true
                 Limit
                   Number of rows: 1
                   Statistics: Num rows: 1 Data size: 310 Basic stats: COMPLETE Column stats: COMPLETE
