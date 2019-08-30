@@ -958,7 +958,7 @@ Stage-0
         Select Operator [SEL_33] (rows=399/480 width=186)
           Output:["_col0","_col1","_col2"]
           Map Join Operator [MAPJOIN_32] (rows=399/480 width=186)
-            BucketMapJoin:true,Conds:RS_29._col0=SEL_31._col0(Inner),HybridGraceHashJoin:true,Output:["_col0","_col1","_col3"]
+            BucketMapJoin:true,Conds:RS_29._col0=SEL_31._col0(Inner),Output:["_col0","_col1","_col3"]
           <-Map 1 [CUSTOM_EDGE] vectorized
             MULTICAST [RS_29]
               PartitionCols:_col0
