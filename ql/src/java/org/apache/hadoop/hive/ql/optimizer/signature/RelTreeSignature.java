@@ -18,24 +18,19 @@
 
 package org.apache.hadoop.hive.ql.optimizer.signature;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.google.common.base.Objects;
+import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelWriter;
+import org.apache.calcite.sql.SqlExplainLevel;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelWriterImplCopy;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.RelWriter;
-import org.apache.calcite.rel.externalize.RelWriterImpl;
-import org.apache.calcite.sql.SqlExplainLevel;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelJsonImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelWriterImplCopy;
-
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
-import avro.shaded.com.google.common.base.Objects;
 
 /**
  * Operator tree signature.
