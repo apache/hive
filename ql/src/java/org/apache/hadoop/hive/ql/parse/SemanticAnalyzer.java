@@ -13417,10 +13417,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     boolean makeInsertOnly = !isTemporaryTable && HiveConf.getBoolVar(
         conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
-    boolean makeAcid = !isTemporaryTable &&
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
-        HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
-        DbTxnManager.class.getCanonicalName().equals(HiveConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER));
+    boolean makeAcid = !isTemporaryTable && makeAcid();
     if ((makeInsertOnly || makeAcid || isTransactional)
         && !isExt  && !isMaterialization && StringUtils.isBlank(storageFormat.getStorageHandler())
         //don't overwrite user choice if transactional attribute is explicitly set
@@ -14065,6 +14062,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     unparseTranslator.enable();
 
     if (isMaterialized) {
+      if (makeAcid()) {
+        if (tblProps == null) {
+          tblProps = new HashMap<>();
+        }
+        tblProps = convertToAcidByDefault(storageFormat, dbDotTable, null, tblProps);
+      }
+
       createVwDesc = new CreateViewDesc(
           dbDotTable, cols, comment, tblProps, partColNames, sortColNames, distributeColNames,
           ifNotExists, isRebuild, rewriteEnabled, isAlterViewAs,
@@ -14085,6 +14089,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.setViewDesc(createVwDesc);
 
     return selectStmt;
+  }
+
+  private boolean makeAcid() {
+    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
+            HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
+            DbTxnManager.class.getCanonicalName().equals(HiveConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER));
   }
 
   // validate the (materialized) view statement
