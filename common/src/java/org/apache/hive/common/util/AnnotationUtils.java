@@ -23,17 +23,15 @@ import java.lang.reflect.Method;
 
 public class AnnotationUtils {
 
-  // to avoid https://bugs.openjdk.java.net/browse/JDK-7122142
+  // until JDK8, this had a lock around annotationClass to avoid
+  // https://bugs.openjdk.java.net/browse/JDK-7122142
   public static <T extends Annotation> T getAnnotation(Class<?> clazz, Class<T> annotationClass) {
-    synchronized (annotationClass) {
-      return clazz.getAnnotation(annotationClass);
-    }
+    return clazz.getAnnotation(annotationClass);
   }
 
-  // to avoid https://bugs.openjdk.java.net/browse/JDK-7122142
+  // until JDK8, this had a lock around annotationClass to avoid
+  // https://bugs.openjdk.java.net/browse/JDK-7122142
   public static <T extends Annotation> T getAnnotation(Method method, Class<T> annotationClass) {
-    synchronized (annotationClass) {
-      return method.getAnnotation(annotationClass);
-    }
+    return method.getAnnotation(annotationClass);
   }
 }
