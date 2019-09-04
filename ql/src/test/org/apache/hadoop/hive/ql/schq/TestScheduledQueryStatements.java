@@ -24,8 +24,11 @@ import static org.junit.Assert.fail;
 
 import java.util.Optional;
 
+import javax.jdo.PersistenceManager;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -37,6 +40,7 @@ import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -120,7 +124,6 @@ public class TestScheduledQueryStatements {
     }
   }
 
-  // FIXME: I think this case should fail for now...
   @Test(expected = CommandProcessorResponse.class)
   public void testCreateFromNonDefaultDatabase() throws ParseException, Exception {
     IDriver driver = createDriver();
@@ -132,7 +135,8 @@ public class TestScheduledQueryStatements {
       fail("use database failed");
     }
 
-    // FIXME: the query is actually correct; but it should 
+    // FIXME: save actual database as well?
+    // the query is actually correct; but it may reference a table inside the current database...
     ret = driver.run("create scheduled query nonDef cron '* * * * * ? *' as select 1");
     if (ret.getResponseCode() != 0) {
       throw ret;
@@ -162,18 +166,17 @@ public class TestScheduledQueryStatements {
     ret = driver.run("alter scheduled query alter1 defined as select 22 from tu");
     assertEquals(0, ret.getResponseCode());
 
-    //    try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
-    try (XObjectStore os = new XObjectStore(env_setup.getTestCtx().hiveConf)) {
-      Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("alter1", "default"));
+    try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
+      Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("alter1", "hive"));
       assertTrue(sq.isPresent());
       assertEquals("user3", sq.get().toThrift().getUser());
     }
 
   }
 
-  static class XObjectStore extends ObjectStore implements AutoCloseable {
+  static class CloseableObjectStore extends ObjectStore implements AutoCloseable {
 
-    public XObjectStore(HiveConf hiveConf) {
+    public CloseableObjectStore(HiveConf hiveConf) {
       super();
       super.setConf(hiveConf);
     }
