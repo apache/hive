@@ -670,15 +670,15 @@ public class MetastoreConf {
     SCHEDULED_QUERIES_CRON_SYNTAX("scheduled.queries.cron.syntax", "hive.metastore.scheduled.queries.cron.syntax",
         "QUARTZ", new StringSetValidator("UNIX", "QUARTZ", "CRON4J", "SPRING"),
         "Defines the format of the schedule expressions to be used in scheduled queries."),
-    SCHEDULED_QUERIES_PROGRESS_TIMEOUT("scheduled.queries.progress.timeout",
+    SCHEDULED_QUERIES_EXECUTION_PROGRESS_TIMEOUT("scheduled.queries.execution.timeout",
         "hive.metastore.scheduled.queries.progress.timeout", 120, TimeUnit.SECONDS,
-        "FIXME; MISSING If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
-    SCHEDULED_QUERIES_EXECUTION_CLEAN_FREQUENCY("scheduled.queries.execution.clean.frequency",
-        "hive.metastore.scheduled.queries.execution.clean.frequency", 3600, TimeUnit.SECONDS,
-        "FIXME; MISSING"),
+        "FIXME If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
+    SCHEDULED_QUERIES_EXECUTION_MAINT_TASK_FREQUENCY("scheduled.queries.execution.maint.task.frequency",
+        "hive.metastore.scheduled.queries.execution.clean.frequency", 60, TimeUnit.SECONDS,
+        "Interval of scheduled query maintenance task. Which removes executions above max age; and marks executions as timed out if the condition is met"),
     SCHEDULED_QUERIES_EXECUTION_MAX_AGE("scheduled.queries.execution.max.age",
         "hive.metastore.scheduled.queries.execution.max.age", 3 * 86400, TimeUnit.SECONDS,
-        "FIXME; MISSING"),
+        "Maximal age of a scheduled query execution entry before it is removed."),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
@@ -926,7 +926,8 @@ public class MetastoreConf {
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EVENT_CLEANER_TASK_CLASS + "," + RUNTIME_STATS_CLEANER_TASK_CLASS + "," +
         "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
-          "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask",
+            "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask" + ","
+            + "org.apache.hadoop.hive.metastore.ScheduledQueryExecutionsMaintTask",
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + METASTORE_TASK_THREAD_CLASS),

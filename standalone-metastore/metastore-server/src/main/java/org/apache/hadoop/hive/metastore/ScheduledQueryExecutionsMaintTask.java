@@ -28,14 +28,15 @@ import java.util.concurrent.TimeUnit;
 /**
  * Metastore task to remove old scheduled query executions.
  */
-public class ScheduledQueryExecutionsCleanerTask implements MetastoreTaskThread {
-  private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryExecutionsCleanerTask.class);
+public class ScheduledQueryExecutionsMaintTask implements MetastoreTaskThread {
+  private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryExecutionsMaintTask.class);
 
   private Configuration conf;
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXECUTION_CLEAN_FREQUENCY, unit);
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXECUTION_MAINT_TASK_FREQUENCY,
+        unit);
   }
 
   @Override
