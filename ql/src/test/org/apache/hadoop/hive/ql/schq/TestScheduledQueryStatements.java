@@ -174,6 +174,35 @@ public class TestScheduledQueryStatements {
 
   }
 
+  @Ignore
+  @Test
+  public void testImpersonation() throws ParseException, Exception {
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    IDriver driver = createDriver();
+
+    setupAuthorization();
+
+    CommandProcessorResponse ret;
+    ret = driver.run("create table t1 (a integer)");
+    assertEquals(0, ret.getResponseCode());
+
+    conf.set("user.name", "user1");
+    ret = driver.run("drop table t1");
+    assertEquals(0, ret.getResponseCode());
+
+  }
+
+  private void setupAuthorization() {
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.set("hive.test.authz.sstd.hs2.mode", "true");
+    conf.set("hive.security.authorization.manager",
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest");
+    conf.set("hive.security.authenticator.manager",
+        "org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator");
+    conf.set("hive.security.authorization.enabled", "true");
+
+  }
+
   static class CloseableObjectStore extends ObjectStore implements AutoCloseable {
 
     public CloseableObjectStore(HiveConf hiveConf) {
