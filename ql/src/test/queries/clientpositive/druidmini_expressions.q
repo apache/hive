@@ -189,5 +189,3 @@ select count(*) from (select `__time` from druid_table_n1 limit 1025) as src;
 explain select `timets` from (select `__time` as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`;
 -- Vectorization is on now since we cast to Timestamp
 explain select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`;
-select `timets_with_tz` from (select `__time` as timets_with_tz from druid_table_n1 order by timets_with_tz limit 10)  as src order by `timets_with_tz`;
-select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`;

@@ -2004,29 +2004,3 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select `timets_with_tz` from (select `__time` as timets_with_tz from druid_table_n1 order by timets_with_tz limit 10)  as src order by `timets_with_tz`
-PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_n1
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select `timets_with_tz` from (select `__time` as timets_with_tz from druid_table_n1 order by timets_with_tz limit 10)  as src order by `timets_with_tz`
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_n1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-2019-08-01 16:22:00.0 US/Pacific
-2019-08-01 16:22:00.0 US/Pacific
-2019-08-01 16:22:00.0 US/Pacific
-2019-08-01 16:22:00.0 US/Pacific
-2019-08-01 16:22:00.0 US/Pacific
-PREHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`
-PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_n1
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_n1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-2019-08-01 16:22:00
-2019-08-01 16:22:00
-2019-08-01 16:22:00
-2019-08-01 16:22:00
-2019-08-01 16:22:00
