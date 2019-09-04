@@ -12840,7 +12840,9 @@ public class ObjectStore implements RawStore, Configurable {
         throw new InvalidOperationException("Invalid state change: " + execution.getState() + "=>" + info.getState());
       }
       execution.setState(info.getState());
-      execution.setExecutorQueryId(info.getExecutorQueryId());
+      if (info.isSetExecutorQueryId()) {
+        execution.setExecutorQueryId(info.getExecutorQueryId());
+      }
       if (info.isSetErrorMessage()) {
         execution.setErrorMessage(info.getErrorMessage());
       }
@@ -13028,7 +13030,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public int deleteScheduledExecutions(int maxRetainSecs) {
     if (maxRetainSecs < 0) {
-      LOG.warn("runtime stats retention is disabled");
+      LOG.debug("scheduled executions retention is disabled");
       return 0;
     }
     boolean committed = false;
@@ -13041,6 +13043,40 @@ public class ObjectStore implements RawStore, Configurable {
       long deleted = q.deletePersistentAll(maxCreateTime);
       committed = commitTransaction();
       return (int) deleted;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException {
+    if (timeoutSecs < 0) {
+      LOG.debug("scheduled executions - time_out mark is disabled");
+      return 0;
+    }
+    boolean committed = false;
+    try {
+      openTransaction();
+      int maxLastUpdateTime = (int) (System.currentTimeMillis() / 1000) - timeoutSecs;
+      Query q = pm.newQuery(MScheduledExecution.class);
+      q.setFilter("lastUpdateTime <= maxLastUpdateTime and (state='INITED' or state='EXECUTING')");
+      q.declareParameters("int maxLastUpdateTime");
+      
+      List<MScheduledExecution> results = (List<MScheduledExecution>) q.execute(maxLastUpdateTime);
+      for (MScheduledExecution e : results) {
+        
+        ScheduledQueryProgressInfo info = new ScheduledQueryProgressInfo();
+        info.setScheduledExecutionId(e.getScheduledExecutionId());
+        info.setState(QueryState.TIMED_OUT);
+        info.setErrorMessage(
+            "Query stuck in: " + e.getState() + " state for >" + timeoutSecs + " seconds. Execution timed out.");
+        //        info.set
+        scheduledQueryProgress(info);
+      }
+      committed = commitTransaction();
+      return results.size();
     } finally {
       if (!committed) {
         rollbackTransaction();
