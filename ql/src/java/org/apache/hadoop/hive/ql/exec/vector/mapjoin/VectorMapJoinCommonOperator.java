@@ -554,10 +554,10 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
     super.initializeOp(hconf);
 
-    VectorExpression.doTransientInit(bigTableFilterExpressions);
-    VectorExpression.doTransientInit(bigTableKeyExpressions);
-    VectorExpression.doTransientInit(bigTableValueExpressions);
-    VectorExpression.doTransientInit(bigTableValueExpressions);
+    VectorExpression.doTransientInit(bigTableFilterExpressions, hconf);
+    VectorExpression.doTransientInit(bigTableKeyExpressions, hconf);
+    VectorExpression.doTransientInit(bigTableValueExpressions, hconf);
+    VectorExpression.doTransientInit(bigTableValueExpressions, hconf);
 
     /*
      * Get configuration parameters.

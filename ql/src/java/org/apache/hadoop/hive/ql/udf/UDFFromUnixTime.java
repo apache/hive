@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.udf;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -31,12 +30,14 @@ import org.apache.hadoop.io.Text;
 /**
  * UDFFromUnixTime.
  *
+ * @deprecated Replaced by {@link org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUnixTime}.
  */
 @Description(name = "from_unixtime",
     value = "_FUNC_(unix_time, format) - returns unix_time in the specified format",
     extended = "Example:\n"
     + "  > SELECT _FUNC_(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;\n"
     + "  '1970-01-01 00:00:00'")
+@Deprecated
 public class UDFFromUnixTime extends UDF {
   private SimpleDateFormat formatter;
 
@@ -120,7 +121,6 @@ public class UDFFromUnixTime extends UDF {
   private Text eval(long unixtime, Text format) {
     if (!format.equals(lastFormat)) {
       formatter = new SimpleDateFormat(format.toString());
-      formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
       lastFormat.set(format);
     }
 

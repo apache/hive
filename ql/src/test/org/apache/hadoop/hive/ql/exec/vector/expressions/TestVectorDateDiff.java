@@ -428,7 +428,7 @@ public class TestVectorDateDiff {
             Arrays.asList(dataTypePhysicalVariations),
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (dateDiffTestMode == DateDiffTestMode.VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {
