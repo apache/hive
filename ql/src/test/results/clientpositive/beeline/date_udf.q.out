@@ -190,7 +190,7 @@ POSTHOOK: query: select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf
 #### A masked pattern was here ####
-1970-01-01 08:00:00	1969-12-31 16:00:00	2013-06-19 07:00:00	2013-06-18 17:00:00
+1970-01-01 08:00:00.0	1969-12-31 16:00:00.0	2013-06-19 07:00:00.0	2013-06-18 17:00:00.0
 PREHOOK: query: select 
     to_utc_timestamp(date '1970-01-01', 'America/Los_Angeles') = to_utc_timestamp(timestamp('1970-01-01 00:00:00'), 'America/Los_Angeles'),
     from_utc_timestamp(date '1970-01-01', 'America/Los_Angeles') = from_utc_timestamp(timestamp('1970-01-01 00:00:00'), 'America/Los_Angeles'),
