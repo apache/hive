@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 
 // cast string group to string (varchar to string, etc.)
@@ -34,6 +35,15 @@ public class CastStringGroupToString extends StringUnaryUDFDirect {
   }
 
   @Override
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
+
+    maxLength = ((CharTypeInfo) inputTypeInfos[0]).getLength();
+  }
+
+  /**
+   * Do pad out the CHAR type into the BINARY result, taking into account Unicode...
+   */
   protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length, int i) {
     outV.setVal(i, vector[i], start[i], length[i]);
   }

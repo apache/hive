@@ -1201,16 +1201,14 @@ public class VectorizationContext {
     if (gudf instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) gudf;
       Class<? extends UDF> udfClass = bridge.getUdfClass();
-      if (udfClass.equals(UDFHex.class)
+      return udfClass.equals(UDFHex.class)
           || udfClass.equals(UDFRegExpExtract.class)
           || udfClass.equals(UDFRegExpReplace.class)
           || udfClass.equals(UDFConv.class)
-          || udfClass.equals(UDFFromUnixTime.class) && isIntFamily(arg0Type(expr))
           || isCastToIntFamily(udfClass) && isStringFamily(arg0Type(expr))
-          || isCastToFloatFamily(udfClass) && isStringFamily(arg0Type(expr))) {
-        return true;
-      }
-    } else if ((gudf instanceof GenericUDFTimestamp && isStringFamily(arg0Type(expr)))
+          || isCastToFloatFamily(udfClass) && isStringFamily(arg0Type(expr));
+    } else if (gudf instanceof GenericUDFFromUnixTime && isIntFamily(arg0Type(expr))
+          || (gudf instanceof GenericUDFTimestamp && isStringFamily(arg0Type(expr)))
 
             /* GenericUDFCase and GenericUDFWhen are implemented with the UDF Adaptor because
              * of their complexity and generality. In the future, variations of these

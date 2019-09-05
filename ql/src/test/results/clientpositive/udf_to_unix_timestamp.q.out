@@ -41,7 +41,7 @@ FROM oneline_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
-2009-03-20 11:30:01	1237548601
+2009-03-20 11:30:01	1237573801
 PREHOOK: query: SELECT
   '2009-03-20',
   to_unix_timestamp('2009-03-20', 'yyyy-MM-dd')
@@ -56,7 +56,7 @@ FROM oneline_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
-2009-03-20	1237507200
+2009-03-20	1237532400
 PREHOOK: query: SELECT
   '2009 Mar 20 11:30:01 am',
   to_unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
@@ -71,7 +71,7 @@ FROM oneline_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
-2009 Mar 20 11:30:01 am	1237548601
+2009 Mar 20 11:30:01 am	1237573801
 PREHOOK: query: SELECT
   'random_string',
   to_unix_timestamp('random_string')
