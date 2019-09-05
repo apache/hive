@@ -86,7 +86,7 @@ POSTHOOK: query: select unix_timestamp(cast(d as timestamp with local time zone)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf
 #### A masked pattern was here ####
-1304665200	1304640000	2011	5	6	6	18	2011-05-06
+1304665200	1304665200	2011	5	6	6	18	2011-05-06
 PREHOOK: query: select date_add(d, 5), date_sub(d, 10)
   from date_udf
 PREHOOK: type: QUERY
