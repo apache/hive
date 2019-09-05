@@ -641,7 +641,7 @@ public class TestVectorFilterCompare {
     VectorExpression vectorExpression =
         vectorizationContext.getVectorExpression(
             exprDesc, mode);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (filterCompareTestMode == FilterCompareTestMode.COMPARE_VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {

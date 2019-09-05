@@ -308,7 +308,7 @@ public class TestVectorStructField {
             hiveConf);
     VectorExpression vectorExpression =
         vectorizationContext.getVectorExpression(exprNodeFieldDesc);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (negativeTestMode == StructFieldTestMode.VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {

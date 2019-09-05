@@ -441,7 +441,7 @@ public class TestVectorCoalesceElt {
             hiveConf);
     VectorExpression vectorExpression =
         vectorizationContext.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (coalesceEltTestMode == CoalesceEltTestMode.VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {
