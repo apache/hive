@@ -25,12 +25,10 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -42,14 +40,10 @@ import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
-import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatUtil;
 
 import org.apache.hadoop.security.UserGroupInformation;
@@ -228,18 +222,6 @@ public class HiveEndPoint {
           , PartitionCreationFailed {
     return new ConnectionImpl(this, ugi, conf, createPartIfNotExists, agentInfo);
   }
-
-  private static UserGroupInformation getUserGroupInfo(String user)
-          throws ImpersonationFailed {
-    try {
-      return UserGroupInformation.createProxyUser(
-              user, UserGroupInformation.getLoginUser());
-    } catch (IOException e) {
-      LOG.error("Unable to get UserGroupInfo for user : " + user, e);
-      throw new ImpersonationFailed(user,e);
-    }
-  }
-
 
   @Override
   public boolean equals(Object o) {
@@ -467,12 +449,10 @@ public class HiveEndPoint {
         Map<String, String> partSpec =
             Warehouse.makeSpecFromValues(tableObject.getPartitionKeys(), ep.partitionVals);
 
-        AlterTableAddPartitionDesc addPartitionDesc = new AlterTableAddPartitionDesc(ep.database, ep.table, true);
-        String partLocation = new Path(tableObject.getDataLocation(),
-            Warehouse.makePartPath(partSpec)).toString();
-        addPartitionDesc.addPartition(partSpec, partLocation);
-        Partition partition = Hive.convertAddSpecToMetaPartition(tableObject,
-            addPartitionDesc.getPartition(0), conf);
+        Path location = new Path(tableObject.getDataLocation(), Warehouse.makePartPath(partSpec));
+        location = new Path(Utilities.getQualifiedPath(conf, location));
+        Partition partition =
+            org.apache.hadoop.hive.ql.metadata.Partition.createMetaPartitionObject(tableObject, partSpec, location);
         msClient.add_partition(partition);
       }
       catch (AlreadyExistsException e) {
@@ -484,36 +464,6 @@ public class HiveEndPoint {
         LOG.error("Failed to create partition : " + ep, e);
         throw new PartitionCreationFailed(ep, e);
       }
-    }
-
-    private static boolean runDDL(IDriver driver, String sql) throws QueryFailedException {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Running Hive Query: " + sql);
-      }
-      driver.run(sql);
-      return true;
-    }
-
-    private static String partSpecStr(List<FieldSchema> partKeys, ArrayList<String> partVals) {
-      if (partKeys.size()!=partVals.size()) {
-        throw new IllegalArgumentException("Partition values:" + partVals +
-                ", does not match the partition Keys in table :" + partKeys );
-      }
-      StringBuilder buff = new StringBuilder(partKeys.size()*20);
-      buff.append(" ( ");
-      int i=0;
-      for (FieldSchema schema : partKeys) {
-        buff.append(schema.getName());
-        buff.append("='");
-        buff.append(partVals.get(i));
-        buff.append("'");
-        if (i!=partKeys.size()-1) {
-          buff.append(",");
-        }
-        ++i;
-      }
-      buff.append(" )");
-      return buff.toString();
     }
 
     private static IMetaStoreClient getMetaStoreClient(HiveEndPoint endPoint, HiveConf conf, boolean secureMode)

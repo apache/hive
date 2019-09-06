@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -41,9 +42,12 @@ import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration;
 
+import com.google.common.collect.ImmutableList;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.getHiveUpdater;
 
@@ -146,7 +150,7 @@ public class FSTableEvent implements TableEvent {
     //TODO: if partitions are loaded lazily via the iterator then we will have to avoid conversion of everything here as it defeats the purpose.
     for (Partition partition : metadata.getPartitions()) {
       // TODO: this should ideally not create AddPartitionDesc per partition
-      AlterTableAddPartitionDesc partsDesc = partitionDesc(fromPath, tblDesc, partition);
+      AlterTableAddPartitionDesc partsDesc = addPartitionDesc(fromPath, tblDesc, partition);
       descs.add(partsDesc);
     }
     return descs;
@@ -167,46 +171,42 @@ public class FSTableEvent implements TableEvent {
     return partitions;
   }
 
-  private AlterTableAddPartitionDesc partitionDesc(Path fromPath,
-      ImportTableDesc tblDesc, Partition partition) throws SemanticException {
+  private AlterTableAddPartitionDesc addPartitionDesc(Path fromPath, ImportTableDesc tblDesc, Partition partition)
+      throws SemanticException {
     try {
-      AlterTableAddPartitionDesc partsDesc =
-          new AlterTableAddPartitionDesc(tblDesc.getDatabaseName(), tblDesc.getTableName(),
-              EximUtil.makePartSpec(tblDesc.getPartCols(), partition.getValues()),
-              partition.getSd().getLocation(), partition.getParameters());
-      AlterTableAddPartitionDesc.PartitionDesc partDesc = partsDesc.getPartition(0);
-      partDesc.setInputFormat(partition.getSd().getInputFormat());
-      partDesc.setOutputFormat(partition.getSd().getOutputFormat());
-      partDesc.setNumBuckets(partition.getSd().getNumBuckets());
-      partDesc.setCols(partition.getSd().getCols());
-      partDesc.setSerializationLib(partition.getSd().getSerdeInfo().getSerializationLib());
-      partDesc.setSerdeParams(partition.getSd().getSerdeInfo().getParameters());
-      partDesc.setBucketCols(partition.getSd().getBucketCols());
-      partDesc.setSortCols(partition.getSd().getSortCols());
-      if (tblDesc.isExternal() && !replicationSpec().isMigratingToExternalTable()) {
-        // we have to provide the source location so target location can be derived.
-        partDesc.setLocation(partition.getSd().getLocation());
-      } else {
+      Map<String, String> partitionSpec = EximUtil.makePartSpec(tblDesc.getPartCols(), partition.getValues());
+
+      StorageDescriptor sd = partition.getSd();
+      String location = sd.getLocation();
+      if (!tblDesc.isExternal() || replicationSpec().isMigratingToExternalTable()) {
         /**
          * this is required for file listing of all files in a partition for managed table as described in
          * {@link org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator}
          */
-        partDesc.setLocation(new Path(fromPath,
-            Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString());
+        location = new Path(fromPath, Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString();
       }
-      partsDesc.setReplicationSpec(replicationSpec());
 
+      ColumnStatistics columnStatistics = null;
+      long writeId = -1;
       if (partition.isSetColStats()) {
         ColumnStatistics colStats = partition.getColStats();
         ColumnStatisticsDesc colStatsDesc = new ColumnStatisticsDesc(colStats.getStatsDesc());
         colStatsDesc.setTableName(tblDesc.getTableName());
         colStatsDesc.setDbName(tblDesc.getDatabaseName());
-        partDesc.setColStats(new ColumnStatistics(colStatsDesc, colStats.getStatsObj(), colStats.getEngine()));
-        long writeId = replicationSpec().isMigratingToTxnTable() ?
+        columnStatistics = new ColumnStatistics(colStatsDesc, colStats.getStatsObj(), colStats.getEngine());
+        writeId = replicationSpec().isMigratingToTxnTable() ?
                 ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID : partition.getWriteId();
-        partDesc.setWriteId(writeId);
       }
-      return partsDesc;
+
+      AlterTableAddPartitionDesc.PartitionDesc partitionDesc = new AlterTableAddPartitionDesc.PartitionDesc(
+          partitionSpec, location, partition.getParameters(), sd.getInputFormat(), sd.getOutputFormat(),
+          sd.getNumBuckets(), sd.getCols(), sd.getSerdeInfo().getSerializationLib(), sd.getSerdeInfo().getParameters(),
+          sd.getBucketCols(), sd.getSortCols(), columnStatistics, writeId);
+
+      AlterTableAddPartitionDesc addPartitionDesc = new AlterTableAddPartitionDesc(tblDesc.getDatabaseName(),
+          tblDesc.getTableName(), true, ImmutableList.of(partitionDesc));
+      addPartitionDesc.setReplicationSpec(replicationSpec());
+      return addPartitionDesc;
     } catch (Exception e) {
       throw new SemanticException(e);
     }

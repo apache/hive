@@ -93,7 +93,7 @@ public class TestViewEntity {
         .getResponseCode();
     assertEquals("Checking command success", 0, ret);
 
-    driver.compile("select * from " + view1 );
+    driver.compile("select * from " + view1, true);
     // view entity
     assertEquals("default@" + view1, CheckInputReadEntity.readEntities[0].getName());
 
@@ -128,7 +128,7 @@ public class TestViewEntity {
     ret = driver.run("create view " + view1 + " as select * from " + tab1).getResponseCode();
     assertEquals("Checking command success", 0, ret);
 
-    driver.compile("select * from " + view1 );
+    driver.compile("select * from " + view1, true);
     // view entity
     assertEquals("default@" + view1, CheckInputReadEntity.readEntities[0].getName());
 
@@ -204,7 +204,7 @@ public class TestViewEntity {
     assertEquals("Checking command success", 0, ret);
 
     //select from view2
-    driver.compile("select * from " + view2);
+    driver.compile("select * from " + view2, true);
 
     //verify that only view2 is direct input in above query
     ReadEntity[] readEntities = CheckInputReadEntity.readEntities;
@@ -243,7 +243,7 @@ public class TestViewEntity {
     ret = driver.run("create view " + view2 + " as select * from (select * from " + view1 + ") x").getResponseCode();
     assertEquals("Checking command success", 0, ret);
 
-    driver.compile("select * from " + view2);
+    driver.compile("select * from " + view2, true);
     // view entity
     assertEquals("default@" + view2, CheckInputReadEntity.readEntities[0].getName());
 
@@ -277,7 +277,7 @@ public class TestViewEntity {
     ret = driver.run("create view " + view2 + " as select * from (select * from " + view1 + " union all select * from " + view1 + ") x").getResponseCode();
     assertEquals("Checking command success", 0, ret);
 
-    driver.compile("select * from " + view2);
+    driver.compile("select * from " + view2, true);
     // view entity
     assertEquals("default@" + view2, CheckInputReadEntity.readEntities[0].getName());
 
