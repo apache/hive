@@ -23,9 +23,12 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -46,16 +49,16 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
   @Override
   public int execute() throws HiveException {
     // We need to fetch the table before it is dropped so that it can be passed to post-execution hook
-    Table tbl = null;
+    Table table = null;
     try {
-      tbl = context.getDb().getTable(desc.getTableName());
+      table = context.getDb().getTable(desc.getTableName());
     } catch (InvalidTableException e) {
       // drop table is idempotent
     }
 
     ReplicationSpec replicationSpec = desc.getReplicationSpec();
     if (replicationSpec.isInReplicationScope()) {
-      dropPartitionForReplication(tbl, replicationSpec);
+      dropPartitionForReplication(table, replicationSpec);
     } else {
       dropPartitions();
     }
@@ -63,7 +66,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
     return 0;
   }
 
-  private void dropPartitionForReplication(Table tbl, ReplicationSpec replicationSpec) throws HiveException {
+  private void dropPartitionForReplication(Table table, ReplicationSpec replicationSpec) throws HiveException {
     /**
      * ALTER TABLE DROP PARTITION ... FOR REPLICATION(x) behaves as a DROP PARTITION IF OLDER THAN x
      *
@@ -79,7 +82,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
     // to the  metastore to allow it to do drop a partition or not, depending on a Predicate on the
     // parameter key values.
 
-    if (tbl == null) {
+    if (table == null) {
       // If table is missing, then partitions are also would've been dropped. Just no-op.
       return;
     }
@@ -87,9 +90,9 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
     for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()) {
       List<Partition> partitions = new ArrayList<>();
       try {
-        context.getDb().getPartitionsByExpr(tbl, partSpec.getPartSpec(), context.getConf(), partitions);
+        context.getDb().getPartitionsByExpr(table, partSpec.getPartSpec(), context.getConf(), partitions);
         for (Partition p : Iterables.filter(partitions, replicationSpec.allowEventReplacementInto())) {
-          context.getDb().dropPartition(tbl.getDbName(), tbl.getTableName(), p.getValues(), true);
+          context.getDb().dropPartition(table.getDbName(), table.getTableName(), p.getValues(), true);
         }
       } catch (NoSuchObjectException e) {
         // ignore NSOE because that means there's nothing to drop.
@@ -101,9 +104,17 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
 
   private void dropPartitions() throws HiveException {
     // ifExists is currently verified in DDLSemanticAnalyzer
-    List<Partition> droppedParts = context.getDb().dropPartitions(desc.getTableName(), desc.getPartSpecs(),
+    String[] names = Utilities.getDbTableName(desc.getTableName());
+
+    List<ObjectPair<Integer, byte[]>> partitionExpressions = new ArrayList<>(desc.getPartSpecs().size());
+    for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()) {
+      partitionExpressions.add(new ObjectPair<>(partSpec.getPrefixLength(),
+          SerializationUtilities.serializeExpressionToKryo(partSpec.getPartSpec())));
+    }
+
+    List<Partition> droppedPartitions = context.getDb().dropPartitions(names[0], names[1], partitionExpressions,
         PartitionDropOptions.instance().deleteData(true).ifExists(true).purgeData(desc.getIfPurge()));
-    for (Partition partition : droppedParts) {
+    for (Partition partition : droppedPartitions) {
       context.getConsole().printInfo("Dropped the partition " + partition.getName());
       // We have already locked the table, don't lock the partitions.
       DDLUtils.addIfAbsentByName(new WriteEntity(partition, WriteEntity.WriteType.DDL_NO_LOCK), context);
