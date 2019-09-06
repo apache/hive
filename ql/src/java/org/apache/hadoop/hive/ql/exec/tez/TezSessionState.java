@@ -73,6 +73,7 @@ import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.common.TezUtils;
+import org.apache.tez.common.security.TokenCache;
 import org.apache.tez.dag.api.PreWarmVertex;
 import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
@@ -429,10 +430,18 @@ public class TezSessionState implements TezSession {
 
   protected final Credentials createLlapCredentials(boolean llapMode,
       TezConfiguration tezConfig) throws IOException {
-    if (!llapMode || !UserGroupInformation.isSecurityEnabled()
-         || !tezConfig.getBoolean(ConfVars.LLAP_KERBEROS_ENABLED.varname, true)) return null;
+    if (!UserGroupInformation.isSecurityEnabled()
+         || !tezConfig.getBoolean(ConfVars.LLAP_KERBEROS_ENABLED.varname, true)) {
+      return null;
+    }
     Credentials llapCredentials = new Credentials();
-    llapCredentials.addToken(LlapTokenIdentifier.KIND_NAME, getLlapToken(user, tezConfig));
+    if (llapMode) {
+      llapCredentials.addToken(LlapTokenIdentifier.KIND_NAME, getLlapToken(user, tezConfig));
+    }
+    String protoPath = conf.getVar(ConfVars.HIVE_PROTO_EVENTS_BASE_PATH);
+    if (protoPath != null && !protoPath.isEmpty()) {
+      TokenCache.obtainTokensForFileSystems(llapCredentials, new Path[] {new Path(protoPath)}, tezConfig);
+    }
     return llapCredentials;
   }
 
