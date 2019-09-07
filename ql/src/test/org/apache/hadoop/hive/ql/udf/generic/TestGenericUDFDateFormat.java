@@ -45,7 +45,7 @@ public class TestGenericUDFDateFormat {
     Text fmtText = new Text("EEEE");
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory
         .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtText);
-    ObjectInspector[] arguments = { valueOI0, valueOI1 };
+    ObjectInspector[] arguments = {valueOI0, valueOI1};
 
     udf.initialize(arguments);
 
@@ -155,6 +155,19 @@ public class TestGenericUDFDateFormat {
     udf.initialize(arguments);
 
     runAndVerifyStr("2015-04-05", fmtText, null, udf);
+  }
+
+
+  @Test
+  public void testJulianDates() throws HiveException {
+    GenericUDFDateFormat udf = new GenericUDFDateFormat();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    Text fmtText = new Text("dd---MM--yyyy");
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory
+            .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtText);
+    ObjectInspector[] arguments = { valueOI0, valueOI1 };
+    udf.initialize(arguments);
+    runAndVerifyStr("1001-01-05", fmtText, "05---01--1001", udf);
   }
 
   private void runAndVerifyStr(String str, Text fmtText, String expResult, GenericUDF udf)
