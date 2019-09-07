@@ -29,13 +29,13 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 
 import java.math.BigDecimal;
 import java.util.Calendar;
-import java.util.TimeZone;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -66,8 +66,8 @@ public class GenericUDFMonthsBetween extends GenericUDF {
   private transient PrimitiveCategory[] tsInputTypes = new PrimitiveCategory[2];
   private transient Converter[] dtConverters = new Converter[2];
   private transient PrimitiveCategory[] dtInputTypes = new PrimitiveCategory[2];
-  private final Calendar cal1 = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-  private final Calendar cal2 = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+  private final Calendar cal1 = DateTimeMath.getProlepticGregorianCalendarUTC();
+  private final Calendar cal2 = DateTimeMath.getProlepticGregorianCalendarUTC();
   private final DoubleWritable output = new DoubleWritable();
   private boolean isRoundOffNeeded = true;
 
