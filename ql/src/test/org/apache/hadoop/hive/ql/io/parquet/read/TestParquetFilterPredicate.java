@@ -38,14 +38,14 @@ public class TestParquetFilterPredicate {
             .isNull("a", PredicateLeaf.Type.LONG)
             .between("y", PredicateLeaf.Type.LONG, 10L, 20L) // Column will be removed from filter
             .in("z", PredicateLeaf.Type.LONG, 1L, 2L, 3L) // Column will be removed from filter
-            .nullSafeEquals("a", PredicateLeaf.Type.STRING, "stinger")
+            .nullSafeEquals("stinger", PredicateLeaf.Type.STRING, "stinger")
             .end()
             .end()
             .build();
 
     FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
 
-    String expected = "and(not(eq(a, null)), not(eq(a, Binary{\"stinger\"})))";
+    String expected = "and(not(eq(a, null)), not(eq(stinger, Binary{\"stinger\"})))";
     assertEquals(expected, p.toString());
   }
 
