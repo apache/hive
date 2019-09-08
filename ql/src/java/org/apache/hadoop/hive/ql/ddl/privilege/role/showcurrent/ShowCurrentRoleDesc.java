@@ -16,5 +16,28 @@
  * limitations under the License.
  */
 
-/** Alter Database DDL operations. */
-package org.apache.hadoop.hive.ql.ddl.database.alter;
+package org.apache.hadoop.hive.ql.ddl.privilege.role.showcurrent;
+
+import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+/**
+ * DDL task description for SHOW CURRENT ROLE commands.
+ */
+@Explain(displayName = "Show Current Role", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ShowCurrentRoleDesc implements DDLDesc, Serializable {
+  private static final long serialVersionUID = 1L;
+
+  private final String resFile;
+
+  public ShowCurrentRoleDesc(String resFile) {
+    this.resFile = resFile;
+  }
+
+  public String getResFile() {
+    return resFile;
+  }
+}

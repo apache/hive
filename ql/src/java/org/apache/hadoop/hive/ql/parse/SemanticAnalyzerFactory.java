@@ -113,7 +113,8 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_GRANT_ROLE, HiveOperation.GRANT_ROLE);
     commandType.put(HiveParser.TOK_REVOKE_ROLE, HiveOperation.REVOKE_ROLE);
     commandType.put(HiveParser.TOK_SHOW_ROLES, HiveOperation.SHOW_ROLES);
-    commandType.put(HiveParser.TOK_SHOW_SET_ROLE, HiveOperation.SHOW_ROLES);
+    commandType.put(HiveParser.TOK_SET_ROLE, HiveOperation.SHOW_ROLES);
+    commandType.put(HiveParser.TOK_SHOW_CURRENT_ROLE, HiveOperation.SHOW_ROLES);
     commandType.put(HiveParser.TOK_SHOW_ROLE_PRINCIPALS, HiveOperation.SHOW_ROLE_PRINCIPALS);
     commandType.put(HiveParser.TOK_SHOW_ROLE_GRANT, HiveOperation.SHOW_ROLE_GRANT);
     commandType.put(HiveParser.TOK_ALTERDATABASE_PROPERTIES, HiveOperation.ALTERDATABASE);
@@ -318,18 +319,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
       case HiveParser.TOK_LOCKTABLE:
       case HiveParser.TOK_UNLOCKTABLE:
-      case HiveParser.TOK_CREATEROLE:
-      case HiveParser.TOK_DROPROLE:
-      case HiveParser.TOK_GRANT:
-      case HiveParser.TOK_REVOKE:
-      case HiveParser.TOK_SHOW_GRANT:
-      case HiveParser.TOK_GRANT_ROLE:
-      case HiveParser.TOK_REVOKE_ROLE:
-      case HiveParser.TOK_SHOW_ROLE_GRANT:
-      case HiveParser.TOK_SHOW_ROLE_PRINCIPALS:
-      case HiveParser.TOK_SHOW_ROLES:
       case HiveParser.TOK_TRUNCATETABLE:
-      case HiveParser.TOK_SHOW_SET_ROLE:
       case HiveParser.TOK_CACHE_METADATA:
       case HiveParser.TOK_KILL_QUERY:
       case HiveParser.TOK_CREATE_RP:

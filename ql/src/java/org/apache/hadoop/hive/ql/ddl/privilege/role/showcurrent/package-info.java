@@ -16,5 +16,6 @@
  * limitations under the License.
  */
 
-/** Alter Database DDL operations. */
-package org.apache.hadoop.hive.ql.ddl.database.alter;
+/** Show current role DDL operation.
+ */
+package org.apache.hadoop.hive.ql.ddl.privilege.role.showcurrent;

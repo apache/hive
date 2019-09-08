@@ -16,5 +16,29 @@
  * limitations under the License.
  */
 
-/** Alter Database DDL operations. */
-package org.apache.hadoop.hive.ql.ddl.database.alter;
+package org.apache.hadoop.hive.ql.ddl.privilege.role.drop;
+
+import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+/**
+ * DDL task description for DROP ROLE commands.
+ */
+@Explain(displayName = "Drop Role", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class DropRoleDesc implements DDLDesc, Serializable {
+  private static final long serialVersionUID = 1L;
+
+  private final String name;
+
+  public DropRoleDesc(String name) {
+    this.name = name;
+  }
+
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getName() {
+    return name;
+  }
+}
