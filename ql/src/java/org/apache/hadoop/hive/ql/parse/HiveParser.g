@@ -329,9 +329,10 @@ TOK_PRIV_OBJECT;
 TOK_PRIV_OBJECT_COL;
 TOK_GRANT_ROLE;
 TOK_REVOKE_ROLE;
+TOK_SET_ROLE;
 TOK_SHOW_ROLE_GRANT;
 TOK_SHOW_ROLES;
-TOK_SHOW_SET_ROLE;
+TOK_SHOW_CURRENT_ROLE;
 TOK_SHOW_ROLE_PRINCIPALS;
 TOK_SHOWDBLOCKS;
 TOK_DESCDATABASE;
@@ -1767,7 +1768,7 @@ showCurrentRole
 @init {pushMsg("show current role", state);}
 @after {popMsg(state);}
     : KW_SHOW KW_CURRENT KW_ROLES
-    -> ^(TOK_SHOW_SET_ROLE)
+    -> ^(TOK_SHOW_CURRENT_ROLE)
     ;
 
 setRole
@@ -1775,11 +1776,11 @@ setRole
 @after {popMsg(state);}
     : KW_SET KW_ROLE 
     (
-    (KW_ALL) => (all=KW_ALL) -> ^(TOK_SHOW_SET_ROLE Identifier[$all.text])
+    (KW_ALL) => (all=KW_ALL) -> ^(TOK_SET_ROLE Identifier[$all.text])
     |
-    (KW_NONE) => (none=KW_NONE) -> ^(TOK_SHOW_SET_ROLE Identifier[$none.text])
+    (KW_NONE) => (none=KW_NONE) -> ^(TOK_SET_ROLE Identifier[$none.text])
     |
-    identifier -> ^(TOK_SHOW_SET_ROLE identifier)
+    identifier -> ^(TOK_SET_ROLE identifier)
     )
     ;
 
