@@ -16,5 +16,26 @@
  * limitations under the License.
  */
 
-/** Alter Database DDL operations. */
-package org.apache.hadoop.hive.ql.ddl.database.alter;
+package org.apache.hadoop.hive.ql.ddl.privilege.role.drop;
+
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeUtils;
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+
+/**
+ * Operation process of dropping a role.
+ */
+public class DropRoleOperation extends DDLOperation<DropRoleDesc> {
+  public DropRoleOperation(DDLOperationContext context, DropRoleDesc desc) {
+    super(context, desc);
+  }
+
+  @Override
+  public int execute() throws HiveException {
+    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
+    authorizer.dropRole(desc.getName());
+    return 0;
+  }
+}

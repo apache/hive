@@ -142,18 +142,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOWMATERIALIZEDVIEWS:
       case HiveParser.TOK_LOCKTABLE:
       case HiveParser.TOK_UNLOCKTABLE:
-      case HiveParser.TOK_CREATEROLE:
-      case HiveParser.TOK_DROPROLE:
-      case HiveParser.TOK_GRANT:
-      case HiveParser.TOK_REVOKE:
-      case HiveParser.TOK_SHOW_GRANT:
-      case HiveParser.TOK_GRANT_ROLE:
-      case HiveParser.TOK_REVOKE_ROLE:
-      case HiveParser.TOK_SHOW_ROLE_GRANT:
-      case HiveParser.TOK_SHOW_ROLE_PRINCIPALS:
-      case HiveParser.TOK_SHOW_ROLES:
       case HiveParser.TOK_TRUNCATETABLE:
-      case HiveParser.TOK_SHOW_SET_ROLE:
       case HiveParser.TOK_CACHE_METADATA:
       case HiveParser.TOK_KILL_QUERY:
       case HiveParser.TOK_CREATE_RP:

@@ -16,5 +16,29 @@
  * limitations under the License.
  */
 
-/** Alter Database DDL operations. */
-package org.apache.hadoop.hive.ql.ddl.database.alter;
+package org.apache.hadoop.hive.ql.ddl.privilege.role.create;
+
+import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+/**
+ * DDL task description for CREATE ROLE commands.
+ */
+@Explain(displayName = "Create Role", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class CreateRoleDesc implements DDLDesc, Serializable {
+  private static final long serialVersionUID = 1L;
+
+  private final String name;
+
+  public CreateRoleDesc(String name) {
+    this.name = name;
+  }
+
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getName() {
+    return name;
+  }
+}
