@@ -16,5 +16,30 @@
  * limitations under the License.
  */
 
-/** Alter Database DDL operations. */
-package org.apache.hadoop.hive.ql.ddl.database.alter;
+package org.apache.hadoop.hive.ql.ddl.privilege.role.show;
+
+import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+/**
+ * DDL task description for SHOW ROLES commands.
+ */
+@Explain(displayName = "Show Roles", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ShowRolesDesc implements DDLDesc, Serializable {
+  private static final long serialVersionUID = 1L;
+
+  public static final String SCHEMA = "role#string";
+
+  private final String resFile;
+
+  public ShowRolesDesc(String resFile) {
+    this.resFile = resFile;
+  }
+
+  public String getResFile() {
+    return resFile;
+  }
+}

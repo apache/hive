@@ -26,9 +26,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.reflections.Reflections;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Manages the DDL command analyzers.
@@ -69,6 +72,19 @@ public final class DDLSemanticAnalyzerFactory {
     Class<? extends BaseSemanticAnalyzer> analyzerClass = TYPE_TO_ANALYZER.get(root.getType());
     try {
       BaseSemanticAnalyzer analyzer = analyzerClass.getConstructor(QueryState.class).newInstance(queryState);
+      return analyzer;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException(e);
+    }
+  }
+
+  @VisibleForTesting
+  public static BaseSemanticAnalyzer getAnalyzer(ASTNode root, QueryState queryState, Hive db) {
+    Class<? extends BaseSemanticAnalyzer> analyzerClass = TYPE_TO_ANALYZER.get(root.getType());
+    try {
+      BaseSemanticAnalyzer analyzer =
+          analyzerClass.getConstructor(QueryState.class, Hive.class).newInstance(queryState, db);
       return analyzer;
     } catch (Exception e) {
       e.printStackTrace();

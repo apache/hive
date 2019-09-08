@@ -16,5 +16,5 @@
  * limitations under the License.
  */
 
-/** Alter Database DDL operations. */
-package org.apache.hadoop.hive.ql.ddl.database.alter;
+/** Granting DDL operation. */
+package org.apache.hadoop.hive.ql.ddl.privilege.grant;
