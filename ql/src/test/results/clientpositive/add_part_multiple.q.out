@@ -30,8 +30,22 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Add Partition
-#### A masked pattern was here ####
-      Spec: {ds=2010-01-01}, {ds=2010-02-01}, {ds=2010-03-01}, {ds=2010-04-01}
+      db name: default
+      partitions:
+          Partition
+            location: A
+            partition spec: {ds=2010-01-01}
+          Partition
+            location: B
+            partition spec: {ds=2010-02-01}
+          Partition
+            params: {totalSize=0, numRows=0, rawDataSize=0, COLUMN_STATS_ACCURATE={"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}, numFiles=0, numFilesErasureCoded=0}
+            partition spec: {ds=2010-03-01}
+          Partition
+            location: C
+            partition spec: {ds=2010-04-01}
+      table name: add_part_test_n1
+      if not exists: true
 
 PREHOOK: query: ALTER TABLE add_part_test_n1 ADD IF NOT EXISTS
 PARTITION (ds='2010-01-01') location 'A'

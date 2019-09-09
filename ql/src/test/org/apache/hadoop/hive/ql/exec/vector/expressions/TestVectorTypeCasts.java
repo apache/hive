@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +34,7 @@ import org.junit.Assert;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -74,9 +76,6 @@ public class TestVectorTypeCasts {
     Assert.assertEquals(1, resultV.vector[6]);
   }
 
-  // +8 hours from PST to GMT, needed because java.sql.Date will subtract 8 hours from final
-  // value because VM in test time zone is PST.
-  private static final long TIME_DIFFERENCE = 28800000L;
   @Test
   public void testCastDateToString() throws HiveException {
     int[] intValues = new int[100];
@@ -86,10 +85,12 @@ public class TestVectorTypeCasts {
     VectorExpression expr = new CastDateToString(0, 1);
     expr.evaluate(b);
 
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    formatter.setCalendar(DateTimeMath.getProlepticGregorianCalendarUTC());
+
     String expected, result;
     for (int i = 0; i < intValues.length; i++) {
-      expected =
-          new java.sql.Date(DateWritableV2.daysToMillis(intValues[i]) + TIME_DIFFERENCE).toString();
+      expected = formatter.format(new java.sql.Date(DateWritableV2.daysToMillis(intValues[i])));
       byte[] subbyte = Arrays.copyOfRange(resultV.vector[i], resultV.start[i],
           resultV.start[i] + resultV.length[i]);
       result = new String(subbyte, StandardCharsets.UTF_8);

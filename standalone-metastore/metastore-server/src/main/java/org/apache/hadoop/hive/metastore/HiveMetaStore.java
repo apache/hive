@@ -9946,8 +9946,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  private static AtomicInteger openConnections;
-
   /**
    * Start Metastore based on a passed {@link HadoopThriftAuthBridge}
    *
@@ -10089,10 +10087,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       serverSocket = new TServerSocketKeepAlive(serverSocket);
     }
 
-    // Metrics will have already been initialized if we're using them since HMSHandler
-    // initializes them.
-    openConnections = Metrics.getOrCreateGauge(MetricsConstants.OPEN_CONNECTIONS);
-
     TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverSocket)
         .processor(processor)
         .transportFactory(transFactory)
@@ -10109,13 +10103,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       @Override
       public ServerContext createContext(TProtocol tProtocol, TProtocol tProtocol1) {
-        openConnections.incrementAndGet();
+        Metrics.getOpenConnectionsCounter().inc();
         return null;
       }
 
       @Override
       public void deleteContext(ServerContext serverContext, TProtocol tProtocol, TProtocol tProtocol1) {
-        openConnections.decrementAndGet();
+        Metrics.getOpenConnectionsCounter().dec();
         // If the IMetaStoreClient#close was called, HMSHandler#shutdown would have already
         // cleaned up thread local RawStore. Otherwise, do it now.
         cleanupRawStore();

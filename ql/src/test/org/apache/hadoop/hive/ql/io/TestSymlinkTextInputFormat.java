@@ -59,7 +59,6 @@ import org.junit.Test;
 /**
  * Unittest for SymlinkTextInputFormat.
  */
-@SuppressWarnings("deprecation")
 public class TestSymlinkTextInputFormat {
   private static final Logger log =
       LoggerFactory.getLogger(TestSymlinkTextInputFormat.class);
@@ -113,21 +112,16 @@ public class TestSymlinkTextInputFormat {
   public void testCombine() throws Exception {
     JobConf newJob = new JobConf(job);
     FileSystem fs = dataDir1.getFileSystem(newJob);
-    int symbolLinkedFileSize = 0;
 
     Path dir1_file1 = new Path(dataDir1, "combinefile1_1");
     writeTextFile(dir1_file1,
                   "dir1_file1_line1\n" +
                   "dir1_file1_line2\n");
 
-    symbolLinkedFileSize += fs.getFileStatus(dir1_file1).getLen();
-
     Path dir2_file1 = new Path(dataDir2, "combinefile2_1");
     writeTextFile(dir2_file1,
                   "dir2_file1_line1\n" +
                   "dir2_file1_line2\n");
-
-    symbolLinkedFileSize += fs.getFileStatus(dir2_file1).getLen();
 
     // A symlink file, contains first file from first dir and second file from
     // second dir.
@@ -172,7 +166,7 @@ public class TestSymlinkTextInputFormat {
       }
 
       String cmd = "select key*1 from " + tblName;
-      ecode = drv.compile(cmd);
+      ecode = drv.compile(cmd, true);
       if (ecode != 0) {
         throw new Exception("Select compile: " + cmd
             + " failed with exit code= " + ecode);

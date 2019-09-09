@@ -1046,7 +1046,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (propsIndex >= 0) {
       Tree propsAST = tabref.getChild(propsIndex);
-      Map<String, String> props = DDLSemanticAnalyzer.getProps((ASTNode) propsAST.getChild(0));
+      Map<String, String> props = getProps((ASTNode) propsAST.getChild(0));
       // We get the information from Calcite.
       if ("TRUE".equals(props.get("insideView"))) {
         qb.getAliasInsideView().add(alias.toLowerCase());
@@ -13417,10 +13417,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     boolean makeInsertOnly = !isTemporaryTable && HiveConf.getBoolVar(
         conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
-    boolean makeAcid = !isTemporaryTable &&
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
-        HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
-        DbTxnManager.class.getCanonicalName().equals(HiveConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER));
+    boolean makeAcid = !isTemporaryTable && makeAcid();
     if ((makeInsertOnly || makeAcid || isTransactional)
         && !isExt  && !isMaterialization && StringUtils.isBlank(storageFormat.getStorageHandler())
         //don't overwrite user choice if transactional attribute is explicitly set
@@ -13657,7 +13654,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         inputs.add(toReadEntity(location));
         break;
       case HiveParser.TOK_TABLEPROPERTIES:
-        tblProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
+        tblProps = getProps((ASTNode) child.getChild(0));
         addPropertyReadEntry(tblProps, inputs);
         break;
       case HiveParser.TOK_TABLESERIALIZER:
@@ -13976,7 +13973,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         comment = unescapeSQLString(child.getChild(0).getText());
         break;
       case HiveParser.TOK_TABLEPROPERTIES:
-        tblProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
+        tblProps = getProps((ASTNode) child.getChild(0));
         break;
       case HiveParser.TOK_VIEWPARTCOLS:
         partColNames = getColumnNames((ASTNode) child.getChild(0));
@@ -14065,6 +14062,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     unparseTranslator.enable();
 
     if (isMaterialized) {
+      if (makeAcid()) {
+        if (tblProps == null) {
+          tblProps = new HashMap<>();
+        }
+        tblProps = convertToAcidByDefault(storageFormat, dbDotTable, null, tblProps);
+      }
+
       createVwDesc = new CreateViewDesc(
           dbDotTable, cols, comment, tblProps, partColNames, sortColNames, distributeColNames,
           ifNotExists, isRebuild, rewriteEnabled, isAlterViewAs,
@@ -14085,6 +14089,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.setViewDesc(createVwDesc);
 
     return selectStmt;
+  }
+
+  private boolean makeAcid() {
+    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
+            HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
+            DbTxnManager.class.getCanonicalName().equals(HiveConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER));
   }
 
   // validate the (materialized) view statement

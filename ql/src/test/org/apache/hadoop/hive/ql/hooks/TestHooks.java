@@ -77,7 +77,7 @@ public class TestHooks {
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     Driver driver = createDriver(conf);
-    int ret = driver.compile("select 'XXX' from t1");
+    int ret = driver.compile("select 'XXX' from t1", true);
     assertEquals("Checking command success", 0, ret);
     assertEquals("select 'AAA' from t1", conf.getQueryString());
   }
