@@ -1,8 +1,1 @@
-* periodic removal of old executions
-* check on:
-  * psql
-  * ora
-  * mysql
-  * derby
 * impersonation?
-* FIXMEs
