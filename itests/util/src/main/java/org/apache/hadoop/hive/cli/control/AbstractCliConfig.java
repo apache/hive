@@ -47,11 +47,6 @@ public abstract class AbstractCliConfig {
   public static final String HIVE_ROOT = HiveTestEnvSetup.HIVE_ROOT;
   private static final Logger LOG = LoggerFactory.getLogger(AbstractCliConfig.class);
 
-  enum MetastoreType {
-    sql
-  }
-
-  private MetastoreType metastoreType = MetastoreType.sql;
   private String queryFile;
   private String queryFileRegex;
   private String queryDirectory;
@@ -399,23 +394,6 @@ public abstract class AbstractCliConfig {
     } catch (Exception e) {
       throw new RuntimeException("unable to build adapter", e);
     }
-  }
-
-  protected void setMetastoreType(MetastoreType mt) {
-    String metaStoreTypeProperty = getSysPropValue("metaStoreType");
-    if (metaStoreTypeProperty != null) {
-      if (metaStoreTypeProperty.equalsIgnoreCase("sql")) {
-        metastoreType = MetastoreType.sql;
-      } else {
-        throw new IllegalArgumentException("Unknown metastore type: " + metaStoreTypeProperty);
-      }
-    } else {
-      metastoreType = mt;
-    }
-  }
-
-  public MetastoreType getMetastoreType() {
-    return metastoreType;
   }
 
   public String getQueryDirectory() {
