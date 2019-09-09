@@ -1322,4 +1322,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public int deleteScheduledExecutions(int maxRetainSecs) {
     return objectStore.deleteScheduledExecutions(maxRetainSecs);
   }
+
+  @Override
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+    return objectStore.markScheduledExecutionsTimedOut(timeoutSecs);
+  }
 }

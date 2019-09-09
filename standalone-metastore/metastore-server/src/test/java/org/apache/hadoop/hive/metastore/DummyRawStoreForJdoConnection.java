@@ -1306,4 +1306,9 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public int deleteScheduledExecutions(int maxRetainSecs) {
     throw new RuntimeException("unimplemented");
   }
+
+  @Override
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+    throw new RuntimeException("unimplemented");
+  }
 }

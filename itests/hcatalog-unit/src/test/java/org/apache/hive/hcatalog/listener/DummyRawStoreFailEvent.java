@@ -1373,4 +1373,9 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
     return objectStore.deleteScheduledExecutions(maxRetainSecs);
   }
 
+
+  @Override
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+    return objectStore.markScheduledExecutionsTimedOut(timeoutSecs);
+  }
 }

@@ -2888,4 +2888,9 @@ public class CachedStore implements RawStore, Configurable {
   public int deleteScheduledExecutions(int maxRetainSecs) {
     return rawStore.deleteScheduledExecutions(maxRetainSecs);
   }
+
+  @Override
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+    return rawStore.markScheduledExecutionsTimedOut(timeoutSecs);
+  }
 }
