@@ -134,26 +134,26 @@ public class TestMetaStoreMetrics {
 
     Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     //initial state is one connection
-    int initialCount =
-        (Integer)Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue();
+    long initialCount =
+        Metrics.getRegistry().getCounters().get(MetricsConstants.OPEN_CONNECTIONS).getCount();
 
     //create two connections
     HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf);
     HiveMetaStoreClient msc2 = new HiveMetaStoreClient(hiveConf);
 
     Assert.assertEquals(initialCount + 2,
-        Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
+        Metrics.getRegistry().getCounters().get(MetricsConstants.OPEN_CONNECTIONS).getCount());
 
     //close one connection, verify still two left
     msc.close();
     Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     Assert.assertEquals(initialCount + 1,
-        Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
+        Metrics.getRegistry().getCounters().get(MetricsConstants.OPEN_CONNECTIONS).getCount());
 
     //close one connection, verify still one left
     msc2.close();
     Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     Assert.assertEquals(initialCount,
-        Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
+        Metrics.getRegistry().getCounters().get(MetricsConstants.OPEN_CONNECTIONS).getCount());
   }
 }
