@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -183,5 +184,17 @@ public interface HiveStorageHandler extends Configurable {
 
   default boolean addDynamicSplitPruningEdge(ExprNodeDesc syntheticFilterPredicate) {
     return false;
+  }
+
+  /**
+   * Used to add additional operator specific information from storage handler during DESCRIBE EXTENDED statement.
+   *
+   * @param operatorDesc operatorDesc
+   * @param initialProps Map containing initial operator properties
+   * @return Map<String, String> containing additional operator specific information from storage handler
+   * OR `initialProps` if the storage handler choose to not provide any such information.
+   */
+  default Map<String, String> getOperatorDescProperties(OperatorDesc operatorDesc, Map<String, String> initialProps) {
+    return initialProps;
   }
 }

@@ -10,7 +10,7 @@ SELECT count(*) FROM druid_table_alltypesorc WHERE character_length(CAST(ctinyin
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-837
+2081
 PREHOOK: query: SELECT count(*) FROM druid_table_alltypesorc WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -19,7 +19,7 @@ POSTHOOK: query: SELECT count(*) FROM druid_table_alltypesorc WHERE character_le
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-4838
+7602
 PREHOOK: query: SELECT count(*) FROM druid_table_alltypesorc WHERE power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -28,7 +28,7 @@ POSTHOOK: query: SELECT count(*) FROM druid_table_alltypesorc WHERE power(cfloat
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-837
+2081
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
 FROM druid_table_alltypesorc WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 PREHOOK: type: QUERY
@@ -39,7 +39,7 @@ FROM druid_table_alltypesorc WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-19884.646918177605	27373419	14472	8.51628242804E11	851620413654	68151649880
+35881.09400522709	23378637	28946	7.57221208318E11	757217375155	68151649880
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
 FROM druid_table_alltypesorc WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000
 PREHOOK: type: QUERY
@@ -50,7 +50,7 @@ FROM druid_table_alltypesorc WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-54430.269943237305	-3740445	51268	1.31919188502E11	131922984948	92160895030
+78620.21200561523	-9973483	74628	3.54463845353E11	354473882701	92859255924
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
 FROM druid_table_alltypesorc WHERE  ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 PREHOOK: type: QUERY
@@ -61,7 +61,7 @@ FROM druid_table_alltypesorc WHERE  ln(cdouble) / log10(10) > 0 AND COS(cint) > 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
--2389.517022252083	27640645	-5707	7.19705549994E11	719697428706	13774723379
+-2195.4589961767197	27912403	-6517	5.33299976914E11	533291579903	13774723379
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
 FROM druid_table_alltypesorc WHERE  SIN(cdouble) > 1
 PREHOOK: type: QUERY
@@ -243,9 +243,9 @@ STAGE PLANS:
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
-                    columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2
+                    columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2,cintstring,cfloatstring,cdoublestring
                     columns.comments 
-                    columns.types timestamp with local time zone:string:string:double:float:tinyint:smallint:int:bigint:boolean:boolean
+                    columns.types timestamp with local time zone:string:string:double:float:tinyint:smallint:int:bigint:boolean:boolean:string:string:string
                     druid.datasource default.druid_table_alltypesorc
                     druid.fieldNames vc
                     druid.fieldTypes int
@@ -259,7 +259,7 @@ STAGE PLANS:
                     numFiles 0
                     numRows 9173
                     rawDataSize 0
-                    serialization.ddl struct druid_table_alltypesorc { timestamp with local time zone __time, string cstring1, string cstring2, double cdouble, float cfloat, byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, bool cboolean1, bool cboolean2}
+                    serialization.ddl struct druid_table_alltypesorc { timestamp with local time zone __time, string cstring1, string cstring2, double cdouble, float cfloat, byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, bool cboolean1, bool cboolean2, string cintstring, string cfloatstring, string cdoublestring}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.druid.serde.DruidSerDe
                     storage_handler org.apache.hadoop.hive.druid.DruidStorageHandler
@@ -275,9 +275,9 @@ STAGE PLANS:
                       bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,
-                      columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2
+                      columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2,cintstring,cfloatstring,cdoublestring
                       columns.comments 
-                      columns.types timestamp with local time zone:string:string:double:float:tinyint:smallint:int:bigint:boolean:boolean
+                      columns.types timestamp with local time zone:string:string:double:float:tinyint:smallint:int:bigint:boolean:boolean:string:string:string
                       druid.datasource default.druid_table_alltypesorc
                       druid.fieldNames vc
                       druid.fieldTypes int
@@ -291,7 +291,7 @@ STAGE PLANS:
                       numFiles 0
                       numRows 9173
                       rawDataSize 0
-                      serialization.ddl struct druid_table_alltypesorc { timestamp with local time zone __time, string cstring1, string cstring2, double cdouble, float cfloat, byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, bool cboolean1, bool cboolean2}
+                      serialization.ddl struct druid_table_alltypesorc { timestamp with local time zone __time, string cstring1, string cstring2, double cdouble, float cfloat, byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, bool cboolean1, bool cboolean2, string cintstring, string cfloatstring, string cdoublestring}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.druid.serde.DruidSerDe
                       storage_handler org.apache.hadoop.hive.druid.DruidStorageHandler
@@ -1088,7 +1088,7 @@ POSTHOOK: query: select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6078	2.7308662793799996E7
+6078	2.73086627938E7
 PREHOOK: query: select count(distinct cstring2), sum(2 * cdouble) FROM druid_table_alltypesorc GROUP  BY floor_year(`__time`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -1097,7 +1097,7 @@ POSTHOOK: query: select count(distinct cstring2), sum(2 * cdouble) FROM druid_ta
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6078	5.461732558759999E7
+6078	5.46173255876E7
 PREHOOK: query: select count(DISTINCT cstring2) FROM druid_table_alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -1188,7 +1188,7 @@ POSTHOOK: query: select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6078	2.7308662793799996E7
+6078	2.73086627938E7
 PREHOOK: query: select count(distinct cstring2 || '_'|| cstring1), sum(cdouble), min(cint) FROM druid_table_alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -1215,7 +1215,7 @@ POSTHOOK: query: select count(*) from (select `__time` from druid_table_alltypes
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6105
+9173
 PREHOOK: query: select count(`__time`) from (select `__time` from druid_table_alltypesorc limit 200) as src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -1794,12 +1794,12 @@ GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DAT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-3.83294831503382E14	1969-12-01
-PREHOOK: query: explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_alltypesorc  order by date_1, date_2 limit 3
+1.91216621994122E14	1969-12-01
+PREHOOK: query: explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2, cast(`__time` as date) as orig_date, CAST((cdouble / 1000) AS INT) as offset from druid_table_alltypesorc  order by date_1, date_2 limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_alltypesorc  order by date_1, date_2 limit 3
+POSTHOOK: query: explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2, cast(`__time` as date) as orig_date, CAST((cdouble / 1000) AS INT) as offset from druid_table_alltypesorc  order by date_1, date_2 limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1820,35 +1820,36 @@ STAGE PLANS:
                 TableScan
                   alias: druid_table_alltypesorc
                   properties:
-                    druid.fieldNames vc,vc0
-                    druid.fieldTypes date,date
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'P1D',CAST((\"cdouble\" / 1000), 'LONG'),'UTC')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'P1D',-( CAST((\"cdouble\" / 1000), 'LONG') ),'UTC')","outputType":"LONG"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
+                    druid.fieldNames vc,vc0,vc1,vc2
+                    druid.fieldTypes date,date,date,int
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'P1D',CAST((\"cdouble\" / 1000), 'LONG'),'UTC')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'P1D',-( CAST((\"cdouble\" / 1000), 'LONG') ),'UTC')","outputType":"LONG"},{"type":"expression","name":"vc1","expression":"timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC')","outputType":"LONG"},{"type":"expression","name":"vc2","expression":"CAST((\"cdouble\" / 1000), 'LONG')","outputType":"LONG"}],"columns":["vc","vc0","vc1","vc2"],"resultFormat":"compactedList"}
                     druid.query.type scan
-                  Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 9173 Data size: 1499152 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: vc (type: date), vc0 (type: date)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
+                    expressions: vc (type: date), vc0 (type: date), vc1 (type: date), vc2 (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 9173 Data size: 1499152 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: date), _col1 (type: date)
                       sort order: ++
-                      Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 9173 Data size: 1499152 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
+                      value expressions: _col2 (type: date), _col3 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: date), KEY.reducesinkkey1 (type: date)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
+                expressions: KEY.reducesinkkey0 (type: date), KEY.reducesinkkey1 (type: date), VALUE._col0 (type: date), VALUE._col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 9173 Data size: 1499152 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
-                  Statistics: Num rows: 3 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 489 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 3 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 489 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1860,17 +1861,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_alltypesorc  order by date_1, date_2 limit 3
+PREHOOK: query: SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2, cast(`__time` as date) as orig_date, CAST((cdouble / 1000) AS INT) as offset from druid_table_alltypesorc  order by date_1, date_2 limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_alltypesorc  order by date_1, date_2 limit 3
+POSTHOOK: query: SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2, cast(`__time` as date) as orig_date, CAST((cdouble / 1000) AS INT) as offset from druid_table_alltypesorc  order by date_1, date_2 limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-02-26	1970-11-04
-1969-03-19	1970-10-14
-1969-11-13	1970-02-17
+1969-12-15	1970-01-16	1969-12-31	-16
+1969-12-15	1970-01-16	1969-12-31	-16
+1969-12-15	1970-01-16	1969-12-31	-16
 PREHOOK: query: -- Boolean Values
 
 
@@ -1913,8 +1914,8 @@ POSTHOOK: query: SELECT cboolean2, count(*) from druid_table_alltypesorc GROUP B
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-false	3148
-true	2957
+false	6214
+true	2959
 PREHOOK: query: -- Expected results of this query are wrong due to https://issues.apache.org/jira/browse/CALCITE-2319
   -- It should get fixed once we upgrade calcite
  SELECT ctinyint > 2, count(*) from druid_table_alltypesorc GROUP BY ctinyint > 2
@@ -1927,8 +1928,8 @@ POSTHOOK: query: -- Expected results of this query are wrong due to https://issu
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-false	2653
-true	3452
+false	4280
+true	4893
 PREHOOK: query: EXPLAIN SELECT ctinyint > 2, count(*) from druid_table_alltypesorc GROUP BY ctinyint > 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -1993,7 +1994,7 @@ POSTHOOK: query: SELECT sum(cfloat) FROM druid_table_alltypesorc WHERE cstring1 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
--39590.24724686146
+-39590.24699282646
 PREHOOK: query: EXPLAIN SELECT sum(cfloat) FROM druid_table_alltypesorc WHERE cstring1 != 'en' group by 1.011, 3.40
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -2030,7 +2031,7 @@ POSTHOOK: query: SELECT sum(cfloat) FROM druid_table_alltypesorc WHERE cstring1 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
--39590.24724686146
+-39590.24699282646
 PREHOOK: query: EXPLAIN SELECT sum(cint) FROM druid_table_alltypesorc WHERE cfloat= 0.011 group by cfloat
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -2468,7 +2469,7 @@ POSTHOOK: query: select count(cstring1) from (select `cfloat`, `cstring1` from d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-3036
+6059
 PREHOOK: query: explain select count(cstring1) from (select `cfloat`, `cstring1`, `cint` from druid_table_alltypesorc limit 90000) as src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -2541,7 +2542,7 @@ POSTHOOK: query: select max(cint * cdouble) from (select `cfloat`, `cstring1`, `
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-8.256991041892764E15
+5.16019886323666E15
 PREHOOK: query: explain select max(cint * cfloat) from (select `cfloat`, `cstring1`, `cint`, `cdouble` from druid_table_alltypesorc limit 90000) as src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
