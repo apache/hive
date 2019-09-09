@@ -142,7 +142,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/tez");
         setClusterType(MiniClusterType.TEZ);
-        setMetastoreType(MetastoreType.sql);
         setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -167,7 +166,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.LLAP);
-        setMetastoreType(MetastoreType.sql);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -193,7 +191,6 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_druid.sql");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.DRUID);
-        setMetastoreType(MetastoreType.sql);
         setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -214,7 +211,6 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_druid.sql");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.DRUID_KAFKA);
-        setMetastoreType(MetastoreType.sql);
         setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -232,7 +228,6 @@ public class CliConfigs {
         setLogDir("itests/qtest/target/tmp/log");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.KAFKA);
-        setMetastoreType(MetastoreType.sql);
         setFsType(QTestMiniClusters.FsType.HDFS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -268,7 +263,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.LLAP_LOCAL);
-        setMetastoreType(MetastoreType.sql);
         setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -770,7 +764,6 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_druid.sql");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.DRUID_LOCAL);
-        setMetastoreType(MetastoreType.sql);
         setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -795,7 +788,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.TEZ_LOCAL);
-        setMetastoreType(MetastoreType.sql);
         setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -817,7 +809,6 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.TEZ_LOCAL);
-        setMetastoreType(MetastoreType.sql);
         setFsType(QTestMiniClusters.FsType.LOCAL);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
