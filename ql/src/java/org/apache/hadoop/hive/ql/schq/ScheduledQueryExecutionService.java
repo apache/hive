@@ -77,8 +77,8 @@ public class ScheduledQueryExecutionService implements Closeable {
         info = new ScheduledQueryProgressInfo();
         info.setScheduledExecutionId(q.getExecutionId());
         info.setState(QueryState.EXECUTING);
-        // FIXME: missing impersonation?
-        try (IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(context.conf), "user1", null)) {
+        try (
+          IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(context.conf), q.getUser(), null)) {
           info.setExecutorQueryId(driver.getQueryState().getQueryId());
           reportQueryProgress();
           CommandProcessorResponse resp;
