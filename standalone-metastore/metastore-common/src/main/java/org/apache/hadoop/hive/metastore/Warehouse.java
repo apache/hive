@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -373,10 +372,15 @@ public class Warehouse {
     }
   }
 
-  public boolean isEmpty(Path path) throws IOException, MetaException {
-    ContentSummary contents = getFs(path).getContentSummary(path);
-    if (contents != null && contents.getFileCount() == 0 && contents.getDirectoryCount() == 1) {
-      return true;
+  public boolean isEmptyDir(Path path) throws IOException, MetaException {
+    try {
+      int listCount = getFs(path).listStatus(path).length;
+      if (listCount == 0) {
+        return true;
+      }
+    } catch (FileNotFoundException fnfe) {
+      // File named by path doesn't exist; nothing to validate.
+      return false;
     }
     return false;
   }

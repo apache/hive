@@ -36,6 +36,7 @@ import java.util.concurrent.Future;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.thrift.TException;
@@ -68,7 +70,8 @@ public class TestPartitionManagement {
     conf.setClass(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
       MsckPartitionExpressionProxy.class, PartitionExpressionProxy.class);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    conf.setBoolean(MetastoreConf.ConfVars.MULTITHREADED.getVarname(), false);
+    conf.setBoolean(ConfVars.MULTITHREADED.getVarname(), false);
+    conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
     MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
     TxnDbUtil.setConfValues(conf);
     TxnDbUtil.prepDb(conf);
@@ -561,6 +564,94 @@ public class TestPartitionManagement {
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(4, partitions.size());
+  }
+
+  @Test
+  public void testNoPartitionDiscoveryForReplTable() throws Exception {
+    String dbName = "db_repl1";
+    String tableName = "tbl_repl1";
+    Map<String, Column> colMap = buildAllColumns();
+    List<String> partKeys = Lists.newArrayList("state", "dt");
+    List<String> partKeyTypes = Lists.newArrayList("string", "date");
+    List<List<String>> partVals = Lists.newArrayList(
+            Lists.newArrayList("__HIVE_DEFAULT_PARTITION__", "1990-01-01"),
+            Lists.newArrayList("CA", "1986-04-28"),
+            Lists.newArrayList("MN", "2018-11-31"));
+    createMetadata(DEFAULT_CATALOG_NAME, dbName, tableName, partKeys, partKeyTypes, partVals, colMap, false);
+    Table table = client.getTable(dbName, tableName);
+    List<Partition> partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(3, partitions.size());
+    String tableLocation = table.getSd().getLocation();
+    URI location = URI.create(tableLocation);
+    Path tablePath = new Path(location);
+    FileSystem fs = FileSystem.get(location, conf);
+    Path newPart1 = new Path(tablePath, "state=WA/dt=2018-12-01");
+    Path newPart2 = new Path(tablePath, "state=UT/dt=2018-12-02");
+    fs.mkdirs(newPart1);
+    fs.mkdirs(newPart2);
+    assertEquals(5, fs.listStatus(tablePath).length);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(3, partitions.size());
+
+    // table property is set to true, but the table is marked as replication target. The new
+    // partitions should not be created
+    table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
+    table.getParameters().put(ReplConst.REPL_TARGET_TABLE_PROPERTY, "1");
+    client.alter_table(dbName, tableName, table);
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(3, partitions.size());
+
+    // change table type to external, delete a partition directory and make sure partition discovery works
+    table.getParameters().put("EXTERNAL", "true");
+    table.setTableType(TableType.EXTERNAL_TABLE.name());
+    client.alter_table(dbName, tableName, table);
+    // Delete location of one of the partitions. The partition discovery task should not drop
+    // that partition.
+    boolean deleted = fs.delete((new Path(URI.create(partitions.get(0).getSd().getLocation()))).getParent(),
+                    true);
+    assertTrue(deleted);
+    assertEquals(4, fs.listStatus(tablePath).length);
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(3, partitions.size());
+  }
+
+  @Test
+  public void testNoPartitionRetentionForReplTarget() throws TException, InterruptedException {
+    String dbName = "db_repl2";
+    String tableName = "tbl_repl2";
+    Map<String, Column> colMap = buildAllColumns();
+    List<String> partKeys = Lists.newArrayList("state", "dt");
+    List<String> partKeyTypes = Lists.newArrayList("string", "date");
+    List<List<String>> partVals = Lists.newArrayList(
+            Lists.newArrayList("__HIVE_DEFAULT_PARTITION__", "1990-01-01"),
+            Lists.newArrayList("CA", "1986-04-28"),
+            Lists.newArrayList("MN", "2018-11-31"));
+    // Check for the existence of partitions 10 seconds after the partition retention period has
+    // elapsed. Gives enough time for the partition retention task to work.
+    long partitionRetentionPeriodMs = 20000;
+    long waitingPeriodForTest = partitionRetentionPeriodMs + 10 * 1000;
+    createMetadata(DEFAULT_CATALOG_NAME, dbName, tableName, partKeys, partKeyTypes, partVals, colMap, false);
+    Table table = client.getTable(dbName, tableName);
+    List<Partition> partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(3, partitions.size());
+
+    table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
+    table.getParameters().put(PartitionManagementTask.PARTITION_RETENTION_PERIOD_TBLPROPERTY,
+            partitionRetentionPeriodMs + "ms");
+    table.getParameters().put(ReplConst.REPL_TARGET_TABLE_PROPERTY, "1");
+    client.alter_table(dbName, tableName, table);
+
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(3, partitions.size());
+
+    // after 30s all partitions should remain in-tact for a table which is target of replication.
+    Thread.sleep(waitingPeriodForTest);
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(3, partitions.size());
   }
 
   private void runPartitionManagementTask(Configuration conf) {

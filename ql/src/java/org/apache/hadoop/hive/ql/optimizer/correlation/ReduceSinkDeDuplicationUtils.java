@@ -144,7 +144,7 @@ public class ReduceSinkDeDuplicationUtils {
       if (parentPCs == null || parentPCs.isEmpty()) {
         // If partitioning columns of the parent RS are not assigned,
         // assign partitioning columns of the child RS to the parent RS.
-        ArrayList<ExprNodeDesc> childPCs = cRS.getConf().getPartitionCols();
+        List<ExprNodeDesc> childPCs = cRS.getConf().getPartitionCols();
         pRS.getConf().setPartitionCols(ExprNodeDescUtils.backtrack(childPCs, cRS, pRS));
       }
     }

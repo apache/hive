@@ -37,4 +37,11 @@ public class ReplConst {
    * database is created as part of repl load and survives the incremental cycles.
    */
   public static final String REPL_TARGET_DB_PROPERTY = "hive.repl.ckpt.key";
+
+  /**
+   * A table which is target of replication will have this property set. The property serves two
+   * purposes, 1. identifies the tables being replicated into and 2. records the event id of the
+   * last event affecting this table.
+   */
+  public static final String REPL_TARGET_TABLE_PROPERTY = "repl.last.id";
 }

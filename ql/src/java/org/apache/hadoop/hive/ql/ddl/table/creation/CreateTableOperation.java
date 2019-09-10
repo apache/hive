@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.creation;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -85,6 +86,14 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
     if (desc.getReplaceMode()) {
       createTableReplaceMode(tbl, replDataLocationChanged);
     } else {
+      // Some HMS background tasks skip processing tables being replicated into. Set the
+      // replication property while creating the table so that they can identify such tables right
+      // from the beginning. Set it to 0, which is lesser than any eventId ever created. This will
+      // soon be overwritten by an actual value.
+      if (desc.getReplicationSpec().isInReplicationScope() &&
+              !tbl.getParameters().containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY)) {
+        tbl.getParameters().put(ReplConst.REPL_TARGET_TABLE_PROPERTY, "0");
+      }
       createTableNonReplaceMode(tbl);
     }
 

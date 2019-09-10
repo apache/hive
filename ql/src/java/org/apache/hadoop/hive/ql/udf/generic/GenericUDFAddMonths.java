@@ -24,7 +24,6 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.TimeZone;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -32,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
@@ -64,7 +64,7 @@ public class GenericUDFAddMonths extends GenericUDF {
   private transient PrimitiveCategory[] dtInputTypes = new PrimitiveCategory[3];
   private final Text output = new Text();
   private transient SimpleDateFormat formatter = null;
-  private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+  private final Calendar calendar = DateTimeMath.getProlepticGregorianCalendarUTC();
   private transient Integer numMonthsConst;
   private transient boolean isNumMonthsConst;
 
@@ -82,7 +82,7 @@ public class GenericUDFAddMonths extends GenericUDF {
         String fmtStr = getConstantStringValue(arguments, 2);
         if (fmtStr != null) {
           formatter = new SimpleDateFormat(fmtStr);
-          formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+          formatter.setCalendar(calendar);
         }
       } else {
         throw new UDFArgumentTypeException(2, getFuncName() + " only takes constant as "
@@ -92,6 +92,7 @@ public class GenericUDFAddMonths extends GenericUDF {
     if (formatter == null) {
       //If the DateFormat is not provided by the user or is invalid, use the default format YYYY-MM-dd
       formatter = DateUtils.getDateFormat();
+      formatter.setCalendar(calendar);
     }
 
     // the function should support both short date and full timestamp format

@@ -18,33 +18,42 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.io.File;
+import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient.GetTablesRequestBuilder;
-import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.ExtendedTableInfo;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetTablesExtRequestFields;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.ExtendedTableInfo;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.GetTablesExtRequestFields;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_NONE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READWRITE;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_WRITEONLY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 import org.apache.hadoop.util.StringUtils;
 
 import com.google.common.collect.Lists;
@@ -53,11 +62,6 @@ import org.apache.thrift.TException;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,15 +69,27 @@ public class TestHiveMetastoreTransformer {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetastoreTransformer.class);
   protected static HiveMetaStoreClient client;
   protected static Configuration conf;
+  File ext_wh = null;
+  File wh = null;
 
-  protected static boolean isThriftClient = false;
+  protected static boolean isThriftClient = true;
   private static final String CAPABILITIES_KEY = "OBJCAPABILITIES";
 
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
+    wh = new File(System.getProperty("java.io.tmpdir") + File.separator +
+        "hive" + File.separator + "warehouse" + File.separator + "managed" + File.separator);
+    wh.mkdirs();
 
-    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer");
+    ext_wh = new File(System.getProperty("java.io.tmpdir") + File.separator +
+        "hive" + File.separator + "warehouse" + File.separator + "external" + File.separator);
+    ext_wh.mkdirs();
+
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS,
+        "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer");
+    MetastoreConf.setBoolVar(conf, ConfVars.HIVE_IN_TEST, false);
+    MetastoreConf.setVar(conf, ConfVars.WAREHOUSE_EXTERNAL, ext_wh.getAbsolutePath());
     client = new HiveMetaStoreClient(conf);
   }
 
@@ -167,10 +183,13 @@ public class TestHiveMetastoreTransformer {
       assertEquals(buckets, tbl2.getSd().getNumBuckets()); // no transformation
       assertEquals("Table access type does not match expected value:" + tblName,
           0, tbl2.getAccessType()); // old client, AccessType not set
+      assertNull(tbl2.getRequiredReadCapabilities());
 
-      setHMSClient("testTranformerExternalTable", (new String[] { "HIVEBUCKET2" }));
+      setHMSClient("testTransformerExternalTable", (new String[] { "HIVEBUCKET2" }));
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Expected buckets does not match:", buckets, tbl2.getSd().getNumBuckets()); // no transformation
+      assertEquals("Table access type does not match expected value:" + tblName,
+              8, tbl2.getAccessType()); // RW with HIVEBUCKET2 but no EXTWRITE
       resetHMSClient();
 
       tblName = "test_ext_bucketed_wc";
@@ -192,6 +211,8 @@ public class TestHiveMetastoreTransformer {
       assertEquals("Table access type does not match the expected value:" + tblName,
           ACCESSTYPE_READWRITE, tbl2.getAccessType());
       assertEquals(buckets, tbl2.getSd().getNumBuckets()); // client has the HIVEBUCKET2 capability, retain bucketing info
+      assertNull(tbl2.getRequiredWriteCapabilities());
+      assertNull(tbl2.getRequiredReadCapabilities());
 
       resetHMSClient();
 
@@ -200,6 +221,10 @@ public class TestHiveMetastoreTransformer {
       assertEquals("Table access type does not match the expected value:" + tblName,
           ACCESSTYPE_READONLY, tbl2.getAccessType());
       assertEquals(-1, tbl2.getSd().getNumBuckets()); // client has no HIVEBUCKET2 capability, remove bucketing info
+      assertNotNull("Required write capabilities is null",
+              tbl2.getRequiredWriteCapabilities());
+      assertTrue("Returned required capabilities list does not contain HIVEBUCKET2",
+              tbl2.getRequiredWriteCapabilities().contains("HIVEBUCKET2"));
 
       resetHMSClient();
 
@@ -215,6 +240,8 @@ public class TestHiveMetastoreTransformer {
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match the expected value:" + tblName,
           ACCESSTYPE_READWRITE, tbl2.getAccessType());
+      assertNull("Required read capabilities are not null", tbl2.getRequiredReadCapabilities());
+      assertNull("Required write capabilities are not null", tbl2.getRequiredWriteCapabilities());
 
       resetHMSClient();
 
@@ -222,7 +249,7 @@ public class TestHiveMetastoreTransformer {
       properties = new StringBuilder();
       properties.append("EXTERNAL").append("=").append("TRUE");
       properties.append(";");
-      properties.append(CAPABILITIES_KEY).append("=").append("SPARKDECIMAL,SPARKBUCKET,EXTREAD");
+      properties.append(CAPABILITIES_KEY).append("=").append("SPARKDECIMAL,SPARKBUCKET,EXTREAD,EXTWRITE");
       tProps.put("TBLNAME", tblName);
       tProps.put("PROPERTIES", properties.toString());
       tProps.put("BUCKETS", buckets);
@@ -233,14 +260,24 @@ public class TestHiveMetastoreTransformer {
       assertEquals("Table access type does not match the expected value:" + tblName,
           ACCESSTYPE_NONE, tbl2.getAccessType()); // requires EXTREAD for RO
       assertEquals(buckets, tbl2.getSd().getNumBuckets());
+      assertNotNull("Required read capabilities is null", tbl2.getRequiredReadCapabilities());
+      assertNotNull("Required write capabilities is null", tbl2.getRequiredWriteCapabilities());
+      assertTrue("Required read capabilities does not contain EXTREAD",
+              tbl2.getRequiredReadCapabilities().contains("EXTREAD"));
+      assertTrue("Required write capabilities does not contain EXTWRITE",
+              tbl2.getRequiredWriteCapabilities().contains("EXTWRITE"));
 
       setHMSClient("testTransformerExternalTableSpark", (new String[] { "EXTREAD", "CONNECTORREAD"}));
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match the expected value:" + tblName,
           ACCESSTYPE_READONLY, tbl2.getAccessType()); // requires EXTREAD for RO
       assertEquals(buckets, tbl2.getSd().getNumBuckets());
+      assertNotNull("Required write capabilities is null", tbl2.getRequiredWriteCapabilities());
+      assertTrue("Required write capabilities does not contain EXTWRITE",
+              tbl2.getRequiredWriteCapabilities().contains("EXTWRITE"));
 
-      setHMSClient("testTransformerExternalTableSpark", (new String[] { "SPARKBUCKET", "SPARKDECIMAL", "EXTREAD" }));
+
+      setHMSClient("testTransformerExternalTableSpark", (new String[] { "SPARKBUCKET", "SPARKDECIMAL", "EXTREAD", "EXTWRITE" }));
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match the expected value:" + tblName,
           ACCESSTYPE_READWRITE, tbl2.getAccessType());
@@ -277,10 +314,12 @@ public class TestHiveMetastoreTransformer {
       LOG.info("Table=" + tblName + ",Access=" + tbl2.getAccessType());
       assertEquals("Created and retrieved tables do not match:" + tbl2.getTableName() + ":" + tblName,
           tbl2.getTableName(), tblName);
-      assertEquals("TableType mismatch", TableType.MANAGED_TABLE.name(), tbl2.getTableType());
+      assertEquals("TableType mismatch", TableType.EXTERNAL_TABLE.name(), tbl2.getTableType()); // transformed
       assertEquals(-1, tbl2.getSd().getNumBuckets());
       assertEquals("Table access type does not match expected value:" + tblName,
           0, tbl2.getAccessType()); // no translation to be done, so accessType not set
+      assertNull("Required read capabilities not null", tbl2.getRequiredReadCapabilities());
+      assertNull("Required write capabilities not null", tbl2.getRequiredWriteCapabilities());
 
       // managed table with no capabilities
       tblName = "test_mgd_insert_woc";
@@ -290,7 +329,10 @@ public class TestHiveMetastoreTransformer {
       properties.append(";");
       properties.append("transactional_properties=insert_only");
       tProps.put("PROPERTIES", properties.toString());
+
+      setHMSClient("createTable", new String[] {"HIVEMANAGEDINSERTWRITE", "HIVEFULLACIDWRITE"});
       tbl = createTableWithCapabilities(tProps);
+      resetHMSClient();
 
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match expected value:" + tblName,
@@ -300,24 +342,33 @@ public class TestHiveMetastoreTransformer {
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match expected value:" + tblName,
           ACCESSTYPE_READONLY, tbl2.getAccessType());
+      assertNotNull("Required write capabilities are null", tbl2.getRequiredWriteCapabilities());
+      assertTrue("Required write capabilities does not contain CONNECTORWRITE",
+              tbl2.getRequiredWriteCapabilities().contains("CONNECTORWRITE"));
       resetHMSClient();
 
       setHMSClient("testMGDwithInsertRead", new String[] {"HIVEMANAGEDINSERTREAD"});
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match expected value:" + tblName,
           ACCESSTYPE_READONLY, tbl2.getAccessType());
+      assertNotNull("Required write capabilities are null", tbl2.getRequiredWriteCapabilities());
+      assertTrue("Required write capabilities does not contain CONNECTORWRITE",
+              tbl2.getRequiredWriteCapabilities().contains("CONNECTORWRITE"));
       resetHMSClient();
 
       setHMSClient("testMGDwithInsertWrite", new String[] {"HIVEMANAGEDINSERTWRITE"});
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match expected value:" + tblName,
           ACCESSTYPE_READWRITE, tbl2.getAccessType());
+      assertNull("Required read capabilities are not null", tbl2.getRequiredReadCapabilities());
+      assertNull("Required write capabilities are not null", tbl2.getRequiredWriteCapabilities());
       resetHMSClient();
 
       setHMSClient("testMGDwithConnectorWrite", new String[] {"CONNECTORWRITE"});
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match expected value:" + tblName,
           ACCESSTYPE_READWRITE, tbl2.getAccessType());
+      assertNull("Required read capabilities are not null", tbl2.getRequiredReadCapabilities());
       resetHMSClient();
 
       // bucketed table with no capabilities
@@ -331,7 +382,9 @@ public class TestHiveMetastoreTransformer {
       properties.append("transactional_properties=insert_only");
       tProps.put("TBLNAME", tblName);
       tProps.put("PROPERTIES", properties.toString());
+      setHMSClient("createTable", new String[] {"HIVEMANAGEDINSERTWRITE" ,"HIVEFULLACIDWRITE"});
       tbl = createTableWithCapabilities(tProps);
+      resetHMSClient();
 
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match expected value:" + tblName,
@@ -342,13 +395,19 @@ public class TestHiveMetastoreTransformer {
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match expected value:" + tblName,
           ACCESSTYPE_READWRITE, tbl2.getAccessType());
+      assertNull("Required read capabilities are not null", tbl2.getRequiredReadCapabilities());
+      assertNull("Required write capabilities are not null", tbl2.getRequiredWriteCapabilities());
       resetHMSClient();
 
       setHMSClient("testMGDwith1MissingWrite", new String[] {"HIVEMANAGEDINSERTREAD", "HIVEMANAGEDINSERTWRITE",
           "HIVECACHEINVALIDATE" });
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match expected value:" + tblName,
-          ACCESSTYPE_NONE, tbl2.getAccessType());
+          ACCESSTYPE_READONLY, tbl2.getAccessType());
+      assertNull("Required read capabilities are not null", tbl2.getRequiredReadCapabilities());
+      assertNotNull("Required write capabilities are null", tbl2.getRequiredWriteCapabilities());
+      assertTrue("Required write capabilities contains HIVEMANAGEDSTATS",
+              tbl2.getRequiredWriteCapabilities().contains("HIVEMANAGEDSTATS"));
       resetHMSClient();
 
       setHMSClient("testMGDwith1Write", new String[] {"CONNECTORWRITE"});
@@ -371,7 +430,9 @@ public class TestHiveMetastoreTransformer {
       tProps.put("TBLNAME", tblName);
       tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
       tProps.put("PROPERTIES", properties.toString());
+      setHMSClient("createTable", new String[] {"HIVEMANAGEDINSERTWRITE", "HIVEFULLACIDWRITE"});
       tbl = createTableWithCapabilities(tProps);
+      resetHMSClient();
 
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match expected value:" + tblName,
@@ -417,7 +478,9 @@ public class TestHiveMetastoreTransformer {
       tProps.put("TBLNAME", tblName);
       tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
       tProps.put("PROPERTIES", properties.toString());
+      setHMSClient("createTable", new String[] {"HIVEMANAGEDINSERTWRITE", "HIVEFULLACIDWRITE"});
       tbl = createTableWithCapabilities(tProps);
+      resetHMSClient();
 
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table access type does not match expected value:" + tblName,
@@ -677,7 +740,8 @@ public class TestHiveMetastoreTransformer {
       LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
       assertEquals("Return list size does not match expected size:extTables", count, extTables.size());
       for (ExtendedTableInfo tableInfo : extTables) {
-        assertEquals("Capability set size does not match", capabilities.size(), tableInfo.getProcessorCapabilities().size());
+        assertNull("Return object should not have read capabilities", tableInfo.getRequiredReadCapabilities());
+        assertNull("Return object should not have write capabilities", tableInfo.getRequiredWriteCapabilities());
         assertEquals("AccessType not expected to be set", 0, tableInfo.getAccessType());
       }
 
@@ -686,7 +750,8 @@ public class TestHiveMetastoreTransformer {
       LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
       assertEquals("Return list size does not match expected size", count, extTables.size());
       for (ExtendedTableInfo tableInfo : extTables) {
-        assertNull("Return value should not contain capabilities", tableInfo.getProcessorCapabilities());
+        assertNull("Return object should not have read capabilities", tableInfo.getRequiredReadCapabilities());
+        assertNull("Return object should not have write capabilities", tableInfo.getRequiredWriteCapabilities());
         assertTrue("AccessType expected to be set", tableInfo.getAccessType() > 0);
       }
 
@@ -695,7 +760,6 @@ public class TestHiveMetastoreTransformer {
       LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
       assertEquals("Return list size does not match expected size", count, extTables.size());
       for (ExtendedTableInfo tableInfo : extTables) {
-        assertEquals("Capability set size does not match", capabilities.size(), tableInfo.getProcessorCapabilities().size());
         assertTrue("AccessType expected to be set", tableInfo.getAccessType() > 0);
       }
 
@@ -703,7 +767,6 @@ public class TestHiveMetastoreTransformer {
       LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
       assertEquals("Return list size does not match expected size", (count - 3), extTables.size());
       for (ExtendedTableInfo tableInfo : extTables) {
-        assertEquals("Capability set size does not match", capabilities.size(), tableInfo.getProcessorCapabilities().size());
         assertTrue("AccessType expected to be set", tableInfo.getAccessType() > 0);
       }
 
@@ -768,12 +831,11 @@ public class TestHiveMetastoreTransformer {
 
       Table table = createTableWithCapabilities(tProps);
 
-      List<String> partNames = new ArrayList<>();
       List<String> partValues = new ArrayList<>();
       for (int i = 1; i <= pCount; i++) {
         partValues.add("partcol=" + i);
       }
-      List<Partition> parts = client.getPartitionsByNames(dbName, tblName, partValues, false);
+      List<Partition> parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
       assertEquals("Return list size does not match expected size", pCount, parts.size());
 
       tblName = "test_gp_ext_bucketed_wc";
@@ -787,7 +849,7 @@ public class TestHiveMetastoreTransformer {
       tProps.put("PROPERTIES", properties.toString());
       table = createTableWithCapabilities(tProps);
 
-      parts = client.getPartitionsByNames(dbName, tblName, partValues, false);
+      parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
       LOG.debug("Return list size=" + parts.size());
 
       for (Partition part : parts) {
@@ -798,7 +860,7 @@ public class TestHiveMetastoreTransformer {
       capabilities.clear();
       capabilities.add("HIVEBUCKET2");
       setHMSClient("TestGetPartitionByNames#2", (String[])(capabilities.toArray(new String[0])));
-      parts = client.getPartitionsByNames(dbName, tblName, partValues, false);
+      parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
 
       for (Partition part : parts) {
         assertEquals("Partition bucket count does not match", -1, part.getSd().getNumBuckets());
@@ -814,12 +876,14 @@ public class TestHiveMetastoreTransformer {
       properties.append("transactional_properties=insert_only");
       tProps.put("TBLNAME", tblName);
       tProps.put("PROPERTIES", properties.toString());
+      setHMSClient("createTable", new String[] {"HIVEMANAGEDINSERTWRITE,HIVEFULLACIDWRITE"});
       table = createTableWithCapabilities(tProps);
+      resetHMSClient();
 
       capabilities.clear();
       capabilities.add("CONNECTORREAD");
       setHMSClient("TestGetPartitionByNames#3", (String[])(capabilities.toArray(new String[0])));
-      parts = client.getPartitionsByNames(dbName, tblName, partValues, false);
+      parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
       assertEquals("Partition count does not match", pCount, parts.size());
 
       LOG.info("Test execution complete:testGetPartitionsByNames");
@@ -827,6 +891,382 @@ public class TestHiveMetastoreTransformer {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testGetPartitionsByNames() failed.");
       fail("testGetPartitions failed:" + e.getMessage());
+    } finally {
+      resetHMSClient();
+    }
+  }
+
+  @Test
+  public void testCreateTable() throws Exception {
+    try {
+      resetHMSClient();
+
+      final String dbName = "dbcreate";
+      String tblName = "test_create_table_ext";
+      TableType type = TableType.EXTERNAL_TABLE;
+      StringBuilder table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      table_params.append(";");
+      table_params.append("EXTERNAL=TRUE");
+      Map<String, Object> tProps = new HashMap<>();
+      tProps.put("DBNAME", dbName);
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", type);
+      tProps.put("PROPERTIES", table_params.toString());
+
+      Table table = createTableWithCapabilities(tProps);
+
+      // retrieve the table
+      Table tbl2 = client.getTable(dbName, tblName);
+      assertEquals("Table type expected to be EXTERNAL", "EXTERNAL_TABLE", tbl2.getTableType());
+
+      tblName = "test_create_table_mgd_woc";
+      type = TableType.MANAGED_TABLE;
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
+      table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      tProps.put("PROPERTIES", table_params.toString());
+      table = createTableWithCapabilities(tProps);
+
+      // retrieve the table
+      tbl2 = client.getTable(dbName, tblName);
+      assertEquals("Table type expected to be converted to EXTERNAL", "EXTERNAL_TABLE", tbl2.getTableType());
+      assertNotNull("external.table.purge is expected to be non-null", tbl2.getParameters().get("external.table.purge"));
+      assertTrue("external.table.purge is expected to be true",
+          tbl2.getParameters().get("external.table.purge").equalsIgnoreCase("TRUE"));
+      assertTrue("Table params expected to contain original properties", tbl2.getParameters().get("key1").equals("val1"));
+
+      // Test for FULL ACID tables
+      tblName = "test_create_table_acid_mgd_woc";
+      type = TableType.MANAGED_TABLE;
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", type);
+      table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      table_params.append(";");
+      table_params.append("transactional=true");
+      tProps.put("PROPERTIES", table_params.toString());
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        fail("CreateTable expected to fail, but passed for " + tblName);
+      } catch (MetaException me) {
+        LOG.info("Create table expected to fail as ACID table cannot be created without possessing capabilities");
+      }
+
+      List<String> capabilities = new ArrayList<>();
+      capabilities.add("CONNECTORWRITE");
+      setHMSClient("TestCreateTableACID#1", (String[])(capabilities.toArray(new String[0])));
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        fail("Create table expected to fail but has succeeded.");
+      } catch (MetaException me) {
+        LOG.info("CreateTable expected to fail and has failed for " + tblName);
+      }
+      resetHMSClient();
+
+      capabilities = new ArrayList<>();
+      capabilities.add("HIVEFULLACIDWRITE");
+      setHMSClient("TestCreateTableACID#2", (String[])(capabilities.toArray(new String[0])));
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        LOG.info("Create table expected to succeed and has succeeded.");
+
+        // retrieve the table
+        tbl2 = client.getTable(dbName, tblName);
+        assertEquals("TableType expected to be MANAGED_TABLE", TableType.MANAGED_TABLE.name(), tbl2.getTableType());
+        assertTrue("Table params expected to contain ACID properties",
+            tbl2.getParameters().get("transactional").equals("true"));
+        assertTrue("Table params not expected to contain INSERT ACID properties",
+            ((tbl2.getParameters().get("transactional_properties") == null) ||
+                !(tbl2.getParameters().get("transactional_properties").equalsIgnoreCase("insert_only"))));
+      } catch (MetaException me) {
+        fail("CreateTable expected to succeed, but failed for " + tblName);
+      }
+      resetHMSClient();
+
+      tblName = "test_create_table_acid_mgd_wc";
+      tProps.put("TBLNAME", tblName);
+      table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      table_params.append(";");
+      table_params.append("transactional=true");
+      table_params.append(";");
+      table_params.append(CAPABILITIES_KEY).append("=").append("HIVEFULLACIDREAD,HIVEFULLACIDWRITE,HIVECACHEINVALIDATE,")
+          .append("HIVEMANAGEDSTATS,CONNECTORREAD,CONNECTORWRITE");
+      tProps.put("PROPERTIES", table_params.toString());
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        fail("CreateTable expected to fail, but passed for " + tblName);
+      } catch (MetaException me) {
+        LOG.info("Create table expected to fail as ACID table cannot be created without possessing capabilities");
+      }
+
+      tblName = "test_create_table_acid_mgd_wcw";
+      tProps.put("TBLNAME", tblName);
+      capabilities = new ArrayList<>();
+      capabilities.add("CONNECTORWRITE");
+      setHMSClient("TestCreateTableACID#3", (String[])(capabilities.toArray(new String[0])));
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        fail("Create table expected to fail but has succeeded.");
+      } catch (MetaException me) {
+        LOG.info("CreateTable expected to fail and has failed for " + tblName);
+      }
+      resetHMSClient();
+
+      tblName = "test_create_table_acid_mgd_whfaw";
+      table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      table_params.append(";");
+      table_params.append("transactional=true");
+      table_params.append(";");
+      table_params.append(CAPABILITIES_KEY).append("=").append("HIVEFULLACIDREAD,HIVEFULLACIDWRITE,HIVECACHEINVALIDATE,")
+          .append("HIVEMANAGEDSTATS,CONNECTORREAD,CONNECTORWRITE");
+      tProps.put("TBLNAME", tblName);
+      capabilities = new ArrayList<>();
+      capabilities.add("HIVEFULLACIDWRITE");
+      setHMSClient("TestCreateTableACID#4", (String[])(capabilities.toArray(new String[0])));
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        LOG.info("Create table expected to succeed and has succeeded.");
+
+        // retrieve the table
+        tbl2 = client.getTable(dbName, tblName);
+        assertEquals("TableType expected to be MANAGED_TABLE", TableType.MANAGED_TABLE.name(), tbl2.getTableType());
+        assertTrue("Table params expected to contain ACID properties",
+            tbl2.getParameters().get("transactional").equals("true"));
+        assertTrue("Table params not expected to contain INSERT ACID properties",
+            ((tbl2.getParameters().get("transactional_properties") == null) ||
+                !(tbl2.getParameters().get("transactional_properties").equalsIgnoreCase("insert_only"))));
+        assertEquals("Expected access of type READONLY", ACCESSTYPE_READWRITE, tbl2.getAccessType());
+        assertNull("Expected null required write capabilities", tbl2.getRequiredWriteCapabilities());
+      } catch (MetaException me) {
+        fail("CreateTable expected to succeed, but failed for " + tblName);
+      }
+      resetHMSClient();
+
+      tblName = "test_create_table_insert_mgd_woc";
+      type = TableType.MANAGED_TABLE;
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", type);
+      table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      table_params.append(";");
+      table_params.append("transactional=true");
+      table_params.append(";");
+      table_params.append("transactional_properties=insert_only");
+      tProps.put("PROPERTIES", table_params.toString());
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        fail("CreateTable expected to fail, but passed for " + tblName);
+      } catch (MetaException me) {
+        LOG.info("Create table expected to fail as ACID table cannot be created without possessing capabilities");
+      }
+
+      capabilities = new ArrayList<>();
+      capabilities.add("CONNECTORWRITE");
+      setHMSClient("TestCreateTableMGD#1", (String[])(capabilities.toArray(new String[0])));
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        fail("Create table expected to fail but has succeeded.");
+      } catch (MetaException me) {
+        LOG.info("CreateTable expected to fail and has failed for " + tblName);
+      }
+      resetHMSClient();
+
+      capabilities = new ArrayList<>();
+      capabilities.add("HIVEMANAGEDINSERTWRITE");
+      setHMSClient("TestCreateTableMGD#2", (String[])(capabilities.toArray(new String[0])));
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        LOG.info("Create table expected to succeed and has succeeded.");
+
+        // retrieve the table
+        tbl2 = client.getTable(dbName, tblName);
+        assertEquals("TableType expected to be MANAGED_TABLE", TableType.MANAGED_TABLE.name(), tbl2.getTableType());
+        assertTrue("Table params expected to contain ACID properties",
+            tbl2.getParameters().get("transactional").equals("true"));
+        assertTrue("Table params expected to contain ACID properties",
+            tbl2.getParameters().get("transactional_properties").equals("insert_only"));
+      } catch (MetaException me) {
+        fail("CreateTable expected to succeed, but failed for " + tblName);
+      }
+      resetHMSClient();
+
+      // table has capabilities
+      tblName = "test_view_wc";
+      table_params = new StringBuilder();
+      table_params.append(CAPABILITIES_KEY).append("=").append("HIVESQL");
+      tProps.put("TBLNAME", tblName);
+      tProps.put("PROPERTIES", table_params.toString());
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        LOG.info("Create view is expected to succeed and has succeeded"); // no transformation for views
+      } catch (Exception e) {
+        LOG.info("Create view expected to succeed but has failed.");
+        fail("Create view expected to succeed but has failed. <" + e.getMessage() +">");
+      }
+    } catch (Exception e) {
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      System.err.println("testCreateTable() failed.");
+      fail("testCreateTable failed:" + e.getMessage());
+    } finally {
+      resetHMSClient();
+    }
+  }
+
+  @Test
+  public void testTransformerDatabase() throws Exception {
+    try {
+      resetHMSClient();
+
+      final String dbName = "testdb";
+      try {
+        silentDropDatabase(dbName);
+      } catch (Exception e) {
+        LOG.info("Drop database failed for " + dbName);
+      }
+
+      new DatabaseBuilder()
+          .setName(dbName)
+          .create(client, conf);
+
+      List<String> capabilities = new ArrayList<>();
+      capabilities.add("EXTWRITE");
+      setHMSClient("TestGetDatabaseEXTWRITE", (String[])(capabilities.toArray(new String[0])));
+      Database db = client.getDatabase(dbName);
+      assertTrue("Database location not as expected:actual=" + db.getLocationUri(),
+          db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+
+      capabilities = new ArrayList<>();
+      capabilities.add("HIVEFULLACIDWRITE");
+      setHMSClient("TestGetDatabaseACIDWRITE", (String[])(capabilities.toArray(new String[0])));
+
+      db = client.getDatabase(dbName);
+      assertFalse("Database location not expected to be external warehouse:actual=" + db.getLocationUri(),
+          db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+      resetHMSClient();
+
+      capabilities = new ArrayList<>();
+      capabilities.add("HIVEMANAGEDINSERTWRITE");
+      setHMSClient("TestGetDatabaseINSERTWRITE", (String[])(capabilities.toArray(new String[0])));
+
+      db = client.getDatabase(dbName);
+      assertFalse("Database location not expected to be external warehouse:actual=" + db.getLocationUri(),
+          db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+      resetHMSClient();
+    } catch (Exception e) {
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      System.err.println("testTransformerDatabase() failed.");
+      fail("testTransformerDatabase failed:" + e.getMessage());
+    } finally {
+      resetHMSClient();
+    }
+  }
+
+  @Test
+  public void testTransformerMultiTable() throws Exception {
+    try {
+      resetHMSClient();
+
+      final String dbName = "testdb";
+      final String ext_table = "ext_table";
+      final String acidTable = "managed_table";
+      final String part_ext = "part_ext";
+
+      try {
+        silentDropDatabase(dbName);
+      } catch (Exception e) {
+        LOG.info("Drop database failed for " + dbName);
+      }
+
+      new DatabaseBuilder()
+          .setName(dbName)
+          .create(client, conf);
+
+      List<String> capabilities = new ArrayList<>();
+      capabilities.add("HIVEFULLACIDWRITE");
+      setHMSClient("TestTransformerMultiTable", (String[])(capabilities.toArray(new String[0])));
+
+      Map<String, Object> tProps = new HashMap<>();
+      tProps.put("DBNAME", dbName);
+      tProps.put("TBLNAME", ext_table);
+      tProps.put("TBLTYPE", TableType.EXTERNAL_TABLE);
+      tProps.put("DROPDB", Boolean.FALSE);
+      StringBuilder properties = new StringBuilder();
+      properties.append("EXTERNAL").append("=").append("TRUE");
+      tProps.put("PROPERTIES", properties.toString());
+      Table tbl = createTableWithCapabilities(tProps);
+
+      tProps.put("TBLNAME", acidTable);
+      tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
+      properties = new StringBuilder();
+      properties.append("transactional").append("=").append("true");
+      tProps.put("PROPERTIES", properties.toString());
+      tProps.put("DROPDB", Boolean.FALSE);
+      tbl = createTableWithCapabilities(tProps);
+
+      tProps = new HashMap<>();
+      tProps.put("DBNAME", dbName);
+      tProps.put("TBLNAME", part_ext);
+      tProps.put("TBLTYPE", TableType.EXTERNAL_TABLE);
+      tProps.put("DROPDB", Boolean.FALSE);
+      properties = new StringBuilder();
+      properties.append("EXTERNAL").append("=").append("TRUE");
+      tProps.put("PROPERTIES", properties.toString());
+      tProps.put("PARTITIONS", 10);
+      tbl = createTableWithCapabilities(tProps);
+
+      resetHMSClient();
+      capabilities = new ArrayList<>();
+      capabilities.add("EXTWRITE");
+      capabilities.add("EXTREAD");
+      setHMSClient("TestTransformerMultiTable", (String[])(capabilities.toArray(new String[0])));
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+
+      tbl = client.getTable(dbName, ext_table);
+      assertEquals("AccessType does not match", ACCESSTYPE_READWRITE, tbl.getAccessType());
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+      resetHMSClient();
+
+      capabilities = new ArrayList<>();
+      capabilities.add("EXTWRITE");
+      capabilities.add("EXTREAD");
+      capabilities.add("HIVESQL");
+      capabilities.add("SPARKSQL");
+      capabilities.add("HIVEBUCKET2");
+      setHMSClient("TestTransformerMultiTable", (String[])(capabilities.toArray(new String[0])));
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+
+      tbl = client.getTable(dbName, part_ext);
+      assertEquals("AccessType does not match", ACCESSTYPE_READWRITE, tbl.getAccessType());
+      tbl = client.getTable(dbName, acidTable);
+      assertEquals("AccessType does not match", ACCESSTYPE_NONE, tbl.getAccessType());
+      resetHMSClient();
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      System.err.println("testTransformerDatabase() failed.");
+      fail("testTransformerDatabase failed:" + e.getMessage());
     } finally {
       resetHMSClient();
     }
@@ -854,7 +1294,6 @@ public class TestHiveMetastoreTransformer {
     } catch (Exception e) {
       LOG.warn("Create table failed for " + newtblName);
     }
-
     return ret;
   }
 
@@ -869,6 +1308,12 @@ public class TestHiveMetastoreTransformer {
       int partitionCount = ((Integer)props.getOrDefault("PARTITIONS", 0)).intValue();
 
       final String typeName = "Person";
+
+      if (type == TableType.EXTERNAL_TABLE) {
+        if (!properties.contains("EXTERNAL=TRUE")) {
+          properties.concat(";EXTERNAL=TRUE");
+        }
+      }
 
       Map<String,String> table_params = new HashMap();
       if (properties.length() > 0) {

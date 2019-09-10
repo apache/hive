@@ -98,8 +98,10 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 // TODO monitor event queue
 // TODO initial load slow?
 // TODO size estimation
+// TODO Only works with Hive engine for column statistics
 
 public class CachedStore implements RawStore, Configurable {
+
   private static ScheduledExecutorService cacheUpdateMaster = null;
   private static List<Pattern> whitelistPatterns = null;
   private static List<Pattern> blacklistPatterns = null;
@@ -214,11 +216,14 @@ public class CachedStore implements RawStore, Configurable {
 
   private static ColumnStatistics updateStatsForAlterPart(RawStore rawStore, Table before, String catalogName,
       String dbName, String tableName, Partition part) throws Exception {
-    ColumnStatistics colStats;
     List<String> deletedCols = new ArrayList<>();
-    colStats = HiveAlterHandler
+    List<ColumnStatistics> multiColumnStats = HiveAlterHandler
         .updateOrGetPartitionColumnStats(rawStore, catalogName, dbName, tableName, part.getValues(),
             part.getSd().getCols(), before, part, null, deletedCols);
+    if (multiColumnStats.size() > 1) {
+      throw new RuntimeException("CachedStore can only be enabled for Hive engine");
+    }
+    ColumnStatistics colStats = multiColumnStats.isEmpty() ? null : multiColumnStats.get(0);
     for (String column : deletedCols) {
       sharedCache.removePartitionColStatsFromCache(catalogName, dbName, tableName, part.getValues(), column);
     }
@@ -240,8 +245,12 @@ public class CachedStore implements RawStore, Configurable {
       }
     }
 
-    List<ColumnStatisticsObj> statisticsObjs = HiveAlterHandler
+    List<ColumnStatistics> multiColumnStats = HiveAlterHandler
         .alterTableUpdateTableColumnStats(rawStore, tblBefore, tblAfter, null, null, rawStore.getConf(), deletedCols);
+    if (multiColumnStats.size() > 1) {
+      throw new RuntimeException("CachedStore can only be enabled for Hive engine");
+    }
+    List<ColumnStatisticsObj> statisticsObjs = multiColumnStats.isEmpty() ? null : multiColumnStats.get(0).getStatsObj();
     if (colStats != null) {
       sharedCache.alterTableAndStatsInCache(catalogName, dbName, tableName, tblAfter.getWriteId(), statisticsObjs,
           tblAfter.getParameters());
@@ -504,12 +513,12 @@ public class CachedStore implements RawStore, Configurable {
                   // Get partition column stats for this table
                   Deadline.startTimer("getPartitionColumnStatistics");
                   partitionColStats =
-                      rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames);
+                      rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
                   Deadline.stopTimer();
                   // Get aggregate stats for all partitions of a table and for all but default
                   // partition
                   Deadline.startTimer("getAggrPartitionColumnStatistics");
-                  aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
+                  aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
                   Deadline.stopTimer();
                   // Remove default partition from partition names and get aggregate
                   // stats again
@@ -526,12 +535,12 @@ public class CachedStore implements RawStore, Configurable {
                   partNames.remove(defaultPartitionName);
                   Deadline.startTimer("getAggrPartitionColumnStatistics");
                   aggrStatsAllButDefaultPartition =
-                      rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
+                      rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
                   Deadline.stopTimer();
                 }
               } else {
                 Deadline.startTimer("getTableColumnStatistics");
-                tableColStats = rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
+                tableColStats = rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, CacheUtils.HIVE_ENGINE);
                 Deadline.stopTimer();
               }
               // If the table could not cached due to memory limit, stop prewarm
@@ -836,7 +845,7 @@ public class CachedStore implements RawStore, Configurable {
         if (table != null && !table.isSetPartitionKeys()) {
           List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
           Deadline.startTimer("getTableColumnStatistics");
-          ColumnStatistics tableColStats = rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
+          ColumnStatistics tableColStats = rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           if (tableColStats != null) {
             sharedCache.refreshTableColStatsInCache(StringUtils.normalizeIdentifier(catName),
@@ -888,7 +897,7 @@ public class CachedStore implements RawStore, Configurable {
           // Get partition column stats for this table
           Deadline.startTimer("getPartitionColumnStatistics");
           List<ColumnStatistics> partitionColStats =
-              rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames);
+              rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           sharedCache.refreshPartitionColStatsInCache(catName, dbName, tblName, partitionColStats);
           Deadline.startTimer("getPartitionsByNames");
@@ -928,7 +937,7 @@ public class CachedStore implements RawStore, Configurable {
         List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
         if ((partNames != null) && (partNames.size() > 0)) {
           Deadline.startTimer("getAggregareStatsForAllPartitions");
-          AggrStats aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
+          AggrStats aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           // Remove default partition from partition names and get aggregate stats again
           List<FieldSchema> partKeys = table.getPartitionKeys();
@@ -943,7 +952,7 @@ public class CachedStore implements RawStore, Configurable {
           partNames.remove(defaultPartitionName);
           Deadline.startTimer("getAggregareStatsForAllPartitionsExceptDefault");
           AggrStats aggrStatsAllButDefaultPartition =
-              rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
+              rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           sharedCache.refreshAggregateStatsInCache(StringUtils.normalizeIdentifier(catName),
               StringUtils.normalizeIdentifier(dbName), StringUtils.normalizeIdentifier(tblName), aggrStatsAllPartitions,
@@ -2010,37 +2019,48 @@ public class CachedStore implements RawStore, Configurable {
     return newParams;
   }
 
-  @Override public ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tblName,
+  @Override public List<ColumnStatistics> getTableColumnStatistics(String catName, String dbName, String tblName,
       List<String> colNames) throws MetaException, NoSuchObjectException {
-    return getTableColumnStatistics(catName, dbName, tblName, colNames, null);
+    return rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
   }
 
   @Override public ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tblName,
-      List<String> colNames, String validWriteIds) throws MetaException, NoSuchObjectException {
+      List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
+    return getTableColumnStatistics(catName, dbName, tblName, colNames, engine, null);
+  }
+
+  @Override public ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tblName,
+      List<String> colNames, String engine, String validWriteIds) throws MetaException, NoSuchObjectException {
+    if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
+      throw new RuntimeException("CachedStore can only be enabled for Hive engine");
+    }
     catName = StringUtils.normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
-      return rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, validWriteIds);
+      return rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, engine, validWriteIds);
     }
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (table == null) {
       // The table is not yet loaded in cache
-      return rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, validWriteIds);
+      return rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, engine, validWriteIds);
     }
     ColumnStatistics columnStatistics =
         sharedCache.getTableColStatsFromCache(catName, dbName, tblName, colNames, validWriteIds, areTxnStatsSupported);
     if (columnStatistics == null) {
       LOG.info("Stat of Table {}.{} for column {} is not present in cache." + "Getting from raw store", dbName, tblName,
           colNames);
-      return rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, validWriteIds);
+      return rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, engine, validWriteIds);
     }
     return columnStatistics;
   }
 
-  @Override public boolean deleteTableColumnStatistics(String catName, String dbName, String tblName, String colName)
+  @Override public boolean deleteTableColumnStatistics(String catName, String dbName, String tblName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    boolean succ = rawStore.deleteTableColumnStatistics(catName, dbName, tblName, colName);
+    if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
+      throw new RuntimeException("CachedStore can only be enabled for Hive engine");
+    }
+    boolean succ = rawStore.deleteTableColumnStatistics(catName, dbName, tblName, colName, engine);
     // in case of event based cache update, cache is updated during commit txn
     if (succ && !canUseEvents) {
       catName = normalizeIdentifier(catName);
@@ -2076,14 +2096,21 @@ public class CachedStore implements RawStore, Configurable {
     return newParams;
   }
 
-  @Override public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName, String tblName,
+  @Override public List<List<ColumnStatistics>> getPartitionColumnStatistics(String catName, String dbName, String tblName,
       List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException {
-    return getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, null);
+    return rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames);
   }
 
   @Override public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName, String tblName,
-      List<String> partNames, List<String> colNames, String writeIdList) throws MetaException, NoSuchObjectException {
+      List<String> partNames, List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
+    return getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, engine, null);
+  }
 
+  @Override public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName, String tblName,
+      List<String> partNames, List<String> colNames, String engine, String writeIdList) throws MetaException, NoSuchObjectException {
+    if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
+      throw new RuntimeException("CachedStore can only be enabled for Hive engine");
+    }
     // If writeIdList is not null, that means stats are requested within a txn context. So set stats compliant to false,
     // if areTxnStatsSupported is false or the write id which has updated the stats in not compatible with writeIdList.
     // This is done within table lock as the number of partitions may be more than one and we need a consistent view
@@ -2092,15 +2119,18 @@ public class CachedStore implements RawStore, Configurable {
         .getPartitionColStatsListFromCache(catName, dbName, tblName, partNames, colNames, writeIdList,
             areTxnStatsSupported);
     if (columnStatistics == null) {
-      return rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, writeIdList);
+      return rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, engine, writeIdList);
     }
     return columnStatistics;
   }
 
   @Override public boolean deletePartitionColumnStatistics(String catName, String dbName, String tblName,
-      String partName, List<String> partVals, String colName)
+      String partName, List<String> partVals, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    boolean succ = rawStore.deletePartitionColumnStatistics(catName, dbName, tblName, partName, partVals, colName);
+    if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
+      throw new RuntimeException("CachedStore can only be enabled for Hive engine");
+    }
+    boolean succ = rawStore.deletePartitionColumnStatistics(catName, dbName, tblName, partName, partVals, colName, engine);
     // in case of event based cache update, cache is updated during commit txn.
     if (succ && !canUseEvents) {
       catName = normalizeIdentifier(catName);
@@ -2115,12 +2145,15 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName, List<String> partNames,
-      List<String> colNames) throws MetaException, NoSuchObjectException {
-    return get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, null);
+      List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
+    return get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, engine, null);
   }
 
   @Override public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName, List<String> partNames,
-      List<String> colNames, String writeIdList) throws MetaException, NoSuchObjectException {
+      List<String> colNames, String engine, String writeIdList) throws MetaException, NoSuchObjectException {
+    if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
+      throw new RuntimeException("CachedStore can only be enabled for Hive engine");
+    }
     List<ColumnStatisticsObj> colStats;
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
@@ -2129,12 +2162,12 @@ public class CachedStore implements RawStore, Configurable {
     //       (incl. due to lack of sync w.r.t. the below rawStore call).
     // In case the cache is updated using events, aggregate is calculated locally and thus can be read from cache.
     if (!shouldCacheTable(catName, dbName, tblName) || (writeIdList != null && !canUseEvents)) {
-      return rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, writeIdList);
+      return rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, engine, writeIdList);
     }
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (table == null) {
       // The table is not yet loaded in cache
-      return rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, writeIdList);
+      return rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, engine, writeIdList);
     }
 
     List<String> allPartNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
@@ -2163,7 +2196,7 @@ public class CachedStore implements RawStore, Configurable {
     if (mergedColStats == null) {
       LOG.info("Aggregate stats of partition " + TableName.getQualified(catName, dbName, tblName) + "." + partNames
           + " for columns " + colNames + " is not present in cache. Getting it from raw store");
-      return rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, writeIdList);
+      return rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, engine, writeIdList);
     }
     return new AggrStats(mergedColStats.getColStats(), mergedColStats.getPartsFound());
   }

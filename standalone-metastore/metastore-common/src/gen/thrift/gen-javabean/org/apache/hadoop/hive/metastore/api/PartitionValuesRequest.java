@@ -1042,14 +1042,14 @@ import org.slf4j.LoggerFactory;
           case 3: // PARTITION_KEYS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list530 = iprot.readListBegin();
-                struct.partitionKeys = new ArrayList<FieldSchema>(_list530.size);
-                FieldSchema _elem531;
-                for (int _i532 = 0; _i532 < _list530.size; ++_i532)
+                org.apache.thrift.protocol.TList _list546 = iprot.readListBegin();
+                struct.partitionKeys = new ArrayList<FieldSchema>(_list546.size);
+                FieldSchema _elem547;
+                for (int _i548 = 0; _i548 < _list546.size; ++_i548)
                 {
-                  _elem531 = new FieldSchema();
-                  _elem531.read(iprot);
-                  struct.partitionKeys.add(_elem531);
+                  _elem547 = new FieldSchema();
+                  _elem547.read(iprot);
+                  struct.partitionKeys.add(_elem547);
                 }
                 iprot.readListEnd();
               }
@@ -1077,14 +1077,14 @@ import org.slf4j.LoggerFactory;
           case 6: // PARTITION_ORDER
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list533 = iprot.readListBegin();
-                struct.partitionOrder = new ArrayList<FieldSchema>(_list533.size);
-                FieldSchema _elem534;
-                for (int _i535 = 0; _i535 < _list533.size; ++_i535)
+                org.apache.thrift.protocol.TList _list549 = iprot.readListBegin();
+                struct.partitionOrder = new ArrayList<FieldSchema>(_list549.size);
+                FieldSchema _elem550;
+                for (int _i551 = 0; _i551 < _list549.size; ++_i551)
                 {
-                  _elem534 = new FieldSchema();
-                  _elem534.read(iprot);
-                  struct.partitionOrder.add(_elem534);
+                  _elem550 = new FieldSchema();
+                  _elem550.read(iprot);
+                  struct.partitionOrder.add(_elem550);
                 }
                 iprot.readListEnd();
               }
@@ -1144,9 +1144,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionKeys.size()));
-          for (FieldSchema _iter536 : struct.partitionKeys)
+          for (FieldSchema _iter552 : struct.partitionKeys)
           {
-            _iter536.write(oprot);
+            _iter552.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1169,9 +1169,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(PARTITION_ORDER_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionOrder.size()));
-            for (FieldSchema _iter537 : struct.partitionOrder)
+            for (FieldSchema _iter553 : struct.partitionOrder)
             {
-              _iter537.write(oprot);
+              _iter553.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -1216,9 +1216,9 @@ import org.slf4j.LoggerFactory;
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.partitionKeys.size());
-        for (FieldSchema _iter538 : struct.partitionKeys)
+        for (FieldSchema _iter554 : struct.partitionKeys)
         {
-          _iter538.write(oprot);
+          _iter554.write(oprot);
         }
       }
       BitSet optionals = new BitSet();
@@ -1250,9 +1250,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitionOrder()) {
         {
           oprot.writeI32(struct.partitionOrder.size());
-          for (FieldSchema _iter539 : struct.partitionOrder)
+          for (FieldSchema _iter555 : struct.partitionOrder)
           {
-            _iter539.write(oprot);
+            _iter555.write(oprot);
           }
         }
       }
@@ -1275,14 +1275,14 @@ import org.slf4j.LoggerFactory;
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list540 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.partitionKeys = new ArrayList<FieldSchema>(_list540.size);
-        FieldSchema _elem541;
-        for (int _i542 = 0; _i542 < _list540.size; ++_i542)
+        org.apache.thrift.protocol.TList _list556 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.partitionKeys = new ArrayList<FieldSchema>(_list556.size);
+        FieldSchema _elem557;
+        for (int _i558 = 0; _i558 < _list556.size; ++_i558)
         {
-          _elem541 = new FieldSchema();
-          _elem541.read(iprot);
-          struct.partitionKeys.add(_elem541);
+          _elem557 = new FieldSchema();
+          _elem557.read(iprot);
+          struct.partitionKeys.add(_elem557);
         }
       }
       struct.setPartitionKeysIsSet(true);
@@ -1297,14 +1297,14 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list543 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.partitionOrder = new ArrayList<FieldSchema>(_list543.size);
-          FieldSchema _elem544;
-          for (int _i545 = 0; _i545 < _list543.size; ++_i545)
+          org.apache.thrift.protocol.TList _list559 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.partitionOrder = new ArrayList<FieldSchema>(_list559.size);
+          FieldSchema _elem560;
+          for (int _i561 = 0; _i561 < _list559.size; ++_i561)
           {
-            _elem544 = new FieldSchema();
-            _elem544.read(iprot);
-            struct.partitionOrder.add(_elem544);
+            _elem560 = new FieldSchema();
+            _elem560.read(iprot);
+            struct.partitionOrder.add(_elem560);
           }
         }
         struct.setPartitionOrderIsSet(true);

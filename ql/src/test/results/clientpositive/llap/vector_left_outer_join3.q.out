@@ -1,0 +1,1337 @@
+PREHOOK: query: drop table if exists TJOIN3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists TJOIN3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists TJOIN4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists TJOIN4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table if not exists TJOIN3 (name string, id int, flag string) STORED AS orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TJOIN3
+POSTHOOK: query: create table if not exists TJOIN3 (name string, id int, flag string) STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TJOIN3
+PREHOOK: query: create table if not exists TJOIN4 (code_name string, id int) STORED AS orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TJOIN4
+POSTHOOK: query: create table if not exists TJOIN4 (code_name string, id int) STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TJOIN4
+PREHOOK: query: create table if not exists TJOIN3STAGE (name string, id int, flag string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TJOIN3STAGE
+POSTHOOK: query: create table if not exists TJOIN3STAGE (name string, id int, flag string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TJOIN3STAGE
+PREHOOK: query: create table if not exists TJOIN4STAGE (code_name string, id int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TJOIN4STAGE
+POSTHOOK: query: create table if not exists TJOIN4STAGE (code_name string, id int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TJOIN4STAGE
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tjoin3.txt' OVERWRITE INTO TABLE TJOIN3STAGE
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tjoin3stage
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tjoin3.txt' OVERWRITE INTO TABLE TJOIN3STAGE
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tjoin3stage
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tjoin4.txt' OVERWRITE INTO TABLE TJOIN4STAGE
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tjoin4stage
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tjoin4.txt' OVERWRITE INTO TABLE TJOIN4STAGE
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tjoin4stage
+PREHOOK: query: INSERT INTO TABLE TJOIN3 SELECT * from TJOIN3STAGE
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin3stage
+PREHOOK: Output: default@tjoin3
+POSTHOOK: query: INSERT INTO TABLE TJOIN3 SELECT * from TJOIN3STAGE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin3stage
+POSTHOOK: Output: default@tjoin3
+POSTHOOK: Lineage: tjoin3.flag SIMPLE [(tjoin3stage)tjoin3stage.FieldSchema(name:flag, type:string, comment:null), ]
+POSTHOOK: Lineage: tjoin3.id SIMPLE [(tjoin3stage)tjoin3stage.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: tjoin3.name SIMPLE [(tjoin3stage)tjoin3stage.FieldSchema(name:name, type:string, comment:null), ]
+tjoin3stage.name	tjoin3stage.id	tjoin3stage.flag
+PREHOOK: query: INSERT INTO TABLE TJOIN4 SELECT * from TJOIN4STAGE
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin4stage
+PREHOOK: Output: default@tjoin4
+POSTHOOK: query: INSERT INTO TABLE TJOIN4 SELECT * from TJOIN4STAGE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin4stage
+POSTHOOK: Output: default@tjoin4
+POSTHOOK: Lineage: tjoin4.code_name SIMPLE [(tjoin4stage)tjoin4stage.FieldSchema(name:code_name, type:string, comment:null), ]
+POSTHOOK: Lineage: tjoin4.id SIMPLE [(tjoin4stage)tjoin4stage.FieldSchema(name:id, type:int, comment:null), ]
+tjoin4stage.code_name	tjoin4stage.id
+PREHOOK: query: explain vectorization detail
+select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin3
+PREHOOK: Input: default@tjoin4
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
+select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin3
+POSTHOOK: Input: default@tjoin4
+#### A masked pattern was here ####
+Explain
+PLAN VECTORIZATION:
+  enabled: false
+  enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tjoin3
+                  Statistics: Num rows: 1050 Data size: 190050 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: name (type: string), id (type: int), (flag = 'N') (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1050 Data size: 105000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join 0 to 1
+                      filter predicates:
+                        0 {_col2}
+                        1 
+                      keys:
+                        0 _col0 (type: string)
+                        1 _col0 (type: string)
+                      outputColumnNames: _col0, _col1
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 4200 Data size: 403200 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col1 (type: int), _col0 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 4200 Data size: 403200 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 4200 Data size: 403200 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: tjoin4
+                  filterExpr: code_name is not null (type: boolean)
+                  Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: code_name is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: code_name (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin3
+PREHOOK: Input: default@tjoin4
+#### A masked pattern was here ####
+POSTHOOK: query: select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin3
+POSTHOOK: Input: default@tjoin4
+#### A masked pattern was here ####
+tjoin3.id	tjoin3.name
+1	testname
+2	testname
+3	testname
+4	testname
+5	testname
+6	testname
+7	testname
+8	testname
+9	testname
+10	testname
+11	testname
+12	testname
+13	testname
+14	testname
+15	testname
+16	testname
+17	testname
+18	testname
+19	testname
+20	testname
+21	testname
+22	testname
+23	testname
+24	testname
+25	testname
+26	testname
+27	testname
+28	testname
+29	testname
+30	testname
+31	testname
+32	testname
+33	testname
+34	testname
+35	testname
+36	testname
+37	testname
+38	testname
+39	testname
+40	testname
+41	testname
+42	testname
+43	testname
+44	testname
+45	testname
+46	testname
+47	testname
+48	testname
+49	testname
+50	testname
+51	testname
+52	testname
+53	testname
+54	testname
+55	testname
+56	testname
+57	testname
+58	testname
+59	testname
+60	testname
+61	testname
+62	testname
+63	testname
+64	testname
+65	testname
+66	testname
+67	testname
+68	testname
+69	testname
+70	testname
+71	testname
+72	testname
+73	testname
+74	testname
+75	testname
+76	testname
+77	testname
+78	testname
+79	testname
+80	testname
+81	testname
+82	testname
+83	testname
+84	testname
+85	testname
+86	testname
+87	testname
+88	testname
+89	testname
+90	testname
+91	testname
+92	testname
+93	testname
+94	testname
+95	testname
+96	testname
+97	testname
+98	testname
+99	testname
+100	testname
+101	testname
+102	testname
+103	testname
+104	testname
+105	testname
+106	testname
+107	testname
+108	testname
+109	testname
+110	testname
+111	testname
+112	testname
+113	testname
+114	testname
+115	testname
+116	testname
+117	testname
+118	testname
+119	testname
+120	testname
+121	testname
+122	testname
+123	testname
+124	testname
+125	testname
+126	testname
+127	testname
+128	testname
+129	testname
+130	testname
+131	testname
+132	testname
+133	testname
+134	testname
+135	testname
+136	testname
+137	testname
+138	testname
+139	testname
+140	testname
+141	testname
+142	testname
+143	testname
+144	testname
+145	testname
+146	testname
+147	testname
+148	testname
+149	testname
+150	testname
+151	testname
+152	testname
+153	testname
+154	testname
+155	testname
+156	testname
+157	testname
+158	testname
+159	testname
+160	testname
+161	testname
+162	testname
+163	testname
+164	testname
+165	testname
+166	testname
+167	testname
+168	testname
+169	testname
+170	testname
+171	testname
+172	testname
+173	testname
+174	testname
+175	testname
+176	testname
+177	testname
+178	testname
+179	testname
+180	testname
+181	testname
+182	testname
+183	testname
+184	testname
+185	testname
+186	testname
+187	testname
+188	testname
+189	testname
+190	testname
+191	testname
+192	testname
+193	testname
+194	testname
+195	testname
+196	testname
+197	testname
+198	testname
+199	testname
+200	testname
+201	testname
+202	testname
+203	testname
+204	testname
+205	testname
+206	testname
+207	testname
+208	testname
+209	testname
+210	testname
+211	testname
+212	testname
+213	testname
+214	testname
+215	testname
+216	testname
+217	testname
+218	testname
+219	testname
+220	testname
+221	testname
+222	testname
+223	testname
+224	testname
+225	testname
+226	testname
+227	testname
+228	testname
+229	testname
+230	testname
+231	testname
+232	testname
+233	testname
+234	testname
+235	testname
+236	testname
+237	testname
+238	testname
+239	testname
+240	testname
+241	testname
+242	testname
+243	testname
+244	testname
+245	testname
+246	testname
+247	testname
+248	testname
+249	testname
+250	testname
+251	testname
+252	testname
+253	testname
+254	testname
+255	testname
+256	testname
+257	testname
+258	testname
+259	testname
+260	testname
+261	testname
+262	testname
+263	testname
+264	testname
+265	testname
+266	testname
+267	testname
+268	testname
+269	testname
+270	testname
+271	testname
+272	testname
+273	testname
+274	testname
+275	testname
+276	testname
+277	testname
+278	testname
+279	testname
+280	testname
+281	testname
+282	testname
+283	testname
+284	testname
+285	testname
+286	testname
+287	testname
+288	testname
+289	testname
+290	testname
+291	testname
+292	testname
+293	testname
+294	testname
+295	testname
+296	testname
+297	testname
+298	testname
+299	testname
+300	testname
+301	testname
+302	testname
+303	testname
+304	testname
+305	testname
+306	testname
+307	testname
+308	testname
+309	testname
+310	testname
+311	testname
+312	testname
+313	testname
+314	testname
+315	testname
+316	testname
+317	testname
+318	testname
+319	testname
+320	testname
+321	testname
+322	testname
+323	testname
+324	testname
+325	testname
+326	testname
+327	testname
+328	testname
+329	testname
+330	testname
+331	testname
+332	testname
+333	testname
+334	testname
+335	testname
+336	testname
+337	testname
+338	testname
+339	testname
+340	testname
+341	testname
+342	testname
+343	testname
+344	testname
+345	testname
+346	testname
+347	testname
+348	testname
+349	testname
+350	testname
+351	testname
+352	testname
+353	testname
+354	testname
+355	testname
+356	testname
+357	testname
+358	testname
+359	testname
+360	testname
+361	testname
+362	testname
+363	testname
+364	testname
+365	testname
+366	testname
+367	testname
+368	testname
+369	testname
+370	testname
+371	testname
+372	testname
+373	testname
+374	testname
+375	testname
+376	testname
+377	testname
+378	testname
+379	testname
+380	testname
+381	testname
+382	testname
+383	testname
+384	testname
+385	testname
+386	testname
+387	testname
+388	testname
+389	testname
+390	testname
+391	testname
+392	testname
+393	testname
+394	testname
+395	testname
+396	testname
+397	testname
+398	testname
+399	testname
+400	testname
+401	testname
+402	testname
+403	testname
+404	testname
+405	testname
+406	testname
+407	testname
+408	testname
+409	testname
+410	testname
+411	testname
+412	testname
+413	testname
+414	testname
+415	testname
+416	testname
+417	testname
+418	testname
+419	testname
+420	testname
+421	testname
+422	testname
+423	testname
+424	testname
+425	testname
+426	testname
+427	testname
+428	testname
+429	testname
+430	testname
+431	testname
+432	testname
+433	testname
+434	testname
+435	testname
+436	testname
+437	testname
+438	testname
+439	testname
+440	testname
+441	testname
+442	testname
+443	testname
+444	testname
+445	testname
+446	testname
+447	testname
+448	testname
+449	testname
+450	testname
+451	testname
+452	testname
+453	testname
+454	testname
+455	testname
+456	testname
+457	testname
+458	testname
+459	testname
+460	testname
+461	testname
+462	testname
+463	testname
+464	testname
+465	testname
+466	testname
+467	testname
+468	testname
+469	testname
+470	testname
+471	testname
+472	testname
+473	testname
+474	testname
+475	testname
+476	testname
+477	testname
+478	testname
+479	testname
+480	testname
+481	testname
+482	testname
+483	testname
+484	testname
+485	testname
+486	testname
+487	testname
+488	testname
+489	testname
+490	testname
+491	testname
+492	testname
+493	testname
+494	testname
+495	testname
+496	testname
+497	testname
+498	testname
+499	testname
+500	testname
+501	testname
+502	testname
+503	testname
+504	testname
+505	testname
+506	testname
+507	testname
+508	testname
+509	testname
+510	testname
+511	testname
+512	testname
+513	testname
+514	testname
+515	testname
+516	testname
+517	testname
+518	testname
+519	testname
+520	testname
+521	testname
+522	testname
+523	testname
+524	testname
+525	testname
+526	testname
+527	testname
+528	testname
+529	testname
+530	testname
+531	testname
+532	testname
+533	testname
+534	testname
+535	testname
+536	testname
+537	testname
+538	testname
+539	testname
+540	testname
+541	testname
+542	testname
+543	testname
+544	testname
+545	testname
+546	testname
+547	testname
+548	testname
+549	testname
+550	testname
+551	testname
+552	testname
+553	testname
+554	testname
+555	testname
+556	testname
+557	testname
+558	testname
+559	testname
+560	testname
+561	testname
+562	testname
+563	testname
+564	testname
+565	testname
+566	testname
+567	testname
+568	testname
+569	testname
+570	testname
+571	testname
+572	testname
+573	testname
+574	testname
+575	testname
+576	testname
+577	testname
+578	testname
+579	testname
+580	testname
+581	testname
+582	testname
+583	testname
+584	testname
+585	testname
+586	testname
+587	testname
+588	testname
+589	testname
+590	testname
+591	testname
+592	testname
+593	testname
+594	testname
+595	testname
+596	testname
+597	testname
+598	testname
+599	testname
+600	testname
+601	testname
+602	testname
+603	testname
+604	testname
+605	testname
+606	testname
+607	testname
+608	testname
+609	testname
+610	testname
+611	testname
+612	testname
+613	testname
+614	testname
+615	testname
+616	testname
+617	testname
+618	testname
+619	testname
+620	testname
+621	testname
+622	testname
+623	testname
+624	testname
+625	testname
+626	testname
+627	testname
+628	testname
+629	testname
+630	testname
+631	testname
+632	testname
+633	testname
+634	testname
+635	testname
+636	testname
+637	testname
+638	testname
+639	testname
+640	testname
+641	testname
+642	testname
+643	testname
+644	testname
+645	testname
+646	testname
+647	testname
+648	testname
+649	testname
+650	testname
+651	testname
+652	testname
+653	testname
+654	testname
+655	testname
+656	testname
+657	testname
+658	testname
+659	testname
+660	testname
+661	testname
+662	testname
+663	testname
+664	testname
+665	testname
+666	testname
+667	testname
+668	testname
+669	testname
+670	testname
+671	testname
+672	testname
+673	testname
+674	testname
+675	testname
+676	testname
+677	testname
+678	testname
+679	testname
+680	testname
+681	testname
+682	testname
+683	testname
+684	testname
+685	testname
+686	testname
+687	testname
+688	testname
+689	testname
+690	testname
+691	testname
+692	testname
+693	testname
+694	testname
+695	testname
+696	testname
+697	testname
+698	testname
+699	testname
+700	testname
+701	testname
+702	testname
+703	testname
+704	testname
+705	testname
+706	testname
+707	testname
+708	testname
+709	testname
+710	testname
+711	testname
+712	testname
+713	testname
+714	testname
+715	testname
+716	testname
+717	testname
+718	testname
+719	testname
+720	testname
+721	testname
+722	testname
+723	testname
+724	testname
+725	testname
+726	testname
+727	testname
+728	testname
+729	testname
+730	testname
+731	testname
+732	testname
+733	testname
+734	testname
+735	testname
+736	testname
+737	testname
+738	testname
+739	testname
+740	testname
+741	testname
+742	testname
+743	testname
+744	testname
+745	testname
+746	testname
+747	testname
+748	testname
+749	testname
+750	testname
+751	testname
+752	testname
+753	testname
+754	testname
+755	testname
+756	testname
+757	testname
+758	testname
+759	testname
+760	testname
+761	testname
+762	testname
+763	testname
+764	testname
+765	testname
+766	testname
+767	testname
+768	testname
+769	testname
+770	testname
+771	testname
+772	testname
+773	testname
+774	testname
+775	testname
+776	testname
+777	testname
+778	testname
+779	testname
+780	testname
+781	testname
+782	testname
+783	testname
+784	testname
+785	testname
+786	testname
+787	testname
+788	testname
+789	testname
+790	testname
+791	testname
+792	testname
+793	testname
+794	testname
+795	testname
+796	testname
+797	testname
+798	testname
+799	testname
+800	testname
+801	testname
+802	testname
+803	testname
+804	testname
+805	testname
+806	testname
+807	testname
+808	testname
+809	testname
+810	testname
+811	testname
+812	testname
+813	testname
+814	testname
+815	testname
+816	testname
+817	testname
+818	testname
+819	testname
+820	testname
+821	testname
+822	testname
+823	testname
+824	testname
+825	testname
+826	testname
+827	testname
+828	testname
+829	testname
+830	testname
+831	testname
+832	testname
+833	testname
+834	testname
+835	testname
+836	testname
+837	testname
+838	testname
+839	testname
+840	testname
+841	testname
+842	testname
+843	testname
+844	testname
+845	testname
+846	testname
+847	testname
+848	testname
+849	testname
+850	testname
+851	testname
+852	testname
+853	testname
+854	testname
+855	testname
+856	testname
+857	testname
+858	testname
+859	testname
+860	testname
+861	testname
+862	testname
+863	testname
+864	testname
+865	testname
+866	testname
+867	testname
+868	testname
+869	testname
+870	testname
+871	testname
+872	testname
+873	testname
+874	testname
+875	testname
+876	testname
+877	testname
+878	testname
+879	testname
+880	testname
+881	testname
+882	testname
+883	testname
+884	testname
+885	testname
+886	testname
+887	testname
+888	testname
+889	testname
+890	testname
+891	testname
+892	testname
+893	testname
+894	testname
+895	testname
+896	testname
+897	testname
+898	testname
+899	testname
+900	testname
+901	testname
+902	testname
+903	testname
+904	testname
+905	testname
+906	testname
+907	testname
+908	testname
+909	testname
+910	testname
+911	testname
+912	testname
+913	testname
+914	testname
+915	testname
+916	testname
+917	testname
+918	testname
+919	testname
+920	testname
+921	testname
+922	testname
+923	testname
+924	testname
+925	testname
+926	testname
+927	testname
+928	testname
+929	testname
+930	testname
+931	testname
+932	testname
+933	testname
+934	testname
+935	testname
+936	testname
+937	testname
+938	testname
+939	testname
+940	testname
+941	testname
+942	testname
+943	testname
+944	testname
+945	testname
+946	testname
+947	testname
+948	testname
+949	testname
+950	testname
+951	testname
+952	testname
+953	testname
+954	testname
+955	testname
+956	testname
+957	testname
+958	testname
+959	testname
+960	testname
+961	testname
+962	testname
+963	testname
+964	testname
+965	testname
+966	testname
+967	testname
+968	testname
+969	testname
+970	testname
+971	testname
+972	testname
+973	testname
+974	testname
+975	testname
+976	testname
+977	testname
+978	testname
+979	testname
+980	testname
+981	testname
+982	testname
+983	testname
+984	testname
+985	testname
+986	testname
+987	testname
+988	testname
+989	testname
+990	testname
+991	testname
+992	testname
+993	testname
+994	testname
+995	testname
+996	testname
+997	testname
+998	testname
+999	testname
+1000	testname
+1001	testname
+1002	testname
+1003	testname
+1004	testname
+1005	testname
+1006	testname
+1007	testname
+1008	testname
+1009	testname
+1010	testname
+1011	testname
+1012	testname
+1013	testname
+1014	testname
+1015	testname
+1016	testname
+1017	testname
+1018	testname
+1019	testname
+1020	testname
+1021	testname
+1022	testname
+1023	testname
+1024	testname
+1025	testname
+1026	testname
+1027	testname
+1028	testname
+1029	testname
+1030	testname
+1031	testname
+1032	testname
+1033	testname
+1034	testname
+1035	testname
+1036	testname
+1037	testname
+1038	testname
+1039	testname
+1040	testname
+1041	testname
+1042	testname
+1043	testname
+1044	testname
+1045	testname
+1046	testname
+1047	testname
+1048	testname
+1049	testname
+1050	testname
+PREHOOK: query: explain vectorization detail
+select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N') limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin3
+PREHOOK: Input: default@tjoin4
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
+select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N') limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin3
+POSTHOOK: Input: default@tjoin4
+#### A masked pattern was here ####
+Explain
+PLAN VECTORIZATION:
+  enabled: false
+  enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tjoin3
+                  Statistics: Num rows: 1050 Data size: 190050 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: name (type: string), id (type: int), (flag = 'N') (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1050 Data size: 105000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join 0 to 1
+                      filter predicates:
+                        0 {_col2}
+                        1 
+                      keys:
+                        0 _col0 (type: string)
+                        1 _col0 (type: string)
+                      outputColumnNames: _col0, _col1
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 4200 Data size: 403200 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col1 (type: int), _col0 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 4200 Data size: 403200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Limit
+                          Number of rows: 1
+                          Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: tjoin4
+                  filterExpr: code_name is not null (type: boolean)
+                  Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: code_name is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: code_name (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N') limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin3
+PREHOOK: Input: default@tjoin4
+#### A masked pattern was here ####
+POSTHOOK: query: select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N') limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin3
+POSTHOOK: Input: default@tjoin4
+#### A masked pattern was here ####
+tjoin3.id	tjoin3.name
+1	testname

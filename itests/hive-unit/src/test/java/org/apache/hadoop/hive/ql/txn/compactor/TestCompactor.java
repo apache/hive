@@ -47,6 +47,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -408,7 +409,7 @@ public class TestCompactor {
 
     //now make sure we get the stats we expect for partition we are going to add data to later
     Map<String, List<ColumnStatisticsObj>> stats = msClient.getPartitionColumnStatistics(ci.dbname,
-      ci.tableName, Arrays.asList(ci.partName), colNames);
+      ci.tableName, Arrays.asList(ci.partName), colNames, Constants.HIVE_ENGINE);
     List<ColumnStatisticsObj> colStats = stats.get(ci.partName);
     assertNotNull("No stats found for partition " + ci.partName, colStats);
     Assert.assertEquals("Expected column 'a' at index 0", "a", colStats.get(0).getColName());
@@ -426,7 +427,7 @@ public class TestCompactor {
 
     //now save stats for partition we won't modify
     stats = msClient.getPartitionColumnStatistics(ciPart2.dbname,
-      ciPart2.tableName, Arrays.asList(ciPart2.partName), colNames);
+      ciPart2.tableName, Arrays.asList(ciPart2.partName), colNames, Constants.HIVE_ENGINE);
     colStats = stats.get(ciPart2.partName);
     LongColumnStatsData colAStatsPart2 = colStats.get(0).getStatsData().getLongStats();
     StringColumnStatsData colBStatsPart2 = colStats.get(1).getStatsData().getStringStats();
@@ -498,7 +499,7 @@ public class TestCompactor {
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
 
     stats = msClient.getPartitionColumnStatistics(ci.dbname, ci.tableName,
-      Arrays.asList(ci.partName), colNames);
+      Arrays.asList(ci.partName), colNames, Constants.HIVE_ENGINE);
     colStats = stats.get(ci.partName);
     assertNotNull("No stats found for partition " + ci.partName, colStats);
     Assert.assertEquals("Expected column 'a' at index 0", "a", colStats.get(0).getColName());
@@ -517,7 +518,7 @@ public class TestCompactor {
 
     //now check that stats for partition we didn't modify did not change
     stats = msClient.getPartitionColumnStatistics(ciPart2.dbname, ciPart2.tableName,
-      Arrays.asList(ciPart2.partName), colNames);
+      Arrays.asList(ciPart2.partName), colNames, Constants.HIVE_ENGINE);
     colStats = stats.get(ciPart2.partName);
     Assert.assertEquals("Expected stats for " + ciPart2.partName + " to stay the same",
       colAStatsPart2, colStats.get(0).getStatsData().getLongStats());

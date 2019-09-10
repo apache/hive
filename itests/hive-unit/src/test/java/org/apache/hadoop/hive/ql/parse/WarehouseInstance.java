@@ -27,11 +27,14 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -447,6 +450,23 @@ public class WarehouseInstance implements Closeable {
     }
   }
 
+  // Make sure that every table in the target database is marked as target of the replication.
+  // Stats updater task and partition management task skip processing tables being replicated into.
+  private void verifyReplTargetProperty(Map<String, String> props) {
+    assertTrue(props.containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY));
+  }
+
+  public WarehouseInstance verifyReplTargetProperty(String dbName, List<String> tblNames) throws Exception {
+    for (String tblName : tblNames) {
+      verifyReplTargetProperty(getTable(dbName, tblName).getParameters());
+    }
+    return this;
+  }
+
+  public WarehouseInstance verifyReplTargetProperty(String dbName) throws Exception {
+    return verifyReplTargetProperty(dbName, getAllTables(dbName));
+  }
+
   public Database getDatabase(String dbName) throws Exception {
     try {
       return client.getDatabase(dbName);
@@ -474,7 +494,7 @@ public class WarehouseInstance implements Closeable {
    * @return - list of ColumnStatisticsObj objects in the order of the specified columns
    */
   public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName) throws Exception {
-    return client.getTableColumnStatistics(dbName, tableName, getTableColNames(dbName, tableName));
+    return client.getTableColumnStatistics(dbName, tableName, getTableColNames(dbName, tableName), Constants.HIVE_ENGINE);
   }
 
   /**
@@ -500,7 +520,7 @@ public class WarehouseInstance implements Closeable {
     List<String> colNames = new ArrayList();
     client.getFields(dbName, tableName).forEach(fs -> colNames.add(fs.getName()));
     return client.getPartitionColumnStatistics(dbName, tableName,
-            client.listPartitionNames(dbName, tableName, (short) -1), colNames);
+            client.listPartitionNames(dbName, tableName, (short) -1), colNames, Constants.HIVE_ENGINE);
   }
 
   /**
@@ -516,7 +536,7 @@ public class WarehouseInstance implements Closeable {
                                                          String partName, List<String> colNames)
           throws Exception {
     return client.getPartitionColumnStatistics(dbName, tableName,
-                                              Collections.singletonList(partName), colNames).get(0);
+                                              Collections.singletonList(partName), colNames, Constants.HIVE_ENGINE).get(0);
   }
 
   public List<Partition> getAllPartitions(String dbName, String tableName) throws Exception {
@@ -585,6 +605,10 @@ public class WarehouseInstance implements Closeable {
     if (miniDFSCluster != null && miniDFSCluster.isClusterUp()) {
       miniDFSCluster.shutdown();
     }
+  }
+
+  CurrentNotificationEventId getCurrentNotificationEventId() throws Exception {
+    return client.getCurrentNotificationEventId();
   }
 
   List<Path> copyToHDFS(List<URI> localUris) throws IOException, SemanticException {

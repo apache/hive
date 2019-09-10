@@ -729,12 +729,6 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     final NavigableMap<Integer, RexLiteral> omittedConstants = new TreeMap<>();
     for (int i = 0; i < oldGroupKeyCount; i++) {
       final RexLiteral constant = projectedLiteral(newInput, i);
-      if (constant != null) {
-        // Exclude constants. Aggregate({true}) occurs because Aggregate({})
-        // would generate 1 row even when applied to an empty table.
-        omittedConstants.put(i, constant);
-        continue;
-      }
       int newInputPos = frame.oldToNewOutputs.get(i);
       projects.add(RexInputRef.of2(newInputPos, newInputOutput));
       mapNewInputToProjOutputs.put(newInputPos, newPos);

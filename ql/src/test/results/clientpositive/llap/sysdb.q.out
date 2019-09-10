@@ -1736,6 +1736,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
+ `ENGINE` string,
   CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1761,7 +1762,8 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\"
+ \"LAST_ANALYZED\",
+ \"ENGINE\"
 FROM
   \"TAB_COL_STATS\""
 )
@@ -1788,6 +1790,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
+ `ENGINE` string,
   CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1813,7 +1816,8 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\"
+ \"LAST_ANALYZED\",
+ \"ENGINE\"
 FROM
   \"TAB_COL_STATS\""
 )
@@ -1841,6 +1845,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
+ `ENGINE` string,
   CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1867,7 +1872,8 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\"
+ \"LAST_ANALYZED\",
+ \"ENGINE\"
 FROM
   \"PART_COL_STATS\""
 )
@@ -1895,6 +1901,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
+ `ENGINE` string,
   CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1921,7 +1928,8 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\"
+ \"LAST_ANALYZED\",
+ \"ENGINE\"
 FROM
   \"PART_COL_STATS\""
 )
@@ -3949,6 +3957,7 @@ part_col_stats	cs_id
 part_col_stats	db_name
 part_col_stats	double_high_value
 part_col_stats	double_low_value
+part_col_stats	engine
 part_col_stats	last_analyzed
 part_col_stats	long_high_value
 part_col_stats	long_low_value
@@ -4091,6 +4100,7 @@ tab_col_stats	cs_id
 tab_col_stats	db_name
 tab_col_stats	double_high_value
 tab_col_stats	double_low_value
+tab_col_stats	engine
 tab_col_stats	last_analyzed
 tab_col_stats	long_high_value
 tab_col_stats	long_low_value
@@ -4723,6 +4733,7 @@ max_col_len         	bigint              	from deserializer
 num_trues           	bigint              	from deserializer   
 num_falses          	bigint              	from deserializer   
 last_analyzed       	bigint              	from deserializer   
+engine              	string              	from deserializer   
 PREHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tab_col_stats

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -30,6 +31,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -80,6 +82,16 @@ public class PartitionManagementTask implements MetastoreTaskThread {
     return conf;
   }
 
+  private static boolean partitionDiscoveryEnabled(Map<String, String> params) {
+    return params != null && params.containsKey(DISCOVER_PARTITIONS_TBLPROPERTY) &&
+            params.get(DISCOVER_PARTITIONS_TBLPROPERTY).equalsIgnoreCase("true");
+  }
+
+  private static boolean tblBeingReplicatedInto(Map<String, String> params) {
+    return params != null && params.containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY) &&
+            !params.get(ReplConst.REPL_TARGET_TABLE_PROPERTY).trim().isEmpty();
+  }
+
   @Override
   public void run() {
     if (lock.tryLock()) {
@@ -116,8 +128,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
 
         for (TableMeta tableMeta : foundTableMetas) {
           Table table = msc.getTable(tableMeta.getCatName(), tableMeta.getDbName(), tableMeta.getTableName());
-          if (table.getParameters() != null && table.getParameters().containsKey(DISCOVER_PARTITIONS_TBLPROPERTY) &&
-            table.getParameters().get(DISCOVER_PARTITIONS_TBLPROPERTY).equalsIgnoreCase("true")) {
+          if (partitionDiscoveryEnabled(table.getParameters()) && !tblBeingReplicatedInto(table.getParameters())) {
             candidateTables.add(table);
           }
         }

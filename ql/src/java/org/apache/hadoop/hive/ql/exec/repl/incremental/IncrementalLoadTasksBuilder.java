@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ReplLastIdInfo;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.ReplRemoveFirstIncLoadPendFlagDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -151,13 +151,6 @@ public class IncrementalLoadTasksBuilder {
     }
 
     if (!hasMoreWork()) {
-      // if no events were replayed, then add a task to update the last repl id of the database/table to last event id.
-      if (taskChainTail == evTaskRoot) {
-        String lastEventid = eventTo.toString();
-        taskChainTail = dbUpdateReplStateTask(dbName, lastEventid, taskChainTail);
-        this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " + lastEventid);
-      }
-
       ReplRemoveFirstIncLoadPendFlagDesc desc = new ReplRemoveFirstIncLoadPendFlagDesc(dbName);
       Task<? extends Serializable> updateIncPendTask = TaskFactory.get(new DDLWork(inputs, outputs, desc), conf);
       taskChainTail.addDependentTask(updateIncPendTask);

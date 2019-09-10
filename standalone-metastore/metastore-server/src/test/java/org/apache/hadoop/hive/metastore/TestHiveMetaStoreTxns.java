@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.junit.After;
@@ -309,6 +310,7 @@ public class TestHiveMetaStoreTxns {
 
   @Before
   public void setUp() throws Exception {
+    conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     TxnDbUtil.setConfValues(conf);
     TxnDbUtil.prepDb(conf);

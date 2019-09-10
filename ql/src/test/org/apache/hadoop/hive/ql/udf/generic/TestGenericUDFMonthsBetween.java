@@ -131,6 +131,9 @@ public class TestGenericUDFMonthsBetween {
     runTestStr(null, null, null, udf);
 
     runTestStr("2003-04-23", "2002-04-24", 11.96774194, udf);
+
+    //Test for Julian vs Gregorian dates
+    runTestStr("1582-10-05", "1582-11-05", -1., udf);
   }
 
 

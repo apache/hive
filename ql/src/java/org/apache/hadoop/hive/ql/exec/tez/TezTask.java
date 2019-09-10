@@ -175,7 +175,7 @@ public class TezTask extends Task<TezWork> {
 
       WmContext wmContext = ctx.getWmContext();
       // jobConf will hold all the configuration for hadoop, tez, and hive, which are not set in AM defaults
-      JobConf jobConf = utils.createConfiguration(conf, true);
+      JobConf jobConf = utils.createConfiguration(conf, false);
 
 
       // Get all user jars from work (e.g. input format stuff).

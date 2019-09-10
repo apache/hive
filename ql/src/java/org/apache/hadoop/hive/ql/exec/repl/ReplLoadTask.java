@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
@@ -66,6 +68,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -515,6 +518,42 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         childTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(tracker));
       } else {
         childTasks.add(builder.build(driverContext, getHive(), LOG, tracker));
+      }
+
+      // If there are no more events to be applied, add a task to update the last.repl.id of the
+      // target database to the event id of the last event considered by the dump. Next
+      // incremental cycle won't consider the events in this dump again if it starts from this id.
+      if (!builder.hasMoreWork() && !work.getPathsToCopyIterator().hasNext()) {
+        // The name of the database to be loaded into is either specified directly in REPL LOAD
+        // command i.e. when dbNameToLoadIn has a valid dbname or is available through dump
+        // metadata during table level replication.
+        String dbName = work.dbNameToLoadIn;
+        if (dbName == null || StringUtils.isBlank(dbName)) {
+          if (work.currentReplScope != null) {
+            String replScopeDbName = work.currentReplScope.getDbName();
+            if (replScopeDbName != null && !"*".equals(replScopeDbName)) {
+              dbName = replScopeDbName;
+            }
+          }
+        }
+
+        // If we are replicating to multiple databases at a time, it's not
+        // possible to know which all databases we are replicating into and hence we can not
+        // update repl id in all those databases.
+        if (StringUtils.isNotBlank(dbName)) {
+          String lastEventid = builder.eventTo().toString();
+          Map<String, String> mapProp = new HashMap<>();
+          mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), lastEventid);
+
+          AlterDatabaseSetPropertiesDesc alterDbDesc =
+                  new AlterDatabaseSetPropertiesDesc(dbName, mapProp,
+                          new ReplicationSpec(lastEventid, lastEventid));
+          Task<? extends Serializable> updateReplIdTask =
+                  TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc), conf);
+
+          DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(updateReplIdTask));
+          LOG.debug("Added task to set last repl id of db " + dbName + " to " + lastEventid);
+        }
       }
 
       // Either the incremental has more work or the external table file copy has more paths to process.
