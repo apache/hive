@@ -1011,8 +1011,8 @@
                   <shadedPattern>org.apache.hive.org.objenesis</shadedPattern>
                 </relocation>
                 <relocation>
-                  <pattern>com.fasterxml.jackson.core</pattern>
-                  <shadedPattern>org.apache.hive.com.fasterxml.jackson.core</shadedPattern>
+                  <pattern>com.fasterxml.jackson</pattern>
+                  <shadedPattern>org.apache.hive.com.fasterxml.jackson</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
