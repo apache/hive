@@ -66,7 +66,9 @@ public class VectorLimitOperator extends LimitOperator implements VectorizationO
   public void process(Object row, int tag) throws HiveException {
     VectorizedRowBatch batch = (VectorizedRowBatch) row;
 
-    if (currCount + batch.size < offset) {
+    // We should skip number of rows equal to offset value
+    // skip until sum of current read count and current batch size less than or equal offset value
+    if (currCount + batch.size <= offset) {
       currCount += batch.size;
     } else if (currCount >= offset + limit) {
       setDone(true);
