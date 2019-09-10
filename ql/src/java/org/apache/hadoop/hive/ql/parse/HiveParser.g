@@ -168,16 +168,23 @@ TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
 TOK_ALTERTABLE_PARTCOLTYPE;
 TOK_ALTERTABLE_MERGEFILES;
+TOK_ALTERPARTITION_MERGEFILES;
 TOK_ALTERTABLE_TOUCH;
 TOK_ALTERTABLE_ARCHIVE;
 TOK_ALTERTABLE_UNARCHIVE;
 TOK_ALTERTABLE_SERDEPROPERTIES;
+TOK_ALTERPARTITION_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
+TOK_ALTERPARTITION_SERIALIZER;
 TOK_ALTERTABLE_UPDATECOLSTATS;
+TOK_ALTERPARTITION_UPDATECOLSTATS;
 TOK_ALTERTABLE_UPDATESTATS;
+TOK_ALTERPARTITION_UPDATESTATS;
 TOK_TABLE_PARTITION;
 TOK_ALTERTABLE_FILEFORMAT;
+TOK_ALTERPARTITION_FILEFORMAT;
 TOK_ALTERTABLE_LOCATION;
+TOK_ALTERPARTITION_LOCATION;
 TOK_ALTERTABLE_PROPERTIES;
 TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION;
 TOK_ALTERTABLE_DROPPROPERTIES;
@@ -185,6 +192,7 @@ TOK_ALTERTABLE_SKEWED;
 TOK_ALTERTABLE_EXCHANGEPARTITION;
 TOK_ALTERTABLE_SKEWED_LOCATION;
 TOK_ALTERTABLE_BUCKETS;
+TOK_ALTERPARTITION_BUCKETS;
 TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_ALTERTABLE_COMPACT;
 TOK_ALTERTABLE_DROPCONSTRAINT;
@@ -1185,24 +1193,25 @@ alterTableStatementSuffix
     | alterStatementPartitionKeyType
     | alterStatementSuffixDropConstraint
     | alterStatementSuffixAddConstraint
-    | partitionSpec? alterTblPartitionStatementSuffix -> alterTblPartitionStatementSuffix partitionSpec?
+    | alterTblPartitionStatementSuffix[false]
+    | partitionSpec alterTblPartitionStatementSuffix[true] -> alterTblPartitionStatementSuffix partitionSpec
     | alterStatementSuffixSetOwner
     ;
 
-alterTblPartitionStatementSuffix
+alterTblPartitionStatementSuffix[boolean partition]
 @init {pushMsg("alter table partition statement suffix", state);}
 @after {popMsg(state);}
-  : alterStatementSuffixFileFormat
-  | alterStatementSuffixLocation
-  | alterStatementSuffixMergeFiles
-  | alterStatementSuffixSerdeProperties
+  : alterStatementSuffixFileFormat[partition]
+  | alterStatementSuffixLocation[partition]
+  | alterStatementSuffixMergeFiles[partition]
+  | alterStatementSuffixSerdeProperties[partition]
   | alterStatementSuffixRenamePart
-  | alterStatementSuffixBucketNum
+  | alterStatementSuffixBucketNum[partition]
   | alterTblPartitionStatementSuffixSkewedLocation
   | alterStatementSuffixClusterbySortby
   | alterStatementSuffixCompact
-  | alterStatementSuffixUpdateStatsCol
-  | alterStatementSuffixUpdateStats
+  | alterStatementSuffixUpdateStatsCol[partition]
+  | alterStatementSuffixUpdateStats[partition]
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
   | alterStatementSuffixUpdateColumns
@@ -1306,18 +1315,20 @@ alterStatementSuffixRenameCol
     ->^(TOK_ALTERTABLE_RENAMECOL $oldName $newName colType $comment? alterColumnConstraint? alterStatementChangeColPosition? restrictOrCascade?)
     ;
 
-alterStatementSuffixUpdateStatsCol
+alterStatementSuffixUpdateStatsCol[boolean partition]
 @init { pushMsg("update column statistics", state); }
 @after { popMsg(state); }
     : KW_UPDATE KW_STATISTICS KW_FOR KW_COLUMN? colName=identifier KW_SET tableProperties (KW_COMMENT comment=StringLiteral)?
-    ->^(TOK_ALTERTABLE_UPDATECOLSTATS $colName tableProperties $comment?)
+    -> {partition}? ^(TOK_ALTERPARTITION_UPDATECOLSTATS $colName tableProperties $comment?)
+    ->              ^(TOK_ALTERTABLE_UPDATECOLSTATS $colName tableProperties $comment?)
     ;
 
-alterStatementSuffixUpdateStats
+alterStatementSuffixUpdateStats[boolean partition]
 @init { pushMsg("update basic statistics", state); }
 @after { popMsg(state); }
     : KW_UPDATE KW_STATISTICS KW_SET tableProperties
-    ->^(TOK_ALTERTABLE_UPDATESTATS tableProperties)
+    -> {partition}? ^(TOK_ALTERPARTITION_UPDATESTATS tableProperties)
+    ->              ^(TOK_ALTERTABLE_UPDATESTATS tableProperties)
     ;
 
 alterStatementChangeColPosition
@@ -1405,13 +1416,15 @@ alterMaterializedViewSuffixRebuild
     : KW_REBUILD -> ^(TOK_ALTER_MATERIALIZED_VIEW_REBUILD)
     ;
 
-alterStatementSuffixSerdeProperties
+alterStatementSuffixSerdeProperties[boolean partition]
 @init { pushMsg("alter serdes statement", state); }
 @after { popMsg(state); }
     : KW_SET KW_SERDE serdeName=StringLiteral (KW_WITH KW_SERDEPROPERTIES tableProperties)?
-    -> ^(TOK_ALTERTABLE_SERIALIZER $serdeName tableProperties?)
+    -> {partition}? ^(TOK_ALTERPARTITION_SERIALIZER $serdeName tableProperties?)
+    ->              ^(TOK_ALTERTABLE_SERIALIZER $serdeName tableProperties?)
     | KW_SET KW_SERDEPROPERTIES tableProperties
-    -> ^(TOK_ALTERTABLE_SERDEPROPERTIES tableProperties)
+    -> {partition}? ^(TOK_ALTERPARTITION_SERDEPROPERTIES tableProperties)
+    ->              ^(TOK_ALTERTABLE_SERDEPROPERTIES tableProperties)
     ;
 
 tablePartitionPrefix
@@ -1421,12 +1434,13 @@ tablePartitionPrefix
   ->^(TOK_TABLE_PARTITION tableName partitionSpec?)
   ;
 
-alterStatementSuffixFileFormat
+alterStatementSuffixFileFormat[boolean partition]
 @init {pushMsg("alter fileformat statement", state); }
 @after {popMsg(state);}
-	: KW_SET KW_FILEFORMAT fileFormat
-	-> ^(TOK_ALTERTABLE_FILEFORMAT fileFormat)
-	;
+  : KW_SET KW_FILEFORMAT fileFormat
+  -> {partition}? ^(TOK_ALTERPARTITION_FILEFORMAT fileFormat)
+  ->              ^(TOK_ALTERTABLE_FILEFORMAT fileFormat)
+  ;
 
 alterStatementSuffixClusterbySortby
 @init {pushMsg("alter partition cluster by sort by statement", state);}
@@ -1464,11 +1478,12 @@ skewedLocationMap
       key=skewedValueLocationElement EQUAL value=StringLiteral -> ^(TOK_SKEWED_LOCATION_MAP $key $value)
     ;
 
-alterStatementSuffixLocation
+alterStatementSuffixLocation[boolean partition]
 @init {pushMsg("alter location", state);}
 @after {popMsg(state);}
   : KW_SET KW_LOCATION newLoc=StringLiteral
-  -> ^(TOK_ALTERTABLE_LOCATION $newLoc)
+  -> {partition}? ^(TOK_ALTERPARTITION_LOCATION $newLoc)
+  ->              ^(TOK_ALTERTABLE_LOCATION $newLoc)
   ;
 
 	
@@ -1506,18 +1521,20 @@ alterStatementSuffixStatsPart
     ->^(TOK_ALTERTABLE_UPDATECOLSTATS $colName tableProperties $comment?)
     ;
 
-alterStatementSuffixMergeFiles
+alterStatementSuffixMergeFiles[boolean partition]
 @init { pushMsg("", state); }
 @after { popMsg(state); }
     : KW_CONCATENATE
-    -> ^(TOK_ALTERTABLE_MERGEFILES)
+    -> {partition}? ^(TOK_ALTERPARTITION_MERGEFILES)
+    ->              ^(TOK_ALTERTABLE_MERGEFILES)
     ;
 
-alterStatementSuffixBucketNum
+alterStatementSuffixBucketNum[boolean partition]
 @init { pushMsg("", state); }
 @after { popMsg(state); }
     : KW_INTO num=Number KW_BUCKETS
-    -> ^(TOK_ALTERTABLE_BUCKETS $num)
+    -> {partition}? ^(TOK_ALTERPARTITION_BUCKETS $num)
+    ->              ^(TOK_ALTERTABLE_BUCKETS $num)
     ;
 
 blocking
