@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
+import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.ddl.database.lock.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.unlock.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.table.lock.LockTableDesc;
@@ -120,10 +120,10 @@ public interface HiveTxnManager {
    * @param plan query plan
    * @param ctx Context for this query
    * @param username name of the user for this query
-   * @param lDrvState the state to inform if the query cancelled or not
+   * @param driverState the state to inform if the query cancelled or not
    * @throws LockException if there is an error getting the locks
    */
-   void acquireLocks(QueryPlan plan, Context ctx, String username, LockedDriverState lDrvState) throws LockException;
+   void acquireLocks(QueryPlan plan, Context ctx, String username, DriverState driverState) throws LockException;
 
   /**
    * Release specified locks.
