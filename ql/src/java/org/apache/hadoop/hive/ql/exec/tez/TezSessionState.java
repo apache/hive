@@ -704,20 +704,18 @@ public class TezSessionState {
 
   protected final void cleanupScratchDir() throws IOException {
     if (tezScratchDir != null) {
-      try (FileSystem fs = tezScratchDir.getFileSystem(conf)) {
-        fs.delete(tezScratchDir, true);
-        tezScratchDir = null;
-      }
+      FileSystem fs = tezScratchDir.getFileSystem(conf);
+      fs.delete(tezScratchDir, true);
+      tezScratchDir = null;
     }
   }
 
   protected final void cleanupDagResources() throws IOException {
     LOG.info("Attemting to clean up resources for " + sessionId + ": " + resources);
     if (resources != null) {
-      try (FileSystem fs = resources.dagResourcesDir.getFileSystem(conf)) {
-        fs.delete(resources.dagResourcesDir, true);
-        resources = null;
-      }
+      FileSystem fs = resources.dagResourcesDir.getFileSystem(conf);
+      fs.delete(resources.dagResourcesDir, true);
+      resources = null;
     }
   }
 
