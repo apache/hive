@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.schq;
+package org.apache.hadoop.hive.schq;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.schq.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
@@ -45,7 +46,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
-public class TestScheduledQueryStatements {
+public class TestScheduledQueryIntegration {
 
   @ClassRule
   public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
@@ -75,6 +76,7 @@ public class TestScheduledQueryStatements {
 
   @AfterClass
   public static void afterClass() throws Exception {
+
     IDriver driver = createDriver();
     dropTables(driver);
   }
@@ -88,106 +90,25 @@ public class TestScheduledQueryStatements {
   }
 
   @Test
-  public void testSimpleCreate() throws ParseException, Exception {
-    IDriver driver = createDriver();
-
-    CommandProcessorResponse ret;
-    ret = driver.run("create scheduled query simplecreate cron '* * * * * ? *' as select 1 from tu");
-    if (ret.getResponseCode() != 0) {
-      throw ret;
-    }
-  }
-
-  @Test(expected = CommandProcessorResponse.class)
-  public void testNonExistentTable1() throws ParseException, Exception {
-    IDriver driver = createDriver();
-    CommandProcessorResponse ret =
-        driver.run("create scheduled query nonexist cron '* * * * * ? *' as select 1 from nonexist");
-    if (ret.getResponseCode() != 0) {
-      throw ret;
-    }
-  }
-
-  @Test(expected = CommandProcessorResponse.class)
-  public void testNonExistentTable2() throws ParseException, Exception {
-    IDriver driver = createDriver();
-
-    CommandProcessorResponse ret;
-    ret = driver.run("use asd");
-    if (ret.getResponseCode() != 0) {
-      fail("use database failed");
-    }
-
-    ret = driver.run("create scheduled query nonexist2 cron '* * * * * ? *' as select 1 from tu");
-    if (ret.getResponseCode() != 0) {
-      throw ret;
-    }
-  }
-
-  @Test(expected = CommandProcessorResponse.class)
-  public void testCreateFromNonDefaultDatabase() throws ParseException, Exception {
-    IDriver driver = createDriver();
-
-    CommandProcessorResponse ret;
-    ret = driver.run("use asd");
-
-    if (ret.getResponseCode() != 0) {
-      fail("use database failed");
-    }
-
-    // FIXME: save actual database as well?
-    // the query is actually correct; but it may reference a table inside the current database...
-    ret = driver.run("create scheduled query nonDef cron '* * * * * ? *' as select 1");
-    if (ret.getResponseCode() != 0) {
-      throw ret;
-    }
-  }
-
-  @Test
-  public void testDoubleCreate() throws ParseException, Exception {
-    IDriver driver = createDriver();
-
-    CommandProcessorResponse ret;
-    ret = driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
-    assertEquals(0, ret.getResponseCode());
-    ret = driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
-    assertNotEquals("expected to fail", 0, ret.getResponseCode());
-  }
-
-  @Test
-  public void testAlter() throws ParseException, Exception {
-    IDriver driver = createDriver();
-
-    CommandProcessorResponse ret;
-    ret = driver.run("create scheduled query alter1 cron '* * * * * ? *' as select 1 from tu");
-    assertEquals(0, ret.getResponseCode());
-    ret = driver.run("alter scheduled query alter1 executed as 'user3'");
-    assertEquals(0, ret.getResponseCode());
-    ret = driver.run("alter scheduled query alter1 defined as select 22 from tu");
-    assertEquals(0, ret.getResponseCode());
-
-    try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
-      Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("alter1", "hive"));
-      assertTrue(sq.isPresent());
-      assertEquals("user3", sq.get().toThrift().getUser());
-    }
-
-  }
-
-  @Test
   public void testImpersonation() throws ParseException, Exception {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
-    IDriver driver = createDriver();
-
     setupAuthorization();
 
-    CommandProcessorResponse ret;
-    ret = driver.run("create table t1 (a integer)");
-    assertEquals(0, ret.getResponseCode());
+    {
+      conf.set("user.name", "user1");
+      IDriver driver = createDriver();
+      CommandProcessorResponse ret;
+      ret = driver.run("create table t1 (a integer)");
+      assertEquals(0, ret.getResponseCode());
+    }
 
-    conf.set("user.name", "user1");
-    ret = driver.run("drop table t1");
-    assertEquals(0, ret.getResponseCode());
+    {
+      conf.set("user.name", "user2");
+      IDriver driver = createDriver();
+      CommandProcessorResponse ret;
+      ret = driver.run("drop table t1");
+      assertEquals(40000, ret.getResponseCode());
+    }
 
   }
 
