@@ -1450,10 +1450,6 @@
       <datastore-identity>
         <column name="SCHEDULED_QUERY_ID"/>
       </datastore-identity>
-<!-- FIXME: need a create/update/etc ts? no functional use...
-      <field name="createTime">
-        <column name="CREATE_TIME" jdbc-type="integer"/>
-      </field> -->
       <field name="scheduleName">
         <column name="SCHEDULE_NAME" jdbc-type="varchar" length="256" allows-null="true"/>
       </field>
@@ -1479,7 +1475,6 @@
         <collection element-type="MScheduledExecution" dependent-element="true" />
         <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_FK" delete-action="cascade"/>
       </field>
-      
       <index name="UniqueSchedule" unique="true">
         <column name="SCHEDULE_NAME"/>
         <column name="CLUSTER_NAMESPACE"/>

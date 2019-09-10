@@ -12818,9 +12818,6 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (JDOException e) {
       LOG.debug("Caught jdo exception; exclusive", e);
       commited = false;
-    } catch (Throwable t) {
-      //FIXME remove this
-      throw t;
     } finally {
       if (commited) {
         return ret;
