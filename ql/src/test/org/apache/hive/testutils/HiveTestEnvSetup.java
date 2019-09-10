@@ -209,8 +209,7 @@ public class HiveTestEnvSetup extends ExternalResource {
 
     @Override
     public void afterMethod(HiveTestEnvContext ctx) throws Exception {
-      // FIXME: why is this started hanging?
-      // zooKeeper.close();
+      zooKeeper.close();
       ZooKeeperHiveLockManager.releaseAllLocks(ctx.hiveConf);
     }
 
