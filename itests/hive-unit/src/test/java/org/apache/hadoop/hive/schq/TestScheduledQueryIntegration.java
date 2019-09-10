@@ -76,6 +76,8 @@ public class TestScheduledQueryIntegration {
 
   @AfterClass
   public static void afterClass() throws Exception {
+    env_setup.getTestCtx().hiveConf.set("hive.test.authz.sstd.hs2.mode", "false");
+    env_setup.getTestCtx().hiveConf.set("hive.security.authorization.enabled", "false");
 
     IDriver driver = createDriver();
     dropTables(driver);
@@ -111,33 +113,30 @@ public class TestScheduledQueryIntegration {
         "1s");
     setupAuthorization();
 
-    try (ScheduledQueryExecutionService sservice =
-        ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf)) {
-  
-      ret = runAsUser("user1",
-          "create table junk0 as select 12 as i");
+    ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
 
-      ret = runAsUser("user1",
-          "create scheduled query s1 cron '* * * * * ? *' defined as create table tx1 as select 12 as i");
-      //      ret = runAsUser("user1",
-      //          "create table tx1 as select 12 as i");
-      assertEquals(0, ret.getResponseCode());
+    // ctas some table - this will open sessions/etc which will aid the scheduled query execution
+    //      ret = runAsUser("user1",
+    //          "create table junk0 as select 12 as i");
 
-      Thread.sleep(20000);
-  
-      // table exists...
-      ret = runAsUser("user1", "select * from tx1");
-      assertEquals(0, ret.getResponseCode());
+    ret = runAsUser("user1",
+        "create scheduled query s1 cron '* * * * * ? *' defined as create table tx1 as select 12 as i");
 
-      // other user cant drop it
-      ret = runAsUser("user2", "drop table tx1");
-      assertEquals(40000, ret.getResponseCode());
+    assertEquals(0, ret.getResponseCode());
 
-      // but owner can
-      ret = runAsUser("user1", "drop table tx1");
-      assertEquals(0, ret.getResponseCode());
+    Thread.sleep(20000);
 
-    }
+    // table exists - and owner is able to select from it
+    ret = runAsUser("user1", "select * from tx1");
+    assertEquals(0, ret.getResponseCode());
+
+    // other user cant drop it
+    ret = runAsUser("user2", "drop table tx1");
+    assertEquals(40000, ret.getResponseCode());
+
+    // but the owner can drop it
+    ret = runAsUser("user1", "drop table tx1");
+    assertEquals(0, ret.getResponseCode());
   }
 
   private CommandProcessorResponse runAsUser(String userName, String sql) {

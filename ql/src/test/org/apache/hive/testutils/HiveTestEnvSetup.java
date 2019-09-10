@@ -163,6 +163,8 @@ public class HiveTestEnvSetup extends ExternalResource {
       if (savedConf == null) {
         savedConf = new HiveConf(ctx.hiveConf);
       }
+      // service a fresh conf for every testMethod
+      ctx.hiveConf = new HiveConf(savedConf);
     }
 
     @Override
