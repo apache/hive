@@ -26,9 +26,9 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ddl.table.lock.ShowLocksOperation;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.thrift.TException;
 
 import java.io.ByteArrayOutputStream;
@@ -75,7 +75,7 @@ public final class DbLockManager implements HiveLockManager{
   }
 
   @Override
-  public List<HiveLock> lock(List<HiveLockObj> objs, boolean keepAlive, LockedDriverState lDrvState) throws
+  public List<HiveLock> lock(List<HiveLockObj> objs, boolean keepAlive, DriverState driverState) throws
       LockException {
     throw new UnsupportedOperationException();
   }

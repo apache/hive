@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
+import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.ddl.database.lock.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.unlock.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.table.lock.LockTableDesc;
@@ -72,7 +72,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   }
 
   @Override
-  public void acquireLocks(QueryPlan plan, Context ctx, String username, LockedDriverState lDrvState) throws LockException {
+  public void acquireLocks(QueryPlan plan, Context ctx, String username, DriverState driverState) throws LockException {
     acquireLocks(plan, ctx, username);
   }
 

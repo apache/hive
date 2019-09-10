@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
+import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -108,12 +108,12 @@ public class TestDummyTxnManager {
     List<HiveLock> expectedLocks = new ArrayList<HiveLock>();
     expectedLocks.add(new ZooKeeperHiveLock("default", new HiveLockObject(), HiveLockMode.SHARED));
     expectedLocks.add(new ZooKeeperHiveLock("default.table1", new HiveLockObject(), HiveLockMode.SHARED));
-    LockedDriverState lDrvState = new LockedDriverState();
-    LockedDriverState lDrvInp = new LockedDriverState();
-    lDrvInp.abort();
+    DriverState driverState = new DriverState();
+    DriverState driverInterrupted = new DriverState();
+    driverInterrupted.abort();
     LockException lEx = new LockException(ErrorMsg.LOCK_ACQUIRE_CANCELLED.getMsg());
-    when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(lDrvState))).thenReturn(expectedLocks);
-    when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(lDrvInp))).thenThrow(lEx);
+    when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(driverState))).thenReturn(expectedLocks);
+    when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(driverInterrupted))).thenThrow(lEx);
     doNothing().when(mockLockManager).setContext(any(HiveLockManagerCtx.class));
     doNothing().when(mockLockManager).close();
     ArgumentCaptor<List> lockObjsCaptor = ArgumentCaptor.forClass(List.class);
@@ -122,7 +122,7 @@ public class TestDummyTxnManager {
     when(mockQueryPlan.getOutputs()).thenReturn(new HashSet<WriteEntity>());
 
     // Execute
-    txnMgr.acquireLocks(mockQueryPlan, ctx, "fred", lDrvState);
+    txnMgr.acquireLocks(mockQueryPlan, ctx, "fred", driverState);
 
     // Verify
     Assert.assertEquals("db1", SessionState.get().getCurrentDatabase());
@@ -133,7 +133,7 @@ public class TestDummyTxnManager {
     Assert.assertEquals(expectedLocks.get(1).getHiveLockMode(), resultLocks.get(1).getHiveLockMode());
     Assert.assertEquals(expectedLocks.get(0).getHiveLockObject().getName(), resultLocks.get(0).getHiveLockObject().getName());
 
-    verify(mockLockManager).lock(lockObjsCaptor.capture(), eq(false), eq(lDrvState));
+    verify(mockLockManager).lock(lockObjsCaptor.capture(), eq(false), eq(driverState));
     List<HiveLockObj> lockObjs = lockObjsCaptor.getValue();
     Assert.assertEquals(2, lockObjs.size());
     Assert.assertEquals("default", lockObjs.get(0).getName());
@@ -143,7 +143,7 @@ public class TestDummyTxnManager {
 
     // Execute
     try {
-      txnMgr.acquireLocks(mockQueryPlan, ctx, "fred", lDrvInp);
+      txnMgr.acquireLocks(mockQueryPlan, ctx, "fred", driverInterrupted);
       Assert.fail();
     } catch(LockException le) {
       Assert.assertEquals(le.getMessage(), ErrorMsg.LOCK_ACQUIRE_CANCELLED.getMsg());
