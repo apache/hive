@@ -109,8 +109,8 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
@@ -3265,7 +3265,7 @@ public final class Utilities {
 
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
-    LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
+    DriverState driverState = DriverState.getDriverState();
     // AliasToWork contains all the aliases
     Collection<String> aliasToWork = work.getAliasToWork().keySet();
     if (!skipDummy) {
@@ -3285,7 +3285,7 @@ public final class Utilities {
       boolean hasLogged = false;
 
       for (Map.Entry<Path, List<String>> e : pathToAliases) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (driverState != null && driverState.isAborted()) {
           throw new IOException("Operation is Canceled.");
         }
 
@@ -3341,7 +3341,7 @@ public final class Utilities {
       finalPathsToAdd.addAll(getInputPathsWithPool(job, work, hiveScratchDir, ctx, skipDummy, pathsToAdd, pool));
     } else {
       for (final Path path : pathsToAdd) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (driverState != null && driverState.isAborted()) {
           throw new IOException("Operation is Canceled.");
         }
         Path newPath = new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy).call();
@@ -3359,12 +3359,12 @@ public final class Utilities {
   static List<Path> getInputPathsWithPool(JobConf job, MapWork work, Path hiveScratchDir,
                                            Context ctx, boolean skipDummy, List<Path> pathsToAdd,
                                            ExecutorService pool) throws IOException, ExecutionException, InterruptedException {
-    LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
+    DriverState driverState = DriverState.getDriverState();
     List<Path> finalPathsToAdd = new ArrayList<>();
     try {
       Map<GetInputPathsCallable, Future<Path>> getPathsCallableToFuture = new LinkedHashMap<>();
       for (final Path path : pathsToAdd) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (driverState != null && driverState.isAborted()) {
           throw new IOException("Operation is Canceled.");
         }
         GetInputPathsCallable callable = new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy);
@@ -3373,7 +3373,7 @@ public final class Utilities {
       pool.shutdown();
 
       for (Map.Entry<GetInputPathsCallable, Future<Path>> future : getPathsCallableToFuture.entrySet()) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (driverState != null && driverState.isAborted()) {
           throw new IOException("Operation is Canceled.");
         }
 
