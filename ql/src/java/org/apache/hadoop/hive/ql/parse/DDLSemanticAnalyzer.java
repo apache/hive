@@ -342,33 +342,41 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableProps(qualified, null, ast, false, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_DROPPROPERTIES) {
         analyzeAlterTableProps(qualified, null, ast, false, true);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_UPDATESTATS) {
+      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_UPDATESTATS ||
+                 ast.getType() == HiveParser.TOK_ALTERPARTITION_UPDATESTATS) {
         analyzeAlterTableProps(qualified, partSpec, ast, false, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_SKEWED) {
         analyzeAlterTableSkewedby(qualified, ast);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_EXCHANGEPARTITION) {
         analyzeExchangePartition(qualified, ast);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT) {
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT ||
+                 ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_FILEFORMAT) {
         analyzeAlterTableFileFormat(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_LOCATION) {
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_LOCATION ||
+                 ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_LOCATION) {
         analyzeAlterTableLocation(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_MERGEFILES) {
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_MERGEFILES ||
+                 ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_MERGEFILES) {
         analyzeAlterTablePartMergeFiles(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERIALIZER) {
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERIALIZER ||
+                 ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_SERIALIZER) {
         analyzeAlterTableSerde(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES) {
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES ||
+                 ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_SERDEPROPERTIES) {
         analyzeAlterTableSerdeProps(ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAMEPART) {
         analyzeAlterTableRenamePart(ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SKEWED_LOCATION) {
         analyzeAlterTableSkewedLocation(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_BUCKETS) {
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_BUCKETS ||
+                 ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_BUCKETS) {
         analyzeAlterTableBucketNum(ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_CLUSTER_SORT) {
         analyzeAlterTableClusterSort(ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_COMPACT) {
         analyzeAlterTableCompact(ast, tableName, partSpec);
-      } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS){
+      } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS ||
+                ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_UPDATECOLSTATS){
         analyzeAlterTableUpdateStats(ast, tableName, partSpec);
       } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPCONSTRAINT) {
         analyzeAlterTableDropConstraint(ast, tableName);
