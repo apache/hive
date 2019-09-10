@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField SCHEDULE_KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("scheduleKey", org.apache.thrift.protocol.TType.STRUCT, (short)1);
   private static final org.apache.thrift.protocol.TField EXECUTION_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("executionId", org.apache.thrift.protocol.TType.I64, (short)2);
   private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField USER_FIELD_DESC = new org.apache.thrift.protocol.TField("user", org.apache.thrift.protocol.TType.STRING, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,12 +52,14 @@ import org.slf4j.LoggerFactory;
   private ScheduledQueryKey scheduleKey; // optional
   private long executionId; // optional
   private String query; // optional
+  private String user; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     SCHEDULE_KEY((short)1, "scheduleKey"),
     EXECUTION_ID((short)2, "executionId"),
-    QUERY((short)3, "query");
+    QUERY((short)3, "query"),
+    USER((short)4, "user");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +80,8 @@ import org.slf4j.LoggerFactory;
           return EXECUTION_ID;
         case 3: // QUERY
           return QUERY;
+        case 4: // USER
+          return USER;
         default:
           return null;
       }
@@ -119,7 +124,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __EXECUTIONID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.SCHEDULE_KEY,_Fields.EXECUTION_ID,_Fields.QUERY};
+  private static final _Fields optionals[] = {_Fields.SCHEDULE_KEY,_Fields.EXECUTION_ID,_Fields.QUERY,_Fields.USER};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -128,6 +133,8 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.EXECUTION_ID, new org.apache.thrift.meta_data.FieldMetaData("executionId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.USER, new org.apache.thrift.meta_data.FieldMetaData("user", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ScheduledQueryPollResponse.class, metaDataMap);
@@ -148,6 +155,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetQuery()) {
       this.query = other.query;
     }
+    if (other.isSetUser()) {
+      this.user = other.user;
+    }
   }
 
   public ScheduledQueryPollResponse deepCopy() {
@@ -160,6 +170,7 @@ import org.slf4j.LoggerFactory;
     setExecutionIdIsSet(false);
     this.executionId = 0;
     this.query = null;
+    this.user = null;
   }
 
   public ScheduledQueryKey getScheduleKey() {
@@ -230,6 +241,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getUser() {
+    return this.user;
+  }
+
+  public void setUser(String user) {
+    this.user = user;
+  }
+
+  public void unsetUser() {
+    this.user = null;
+  }
+
+  /** Returns true if field user is set (has been assigned a value) and false otherwise */
+  public boolean isSetUser() {
+    return this.user != null;
+  }
+
+  public void setUserIsSet(boolean value) {
+    if (!value) {
+      this.user = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case SCHEDULE_KEY:
@@ -256,6 +290,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case USER:
+      if (value == null) {
+        unsetUser();
+      } else {
+        setUser((String)value);
+      }
+      break;
+
     }
   }
 
@@ -269,6 +311,9 @@ import org.slf4j.LoggerFactory;
 
     case QUERY:
       return getQuery();
+
+    case USER:
+      return getUser();
 
     }
     throw new IllegalStateException();
@@ -287,6 +332,8 @@ import org.slf4j.LoggerFactory;
       return isSetExecutionId();
     case QUERY:
       return isSetQuery();
+    case USER:
+      return isSetUser();
     }
     throw new IllegalStateException();
   }
@@ -331,6 +378,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_user = true && this.isSetUser();
+    boolean that_present_user = true && that.isSetUser();
+    if (this_present_user || that_present_user) {
+      if (!(this_present_user && that_present_user))
+        return false;
+      if (!this.user.equals(that.user))
+        return false;
+    }
+
     return true;
   }
 
@@ -352,6 +408,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_query);
     if (present_query)
       list.add(query);
+
+    boolean present_user = true && (isSetUser());
+    list.add(present_user);
+    if (present_user)
+      list.add(user);
 
     return list.hashCode();
   }
@@ -390,6 +451,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetQuery()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.query, other.query);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetUser()).compareTo(other.isSetUser());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUser()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.user, other.user);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -436,6 +507,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.query);
+      }
+      first = false;
+    }
+    if (isSetUser()) {
+      if (!first) sb.append(", ");
+      sb.append("user:");
+      if (this.user == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.user);
       }
       first = false;
     }
@@ -509,6 +590,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // USER
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.user = iprot.readString();
+              struct.setUserIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -541,6 +630,13 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.user != null) {
+        if (struct.isSetUser()) {
+          oprot.writeFieldBegin(USER_FIELD_DESC);
+          oprot.writeString(struct.user);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -568,7 +664,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetQuery()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetUser()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetScheduleKey()) {
         struct.scheduleKey.write(oprot);
       }
@@ -578,12 +677,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetQuery()) {
         oprot.writeString(struct.query);
       }
+      if (struct.isSetUser()) {
+        oprot.writeString(struct.user);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ScheduledQueryPollResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.scheduleKey = new ScheduledQueryKey();
         struct.scheduleKey.read(iprot);
@@ -596,6 +698,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(2)) {
         struct.query = iprot.readString();
         struct.setQueryIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.user = iprot.readString();
+        struct.setUserIsSet(true);
       }
     }
   }

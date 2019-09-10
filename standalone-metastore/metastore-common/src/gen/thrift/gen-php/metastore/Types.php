@@ -34994,6 +34994,10 @@ class ScheduledQueryPollResponse {
    * @var string
    */
   public $query = null;
+  /**
+   * @var string
+   */
+  public $user = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -35011,6 +35015,10 @@ class ScheduledQueryPollResponse {
           'var' => 'query',
           'type' => TType::STRING,
           ),
+        4 => array(
+          'var' => 'user',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -35022,6 +35030,9 @@ class ScheduledQueryPollResponse {
       }
       if (isset($vals['query'])) {
         $this->query = $vals['query'];
+      }
+      if (isset($vals['user'])) {
+        $this->user = $vals['user'];
       }
     }
   }
@@ -35067,6 +35078,13 @@ class ScheduledQueryPollResponse {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->user);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -35096,6 +35114,11 @@ class ScheduledQueryPollResponse {
     if ($this->query !== null) {
       $xfer += $output->writeFieldBegin('query', TType::STRING, 3);
       $xfer += $output->writeString($this->query);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->user !== null) {
+      $xfer += $output->writeFieldBegin('user', TType::STRING, 4);
+      $xfer += $output->writeString($this->user);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

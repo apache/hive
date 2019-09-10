@@ -5517,11 +5517,13 @@ class ScheduledQueryPollResponse
   SCHEDULEKEY = 1
   EXECUTIONID = 2
   QUERY = 3
+  USER = 4
 
   FIELDS = {
     SCHEDULEKEY => {:type => ::Thrift::Types::STRUCT, :name => 'scheduleKey', :class => ::ScheduledQueryKey, :optional => true},
     EXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'executionId', :optional => true},
-    QUERY => {:type => ::Thrift::Types::STRING, :name => 'query', :optional => true}
+    QUERY => {:type => ::Thrift::Types::STRING, :name => 'query', :optional => true},
+    USER => {:type => ::Thrift::Types::STRING, :name => 'user', :optional => true}
   }
 
   def struct_fields; FIELDS; end

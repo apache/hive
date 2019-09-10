@@ -24661,6 +24661,7 @@ class ScheduledQueryPollResponse:
    - scheduleKey
    - executionId
    - query
+   - user
   """
 
   thrift_spec = (
@@ -24668,12 +24669,14 @@ class ScheduledQueryPollResponse:
     (1, TType.STRUCT, 'scheduleKey', (ScheduledQueryKey, ScheduledQueryKey.thrift_spec), None, ), # 1
     (2, TType.I64, 'executionId', None, None, ), # 2
     (3, TType.STRING, 'query', None, None, ), # 3
+    (4, TType.STRING, 'user', None, None, ), # 4
   )
 
-  def __init__(self, scheduleKey=None, executionId=None, query=None,):
+  def __init__(self, scheduleKey=None, executionId=None, query=None, user=None,):
     self.scheduleKey = scheduleKey
     self.executionId = executionId
     self.query = query
+    self.user = user
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -24700,6 +24703,11 @@ class ScheduledQueryPollResponse:
           self.query = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.user = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -24722,6 +24730,10 @@ class ScheduledQueryPollResponse:
       oprot.writeFieldBegin('query', TType.STRING, 3)
       oprot.writeString(self.query)
       oprot.writeFieldEnd()
+    if self.user is not None:
+      oprot.writeFieldBegin('user', TType.STRING, 4)
+      oprot.writeString(self.user)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -24734,6 +24746,7 @@ class ScheduledQueryPollResponse:
     value = (value * 31) ^ hash(self.scheduleKey)
     value = (value * 31) ^ hash(self.executionId)
     value = (value * 31) ^ hash(self.query)
+    value = (value * 31) ^ hash(self.user)
     return value
 
   def __repr__(self):
