@@ -96,7 +96,6 @@ public class ScheduledQueryExecutionService implements Closeable {
           try {
             state.close();
           } catch (Throwable e) {
-            //FIXME does it really have to throw exception?
           }
         }
 
