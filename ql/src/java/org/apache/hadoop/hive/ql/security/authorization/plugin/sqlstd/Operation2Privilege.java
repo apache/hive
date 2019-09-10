@@ -237,8 +237,6 @@ public class Operation2Privilege {
     // require view ownership for alter/drop view
     op2Priv.put(HiveOperationType.ALTERVIEW_PROPERTIES,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.DROPVIEW_PROPERTIES,
-        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERVIEW_RENAME,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERVIEW_AS,
