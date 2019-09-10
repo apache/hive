@@ -90,26 +90,63 @@ public class TestScheduledQueryIntegration {
   }
 
   @Test
-  public void testImpersonation() throws ParseException, Exception {
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
+  public void testBasicImpersonation() throws ParseException, Exception {
+    CommandProcessorResponse ret;
+
     setupAuthorization();
 
-    {
-      conf.set("user.name", "user1");
-      IDriver driver = createDriver();
-      CommandProcessorResponse ret;
-      ret = driver.run("create table t1 (a integer)");
+    ret = runAsUser("user1", "create table t1 (a integer)");
+    assertEquals(0, ret.getResponseCode());
+
+    ret = runAsUser("user2", "drop table t1");
+    assertEquals(40000, ret.getResponseCode());
+  }
+
+  @Test
+  public void testScheduledQueryExecutionImpersonation() throws ParseException, Exception {
+    CommandProcessorResponse ret;
+
+    env_setup.getTestCtx().hiveConf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME, "1s");
+    env_setup.getTestCtx().hiveConf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL,
+        "1s");
+    setupAuthorization();
+
+    try (ScheduledQueryExecutionService sservice =
+        ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf)) {
+  
+      ret = runAsUser("user1",
+          "create table junk0 as select 12 as i");
+
+      ret = runAsUser("user1",
+          "create scheduled query s1 cron '* * * * * ? *' defined as create table tx1 as select 12 as i");
+      //      ret = runAsUser("user1",
+      //          "create table tx1 as select 12 as i");
       assertEquals(0, ret.getResponseCode());
-    }
 
-    {
-      conf.set("user.name", "user2");
-      IDriver driver = createDriver();
-      CommandProcessorResponse ret;
-      ret = driver.run("drop table t1");
+      Thread.sleep(20000);
+  
+      // table exists...
+      ret = runAsUser("user1", "select * from tx1");
+      assertEquals(0, ret.getResponseCode());
+
+      // other user cant drop it
+      ret = runAsUser("user2", "drop table tx1");
       assertEquals(40000, ret.getResponseCode());
-    }
 
+      // but owner can
+      ret = runAsUser("user1", "drop table tx1");
+      assertEquals(0, ret.getResponseCode());
+
+    }
+  }
+
+  private CommandProcessorResponse runAsUser(String userName, String sql) {
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.set("user.name", userName);
+    IDriver driver = createDriver();
+    CommandProcessorResponse ret;
+    ret = driver.run(sql);
+    return ret;
   }
 
   private void setupAuthorization() {

@@ -12812,6 +12812,7 @@ public class ObjectStore implements RawStore, Configurable {
       commited = commitTransaction();
       ret.setScheduleKey(schq.getScheduleKey());
       ret.setQuery(schq.getQuery());
+      ret.setUser(schq.getUser());
       int executionId = ((IntIdentity) pm.getObjectId(execution)).getKey();
       ret.setExecutionId(executionId);
     } catch (JDOException e) {

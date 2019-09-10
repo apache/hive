@@ -1762,6 +1762,7 @@ struct ScheduledQueryPollResponse {
   1: optional ScheduledQueryKey scheduleKey,
   2: optional i64 executionId,
   3: optional string query,
+  4: optional string user,
 }
 
 struct ScheduledQueryKey {

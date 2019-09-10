@@ -1,7 +1,10 @@
 package org.apache.hadoop.hive.ql.schq;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.QueryState;
@@ -14,9 +17,10 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-public class ScheduledQueryExecutionService {
+public class ScheduledQueryExecutionService implements Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryExecutionService.class);
 
@@ -74,7 +78,7 @@ public class ScheduledQueryExecutionService {
         info.setScheduledExecutionId(q.getExecutionId());
         info.setState(QueryState.EXECUTING);
         // FIXME: missing impersonation?
-        try (IDriver driver = DriverFactory.newDriver(context.conf)) {
+        try (IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(context.conf), "user1", null)) {
           info.setExecutorQueryId(driver.getQueryState().getQueryId());
           reportQueryProgress();
           CommandProcessorResponse resp;
@@ -127,6 +131,20 @@ public class ScheduledQueryExecutionService {
         worker.reportQueryProgress();
       }
     }
+  }
+
+  @VisibleForTesting
+  @Override
+  public void close() throws IOException {
+    context.executor.shutdown();
+    try {
+      context.executor.awaitTermination(1, TimeUnit.SECONDS);
+      context.executor.shutdownNow();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+    
+
   }
 
 }

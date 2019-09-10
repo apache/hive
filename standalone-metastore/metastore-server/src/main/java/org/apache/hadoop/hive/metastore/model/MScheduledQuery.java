@@ -105,4 +105,8 @@ public class MScheduledQuery {
     executions=e;
   }
 
+  public String getUser() {
+    return user;
+  }
+
 }
