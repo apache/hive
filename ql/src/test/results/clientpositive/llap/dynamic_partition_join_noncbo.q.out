@@ -1013,6 +1013,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t0
+                  filterExpr: phi is not null (type: boolean)
                   Statistics: Num rows: 8146725 Data size: 46331126445 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: phi is not null (type: boolean)
@@ -1029,6 +1030,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (phi is not null and pli is not null) (type: boolean)
                   Statistics: Num rows: 15680439 Data size: 56180088521 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (phi is not null and pli is not null) (type: boolean)
@@ -1045,6 +1047,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: pli is not null (type: boolean)
                   Statistics: Num rows: 15390381 Data size: 116471238533 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: pli is not null (type: boolean)
