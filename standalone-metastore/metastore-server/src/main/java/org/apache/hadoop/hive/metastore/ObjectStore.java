@@ -13059,7 +13059,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       int maxLastUpdateTime = (int) (System.currentTimeMillis() / 1000) - timeoutSecs;
       Query q = pm.newQuery(MScheduledExecution.class);
-      q.setFilter("lastUpdateTime <= maxLastUpdateTime and (state='INITED' or state='EXECUTING')");
+      q.setFilter("lastUpdateTime <= maxLastUpdateTime and (state == 'INITED' or state == 'EXECUTING')");
       q.declareParameters("int maxLastUpdateTime");
       
       List<MScheduledExecution> results = (List<MScheduledExecution>) q.execute(maxLastUpdateTime);
