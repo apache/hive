@@ -194,7 +194,7 @@
     <netty.version>4.1.17.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
     <parquet.version>1.10.99.7.0.2.0-SNAPSHOT</parquet.version>
-    <pig.version>0.16.0.3.1.0.0-SNAPSHOT</pig.version>
+    <pig.version>0.16.0.7.0.2.0-SNAPSHOT</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
