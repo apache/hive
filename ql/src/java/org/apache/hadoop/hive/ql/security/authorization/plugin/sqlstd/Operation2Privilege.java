@@ -365,6 +365,10 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.LOCKTABLE, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.UNLOCKTABLE, PrivRequirement.newIOPrivRequirement(null, null));
 
+    op2Priv.put(HiveOperationType.CREATE_SCHEDULED_QUERY, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTER_SCHEDULED_QUERY, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROP_SCHEDULED_QUERY, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+
     // require db ownership, if there is a file require SELECT , INSERT, and DELETE
     op2Priv.put(HiveOperationType.CREATETABLE, PrivRequirement.newPrivRequirementList(
         new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, IOType.INPUT),
