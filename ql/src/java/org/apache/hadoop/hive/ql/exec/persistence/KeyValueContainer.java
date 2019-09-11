@@ -23,9 +23,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.BytesWritable;
@@ -47,7 +47,7 @@ public class KeyValueContainer {
   @VisibleForTesting
   static final int IN_MEMORY_NUM_ROWS = 1024;
 
-  private ObjectPair<HiveKey, BytesWritable>[] readBuffer;
+  private MutablePair<HiveKey, BytesWritable>[] readBuffer;
   private boolean readBufferUsed = false; // indicates if read buffer has data
   private int rowsInReadBuffer = 0;       // number of rows in the temporary read buffer
   private int readCursor = 0;             // cursor during reading
@@ -60,9 +60,9 @@ public class KeyValueContainer {
   private Output output;
 
   public KeyValueContainer(String spillLocalDirs) {
-    readBuffer = new ObjectPair[IN_MEMORY_NUM_ROWS];
+    readBuffer = new MutablePair[IN_MEMORY_NUM_ROWS];
     for (int i = 0; i < IN_MEMORY_NUM_ROWS; i++) {
-      readBuffer[i] = new ObjectPair<HiveKey, BytesWritable>();
+      readBuffer[i] = new MutablePair<HiveKey, BytesWritable>();
     }
     try {
       setupOutput(spillLocalDirs);
@@ -158,7 +158,7 @@ public class KeyValueContainer {
     return readBufferUsed || rowsOnDisk > 0;
   }
 
-  public ObjectPair<HiveKey, BytesWritable> next() {
+  public MutablePair<HiveKey, BytesWritable> next() {
     Preconditions.checkState(hasNext());
     if (!readBufferUsed) {
       try {
@@ -186,9 +186,9 @@ public class KeyValueContainer {
           }
 
           for (int i = 0; i < rowsInReadBuffer; i++) {
-            ObjectPair<HiveKey, BytesWritable> pair = readBuffer[i];
-            pair.setFirst(readHiveKey(input));
-            pair.setSecond(readValue(input));
+            MutablePair<HiveKey, BytesWritable> pair = readBuffer[i];
+            pair.setLeft(readHiveKey(input));
+            pair.setRight(readValue(input));
           }
 
           if (input.eof()) {
@@ -206,7 +206,7 @@ public class KeyValueContainer {
       }
     }
 
-    ObjectPair<HiveKey, BytesWritable> row = readBuffer[readCursor];
+    MutablePair<HiveKey, BytesWritable> row = readBuffer[readCursor];
     if (++readCursor >= rowsInReadBuffer) {
       readBufferUsed = false;
       rowsInReadBuffer = 0;

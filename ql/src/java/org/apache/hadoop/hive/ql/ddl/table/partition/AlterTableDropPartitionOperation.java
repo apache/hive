@@ -21,9 +21,9 @@ package org.apache.hadoop.hive.ql.ddl.table.partition;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -106,9 +106,9 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
     // ifExists is currently verified in DDLSemanticAnalyzer
     String[] names = Utilities.getDbTableName(desc.getTableName());
 
-    List<ObjectPair<Integer, byte[]>> partitionExpressions = new ArrayList<>(desc.getPartSpecs().size());
+    List<Pair<Integer, byte[]>> partitionExpressions = new ArrayList<>(desc.getPartSpecs().size());
     for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()) {
-      partitionExpressions.add(new ObjectPair<>(partSpec.getPrefixLength(),
+      partitionExpressions.add(Pair.of(partSpec.getPrefixLength(),
           SerializationUtilities.serializeExpressionToKryo(partSpec.getPartSpec())));
     }
 

@@ -27,19 +27,17 @@ import java.util.Stack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
-import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -216,7 +214,7 @@ public class GenSparkWork implements NodeProcessor {
         rsOp.getConf().setOutputName(reduceWork.getName());
         GenMapRedUtils.setKeyAndValueDesc(reduceWork, rsOp);
 
-        context.leafOpToFollowingWorkInfo.put(rsOp, ObjectPair.create(edgeProp, reduceWork));
+        context.leafOpToFollowingWorkInfo.put(rsOp, Pair.of(edgeProp, reduceWork));
         LOG.debug("Removing " + parent + " as parent from " + root);
         root.removeParent(parent);
       }
@@ -242,10 +240,9 @@ public class GenSparkWork implements NodeProcessor {
     // Also note: the concept of leaf and root is reversed in hive for historical
     // reasons. Roots are data sources, leaves are data sinks. I know.
     if (context.leafOpToFollowingWorkInfo.containsKey(operator)) {
-      ObjectPair<SparkEdgeProperty, ReduceWork> childWorkInfo = context.
-        leafOpToFollowingWorkInfo.get(operator);
-      SparkEdgeProperty edgeProp = childWorkInfo.getFirst();
-      ReduceWork childWork = childWorkInfo.getSecond();
+      Pair<SparkEdgeProperty, ReduceWork> childWorkInfo = context.leafOpToFollowingWorkInfo.get(operator);
+      SparkEdgeProperty edgeProp = childWorkInfo.getLeft();
+      ReduceWork childWork = childWorkInfo.getRight();
 
       LOG.debug("Second pass. Leaf operator: " + operator + " has common downstream work:" + childWork);
 
