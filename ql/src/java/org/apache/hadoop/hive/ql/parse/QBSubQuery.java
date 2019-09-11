@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -279,14 +279,14 @@ public class QBSubQuery implements ISubQueryJoinInfo {
      * 3. All other expressions have a Type based on their children.
      *    An Expr w/o children is assumed to refer to neither.
      */
-    private ObjectPair<ExprType,ColumnInfo> analyzeExpr(ASTNode expr) {
+    private Pair<ExprType, ColumnInfo> analyzeExpr(ASTNode expr) {
       ColumnInfo cInfo = null;
       if ( forHavingClause ) {
         try {
           cInfo = parentQueryRR.getExpression(expr);
           if ( cInfo != null) {
-              return ObjectPair.create(ExprType.REFERS_PARENT, cInfo);
-            }
+            return Pair.of(ExprType.REFERS_PARENT, cInfo);
+          }
         } catch(SemanticException se) {
         }
       }
@@ -294,19 +294,19 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         ASTNode dot = firstDot(expr);
         cInfo = resolveDot(dot);
         if ( cInfo != null ) {
-          return ObjectPair.create(ExprType.REFERS_PARENT, cInfo);
+          return Pair.of(ExprType.REFERS_PARENT, cInfo);
         }
-        return ObjectPair.create(ExprType.REFERS_SUBQUERY, null);
+        return Pair.of(ExprType.REFERS_SUBQUERY, null);
       } else if ( expr.getType() == HiveParser.TOK_TABLE_OR_COL ) {
-        return ObjectPair.create(ExprType.REFERS_SUBQUERY, null);
+        return Pair.of(ExprType.REFERS_SUBQUERY, null);
       } else {
         ExprType exprType = ExprType.REFERS_NONE;
         int cnt = expr.getChildCount();
         for(int i=0; i < cnt; i++) {
           ASTNode child = (ASTNode) expr.getChild(i);
-          exprType = exprType.combine(analyzeExpr(child).getFirst());
+          exprType = exprType.combine(analyzeExpr(child).getLeft());
         }
-        return ObjectPair.create(exprType, null);
+        return Pair.of(exprType, null);
       }
     }
 
@@ -321,17 +321,17 @@ public class QBSubQuery implements ISubQueryJoinInfo {
        if(conjunct.getChildCount() == 2) {
         ASTNode left = (ASTNode) conjunct.getChild(0);
         ASTNode right = (ASTNode) conjunct.getChild(1);
-        ObjectPair<ExprType,ColumnInfo> leftInfo = analyzeExpr(left);
-        ObjectPair<ExprType,ColumnInfo> rightInfo = analyzeExpr(right);
+        Pair<ExprType, ColumnInfo> leftInfo = analyzeExpr(left);
+        Pair<ExprType, ColumnInfo> rightInfo = analyzeExpr(right);
 
         return new Conjunct(left, right,
-            leftInfo.getFirst(), rightInfo.getFirst(),
-            leftInfo.getSecond(), rightInfo.getSecond());
+            leftInfo.getLeft(), rightInfo.getLeft(),
+            leftInfo.getRight(), rightInfo.getRight());
       } else {
-        ObjectPair<ExprType,ColumnInfo> sqExprInfo = analyzeExpr(conjunct);
+        Pair<ExprType, ColumnInfo> sqExprInfo = analyzeExpr(conjunct);
         return new Conjunct(conjunct, null,
-            sqExprInfo.getFirst(), null,
-            sqExprInfo.getSecond(), sqExprInfo.getSecond());
+            sqExprInfo.getLeft(), null,
+            sqExprInfo.getRight(), sqExprInfo.getRight());
       }
     }
 

@@ -3825,7 +3825,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         int groupingColsSize = gbExprNDescLst.size();
         List<Long> groupingSets = null;
         if (cubeRollupGrpSetPresent) {
-          groupingSets = getGroupByGroupingSetsForClause(qbp, detsClauseName).getSecond();
+          groupingSets = getGroupByGroupingSetsForClause(qbp, detsClauseName).getRight();
         }
 
         // 6. Construct aggregation function Info

@@ -29,10 +29,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.mutable.MutableObject;
-import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaConstantStringObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import com.google.common.collect.Lists;
@@ -146,23 +145,21 @@ public class TestReflectionObjectInspectors {
       @SuppressWarnings("unchecked")
       public void run() {
         Future<ObjectInspector>[] results = (Future<ObjectInspector>[])new Future[workerCount];
-        ObjectPair<Type, ObjectInspectorFactory.ObjectInspectorOptions>[] types =
-          (ObjectPair<Type, ObjectInspectorFactory.ObjectInspectorOptions>[])new ObjectPair[] {
-             new ObjectPair<Type, ObjectInspectorFactory.ObjectInspectorOptions>(Complex.class,
-               ObjectInspectorFactory.ObjectInspectorOptions.THRIFT),
-             new ObjectPair<Type, ObjectInspectorFactory.ObjectInspectorOptions>(MyStruct.class,
-               ObjectInspectorFactory.ObjectInspectorOptions.JAVA),
+        Pair<Type, ObjectInspectorFactory.ObjectInspectorOptions>[] types =
+          (Pair<Type, ObjectInspectorFactory.ObjectInspectorOptions>[])new Pair[] {
+             Pair.of(Complex.class, ObjectInspectorFactory.ObjectInspectorOptions.THRIFT),
+             Pair.of(MyStruct.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA),
           };
         try {
           for (int i = 0; i < 20; i++) { // repeat 20 times
-            for (final ObjectPair<Type, ObjectInspectorFactory.ObjectInspectorOptions> t: types) {
+            for (final Pair<Type, ObjectInspectorFactory.ObjectInspectorOptions> t: types) {
               ObjectInspectorFactory.objectInspectorCache.asMap().clear();
               for (int k = 0; k < workerCount; k++) {
                 results[k] = executorService.schedule(new Callable<ObjectInspector>() {
                   @Override
                   public ObjectInspector call() throws Exception {
                     return ObjectInspectorFactory.getReflectionObjectInspector(
-                      t.getFirst(), t.getSecond());
+                      t.getLeft(), t.getRight());
                   }
                 }, 50, TimeUnit.MILLISECONDS);
               }

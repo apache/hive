@@ -26,7 +26,7 @@ import com.google.gson.stream.JsonWriter;
 import org.apache.commons.collections.SetUtils;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -249,15 +249,15 @@ public class LineageLogger implements ExecuteWithHookContext {
    */
   @VisibleForTesting
   public static List<Edge> getEdges(QueryPlan plan, Index index) {
-    LinkedHashMap<String, ObjectPair<SelectOperator,
-      org.apache.hadoop.hive.ql.metadata.Table>> finalSelOps = index.getFinalSelectOps();
+    Map<String, Pair<SelectOperator, org.apache.hadoop.hive.ql.metadata.Table>> finalSelOps =
+        index.getFinalSelectOps();
     Map<String, Vertex> vertexCache = new LinkedHashMap<String, Vertex>();
     List<Edge> edges = new ArrayList<Edge>();
-    for (ObjectPair<SelectOperator,
+    for (Pair<SelectOperator,
         org.apache.hadoop.hive.ql.metadata.Table> pair: finalSelOps.values()) {
       List<FieldSchema> fieldSchemas = plan.getResultSchema().getFieldSchemas();
-      SelectOperator finalSelOp = pair.getFirst();
-      org.apache.hadoop.hive.ql.metadata.Table t = pair.getSecond();
+      SelectOperator finalSelOp = pair.getLeft();
+      org.apache.hadoop.hive.ql.metadata.Table t = pair.getRight();
       String destTableName = null;
       List<String> colNames = null;
       if (t != null) {
