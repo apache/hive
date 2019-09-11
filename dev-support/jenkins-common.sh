@@ -103,8 +103,8 @@ is_check_no_precommit_tests_set() {
 
 # Gets the URL for the JIRA patch attached
 get_jira_patch_url() {
-  grep -o '"/jira/secure/attachment/[0-9]*/[^"]*' $1 | grep -v -e 'htm[l]*$' | sort | tail -1 | \
-    grep -o '/jira/secure/attachment/[0-9]*/[^"]*'
+  grep -o '"/jira/secure/attachment/[0-9]*/[^"]*\.patch*' $1 | sort | tail -1 | \
+    grep -o '/jira/secure/attachment/[0-9]*/[^"]*\.patch*'
 }
 
 # Checks if the patch was already tested
