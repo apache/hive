@@ -216,6 +216,8 @@ public class QTestUtil {
 
     postInit();
     savedConf = new HiveConf(conf);
+    conf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME, "1s");
+    conf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL, "1s");
     ScheduledQueryExecutionService.startScheduledQueryExecutorService(conf);
   }
 

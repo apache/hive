@@ -16,4 +16,12 @@ create scheduled query asd cron '* * * * * ? *' defined as select 1;
 desc formatted scheduled_queries;
 
 select * from scheduled_queries;
-select * from scheduled_executions;
+select	scheduled_execution_id,
+	scheduled_query_id,
+	substr(executor_query_id,1,5),
+	state,
+	start_time>0,
+	end_time>start_time,
+	error_message,
+	last_update_time>start_time
+		from scheduled_executions order by SCHEDULED_EXECUTION_ID limit 1;
