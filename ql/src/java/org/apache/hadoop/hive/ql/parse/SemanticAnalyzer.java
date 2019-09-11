@@ -67,7 +67,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.common.StringInternUtils;
@@ -2094,8 +2093,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // For eg: for a query like 'select * from V3', where V3 -> V2, V2 -> V1, V1 -> T
     // keeps track of full view name and read entity corresponding to alias V3, V3:V2, V3:V2:V1.
     // This is needed for tracking the dependencies for inputs, along with their parents.
-    Map<String, ObjectPair<String, ReadEntity>> aliasToViewInfo =
-        new HashMap<String, ObjectPair<String, ReadEntity>>();
+    Map<String, Pair<String, ReadEntity>> aliasToViewInfo =
+        new HashMap<String, Pair<String, ReadEntity>>();
 
     /*
      * used to capture view to SQ conversions. This is used to check for
@@ -2171,7 +2170,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         ReadEntity viewInput = new ReadEntity(tab, parentInput, !qb.isInsideView());
         viewInput = PlanUtils.addInput(inputs, viewInput);
-        aliasToViewInfo.put(alias, new ObjectPair<String, ReadEntity>(fullViewName, viewInput));
+        aliasToViewInfo.put(alias, Pair.of(fullViewName, viewInput));
         String aliasId = getAliasId(alias, qb);
         if (aliasId != null) {
           aliasId = aliasId.replace(SemanticAnalyzer.SUBQUERY_TAG_1, "")
@@ -2221,8 +2220,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean wasCTE = sqAliasToCTEName.containsKey(alias);
       ReadEntity newParentInput = null;
       if (wasView) {
-        viewsExpanded.add(aliasToViewInfo.get(alias).getFirst());
-        newParentInput = aliasToViewInfo.get(alias).getSecond();
+        viewsExpanded.add(aliasToViewInfo.get(alias).getLeft());
+        newParentInput = aliasToViewInfo.get(alias).getRight();
       } else if (wasCTE) {
         ctesExpanded.add(sqAliasToCTEName.get(alias));
       }
@@ -4137,7 +4136,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // This function returns the grouping sets along with the grouping expressions
   // Even if rollups and cubes are present in the query, they are converted to
   // grouping sets at this point
-  ObjectPair<List<ASTNode>, List<Long>> getGroupByGroupingSetsForClause(
+  Pair<List<ASTNode>, List<Long>> getGroupByGroupingSetsForClause(
     QBParseInfo parseInfo, String dest) throws SemanticException {
     List<Long> groupingSets = new ArrayList<Long>();
     List<ASTNode> groupByExprs = getGroupByForClause(parseInfo, dest);
@@ -4154,7 +4153,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_SIZE_LIMIT.getMsg());
     }
 
-    return new ObjectPair<List<ASTNode>, List<Long>>(groupByExprs, groupingSets);
+    return Pair.of(groupByExprs, groupingSets);
   }
 
   protected List<Long> getGroupingSets(List<ASTNode> groupByExpr, QBParseInfo parseInfo,
@@ -6115,11 +6114,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBParseInfo parseInfo = qb.getParseInfo();
 
     int numReducers = -1;
-    ObjectPair<List<ASTNode>, List<Long>> grpByExprsGroupingSets =
-        getGroupByGroupingSetsForClause(parseInfo, dest);
+    Pair<List<ASTNode>, List<Long>> grpByExprsGroupingSets = getGroupByGroupingSetsForClause(parseInfo, dest);
 
-    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
-    List<Long> groupingSets = grpByExprsGroupingSets.getSecond();
+    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getLeft();
+    List<Long> groupingSets = grpByExprsGroupingSets.getRight();
 
     if (grpByExprs.isEmpty()) {
       numReducers = 1;
@@ -6164,10 +6162,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ExprNodeDesc.ExprNodeDescEqualityWrapper> whereExpressions =
         new ArrayList<ExprNodeDesc.ExprNodeDescEqualityWrapper>();
     for (String dest : dests) {
-      ObjectPair<List<ASTNode>, List<Long>> grpByExprsGroupingSets =
+      Pair<List<ASTNode>, List<Long>> grpByExprsGroupingSets =
           getGroupByGroupingSetsForClause(parseInfo, dest);
 
-      List<Long> groupingSets = grpByExprsGroupingSets.getSecond();
+      List<Long> groupingSets = grpByExprsGroupingSets.getRight();
       if (!groupingSets.isEmpty()) {
         throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_AGGR_NOMAPAGGR_MULTIGBY.getMsg());
       }
@@ -6301,11 +6299,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     QBParseInfo parseInfo = qb.getParseInfo();
 
-    ObjectPair<List<ASTNode>, List<Long>> grpByExprsGroupingSets =
-        getGroupByGroupingSetsForClause(parseInfo, dest);
+    Pair<List<ASTNode>, List<Long>> grpByExprsGroupingSets = getGroupByGroupingSetsForClause(parseInfo, dest);
 
-    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
-    List<Long> groupingSets = grpByExprsGroupingSets.getSecond();
+    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getLeft();
+    List<Long> groupingSets = grpByExprsGroupingSets.getRight();
 
     // Grouping sets are not allowed
     // This restriction can be lifted in future.
@@ -6496,11 +6493,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                                Operator inputOperatorInfo) throws SemanticException {
 
     QBParseInfo parseInfo = qb.getParseInfo();
-    ObjectPair<List<ASTNode>, List<Long>> grpByExprsGroupingSets =
-        getGroupByGroupingSetsForClause(parseInfo, dest);
+    Pair<List<ASTNode>, List<Long>> grpByExprsGroupingSets = getGroupByGroupingSetsForClause(parseInfo, dest);
 
-    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
-    List<Long> groupingSets = grpByExprsGroupingSets.getSecond();
+    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getLeft();
+    List<Long> groupingSets = grpByExprsGroupingSets.getRight();
     boolean groupingSetsPresent = !groupingSets.isEmpty();
 
     int newMRJobGroupingSetsThreshold =
@@ -6665,11 +6661,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     QBParseInfo parseInfo = qb.getParseInfo();
 
-    ObjectPair<List<ASTNode>, List<Long>> grpByExprsGroupingSets =
-        getGroupByGroupingSetsForClause(parseInfo, dest);
+    Pair<List<ASTNode>, List<Long>> grpByExprsGroupingSets = getGroupByGroupingSetsForClause(parseInfo, dest);
 
-    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
-    List<Long> groupingSets = grpByExprsGroupingSets.getSecond();
+    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getLeft();
+    List<Long> groupingSets = grpByExprsGroupingSets.getRight();
     boolean groupingSetsPresent = !groupingSets.isEmpty();
 
     if (groupingSetsPresent) {
@@ -10433,12 +10428,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private ObjectPair<Integer, int[]> findMergePos(QBJoinTree node, QBJoinTree target) {
+  private Pair<Integer, int[]> findMergePos(QBJoinTree node, QBJoinTree target) {
     int res = -1;
     String leftAlias = node.getLeftAlias();
     if (leftAlias == null && (!node.getNoOuterJoin() || !target.getNoOuterJoin())) {
       // Cross with outer join: currently we do not merge
-      return new ObjectPair(-1, null);
+      return Pair.of(-1, null);
     }
 
     ArrayList<ASTNode> nodeCondn = node.getExpressions().get(0);
@@ -10458,7 +10453,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if ( targetCondn == null || (nodeCondn.size() != targetCondn.size())) {
-      return new ObjectPair(-1, null);
+      return Pair.of(-1, null);
     }
 
     /*
@@ -10481,17 +10476,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
       if ( tgtToNodeExprMap[i] == -1) {
-        return new ObjectPair(-1, null);
+        return Pair.of(-1, null);
       }
     }
 
     for(j=0; j < nodeCondn.size(); j++) {
       if ( !nodeFiltersMapped[j]) {
-        return new ObjectPair(-1, null);
+        return Pair.of(-1, null);
       }
     }
 
-    return new ObjectPair(res, tgtToNodeExprMap);
+    return Pair.of(res, tgtToNodeExprMap);
   }
 
   boolean isCBOExecuted() {
@@ -10565,8 +10560,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // Outer joins with post-filtering conditions cannot be merged
           break;
         }
-        ObjectPair<Integer, int[]> mergeDetails = findMergePos(node, target);
-        int pos = mergeDetails.getFirst();
+        Pair<Integer, int[]> mergeDetails = findMergePos(node, target);
+        int pos = mergeDetails.getLeft();
         if (pos >= 0) {
           // for outer joins, it should not exceed 16 aliases (short type)
           if (!node.getNoOuterJoin() || !target.getNoOuterJoin()) {
@@ -10576,7 +10571,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               continue;
             }
           }
-          mergeJoins(qb, node, target, pos, mergeDetails.getSecond());
+          mergeJoins(qb, node, target, pos, mergeDetails.getRight());
           trees.set(j, null);
           mergedQBJTree = true;
           continue; // continue merging with next alias

@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse.spark;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -92,8 +92,7 @@ public class GenSparkProcContext implements NodeProcessorCtx {
 
   // map that keeps track of the last operator of a task to the following work
   // of this operator. This is used for connecting them later.
-  public final Map<ReduceSinkOperator, ObjectPair<SparkEdgeProperty, ReduceWork>>
-    leafOpToFollowingWorkInfo;
+  public final Map<ReduceSinkOperator, Pair<SparkEdgeProperty, ReduceWork>> leafOpToFollowingWorkInfo;
 
   // a map that keeps track of work that need to be linked while
   // traversing an operator tree
@@ -149,7 +148,6 @@ public class GenSparkProcContext implements NodeProcessorCtx {
   public final Set<Operator<?>> clonedPruningTableScanSet;
 
 
-  @SuppressWarnings("unchecked")
   public GenSparkProcContext(HiveConf conf,
       ParseContext parseContext,
       List<Task<MoveWork>> moveTask,
@@ -167,7 +165,7 @@ public class GenSparkProcContext implements NodeProcessorCtx {
     this.currentTask = SparkUtilities.createSparkTask(conf);
     this.rootTasks.add(currentTask);
     this.leafOpToFollowingWorkInfo =
-        new LinkedHashMap<ReduceSinkOperator, ObjectPair<SparkEdgeProperty, ReduceWork>>();
+        new LinkedHashMap<ReduceSinkOperator, Pair<SparkEdgeProperty, ReduceWork>>();
     this.linkOpWithWorkMap = new LinkedHashMap<Operator<?>, Map<BaseWork, SparkEdgeProperty>>();
     this.linkWorkWithReduceSinkMap = new LinkedHashMap<BaseWork, List<ReduceSinkOperator>>();
     this.smbMapJoinCtxMap = new HashMap<SMBMapJoinOperator, SparkSMBMapJoinInfo>();
