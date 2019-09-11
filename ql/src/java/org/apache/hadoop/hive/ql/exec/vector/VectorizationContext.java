@@ -1966,10 +1966,10 @@ import com.google.common.annotations.VisibleForTesting;
         builder.setInputExpressionType(i, InputExpressionType.COLUMN);
       } else if (child instanceof ExprNodeConstantDesc) {
         if (isNullConst(child)) {
-          // Cannot handle NULL scalar parameter.
-          return null;
+          builder.setInputExpressionType(i, InputExpressionType.NULLSCALAR);
+        }else {
+          builder.setInputExpressionType(i, InputExpressionType.SCALAR);
         }
-        builder.setInputExpressionType(i, InputExpressionType.SCALAR);
       } else if (child instanceof ExprNodeDynamicValueDesc) {
         builder.setInputExpressionType(i, InputExpressionType.DYNAMICVALUE);
       } else {
@@ -4067,10 +4067,10 @@ import com.google.common.annotations.VisibleForTesting;
     } else if (varcharTypePattern.matcher(typeString).matches()) {
       return ((HiveVarchar) constDesc.getValue()).getValue().getBytes(StandardCharsets.UTF_8);
     } else if (typeString.equalsIgnoreCase("boolean")) {
-      if (constDesc.getValue().equals(Boolean.TRUE)) {
-        return 1;
-      } else {
-        return 0;
+      if (constDesc.getValue() == null) {
+        return null;
+      }else{
+        return constDesc.getValue().equals(Boolean.TRUE) ? 1 : 0;
       }
     } else if (decimalTypePattern.matcher(typeString).matches()) {
       return constDesc.getValue();

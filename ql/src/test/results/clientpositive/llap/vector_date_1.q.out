@@ -124,8 +124,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 4, 5, 6, 7, 9, 10, 11]
-                        selectExpressions: VectorUDFAdaptor((null or dt1 is not null))(children: IsNotNull(col 0:date) -> 3:boolean) -> 4:boolean, LongColNotEqualLongColumn(col 0:date, col 1:date) -> 5:boolean, LongColLessEqualLongColumn(col 0:date, col 1:date) -> 6:boolean, LongColLessLongColumn(col 0:date, col 1:date) -> 7:boolean, VectorUDFAdaptor((null or dt2 is not null))(children: IsNotNull(col 1:date) -> 8:boolean) -> 9:boolean, LongColGreaterEqualLongColumn(col 1:date, col 0:date) -> 10:boolean, LongColGreaterLongColumn(col 1:date, col 0:date) -> 11:boolean
+                        projectedOutputColumnNums: [0, 1, 5, 6, 7, 8, 11, 12, 13]
+                        selectExpressions: ScalarNullOrCol(col 4:boolean, val 0:boolean)(children: IsNotNull(col 0:date) -> 4:boolean) -> 5:boolean, LongColNotEqualLongColumn(col 0:date, col 1:date) -> 6:boolean, LongColLessEqualLongColumn(col 0:date, col 1:date) -> 7:boolean, LongColLessLongColumn(col 0:date, col 1:date) -> 8:boolean, ScalarNullOrCol(col 10:boolean, val 0:boolean)(children: IsNotNull(col 1:date) -> 10:boolean) -> 11:boolean, LongColGreaterEqualLongColumn(col 1:date, col 0:date) -> 12:boolean, LongColGreaterLongColumn(col 1:date, col 0:date) -> 13:boolean
                     Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: date)
@@ -135,7 +135,7 @@ STAGE PLANS:
                           keyColumns: 0:date
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumns: 1:date, 4:boolean, 5:boolean, 6:boolean, 7:boolean, 9:boolean, 10:boolean, 11:boolean
+                          valueColumns: 1:date, 5:boolean, 6:boolean, 7:boolean, 8:boolean, 11:boolean, 12:boolean, 13:boolean
                       Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: date), _col2 (type: boolean), _col3 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean)
             Execution mode: vectorized, llap
@@ -147,14 +147,14 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
                     dataColumns: dt1:date, dt2:date
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -293,8 +293,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 4, 5, 6, 7, 9, 10, 11]
-                        selectExpressions: VectorUDFAdaptor((null and dt1 is null))(children: IsNull(col 0:date) -> 3:boolean) -> 4:boolean, LongColEqualLongColumn(col 0:date, col 1:date) -> 5:boolean, LongColGreaterEqualLongColumn(col 0:date, col 1:date) -> 6:boolean, LongColGreaterLongColumn(col 0:date, col 1:date) -> 7:boolean, VectorUDFAdaptor((null and dt2 is null))(children: IsNull(col 1:date) -> 8:boolean) -> 9:boolean, LongColLessEqualLongColumn(col 1:date, col 0:date) -> 10:boolean, LongColLessLongColumn(col 1:date, col 0:date) -> 11:boolean
+                        projectedOutputColumnNums: [0, 1, 5, 6, 7, 8, 11, 12, 13]
+                        selectExpressions: ScalarNullAndCol(col 4:boolean, val 0:boolean)(children: IsNull(col 0:date) -> 4:boolean) -> 5:boolean, LongColEqualLongColumn(col 0:date, col 1:date) -> 6:boolean, LongColGreaterEqualLongColumn(col 0:date, col 1:date) -> 7:boolean, LongColGreaterLongColumn(col 0:date, col 1:date) -> 8:boolean, ScalarNullAndCol(col 10:boolean, val 0:boolean)(children: IsNull(col 1:date) -> 10:boolean) -> 11:boolean, LongColLessEqualLongColumn(col 1:date, col 0:date) -> 12:boolean, LongColLessLongColumn(col 1:date, col 0:date) -> 13:boolean
                     Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: date)
@@ -304,7 +304,7 @@ STAGE PLANS:
                           keyColumns: 0:date
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumns: 1:date, 4:boolean, 5:boolean, 6:boolean, 7:boolean, 9:boolean, 10:boolean, 11:boolean
+                          valueColumns: 1:date, 5:boolean, 6:boolean, 7:boolean, 8:boolean, 11:boolean, 12:boolean, 13:boolean
                       Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: date), _col2 (type: boolean), _col3 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean)
             Execution mode: vectorized, llap
@@ -316,14 +316,14 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
                     dataColumns: dt1:date, dt2:date
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:

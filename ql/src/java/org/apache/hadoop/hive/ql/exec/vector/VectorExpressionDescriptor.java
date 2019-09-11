@@ -171,7 +171,8 @@ public class VectorExpressionDescriptor {
     NONE(0),
     COLUMN(1),
     SCALAR(2),
-    DYNAMICVALUE(3);
+    DYNAMICVALUE(3),
+    NULLSCALAR(4);
 
     private final int value;
 
