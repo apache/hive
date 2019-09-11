@@ -172,7 +172,7 @@ public class TestVectorMapJoinFastBytesHashMultiSet extends CommonFastHashTable 
 
     VerifyFastBytesHashMultiSet verifyTable = new VerifyFastBytesHashMultiSet();
 
-    for (int i = 0; i < 18; ++i) {
+    for (int i = 0; i < 6; ++i) {
       byte[] key;
       while (true) {
         key = new byte[random.nextInt(MAX_KEY_LENGTH)];
