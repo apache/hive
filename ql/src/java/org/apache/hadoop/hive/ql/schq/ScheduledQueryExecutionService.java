@@ -57,6 +57,8 @@ public class ScheduledQueryExecutionService implements Closeable {
             Thread.sleep(context.getIdleSleepTime());
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            LOG.info("interrupted");
+            break;
           }
         }
       }

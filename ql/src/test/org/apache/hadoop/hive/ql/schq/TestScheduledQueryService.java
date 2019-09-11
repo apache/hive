@@ -56,6 +56,10 @@ public class TestScheduledQueryService {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    env_setup.getTestCtx().hiveConf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME, "1s");
+    env_setup.getTestCtx().hiveConf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL,
+        "1s");
+
     IDriver driver = createDriver();
     dropTables(driver);
     String cmds[] = {
@@ -119,7 +123,7 @@ public class TestScheduledQueryService {
 
     @Override
     public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
-      System.out.printf("%ld, state: %s, error: %s", info.getScheduledExecutionId(), info.getState(),
+      System.out.printf("%d, state: %s, error: %s", info.getScheduledExecutionId(), info.getState(),
           info.getErrorMessage());
     }
 
