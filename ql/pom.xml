@@ -1007,6 +1007,10 @@
                   <pattern>org.objenesis</pattern>
                   <shadedPattern>org.apache.hive.org.objenesis</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>com.google.guava</pattern>
+                  <shadedPattern>org.apache.hive.com.google.guava</shadedPattern>
+                </relocation>
               </relocations>
             </configuration>
           </execution>
