@@ -204,9 +204,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         }
         // make metastore URIS random
         if (HiveConf.getVar(conf, ConfVars.METASTORESELECTION).equalsIgnoreCase("RANDOM")) {
-          List uriList = Arrays.asList(metastoreUris);
+          List<URI> uriList = Arrays.asList(metastoreUris);
           Collections.shuffle(uriList);
-          metastoreUris = (URI[]) uriList.toArray();
+          metastoreUris = uriList.toArray(new URI[uriList.size()]);
         }
       } catch (IllegalArgumentException e) {
         throw (e);
