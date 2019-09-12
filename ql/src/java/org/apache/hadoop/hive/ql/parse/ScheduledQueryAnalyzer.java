@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.schq.ScheduledQueryMaintWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -59,11 +60,9 @@ import org.slf4j.LoggerFactory;
 
 public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
   private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryAnalyzer.class);
-  private UnparseTranslator unparseTranslator;
 
   public ScheduledQueryAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
-    this.unparseTranslator = new UnparseTranslator(conf);
   }
 
   @Override
@@ -168,11 +167,14 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
 
   private String unparseQuery(Tree child) throws SemanticException {
     ASTNode input = (ASTNode) child;
+    ((HiveConf) (ctx.getConf())).setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, false);
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
+
+    ctx.setEnableUnparse(true);
     sem.analyze(input, ctx);
     sem.validate();
+    sem.unparse();
 
-    unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
     String expandedText = ctx.getTokenRewriteStream().toString(input.getTokenStartIndex(), input.getTokenStopIndex());
 
     return expandedText;

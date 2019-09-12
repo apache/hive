@@ -2318,4 +2318,10 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
   }
+
+  protected void unparse() {
+    UnparseTranslator unparseTranslator = new UnparseTranslator(conf);
+    unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
+  }
+
 }

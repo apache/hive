@@ -170,6 +170,7 @@ public class Context {
 
   // Load data rewrite
   private Table tempTableForLoad;
+  private boolean enableUnparse;
 
   public void setOperation(Operation operation) {
     this.operation = operation;
@@ -1212,6 +1213,14 @@ public class Context {
 
   public void setTempTableForLoad(Table tempTableForLoad) {
     this.tempTableForLoad = tempTableForLoad;
+  }
+
+  public boolean enableUnparse() {
+    return enableUnparse;
+  }
+
+  public void setEnableUnparse(boolean enableUnparse) {
+    this.enableUnparse = enableUnparse;
   }
 
 }
