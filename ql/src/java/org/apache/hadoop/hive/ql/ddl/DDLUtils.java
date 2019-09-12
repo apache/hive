@@ -33,13 +33,17 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -197,5 +201,22 @@ public final class DDLUtils {
     if (value != null) {
       builder.append(value);
     }
+  }
+
+  public static void addServiceOutput(HiveConf conf, Set<WriteEntity> outputs) throws SemanticException {
+    String hs2Hostname = getHS2Host(conf);
+    if (hs2Hostname != null) {
+      outputs.add(new WriteEntity(hs2Hostname, Type.SERVICE_NAME));
+    }
+  }
+
+  private static String getHS2Host(HiveConf conf) throws SemanticException {
+    if (SessionState.get().isHiveServerQuery()) {
+      return SessionState.get().getHiveServer2Host();
+    } else if (conf.getBoolVar(ConfVars.HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE)) {
+      return "dummyHostnameForTest";
+    }
+
+    throw new SemanticException("Kill query is only supported in HiveServer2 (not hive cli)");
   }
 }

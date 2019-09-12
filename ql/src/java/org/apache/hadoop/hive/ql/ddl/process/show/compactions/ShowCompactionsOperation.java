@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.process;
+package org.apache.hadoop.hive.ql.ddl.process.show.compactions;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

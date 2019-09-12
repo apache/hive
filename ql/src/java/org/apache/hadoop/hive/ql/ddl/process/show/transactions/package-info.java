@@ -16,23 +16,5 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.process;
-
-import org.apache.hadoop.hive.ql.ddl.DDLOperation;
-import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-
-/**
- * Operation process of aborting transactions.
- */
-public class AbortTransactionsOperation extends DDLOperation<AbortTransactionsDesc> {
-  public AbortTransactionsOperation(DDLOperationContext context, AbortTransactionsDesc desc) {
-    super(context, desc);
-  }
-
-  @Override
-  public int execute() throws HiveException {
-    context.getDb().abortTransactions(desc.getTransactionIds());
-    return 0;
-  }
-}
+/** Show Transactions DDL operation. */
+package org.apache.hadoop.hive.ql.ddl.process.show.transactions;
