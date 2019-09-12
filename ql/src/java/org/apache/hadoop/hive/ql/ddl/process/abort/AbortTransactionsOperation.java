@@ -16,28 +16,23 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.process;
+package org.apache.hadoop.hive.ql.ddl.process.abort;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
- * Operation process of killing queries.
+ * Operation process of aborting transactions.
  */
-public class KillQueriesOperation extends DDLOperation<KillQueriesDesc> {
-  public KillQueriesOperation(DDLOperationContext context, KillQueriesDesc desc) {
+public class AbortTransactionsOperation extends DDLOperation<AbortTransactionsDesc> {
+  public AbortTransactionsOperation(DDLOperationContext context, AbortTransactionsDesc desc) {
     super(context, desc);
   }
 
   @Override
   public int execute() throws HiveException {
-    SessionState sessionState = SessionState.get();
-    for (String queryId : desc.getQueryIds()) {
-      sessionState.getKillQuery().killQuery(queryId, "User invoked KILL QUERY", context.getDb().getConf());
-    }
-    LOG.info("kill query called ({})", desc.getQueryIds());
+    context.getDb().abortTransactions(desc.getTransactionIds());
     return 0;
   }
 }

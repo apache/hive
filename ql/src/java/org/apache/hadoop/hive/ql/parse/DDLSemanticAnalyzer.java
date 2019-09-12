@@ -72,10 +72,6 @@ import org.apache.hadoop.hive.ql.ddl.misc.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.MsckDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.ShowConfDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
-import org.apache.hadoop.hive.ql.ddl.process.AbortTransactionsDesc;
-import org.apache.hadoop.hive.ql.ddl.process.KillQueriesDesc;
-import org.apache.hadoop.hive.ql.ddl.process.ShowCompactionsDesc;
-import org.apache.hadoop.hive.ql.ddl.process.ShowTransactionsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.column.AlterTableAddColumnsDesc;
@@ -412,20 +408,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOWDBLOCKS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowDbLocks(ast);
-      break;
-    case HiveParser.TOK_SHOW_COMPACTIONS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowCompactions(ast);
-      break;
-    case HiveParser.TOK_SHOW_TRANSACTIONS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowTxns(ast);
-      break;
-    case HiveParser.TOK_ABORT_TRANSACTIONS:
-      analyzeAbortTxns(ast);
-      break;
-    case HiveParser.TOK_KILL_QUERY:
-      analyzeKillQuery(ast);
       break;
     case HiveParser.TOK_SHOWCONF:
       ctx.setResFile(ctx.getLocalTmpPath());
@@ -2582,59 +2564,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);
-  }
-
-  /**
-   * Add a task to execute "SHOW COMPACTIONS"
-   * @param ast The parsed command tree.
-   * @throws SemanticException Parsing failed.
-   */
-  private void analyzeShowCompactions(ASTNode ast) throws SemanticException {
-    ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-    setFetchTask(createFetchTask(ShowCompactionsDesc.SCHEMA));
-  }
-
-  /**
-   * Add a task to execute "SHOW COMPACTIONS"
-   * @param ast The parsed command tree.
-   * @throws SemanticException Parsing failed.
-   */
-  private void analyzeShowTxns(ASTNode ast) throws SemanticException {
-    ShowTransactionsDesc desc = new ShowTransactionsDesc(ctx.getResFile());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-    setFetchTask(createFetchTask(ShowTransactionsDesc.SCHEMA));
-  }
-
-  /**
-   * Add a task to execute "ABORT TRANSACTIONS"
-   * @param ast The parsed command tree
-   * @throws SemanticException Parsing failed
-   */
-  private void analyzeAbortTxns(ASTNode ast) throws SemanticException {
-    List<Long> txnids = new ArrayList<Long>();
-    int numChildren = ast.getChildCount();
-    for (int i = 0; i < numChildren; i++) {
-      txnids.add(Long.parseLong(ast.getChild(i).getText()));
-    }
-    AbortTransactionsDesc desc = new AbortTransactionsDesc(txnids);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-  }
-
-   /**
-   * Add a task to execute "Kill query"
-   * @param ast The parsed command tree
-   * @throws SemanticException Parsing failed
-   */
-  private void analyzeKillQuery(ASTNode ast) throws SemanticException {
-    List<String> queryIds = new ArrayList<String>();
-    int numChildren = ast.getChildCount();
-    for (int i = 0; i < numChildren; i++) {
-      queryIds.add(stripQuotes(ast.getChild(i).getText()));
-    }
-    addServiceOutput();
-    KillQueriesDesc desc = new KillQueriesDesc(queryIds);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 
   private void addServiceOutput() throws SemanticException {

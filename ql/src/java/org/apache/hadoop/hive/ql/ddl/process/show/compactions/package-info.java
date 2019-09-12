@@ -15,30 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.ddl.process;
 
-import java.io.Serializable;
-import java.util.List;
-
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
-/**
- * DDL task description for KILL QUERY commands.
- */
-@Explain(displayName = "Kill Query", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class KillQueriesDesc implements DDLDesc, Serializable {
-  private static final long serialVersionUID = 1L;
-
-  private List<String> queryIds;
-
-  public KillQueriesDesc(List<String> queryIds) {
-    this.queryIds = queryIds;
-  }
-
-  @Explain(displayName = "Query IDs", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public List<String> getQueryIds() {
-    return queryIds;
-  }
-}
+/** Show Compactions DDL operation. */
+package org.apache.hadoop.hive.ql.ddl.process.show.compactions;
