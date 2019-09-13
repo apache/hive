@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import com.google.common.collect.Multimap;
+import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -577,44 +579,51 @@ public class ExprNodeDescUtils {
     } catch (Exception e) {
       return null;
     }
-	}
+  }
 
-	public static void getExprNodeColumnDesc(List<ExprNodeDesc> exprDescList,
-			Map<Integer, ExprNodeDesc> hashCodeTocolumnDescMap) {
-		for (ExprNodeDesc exprNodeDesc : exprDescList) {
-			getExprNodeColumnDesc(exprNodeDesc, hashCodeTocolumnDescMap);
-		}
-	}
+  public static void getExprNodeColumnDesc(List<ExprNodeDesc> exprDescList,
+      Multimap<Integer, ExprNodeColumnDesc> hashCodeTocolumnDescMap) {
+    for (ExprNodeDesc exprNodeDesc : exprDescList) {
+      getExprNodeColumnDesc(exprNodeDesc, hashCodeTocolumnDescMap);
+    }
+  }
 
-	/**
-	 * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
-	 *
-	 * @param exprDesc
-	 * @param hashCodeToColumnDescMap
-	 *            Assumption: If two ExprNodeColumnDesc have same hash code then
-	 *            they are logically referring to same projection
-	 */
-	public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
-			Map<Integer, ExprNodeDesc> hashCodeToColumnDescMap) {
-		if (exprDesc instanceof ExprNodeColumnDesc) {
-			hashCodeToColumnDescMap.put(exprDesc.hashCode(), exprDesc);
-		} else if (exprDesc instanceof ExprNodeColumnListDesc) {
-			for (ExprNodeDesc child : exprDesc.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
-			}
-		} else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
-			for (ExprNodeDesc child : exprDesc.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
-			}
-		} else if (exprDesc instanceof ExprNodeFieldDesc) {
-			getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
-					hashCodeToColumnDescMap);
-		} else if( exprDesc instanceof  ExprNodeSubQueryDesc) {
-		    getExprNodeColumnDesc(((ExprNodeSubQueryDesc) exprDesc).getSubQueryLhs(),
-                    hashCodeToColumnDescMap);
+  /**
+   * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
+   *
+   * @param exprDesc
+   * @param hashCodeToColumnDescMap
+   */
+  public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
+      Multimap<Integer, ExprNodeColumnDesc> hashCodeToColumnDescMap) {
+    if (exprDesc instanceof ExprNodeColumnDesc) {
+      Collection<ExprNodeColumnDesc> nodes = hashCodeToColumnDescMap.get(exprDesc.hashCode());
+      boolean insert = true;
+      for (ExprNodeColumnDesc node : nodes) {
+        if (node.isSame(exprDesc)) {
+          insert = false;
+          break;
         }
-
-	}
+      }
+      if (insert) {
+        nodes.add((ExprNodeColumnDesc) exprDesc);
+      }
+    } else if (exprDesc instanceof ExprNodeColumnListDesc) {
+      for (ExprNodeDesc child : exprDesc.getChildren()) {
+        getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
+      }
+    } else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
+      for (ExprNodeDesc child : exprDesc.getChildren()) {
+        getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
+      }
+    } else if (exprDesc instanceof ExprNodeFieldDesc) {
+      getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
+          hashCodeToColumnDescMap);
+    } else if(exprDesc instanceof  ExprNodeSubQueryDesc) {
+      getExprNodeColumnDesc(((ExprNodeSubQueryDesc) exprDesc).getSubQueryLhs(),
+          hashCodeToColumnDescMap);
+    }
+  }
 
   public static boolean isConstant(ExprNodeDesc value) {
     if (value instanceof ExprNodeConstantDesc) {
