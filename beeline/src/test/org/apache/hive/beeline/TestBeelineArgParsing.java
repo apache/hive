@@ -353,4 +353,18 @@ public class TestBeelineArgParsing {
     Assert.assertTrue(bl.getOpts().getMaxHistoryRows() == 100);
     bl.close();
   }
+
+  /**
+   * Test the report parameter option.
+   * @throws Exception
+   */
+  @Test
+  public void testReport() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] = new String[] {"--report=true"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertTrue(bl.getOpts().isReport());
+    bl.close();
+  }
+
 }
