@@ -26,6 +26,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.druid.data.input.impl.DimensionSchema;
 import org.apache.druid.data.input.impl.DimensionsSpec;
@@ -49,6 +50,8 @@ import org.apache.druid.metadata.storage.mysql.MySQLConnector;
 import org.apache.druid.metadata.storage.mysql.MySQLConnectorConfig;
 import org.apache.druid.metadata.storage.postgresql.PostgreSQLConnector;
 import org.apache.druid.metadata.storage.postgresql.PostgreSQLConnectorConfig;
+import org.apache.druid.query.BaseQuery;
+import org.apache.druid.query.Query;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.segment.IndexSpec;
 import org.apache.druid.segment.indexing.DataSchema;
@@ -84,7 +87,10 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -963,5 +969,29 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
       // e.g. Total size of segments in druid, load status of table on historical nodes etc.
       return null;
     }
+  }
+
+  @Override public Map<String, String> getOperatorDescProperties(OperatorDesc operatorDesc,
+      Map<String, String> initialProps) {
+    if (operatorDesc instanceof TableScanDesc) {
+      TableScanDesc tableScanDesc = (TableScanDesc) operatorDesc;
+      ExprNodeGenericFuncDesc filterExpr = tableScanDesc.getFilterExpr();
+      String druidQuery = initialProps.get(Constants.DRUID_QUERY_JSON);
+
+      if (filterExpr != null && druidQuery != null) {
+        try {
+          Query query = DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, BaseQuery.class);
+          Query queryWithDynamicFilters = DruidStorageHandlerUtils.addDynamicFilters(query, filterExpr, conf, false);
+          Map<String, String> props = Maps.newHashMap(initialProps);
+          props.put(Constants.DRUID_QUERY_JSON,
+              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(queryWithDynamicFilters));
+          return props;
+        } catch (IOException e) {
+          LOG.error("Exception while deserializing druid query. Explain plan may not have final druid query", e);
+        }
+      }
+    }
+    // Case when we do not have any additional info to add.
+    return initialProps;
   }
 }

@@ -67,6 +67,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
+                  filterExpr: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)
@@ -389,6 +390,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
+                  filterExpr: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)
