@@ -18,16 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
@@ -37,6 +30,14 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Table Scan Descriptor Currently, data is only read from a base source as part
@@ -470,10 +471,16 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return rtn;
   }
 
-  @Override
-  @Explain(displayName = "properties", explainLevels = { Level.DEFAULT, Level.USER, Level.EXTENDED })
-  public Map<String, String> getOpProps() {
+  @Override public Map<String, String> getOpProps() {
     return opProps;
+  }
+
+  @Explain(displayName = "properties", explainLevels = { Level.DEFAULT, Level.USER, Level.EXTENDED })
+  public Map<String, String> getOpPropsWithStorageHandlerProps() {
+    HiveStorageHandler storageHandler = tableMetadata.getStorageHandler();
+    return storageHandler == null
+            ? opProps
+            : storageHandler.getOperatorDescProperties(this, opProps);
   }
 
   public class TableScanOperatorExplainVectorization extends OperatorExplainVectorization {

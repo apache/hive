@@ -39,7 +39,7 @@ druid_table_with_nulls `tbl1`
   )
   `tbl2`
     ON (`tbl1`.`username` = `tbl2`.`username`)
-GROUP BY `tbl1`.`username`;
+GROUP BY `tbl1`.`username` ORDER BY `sum_double1`;
 
 
 SELECT
@@ -58,4 +58,4 @@ druid_table_with_nulls `tbl1`
   )
   `tbl2`
     ON (`tbl1`.`username` = `tbl2`.`username`)
-GROUP BY `tbl1`.`username`;
+GROUP BY `tbl1`.`username` ORDER BY `sum_double1`;
