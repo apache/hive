@@ -71,6 +71,7 @@ public class TestReplicationOnHDFSEncryptedZones {
     primary = new WarehouseInstance(LOG, miniDFSCluster, new HashMap<String, String>() {{
       put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");
       put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
+      put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
     }}, "test_key");
   }
 
@@ -112,6 +113,7 @@ public class TestReplicationOnHDFSEncryptedZones {
     replica
         .run("repl load " + replicatedDbName + " from '" + tuple.dumpLocation
                 + "' with('hive.repl.add.raw.reserved.namespace'='true', "
+                + "'hive.repl.replica.external.table.base.dir'='" + replica.externalTableWarehouseRoot + "', "
                 + "'distcp.options.pugpbx'='', 'distcp.options.skipcrccheck'='', 'distcp.options.update'='')")
         .run("use " + replicatedDbName)
         .run("repl status " + replicatedDbName)

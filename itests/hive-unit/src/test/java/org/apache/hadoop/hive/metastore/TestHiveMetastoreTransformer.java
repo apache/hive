@@ -920,13 +920,20 @@ public class TestHiveMetastoreTransformer {
       Table tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table type expected to be EXTERNAL", "EXTERNAL_TABLE", tbl2.getTableType());
 
-      tblName = "test_create_table_mgd_woc";
+      tblName = "test_create_table_mgd_wc";
       type = TableType.MANAGED_TABLE;
       tProps.put("TBLNAME", tblName);
       tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
       table_params = new StringBuilder();
       table_params.append("key1=val1");
+      table_params.append(";");
+      table_params.append("transactional_properties=default");
       tProps.put("PROPERTIES", table_params.toString());
+
+      List<String> capabilities = new ArrayList<>();
+      capabilities.add("HIVEFULLACIDWRITE");
+      setHMSClient("TestCreateTableMGD#1", (String[])(capabilities.toArray(new String[0])));
+
       table = createTableWithCapabilities(tProps);
 
       // retrieve the table
@@ -936,6 +943,24 @@ public class TestHiveMetastoreTransformer {
       assertTrue("external.table.purge is expected to be true",
           tbl2.getParameters().get("external.table.purge").equalsIgnoreCase("TRUE"));
       assertTrue("Table params expected to contain original properties", tbl2.getParameters().get("key1").equals("val1"));
+
+      resetHMSClient();
+
+      capabilities = new ArrayList<>();
+      capabilities.add("HIVEMANAGEDINSERTWRITE");
+      setHMSClient("TestCreateTableMGD#2", (String[])(capabilities.toArray(new String[0])));
+
+      table = createTableWithCapabilities(tProps);
+
+      // retrieve the table
+      tbl2 = client.getTable(dbName, tblName);
+      assertEquals("Table type expected to be converted to EXTERNAL", "EXTERNAL_TABLE", tbl2.getTableType());
+      assertNotNull("external.table.purge is expected to be non-null", tbl2.getParameters().get("external.table.purge"));
+      assertTrue("external.table.purge is expected to be true",
+          tbl2.getParameters().get("external.table.purge").equalsIgnoreCase("TRUE"));
+      assertTrue("Table params expected to contain original properties", tbl2.getParameters().get("key1").equals("val1"));
+
+      resetHMSClient();
 
       // Test for FULL ACID tables
       tblName = "test_create_table_acid_mgd_woc";
@@ -955,7 +980,7 @@ public class TestHiveMetastoreTransformer {
         LOG.info("Create table expected to fail as ACID table cannot be created without possessing capabilities");
       }
 
-      List<String> capabilities = new ArrayList<>();
+      capabilities = new ArrayList<>();
       capabilities.add("CONNECTORWRITE");
       setHMSClient("TestCreateTableACID#1", (String[])(capabilities.toArray(new String[0])));
 
