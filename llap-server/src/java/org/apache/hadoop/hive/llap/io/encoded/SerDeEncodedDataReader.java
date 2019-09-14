@@ -820,7 +820,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     List<StripeData> slices = cachedData.getData();
     if (slices.isEmpty()) return false;
     long uncachedPrefixEnd = slices.get(0).getKnownTornStart(),
-        uncachedSuffixStart = slices.get(slices.size() - 1).getLastEnd();
+        uncachedSuffixStart = slices.get(slices.size() - 1).getLastEnd(),
+        lastStripeLastStart = slices.get(slices.size() - 1).getLastStart();
     Ref<Integer> stripeIx = Ref.from(0);
     if (uncachedPrefixEnd > split.getStart()) {
       // TODO: can we merge neighboring splits? So we don't init so many readers.
@@ -856,8 +857,9 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     if (uncachedSuffixStart < endOfSplit || isUnfortunate) {
       // Note: we assume 0-length split is correct given now LRR interprets offsets (reading an
       // extra row). Should we instead assume 1+ chars and add 1 for isUnfortunate?
-      FileSplit splitPart = new FileSplit(split.getPath(), uncachedSuffixStart,
-          endOfSplit - uncachedSuffixStart, hosts, inMemoryHosts);
+      // Do not read from uncachedSuffixStart as LineRecordReader skips first row
+      FileSplit splitPart = new FileSplit(split.getPath(), lastStripeLastStart,
+          endOfSplit - lastStripeLastStart, hosts, inMemoryHosts);
       if (!processOneFileSplit(splitPart, startTime, stripeIx, null)) return null;
     }
     return true;
