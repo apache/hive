@@ -128,6 +128,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
     }
   }
 
+  @Override
   public void configure(MapredContext context) {
     if (context != null) {
       String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
