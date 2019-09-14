@@ -24542,6 +24542,8 @@ class AlterTableRequest:
    - environmentContext
    - writeId
    - validWriteIdList
+   - processorCapabilities
+   - processorIdentifier
   """
 
   thrift_spec = (
@@ -24553,9 +24555,11 @@ class AlterTableRequest:
     (5, TType.STRUCT, 'environmentContext', (EnvironmentContext, EnvironmentContext.thrift_spec), None, ), # 5
     (6, TType.I64, 'writeId', None, -1, ), # 6
     (7, TType.STRING, 'validWriteIdList', None, None, ), # 7
+    (8, TType.LIST, 'processorCapabilities', (TType.STRING,None), None, ), # 8
+    (9, TType.STRING, 'processorIdentifier', None, None, ), # 9
   )
 
-  def __init__(self, catName=None, dbName=None, tableName=None, table=None, environmentContext=None, writeId=thrift_spec[6][4], validWriteIdList=None,):
+  def __init__(self, catName=None, dbName=None, tableName=None, table=None, environmentContext=None, writeId=thrift_spec[6][4], validWriteIdList=None, processorCapabilities=None, processorIdentifier=None,):
     self.catName = catName
     self.dbName = dbName
     self.tableName = tableName
@@ -24563,6 +24567,8 @@ class AlterTableRequest:
     self.environmentContext = environmentContext
     self.writeId = writeId
     self.validWriteIdList = validWriteIdList
+    self.processorCapabilities = processorCapabilities
+    self.processorIdentifier = processorIdentifier
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -24610,6 +24616,21 @@ class AlterTableRequest:
           self.validWriteIdList = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.LIST:
+          self.processorCapabilities = []
+          (_etype994, _size991) = iprot.readListBegin()
+          for _i995 in xrange(_size991):
+            _elem996 = iprot.readString()
+            self.processorCapabilities.append(_elem996)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.STRING:
+          self.processorIdentifier = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -24648,6 +24669,17 @@ class AlterTableRequest:
       oprot.writeFieldBegin('validWriteIdList', TType.STRING, 7)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
+    if self.processorCapabilities is not None:
+      oprot.writeFieldBegin('processorCapabilities', TType.LIST, 8)
+      oprot.writeListBegin(TType.STRING, len(self.processorCapabilities))
+      for iter997 in self.processorCapabilities:
+        oprot.writeString(iter997)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.processorIdentifier is not None:
+      oprot.writeFieldBegin('processorIdentifier', TType.STRING, 9)
+      oprot.writeString(self.processorIdentifier)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -24670,6 +24702,8 @@ class AlterTableRequest:
     value = (value * 31) ^ hash(self.environmentContext)
     value = (value * 31) ^ hash(self.writeId)
     value = (value * 31) ^ hash(self.validWriteIdList)
+    value = (value * 31) ^ hash(self.processorCapabilities)
+    value = (value * 31) ^ hash(self.processorIdentifier)
     return value
 
   def __repr__(self):

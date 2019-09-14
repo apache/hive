@@ -14879,11 +14879,13 @@ inline std::ostream& operator<<(std::ostream& out, const RenamePartitionResponse
 }
 
 typedef struct _AlterTableRequest__isset {
-  _AlterTableRequest__isset() : catName(false), environmentContext(false), writeId(true), validWriteIdList(false) {}
+  _AlterTableRequest__isset() : catName(false), environmentContext(false), writeId(true), validWriteIdList(false), processorCapabilities(false), processorIdentifier(false) {}
   bool catName :1;
   bool environmentContext :1;
   bool writeId :1;
   bool validWriteIdList :1;
+  bool processorCapabilities :1;
+  bool processorIdentifier :1;
 } _AlterTableRequest__isset;
 
 class AlterTableRequest {
@@ -14891,7 +14893,7 @@ class AlterTableRequest {
 
   AlterTableRequest(const AlterTableRequest&);
   AlterTableRequest& operator=(const AlterTableRequest&);
-  AlterTableRequest() : catName(), dbName(), tableName(), writeId(-1LL), validWriteIdList() {
+  AlterTableRequest() : catName(), dbName(), tableName(), writeId(-1LL), validWriteIdList(), processorIdentifier() {
   }
 
   virtual ~AlterTableRequest() throw();
@@ -14902,6 +14904,8 @@ class AlterTableRequest {
   EnvironmentContext environmentContext;
   int64_t writeId;
   std::string validWriteIdList;
+  std::vector<std::string>  processorCapabilities;
+  std::string processorIdentifier;
 
   _AlterTableRequest__isset __isset;
 
@@ -14918,6 +14922,10 @@ class AlterTableRequest {
   void __set_writeId(const int64_t val);
 
   void __set_validWriteIdList(const std::string& val);
+
+  void __set_processorCapabilities(const std::vector<std::string> & val);
+
+  void __set_processorIdentifier(const std::string& val);
 
   bool operator == (const AlterTableRequest & rhs) const
   {
@@ -14942,6 +14950,14 @@ class AlterTableRequest {
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (__isset.processorCapabilities != rhs.__isset.processorCapabilities)
+      return false;
+    else if (__isset.processorCapabilities && !(processorCapabilities == rhs.processorCapabilities))
+      return false;
+    if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
+      return false;
+    else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
       return false;
     return true;
   }

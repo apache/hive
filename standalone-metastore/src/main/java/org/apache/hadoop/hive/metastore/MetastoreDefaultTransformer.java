@@ -547,7 +547,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     boolean isInsertAcid = false;
 
     if (TableType.MANAGED_TABLE.name().equals(tableType)) {
-      LOG.info("Table is a MANAGED_TABLE");
+      LOG.debug("Table is a MANAGED_TABLE");
       txnal = params.get(TABLE_IS_TRANSACTIONAL);
       txn_properties = params.get(TABLE_TRANSACTIONAL_PROPERTIES);
       isInsertAcid = (txn_properties != null && txn_properties.equalsIgnoreCase("insert_only"));
@@ -557,7 +557,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         params.remove(TABLE_IS_TRANSACTIONAL);
         params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
         params.put("EXTERNAL", "TRUE");
-        params.put(EXTERNAL_TABLE_PURGE, "TRUE");
+        params.put(EXTERNAL_TABLE_PURGE, "true");
         params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
         newTable.setParameters(params);
         LOG.info("Modified table params are:" + params.toString());
@@ -592,11 +592,49 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           }
         }
       }
-    } else {
+    } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
       LOG.info("Table to be created is of type " + tableType + " but not " + TableType.MANAGED_TABLE.toString());
+      String tableLocation = table.getSd().getLocation();
+      Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
+
+      if (tableLocation != null) {
+        Path tablePath = Path.getPathWithoutSchemeAndAuthority(new Path(tableLocation));
+        if (tablePath.toString().startsWith(whRootPath.toString())) {
+          throw new MetaException(
+            "An external table's location should not be located within managed warehouse root directory," + "table:"
+                + table.getTableName() + ",location:" + tablePath + ",Hive managed warehouse:" + whRootPath);
+        }
+      }
     }
     LOG.info("Transformer returning table:" + newTable.toString());
     return newTable;
+  }
+
+  @Override
+  public Table transformAlterTable(Table table, List<String> processorCapabilities, String processorId) throws MetaException {
+    LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
+        + " on table " + table.getTableName());
+    String tableType = table.getTableType();
+    Path tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
+    Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
+
+    if (TableType.MANAGED_TABLE.name().equals(tableType)) {
+      LOG.debug("Table is a MANAGED_TABLE");
+      if (tableLocation != null && !tableLocation.toString().startsWith(whRootPath.toString())) {
+        throw new MetaException(
+            "A managed table's location needs to be under the hive warehouse root directory," + "table:"
+                + table.getTableName() + ",location:" + tableLocation + ",Hive warehouse:" + whRootPath);
+      }
+    } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
+      LOG.debug("Table is a EXTERNAL TABLE:tableLocation=" + tableLocation.toString() + ",whroot=" + whRootPath.toString());
+      if (tableLocation != null && tableLocation.toString().startsWith(whRootPath.toString())) {
+        throw new MetaException(
+            "An external table's location should not be located within managed warehouse root directory," + "table:"
+                + table.getTableName() + ",location:" + tableLocation + ",Hive managed warehouse:" + whRootPath);
+      }
+    }
+    LOG.debug("Transformer returning table:" + table.toString());
+    return table;
   }
 
   /**

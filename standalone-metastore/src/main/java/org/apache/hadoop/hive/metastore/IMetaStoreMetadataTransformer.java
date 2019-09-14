@@ -78,4 +78,14 @@ public interface IMetaStoreMetadataTransformer {
   */
  public Database transformDatabase(Database db, List<String> processorCapabilities,
      String processorId) throws MetaException;
+
+ /**
+  * @param table A table object to be transformed prior to the alteration of a table
+  * @param processorCapabilities A array of String capabilities received from the data processor
+  * @param processorId String ID used for logging purpose.
+  * @return Table An altered Table based on the processor capabilities
+  * @throws HiveMetaException
+  */
+ public Table transformAlterTable(Table table, List<String> processorCapabilities,
+     String processorId) throws MetaException;
 }
