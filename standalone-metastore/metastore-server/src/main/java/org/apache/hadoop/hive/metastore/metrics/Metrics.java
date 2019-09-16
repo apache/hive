@@ -29,7 +29,9 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.Reporter;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Slf4jReporter;
@@ -53,6 +55,7 @@ public class Metrics {
 
   private static Metrics self;
   private static final AtomicInteger singletonAtomicInteger = new AtomicInteger();
+  private static final Counter dummyCounter = new Counter();
 
   private final MetricRegistry registry;
   private List<Reporter> reporters;
@@ -91,7 +94,7 @@ public class Metrics {
    * metrics have not been initialized.
    */
   public static Counter getOrCreateCounter(String name) {
-    if (self == null) return null;
+    if (self == null) return dummyCounter;
     Map<String, Counter> counters = self.registry.getCounters();
     Counter counter = counters.get(name);
     if (counter != null) return counter;
@@ -153,6 +156,10 @@ public class Metrics {
     }
   }
 
+  public static Counter getOpenConnectionsCounter() {
+    return getOrCreateCounter(MetricsConstants.OPEN_CONNECTIONS);
+  }
+
   @VisibleForTesting
   static List<Reporter> getReporters() {
     return self.reporters;
@@ -161,11 +168,13 @@ public class Metrics {
   private Metrics(Configuration conf) {
     registry = new MetricRegistry();
 
-    registry.registerAll(new GarbageCollectorMetricSet());
-    registry.registerAll(new BufferPoolMetricSet(ManagementFactory.getPlatformMBeanServer()));
-    registry.registerAll(new MemoryUsageGaugeSet());
-    registry.registerAll(new ThreadStatesGaugeSet());
-    registry.registerAll(new ClassLoadingGaugeSet());
+    // this is the same logic as implemented in CodahaleMetrics in hive-common package,
+    // but standalone-metastore project doesn't depend on that
+    registerAll("gc", new GarbageCollectorMetricSet());
+    registerAll("buffers", new BufferPoolMetricSet(ManagementFactory.getPlatformMBeanServer()));
+    registerAll("memory", new MemoryUsageGaugeSet());
+    registerAll("threads", new ThreadStatesGaugeSet());
+    registerAll("classLoading", new ClassLoadingGaugeSet());
 
     /*
      * This is little complicated.  First we look for our own config values on this.  If those
@@ -254,5 +263,15 @@ public class Metrics {
 
     // Create map for tracking gauges
     gaugeAtomics = new HashMap<>();
+  }
+
+  private void registerAll(String prefix, MetricSet metricSet) {
+    for (Map.Entry<String, Metric> entry : metricSet.getMetrics().entrySet()) {
+      if (entry.getValue() instanceof MetricSet) {
+        registerAll(prefix + "." + entry.getKey(), (MetricSet) entry.getValue());
+      } else {
+        registry.register(prefix + "." + entry.getKey(), entry.getValue());
+      }
+    }
   }
 }

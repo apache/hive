@@ -25,13 +25,17 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
+import org.apache.calcite.adapter.druid.DruidQuery;
+import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.druid.data.input.impl.DimensionSchema;
 import org.apache.druid.data.input.impl.StringDimensionSchema;
+import org.apache.druid.guice.BloomFilterSerializersModule;
 import org.apache.druid.jackson.DefaultObjectMapper;
 import org.apache.druid.java.util.common.JodaUtils;
 import org.apache.druid.java.util.common.MapUtils;
@@ -50,6 +54,7 @@ import org.apache.druid.metadata.MetadataStorageTablesConfig;
 import org.apache.druid.metadata.SQLMetadataConnector;
 import org.apache.druid.metadata.storage.mysql.MySQLConnector;
 import org.apache.druid.query.DruidProcessingConfig;
+import org.apache.druid.query.Druids;
 import org.apache.druid.query.aggregation.AggregatorFactory;
 import org.apache.druid.query.aggregation.DoubleSumAggregatorFactory;
 import org.apache.druid.query.aggregation.FloatSumAggregatorFactory;
@@ -63,12 +68,29 @@ import org.apache.druid.query.expression.TimestampFormatExprMacro;
 import org.apache.druid.query.expression.TimestampParseExprMacro;
 import org.apache.druid.query.expression.TimestampShiftExprMacro;
 import org.apache.druid.query.expression.TrimExprMacro;
+import org.apache.druid.query.filter.AndDimFilter;
+import org.apache.druid.query.filter.BloomDimFilter;
+import org.apache.druid.query.filter.BloomKFilter;
+import org.apache.druid.query.filter.BloomKFilterHolder;
+import org.apache.druid.query.filter.BoundDimFilter;
+import org.apache.druid.query.filter.DimFilter;
+import org.apache.druid.query.filter.OrDimFilter;
+import org.apache.druid.query.groupby.GroupByQuery;
+import org.apache.druid.query.ordering.StringComparator;
+import org.apache.druid.query.ordering.StringComparators;
 import org.apache.druid.query.scan.ScanQuery;
+import org.apache.druid.query.select.SelectQuery;
 import org.apache.druid.query.select.SelectQueryConfig;
 import org.apache.druid.query.spec.MultipleIntervalSegmentSpec;
+import org.apache.druid.query.timeseries.TimeseriesQuery;
+import org.apache.druid.query.topn.TopNQuery;
+import org.apache.druid.query.topn.TopNQueryBuilder;
 import org.apache.druid.segment.IndexIO;
 import org.apache.druid.segment.IndexMergerV9;
 import org.apache.druid.segment.IndexSpec;
+import org.apache.druid.segment.VirtualColumn;
+import org.apache.druid.segment.VirtualColumns;
+import org.apache.druid.segment.column.ValueType;
 import org.apache.druid.segment.data.BitmapSerdeFactory;
 import org.apache.druid.segment.data.ConciseBitmapSerdeFactory;
 import org.apache.druid.segment.data.RoaringBitmapSerdeFactory;
@@ -76,6 +98,7 @@ import org.apache.druid.segment.indexing.granularity.GranularitySpec;
 import org.apache.druid.segment.indexing.granularity.UniformGranularitySpec;
 import org.apache.druid.segment.loading.DataSegmentPusher;
 import org.apache.druid.segment.realtime.appenderator.SegmentIdWithShardSpec;
+import org.apache.druid.segment.virtual.ExpressionVirtualColumn;
 import org.apache.druid.segment.writeout.TmpFileSegmentWriteOutMediumFactory;
 import org.apache.druid.storage.hdfs.HdfsDataSegmentPusher;
 import org.apache.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
@@ -97,11 +120,30 @@ import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.json.AvroParseSpec;
 import org.apache.hadoop.hive.druid.json.AvroStreamInputRowParser;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.exec.ExprNodeDynamicValueEvaluator;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.udf.UDFToDouble;
+import org.apache.hadoop.hive.ql.udf.UDFToFloat;
+import org.apache.hadoop.hive.ql.udf.UDFToLong;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToString;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryProxy;
 import org.apache.hadoop.util.StringUtils;
@@ -131,11 +173,14 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -209,6 +254,11 @@ public final class DruidStorageHandlerUtils {
     SMILE_MAPPER.registerSubtypes(new NamedType(AvroParseSpec.class, "avro"));
     JSON_MAPPER.registerSubtypes(new NamedType(AvroStreamInputRowParser.class, "avro_stream"));
     SMILE_MAPPER.registerSubtypes(new NamedType(AvroStreamInputRowParser.class, "avro_stream"));
+    // Register Bloom Filter Serializers
+    BloomFilterSerializersModule bloomFilterSerializersModule = new BloomFilterSerializersModule();
+    JSON_MAPPER.registerModule(bloomFilterSerializersModule);
+    SMILE_MAPPER.registerModule(bloomFilterSerializersModule);
+
     // set the timezone of the object mapper
     // THIS IS NOT WORKING workaround is to set it as part of java opts -Duser.timezone="UTC"
     JSON_MAPPER.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -893,5 +943,215 @@ public final class DruidStorageHandlerUtils {
     }
     ImmutableList<AggregatorFactory> aggregatorFactories = aggregatorFactoryBuilder.build();
     return Pair.of(dimensions, aggregatorFactories.toArray(new AggregatorFactory[0]));
+  }
+
+  // Druid only supports String,Long,Float,Double selectors
+  private static Set<TypeInfo> druidSupportedTypeInfos =
+      ImmutableSet.<TypeInfo>of(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.charTypeInfo,
+          TypeInfoFactory.varcharTypeInfo, TypeInfoFactory.byteTypeInfo, TypeInfoFactory.intTypeInfo,
+          TypeInfoFactory.longTypeInfo, TypeInfoFactory.shortTypeInfo, TypeInfoFactory.doubleTypeInfo);
+
+  private static Set<TypeInfo> stringTypeInfos =
+      ImmutableSet.<TypeInfo>of(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.charTypeInfo,
+          TypeInfoFactory.varcharTypeInfo);
+
+  public static org.apache.druid.query.Query addDynamicFilters(org.apache.druid.query.Query query,
+      ExprNodeGenericFuncDesc filterExpr, Configuration conf, boolean resolveDynamicValues) {
+    List<VirtualColumn> virtualColumns = Arrays.asList(getVirtualColumns(query).getVirtualColumns());
+    org.apache.druid.query.Query rv = query;
+    DimFilter joinReductionFilter = toDruidFilter(filterExpr, conf, virtualColumns, resolveDynamicValues);
+    if (joinReductionFilter != null) {
+      String type = query.getType();
+      DimFilter filter = new AndDimFilter(joinReductionFilter, query.getFilter());
+      switch (type) {
+      case org.apache.druid.query.Query.TIMESERIES:
+        rv = Druids.TimeseriesQueryBuilder.copy((TimeseriesQuery) query).filters(filter)
+            .virtualColumns(VirtualColumns.create(virtualColumns)).build();
+        break;
+      case org.apache.druid.query.Query.TOPN:
+        rv = new TopNQueryBuilder((TopNQuery) query).filters(filter)
+            .virtualColumns(VirtualColumns.create(virtualColumns)).build();
+        break;
+      case org.apache.druid.query.Query.GROUP_BY:
+        rv = new GroupByQuery.Builder((GroupByQuery) query).setDimFilter(filter)
+            .setVirtualColumns(VirtualColumns.create(virtualColumns)).build();
+        break;
+      case org.apache.druid.query.Query.SCAN:
+        rv = ScanQuery.ScanQueryBuilder.copy((ScanQuery) query).filters(filter)
+            .virtualColumns(VirtualColumns.create(virtualColumns)).build();
+        break;
+      case org.apache.druid.query.Query.SELECT:
+        rv = Druids.SelectQueryBuilder.copy((SelectQuery) query).filters(filter)
+            .virtualColumns(VirtualColumns.create(virtualColumns)).build();
+        break;
+      default:
+        throw new UnsupportedOperationException("Unsupported Query type " + type);
+      }
+    }
+    return rv;
+  }
+
+  @Nullable private static DimFilter toDruidFilter(ExprNodeDesc filterExpr, Configuration configuration,
+      List<VirtualColumn> virtualColumns, boolean resolveDynamicValues) {
+    if (filterExpr == null) {
+      return null;
+    }
+    Class<? extends GenericUDF> genericUDFClass = getGenericUDFClassFromExprDesc(filterExpr);
+    if (FunctionRegistry.isOpAnd(filterExpr)) {
+      Iterator<ExprNodeDesc> iterator = filterExpr.getChildren().iterator();
+      List<DimFilter> delegates = Lists.newArrayList();
+      while (iterator.hasNext()) {
+        DimFilter filter = toDruidFilter(iterator.next(), configuration, virtualColumns, resolveDynamicValues);
+        if (filter != null) {
+          delegates.add(filter);
+        }
+      }
+      if (!delegates.isEmpty()) {
+        return new AndDimFilter(delegates);
+      }
+    }
+    if (FunctionRegistry.isOpOr(filterExpr)) {
+      Iterator<ExprNodeDesc> iterator = filterExpr.getChildren().iterator();
+      List<DimFilter> delegates = Lists.newArrayList();
+      while (iterator.hasNext()) {
+        DimFilter filter = toDruidFilter(iterator.next(), configuration, virtualColumns, resolveDynamicValues);
+        if (filter != null) {
+          delegates.add(filter);
+        }
+      }
+      if (!delegates.isEmpty()) {
+        return new OrDimFilter(delegates);
+      }
+    } else if (GenericUDFBetween.class == genericUDFClass) {
+      List<ExprNodeDesc> child = filterExpr.getChildren();
+      String col = extractColName(child.get(1), virtualColumns);
+      if (col != null) {
+        try {
+          StringComparator comparator = stringTypeInfos
+              .contains(child.get(1).getTypeInfo()) ? StringComparators.LEXICOGRAPHIC : StringComparators.NUMERIC;
+          String lower = evaluate(child.get(2), configuration, resolveDynamicValues);
+          String upper = evaluate(child.get(3), configuration, resolveDynamicValues);
+          return new BoundDimFilter(col, lower, upper, false, false, null, null, comparator);
+
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    } else if (GenericUDFInBloomFilter.class == genericUDFClass) {
+      List<ExprNodeDesc> child = filterExpr.getChildren();
+      String col = extractColName(child.get(0), virtualColumns);
+      if (col != null) {
+        try {
+          BloomKFilter bloomFilter = evaluateBloomFilter(child.get(1), configuration, resolveDynamicValues);
+          return new BloomDimFilter(col, BloomKFilterHolder.fromBloomKFilter(bloomFilter), null);
+        } catch (HiveException | IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+    return null;
+  }
+
+  private static String evaluate(ExprNodeDesc desc, Configuration configuration, boolean resolveDynamicValue)
+      throws HiveException {
+    ExprNodeEvaluator exprNodeEvaluator = ExprNodeEvaluatorFactory.get(desc, configuration);
+    if (exprNodeEvaluator instanceof ExprNodeDynamicValueEvaluator && !resolveDynamicValue) {
+      return desc.getExprStringForExplain();
+    } else {
+      return exprNodeEvaluator.evaluate(null).toString();
+    }
+  }
+
+  private static BloomKFilter evaluateBloomFilter(ExprNodeDesc desc, Configuration configuration,
+      boolean resolveDynamicValue) throws HiveException, IOException {
+    if (!resolveDynamicValue) {
+      // return a dummy bloom filter for explain
+      return new BloomKFilter(1);
+    } else {
+      BytesWritable bw = (BytesWritable) ExprNodeEvaluatorFactory.get(desc, configuration).evaluate(null);
+      return BloomKFilter.deserialize(ByteBuffer.wrap(bw.getBytes()));
+    }
+  }
+
+  @Nullable public static String extractColName(ExprNodeDesc expr, List<VirtualColumn> virtualColumns) {
+    if (!druidSupportedTypeInfos.contains(expr.getTypeInfo())) {
+      // This column type is currently not supported in druid.(e.g boolean)
+      // We cannot pass the bloom filter to druid since bloom filter tests for exact object bytes.
+      return null;
+    }
+    if (expr instanceof ExprNodeColumnDesc) {
+      return ((ExprNodeColumnDesc) expr).getColumn();
+    }
+
+    ExprNodeGenericFuncDesc funcDesc = null;
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      funcDesc = (ExprNodeGenericFuncDesc) expr;
+    }
+    if (null == funcDesc) {
+      return null;
+    }
+    GenericUDF udf = funcDesc.getGenericUDF();
+    // bail out if its not a simple cast expression.
+    if (funcDesc.getChildren().size() == 1 && funcDesc.getChildren().get(0) instanceof ExprNodeColumnDesc) {
+      return null;
+    }
+    String columnName = ((ExprNodeColumnDesc) (funcDesc.getChildren().get(0))).getColumn();
+    ValueType targetType = null;
+    if (udf instanceof GenericUDFBridge) {
+      Class<? extends UDF> udfClass = ((GenericUDFBridge) udf).getUdfClass();
+      if (udfClass.equals(UDFToDouble.class)) {
+        targetType = ValueType.DOUBLE;
+      } else if (udfClass.equals(UDFToFloat.class)) {
+        targetType = ValueType.FLOAT;
+      } else if (udfClass.equals(UDFToLong.class)) {
+        targetType = ValueType.LONG;
+      }
+    } else if (udf instanceof GenericUDFToString) {
+      targetType = ValueType.STRING;
+    }
+
+    if (targetType == null) {
+      return null;
+    }
+    String virtualColumnExpr = DruidQuery.format("CAST(%s, '%s')", columnName, targetType.toString());
+    for (VirtualColumn column : virtualColumns) {
+      if (column instanceof ExpressionVirtualColumn && ((ExpressionVirtualColumn) column).getExpression()
+          .equals(virtualColumnExpr)) {
+        // Found an existing virtual column with same expression, no need to add another virtual column
+        return column.getOutputName();
+      }
+    }
+    Set<String> usedColumnNames = virtualColumns.stream().map(col -> col.getOutputName()).collect(Collectors.toSet());
+    final String name = SqlValidatorUtil.uniquify("vc", usedColumnNames, SqlValidatorUtil.EXPR_SUGGESTER);
+    ExpressionVirtualColumn expressionVirtualColumn =
+        new ExpressionVirtualColumn(name, virtualColumnExpr, targetType, ExprMacroTable.nil());
+    virtualColumns.add(expressionVirtualColumn);
+    return name;
+  }
+
+  public static VirtualColumns getVirtualColumns(org.apache.druid.query.Query query) {
+    String type = query.getType();
+    switch (type) {
+    case org.apache.druid.query.Query.TIMESERIES:
+      return ((TimeseriesQuery) query).getVirtualColumns();
+    case org.apache.druid.query.Query.TOPN:
+      return ((TopNQuery) query).getVirtualColumns();
+    case org.apache.druid.query.Query.GROUP_BY:
+      return ((GroupByQuery) query).getVirtualColumns();
+    case org.apache.druid.query.Query.SCAN:
+      return ((ScanQuery) query).getVirtualColumns();
+    case org.apache.druid.query.Query.SELECT:
+      return ((SelectQuery) query).getVirtualColumns();
+    default:
+      throw new UnsupportedOperationException("Unsupported Query type " + query);
+    }
+  }
+
+  @Nullable private static Class<? extends GenericUDF> getGenericUDFClassFromExprDesc(ExprNodeDesc desc) {
+    if (!(desc instanceof ExprNodeGenericFuncDesc)) {
+      return null;
+    }
+    ExprNodeGenericFuncDesc genericFuncDesc = (ExprNodeGenericFuncDesc) desc;
+    return genericFuncDesc.getGenericUDF().getClass();
   }
 }

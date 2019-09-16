@@ -85,7 +85,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // if the Hive configs are received from WITH clause in REPL LOAD or REPL STATUS commands.
   private Hive db;
 
-  private static String testInjectDumpDir = null; // unit tests can overwrite this to affect default dump behaviour
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
 
   ReplicationSemanticAnalyzer(QueryState queryState) throws SemanticException {
@@ -193,52 +192,44 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     while (childIdx < numChildren) {
       Tree currNode = ast.getChild(childIdx);
       switch (currNode.getType()) {
-        case TOK_REPL_CONFIG: {
-          Map<String, String> replConfigs
-              = DDLSemanticAnalyzer.getProps((ASTNode) currNode.getChild(0));
-          if (null != replConfigs) {
-            for (Map.Entry<String, String> config : replConfigs.entrySet()) {
-              conf.set(config.getKey(), config.getValue());
-            }
-            isMetaDataOnly = HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY);
+      case TOK_REPL_CONFIG:
+        Map<String, String> replConfigs = getProps((ASTNode) currNode.getChild(0));
+        if (null != replConfigs) {
+          for (Map.Entry<String, String> config : replConfigs.entrySet()) {
+            conf.set(config.getKey(), config.getValue());
           }
-          break;
+          isMetaDataOnly = HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY);
         }
-        case TOK_REPL_TABLES: {
-          setReplDumpTablesList(currNode, replScope);
-          break;
-        }
-        case TOK_REPLACE: {
-          setOldReplPolicy(currNode);
-          break;
-        }
-        case TOK_FROM: {
-          // TOK_FROM subtree
-          Tree fromNode = currNode;
-          eventFrom = Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(0).getText()));
+        break;
+      case TOK_REPL_TABLES:
+        setReplDumpTablesList(currNode, replScope);
+        break;
+      case TOK_REPLACE:
+        setOldReplPolicy(currNode);
+        break;
+      case TOK_FROM:
+        // TOK_FROM subtree
+        Tree fromNode = currNode;
+        eventFrom = Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(0).getText()));
 
-          // Skip the first, which is always required
-          int fromChildIdx = 1;
-          while (fromChildIdx < fromNode.getChildCount()) {
-            if (fromNode.getChild(fromChildIdx).getType() == TOK_TO) {
-              eventTo =
-                      Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(fromChildIdx + 1).getText()));
-              // Skip the next child, since we already took care of it
-              fromChildIdx++;
-            } else if (fromNode.getChild(fromChildIdx).getType() == TOK_LIMIT) {
-              maxEventLimit =
-                      Integer.parseInt(PlanUtils.stripQuotes(fromNode.getChild(fromChildIdx + 1).getText()));
-              // Skip the next child, since we already took care of it
-              fromChildIdx++;
-            }
-            // move to the next child in FROM tree
+        // Skip the first, which is always required
+        int fromChildIdx = 1;
+        while (fromChildIdx < fromNode.getChildCount()) {
+          if (fromNode.getChild(fromChildIdx).getType() == TOK_TO) {
+            eventTo = Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(fromChildIdx + 1).getText()));
+            // Skip the next child, since we already took care of it
+            fromChildIdx++;
+          } else if (fromNode.getChild(fromChildIdx).getType() == TOK_LIMIT) {
+            maxEventLimit = Integer.parseInt(PlanUtils.stripQuotes(fromNode.getChild(fromChildIdx + 1).getText()));
+            // Skip the next child, since we already took care of it
             fromChildIdx++;
           }
-          break;
+          // move to the next child in FROM tree
+          fromChildIdx++;
         }
-        default: {
-          throw new SemanticException("Unrecognized token " + currNode.getType() + " in REPL DUMP statement.");
-        }
+        break;
+      default:
+        throw new SemanticException("Unrecognized token " + currNode.getType() + " in REPL DUMP statement.");
       }
       // Move to the next root node
       childIdx++;
@@ -465,7 +456,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void setConfigs(ASTNode node) throws SemanticException {
-    Map<String, String> replConfigs = DDLSemanticAnalyzer.getProps(node);
+    Map<String, String> replConfigs = getProps(node);
     if (null != replConfigs) {
       for (Map.Entry<String, String> config : replConfigs.entrySet()) {
         String key = config.getKey();

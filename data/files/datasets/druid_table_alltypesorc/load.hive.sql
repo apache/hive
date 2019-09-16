@@ -10,7 +10,10 @@ CREATE TABLE alltypesorc1(
     ctimestamp1 TIMESTAMP,
     ctimestamp2 TIMESTAMP,
     cboolean1 BOOLEAN,
-    cboolean2 BOOLEAN)
+    cboolean2 BOOLEAN,
+    cintstring STRING,
+    cfloatstring STRING,
+    cdoublestring STRING)
     STORED AS ORC;
 
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/alltypesorc"
@@ -30,5 +33,8 @@ SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
   cint,
   cbigint,
   cboolean1,
-  cboolean2
+  cboolean2,
+  cast(cint as string) as cintstring,
+  cast(cfloat as string) as cfloatstring,
+  cast(cdouble as string) as cdoublestring
   FROM alltypesorc1 where ctimestamp1 IS NOT NULL;

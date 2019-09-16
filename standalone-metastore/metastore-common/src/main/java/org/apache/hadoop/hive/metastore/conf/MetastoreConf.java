@@ -690,7 +690,7 @@ public class MetastoreConf {
     METRICS_HADOOP2_COMPONENT_NAME("metastore.metrics.hadoop2.component", "hive.service.metrics.hadoop2.component", "hivemetastore",
                     "Component name to provide to Hadoop2 Metrics system."),
     METRICS_JSON_FILE_INTERVAL("metastore.metrics.file.frequency",
-        "hive.service.metrics.file.frequency", 1, TimeUnit.MINUTES,
+        "hive.service.metrics.file.frequency", 60000, TimeUnit.MILLISECONDS,
         "For json metric reporter, the frequency of updating JSON metrics file."),
     METRICS_JSON_FILE_LOCATION("metastore.metrics.file.location",
         "hive.service.metrics.file.location", "/tmp/report.json",

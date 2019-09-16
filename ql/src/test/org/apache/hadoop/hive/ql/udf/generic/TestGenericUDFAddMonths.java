@@ -66,6 +66,8 @@ public class TestGenericUDFAddMonths {
     runAndVerify("2016-02-29", -12, "2015-02-28", udf);
     runAndVerify("2016-01-29", 1, "2016-02-29", udf);
     runAndVerify("2016-02-29", -1, "2016-01-31", udf);
+    runAndVerify("1001-10-05", 1, "1001-11-05", udf);
+    runAndVerify("1582-10-05", 1, "1582-11-05", udf);
 
     // ts str
     runAndVerify("2014-01-14 10:30:00", 1, "2014-02-14", udf);

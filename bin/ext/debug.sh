@@ -71,14 +71,12 @@ get_debug_params(){
   set_debug_defaults
   parse_debug $1
 
-  # For Debug -XX:+UseParallelGC is needed, as it is a (unfortunately not perfect)
-  # workaround for JVM 6862295 bug, that affects some JVMs still in use
   if does_jvm_support_ti; then
-    export HIVE_MAIN_CLIENT_DEBUG_OPTS=" -XX:+UseParallelGC -agentlib:jdwp=transport=dt_socket,server=y,$port,$main_suspend"
-    export HIVE_CHILD_CLIENT_DEBUG_OPTS=" -XX:+UseParallelGC -agentlib:jdwp=transport=dt_socket,server=y,$child_suspend"
+    export HIVE_MAIN_CLIENT_DEBUG_OPTS=" -agentlib:jdwp=transport=dt_socket,server=y,$port,$main_suspend"
+    export HIVE_CHILD_CLIENT_DEBUG_OPTS=" -agentlib:jdwp=transport=dt_socket,server=y,$child_suspend"
   else
-    export HIVE_MAIN_CLIENT_DEBUG_OPTS=" -XX:+UseParallelGC -Xdebug -Xrunjdwp:transport=dt_socket,server=y,$port,$main_suspend"
-    export HIVE_CHILD_CLIENT_DEBUG_OPTS=" -XX:+UseParallelGC -Xdebug -Xrunjdwp:transport=dt_socket,server=y,$child_suspend"
+    export HIVE_MAIN_CLIENT_DEBUG_OPTS=" -Xdebug -Xrunjdwp:transport=dt_socket,server=y,$port,$main_suspend"
+    export HIVE_CHILD_CLIENT_DEBUG_OPTS=" -Xdebug -Xrunjdwp:transport=dt_socket,server=y,$child_suspend"
   fi
 }
 

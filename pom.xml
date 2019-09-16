@@ -171,7 +171,6 @@
     <javax-servlet.version>3.1.0</javax-servlet.version>
     <javax-servlet-jsp.version>2.3.1</javax-servlet-jsp.version>
     <javolution.version>5.5.1</javolution.version>
-    <jdo-api.version>3.0.1</jdo-api.version>
     <jettison.version>1.1</jettison.version>
     <jetty.version>9.3.27.v20190418</jetty.version>
     <jersey.version>1.19</jersey.version>
@@ -358,11 +357,6 @@
         <groupId>io.netty</groupId>
         <artifactId>netty-all</artifactId>
         <version>${netty.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>javax.jdo</groupId>
-        <artifactId>jdo-api</artifactId>
-        <version>${jdo-api.version}</version>
       </dependency>
       <dependency>
         <groupId>jakarta.jms</groupId>
@@ -1452,7 +1446,7 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.5</version>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
@@ -1467,7 +1461,7 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.5</version>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>

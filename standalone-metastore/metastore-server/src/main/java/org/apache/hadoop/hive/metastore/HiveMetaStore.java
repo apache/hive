@@ -5483,7 +5483,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // Do not set an environment context.
       String[] parsedDbName = parseDbName(dbname, conf);
       alter_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, newTable,
-          null, null);
+          null, null, null, null);
     }
 
     @Override
@@ -5497,14 +5497,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       String[] parsedDbName = parseDbName(dbname, conf);
       alter_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, newTable,
-          envContext, null);
+          envContext, null, null, null);
     }
 
     @Override
     public AlterTableResponse alter_table_req(AlterTableRequest req)
         throws InvalidOperationException, MetaException, TException {
       alter_table_core(req.getCatName(), req.getDbName(), req.getTableName(),
-          req.getTable(), req.getEnvironmentContext(), req.getValidWriteIdList());
+          req.getTable(), req.getEnvironmentContext(), req.getValidWriteIdList(),
+          req.getProcessorCapabilities(), req.getProcessorIdentifier());
       return new AlterTableResponse();
     }
 
@@ -5515,11 +5516,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws InvalidOperationException, MetaException {
       String[] parsedDbName = parseDbName(dbname, conf);
       alter_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-          name, newTable, envContext, null);
+          name, newTable, envContext, null, null, null);
     }
 
     private void alter_table_core(String catName, String dbname, String name, Table newTable,
-        EnvironmentContext envContext, String validWriteIdList)
+        EnvironmentContext envContext, String validWriteIdList, List<String> processorCapabilities, String processorId)
         throws InvalidOperationException, MetaException {
       startFunction("alter_table", ": " + TableName.getQualified(catName, dbname, name)
           + " newtbl=" + newTable.getTableName());
@@ -5554,6 +5555,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       try {
         Table oldt = get_table_core(catName, dbname, name);
+        if (transformer != null && !isInTest) {
+          newTable = transformer.transformAlterTable(newTable, processorCapabilities, processorId);
+        }
         firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
         alterHandler.alterTable(getMS(), wh, catName, dbname, name, newTable,
                 envContext, this, validWriteIdList);
@@ -9882,8 +9886,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  private static AtomicInteger openConnections;
-
   /**
    * Start Metastore based on a passed {@link HadoopThriftAuthBridge}
    *
@@ -10025,10 +10027,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       serverSocket = new TServerSocketKeepAlive(serverSocket);
     }
 
-    // Metrics will have already been initialized if we're using them since HMSHandler
-    // initializes them.
-    openConnections = Metrics.getOrCreateGauge(MetricsConstants.OPEN_CONNECTIONS);
-
     TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverSocket)
         .processor(processor)
         .transportFactory(transFactory)
@@ -10045,13 +10043,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       @Override
       public ServerContext createContext(TProtocol tProtocol, TProtocol tProtocol1) {
-        openConnections.incrementAndGet();
+        Metrics.getOpenConnectionsCounter().inc();
         return null;
       }
 
       @Override
       public void deleteContext(ServerContext serverContext, TProtocol tProtocol, TProtocol tProtocol1) {
-        openConnections.decrementAndGet();
+        Metrics.getOpenConnectionsCounter().dec();
         // If the IMetaStoreClient#close was called, HMSHandler#shutdown would have already
         // cleaned up thread local RawStore. Otherwise, do it now.
         cleanupRawStore();

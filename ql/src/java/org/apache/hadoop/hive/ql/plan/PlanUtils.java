@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,7 +69,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
@@ -84,7 +85,6 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
 /**
  * PlanUtils.
@@ -723,9 +723,9 @@ public final class PlanUtils {
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
-      ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
+      List<ExprNodeDesc> keyCols, List<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKeyCols, int tag,
-      ArrayList<ExprNodeDesc> partitionCols, String order, String nullOrder,
+      List<ExprNodeDesc> partitionCols, String order, String nullOrder,
       int numReducers, AcidUtils.Operation writeType) {
     return getReduceSinkDesc(keyCols, keyCols.size(), valueCols,
         new ArrayList<List<Integer>>(),
@@ -764,18 +764,18 @@ public final class PlanUtils {
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
-      final ArrayList<ExprNodeDesc> keyCols, int numKeys,
-      ArrayList<ExprNodeDesc> valueCols,
+      final List<ExprNodeDesc> keyCols, int numKeys,
+      List<ExprNodeDesc> valueCols,
       List<List<Integer>> distinctColIndices,
       List<String> outputKeyColumnNames,
       List<String> outputValueColumnNames,
       boolean includeKeyCols, int tag,
-      ArrayList<ExprNodeDesc> partitionCols, String order, String nullOrder,
+      List<ExprNodeDesc> partitionCols, String order, String nullOrder,
       int numReducers, AcidUtils.Operation writeType) {
     TableDesc keyTable = null;
     TableDesc valueTable = null;
-    ArrayList<String> outputKeyCols = new ArrayList<String>();
-    ArrayList<String> outputValCols = new ArrayList<String>();
+    List<String> outputKeyCols = new ArrayList<String>();
+    List<String> outputValCols = new ArrayList<String>();
     if (includeKeyCols) {
       List<FieldSchema> keySchema = getFieldSchemasFromColumnListWithLength(
           keyCols, distinctColIndices, outputKeyColumnNames, numKeys, "");
@@ -825,7 +825,7 @@ public final class PlanUtils {
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
-      ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
+      List<ExprNodeDesc> keyCols, List<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKey, int tag,
       int numPartitionFields, int numReducers, AcidUtils.Operation writeType)
       throws SemanticException {
@@ -867,8 +867,7 @@ public final class PlanUtils {
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
-      ArrayList<ExprNodeDesc> keyCols, int numKeys,
-      ArrayList<ExprNodeDesc> valueCols,
+      List<ExprNodeDesc> keyCols, int numKeys, List<ExprNodeDesc> valueCols,
       List<List<Integer>> distinctColIndices,
       List<String> outputKeyColumnNames, List<String> outputValueColumnNames,
       boolean includeKey, int tag,

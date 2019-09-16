@@ -522,7 +522,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       mapJoinDesc =
           new MapJoinDesc(
                   MapJoinProcessor.getKeys(joinOp.getConf().isLeftInputJoin(),
-                  joinOp.getConf().getBaseSrc(), joinOp).getSecond(),
+                  joinOp.getConf().getBaseSrc(), joinOp).getRight(),
                   null, joinDesc.getExprs(), null, null,
                   joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
                   joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null,
@@ -639,7 +639,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     ReduceSinkOperator bigTableRS = (ReduceSinkOperator)joinOp.getParentOperators().get(bigTablePosition);
     OpTraits opTraits = bigTableRS.getOpTraits();
     List<List<String>> listBucketCols = opTraits.getBucketColNames();
-    ArrayList<ExprNodeDesc> bigTablePartitionCols = bigTableRS.getConf().getPartitionCols();
+    List<ExprNodeDesc> bigTablePartitionCols = bigTableRS.getConf().getPartitionCols();
     boolean updatePartitionCols = false;
     List<Integer> positions = new ArrayList<>();
 
@@ -691,8 +691,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         }
 
         ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
-        ArrayList<ExprNodeDesc> newPartitionCols = new ArrayList<>();
-        ArrayList<ExprNodeDesc> partitionCols = rsOp.getConf().getPartitionCols();
+        List<ExprNodeDesc> newPartitionCols = new ArrayList<>();
+        List<ExprNodeDesc> partitionCols = rsOp.getConf().getPartitionCols();
         for (Integer position : positions) {
           newPartitionCols.add(partitionCols.get(position));
         }

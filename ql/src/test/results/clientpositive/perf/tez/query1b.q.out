@@ -170,7 +170,6 @@ STAGE PLANS:
                         input vertices:
                           1 Map 9
                         Statistics: Num rows: 16855704 Data size: 1805298496 Basic stats: COMPLETE Column stats: COMPLETE
-                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: sum(_col3)
                           keys: _col2 (type: int), _col1 (type: int)
@@ -201,7 +200,6 @@ STAGE PLANS:
                         input vertices:
                           1 Map 11
                         Statistics: Num rows: 17467258 Data size: 1870797840 Basic stats: COMPLETE Column stats: COMPLETE
-                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: sum(_col3)
                           keys: _col2 (type: int), _col1 (type: int)
@@ -273,7 +271,6 @@ STAGE PLANS:
                       input vertices:
                         0 Map 1
                       Statistics: Num rows: 1923224 Data size: 220816368 Basic stats: COMPLETE Column stats: COMPLETE
-                      HybridGraceHashJoin: true
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -314,7 +311,6 @@ STAGE PLANS:
                   input vertices:
                     1 Reducer 8
                   Statistics: Num rows: 1991910 Data size: 645378840 Basic stats: COMPLETE Column stats: COMPLETE
-                  HybridGraceHashJoin: true
                   Filter Operator
                     predicate: (_col3 > _col6) (type: boolean)
                     Statistics: Num rows: 663970 Data size: 215126280 Basic stats: COMPLETE Column stats: COMPLETE
