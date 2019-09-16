@@ -35,9 +35,6 @@ public final class SemanticAnalyzerFactory {
 
   private SemanticAnalyzerFactory() {
     throw new UnsupportedOperationException("SemanticAnalyzerFactory should not be instantiated");
-    commandType.put(HiveParser.TOK_CREATE_SCHEDULED_QUERY, HiveOperation.CREATE_SCHEDULED_QUERY);
-    commandType.put(HiveParser.TOK_ALTER_SCHEDULED_QUERY, HiveOperation.ALTER_SCHEDULED_QUERY);
-    commandType.put(HiveParser.TOK_DROP_SCHEDULED_QUERY, HiveOperation.DROP_SCHEDULED_QUERY);
   }
 
   public static BaseSemanticAnalyzer get(QueryState queryState, ASTNode tree) throws SemanticException {
