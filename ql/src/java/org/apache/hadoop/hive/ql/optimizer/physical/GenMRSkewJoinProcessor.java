@@ -108,7 +108,7 @@ public final class GenMRSkewJoinProcessor {
    */
   @SuppressWarnings("unchecked")
   public static void processSkewJoin(JoinOperator joinOp,
-      Task<? extends Serializable> currTask, ParseContext parseCtx)
+      Task<?> currTask, ParseContext parseCtx)
       throws SemanticException {
 
     // We are trying to adding map joins to handle skew keys, and map join right
@@ -117,7 +117,7 @@ public final class GenMRSkewJoinProcessor {
       return;
     }
 
-    List<Task<? extends Serializable>> children = currTask.getChildTasks();
+    List<Task<?>> children = currTask.getChildTasks();
 
     Path baseTmpDir = parseCtx.getContext().getMRTmpPath();
 
@@ -149,10 +149,10 @@ public final class GenMRSkewJoinProcessor {
     joinDescriptor.setSkewKeyDefinition(HiveConf.getIntVar(parseCtx.getConf(),
         HiveConf.ConfVars.HIVESKEWJOINKEY));
 
-    HashMap<Path, Task<? extends Serializable>> bigKeysDirToTaskMap =
-      new HashMap<Path, Task<? extends Serializable>>();
+    HashMap<Path, Task<?>> bigKeysDirToTaskMap =
+      new HashMap<Path, Task<?>>();
     List<Serializable> listWorks = new ArrayList<Serializable>();
-    List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> listTasks = new ArrayList<Task<?>>();
     MapredWork currPlan = (MapredWork) currTask.getWork();
 
     TableDesc keyTblDesc = (TableDesc) currPlan.getReduceWork().getKeyDesc().clone();
@@ -331,7 +331,7 @@ public final class GenMRSkewJoinProcessor {
       MapredWork w = new MapredWork();
       w.setMapWork(newPlan);
 
-      Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(w);
+      Task<?> skewJoinMapJoinTask = TaskFactory.get(w);
       skewJoinMapJoinTask.setFetchSource(currTask.isFetchSource());
 
       bigKeysDirToTaskMap.put(bigKeyDirPath, skewJoinMapJoinTask);
@@ -339,13 +339,13 @@ public final class GenMRSkewJoinProcessor {
       listTasks.add(skewJoinMapJoinTask);
     }
     if (children != null) {
-      for (Task<? extends Serializable> tsk : listTasks) {
-        for (Task<? extends Serializable> oldChild : children) {
+      for (Task<?> tsk : listTasks) {
+        for (Task<?> oldChild : children) {
           tsk.addDependentTask(oldChild);
         }
       }
-      currTask.setChildTasks(new ArrayList<Task<? extends Serializable>>());
-      for (Task<? extends Serializable> oldChild : children) {
+      currTask.setChildTasks(new ArrayList<Task<?>>());
+      for (Task<?> oldChild : children) {
         oldChild.getParentTasks().remove(currTask);
       }
       listTasks.addAll(children);
@@ -358,7 +358,7 @@ public final class GenMRSkewJoinProcessor {
     cndTsk.setListTasks(listTasks);
     cndTsk.setResolver(new ConditionalResolverSkewJoin());
     cndTsk.setResolverCtx(context);
-    currTask.setChildTasks(new ArrayList<Task<? extends Serializable>>());
+    currTask.setChildTasks(new ArrayList<Task<?>>());
     currTask.addDependentTask(cndTsk);
 
     return;

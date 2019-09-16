@@ -53,7 +53,7 @@ public class ReplLoadWork implements Serializable {
   private DatabaseEvent.State state = null;
   private final transient BootstrapEventsIterator bootstrapIterator;
   private transient IncrementalLoadTasksBuilder incrementalLoadTasksBuilder;
-  private transient Task<? extends Serializable> rootTask;
+  private transient Task<?> rootTask;
   private final transient Iterator<DirCopyWork> pathsToCopyIterator;
 
   /*
@@ -143,11 +143,11 @@ public class ReplLoadWork implements Serializable {
     return incrementalLoadTasksBuilder;
   }
 
-  public Task<? extends Serializable> getRootTask() {
+  public Task<?> getRootTask() {
     return rootTask;
   }
 
-  public void setRootTask(Task<? extends Serializable> rootTask) {
+  public void setRootTask(Task<?> rootTask) {
     this.rootTask = rootTask;
   }
 

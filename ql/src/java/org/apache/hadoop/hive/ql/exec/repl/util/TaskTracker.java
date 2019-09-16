@@ -39,7 +39,7 @@ public class TaskTracker {
    * used to identify the list of tasks at root level for a given level like table /  db / partition.
    * this does not include the task dependency notion of "table tasks < ---- partition task"
    */
-  private final List<Task<? extends Serializable>> tasks = new ArrayList<>();
+  private final List<Task<?>> tasks = new ArrayList<>();
   private ReplicationState replicationState = null;
   // since tasks themselves can be graphs we want to limit the number of created
   // tasks including all of dependencies.
@@ -59,16 +59,16 @@ public class TaskTracker {
    * the graph however might get created in a disjoint fashion, in which case we can just update
    * the number of tasks using the "update" method.
    */
-  public void addTask(Task<? extends Serializable> task) {
+  public void addTask(Task<?> task) {
     tasks.add(task);
 
-    List <Task<? extends Serializable>> visited = new ArrayList<>();
+    List <Task<?>> visited = new ArrayList<>();
     updateTaskCount(task, visited);
   }
 
-  public void addTaskList(List <Task<? extends Serializable>> taskList) {
-    List <Task<? extends Serializable>> visited = new ArrayList<>();
-    for (Task<? extends Serializable> task : taskList) {
+  public void addTaskList(List <Task<?>> taskList) {
+    List <Task<?>> visited = new ArrayList<>();
+    for (Task<?> task : taskList) {
       if (!visited.contains(task)) {
         tasks.add(task);
         updateTaskCount(task, visited);
@@ -78,23 +78,23 @@ public class TaskTracker {
 
   // This method is used to traverse the DAG created in tasks list and add the dependent task to
   // the tail of each task chain.
-  public void addDependentTask(Task<? extends Serializable> dependent) {
+  public void addDependentTask(Task<?> dependent) {
     if (tasks.isEmpty()) {
       addTask(dependent);
     } else {
       DAGTraversal.traverse(tasks, new AddDependencyToLeaves(dependent));
 
-      List<Task<? extends Serializable>> visited = new ArrayList<>();
+      List<Task<?>> visited = new ArrayList<>();
       updateTaskCount(dependent, visited);
     }
   }
 
-  private void updateTaskCount(Task<? extends Serializable> task,
-                               List <Task<? extends Serializable>> visited) {
+  private void updateTaskCount(Task<?> task,
+                               List <Task<?>> visited) {
     numberOfTasks += 1;
     visited.add(task);
     if (task.getChildTasks() != null) {
-      for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+      for (Task<?> childTask : task.getChildTasks()) {
         if (visited.contains(childTask)) {
           continue;
         }
@@ -130,7 +130,7 @@ public class TaskTracker {
     return replicationState;
   }
 
-  public List<Task<? extends Serializable>> tasks() {
+  public List<Task<?>> tasks() {
     return tasks;
   }
 

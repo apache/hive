@@ -181,12 +181,12 @@ public final class TaskFactory {
 
   @SafeVarargs
   public static  void makeChild(Task<?> ret,
-      Task<? extends Serializable>... tasklist) {
+      Task<?>... tasklist) {
     // Add the new task as child of each of the passed in tasks
-    for (Task<? extends Serializable> tsk : tasklist) {
-      List<Task<? extends Serializable>> children = tsk.getChildTasks();
+    for (Task<?> tsk : tasklist) {
+      List<Task<?>> children = tsk.getChildTasks();
       if (children == null) {
-        children = new ArrayList<Task<? extends Serializable>>();
+        children = new ArrayList<Task<?>>();
       }
       children.add(ret);
       tsk.setChildTasks(children);

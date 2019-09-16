@@ -101,16 +101,16 @@ public class CrossProductHandler implements PhysicalPlanResolver, Dispatcher {
   public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
     @SuppressWarnings("unchecked")
-    Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
+    Task<?> currTask = (Task<?>) nd;
     if (currTask instanceof MapRedTask) {
       MapRedTask mrTsk = (MapRedTask)currTask;
       MapredWork mrWrk = mrTsk.getWork();
       checkMapJoins(mrTsk);
       checkMRReducer(currTask.toString(), mrWrk);
     } else if (currTask instanceof ConditionalTask ) {
-      List<Task<? extends Serializable>> taskListInConditionalTask =
+      List<Task<?>> taskListInConditionalTask =
           ((ConditionalTask) currTask).getListTasks();
-      for(Task<? extends Serializable> tsk: taskListInConditionalTask){
+      for(Task<?> tsk: taskListInConditionalTask){
         dispatch(tsk, stack, nodeOutputs);
       }
 

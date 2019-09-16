@@ -68,7 +68,7 @@ public class SerializeFilter implements PhysicalPlanResolver {
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
-      Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
+      Task<?> currTask = (Task<?>) nd;
       if (currTask instanceof StatsTask) {
         currTask = ((StatsTask) currTask).getWork().getSourceTask();
       }

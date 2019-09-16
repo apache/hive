@@ -37,40 +37,40 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 @LimitedPrivate(value = { "Apache Hive, Apache Sentry (incubating)" })
 @Evolving
 public interface HiveAuthorizationTaskFactory {
-  Task<? extends Serializable> createCreateRoleTask(ASTNode node, Set<ReadEntity> inputs,
+  Task<?> createCreateRoleTask(ASTNode node, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException;
 
-  Task<? extends Serializable> createDropRoleTask(ASTNode node, Set<ReadEntity> inputs,
+  Task<?> createDropRoleTask(ASTNode node, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException;
 
-  Task<? extends Serializable> createShowRoleGrantTask(ASTNode node, Path resultFile,
+  Task<?> createShowRoleGrantTask(ASTNode node, Path resultFile,
       Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;
 
-  Task<? extends Serializable> createGrantRoleTask(ASTNode node, Set<ReadEntity> inputs,
+  Task<?> createGrantRoleTask(ASTNode node, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException;
 
-  Task<? extends Serializable> createRevokeRoleTask(ASTNode node, Set<ReadEntity> inputs,
+  Task<?> createRevokeRoleTask(ASTNode node, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException;
 
-  Task<? extends Serializable> createGrantTask(ASTNode node, Set<ReadEntity> inputs,
+  Task<?> createGrantTask(ASTNode node, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException;
 
-  Task<? extends Serializable> createShowGrantTask(ASTNode node, Path resultFile, Set<ReadEntity> inputs,
+  Task<?> createShowGrantTask(ASTNode node, Path resultFile, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException;
 
-  Task<? extends Serializable> createRevokeTask(ASTNode node, Set<ReadEntity> inputs,
+  Task<?> createRevokeTask(ASTNode node, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException;
 
-  Task<? extends Serializable> createSetRoleTask(String roleName,
+  Task<?> createSetRoleTask(String roleName,
       Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;
 
-  Task<? extends Serializable> createShowCurrentRoleTask(Set<ReadEntity> inputs,
+  Task<?> createShowCurrentRoleTask(Set<ReadEntity> inputs,
       Set<WriteEntity> outputs, Path resFile) throws SemanticException;
 
-  Task<? extends Serializable> createShowRolePrincipalsTask(ASTNode ast, Path resFile,
+  Task<?> createShowRolePrincipalsTask(ASTNode ast, Path resFile,
       Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;
 
-  Task<? extends Serializable> createShowRolesTask(ASTNode ast, Path resFile,
+  Task<?> createShowRolesTask(ASTNode ast, Path resFile,
       Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;
 
 }

@@ -121,7 +121,7 @@ public class TestHs2Hooks {
 
     @Override
     public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-        List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+        List<Task<?>> rootTasks) throws SemanticException {
       try {
         userName = context.getUserName();
         ipAddress = context.getIpAddress();

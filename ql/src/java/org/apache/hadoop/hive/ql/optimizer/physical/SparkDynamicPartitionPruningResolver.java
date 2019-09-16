@@ -81,7 +81,7 @@ public class SparkDynamicPartitionPruningResolver implements PhysicalPlanResolve
 
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs) throws SemanticException {
-      Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
+      Task<?> task = (Task<?>) nd;
 
       // If the given Task is a SparkTask then search its Work DAG for SparkPartitionPruningSinkOperator
       if (task instanceof SparkTask) {
@@ -124,12 +124,12 @@ public class SparkDynamicPartitionPruningResolver implements PhysicalPlanResolve
    * Recursively go through the children of the given {@link Task} and check if any child {@link SparkTask} contains
    * the specified {@link MapWork} object.
    */
-  private boolean taskContainsDependentMapWork(Task<? extends Serializable> task,
+  private boolean taskContainsDependentMapWork(Task<?> task,
                                                MapWork work) throws SemanticException {
     if (task == null || task.getChildTasks() == null) {
       return false;
     }
-    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+    for (Task<?> childTask : task.getChildTasks()) {
       if (childTask != null && childTask instanceof SparkTask && childTask.getMapWork().contains(work)) {
         return true;
       } else if (taskContainsDependentMapWork(childTask, work)) {

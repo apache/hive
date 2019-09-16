@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class DeletePartColStatHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     context.log.info("Replication of partition stat delete event is not supported yet");
     if (!context.isDbNameEmpty()) {

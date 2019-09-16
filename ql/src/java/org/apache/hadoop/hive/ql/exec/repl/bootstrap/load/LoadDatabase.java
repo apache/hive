@@ -60,7 +60,7 @@ public class LoadDatabase {
   public TaskTracker tasks() throws Exception {
     Database dbInMetadata = readDbMetadata();
     String dbName = dbInMetadata.getName();
-    Task<? extends Serializable> dbRootTask = null;
+    Task<?> dbRootTask = null;
     ReplLoadOpType loadDbType = getLoadDbType(dbName);
     switch (loadDbType) {
       case LOAD_NEW:
@@ -115,7 +115,7 @@ public class LoadDatabase {
     return allTables.isEmpty() && allFunctions.isEmpty();
   }
 
-  private Task<? extends Serializable> createDbTask(Database dbObj) {
+  private Task<?> createDbTask(Database dbObj) {
     // note that we do not set location - for repl load, we want that auto-created.
     CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc(dbObj.getName(), dbObj.getDescription(), null, false,
         updateDbProps(dbObj, context.dumpDirectory));
@@ -126,12 +126,12 @@ public class LoadDatabase {
     return TaskFactory.get(work, context.hiveConf);
   }
 
-  private Task<? extends Serializable> alterDbTask(Database dbObj) {
+  private Task<?> alterDbTask(Database dbObj) {
     return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory),
             context.hiveConf);
   }
 
-  private Task<? extends Serializable> setOwnerInfoTask(Database dbObj) {
+  private Task<?> setOwnerInfoTask(Database dbObj) {
     AlterDatabaseSetOwnerDesc alterDbDesc = new AlterDatabaseSetOwnerDesc(dbObj.getName(),
         new PrincipalDesc(dbObj.getOwnerName(), dbObj.getOwnerType()), null);
     DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);
@@ -160,7 +160,7 @@ public class LoadDatabase {
     return parameters;
   }
 
-  private static Task<? extends Serializable> alterDbTask(String dbName, Map<String, String> props,
+  private static Task<?> alterDbTask(String dbName, Map<String, String> props,
                                                           HiveConf hiveConf) {
     AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(dbName, props, null);
     DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);

@@ -93,11 +93,11 @@ public class EximUtil {
     private Hive db;
     private Set<ReadEntity> inputs;
     private Set<WriteEntity> outputs;
-    private List<Task<? extends Serializable>> tasks;
+    private List<Task<?>> tasks;
     private Logger LOG;
     private Context ctx;
     private DumpType eventType = DumpType.EVENT_UNKNOWN;
-    private Task<? extends Serializable> openTxnTask = null;
+    private Task<?> openTxnTask = null;
 
     public HiveConf getConf() {
       return conf;
@@ -115,7 +115,7 @@ public class EximUtil {
       return outputs;
     }
 
-    public List<Task<? extends Serializable>> getTasks() {
+    public List<Task<?>> getTasks() {
       return tasks;
     }
 
@@ -138,7 +138,7 @@ public class EximUtil {
     public SemanticAnalyzerWrapperContext(HiveConf conf, Hive db,
                                           Set<ReadEntity> inputs,
                                           Set<WriteEntity> outputs,
-                                          List<Task<? extends Serializable>> tasks,
+                                          List<Task<?>> tasks,
                                           Logger LOG, Context ctx){
       this.conf = conf;
       this.db = db;
@@ -149,10 +149,10 @@ public class EximUtil {
       this.ctx = ctx;
     }
 
-    public Task<? extends Serializable> getOpenTxnTask() {
+    public Task<?> getOpenTxnTask() {
       return openTxnTask;
     }
-    public void setOpenTxnTask(Task<? extends Serializable> openTxnTask) {
+    public void setOpenTxnTask(Task<?> openTxnTask) {
       this.openTxnTask = openTxnTask;
     }
   }
