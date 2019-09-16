@@ -1069,6 +1069,27 @@ public class TestBeeLineWithArgs {
     testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
   }
 
+  @Test
+  public void testBeelineWithSilentAndReport() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int, bar string);\n "
+        + "desc new_table;\n";
+    final String EXPECTED_PATTERN = "2 rows selected";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--silent=true");
+    argList.add("--report=true");
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
+  }
+
+  @Test
+  public void testBeelineWithSilent() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists new_table;\n create table new_table(foo int, bar string);\n "
+        + "desc new_table;\n";
+    final String EXPECTED_PATTERN = "2 rows selected";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--silent=true");
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, false);
+  }
+
   private static class Tuple<K> {
     final K pattern;
     final boolean shouldMatch;

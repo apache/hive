@@ -42,8 +42,12 @@ POSTHOOK: Lineage: masking_test_druid.key SCRIPT []
 POSTHOOK: Lineage: masking_test_druid.username SCRIPT []
 PREHOOK: query: explain select username, key from masking_test_druid
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_druid
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select username, key from masking_test_druid
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_druid
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

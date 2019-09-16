@@ -131,6 +131,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer
+                  filterExpr: (c_customer_sk BETWEEN DynamicValue(RS_47_store_returns_sr_customer_sk_min) AND DynamicValue(RS_47_store_returns_sr_customer_sk_max) and in_bloom_filter(c_customer_sk, DynamicValue(RS_47_store_returns_sr_customer_sk_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 8320000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c_customer_sk BETWEEN DynamicValue(RS_47_store_returns_sr_customer_sk_min) AND DynamicValue(RS_47_store_returns_sr_customer_sk_max) and in_bloom_filter(c_customer_sk, DynamicValue(RS_47_store_returns_sr_customer_sk_bloom_filter))) (type: boolean)

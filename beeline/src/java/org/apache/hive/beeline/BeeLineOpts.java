@@ -68,6 +68,7 @@ public class BeeLineOpts implements Completer {
   private final BeeLine beeLine;
   private boolean autosave = false;
   private boolean silent = false;
+  private Boolean report = null;
   private boolean color = false;
   private boolean showHeader = true;
   private boolean escapeCRLF = false;
@@ -569,6 +570,14 @@ public class BeeLineOpts implements Completer {
 
   public boolean isSilent() {
     return silent;
+  }
+
+  public void setReport(boolean report) {
+    this.report = report;
+  }
+
+  public Boolean isReport() {
+    return report;
   }
 
   public void setAutosave(boolean autosave) {

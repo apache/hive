@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.ql.ddl.function.DropMacroDesc;
+import org.apache.hadoop.hive.ql.ddl.function.macro.drop.DropMacroDesc;
 import org.junit.Assert;
 
 import org.junit.Before;

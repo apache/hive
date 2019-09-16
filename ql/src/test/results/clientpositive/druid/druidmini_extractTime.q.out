@@ -725,8 +725,8 @@ POSTHOOK: query: SELECT CAST(`__time` AS TIMESTAMP) AS `x_time`, SUM(cfloat)  FR
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-12-31 15:59:00	-4532.570196151733
-1969-12-31 16:00:00	-35057.677050709724
+1969-12-31 15:59:00	-4532.570000171661
+1969-12-31 16:00:00	-35057.6769926548
 PREHOOK: query: explain SELECT CAST(`__time` AS DATE) AS `x_date`, SUM(cfloat)  FROM druid_table_alltypesorc GROUP BY CAST(`__time` AS DATE) ORDER BY `x_date` LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -763,7 +763,7 @@ POSTHOOK: query: SELECT CAST(`__time` AS DATE) AS `x_date`, SUM(cfloat)  FROM dr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-12-31	-39590.24724686146
+1969-12-31	-39590.24699282646
 PREHOOK: query: SELECT CAST(`__time` AS DATE) AS `x_date` FROM druid_table_alltypesorc ORDER BY `x_date` LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc

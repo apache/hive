@@ -23,13 +23,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -134,7 +132,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   // Only used in bucket map join.
   private transient int numBuckets = -1;
   private transient int bucketId = -1;
-  private transient ReentrantLock subCacheLock = new ReentrantLock();
 
   /** Kryo ctor. */
   protected MapJoinOperator() {
@@ -680,8 +677,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
      */
     NonMatchedSmallTableIterator nonMatchedIterator =
         substituteSmallTable.createNonMatchedSmallTableIterator(matchTracker);
-    int nonMatchedKeyCount = 0;
-    int nonMatchedValueCount = 0;
     while (nonMatchedIterator.isNext()) {
       List<Object> keyObjList = nonMatchedIterator.getCurrentKey();
 
@@ -729,10 +724,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
         // FUTURE: Support residual filters for non-equi joins.
         internalForward(standardCopyRow, outputObjInspector);
-        nonMatchedValueCount++;
       }
-
-      nonMatchedKeyCount++;
     }
   }
 
@@ -938,9 +930,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     KeyValueHelper writeHelper = container.getWriteHelper();
     while (kvContainer.hasNext()) {
-      ObjectPair<HiveKey, BytesWritable> pair = kvContainer.next();
-      Writable key = pair.getFirst();
-      Writable val = pair.getSecond();
+      Pair<HiveKey, BytesWritable> pair = kvContainer.next();
+      Writable key = pair.getLeft();
+      Writable val = pair.getRight();
       writeHelper.setKeyValue(key, val);
       restoredHashMap.put(writeHelper, -1);
     }
