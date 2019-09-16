@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(PowerMockRunner.class)
   public class TestTaskTracker {
   @Mock
-  private Task<? extends Serializable> task;
+  private Task<?> task;
 
   @Test
   public void taskTrackerCompositionInitializesTheMaxTasksCorrectly() {

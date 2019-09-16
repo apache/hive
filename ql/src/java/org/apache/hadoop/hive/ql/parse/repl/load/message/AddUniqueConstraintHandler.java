@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class AddUniqueConstraintHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     AddUniqueConstraintMessage msg = deserializer.getAddUniqueConstraintMessage(context.dmd.getPayload());
 
@@ -48,7 +48,7 @@ public class AddUniqueConstraintHandler extends AbstractMessageHandler {
       }
     }
 
-    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> tasks = new ArrayList<Task<?>>();
     if (uks.isEmpty()) {
       return tasks;
     }

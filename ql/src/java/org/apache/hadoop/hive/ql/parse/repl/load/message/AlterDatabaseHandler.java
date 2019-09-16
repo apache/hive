@@ -44,7 +44,7 @@ import java.util.Map;
  */
 public class AlterDatabaseHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     AlterDatabaseMessage msg = deserializer.getAlterDatabaseMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;

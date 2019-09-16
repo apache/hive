@@ -326,7 +326,7 @@ public class ImportTableDesc {
     return dbName;
   }
 
-  public Task<? extends Serializable> getCreateTableTask(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+  public Task<?> getCreateTableTask(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       HiveConf conf) {
     switch (getDescType()) {
     case TABLE:

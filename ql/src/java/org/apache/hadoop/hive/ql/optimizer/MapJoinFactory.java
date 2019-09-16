@@ -146,7 +146,7 @@ public final class MapJoinFactory {
      *          position of the parent
      */
     private static void initMapJoinPlan(AbstractMapJoinOperator<? extends MapJoinDesc> op,
-        Task<? extends Serializable> currTask,
+        Task<?> currTask,
         GenMRProcContext opProcCtx, boolean local)
         throws SemanticException {
 
@@ -171,7 +171,7 @@ public final class MapJoinFactory {
      * @param pos
      *          position of the parent in the stack
      */
-    private static void joinMapJoinPlan(Task<? extends Serializable> oldTask,
+    private static void joinMapJoinPlan(Task<?> oldTask,
         GenMRProcContext opProcCtx, boolean local)
         throws SemanticException {
       TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
@@ -199,12 +199,12 @@ public final class MapJoinFactory {
       Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
           .getMapCurrCtx();
       GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(pos));
-      Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
+      Task<?> currTask = mapredCtx.getCurrTask();
       MapredWork currPlan = (MapredWork) currTask.getWork();
       String currAliasId = mapredCtx.getCurrAliasId();
-      HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+      HashMap<Operator<? extends OperatorDesc>, Task<?>> opTaskMap =
           ctx.getOpTaskMap();
-      Task<? extends Serializable> oldTask = opTaskMap.get(mapJoin);
+      Task<?> oldTask = opTaskMap.get(mapJoin);
 
       ctx.setCurrAliasId(currAliasId);
       ctx.setCurrTask(currTask);

@@ -68,7 +68,7 @@ public class AnnotateRunTimeStatsOptimizer implements PhysicalPlanResolver {
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
-      Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
+      Task<?> currTask = (Task<?>) nd;
       Set<Operator<? extends OperatorDesc>> ops = new HashSet<>();
 
       if (currTask instanceof MapRedTask) {

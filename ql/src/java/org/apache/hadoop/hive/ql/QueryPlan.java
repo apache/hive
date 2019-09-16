@@ -76,7 +76,7 @@ public class QueryPlan implements Serializable {
   private String optimizedCBOPlan;
   private String optimizedQueryString;
 
-  private ArrayList<Task<? extends Serializable>> rootTasks;
+  private ArrayList<Task<?>> rootTasks;
   private FetchTask fetchTask;
   private final List<ReducerTimeStatsPerJob> reducerTimeStatsPerJobList;
 
@@ -134,7 +134,7 @@ public class QueryPlan implements Serializable {
                   HiveOperation operation, Schema resultSchema) {
     this.queryString = queryString;
 
-    rootTasks = new ArrayList<Task<? extends Serializable>>(sem.getAllRootTasks());
+    rootTasks = new ArrayList<Task<?>>(sem.getAllRootTasks());
     reducerTimeStatsPerJobList = new ArrayList<ReducerTimeStatsPerJob>();
     fetchTask = sem.getFetchTask();
     // Note that inputs and outputs can be changed when the query gets executed
@@ -264,12 +264,12 @@ public class QueryPlan implements Serializable {
     query.setStageGraph(new org.apache.hadoop.hive.ql.plan.api.Graph());
     query.getStageGraph().setNodeType(NodeType.STAGE);
 
-    Queue<Task<? extends Serializable>> tasksToVisit =
-      new LinkedList<Task<? extends Serializable>>();
-    Set<Task<? extends Serializable>> tasksVisited = new HashSet<Task<? extends Serializable>>();
+    Queue<Task<?>> tasksToVisit =
+      new LinkedList<Task<?>>();
+    Set<Task<?>> tasksVisited = new HashSet<Task<?>>();
     tasksToVisit.addAll(rootTasks);
     while (tasksToVisit.size() != 0) {
-      Task<? extends Serializable> task = tasksToVisit.remove();
+      Task<?> task = tasksToVisit.remove();
       tasksVisited.add(task);
       // populate stage
       org.apache.hadoop.hive.ql.plan.api.Stage stage =
@@ -315,14 +315,14 @@ public class QueryPlan implements Serializable {
         listEntry.setNode(task.getId());
         ConditionalTask t = (ConditionalTask) task;
 
-        for (Task<? extends Serializable> listTask : t.getListTasks()) {
+        for (Task<?> listTask : t.getListTasks()) {
           if (t.getChildTasks() != null) {
             org.apache.hadoop.hive.ql.plan.api.Adjacency childEntry =
               new org.apache.hadoop.hive.ql.plan.api.Adjacency();
             childEntry.setAdjacencyType(AdjacencyType.DISJUNCTIVE);
             childEntry.setNode(listTask.getId());
             // done processing the task
-            for (Task<? extends Serializable> childTask : t.getChildTasks()) {
+            for (Task<?> childTask : t.getChildTasks()) {
               childEntry.addToChildren(childTask.getId());
               if (!tasksVisited.contains(childTask)) {
                 tasksToVisit.add(childTask);
@@ -343,7 +343,7 @@ public class QueryPlan implements Serializable {
         entry.setAdjacencyType(AdjacencyType.CONJUNCTIVE);
         entry.setNode(task.getId());
         // done processing the task
-        for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+        for (Task<?> childTask : task.getChildTasks()) {
           entry.addToChildren(childTask.getId());
           if (!tasksVisited.contains(childTask)) {
             tasksToVisit.add(childTask);
@@ -399,17 +399,17 @@ public class QueryPlan implements Serializable {
    * Extract all the counters from tasks and operators.
    */
   private void extractCounters() throws IOException {
-    Queue<Task<? extends Serializable>> tasksToVisit =
-      new LinkedList<Task<? extends Serializable>>();
-    Set<Task<? extends Serializable>> tasksVisited =
-      new HashSet<Task<? extends Serializable>>();
+    Queue<Task<?>> tasksToVisit =
+      new LinkedList<Task<?>>();
+    Set<Task<?>> tasksVisited =
+      new HashSet<Task<?>>();
     tasksToVisit.addAll(rootTasks);
     while (tasksToVisit.peek() != null) {
-      Task<? extends Serializable> task = tasksToVisit.remove();
+      Task<?> task = tasksToVisit.remove();
       tasksVisited.add(task);
       // add children to tasksToVisit
       if (task.getChildTasks() != null) {
-        for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+        for (Task<?> childTask : task.getChildTasks()) {
           if (!tasksVisited.contains(childTask)) {
             tasksToVisit.add(childTask);
           }
@@ -450,7 +450,7 @@ public class QueryPlan implements Serializable {
         }
       } else if (task instanceof ConditionalTask) {
         ConditionalTask cTask = (ConditionalTask) task;
-        for (Task<? extends Serializable> listTask : cTask.getListTasks()) {
+        for (Task<?> listTask : cTask.getListTasks()) {
           if (!tasksVisited.contains(listTask)) {
             tasksToVisit.add(listTask);
           }
@@ -696,11 +696,11 @@ public class QueryPlan implements Serializable {
     return done;
   }
 
-  public ArrayList<Task<? extends Serializable>> getRootTasks() {
+  public ArrayList<Task<?>> getRootTasks() {
     return rootTasks;
   }
 
-  public void setRootTasks(ArrayList<Task<? extends Serializable>> rootTasks) {
+  public void setRootTasks(ArrayList<Task<?>> rootTasks) {
     this.rootTasks = rootTasks;
   }
 

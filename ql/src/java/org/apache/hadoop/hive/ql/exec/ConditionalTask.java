@@ -33,11 +33,11 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 public class ConditionalTask extends Task<ConditionalWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private List<Task<? extends Serializable>> listTasks;
+  private List<Task<?>> listTasks;
 
   private boolean resolved = false;
 
-  private List<Task<? extends Serializable>> resTasks;
+  private List<Task<?>> resTasks;
 
   private ConditionalResolver resolver;
   private Object resolverCtx;
@@ -49,7 +49,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
 
   @Override
   public boolean isMapRedTask() {
-    for (Task<? extends Serializable> task : listTasks) {
+    for (Task<?> task : listTasks) {
       if (task.isMapRedTask()) {
         return true;
       }
@@ -65,7 +65,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
 
   @Override
   public boolean hasReduce() {
-    for (Task<? extends Serializable> task : listTasks) {
+    for (Task<?> task : listTasks) {
       if (task.hasReduce()) {
         return true;
       }
@@ -89,7 +89,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
   }
 
   private void resolveTask(DriverContext driverContext) throws HiveException {
-    for (Task<? extends Serializable> tsk : getListTasks()) {
+    for (Task<?> tsk : getListTasks()) {
       if (!resTasks.contains(tsk)) {
         driverContext.remove(tsk);
         console.printInfo(tsk.getId() + " is filtered out by condition resolver.");
@@ -101,7 +101,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
       } else {
         if (getParentTasks() != null) {
           // This makes it so that we can go back up the tree later
-          for (Task<? extends Serializable> task : getParentTasks()) {
+          for (Task<?> task : getParentTasks()) {
             task.addDependentTask(tsk);
           }
         }
@@ -140,20 +140,20 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
   @Override
   public boolean done() {
     boolean ret = true;
-    List<Task<? extends Serializable>> parentTasks = getParentTasks();
+    List<Task<?>> parentTasks = getParentTasks();
     if (parentTasks != null) {
-      for (Task<? extends Serializable> par : parentTasks) {
+      for (Task<?> par : parentTasks) {
         ret = ret && par.done();
       }
     }
-    List<Task<? extends Serializable>> retTasks;
+    List<Task<?>> retTasks;
     if (resolved) {
       retTasks = resTasks;
     } else {
       retTasks = getListTasks();
     }
     if (ret && retTasks != null) {
-      for (Task<? extends Serializable> tsk : retTasks) {
+      for (Task<?> tsk : retTasks) {
         ret = ret && tsk.done();
       }
     }
@@ -171,7 +171,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
   /**
    * @return the listTasks
    */
-  public List<Task<? extends Serializable>> getListTasks() {
+  public List<Task<?>> getListTasks() {
     return listTasks;
   }
 
@@ -179,7 +179,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
    * @param listTasks
    *          the listTasks to set
    */
-  public void setListTasks(List<Task<? extends Serializable>> listTasks) {
+  public void setListTasks(List<Task<?>> listTasks) {
     this.listTasks = listTasks;
   }
 
@@ -200,11 +200,11 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
    * @return true if the task got added false if it already existed
    */
   @Override
-  public boolean addDependentTask(Task<? extends Serializable> dependent) {
+  public boolean addDependentTask(Task<?> dependent) {
     boolean ret = false;
     if (getListTasks() != null) {
       ret = true;
-      for (Task<? extends Serializable> tsk : getListTasks()) {
+      for (Task<?> tsk : getListTasks()) {
         ret = ret & tsk.addDependentTask(dependent);
       }
     }
@@ -212,7 +212,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
   }
 
   @Override
-  public List<Task<? extends Serializable>> getDependentTasks() {
+  public List<Task<?>> getDependentTasks() {
     return listTasks;
   }
 }

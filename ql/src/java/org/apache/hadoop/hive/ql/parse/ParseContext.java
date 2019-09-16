@@ -110,7 +110,7 @@ public class ParseContext {
   private GlobalLimitCtx globalLimitCtx;
 
   private HashSet<ReadEntity> semanticInputs;
-  private List<Task<? extends Serializable>> rootTasks;
+  private List<Task<?>> rootTasks;
 
   private FetchTask fetchTask;
   private QueryProperties queryProperties;
@@ -194,7 +194,7 @@ public class ParseContext {
       HashMap<TableScanOperator, SampleDesc> opToSamplePruner,
       GlobalLimitCtx globalLimitCtx,
       HashMap<String, SplitSample> nameToSplitSample,
-      HashSet<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks,
+      HashSet<ReadEntity> semanticInputs, List<Task<?>> rootTasks,
       Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner,
       Map<String, ReadEntity> viewAliasToInput,
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
@@ -511,8 +511,8 @@ public class ParseContext {
     return semanticInputs;
   }
 
-  public void replaceRootTask(Task<? extends Serializable> rootTask,
-                              List<? extends Task<? extends Serializable>> tasks) {
+  public void replaceRootTask(Task<?> rootTask,
+                              List<? extends Task<?>> tasks) {
     this.rootTasks.remove(rootTask);
     this.rootTasks.addAll(tasks);
   }

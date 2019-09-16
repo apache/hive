@@ -597,7 +597,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
+  protected void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
 
@@ -690,7 +690,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void setInputFormat(Task<? extends Serializable> task) {
+  protected void setInputFormat(Task<?> task) {
     if (task instanceof TezTask) {
       TezWork work = ((TezTask)task).getWork();
       List<BaseWork> all = work.getAllWork();
@@ -706,15 +706,15 @@ public class TezCompiler extends TaskCompiler {
         }
       }
     } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks
+      List<Task<?>> listTasks
         = ((ConditionalTask) task).getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
+      for (Task<?> tsk : listTasks) {
         setInputFormat(tsk);
       }
     }
 
     if (task.getChildTasks() != null) {
-      for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+      for (Task<?> childTask : task.getChildTasks()) {
         setInputFormat(childTask);
       }
     }
@@ -737,7 +737,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void decideExecMode(List<Task<? extends Serializable>> rootTasks, Context ctx,
+  protected void decideExecMode(List<Task<?>> rootTasks, Context ctx,
       GlobalLimitCtx globalLimitCtx)
       throws SemanticException {
     // currently all Tez work is on the cluster
@@ -745,7 +745,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void optimizeTaskPlan(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
+  protected void optimizeTaskPlan(List<Task<?>> rootTasks, ParseContext pCtx,
       Context ctx) throws SemanticException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);

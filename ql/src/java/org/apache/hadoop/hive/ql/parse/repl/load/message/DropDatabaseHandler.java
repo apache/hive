@@ -31,13 +31,13 @@ import java.util.List;
 
 public class DropDatabaseHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     DropDatabaseMessage msg =
         deserializer.getDropDatabaseMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
     DropDatabaseDesc desc = new DropDatabaseDesc(actualDbName, true, context.eventOnlyReplicationSpec());
-    Task<? extends Serializable> dropDBTask =
+    Task<?> dropDBTask =
         TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), desc), context.hiveConf);
     context.log.info(
         "Added drop database task : {}:{}", dropDBTask.getId(), desc.getDatabaseName());

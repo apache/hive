@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class AddPrimaryKeyHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     AddPrimaryKeyMessage msg = deserializer.getAddPrimaryKeyMessage(context.dmd.getPayload());
 
@@ -48,7 +48,7 @@ public class AddPrimaryKeyHandler extends AbstractMessageHandler {
       }
     }
 
-    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> tasks = new ArrayList<Task<?>>();
     if (pks.isEmpty()) {
       return tasks;
     }

@@ -132,7 +132,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-              List<Task<? extends Serializable>> rootTasks)
+              List<Task<?>> rootTasks)
     throws SemanticException {
 
     if (rootTasks.size() == 0) {

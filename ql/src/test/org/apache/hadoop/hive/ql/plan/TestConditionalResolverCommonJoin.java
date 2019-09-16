@@ -58,8 +58,8 @@ public class TestConditionalResolverCommonJoin {
 
     // joins alias1, alias2, alias3 (alias1 was not eligible for big pos)
     // Must be deterministic order map for consistent q-test output across Java versions
-    HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
-        new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
+    HashMap<Task<?>, Set<String>> taskToAliases =
+        new LinkedHashMap<Task<?>, Set<String>>();
     taskToAliases.put(task1, new HashSet<String>(Arrays.asList("alias2")));
     taskToAliases.put(task2, new HashSet<String>(Arrays.asList("alias3")));
 

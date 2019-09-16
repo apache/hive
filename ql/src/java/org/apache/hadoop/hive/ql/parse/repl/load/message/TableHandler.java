@@ -45,9 +45,9 @@ public class TableHandler extends AbstractMessageHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TableHandler.class);
 
   @Override
-  public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
+  public List<Task<?>> handle(Context context) throws SemanticException {
     try {
-      List<Task<? extends Serializable>> importTasks = new ArrayList<>();
+      List<Task<?>> importTasks = new ArrayList<>();
       boolean isExternal = false, isLocationSet = false;
       String parsedLocation = null;
 
@@ -82,9 +82,9 @@ public class TableHandler extends AbstractMessageHandler {
           (context.precursor != null), parsedLocation, null, context.dbName,
           null, context.location, x, updatedMetadata, context.getTxnMgr(), tuple.writeId);
 
-      Task<? extends Serializable> openTxnTask = x.getOpenTxnTask();
+      Task<?> openTxnTask = x.getOpenTxnTask();
       if (openTxnTask != null && !importTasks.isEmpty()) {
-        for (Task<? extends Serializable> t : importTasks) {
+        for (Task<?> t : importTasks) {
           openTxnTask.addDependentTask(t);
         }
         importTasks.add(openTxnTask);
