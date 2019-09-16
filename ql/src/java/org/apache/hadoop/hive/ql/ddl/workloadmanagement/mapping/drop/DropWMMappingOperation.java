@@ -16,26 +16,28 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement.mapping.drop;
 
-import org.antlr.runtime.tree.Tree;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import java.io.IOException;
+
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * Common utilities for Workload Management related ddl operations.
+ * Operation process of dropping a workload management mapping.
  */
-public final class WMUtils {
-  private WMUtils() {
-    throw new UnsupportedOperationException("WMUtils should not be instantiated");
+public class DropWMMappingOperation extends DDLOperation<DropWMMappingDesc> {
+  public DropWMMappingOperation(DDLOperationContext context, DropWMMappingDesc desc) {
+    super(context, desc);
   }
 
-  public static String poolPath(Tree root) {
-    StringBuilder builder = new StringBuilder();
-    builder.append(BaseSemanticAnalyzer.unescapeIdentifier(root.getText()));
-    for (int i = 0; i < root.getChildCount(); ++i) {
-      // DOT is not affected
-      builder.append(BaseSemanticAnalyzer.unescapeIdentifier(root.getChild(i).getText()));
-    }
-    return builder.toString();
+  @Override
+  public int execute() throws HiveException, IOException {
+    WMMapping mapping = new WMMapping(desc.getResourcePlanName(), desc.getEntityType(), desc.getEntityName());
+    context.getDb().dropWMMapping(mapping);
+
+    return 0;
   }
 }

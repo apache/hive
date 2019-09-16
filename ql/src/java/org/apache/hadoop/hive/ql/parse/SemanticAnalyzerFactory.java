@@ -141,19 +141,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_UNLOCKTABLE:
       case HiveParser.TOK_TRUNCATETABLE:
       case HiveParser.TOK_CACHE_METADATA:
-      case HiveParser.TOK_CREATE_RP:
-      case HiveParser.TOK_SHOW_RP:
-      case HiveParser.TOK_ALTER_RP:
-      case HiveParser.TOK_DROP_RP:
-      case HiveParser.TOK_CREATE_TRIGGER:
-      case HiveParser.TOK_ALTER_TRIGGER:
-      case HiveParser.TOK_DROP_TRIGGER:
-      case HiveParser.TOK_CREATE_POOL:
-      case HiveParser.TOK_ALTER_POOL:
-      case HiveParser.TOK_DROP_POOL:
-      case HiveParser.TOK_CREATE_MAPPING:
-      case HiveParser.TOK_ALTER_MAPPING:
-      case HiveParser.TOK_DROP_MAPPING:
         return new DDLSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_ANALYZE:

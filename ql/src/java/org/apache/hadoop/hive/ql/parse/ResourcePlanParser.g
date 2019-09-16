@@ -76,11 +76,11 @@ rpAssignList
   ;
 
 rpUnassign
-@init { gParent.pushMsg("rpAssign", state); }
+@init { gParent.pushMsg("rpUnassign", state); }
 @after { gParent.popMsg(state); }
   : (
-      (KW_QUERY_PARALLELISM) -> ^(TOK_QUERY_PARALLELISM TOK_NULL)
-    | (KW_DEFAULT KW_POOL) -> ^(TOK_DEFAULT_POOL TOK_NULL)
+      (KW_QUERY_PARALLELISM) -> ^(TOK_QUERY_PARALLELISM)
+    | (KW_DEFAULT KW_POOL) -> ^(TOK_DEFAULT_POOL)
     )
   ;
 
@@ -111,12 +111,12 @@ alterResourcePlanStatement
 @init { gParent.pushMsg("alter resource plan statement", state); }
 @after { gParent.popMsg(state); }
     : KW_ALTER KW_RESOURCE KW_PLAN name=identifier (
-          (KW_VALIDATE -> ^(TOK_ALTER_RP $name TOK_VALIDATE))
-        | (KW_DISABLE -> ^(TOK_ALTER_RP $name TOK_DISABLE))
-        | (KW_SET rpAssignList -> ^(TOK_ALTER_RP $name rpAssignList))
-        | (KW_UNSET rpUnassignList -> ^(TOK_ALTER_RP $name rpUnassignList))
-        | (KW_RENAME KW_TO newName=identifier -> ^(TOK_ALTER_RP $name ^(TOK_RENAME $newName)))
-        | ((activate enable? | enable activate?) -> ^(TOK_ALTER_RP $name activate? enable?))
+          (KW_VALIDATE -> ^(TOK_ALTER_RP_VALIDATE $name))
+        | (KW_DISABLE -> ^(TOK_ALTER_RP_DISABLE $name))
+        | (KW_SET rpAssignList -> ^(TOK_ALTER_RP_SET $name rpAssignList))
+        | (KW_UNSET rpUnassignList -> ^(TOK_ALTER_RP_UNSET $name rpUnassignList))
+        | (KW_RENAME KW_TO newName=identifier -> ^(TOK_ALTER_RP_RENAME $name $newName))
+        | ((activate enable? | enable activate?) -> ^(TOK_ALTER_RP_ENABLE $name activate? enable?))
       )
     ;
 
@@ -125,15 +125,16 @@ alterResourcePlanStatement
 globalWmStatement
 @init { gParent.pushMsg("global WM statement", state); }
 @after { gParent.popMsg(state); }
-    : (enable | disable) KW_WORKLOAD KW_MANAGEMENT -> ^(TOK_ALTER_RP enable? disable?)
+    : KW_ENABLE KW_WORKLOAD KW_MANAGEMENT -> ^(TOK_ALTER_RP_ENABLE)
+    | KW_DISABLE KW_WORKLOAD KW_MANAGEMENT -> ^(TOK_ALTER_RP_DISABLE)
     ;
 
 replaceResourcePlanStatement
 @init { gParent.pushMsg("replace resource plan statement", state); }
 @after { gParent.popMsg(state); }
     : KW_REPLACE (
-          (KW_ACTIVE KW_RESOURCE KW_PLAN KW_WITH src=identifier -> ^(TOK_ALTER_RP $src TOK_REPLACE))
-        | (KW_RESOURCE KW_PLAN dest=identifier KW_WITH src=identifier -> ^(TOK_ALTER_RP $src ^(TOK_REPLACE $dest)))
+          (KW_ACTIVE KW_RESOURCE KW_PLAN KW_WITH src=identifier -> ^(TOK_ALTER_RP_REPLACE $src))
+        | (KW_RESOURCE KW_PLAN dest=identifier KW_WITH src=identifier -> ^(TOK_ALTER_RP_REPLACE $src $dest))
       )
     ;
 
@@ -216,10 +217,10 @@ alterTriggerStatement
     : KW_ALTER KW_TRIGGER rpName=identifier DOT triggerName=identifier (
         (KW_WHEN triggerExpression KW_DO triggerActionExpression
           -> ^(TOK_ALTER_TRIGGER $rpName $triggerName triggerExpression triggerActionExpression))
-      | (KW_ADD KW_TO KW_POOL poolName=poolPath -> ^(TOK_ALTER_POOL $rpName $poolName ^(TOK_ADD_TRIGGER $triggerName)))
-      | (KW_DROP KW_FROM KW_POOL poolName=poolPath -> ^(TOK_ALTER_POOL $rpName $poolName ^(TOK_DROP_TRIGGER $triggerName)))
-      | (KW_ADD KW_TO KW_UNMANAGED -> ^(TOK_ALTER_POOL $rpName TOK_UNMANAGED ^(TOK_ADD_TRIGGER $triggerName)))
-      | (KW_DROP KW_FROM KW_UNMANAGED -> ^(TOK_ALTER_POOL $rpName TOK_UNMANAGED ^(TOK_DROP_TRIGGER $triggerName)))
+      | (KW_ADD KW_TO KW_POOL poolName=poolPath -> ^(TOK_ALTER_POOL_ADD_TRIGGER $rpName $poolName $triggerName))
+      | (KW_DROP KW_FROM KW_POOL poolName=poolPath -> ^(TOK_ALTER_POOL_DROP_TRIGGER $rpName $poolName  $triggerName))
+      | (KW_ADD KW_TO KW_UNMANAGED -> ^(TOK_ALTER_POOL_ADD_TRIGGER $rpName TOK_UNMANAGED $triggerName))
+      | (KW_DROP KW_FROM KW_UNMANAGED -> ^(TOK_ALTER_POOL_DROP_TRIGGER $rpName TOK_UNMANAGED $triggerName))
     )
     ;
 
@@ -262,10 +263,8 @@ alterPoolStatement
     : KW_ALTER KW_POOL rpName=identifier DOT poolPath (
         (KW_SET poolAssignList -> ^(TOK_ALTER_POOL $rpName poolPath poolAssignList))
         | (KW_UNSET KW_SCHEDULING_POLICY -> ^(TOK_ALTER_POOL $rpName poolPath ^(TOK_SCHEDULING_POLICY TOK_NULL)))
-        | (KW_ADD KW_TRIGGER triggerName=identifier
-            -> ^(TOK_ALTER_POOL $rpName poolPath ^(TOK_ADD_TRIGGER $triggerName)))
-        | (KW_DROP KW_TRIGGER triggerName=identifier
-            -> ^(TOK_ALTER_POOL $rpName poolPath ^(TOK_DROP_TRIGGER $triggerName)))
+        | (KW_ADD KW_TRIGGER triggerName=identifier -> ^(TOK_ALTER_POOL_ADD_TRIGGER $rpName poolPath $triggerName))
+        | (KW_DROP KW_TRIGGER triggerName=identifier -> ^(TOK_ALTER_POOL_DROP_TRIGGER $rpName poolPath $triggerName))
       )
     ;
 
