@@ -16,26 +16,26 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement.resourceplan.drop;
 
-import org.antlr.runtime.tree.Tree;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import java.io.IOException;
+
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * Common utilities for Workload Management related ddl operations.
+ * Operation process of dropping a resource plan.
  */
-public final class WMUtils {
-  private WMUtils() {
-    throw new UnsupportedOperationException("WMUtils should not be instantiated");
+public class DropResourcePlanOperation extends DDLOperation<DropResourcePlanDesc> {
+  public DropResourcePlanOperation(DDLOperationContext context, DropResourcePlanDesc desc) {
+    super(context, desc);
   }
 
-  public static String poolPath(Tree root) {
-    StringBuilder builder = new StringBuilder();
-    builder.append(BaseSemanticAnalyzer.unescapeIdentifier(root.getText()));
-    for (int i = 0; i < root.getChildCount(); ++i) {
-      // DOT is not affected
-      builder.append(BaseSemanticAnalyzer.unescapeIdentifier(root.getChild(i).getText()));
-    }
-    return builder.toString();
+  @Override
+  public int execute() throws HiveException, IOException {
+    context.getDb().dropResourcePlan(desc.getResourcePlanName(), desc.getIfExists());
+
+    return 0;
   }
 }
