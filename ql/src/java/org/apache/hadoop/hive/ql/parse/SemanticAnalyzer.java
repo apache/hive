@@ -518,7 +518,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     queryProperties.clear();
     outputs.clear();
 
-    if (ctx.enableUnparse()) {
+    if (ctx != null && ctx.enableUnparse()) {
       unparseTranslator.enable();
     }
   }
