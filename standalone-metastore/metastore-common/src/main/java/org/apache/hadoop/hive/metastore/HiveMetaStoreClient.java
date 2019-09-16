@@ -491,6 +491,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     AlterTableRequest req = new AlterTableRequest(dbname, tbl_name, new_tbl);
     req.setCatName(MetaStoreUtils.getDefaultCatalog(conf));
     req.setEnvironmentContext(envContext);
+    if (processorCapabilities != null) {
+      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      req.setProcessorIdentifier(processorIdentifier);
+    }
     client.alter_table_req(req);
   }
 
@@ -501,6 +505,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     AlterTableRequest req = new AlterTableRequest(dbName, tblName, newTable);
     req.setCatName(catName);
     req.setEnvironmentContext(envContext);
+    if (processorCapabilities != null) {
+      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      req.setProcessorIdentifier(processorIdentifier);
+    }
     client.alter_table_req(req);
   }
 
@@ -516,6 +524,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setCatName(catName);
     req.setValidWriteIdList(validWriteIds);
     req.setEnvironmentContext(envContext);
+    if (processorCapabilities != null) {
+      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      req.setProcessorIdentifier(processorIdentifier);
+    }
     client.alter_table_req(req);
   }
 
