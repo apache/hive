@@ -987,6 +987,9 @@
                   <include>io.airlift:aircompressor</include>
                   <include>org.codehaus.jackson:jackson-core-asl</include>
                   <include>org.codehaus.jackson:jackson-mapper-asl</include>
+                  <include>com.fasterxml.jackson.core:jackson-core</include>
+                  <include>com.fasterxml.jackson.core:jackson-annotations</include>
+                  <include>com.fasterxml.jackson.core:jackson-databind</include>
                   <include>com.google.guava:guava</include>
                   <include>net.sf.opencsv:opencsv</include>
                   <include>org.apache.hive:hive-spark-client</include>
@@ -996,6 +999,10 @@
                   <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
                   <include>com.google.re2j:re2j</include>
+                  <include>io.dropwizard.metrics:metrics-core</include>
+                  <include>io.dropwizard.metrics:metrics-jvm</include>
+                  <include>io.dropwizard.metrics:metrics-json</include>
+                  <include>com.zaxxer:HikariCP</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -1006,6 +1013,18 @@
                 <relocation>
                   <pattern>org.objenesis</pattern>
                   <shadedPattern>org.apache.hive.org.objenesis</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.fasterxml.jackson</pattern>
+                  <shadedPattern>org.apache.hive.com.fasterxml.jackson</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.codahale.metrics</pattern>
+                  <shadedPattern>org.apache.hive.com.codahale.metrics</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.zaxxer.hikari</pattern>
+                  <shadedPattern>org.apache.hive.com.zaxxer.hikari</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>com.google.guava</pattern>
