@@ -4766,6 +4766,8 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_PLANMAPPER_LINK_RELNODES("hive.query.planmapper.link.relnodes", true,
         "Wether to link Calcite nodes to runtime statistics."),
 
+    HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED("hive.scheduled.queries.executor.enabled", true,
+        "Controls wether HS2 will run scheduled query executor."),
     HIVE_SCHEDULED_QUERIES_NAMESPACE("hive.scheduled.queries.namespace", "hive",
         "Sets the scheduled query namespace to be used. New scheduled queries are created in this namespace;"
             + "and execution is also bound to the namespace"),
