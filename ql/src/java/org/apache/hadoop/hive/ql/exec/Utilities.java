@@ -314,15 +314,17 @@ public final class Utilities {
       return;
     }
 
-    try {
-      FileSystem fs = mapPath.getFileSystem(conf);
-      if (fs.exists(mapPath)) {
-        fs.delete(mapPath, true);
-      }
-      if (fs.exists(reducePath)) {
-        fs.delete(reducePath, true);
-      }
 
+    try {
+      if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+        FileSystem fs = mapPath.getFileSystem(conf);
+        if (fs.exists(mapPath)) {
+          fs.delete(mapPath, true);
+        }
+        if (fs.exists(reducePath)) {
+          fs.delete(reducePath, true);
+        }
+      }
     } catch (Exception e) {
       LOG.warn("Failed to clean-up tmp directories.", e);
     } finally {
