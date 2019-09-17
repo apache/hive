@@ -3804,7 +3804,7 @@ POSTHOOK: query: select * from scheduled_queries
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_queries
 #### A masked pattern was here ####
-1	asd	false	hive	* * * * * ? *	NULL	select 1	1568207934
+1	asd	false	hive	* * * * * ? *	NULL	select 1	1568728769
 PREHOOK: query: select	scheduled_execution_id,
 	scheduled_query_id,
 	substr(executor_query_id,1,5),
@@ -3829,4 +3829,4 @@ POSTHOOK: query: select	scheduled_execution_id,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_executions
 #### A masked pattern was here ####
-1	1	kirk_	FINISHED	true	true	NULL	NULL
+1	1	kirk_	FINISHED	true	false	NULL	NULL
