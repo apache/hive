@@ -45292,10 +45292,10 @@ class find_columns_with_stats_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype1531, _size1528) = iprot.readListBegin()
-          for _i1532 in xrange(_size1528):
-            _elem1533 = iprot.readString()
-            self.success.append(_elem1533)
+          (_etype1538, _size1535) = iprot.readListBegin()
+          for _i1539 in xrange(_size1535):
+            _elem1540 = iprot.readString()
+            self.success.append(_elem1540)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -45312,8 +45312,8 @@ class find_columns_with_stats_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter1534 in self.success:
-        oprot.writeString(iter1534)
+      for iter1541 in self.success:
+        oprot.writeString(iter1541)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -45948,19 +45948,9 @@ class get_next_notification_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-<<<<<<< HEAD
         if ftype == TType.STRUCT:
           self.success = NotificationEventResponse()
           self.success.read(iprot)
-=======
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype1538, _size1535) = iprot.readListBegin()
-          for _i1539 in xrange(_size1535):
-            _elem1540 = iprot.readString()
-            self.success.append(_elem1540)
-          iprot.readListEnd()
->>>>>>> asf/master
         else:
           iprot.skip(ftype)
       else:
@@ -45974,16 +45964,8 @@ class get_next_notification_result:
       return
     oprot.writeStructBegin('get_next_notification_result')
     if self.success is not None:
-<<<<<<< HEAD
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
-=======
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter1541 in self.success:
-        oprot.writeString(iter1541)
-      oprot.writeListEnd()
->>>>>>> asf/master
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -51641,11 +51623,11 @@ class get_schema_all_versions_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype1538, _size1535) = iprot.readListBegin()
-          for _i1539 in xrange(_size1535):
-            _elem1540 = SchemaVersion()
-            _elem1540.read(iprot)
-            self.success.append(_elem1540)
+          (_etype1545, _size1542) = iprot.readListBegin()
+          for _i1546 in xrange(_size1542):
+            _elem1547 = SchemaVersion()
+            _elem1547.read(iprot)
+            self.success.append(_elem1547)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -51674,8 +51656,8 @@ class get_schema_all_versions_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1541 in self.success:
-        iter1541.write(oprot)
+      for iter1548 in self.success:
+        iter1548.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -52243,22 +52225,7 @@ class set_schema_version_state_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-<<<<<<< HEAD
       if fid == 1:
-=======
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype1545, _size1542) = iprot.readListBegin()
-          for _i1546 in xrange(_size1542):
-            _elem1547 = SchemaVersion()
-            _elem1547.read(iprot)
-            self.success.append(_elem1547)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
->>>>>>> asf/master
         if ftype == TType.STRUCT:
           self.o1 = NoSuchObjectException()
           self.o1.read(iprot)
@@ -52285,18 +52252,7 @@ class set_schema_version_state_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-<<<<<<< HEAD
     oprot.writeStructBegin('set_schema_version_state_result')
-=======
-    oprot.writeStructBegin('get_schema_all_versions_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1548 in self.success:
-        iter1548.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
->>>>>>> asf/master
     if self.o1 is not None:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
       self.o1.write(oprot)
@@ -53176,11 +53132,11 @@ class get_runtime_stats_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype1545, _size1542) = iprot.readListBegin()
-          for _i1546 in xrange(_size1542):
-            _elem1547 = RuntimeStat()
-            _elem1547.read(iprot)
-            self.success.append(_elem1547)
+          (_etype1552, _size1549) = iprot.readListBegin()
+          for _i1553 in xrange(_size1549):
+            _elem1554 = RuntimeStat()
+            _elem1554.read(iprot)
+            self.success.append(_elem1554)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -53203,8 +53159,8 @@ class get_runtime_stats_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1548 in self.success:
-        iter1548.write(oprot)
+      for iter1555 in self.success:
+        iter1555.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -53791,22 +53747,7 @@ class scheduled_query_progress_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-<<<<<<< HEAD
       if fid == 1:
-=======
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype1552, _size1549) = iprot.readListBegin()
-          for _i1553 in xrange(_size1549):
-            _elem1554 = RuntimeStat()
-            _elem1554.read(iprot)
-            self.success.append(_elem1554)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
->>>>>>> asf/master
         if ftype == TType.STRUCT:
           self.o1 = MetaException()
           self.o1.read(iprot)
@@ -53827,18 +53768,7 @@ class scheduled_query_progress_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-<<<<<<< HEAD
     oprot.writeStructBegin('scheduled_query_progress_result')
-=======
-    oprot.writeStructBegin('get_runtime_stats_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1555 in self.success:
-        iter1555.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
->>>>>>> asf/master
     if self.o1 is not None:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
       self.o1.write(oprot)
