@@ -159,6 +159,7 @@ public class HiveServer2 extends CompositeService {
   private SettableFuture<Boolean> isLeaderTestFuture = SettableFuture.create();
   private SettableFuture<Boolean> notLeaderTestFuture = SettableFuture.create();
   private ZooKeeperHiveHelper zooKeeperHelper = null;
+  private ScheduledQueryExecutionService scheduledQueryService;
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
@@ -263,7 +264,7 @@ public class HiveServer2 extends CompositeService {
 
     StatsSources.initialize(hiveConf);
 
-    ScheduledQueryExecutionService.startScheduledQueryExecutorService(hiveConf);
+    scheduledQueryService = ScheduledQueryExecutionService.startScheduledQueryExecutorService(hiveConf));
 
     // Setup cache if enabled.
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED)) {
@@ -852,6 +853,13 @@ public class HiveServer2 extends CompositeService {
     LOG.info("Shutting down HiveServer2");
     HiveConf hiveConf = this.getHiveConf();
     super.stop();
+    if (scheduledQueryService != null) {
+      try {
+        scheduledQueryService.close();
+      } catch (Exception e) {
+        LOG.error("Error stopping schq", e);
+      }
+    }
     if (hs2HARegistry != null) {
       hs2HARegistry.stop();
       shutdownExecutor(leaderActionsExecutorService);
