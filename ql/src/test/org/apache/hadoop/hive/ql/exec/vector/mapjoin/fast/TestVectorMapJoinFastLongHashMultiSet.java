@@ -173,7 +173,7 @@ public class TestVectorMapJoinFastLongHashMultiSet extends CommonFastHashTable {
 
     VerifyFastLongHashMultiSet verifyTable = new VerifyFastLongHashMultiSet();
 
-    for (int i = 0; i < 18; ++i) {
+    for (int i = 0; i < 6; ++i) {
       long key;
       while (true) {
         key = random.nextLong();
