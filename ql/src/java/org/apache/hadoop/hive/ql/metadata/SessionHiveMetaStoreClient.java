@@ -33,6 +33,8 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -67,6 +70,7 @@ import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -78,9 +82,11 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
+import static org.apache.hadoop.hive.metastore.Warehouse.makeSpecFromName;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * todo: This need review re: thread safety.  Various places (see callsers of
@@ -922,6 +928,9 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   public static final class TempTable {
     private final org.apache.hadoop.hive.metastore.api.Table tTable;
     private final PartitionTree pTree;
+
+    private static final String EXTERNAL_PARAM = "EXTERNAL";
+
     TempTable(org.apache.hadoop.hive.metastore.api.Table t) {
       assert t != null;
       this.tTable = t;
@@ -932,6 +941,10 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       String partName = makePartName(tTable.getPartitionKeys(), p.getValues());
       Partition partition = pTree.addPartition(p, partName, false);
       return partition == null ? pTree.getPartition(partName) : partition;
+    }
+
+    private boolean isExternal() {
+      return tTable.getParameters() != null && "true".equals(tTable.getParameters().get(EXTERNAL_PARAM));
     }
 
     private Partition getPartition(String partName) throws MetaException {
@@ -1007,6 +1020,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return result;
     }
 
+
     private boolean checkPrivilegesForPartition(Partition partition, String userName, List<String> groupNames) {
       if ((userName == null || userName.isEmpty()) && (groupNames == null || groupNames.isEmpty())) {
         return true;
@@ -1032,6 +1046,28 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       }
       return true;
     }
+
+    private Partition dropPartition(List<String> partVals) throws MetaException, NoSuchObjectException {
+      return pTree.dropPartition(partVals);
+    }
+
+    private Partition dropPartition(String partitionName) throws MetaException, NoSuchObjectException {
+      Map<String, String> specFromName = makeSpecFromName(partitionName);
+      if (specFromName == null || specFromName.isEmpty()) {
+        throw new NoSuchObjectException("Invalid partition name " + partitionName);
+      }
+      List<String> pVals = new ArrayList<>();
+      for (FieldSchema field : tTable.getPartitionKeys()) {
+        String val = specFromName.get(field.getName());
+        if (val == null) {
+          throw new NoSuchObjectException("Partition name " + partitionName + " and table partition keys " + Arrays
+              .toString(tTable.getPartitionKeys().toArray()) + " does not match");
+        }
+        pVals.add(val);
+      }
+      return pTree.dropPartition(pVals);
+    }
+
 
     /**
      * Always clone objects before adding or returning them so that callers don't modify them
@@ -1131,6 +1167,21 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
        */
       private List<Partition> listPartitions() {
         return new ArrayList<>(parts.values());
+      }
+
+      /**
+       * Remove a partition from the table.
+       * @param partVals partition values, must be not null
+       * @return the instance of the dropped partition, if the remove was successful, otherwise false
+       * @throws MetaException
+       */
+      private Partition dropPartition(List<String> partVals) throws MetaException, NoSuchObjectException {
+        String partName = makePartName(tTable.getPartitionKeys(), partVals);
+        if (!parts.containsKey(partName)) {
+          throw new NoSuchObjectException(
+              "Partition with partition values " + Arrays.toString(partVals.toArray()) + " is not found.");
+        }
+        return parts.remove(partName);
       }
     }
   }
@@ -1449,7 +1500,74 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     return deepCopy(partition);
   }
 
-  private  TempTable getPartitionedTempTable(org.apache.hadoop.hive.metastore.api.Table t) throws MetaException {
+  @Override
+  public boolean dropPartition(String dbName, String tableName, List<String> partVals) throws TException {
+    return dropPartition(getDefaultCatalog(conf), dbName, tableName, partVals,
+        PartitionDropOptions.instance().deleteData(true));
+  }
+
+  @Override
+  public boolean dropPartition(String catName, String dbName, String tblName, List<String> partVals,
+      PartitionDropOptions options) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.dropPartition(catName, dbName, tblName, partVals, options);
+    }
+    assertTempTablePartitioned(table);
+    if (partVals == null || partVals.isEmpty() || partVals.contains(null)) {
+      throw new MetaException("Partition values cannot be null, empty or contain null values");
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    if (tt == null) {
+      throw new IllegalStateException("TempTable not found for " + getCatalogQualifiedTableName(table));
+    }
+    Partition droppedPartition = tt.dropPartition(partVals);
+    boolean result = droppedPartition != null ? true : false;
+    boolean purgeData = true;
+    boolean deleteData = true;
+    if (options != null) {
+      deleteData = options.deleteData;
+      purgeData = options.purgeData;
+    }
+
+    if (deleteData && !tt.isExternal()) {
+      result &= deletePartitionLocation(droppedPartition, purgeData);
+    }
+
+    return result;
+  }
+
+  @Override
+  public boolean dropPartition(String catName, String dbName, String tableName, String partitionName,
+      boolean deleteData) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
+    if (table == null) {
+      return super.dropPartition(catName, dbName, tableName, partitionName, deleteData);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    if (tt == null) {
+      throw new IllegalStateException("TempTable not found for " + getCatalogQualifiedTableName(table));
+    }
+    Partition droppedPartition = tt.dropPartition(partitionName);
+    boolean result = droppedPartition != null ? true : false;
+    if (deleteData && !tt.isExternal()) {
+      result &= deletePartitionLocation(droppedPartition, true);
+    }
+    return result;
+  }
+
+  @Override
+  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+      List<ObjectPair<Integer, byte[]>> partExprs, PartitionDropOptions options) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.dropPartitions(catName, dbName, tblName, partExprs, options);
+    }
+    throw new UnsupportedOperationException("Dropping partitions for temporary tables, using an expression is not"
+        + "supported");
+  }
+
+  private TempTable getPartitionedTempTable(org.apache.hadoop.hive.metastore.api.Table t) throws MetaException {
     String qualifiedTableName = Warehouse.
         getQualifiedName(t.getDbName().toLowerCase(), t.getTableName().toLowerCase());
     SessionState ss = SessionState.get();
@@ -1509,8 +1627,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       // Check to see if the directory already exists before calling
       // mkdirs() because if the file system is read-only, mkdirs will
       // throw an exception even if the directory already exists.
-      if (!wh.isDir(partitionLocation)) {
-        if (!wh.mkdirs(partitionLocation)) {
+      if (!getWh().isDir(partitionLocation)) {
+        if (!getWh().mkdirs(partitionLocation)) {
           throw new MetaException(partitionLocation
               + " is not a directory or unable to create one");
         }
@@ -1582,7 +1700,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
         throw new MetaException("Cannot specify location for a view partition");
       }
       try {
-        partLocation = wh.getDnsPath(new Path(partLocationStr));
+        partLocation = getWh().getDnsPath(new Path(partLocationStr));
       } catch (IllegalArgumentException e) {
         throw new MetaException("Partition path is invalid. " + e.getLocalizedMessage());
       }
@@ -1684,5 +1802,31 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     if(table.getPartitionKeysSize() <= 0) {
       throw new MetaException(getCatalogQualifiedTableName(table) + " is not partitioned");
     }
+  }
+
+  /**
+   * Delete the directory where the partition resides.
+   * @param partition instance of partition, must be not null
+   * @param purgeData purge the data
+   * @return true if delete was successful
+   * @throws MetaException if delete fails
+   */
+  private boolean deletePartitionLocation(Partition partition, boolean purgeData) throws MetaException {
+    String location = partition.getSd().getLocation();
+    if (location != null) {
+      Path path = getWh().getDnsPath(new Path(location));
+      try {
+        do {
+          if (!getWh().deleteDir(path, true, purgeData, false)) {
+            throw new MetaException("Unable to delete partition at " + location);
+          }
+          path = path.getParent();
+        } while (getWh().isEmpty(path));
+      } catch (IOException e) {
+        throw new MetaException("Unable to delete partition at " + path.toString());
+      }
+      return true;
+    }
+    return false;
   }
 }
