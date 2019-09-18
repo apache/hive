@@ -13895,6 +13895,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
+      if (createVwDesc.isMaterialized() && !qb.hasTableDefined()) {
+        throw new SemanticException("Materialized view must have a table defined.");
+      }
+
       if (createVwDesc.isMaterialized() && createVwDesc.isRewriteEnabled()) {
         if (!ctx.isCboSucceeded()) {
           String msg = "Cannot enable automatic rewriting for materialized view.";
