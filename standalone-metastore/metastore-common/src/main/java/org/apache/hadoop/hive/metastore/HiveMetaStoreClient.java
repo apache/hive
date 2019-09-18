@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.login.LoginException;
+import javax.security.sasl.SaslException;
 
 import com.google.common.base.Preconditions;
 
@@ -552,6 +553,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     TTransportException tte = null;
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
     boolean useSasl = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_SASL);
+    boolean usePasswordAuth = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_PASSWORD_AUTH);
     boolean useFramedTransport = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
@@ -590,7 +592,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
           }
 
-          if (useSasl) {
+          if (usePasswordAuth) {
+            // we are using PLAIN Sasl connection with user/password
+            LOG.debug("HMSC::open(): Creating plain authentication thrift connection.");
+            String userName = MetastoreConf.getVar(conf, ConfVars.THRIFT_AUTH_USERNAME);
+            String passwd = MetastoreConf.getVar(conf, ConfVars.THRIFT_AUTH_PASSWORD);
+            // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
+            try {
+              transport = MetaStorePlainSaslHelper.getPlainTransport(userName, passwd, transport);
+            } catch (SaslException sasle) {
+              LOG.error("Couldn't create client transport", sasle);
+              throw new MetaException(sasle.toString());
+            }
+          } else if (useSasl) {
             // Wrap thrift connection with SASL for secure connection.
             try {
               HadoopThriftAuthBridge.Client authBridge =
@@ -656,7 +670,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             }
           }
 
-          if (isConnected && !useSasl && MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)) {
+          if (isConnected && !useSasl && !usePasswordAuth &&
+                  MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)) {
             // Call set_ugi, only in unsecure mode.
             try {
               UserGroupInformation ugi = SecurityUtils.getUGI();

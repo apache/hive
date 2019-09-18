@@ -15,23 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.metastore.ldap;
 
-package org.apache.hadoop.hive.metastore;
+import org.apache.hadoop.conf.Configuration;
 
-import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
+import javax.security.sasl.AuthenticationException;
 
-@Category(MetastoreCheckinTest.class)
-public class TestRemoteHiveMetaStoreZKBindHost extends TestRemoteHiveMetaStoreZK {
+/**
+ * A factory for {@code DirSearch}.
+ */
+public interface DirSearchFactory {
 
-    @Before
-    public void setUp() throws Exception {
-      initConf();
-      // Test that the metastore gets bound to the configured address.
-      MetastoreConf.setVar(conf, ConfVars.THRIFT_BIND_HOST, "localhost");
-      super.setUp();
-    }
+  /**
+   * Returns an instance of {@code DirSearch}.
+   * @param conf Hive configuration
+   * @param user username
+   * @param password user password
+   * @return instance of {@code DirSearch}
+   * @throws AuthenticationException
+   */
+  DirSearch getInstance(Configuration conf, String user, String password) throws AuthenticationException;
 }
