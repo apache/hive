@@ -133,7 +133,7 @@ STAGE PLANS:
   Stage: Stage-5
     Materialized View Update
       name: default.cluster_mv_1
-      retrieveAndInclude: true
+      retrieve and include: true
 
   Stage: Stage-0
     Move Operator
@@ -546,7 +546,7 @@ STAGE PLANS:
   Stage: Stage-4
     Materialized View Update
       name: default.cluster_mv_1
-      updateCreationMetadata: true
+      update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
 PREHOOK: type: QUERY
@@ -886,7 +886,7 @@ STAGE PLANS:
   Stage: Stage-4
     Materialized View Update
       name: default.cluster_mv_3
-      updateCreationMetadata: true
+      update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
 PREHOOK: type: QUERY
@@ -1141,7 +1141,7 @@ STAGE PLANS:
   Stage: Stage-4
     Materialized View Update
       name: default.cluster_mv_3
-      updateCreationMetadata: true
+      update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
 PREHOOK: type: QUERY
@@ -1289,7 +1289,7 @@ STAGE PLANS:
   Stage: Stage-4
     Materialized View Update
       name: default.cluster_mv_4
-      updateCreationMetadata: true
+      update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
 PREHOOK: type: QUERY

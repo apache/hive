@@ -1182,8 +1182,7 @@ alterStatement
 @after { popMsg(state); }
     : KW_ALTER KW_TABLE tableName alterTableStatementSuffix -> ^(TOK_ALTERTABLE tableName alterTableStatementSuffix)
     | KW_ALTER KW_VIEW tableName KW_AS? alterViewStatementSuffix -> ^(TOK_ALTERVIEW tableName alterViewStatementSuffix)
-    | KW_ALTER KW_MATERIALIZED KW_VIEW tableName alterMaterializedViewStatementSuffix
-    -> ^(TOK_ALTER_MATERIALIZED_VIEW tableName alterMaterializedViewStatementSuffix)
+    | KW_ALTER KW_MATERIALIZED KW_VIEW tableNameTree=tableName alterMaterializedViewStatementSuffix[$tableNameTree.tree] -> alterMaterializedViewStatementSuffix
     | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
     ;
 
@@ -1243,11 +1242,24 @@ alterViewStatementSuffix
     | selectStatementWithCTE
     ;
 
-alterMaterializedViewStatementSuffix
+alterMaterializedViewStatementSuffix[CommonTree tableNameTree]
 @init { pushMsg("alter materialized view statement", state); }
 @after { popMsg(state); }
-    : alterMaterializedViewSuffixRewrite
-    | alterMaterializedViewSuffixRebuild
+    : alterMaterializedViewSuffixRewrite[tableNameTree]
+    | alterMaterializedViewSuffixRebuild[tableNameTree]
+    ;
+
+alterMaterializedViewSuffixRewrite[CommonTree tableNameTree]
+@init { pushMsg("alter materialized view rewrite statement", state); }
+@after { popMsg(state); }
+    : (mvRewriteFlag=rewriteEnabled | mvRewriteFlag=rewriteDisabled)
+    -> ^(TOK_ALTER_MATERIALIZED_VIEW_REWRITE {$tableNameTree} $mvRewriteFlag)
+    ;
+
+alterMaterializedViewSuffixRebuild[CommonTree tableNameTree]
+@init { pushMsg("alter materialized view rebuild statement", state); }
+@after { popMsg(state); }
+    : KW_REBUILD -> ^(TOK_ALTER_MATERIALIZED_VIEW_REBUILD {$tableNameTree})
     ;
 
 alterDatabaseStatementSuffix
@@ -1410,19 +1422,6 @@ alterViewSuffixProperties
     -> ^(TOK_ALTERVIEW_PROPERTIES tableProperties)
     | KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
     -> ^(TOK_ALTERVIEW_DROPPROPERTIES tableProperties ifExists?)
-    ;
-
-alterMaterializedViewSuffixRewrite
-@init { pushMsg("alter materialized view rewrite statement", state); }
-@after { popMsg(state); }
-    : (mvRewriteFlag=rewriteEnabled | mvRewriteFlag=rewriteDisabled)
-    -> ^(TOK_ALTER_MATERIALIZED_VIEW_REWRITE $mvRewriteFlag)
-    ;
-
-alterMaterializedViewSuffixRebuild
-@init { pushMsg("alter materialized view rebuild statement", state); }
-@after { popMsg(state); }
-    : KW_REBUILD -> ^(TOK_ALTER_MATERIALIZED_VIEW_REBUILD)
     ;
 
 alterStatementSuffixSerdeProperties[boolean partition]
