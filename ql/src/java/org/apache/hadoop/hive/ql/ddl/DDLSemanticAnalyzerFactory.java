@@ -29,9 +29,11 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.reflections.Reflections;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 
 /**
  * Manages the DDL command analyzers.
@@ -49,11 +51,15 @@ public final class DDLSemanticAnalyzerFactory {
     int type();
   }
 
+  private static final String DDL_ROOT = "org.apache.hadoop.hive.ql.ddl";
   private static final Map<Integer, Class<? extends BaseSemanticAnalyzer>> TYPE_TO_ANALYZER = new HashMap<>();
 
   static {
-    Set<Class<? extends BaseSemanticAnalyzer>> analyzerClasses =
-        new Reflections("org.apache.hadoop.hive.ql.ddl").getSubTypesOf(BaseSemanticAnalyzer.class);
+    Set<Class<? extends BaseSemanticAnalyzer>> analyzerClasses1 =
+        new Reflections(DDL_ROOT).getSubTypesOf(BaseSemanticAnalyzer.class);
+    Set<Class<? extends CalcitePlanner>> analyzerClasses2 =
+        new Reflections(DDL_ROOT).getSubTypesOf(CalcitePlanner.class);
+    Set<Class<? extends BaseSemanticAnalyzer>> analyzerClasses = Sets.union(analyzerClasses1, analyzerClasses2);
     for (Class<? extends BaseSemanticAnalyzer> analyzerClass : analyzerClasses) {
       if (Modifier.isAbstract(analyzerClass.getModifiers())) {
         continue;
