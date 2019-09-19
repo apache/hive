@@ -133,7 +133,7 @@ STAGE PLANS:
   Stage: Stage-5
     Materialized View Update
       name: default.distribute_mv_1
-      retrieveAndInclude: true
+      retrieve and include: true
 
   Stage: Stage-0
     Move Operator
@@ -409,7 +409,7 @@ STAGE PLANS:
   Stage: Stage-5
     Materialized View Update
       name: default.distribute_mv_2
-      retrieveAndInclude: true
+      retrieve and include: true
 
   Stage: Stage-0
     Move Operator
@@ -715,7 +715,7 @@ STAGE PLANS:
   Stage: Stage-4
     Materialized View Update
       name: default.distribute_mv_1
-      updateCreationMetadata: true
+      update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW distribute_mv_1 REBUILD
 PREHOOK: type: QUERY
@@ -934,7 +934,7 @@ WHERE src_txn.key = src_txn_2.key
   Stage: Stage-5
     Materialized View Update
       name: default.distribute_mv_3
-      retrieveAndInclude: true
+      retrieve and include: true
 
   Stage: Stage-0
     Move Operator
@@ -1280,7 +1280,7 @@ STAGE PLANS:
   Stage: Stage-4
     Materialized View Update
       name: default.distribute_mv_3
-      updateCreationMetadata: true
+      update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW distribute_mv_3 REBUILD
 PREHOOK: type: QUERY

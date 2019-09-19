@@ -158,7 +158,7 @@ STAGE PLANS:
   Stage: Stage-1
     Materialized View Update
       name: default.cmv_mat_view2
-      disableRewrite: true
+      disable rewrite: true
 
 PREHOOK: query: alter materialized view cmv_mat_view2 disable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
@@ -308,7 +308,7 @@ STAGE PLANS:
   Stage: Stage-1
     Materialized View Update
       name: default.cmv_mat_view2
-      retrieveAndInclude: true
+      retrieve and include: true
 
 PREHOOK: query: alter materialized view cmv_mat_view2 enable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
