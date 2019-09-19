@@ -88,7 +88,9 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
+
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -3264,6 +3266,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.Idempotent
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
                              Iterator<Partition> partitionIterator) throws MetaException {
+
+    // cleanup should be done only for objecdts belonging to default catalog
+    final String defaultCatalog = getDefaultCatalog(conf);
+
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -3279,6 +3285,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         switch (type) {
           case DATABASE: {
             dbName = db.getName();
+            if(!defaultCatalog.equals(db.getCatalogName())) {
+              LOG.debug("Skipping cleanup because db: " + dbName + " belongs to catalog "
+                  + "other than default catalog: " + db.getCatalogName());
+              return;
+            }
 
             buff.append("delete from TXN_COMPONENTS where tc_database='");
             buff.append(dbName);
@@ -3320,6 +3331,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           case TABLE: {
             dbName = table.getDbName();
             tblName = table.getTableName();
+            if(!defaultCatalog.equals(table.getCatName())) {
+              LOG.debug("Skipping cleanup because table: " + tblName + " belongs to catalog "
+                  + "other than default catalog: " + table.getCatName());
+              return;
+            }
 
             buff.append("delete from TXN_COMPONENTS where tc_database='");
             buff.append(dbName);
@@ -3373,6 +3389,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           case PARTITION: {
             dbName = table.getDbName();
             tblName = table.getTableName();
+            if(!defaultCatalog.equals(table.getCatName())) {
+              LOG.debug("Skipping cleanup because partitions belong to catalog "
+                  + "other than default catalog: " + table.getCatName());
+              return;
+            }
+
             List<FieldSchema> partCols = table.getPartitionKeys();  // partition columns
             List<String> partVals;                                  // partition values
             String partName;
