@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.ddl.view;
+package org.apache.hadoop.hive.ql.ddl.view.materialized.update;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -48,19 +48,19 @@ public class MaterializedViewUpdateDesc implements DDLDesc, Serializable {
     return name;
   }
 
-  @Explain(displayName = "retrieveAndInclude", displayOnlyOnTrue = true,
+  @Explain(displayName = "retrieve and include", displayOnlyOnTrue = true,
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isRetrieveAndInclude() {
     return retrieveAndInclude;
   }
 
-  @Explain(displayName = "disableRewrite", displayOnlyOnTrue = true,
+  @Explain(displayName = "disable rewrite", displayOnlyOnTrue = true,
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isDisableRewrite() {
     return disableRewrite;
   }
 
-  @Explain(displayName = "updateCreationMetadata", displayOnlyOnTrue = true,
+  @Explain(displayName = "update creation metadata", displayOnlyOnTrue = true,
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isUpdateCreationMetadata() {
     return updateCreationMetadata;

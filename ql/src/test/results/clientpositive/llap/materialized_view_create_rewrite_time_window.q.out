@@ -478,7 +478,7 @@ STAGE PLANS:
   Stage: Stage-1
     Materialized View Update
       name: default.cmv_mat_view_n3
-      retrieveAndInclude: true
+      retrieve and include: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n3 ENABLE REWRITE
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
@@ -801,7 +801,7 @@ STAGE PLANS:
   Stage: Stage-4
     Materialized View Update
       name: default.cmv_mat_view_n3
-      updateCreationMetadata: true
+      update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n3 REBUILD
 PREHOOK: type: QUERY
