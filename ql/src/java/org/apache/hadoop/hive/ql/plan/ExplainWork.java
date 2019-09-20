@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -41,20 +41,20 @@ public class ExplainWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private Path resFile;
-  private ArrayList<Task<?>> rootTasks;
+  private List<Task<?>> rootTasks;
   private Task<?> fetchTask;
   private ASTNode astTree;
   private String astStringTree;
-  private HashSet<ReadEntity> inputs;
-  private HashSet<WriteEntity> outputs;
+  private Set<ReadEntity> inputs;
+  private Set<WriteEntity> outputs;
   private ParseContext pCtx;
 
   private ExplainConfiguration config;
 
-  boolean appendTaskType;
+  private boolean appendTaskType;
 
-  String cboInfo;
-  String cboPlan;
+  private String cboInfo;
+  private String cboPlan;
 
   private String optimizedSQL;
 
@@ -101,11 +101,11 @@ public class ExplainWork implements Serializable {
     this.resFile = resFile;
   }
 
-  public ArrayList<Task<?>> getRootTasks() {
+  public List<Task<?>> getRootTasks() {
     return rootTasks;
   }
 
-  public void setRootTasks(ArrayList<Task<?>> rootTasks) {
+  public void setRootTasks(List<Task<?>> rootTasks) {
     this.rootTasks = rootTasks;
   }
 
@@ -117,19 +117,19 @@ public class ExplainWork implements Serializable {
     this.fetchTask = fetchTask;
   }
 
-  public HashSet<ReadEntity> getInputs() {
+  public Set<ReadEntity> getInputs() {
     return inputs;
   }
 
-  public void setInputs(HashSet<ReadEntity> inputs) {
+  public void setInputs(Set<ReadEntity> inputs) {
     this.inputs = inputs;
   }
 
-  public HashSet<WriteEntity> getOutputs() {
+  public Set<WriteEntity> getOutputs() {
     return outputs;
   }
 
-  public void setOutputs(HashSet<WriteEntity> outputs) {
+  public void setOutputs(Set<WriteEntity> outputs) {
     this.outputs = outputs;
   }
 

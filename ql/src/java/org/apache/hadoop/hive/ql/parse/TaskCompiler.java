@@ -122,7 +122,7 @@ public abstract class TaskCompiler {
   @SuppressWarnings("nls")
   public void compile(final ParseContext pCtx,
       final List<Task<? extends Serializable>> rootTasks,
-      final HashSet<ReadEntity> inputs, final HashSet<WriteEntity> outputs) throws SemanticException {
+      final Set<ReadEntity> inputs, final Set<WriteEntity> outputs) throws SemanticException {
 
     Context ctx = pCtx.getContext();
     GlobalLimitCtx globalLimitCtx = pCtx.getGlobalLimitCtx();
@@ -405,7 +405,7 @@ public abstract class TaskCompiler {
     return tsk.getWork().getFullTableName();
   }
 
-  private Task<?> genTableStats(ParseContext parseContext, TableScanOperator tableScan, Task currentTask, final HashSet<WriteEntity> outputs)
+  private Task<?> genTableStats(ParseContext parseContext, TableScanOperator tableScan, Task currentTask, final Set<WriteEntity> outputs)
       throws HiveException {
     Class<? extends InputFormat> inputFormat = tableScan.getConf().getTableMetadata()
         .getInputFormatClass();
