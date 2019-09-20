@@ -896,11 +896,9 @@ public class TezCompiler extends TaskCompiler {
 
   private static class TerminalOpsInfo {
     public Set<TerminalOperator<?>> terminalOps;
-    public Set<ReduceSinkOperator> rsOps;
 
-    TerminalOpsInfo(Set<TerminalOperator<?>> terminalOps, Set<ReduceSinkOperator> rsOps) {
+    TerminalOpsInfo(Set<TerminalOperator<?>> terminalOps) {
       this.terminalOps = terminalOps;
-      this.rsOps = rsOps;
     }
   }
 
@@ -928,7 +926,7 @@ public class TezCompiler extends TaskCompiler {
       OperatorUtils.findWorkOperatorsAndSemiJoinEdges(selOp,
               pCtx.getRsToSemiJoinBranchInfo(), workRSOps, workTerminalOps);
 
-      TerminalOpsInfo candidate = new TerminalOpsInfo(workTerminalOps, workRSOps);
+      TerminalOpsInfo candidate = new TerminalOpsInfo(workTerminalOps);
 
       // A work may contain multiple semijoin edges, traverse rsOps and add for each
       for (ReduceSinkOperator rsFound : workRSOps) {
@@ -1094,7 +1092,7 @@ public class TezCompiler extends TaskCompiler {
       // <Parent Ops>-SEL-GB1-RS1-GB2-RS2
       GroupByOperator gbOp = (GroupByOperator) stack.get(stack.size() - 2);
       GroupByDesc gbDesc = gbOp.getConf();
-      ArrayList<AggregationDesc> aggregationDescs = gbDesc.getAggregators();
+      List<AggregationDesc> aggregationDescs = gbDesc.getAggregators();
       for (AggregationDesc agg : aggregationDescs) {
         if (!isBloomFilterAgg(agg)) {
           continue;

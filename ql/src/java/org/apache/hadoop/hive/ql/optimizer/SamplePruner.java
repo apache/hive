@@ -35,7 +35,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -63,17 +62,17 @@ public class SamplePruner extends Transform {
    *
    */
   public static class SamplePrunerCtx implements NodeProcessorCtx {
-    HashMap<TableScanOperator, SampleDesc> opToSamplePruner;
+    Map<TableScanOperator, SampleDesc> opToSamplePruner;
 
     public SamplePrunerCtx(
-        HashMap<TableScanOperator, SampleDesc> opToSamplePruner) {
+        Map<TableScanOperator, SampleDesc> opToSamplePruner) {
       this.opToSamplePruner = opToSamplePruner;
     }
 
     /**
      * @return the opToSamplePruner
      */
-    public HashMap<TableScanOperator, SampleDesc> getOpToSamplePruner() {
+    public Map<TableScanOperator, SampleDesc> getOpToSamplePruner() {
       return opToSamplePruner;
     }
 
@@ -102,8 +101,7 @@ public class SamplePruner extends Transform {
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
     // create a the context for walking operators
-    SamplePrunerCtx samplePrunerCtx = new SamplePrunerCtx(pctx
-        .getOpToSamplePruner());
+    SamplePrunerCtx samplePrunerCtx = new SamplePrunerCtx(pctx.getOpToSamplePruner());
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1",
