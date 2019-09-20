@@ -234,12 +234,12 @@ public class ColumnStatsAutoGatherContext {
   private void replaceSelectOperatorProcess(SelectOperator operator, Operator<? extends OperatorDesc> input)
       throws HiveException {
     RowSchema selRS = operator.getSchema();
-    ArrayList<ColumnInfo> signature = new ArrayList<>();
+    List<ColumnInfo> signature = new ArrayList<>();
     OpParseContext inputCtx = sa.opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
-    ArrayList<ColumnInfo> columns = inputRR.getColumnInfos();
-    ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
-    ArrayList<String> columnNames = new ArrayList<String>();
+    List<ColumnInfo> columns = inputRR.getColumnInfos();
+    List<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
+    List<String> columnNames = new ArrayList<String>();
     Map<String, ExprNodeDesc> columnExprMap =
         new HashMap<String, ExprNodeDesc>();
     // the column positions in the operator should be like this

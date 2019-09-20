@@ -65,12 +65,12 @@ public class GroupByDesc extends AbstractOperatorDesc {
   // no hash aggregations for group by
   private boolean bucketGroup;
 
-  private ArrayList<ExprNodeDesc> keys;
+  private List<ExprNodeDesc> keys;
   private List<Long> listGroupingSets;
   private boolean groupingSetsPresent;
   private int groupingSetPosition = -1; //  /* in case of grouping sets; groupby1 will output values for every setgroup; this is the index of the column that information will be sent */
-  private ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators;
-  private ArrayList<java.lang.String> outputColumnNames;
+  private List<AggregationDesc> aggregators;
+  private List<String> outputColumnNames;
   private float groupByMemoryUsage;
   private float memoryThreshold;
   private float minReductionHashAggr;
@@ -82,9 +82,9 @@ public class GroupByDesc extends AbstractOperatorDesc {
 
   public GroupByDesc(
       final Mode mode,
-      final ArrayList<java.lang.String> outputColumnNames,
-      final ArrayList<ExprNodeDesc> keys,
-      final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
+      final List<String> outputColumnNames,
+      final List<ExprNodeDesc> keys,
+      final List<AggregationDesc> aggregators,
       final float groupByMemoryUsage,
       final float memoryThreshold,
       final float minReductionHashAggr,
@@ -99,9 +99,9 @@ public class GroupByDesc extends AbstractOperatorDesc {
 
   public GroupByDesc(
       final Mode mode,
-      final ArrayList<java.lang.String> outputColumnNames,
-      final ArrayList<ExprNodeDesc> keys,
-      final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
+      final List<String> outputColumnNames,
+      final List<ExprNodeDesc> keys,
+      final List<AggregationDesc> aggregators,
       final boolean bucketGroup,
       final float groupByMemoryUsage,
       final float memoryThreshold,
@@ -166,22 +166,22 @@ public class GroupByDesc extends AbstractOperatorDesc {
     return PlanUtils.getExprListString(keys, true);
   }
 
-  public ArrayList<ExprNodeDesc> getKeys() {
+  public List<ExprNodeDesc> getKeys() {
     return keys;
   }
 
-  public void setKeys(final ArrayList<ExprNodeDesc> keys) {
+  public void setKeys(final List<ExprNodeDesc> keys) {
     this.keys = keys;
   }
 
   @Explain(displayName = "outputColumnNames")
   @Signature
-  public ArrayList<java.lang.String> getOutputColumnNames() {
+  public List<String> getOutputColumnNames() {
     return outputColumnNames;
   }
 
   @Explain(displayName = "Output", explainLevels = { Level.USER })
-  public ArrayList<java.lang.String> getUserLevelExplainOutputColumnNames() {
+  public List<String> getUserLevelExplainOutputColumnNames() {
     return outputColumnNames;
   }
 
@@ -192,8 +192,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
         outputColumnNames.size() != keys.size() + aggregators.size();
   }
 
-  public void setOutputColumnNames(
-      ArrayList<java.lang.String> outputColumnNames) {
+  public void setOutputColumnNames(List<String> outputColumnNames) {
     this.outputColumnNames = outputColumnNames;
   }
 
@@ -236,12 +235,11 @@ public class GroupByDesc extends AbstractOperatorDesc {
     return res;
   }
 
-  public ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> getAggregators() {
+  public List<AggregationDesc> getAggregators() {
     return aggregators;
   }
 
-  public void setAggregators(
-      final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators) {
+  public void setAggregators(List<AggregationDesc> aggregators) {
     this.aggregators = aggregators;
   }
 
@@ -267,7 +265,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
    * columns behave like they were distinct - for example min and max operators.
    */
   public boolean isDistinctLike() {
-    ArrayList<AggregationDesc> aggregators = getAggregators();
+    List<AggregationDesc> aggregators = getAggregators();
     for (AggregationDesc ad : aggregators) {
       if (!ad.getDistinct()) {
         GenericUDAFEvaluator udafEval = ad.getGenericUDAFEvaluator();
@@ -328,11 +326,11 @@ public class GroupByDesc extends AbstractOperatorDesc {
 
   @Override
   public Object clone() {
-    ArrayList<java.lang.String> outputColumnNames = new ArrayList<>();
+    List<String> outputColumnNames = new ArrayList<>();
     outputColumnNames.addAll(this.outputColumnNames);
-    ArrayList<ExprNodeDesc> keys = new ArrayList<>();
+    List<ExprNodeDesc> keys = new ArrayList<>();
     keys.addAll(this.keys);
-    ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators = new ArrayList<>();
+    List<AggregationDesc> aggregators = new ArrayList<>();
     aggregators.addAll(this.aggregators);
     List<Long> listGroupingSets = new ArrayList<>();
     listGroupingSets.addAll(this.listGroupingSets);

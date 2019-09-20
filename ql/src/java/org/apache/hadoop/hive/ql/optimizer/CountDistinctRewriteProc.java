@@ -142,7 +142,7 @@ public class CountDistinctRewriteProc extends Transform {
         GroupByOperator rGby) {
       // Position of distinct column in aggregator list of map Gby before rewrite.
       int indexOfDist = -1;
-      ArrayList<ExprNodeDesc> keys = mGby.getConf().getKeys();
+      List<ExprNodeDesc> keys = mGby.getConf().getKeys();
       if (!(mGby.getConf().getMode() == GroupByDesc.Mode.HASH
           && !mGby.getConf().isGroupingSetsPresent() && rs.getConf().getKeyCols().size() == 1
           && rs.getConf().getPartitionCols().size() == 0

@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -45,30 +45,29 @@ public class MoveWork implements Serializable {
   /**
    * ReadEntitites that are passed to the hooks.
    */
-  protected HashSet<ReadEntity> inputs;
+  protected Set<ReadEntity> inputs;
   /**
    * List of WriteEntities that are passed to the hooks.
    */
-  protected HashSet<WriteEntity> outputs;
+  protected Set<WriteEntity> outputs;
 
   /**
    * List of inserted partitions
    */
   protected List<Partition> movedParts;
-  private boolean isNoop;
   private boolean isInReplicationScope = false;
 
   public MoveWork() {
   }
 
 
-  private MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
+  private MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
     this.inputs = inputs;
     this.outputs = outputs;
     this.needCleanTarget = true;
   }
 
-  public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+  public MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat, boolean srcLocal) {
     this(inputs, outputs);
@@ -82,7 +81,7 @@ public class MoveWork implements Serializable {
     this.srcLocal = srcLocal;
   }
 
-  public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+  public MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat) {
     this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat, false);
@@ -134,19 +133,19 @@ public class MoveWork implements Serializable {
     this.checkFileFormat = checkFileFormat;
   }
 
-  public HashSet<ReadEntity> getInputs() {
+  public Set<ReadEntity> getInputs() {
     return inputs;
   }
 
-  public HashSet<WriteEntity> getOutputs() {
+  public Set<WriteEntity> getOutputs() {
     return outputs;
   }
 
-  public void setInputs(HashSet<ReadEntity> inputs) {
+  public void setInputs(Set<ReadEntity> inputs) {
     this.inputs = inputs;
   }
 
-  public void setOutputs(HashSet<WriteEntity> outputs) {
+  public void setOutputs(Set<WriteEntity> outputs) {
     this.outputs = outputs;
   }
 

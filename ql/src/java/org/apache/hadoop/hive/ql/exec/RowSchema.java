@@ -31,24 +31,24 @@ import java.util.Set;
 public class RowSchema implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private ArrayList<ColumnInfo> signature = new ArrayList<ColumnInfo>();
+  private List<ColumnInfo> signature = new ArrayList<ColumnInfo>();
 
   public RowSchema() {
   }
 
   public RowSchema(RowSchema that) {
-    this.signature = (ArrayList<ColumnInfo>) that.signature.clone();
+    this.signature = new ArrayList<>(that.signature);
   }
 
-  public RowSchema(ArrayList<ColumnInfo> signature) {
+  public RowSchema(List<ColumnInfo> signature) {
     this.signature = signature;
   }
 
-  public void setSignature(ArrayList<ColumnInfo> signature) {
+  public void setSignature(List<ColumnInfo> signature) {
     this.signature = signature;
   }
 
-  public ArrayList<ColumnInfo> getSignature() {
+  public List<ColumnInfo> getSignature() {
     return signature;
   }
 

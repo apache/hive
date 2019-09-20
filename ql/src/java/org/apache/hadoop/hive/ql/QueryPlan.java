@@ -76,18 +76,18 @@ public class QueryPlan implements Serializable {
   private String optimizedCBOPlan;
   private String optimizedQueryString;
 
-  private ArrayList<Task<? extends Serializable>> rootTasks;
+  private List<Task<? extends Serializable>> rootTasks;
   private FetchTask fetchTask;
   private final List<ReducerTimeStatsPerJob> reducerTimeStatsPerJobList;
 
-  private HashSet<ReadEntity> inputs;
+  private Set<ReadEntity> inputs;
   /**
    * Note: outputs are not all determined at compile time.
    * Some of the tasks can change the outputs at run time, because only at run
    * time, we know what are the changes.  These tasks should keep a reference
    * to the outputs here.
    */
-  private HashSet<WriteEntity> outputs;
+  private Set<WriteEntity> outputs;
   /**
    * Lineage information for the query.
    */
@@ -96,7 +96,7 @@ public class QueryPlan implements Serializable {
   private ColumnAccessInfo columnAccessInfo;
   private Schema resultSchema;
 
-  private HashMap<String, String> idToTableNameMap;
+  private Map<String, String> idToTableNameMap;
 
   private String queryId;
   private org.apache.hadoop.hive.ql.plan.api.Query query;
@@ -696,11 +696,11 @@ public class QueryPlan implements Serializable {
     return done;
   }
 
-  public ArrayList<Task<? extends Serializable>> getRootTasks() {
+  public List<Task<? extends Serializable>> getRootTasks() {
     return rootTasks;
   }
 
-  public void setRootTasks(ArrayList<Task<? extends Serializable>> rootTasks) {
+  public void setRootTasks(List<Task<? extends Serializable>> rootTasks) {
     this.rootTasks = rootTasks;
   }
 
@@ -716,7 +716,7 @@ public class QueryPlan implements Serializable {
     this.fetchTask = fetchTask;
   }
 
-  public HashSet<ReadEntity> getInputs() {
+  public Set<ReadEntity> getInputs() {
     return inputs;
   }
 
@@ -724,7 +724,7 @@ public class QueryPlan implements Serializable {
     this.inputs = inputs;
   }
 
-  public HashSet<WriteEntity> getOutputs() {
+  public Set<WriteEntity> getOutputs() {
     return outputs;
   }
 
@@ -736,11 +736,11 @@ public class QueryPlan implements Serializable {
     return resultSchema;
   }
 
-  public HashMap<String, String> getIdToTableNameMap() {
+  public Map<String, String> getIdToTableNameMap() {
     return idToTableNameMap;
   }
 
-  public void setIdToTableNameMap(HashMap<String, String> idToTableNameMap) {
+  public void setIdToTableNameMap(Map<String, String> idToTableNameMap) {
     this.idToTableNameMap = idToTableNameMap;
   }
 
