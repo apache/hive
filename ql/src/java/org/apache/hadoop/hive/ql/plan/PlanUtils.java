@@ -665,7 +665,7 @@ public final class PlanUtils {
    */
   public static List<FieldSchema> getFieldSchemasFromRowSchema(RowSchema row,
       String fieldPrefix) {
-    ArrayList<ColumnInfo> c = row.getSignature();
+    List<ColumnInfo> c = row.getSignature();
     return getFieldSchemasFromColumnInfo(c, fieldPrefix);
   }
 
@@ -673,7 +673,7 @@ public final class PlanUtils {
    * Convert the ColumnInfo to FieldSchema.
    */
   public static List<FieldSchema> getFieldSchemasFromColumnInfo(
-      ArrayList<ColumnInfo> cols, String fieldPrefix) {
+      List<ColumnInfo> cols, String fieldPrefix) {
     if ((cols == null) || (cols.size() == 0)) {
       return new ArrayList<FieldSchema>();
     }

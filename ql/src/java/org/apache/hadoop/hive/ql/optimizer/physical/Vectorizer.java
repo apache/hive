@@ -3177,7 +3177,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
 
-    ArrayList<ExprNodeDesc> parameters = aggDesc.getParameters();
+    List<ExprNodeDesc> parameters = aggDesc.getParameters();
 
     if (parameters != null && !validateExprNodeDesc(parameters, "Aggregation Function UDF " + udfName + " parameter")) {
       return false;
@@ -4603,7 +4603,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     // For now, we don't support group by on DECIMAL_64 keys.
     VectorExpression[] vecKeyExpressions =
         vContext.getVectorExpressionsUpConvertDecimal64(keysDesc);
-    ArrayList<AggregationDesc> aggrDesc = groupByDesc.getAggregators();
+    List<AggregationDesc> aggrDesc = groupByDesc.getAggregators();
     final int size = aggrDesc.size();
 
     VectorAggregationDesc[] vecAggrDescs = new VectorAggregationDesc[size];
@@ -4820,7 +4820,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<WindowFunctionDef> windowsFunctions = windowTableFunctionDef.getWindowFunctions();
     final int functionCount = windowsFunctions.size();
 
-    ArrayList<ColumnInfo> outputSignature = ptfOp.getSchema().getSignature();
+    List<ColumnInfo> outputSignature = ptfOp.getSchema().getSignature();
     final int outputSize = outputSignature.size();
 
     /*
