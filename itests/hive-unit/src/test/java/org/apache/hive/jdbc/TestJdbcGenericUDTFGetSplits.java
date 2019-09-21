@@ -31,6 +31,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * TestJdbcGenericUDTFGetSplits.
+ */
 public class TestJdbcGenericUDTFGetSplits extends AbstractTestJdbcGenericUDTFGetSplits {
 
   @Test(timeout = 200000)

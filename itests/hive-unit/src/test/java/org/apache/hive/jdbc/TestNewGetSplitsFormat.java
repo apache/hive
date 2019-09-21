@@ -36,36 +36,29 @@ import java.util.UUID;
 import static org.junit.Assert.assertTrue;
 
 /**
- * TestNewGetSplitsFormat
+ * TestNewGetSplitsFormat.
  */
 public class TestNewGetSplitsFormat extends BaseJdbcWithMiniLlap {
 
-
-  @BeforeClass
-  public static void beforeTest() throws Exception {
+  @BeforeClass public static void beforeTest() throws Exception {
     HiveConf conf = defaultConf();
     conf.setBoolVar(HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED, true);
     BaseJdbcWithMiniLlap.beforeTest(conf);
   }
 
-  @Override
-  protected InputFormat<NullWritable, Row> getInputFormat() {
+  @Override protected InputFormat<NullWritable, Row> getInputFormat() {
     //For unit testing, no harm in hard-coding allocator ceiling to LONG.MAX_VALUE
     return new LlapArrowRowInputFormat(Long.MAX_VALUE);
   }
 
-  // Currently MAP type is not supported. Add it back when Arrow 1.0 is released.
-  // See: SPARK-21187
-  @Override
-  public void testDataTypes() throws Exception {
+  @Override public void testDataTypes() throws Exception {
     TestJdbcWithMiniLlapVectorArrow testJdbcWithMiniLlapVectorArrow = new TestJdbcWithMiniLlapVectorArrow();
     testJdbcWithMiniLlapVectorArrow.testDataTypes();
   }
 
-
-  @Override
-  protected int processQuery(String currentDatabase, String query, int numSplits, RowProcessor rowProcessor) throws Exception {
+  @Override protected int processQuery(String currentDatabase, String query, int numSplits, RowProcessor rowProcessor)
+      throws Exception {
     String url = miniHS2.getJdbcURL();
     String user = System.getProperty("user.name");
     String pwd = user;
@@ -119,6 +112,5 @@ public class TestNewGetSplitsFormat extends BaseJdbcWithMiniLlap {
 
     return rowCount;
   }
-
 
 }

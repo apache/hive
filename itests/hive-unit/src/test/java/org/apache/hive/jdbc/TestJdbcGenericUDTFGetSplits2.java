@@ -19,7 +19,7 @@ package org.apache.hive.jdbc;
 import org.junit.Test;
 
 /**
- * TestJdbcGenericUDTFGetSplits2
+ * TestJdbcGenericUDTFGetSplits2.
  */
 public class TestJdbcGenericUDTFGetSplits2 extends AbstractTestJdbcGenericUDTFGetSplits {
 

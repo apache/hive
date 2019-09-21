@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 /**
- * AbstractTestJdbcGenericUDTFGetSplits
+ * AbstractTestJdbcGenericUDTFGetSplits.
  */
 public abstract class AbstractTestJdbcGenericUDTFGetSplits {
   protected static MiniHS2 miniHS2 = null;

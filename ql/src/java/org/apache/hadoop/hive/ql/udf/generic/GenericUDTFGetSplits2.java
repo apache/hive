@@ -51,63 +51,59 @@ import java.util.Map;
  * ...                         ...
  */
 @Description(name = "get_llap_splits", value = "_FUNC_(string,int) - "
-        + "Returns an array of length int serialized splits for the referenced tables string."
-        + " Passing length 0 returns only schema data for the compiled query. "
-        + "The order of splits is: schema-split, plan-split, 0, 1, 2...where 0, 1, 2...are the actual splits "
-        + "This UDTF is for internal use by LlapBaseInputFormat and not to be invoked explicitly")
+    + "Returns an array of length int serialized splits for the referenced tables string."
+    + " Passing length 0 returns only schema data for the compiled query. "
+    + "The order of splits is: schema-split, plan-split, 0, 1, 2...where 0, 1, 2...are the actual splits "
+    + "This UDTF is for internal use by LlapBaseInputFormat and not to be invoked explicitly")
 @UDFType(deterministic = false)
 public class GenericUDTFGetSplits2 extends GenericUDTFGetSplits {
-    private static final Logger LOG = LoggerFactory.getLogger(GenericUDTFGetSplits2.class);
+  private static final Logger LOG = LoggerFactory.getLogger(GenericUDTFGetSplits2.class);
 
-    @Override
-    public StructObjectInspector initialize(ObjectInspector[] arguments)
-            throws UDFArgumentException {
-        LOG.debug("initializing GenericUDFGetSplits2");
-        validateInput(arguments);
+  @Override public StructObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+    LOG.debug("initializing GenericUDFGetSplits2");
+    validateInput(arguments);
 
-        List<String> names = Arrays.asList("type", "split");
-        List<ObjectInspector> fieldOIs = Arrays.asList(PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-                PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector);
-        StructObjectInspector outputOI = ObjectInspectorFactory
-                .getStandardStructObjectInspector(names, fieldOIs);
+    List<String> names = Arrays.asList("type", "split");
+    List<ObjectInspector> fieldOIs = Arrays.asList(PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+        PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector);
+    StructObjectInspector outputOI = ObjectInspectorFactory.getStandardStructObjectInspector(names, fieldOIs);
 
-        LOG.debug("done initializing GenericUDFGetSplits2");
-        return outputOI;
+    LOG.debug("done initializing GenericUDFGetSplits2");
+    return outputOI;
+  }
+
+  @Override public void process(Object[] arguments) throws HiveException {
+    try {
+      initArgs(arguments);
+      SplitResult splitResult = getSplitResult(true);
+      forwardOutput(splitResult);
+    } catch (Exception e) {
+      throw new HiveException(e);
     }
+  }
 
-    @Override
-    public void process(Object[] arguments) throws HiveException {
-        try {
-            initArgs(arguments);
-            SplitResult splitResult = getSplitResult(true);
-            forwardOutput(splitResult);
-        } catch (Exception e) {
-            throw new HiveException(e);
-        }
+  private void forwardOutput(SplitResult splitResult) throws IOException, HiveException {
+    for (Map.Entry<String, InputSplit> entry : transformSplitResult(splitResult).entrySet()) {
+      Object[] os = new Object[2];
+      os[0] = entry.getKey();
+      InputSplit split = entry.getValue();
+      bos.reset();
+      split.write(dos);
+      os[1] = bos.toByteArray();
+      forward(os);
     }
+  }
 
-    private void forwardOutput(SplitResult splitResult) throws IOException, HiveException {
-        for (Map.Entry<String, InputSplit> entry : transformSplitResult(splitResult).entrySet()) {
-            Object[] os = new Object[2];
-            os[0] = entry.getKey();
-            InputSplit split = entry.getValue();
-            bos.reset();
-            split.write(dos);
-            os[1] = bos.toByteArray();
-            forward(os);
-        }
+  private Map<String, InputSplit> transformSplitResult(SplitResult splitResult) {
+    Map<String, InputSplit> splitMap = new LinkedHashMap<>();
+    splitMap.put("schema-split", splitResult.schemaSplit);
+    if (splitResult.actualSplits != null && splitResult.actualSplits.length > 0) {
+      Preconditions.checkNotNull(splitResult.planSplit);
+      splitMap.put("plan-split", splitResult.planSplit);
+      for (int i = 0; i < splitResult.actualSplits.length; i++) {
+        splitMap.put("" + i, splitResult.actualSplits[i]);
+      }
     }
-
-    private Map<String, InputSplit> transformSplitResult(SplitResult splitResult) {
-        Map<String, InputSplit> splitMap = new LinkedHashMap<>();
-        splitMap.put("schema-split", splitResult.schemaSplit);
-        if (splitResult.actualSplits != null && splitResult.actualSplits.length > 0) {
-            Preconditions.checkNotNull(splitResult.planSplit);
-            splitMap.put("plan-split", splitResult.planSplit);
-            for (int i = 0; i < splitResult.actualSplits.length; i++) {
-                splitMap.put("" + i, splitResult.actualSplits[i]);
-            }
-        }
-        return splitMap;
-    }
+    return splitMap;
+  }
 }

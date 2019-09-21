@@ -507,7 +507,8 @@ public abstract class BaseJdbcWithMiniLlap {
 
   protected abstract InputFormat<NullWritable, Row> getInputFormat();
 
-  protected int processQuery(String currentDatabase, String query, int numSplits, RowProcessor rowProcessor) throws Exception {
+  protected int processQuery(String currentDatabase, String query, int numSplits, RowProcessor rowProcessor)
+      throws Exception {
     String url = miniHS2.getJdbcURL();
     String user = System.getProperty("user.name");
     String pwd = user;

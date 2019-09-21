@@ -63,7 +63,6 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.InputSplitWithLocationInfo;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
@@ -120,7 +119,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public static final String SESSION_QUERIES_FOR_GET_NUM_SPLITS = "llap.session.queries.for.get.num.splits";
   public static final Pattern SET_QUERY_PATTERN = Pattern.compile("^\\s*set\\s+.*=.+$", Pattern.CASE_INSENSITIVE);
 
-  public final String SPLIT_QUERY = "select get_llap_splits(\"%s\",%d)";
+  public static final String SPLIT_QUERY = "select get_llap_splits(\"%s\",%d)";
   public static final LlapServiceInstance[] serviceInstanceArray = new LlapServiceInstance[0];
 
   public LlapBaseInputFormat(String url, String user, String pwd, String query) {
