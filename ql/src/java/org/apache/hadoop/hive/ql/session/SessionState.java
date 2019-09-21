@@ -1343,35 +1343,35 @@ public class SessionState {
    * @throws IOException
    */
   public void loadReloadableAuxJars() throws IOException {
-    final Set<String> reloadedAuxJars = new HashSet<String>();
+    LOG.info("Reloading auxiliary JAR files");
 
     final String renewableJarPath = sessionConf.getVar(ConfVars.HIVERELOADABLEJARS);
     // do nothing if this property is not specified or empty
-    if (renewableJarPath == null || renewableJarPath.isEmpty()) {
+    if (StringUtils.isBlank(renewableJarPath)) {
+      LOG.warn("Configuration {} not specified", ConfVars.HIVERELOADABLEJARS);
       return;
     }
 
-    Set<String> jarPaths = FileUtils.getJarFilesByPath(renewableJarPath, sessionConf);
-
     // load jars under the hive.reloadable.aux.jars.path
-    if (!jarPaths.isEmpty()) {
-      reloadedAuxJars.addAll(jarPaths);
-    }
+    final Set<String> jarPaths = FileUtils.getJarFilesByPath(renewableJarPath, sessionConf);
+
+    LOG.info("Auxiliary JAR files discovered for reload: {}", jarPaths);
 
     // remove the previous renewable jars
-    if (preReloadableAuxJars != null && !preReloadableAuxJars.isEmpty()) {
+    if (!preReloadableAuxJars.isEmpty()) {
       Utilities.removeFromClassPath(preReloadableAuxJars.toArray(new String[0]));
     }
 
-    if (reloadedAuxJars != null && !reloadedAuxJars.isEmpty()) {
+    if (!jarPaths.isEmpty()) {
       AddToClassPathAction addAction = new AddToClassPathAction(
-          SessionState.get().getConf().getClassLoader(), reloadedAuxJars);
+          SessionState.get().getConf().getClassLoader(), jarPaths);
       final ClassLoader currentCLoader = AccessController.doPrivileged(addAction);
       sessionConf.setClassLoader(currentCLoader);
       Thread.currentThread().setContextClassLoader(currentCLoader);
     }
+
     preReloadableAuxJars.clear();
-    preReloadableAuxJars.addAll(reloadedAuxJars);
+    preReloadableAuxJars.addAll(jarPaths);
   }
 
   static void registerJars(List<String> newJars) throws IllegalArgumentException {
