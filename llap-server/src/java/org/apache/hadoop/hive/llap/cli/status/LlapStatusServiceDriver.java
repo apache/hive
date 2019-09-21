@@ -379,7 +379,7 @@ public class LlapStatusServiceDriver {
           LlapInstance llapInstance = new LlapInstance(cont.getHostname(), cont.getId());
           appStatusBuilder.addNewRunningLlapInstance(llapInstance);
         }
-        if (state == ServiceState.STABLE) {
+        if (state == ServiceState.STARTED || state == ServiceState.STABLE || state == ServiceState.FLEX) {
           exitCode = ExitCode.SUCCESS;
         }
       } else {
