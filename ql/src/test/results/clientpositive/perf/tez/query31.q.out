@@ -131,8 +131,8 @@ Reducer 18 <- Map 35 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 Reducer 19 <- Map 32 (SIMPLE_EDGE), Reducer 18 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 Reducer 20 <- Reducer 19 (SIMPLE_EDGE)
-Reducer 21 <- Reducer 20 (ONE_TO_ONE_EDGE), Reducer 26 (ONE_TO_ONE_EDGE)
-Reducer 22 <- Reducer 21 (ONE_TO_ONE_EDGE), Reducer 30 (ONE_TO_ONE_EDGE)
+Reducer 21 <- Reducer 20 (SIMPLE_EDGE), Reducer 26 (SIMPLE_EDGE)
+Reducer 22 <- Reducer 21 (SIMPLE_EDGE), Reducer 30 (SIMPLE_EDGE)
 Reducer 23 <- Map 8 (CUSTOM_SIMPLE_EDGE)
 Reducer 24 <- Map 36 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 Reducer 25 <- Map 32 (SIMPLE_EDGE), Reducer 24 (SIMPLE_EDGE)
@@ -144,9 +144,9 @@ Reducer 3 <- Map 32 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 30 <- Reducer 29 (SIMPLE_EDGE)
 Reducer 31 <- Map 8 (CUSTOM_SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 12 (ONE_TO_ONE_EDGE), Reducer 4 (ONE_TO_ONE_EDGE)
-Reducer 6 <- Reducer 16 (ONE_TO_ONE_EDGE), Reducer 5 (ONE_TO_ONE_EDGE)
-Reducer 7 <- Reducer 22 (ONE_TO_ONE_EDGE), Reducer 6 (ONE_TO_ONE_EDGE)
+Reducer 5 <- Reducer 12 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+Reducer 6 <- Reducer 16 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+Reducer 7 <- Reducer 22 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
 Reducer 9 <- Map 8 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
@@ -161,18 +161,18 @@ Stage-0
             predicate:(CASE WHEN ((_col9 > 0)) THEN (CASE WHEN (_col7) THEN (((_col4 / _col6) > (_col13 / _col9))) ELSE (false) END) ELSE (false) END and CASE WHEN ((_col11 > 0)) THEN (CASE WHEN (_col2) THEN (((_col6 / _col1) > (_col9 / _col11))) ELSE (false) END) ELSE (false) END)
             Merge Join Operator [MERGEJOIN_450] (rows=440 width=778)
               Conds:RS_133._col0=RS_134._col0(Inner),Output:["_col1","_col2","_col4","_col6","_col7","_col8","_col9","_col11","_col13"]
-            <-Reducer 22 [ONE_TO_ONE_EDGE]
-              FORWARD [RS_134]
+            <-Reducer 22 [SIMPLE_EDGE]
+              SHUFFLE [RS_134]
                 PartitionCols:_col0
                 Merge Join Operator [MERGEJOIN_448] (rows=1605 width=434)
                   Conds:RS_123._col0=RS_538._col0(Inner),Output:["_col0","_col1","_col3","_col5"]
-                <-Reducer 21 [ONE_TO_ONE_EDGE]
-                  FORWARD [RS_123]
+                <-Reducer 21 [SIMPLE_EDGE]
+                  SHUFFLE [RS_123]
                     PartitionCols:_col0
                     Merge Join Operator [MERGEJOIN_447] (rows=1605 width=322)
                       Conds:RS_524._col0=RS_531._col0(Inner),Output:["_col0","_col1","_col3"]
-                    <-Reducer 20 [ONE_TO_ONE_EDGE] vectorized
-                      FORWARD [RS_524]
+                    <-Reducer 20 [SIMPLE_EDGE] vectorized
+                      SHUFFLE [RS_524]
                         PartitionCols:_col0
                         Group By Operator [GBY_523] (rows=1605 width=210)
                           Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
@@ -226,8 +226,8 @@ Stage-0
                                                     Select Operator [SEL_470] (rows=130 width=4)
                                                       Output:["_col0"]
                                                        Please refer to the previous Select Operator [SEL_460]
-                    <-Reducer 26 [ONE_TO_ONE_EDGE] vectorized
-                      FORWARD [RS_531]
+                    <-Reducer 26 [SIMPLE_EDGE] vectorized
+                      SHUFFLE [RS_531]
                         PartitionCols:_col0
                         Group By Operator [GBY_530] (rows=1605 width=210)
                           Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
@@ -275,8 +275,8 @@ Stage-0
                                                     Select Operator [SEL_472] (rows=130 width=4)
                                                       Output:["_col0"]
                                                        Please refer to the previous Select Operator [SEL_461]
-                <-Reducer 30 [ONE_TO_ONE_EDGE] vectorized
-                  FORWARD [RS_538]
+                <-Reducer 30 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_538]
                     PartitionCols:_col0
                     Group By Operator [GBY_537] (rows=1605 width=210)
                       Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
@@ -324,13 +324,13 @@ Stage-0
                                                 Select Operator [SEL_474] (rows=130 width=4)
                                                   Output:["_col0"]
                                                    Please refer to the previous Select Operator [SEL_462]
-            <-Reducer 6 [ONE_TO_ONE_EDGE]
-              FORWARD [RS_133]
+            <-Reducer 6 [SIMPLE_EDGE]
+              SHUFFLE [RS_133]
                 PartitionCols:_col0
                 Merge Join Operator [MERGEJOIN_449] (rows=440 width=442)
                   Conds:RS_130._col0=RS_517._col0(Inner),Output:["_col0","_col1","_col2","_col4","_col6","_col7"]
-                <-Reducer 16 [ONE_TO_ONE_EDGE] vectorized
-                  FORWARD [RS_517]
+                <-Reducer 16 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_517]
                     PartitionCols:_col0
                     Select Operator [SEL_516] (rows=440 width=214)
                       Output:["_col0","_col1","_col2"]
@@ -380,13 +380,13 @@ Stage-0
                                                   Select Operator [SEL_468] (rows=130 width=4)
                                                     Output:["_col0"]
                                                      Please refer to the previous Select Operator [SEL_459]
-                <-Reducer 5 [ONE_TO_ONE_EDGE]
-                  FORWARD [RS_130]
+                <-Reducer 5 [SIMPLE_EDGE]
+                  SHUFFLE [RS_130]
                     PartitionCols:_col0
                     Merge Join Operator [MERGEJOIN_446] (rows=440 width=326)
                       Conds:RS_502._col0=RS_509._col0(Inner),Output:["_col0","_col1","_col2","_col4"]
-                    <-Reducer 12 [ONE_TO_ONE_EDGE] vectorized
-                      FORWARD [RS_509]
+                    <-Reducer 12 [SIMPLE_EDGE] vectorized
+                      SHUFFLE [RS_509]
                         PartitionCols:_col0
                         Group By Operator [GBY_508] (rows=440 width=210)
                           Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
@@ -434,8 +434,8 @@ Stage-0
                                                     Select Operator [SEL_466] (rows=130 width=4)
                                                       Output:["_col0"]
                                                        Please refer to the previous Select Operator [SEL_458]
-                    <-Reducer 4 [ONE_TO_ONE_EDGE] vectorized
-                      FORWARD [RS_502]
+                    <-Reducer 4 [SIMPLE_EDGE] vectorized
+                      SHUFFLE [RS_502]
                         PartitionCols:_col0
                         Select Operator [SEL_501] (rows=440 width=214)
                           Output:["_col0","_col1","_col2"]

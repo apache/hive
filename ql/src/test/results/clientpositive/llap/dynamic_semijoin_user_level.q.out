@@ -341,7 +341,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
-Reducer 3 <- Map 6 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
+Reducer 3 <- Map 6 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
@@ -367,8 +367,8 @@ Stage-0
                       predicate:cstring is not null
                       TableScan [TS_6] (rows=12288 width=70)
                         default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
-              <-Reducer 2 [ONE_TO_ONE_EDGE] llap
-                FORWARD [RS_12]
+              <-Reducer 2 [SIMPLE_EDGE] llap
+                SHUFFLE [RS_12]
                   PartitionCols:_col1
                   Merge Join Operator [MERGEJOIN_29] (rows=2200 width=87)
                     Conds:RS_9._col0=RS_10._col0(Inner),Output:["_col1"]
@@ -438,7 +438,7 @@ Vertex dependency in root stage
 Map 1 <- Reducer 6 (BROADCAST_EDGE)
 Map 7 <- Reducer 6 (BROADCAST_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
-Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
+Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
 Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE)
 
@@ -481,8 +481,8 @@ Stage-0
                                       predicate:key1 is not null
                                       TableScan [TS_3] (rows=20 width=87)
                                         default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
-              <-Reducer 2 [ONE_TO_ONE_EDGE] llap
-                FORWARD [RS_12]
+              <-Reducer 2 [SIMPLE_EDGE] llap
+                SHUFFLE [RS_12]
                   PartitionCols:_col1
                   Merge Join Operator [MERGEJOIN_52] (rows=2200 width=87)
                     Conds:RS_9._col0=RS_10._col0(Inner),Output:["_col1"]

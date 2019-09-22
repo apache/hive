@@ -261,10 +261,10 @@ Reducer 36 <- Map 31 (CUSTOM_SIMPLE_EDGE)
 Reducer 37 <- Map 31 (CUSTOM_SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 14 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
-Reducer 6 <- Reducer 18 (SIMPLE_EDGE), Reducer 5 (ONE_TO_ONE_EDGE)
-Reducer 7 <- Reducer 22 (SIMPLE_EDGE), Reducer 6 (ONE_TO_ONE_EDGE)
-Reducer 8 <- Reducer 26 (SIMPLE_EDGE), Reducer 7 (ONE_TO_ONE_EDGE)
-Reducer 9 <- Reducer 30 (SIMPLE_EDGE), Reducer 8 (ONE_TO_ONE_EDGE)
+Reducer 6 <- Reducer 18 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+Reducer 7 <- Reducer 22 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+Reducer 8 <- Reducer 26 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+Reducer 9 <- Reducer 30 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -341,8 +341,8 @@ Stage-0
                                                     Select Operator [SEL_482] (rows=652 width=4)
                                                       Output:["_col0"]
                                                        Please refer to the previous Select Operator [SEL_477]
-                  <-Reducer 8 [ONE_TO_ONE_EDGE]
-                    FORWARD [RS_136]
+                  <-Reducer 8 [SIMPLE_EDGE]
+                    SHUFFLE [RS_136]
                       PartitionCols:_col2
                       Filter Operator [FIL_135] (rows=12248093 width=668)
                         predicate:CASE WHEN (_col6) THEN (CASE WHEN (_col9) THEN (((_col11 / _col8) > (_col1 / _col5))) ELSE (false) END) ELSE (false) END
@@ -395,8 +395,8 @@ Stage-0
                                                           Select Operator [SEL_484] (rows=652 width=4)
                                                             Output:["_col0"]
                                                              Please refer to the previous Select Operator [SEL_477]
-                        <-Reducer 7 [ONE_TO_ONE_EDGE]
-                          FORWARD [RS_132]
+                        <-Reducer 7 [SIMPLE_EDGE]
+                          SHUFFLE [RS_132]
                             PartitionCols:_col2
                             Merge Join Operator [MERGEJOIN_470] (rows=20485011 width=556)
                               Conds:RS_129._col2=RS_550._col0(Inner),Output:["_col1","_col2","_col3","_col5","_col6","_col8","_col9"]
@@ -455,8 +455,8 @@ Stage-0
                                                                   Select Operator [SEL_492] (rows=652 width=4)
                                                                     Output:["_col0"]
                                                                      Please refer to the previous Select Operator [SEL_480]
-                            <-Reducer 6 [ONE_TO_ONE_EDGE]
-                              FORWARD [RS_129]
+                            <-Reducer 6 [SIMPLE_EDGE]
+                              SHUFFLE [RS_129]
                                 PartitionCols:_col2
                                 Merge Join Operator [MERGEJOIN_469] (rows=20485011 width=440)
                                   Conds:RS_126._col2=RS_540._col0(Inner),Output:["_col1","_col2","_col3","_col5","_col6"]
@@ -515,8 +515,8 @@ Stage-0
                                                                       Select Operator [SEL_490] (rows=652 width=4)
                                                                         Output:["_col0"]
                                                                          Please refer to the previous Select Operator [SEL_479]
-                                <-Reducer 5 [ONE_TO_ONE_EDGE]
-                                  FORWARD [RS_126]
+                                <-Reducer 5 [SIMPLE_EDGE]
+                                  SHUFFLE [RS_126]
                                     PartitionCols:_col2
                                     Merge Join Operator [MERGEJOIN_468] (rows=31888273 width=324)
                                       Conds:RS_520._col0=RS_530._col0(Inner),Output:["_col1","_col2","_col3"]

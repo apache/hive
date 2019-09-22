@@ -173,7 +173,7 @@ Reducer 15 <- Map 14 (SIMPLE_EDGE), Map 17 (SIMPLE_EDGE)
 Reducer 16 <- Map 25 (SIMPLE_EDGE), Reducer 15 (SIMPLE_EDGE)
 Reducer 18 <- Map 17 (CUSTOM_SIMPLE_EDGE)
 Reducer 19 <- Map 17 (SIMPLE_EDGE), Map 26 (SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 13 (ONE_TO_ONE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 13 (SIMPLE_EDGE)
 Reducer 20 <- Map 25 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
 Reducer 21 <- Map 17 (CUSTOM_SIMPLE_EDGE)
 Reducer 22 <- Map 17 (SIMPLE_EDGE), Map 27 (SIMPLE_EDGE)
@@ -229,8 +229,8 @@ Stage-0
                                         predicate:i_manufact_id is not null
                                         TableScan [TS_0] (rows=462000 width=7)
                                           default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_manufact_id"]
-                                <-Reducer 13 [ONE_TO_ONE_EDGE] vectorized
-                                  FORWARD [RS_325]
+                                <-Reducer 13 [SIMPLE_EDGE] vectorized
+                                  SHUFFLE [RS_325]
                                     PartitionCols:_col0
                                     Group By Operator [GBY_324] (rows=69 width=4)
                                       Output:["_col0"],keys:KEY._col0
