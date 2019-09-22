@@ -281,7 +281,7 @@ Reducer 18 <- Reducer 17 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 19 (SIMPLE_EDGE)
 Reducer 20 <- Map 19 (CUSTOM_SIMPLE_EDGE)
 Reducer 22 <- Map 21 (SIMPLE_EDGE), Reducer 46 (SIMPLE_EDGE)
-Reducer 23 <- Reducer 22 (SIMPLE_EDGE), Reducer 40 (ONE_TO_ONE_EDGE)
+Reducer 23 <- Reducer 22 (SIMPLE_EDGE), Reducer 40 (SIMPLE_EDGE)
 Reducer 24 <- Map 41 (SIMPLE_EDGE), Reducer 23 (SIMPLE_EDGE)
 Reducer 25 <- Map 42 (SIMPLE_EDGE), Reducer 24 (SIMPLE_EDGE)
 Reducer 26 <- Map 43 (SIMPLE_EDGE), Reducer 25 (SIMPLE_EDGE)
@@ -302,7 +302,7 @@ Reducer 40 <- Reducer 39 (SIMPLE_EDGE)
 Reducer 45 <- Map 44 (CUSTOM_SIMPLE_EDGE)
 Reducer 46 <- Map 44 (SIMPLE_EDGE), Reducer 51 (SIMPLE_EDGE)
 Reducer 47 <- Map 44 (CUSTOM_SIMPLE_EDGE)
-Reducer 5 <- Reducer 37 (ONE_TO_ONE_EDGE), Reducer 4 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 37 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
 Reducer 51 <- Map 50 (SIMPLE_EDGE), Map 52 (SIMPLE_EDGE)
 Reducer 53 <- Map 52 (CUSTOM_SIMPLE_EDGE)
 Reducer 6 <- Map 41 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
@@ -460,8 +460,8 @@ Stage-0
                                                                           PartitionCols:_col1, _col7
                                                                           Merge Join Operator [MERGEJOIN_951] (rows=12564038 width=28)
                                                                             Conds:RS_57._col1=RS_1024._col0(Inner),Output:["_col1","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col15","_col16","_col17","_col18","_col19"]
-                                                                          <-Reducer 37 [ONE_TO_ONE_EDGE] vectorized
-                                                                            FORWARD [RS_1024]
+                                                                          <-Reducer 37 [SIMPLE_EDGE] vectorized
+                                                                            SHUFFLE [RS_1024]
                                                                               PartitionCols:_col0
                                                                               Select Operator [SEL_1023] (rows=13257 width=4)
                                                                                 Output:["_col0"]
@@ -734,8 +734,8 @@ Stage-0
                                                                                                         Select Operator [SEL_993] (rows=652 width=4)
                                                                                                           Output:["_col0"]
                                                                                                            Please refer to the previous Select Operator [SEL_989]
-                                                                          <-Reducer 40 [ONE_TO_ONE_EDGE] vectorized
-                                                                            FORWARD [RS_1072]
+                                                                          <-Reducer 40 [SIMPLE_EDGE] vectorized
+                                                                            SHUFFLE [RS_1072]
                                                                               PartitionCols:_col0
                                                                               Select Operator [SEL_1071] (rows=13257 width=4)
                                                                                 Output:["_col0"]

@@ -72,7 +72,7 @@ Reducer 11 <- Map 10 (CUSTOM_SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 10 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
-Reducer 5 <- Map 12 (SIMPLE_EDGE), Reducer 4 (ONE_TO_ONE_EDGE)
+Reducer 5 <- Map 12 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
 Reducer 6 <- Map 13 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
 Reducer 8 <- Map 1 (SIMPLE_EDGE), Map 10 (SIMPLE_EDGE)
@@ -117,8 +117,8 @@ Stage-0
                             predicate:s_store_sk is not null
                             TableScan [TS_36] (rows=1704 width=92)
                               default@store,store,Tbl:COMPLETE,Col:COMPLETE,Output:["s_store_sk","s_store_name"]
-                    <-Reducer 4 [ONE_TO_ONE_EDGE]
-                      FORWARD [RS_46]
+                    <-Reducer 4 [SIMPLE_EDGE]
+                      SHUFFLE [RS_46]
                         PartitionCols:_col0
                         Filter Operator [FIL_45] (rows=56354 width=231)
                           predicate:(_col2 <= _col4)

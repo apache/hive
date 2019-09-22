@@ -425,7 +425,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE), Reducer 6 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -557,7 +557,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Reduce Sink Vectorization:
-                      className: VectorReduceSinkObjectHashOperator
+                      className: VectorReduceSinkLongOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
@@ -615,7 +615,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Reduce Sink Vectorization:
-                      className: VectorReduceSinkObjectHashOperator
+                      className: VectorReduceSinkLongOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE

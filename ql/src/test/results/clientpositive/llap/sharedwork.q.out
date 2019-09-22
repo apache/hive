@@ -668,7 +668,7 @@ STAGE PLANS:
         Reducer 3 <- Map 10 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
         Reducer 5 <- Map 1 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 5 (SIMPLE_EDGE), Reducer 9 (ONE_TO_ONE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
         Reducer 9 <- Map 7 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -886,7 +886,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
                           tag: -1
-                          auto parallelism: false
+                          auto parallelism: true
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
@@ -1071,7 +1071,7 @@ STAGE PLANS:
                     Statistics: Num rows: 13 Data size: 1404 Basic stats: COMPLETE Column stats: COMPLETE
                     tag: 0
                     value expressions: _col0 (type: string)
-                    auto parallelism: false
+                    auto parallelism: true
         Reducer 6 
             Execution mode: llap
             Needs Tagging: false
@@ -1114,7 +1114,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
-                  auto parallelism: false
+                  auto parallelism: true
 
   Stage: Stage-0
     Fetch Operator

@@ -154,15 +154,15 @@ Reducer 15 <- Map 25 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE)
 Reducer 16 <- Reducer 15 (SIMPLE_EDGE)
 Reducer 17 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 Reducer 19 <- Map 18 (CUSTOM_SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 22 (ONE_TO_ONE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 22 (SIMPLE_EDGE)
 Reducer 20 <- Map 23 (CUSTOM_SIMPLE_EDGE), Reducer 19 (CUSTOM_SIMPLE_EDGE)
 Reducer 21 <- Map 23 (SIMPLE_EDGE), Reducer 20 (SIMPLE_EDGE)
 Reducer 22 <- Reducer 21 (SIMPLE_EDGE)
 Reducer 3 <- Map 24 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Map 25 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
-Reducer 6 <- Reducer 12 (ONE_TO_ONE_EDGE), Reducer 5 (ONE_TO_ONE_EDGE)
-Reducer 7 <- Reducer 16 (ONE_TO_ONE_EDGE), Reducer 6 (ONE_TO_ONE_EDGE)
+Reducer 6 <- Reducer 12 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+Reducer 7 <- Reducer 16 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
 Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
 Reducer 9 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 
@@ -184,8 +184,8 @@ Stage-0
                   predicate:(_col5 BETWEEN (0.9 * _col1) AND (1.1 * _col1) and _col5 BETWEEN (0.9 * _col3) AND (1.1 * _col3) and _col1 BETWEEN _col6 AND _col7 and _col3 BETWEEN _col6 AND _col7)
                   Merge Join Operator [MERGEJOIN_422] (rows=384 width=660)
                     Conds:RS_149._col0=RS_467._col0(Inner),Output:["_col0","_col1","_col3","_col5","_col6","_col7"]
-                  <-Reducer 16 [ONE_TO_ONE_EDGE] vectorized
-                    FORWARD [RS_467]
+                  <-Reducer 16 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_467]
                       PartitionCols:_col0
                       Select Operator [SEL_466] (rows=15768 width=436)
                         Output:["_col0","_col1","_col2","_col3"]
@@ -224,8 +224,8 @@ Stage-0
                                               predicate:d_date is not null
                                               TableScan [TS_0] (rows=73049 width=98)
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_date"]
-                                      <-Reducer 22 [ONE_TO_ONE_EDGE] vectorized
-                                        FORWARD [RS_441]
+                                      <-Reducer 22 [SIMPLE_EDGE] vectorized
+                                        SHUFFLE [RS_441]
                                           PartitionCols:_col0
                                           Group By Operator [GBY_440] (rows=2 width=94)
                                             Output:["_col0"],keys:KEY._col0
@@ -293,15 +293,15 @@ Stage-0
                                                     Select Operator [SEL_384] (rows=2 width=4)
                                                       Output:["_col0"]
                                                        Please refer to the previous Merge Join Operator [MERGEJOIN_408]
-                  <-Reducer 6 [ONE_TO_ONE_EDGE]
-                    FORWARD [RS_149]
+                  <-Reducer 6 [SIMPLE_EDGE]
+                    SHUFFLE [RS_149]
                       PartitionCols:_col0
                       Filter Operator [FIL_147] (rows=384 width=324)
                         predicate:(_col1 BETWEEN (0.9 * _col3) AND (1.1 * _col3) and _col3 BETWEEN (0.9 * _col1) AND (1.1 * _col1))
                         Merge Join Operator [MERGEJOIN_421] (rows=31163 width=324)
                           Conds:RS_452._col0=RS_459._col0(Inner),Output:["_col0","_col1","_col3"]
-                        <-Reducer 12 [ONE_TO_ONE_EDGE] vectorized
-                          FORWARD [RS_459]
+                        <-Reducer 12 [SIMPLE_EDGE] vectorized
+                          SHUFFLE [RS_459]
                             PartitionCols:_col0
                             Group By Operator [GBY_458] (rows=60249 width=212)
                               Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
@@ -345,8 +345,8 @@ Stage-0
                                                         Select Operator [SEL_338] (rows=2 width=4)
                                                           Output:["_col0"]
                                                            Please refer to the previous Merge Join Operator [MERGEJOIN_408]
-                        <-Reducer 5 [ONE_TO_ONE_EDGE] vectorized
-                          FORWARD [RS_452]
+                        <-Reducer 5 [SIMPLE_EDGE] vectorized
+                          SHUFFLE [RS_452]
                             PartitionCols:_col0
                             Group By Operator [GBY_451] (rows=31163 width=212)
                               Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0

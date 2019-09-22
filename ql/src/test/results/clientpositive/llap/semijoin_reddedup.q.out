@@ -259,8 +259,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 9 (ONE_TO_ONE_EDGE)
-        Reducer 4 <- Map 10 (SIMPLE_EDGE), Reducer 3 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 4 <- Map 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
         Reducer 6 <- Reducer 5 (CUSTOM_SIMPLE_EDGE)
         Reducer 9 <- Map 8 (SIMPLE_EDGE)

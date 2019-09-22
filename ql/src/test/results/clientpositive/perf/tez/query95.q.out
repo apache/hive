@@ -86,12 +86,12 @@ Reducer 16 <- Map 15 (SIMPLE_EDGE), Map 18 (SIMPLE_EDGE)
 Reducer 17 <- Reducer 16 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 11 (SIMPLE_EDGE)
 Reducer 20 <- Map 19 (SIMPLE_EDGE), Map 23 (SIMPLE_EDGE)
-Reducer 21 <- Map 24 (SIMPLE_EDGE), Reducer 20 (ONE_TO_ONE_EDGE)
+Reducer 21 <- Map 24 (SIMPLE_EDGE), Reducer 20 (SIMPLE_EDGE)
 Reducer 22 <- Reducer 21 (SIMPLE_EDGE)
 Reducer 3 <- Map 12 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Map 14 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 17 (ONE_TO_ONE_EDGE), Reducer 4 (SIMPLE_EDGE)
-Reducer 6 <- Reducer 22 (ONE_TO_ONE_EDGE), Reducer 5 (ONE_TO_ONE_EDGE)
+Reducer 5 <- Reducer 17 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+Reducer 6 <- Reducer 22 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
 Reducer 8 <- Reducer 7 (CUSTOM_SIMPLE_EDGE)
 Reducer 9 <- Reducer 5 (CUSTOM_SIMPLE_EDGE)
@@ -117,7 +117,7 @@ Stage-0
                     Output:["_col0","_col2","_col3"],aggregations:["sum(_col4)","sum(_col5)"],keys:_col3
                     Merge Join Operator [MERGEJOIN_237] (rows=5022875 width=227)
                       Conds:RS_61._col3=RS_279._col0(Inner),Output:["_col3","_col4","_col5"]
-                    <-Reducer 5 [ONE_TO_ONE_EDGE]
+                    <-Reducer 5 [SIMPLE_EDGE]
                       PARTITION_ONLY_SHUFFLE [RS_61]
                         PartitionCols:_col3
                         Merge Join Operator [MERGEJOIN_236] (rows=5022875 width=227)
@@ -184,8 +184,8 @@ Stage-0
                                             predicate:(CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00' AND TIMESTAMP'1999-06-30 00:00:00' and d_date_sk is not null)
                                             TableScan [TS_3] (rows=73049 width=98)
                                               default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_date"]
-                        <-Reducer 17 [ONE_TO_ONE_EDGE] vectorized
-                          FORWARD [RS_265]
+                        <-Reducer 17 [SIMPLE_EDGE] vectorized
+                          SHUFFLE [RS_265]
                             PartitionCols:_col0
                             Group By Operator [GBY_264] (rows=14686712 width=4)
                               Output:["_col0"],keys:KEY._col0
@@ -232,8 +232,8 @@ Stage-0
                                               <-Reducer 10 [BROADCAST_EDGE] vectorized
                                                 BROADCAST [RS_257]
                                                    Please refer to the previous Group By Operator [GBY_255]
-                    <-Reducer 22 [ONE_TO_ONE_EDGE] vectorized
-                      FORWARD [RS_279]
+                    <-Reducer 22 [SIMPLE_EDGE] vectorized
+                      SHUFFLE [RS_279]
                         PartitionCols:_col0
                         Group By Operator [GBY_278] (rows=8007986 width=4)
                           Output:["_col0"],keys:KEY._col0
@@ -253,8 +253,8 @@ Stage-0
                                       predicate:wr_order_number is not null
                                       TableScan [TS_38] (rows=14398467 width=4)
                                         default@web_returns,web_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["wr_order_number"]
-                              <-Reducer 20 [ONE_TO_ONE_EDGE]
-                                FORWARD [RS_41]
+                              <-Reducer 20 [SIMPLE_EDGE]
+                                SHUFFLE [RS_41]
                                   PartitionCols:_col0
                                   Select Operator [SEL_37] (rows=1411940834 width=4)
                                     Output:["_col0"]

@@ -234,14 +234,14 @@ Map 80 <- Reducer 23 (BROADCAST_EDGE)
 Reducer 11 <- Map 10 (CUSTOM_SIMPLE_EDGE)
 Reducer 12 <- Map 10 (SIMPLE_EDGE), Map 79 (SIMPLE_EDGE)
 Reducer 13 <- Reducer 12 (SIMPLE_EDGE), Reducer 34 (SIMPLE_EDGE)
-Reducer 14 <- Map 65 (SIMPLE_EDGE), Reducer 13 (ONE_TO_ONE_EDGE)
+Reducer 14 <- Map 65 (SIMPLE_EDGE), Reducer 13 (SIMPLE_EDGE)
 Reducer 15 <- Reducer 14 (SIMPLE_EDGE)
 Reducer 16 <- Reducer 15 (CUSTOM_SIMPLE_EDGE), Reducer 59 (CUSTOM_SIMPLE_EDGE), Union 7 (CONTAINS)
 Reducer 17 <- Map 10 (CUSTOM_SIMPLE_EDGE)
 Reducer 18 <- Map 10 (SIMPLE_EDGE), Map 80 (SIMPLE_EDGE)
 Reducer 19 <- Reducer 18 (SIMPLE_EDGE), Reducer 38 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 10 (SIMPLE_EDGE)
-Reducer 20 <- Map 65 (SIMPLE_EDGE), Reducer 19 (ONE_TO_ONE_EDGE)
+Reducer 20 <- Map 65 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
 Reducer 21 <- Reducer 20 (SIMPLE_EDGE)
 Reducer 22 <- Reducer 21 (CUSTOM_SIMPLE_EDGE), Reducer 62 (CUSTOM_SIMPLE_EDGE), Union 7 (CONTAINS)
 Reducer 23 <- Map 10 (CUSTOM_SIMPLE_EDGE)
@@ -250,14 +250,14 @@ Reducer 26 <- Map 65 (SIMPLE_EDGE), Reducer 25 (SIMPLE_EDGE)
 Reducer 27 <- Reducer 26 (SIMPLE_EDGE), Union 28 (CONTAINS)
 Reducer 29 <- Union 28 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 30 (SIMPLE_EDGE)
-Reducer 30 <- Map 65 (SIMPLE_EDGE), Reducer 29 (ONE_TO_ONE_EDGE)
+Reducer 30 <- Map 65 (SIMPLE_EDGE), Reducer 29 (SIMPLE_EDGE)
 Reducer 31 <- Reducer 26 (SIMPLE_EDGE), Union 32 (CONTAINS)
 Reducer 33 <- Union 32 (SIMPLE_EDGE)
-Reducer 34 <- Map 65 (SIMPLE_EDGE), Reducer 33 (ONE_TO_ONE_EDGE)
+Reducer 34 <- Map 65 (SIMPLE_EDGE), Reducer 33 (SIMPLE_EDGE)
 Reducer 35 <- Reducer 26 (SIMPLE_EDGE), Union 36 (CONTAINS)
 Reducer 37 <- Union 36 (SIMPLE_EDGE)
-Reducer 38 <- Map 65 (SIMPLE_EDGE), Reducer 37 (ONE_TO_ONE_EDGE)
-Reducer 4 <- Map 65 (SIMPLE_EDGE), Reducer 3 (ONE_TO_ONE_EDGE)
+Reducer 38 <- Map 65 (SIMPLE_EDGE), Reducer 37 (SIMPLE_EDGE)
+Reducer 4 <- Map 65 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
 Reducer 40 <- Map 39 (CUSTOM_SIMPLE_EDGE)
 Reducer 41 <- Map 39 (SIMPLE_EDGE), Map 63 (SIMPLE_EDGE)
 Reducer 42 <- Map 65 (SIMPLE_EDGE), Reducer 41 (SIMPLE_EDGE)
@@ -343,8 +343,8 @@ Stage-0
                                                   Output:["_col0","_col1","_col2","_col3"]
                                                   TableScan [TS_81] (rows=462000 width=15)
                                                     default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_brand_id","i_class_id","i_category_id"]
-                                            <-Reducer 13 [ONE_TO_ONE_EDGE]
-                                              FORWARD [RS_232]
+                                            <-Reducer 13 [SIMPLE_EDGE]
+                                              SHUFFLE [RS_232]
                                                 PartitionCols:_col1
                                                 Merge Join Operator [MERGEJOIN_1170] (rows=1 width=120)
                                                   Conds:RS_229._col1=RS_230._col0(Inner),Output:["_col1","_col2","_col3"]
@@ -395,8 +395,8 @@ Stage-0
                                                           Filter Operator [FIL_1331] (rows=458612 width=15)
                                                             predicate:(i_category_id is not null and i_brand_id is not null and i_class_id is not null)
                                                              Please refer to the previous TableScan [TS_81]
-                                                    <-Reducer 33 [ONE_TO_ONE_EDGE] vectorized
-                                                      FORWARD [RS_1370]
+                                                    <-Reducer 33 [SIMPLE_EDGE] vectorized
+                                                      SHUFFLE [RS_1370]
                                                         PartitionCols:_col0, _col1, _col2
                                                         Select Operator [SEL_1369] (rows=1 width=12)
                                                           Output:["_col0","_col1","_col2"]
@@ -718,8 +718,8 @@ Stage-0
                                                 Select Operator [SEL_1332] (rows=462000 width=15)
                                                   Output:["_col0","_col1","_col2","_col3"]
                                                    Please refer to the previous TableScan [TS_81]
-                                            <-Reducer 19 [ONE_TO_ONE_EDGE]
-                                              FORWARD [RS_376]
+                                            <-Reducer 19 [SIMPLE_EDGE]
+                                              SHUFFLE [RS_376]
                                                 PartitionCols:_col1
                                                 Merge Join Operator [MERGEJOIN_1183] (rows=1 width=120)
                                                   Conds:RS_373._col1=RS_374._col0(Inner),Output:["_col1","_col2","_col3"]
@@ -765,8 +765,8 @@ Stage-0
                                                           Filter Operator [FIL_1333] (rows=458612 width=15)
                                                             predicate:(i_category_id is not null and i_brand_id is not null and i_class_id is not null)
                                                              Please refer to the previous TableScan [TS_81]
-                                                    <-Reducer 37 [ONE_TO_ONE_EDGE] vectorized
-                                                      FORWARD [RS_1386]
+                                                    <-Reducer 37 [SIMPLE_EDGE] vectorized
+                                                      SHUFFLE [RS_1386]
                                                         PartitionCols:_col0, _col1, _col2
                                                         Select Operator [SEL_1385] (rows=1 width=12)
                                                           Output:["_col0","_col1","_col2"]
@@ -905,8 +905,8 @@ Stage-0
                                                 Select Operator [SEL_1325] (rows=462000 width=15)
                                                   Output:["_col0","_col1","_col2","_col3"]
                                                    Please refer to the previous TableScan [TS_81]
-                                            <-Reducer 3 [ONE_TO_ONE_EDGE]
-                                              FORWARD [RS_89]
+                                            <-Reducer 3 [SIMPLE_EDGE]
+                                              SHUFFLE [RS_89]
                                                 PartitionCols:_col1
                                                 Merge Join Operator [MERGEJOIN_1157] (rows=1 width=120)
                                                   Conds:RS_86._col1=RS_87._col0(Inner),Output:["_col1","_col2","_col3"]
@@ -952,8 +952,8 @@ Stage-0
                                                           Filter Operator [FIL_1326] (rows=458612 width=15)
                                                             predicate:(i_category_id is not null and i_brand_id is not null and i_class_id is not null)
                                                              Please refer to the previous TableScan [TS_81]
-                                                    <-Reducer 29 [ONE_TO_ONE_EDGE] vectorized
-                                                      FORWARD [RS_1324]
+                                                    <-Reducer 29 [SIMPLE_EDGE] vectorized
+                                                      SHUFFLE [RS_1324]
                                                         PartitionCols:_col0, _col1, _col2
                                                         Select Operator [SEL_1323] (rows=1 width=12)
                                                           Output:["_col0","_col1","_col2"]
