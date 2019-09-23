@@ -234,8 +234,7 @@ Stage-2
   Stats Work{}
     Stage-0
       Map 1
-      TableScan [TS_0] (rows=500 width=10)
-        default@src,src,Tbl:COMPLETE,Col:COMPLETE
+      TableScan [TS_0]
 
 PREHOOK: query: explain analyze table src compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE

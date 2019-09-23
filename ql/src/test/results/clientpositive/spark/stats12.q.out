@@ -64,7 +64,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_srcpart_n3
-                  Statistics: Num rows: 392 Data size: 232480 Basic stats: PARTIAL Column stats: NONE
                   Statistics Aggregation Key Prefix: default.analyze_srcpart_n3/
                   GatherStats: true
             Path -> Alias:
