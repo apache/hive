@@ -13,6 +13,8 @@
  */
 package org.apache.hadoop.hive.registry.impl;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +34,7 @@ public class ZookeeperUtils {
   public static String setupZookeeperAuth(Configuration conf, String saslLoginContextName,
       String zkPrincipal, String zkKeytab) throws IOException {
     // If the login context name is not set, we are in the client and don't need auth.
-    if (UserGroupInformation.isSecurityEnabled() && saslLoginContextName != null) {
+    if (isKerberosEnabled(conf) && saslLoginContextName != null) {
       LOG.info("UGI security is enabled. Setting up ZK auth.");
 
       if (zkPrincipal == null || zkPrincipal.isEmpty()) {
@@ -53,7 +55,19 @@ public class ZookeeperUtils {
   }
 
   /**
-   * Dynamically sets up the JAAS configuration that uses kerberos
+   * Check if Kerberos is enabled.
+   */
+  public static boolean isKerberosEnabled(Configuration conf) {
+    try {
+      return UserGroupInformation.getLoginUser().isFromKeytab() && !AuthenticationMethod.SIMPLE.name().equalsIgnoreCase(
+          HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SECURITY_ZOOKEEPER_AUTHENTICATION));
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Dynamically sets up the JAAS configuration that uses kerberos.
    *
    * @param principal
    * @param keyTabFile

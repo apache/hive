@@ -87,9 +87,9 @@ import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
+import org.apache.hadoop.hive.registry.impl.ZookeeperUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.ShutdownHookManager;
@@ -277,6 +277,7 @@ public class HiveServer2 extends CompositeService {
     }
 
     wmQueue = hiveConf.get(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname, "").trim();
+    this.zooKeeperAclProvider = getACLProvider(hiveConf);
 
     this.serviceDiscovery = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY);
     this.activePassiveHA = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_ENABLE);
@@ -450,29 +451,34 @@ public class HiveServer2 extends CompositeService {
   /**
    * ACLProvider for providing appropriate ACLs to CuratorFrameworkFactory
    */
-  private final ACLProvider zooKeeperAclProvider = new ACLProvider() {
+  private ACLProvider zooKeeperAclProvider;
 
-    @Override
-    public List<ACL> getDefaultAcl() {
-      List<ACL> nodeAcls = new ArrayList<ACL>();
-      if (UserGroupInformation.isSecurityEnabled()) {
-        // Read all to the world
-        nodeAcls.addAll(Ids.READ_ACL_UNSAFE);
-        // Create/Delete/Write/Admin to the authenticated user
-        nodeAcls.add(new ACL(Perms.ALL, Ids.AUTH_IDS));
-      } else {
-        // ACLs for znodes on a non-kerberized cluster
-        // Create/Read/Delete/Write/Admin to the world
-        nodeAcls.addAll(Ids.OPEN_ACL_UNSAFE);
+  private ACLProvider getACLProvider(HiveConf hiveConf) {
+    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(hiveConf);
+
+    return new ACLProvider() {
+      @Override
+      public List<ACL> getDefaultAcl() {
+        List<ACL> nodeAcls = new ArrayList<ACL>();
+        if (isSecure) {
+          // Read all to the world
+          nodeAcls.addAll(Ids.READ_ACL_UNSAFE);
+          // Create/Delete/Write/Admin to the authenticated user
+          nodeAcls.add(new ACL(Perms.ALL, Ids.AUTH_IDS));
+        } else {
+          // ACLs for znodes on a non-kerberized cluster
+          // Create/Read/Delete/Write/Admin to the world
+          nodeAcls.addAll(Ids.OPEN_ACL_UNSAFE);
+        }
+        return nodeAcls;
       }
-      return nodeAcls;
-    }
 
-    @Override
-    public List<ACL> getAclForPath(String path) {
-      return getDefaultAcl();
-    }
-  };
+      @Override
+      public List<ACL> getAclForPath(String path) {
+        return getDefaultAcl();
+      }
+    };
+  }
 
   /**
    * Add conf keys, values that HiveServer2 will publish to ZooKeeper.
@@ -519,7 +525,7 @@ public class HiveServer2 extends CompositeService {
    * @throws Exception
    */
   private void setUpZooKeeperAuth(HiveConf hiveConf) throws Exception {
-    if (UserGroupInformation.isSecurityEnabled()) {
+    if (ZookeeperUtils.isKerberosEnabled(hiveConf)) {
       String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
       if (principal.isEmpty()) {
         throw new IOException("HiveServer2 Kerberos principal is empty");
