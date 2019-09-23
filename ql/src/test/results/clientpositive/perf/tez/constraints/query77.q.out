@@ -248,12 +248,12 @@ Reducer 17 <- Reducer 16 (CUSTOM_SIMPLE_EDGE)
 Reducer 18 <- Map 27 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 Reducer 19 <- Reducer 18 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
-Reducer 20 <- Reducer 19 (ONE_TO_ONE_EDGE), Reducer 23 (ONE_TO_ONE_EDGE), Union 5 (CONTAINS)
+Reducer 20 <- Reducer 19 (SIMPLE_EDGE), Reducer 23 (SIMPLE_EDGE), Union 5 (CONTAINS)
 Reducer 21 <- Map 8 (CUSTOM_SIMPLE_EDGE)
 Reducer 22 <- Map 28 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 Reducer 23 <- Reducer 22 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-Reducer 4 <- Reducer 11 (ONE_TO_ONE_EDGE), Reducer 3 (ONE_TO_ONE_EDGE), Union 5 (CONTAINS)
+Reducer 4 <- Reducer 11 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Union 5 (CONTAINS)
 Reducer 6 <- Union 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
 Reducer 9 <- Map 8 (CUSTOM_SIMPLE_EDGE)
@@ -360,8 +360,8 @@ Stage-0
                             Output:["_col0","_col1","_col2","_col3","_col4"]
                             Merge Join Operator [MERGEJOIN_231] (rows=46 width=340)
                               Conds:RS_290._col0=RS_295._col0(Left Outer),Output:["_col0","_col1","_col2","_col4","_col5"]
-                            <-Reducer 19 [ONE_TO_ONE_EDGE] vectorized
-                              FORWARD [RS_290]
+                            <-Reducer 19 [SIMPLE_EDGE] vectorized
+                              SHUFFLE [RS_290]
                                 PartitionCols:_col0
                                 Group By Operator [GBY_289] (rows=24 width=228)
                                   Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0
@@ -398,8 +398,8 @@ Stage-0
                                                           Select Operator [SEL_246] (rows=8116 width=4)
                                                             Output:["_col0"]
                                                              Please refer to the previous Select Operator [SEL_238]
-                            <-Reducer 23 [ONE_TO_ONE_EDGE] vectorized
-                              FORWARD [RS_295]
+                            <-Reducer 23 [SIMPLE_EDGE] vectorized
+                              SHUFFLE [RS_295]
                                 PartitionCols:_col0
                                 Group By Operator [GBY_294] (rows=22 width=226)
                                   Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0
@@ -436,8 +436,8 @@ Stage-0
                             Output:["_col0","_col1","_col2","_col3","_col4"]
                             Merge Join Operator [MERGEJOIN_219] (rows=12 width=451)
                               Conds:RS_260._col0=RS_265._col0(Left Outer),Output:["_col0","_col1","_col2","_col4","_col5"]
-                            <-Reducer 11 [ONE_TO_ONE_EDGE] vectorized
-                              FORWARD [RS_265]
+                            <-Reducer 11 [SIMPLE_EDGE] vectorized
+                              SHUFFLE [RS_265]
                                 PartitionCols:_col0
                                 Group By Operator [GBY_264] (rows=11 width=226)
                                   Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0
@@ -463,8 +463,8 @@ Stage-0
                                                 predicate:(sr_store_sk is not null and sr_returned_date_sk is not null)
                                                 TableScan [TS_15] (rows=57591150 width=223)
                                                   default@store_returns,store_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["sr_returned_date_sk","sr_store_sk","sr_return_amt","sr_net_loss"]
-                            <-Reducer 3 [ONE_TO_ONE_EDGE] vectorized
-                              FORWARD [RS_260]
+                            <-Reducer 3 [SIMPLE_EDGE] vectorized
+                              SHUFFLE [RS_260]
                                 PartitionCols:_col0
                                 Group By Operator [GBY_259] (rows=11 width=226)
                                   Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0

@@ -39,7 +39,7 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 4 (CUSTOM_SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE), Reducer 3 (ONE_TO_ONE_EDGE)
+        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE), Reducer 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -197,47 +197,47 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-val_238	238	val_238
-val_311	311	val_311
-val_27	27	val_27
-val_165	165	val_165
+val_146	146	val_146
+val_406	406	val_406
+val_406	406	val_406
 val_409	409	val_409
-val_255	255	val_255
+val_406	406	val_406
+val_238	238	val_238
+val_409	409	val_409
 val_278	278	val_278
-val_98	98	val_98
-val_484	484	val_484
-val_265	265	val_265
-val_193	193	val_193
-val_401	401	val_401
-val_150	150	val_150
-val_273	273	val_273
+val_213	213	val_213
+val_406	406	val_406
+val_146	146	val_146
+val_213	213	val_213
 val_66	66	val_66
-val_213	213	val_213
-val_146	146	val_146
-val_406	406	val_406
-val_193	193	val_193
-val_311	311	val_311
-val_213	213	val_213
+val_150	150	val_150
 val_278	278	val_278
-val_311	311	val_311
-val_165	165	val_165
-val_98	98	val_98
 val_409	409	val_409
 val_238	238	val_238
 val_273	273	val_273
 val_401	401	val_401
+val_265	265	val_265
+val_255	255	val_255
 val_401	401	val_401
 val_193	193	val_193
-val_406	406	val_406
-val_409	409	val_409
-val_406	406	val_406
 val_401	401	val_401
-val_255	255	val_255
-val_265	265	val_265
-val_406	406	val_406
 val_401	401	val_401
-val_146	146	val_146
 val_273	273	val_273
+val_98	98	val_98
+val_165	165	val_165
+val_311	311	val_311
+val_311	311	val_311
+val_193	193	val_193
+val_273	273	val_273
+val_401	401	val_401
+val_193	193	val_193
+val_265	265	val_265
+val_484	484	val_484
+val_98	98	val_98
+val_255	255	val_255
+val_165	165	val_165
+val_27	27	val_27
+val_311	311	val_311
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM src
@@ -277,7 +277,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 5 (ONE_TO_ONE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 5 (CUSTOM_SIMPLE_EDGE)
         Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE), Map 6 (CUSTOM_SIMPLE_EDGE)
         Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -437,44 +437,44 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-238	val_238	val_238
-311	val_311	val_311
-27	val_27	val_27
-165	val_165	val_165
+146	val_146	val_146
+406	val_406	val_406
+406	val_406	val_406
 409	val_409	val_409
-255	val_255	val_255
+406	val_406	val_406
+238	val_238	val_238
+409	val_409	val_409
 278	val_278	val_278
-98	val_98	val_98
-484	val_484	val_484
-265	val_265	val_265
-193	val_193	val_193
-401	val_401	val_401
-150	val_150	val_150
-273	val_273	val_273
+213	val_213	val_213
+406	val_406	val_406
+146	val_146	val_146
+213	val_213	val_213
 66	val_66	val_66
-213	val_213	val_213
-146	val_146	val_146
-406	val_406	val_406
-193	val_193	val_193
-311	val_311	val_311
-213	val_213	val_213
+150	val_150	val_150
 278	val_278	val_278
-311	val_311	val_311
-165	val_165	val_165
-98	val_98	val_98
 409	val_409	val_409
 238	val_238	val_238
 273	val_273	val_273
 401	val_401	val_401
+265	val_265	val_265
+255	val_255	val_255
 401	val_401	val_401
 193	val_193	val_193
-406	val_406	val_406
-409	val_409	val_409
-406	val_406	val_406
 401	val_401	val_401
-255	val_255	val_255
-265	val_265	val_265
-406	val_406	val_406
 401	val_401	val_401
-146	val_146	val_146
 273	val_273	val_273
+98	val_98	val_98
+165	val_165	val_165
+311	val_311	val_311
+311	val_311	val_311
+193	val_193	val_193
+273	val_273	val_273
+401	val_401	val_401
+193	val_193	val_193
+265	val_265	val_265
+484	val_484	val_484
+98	val_98	val_98
+255	val_255	val_255
+165	val_165	val_165
+27	val_27	val_27
+311	val_311	val_311

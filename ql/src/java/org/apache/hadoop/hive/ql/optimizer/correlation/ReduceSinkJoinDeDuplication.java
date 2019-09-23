@@ -127,6 +127,10 @@ public class ReduceSinkJoinDeDuplication extends Transform {
         // Already set
         return false;
       }
+      if( cRS.getConf().isOrdering()) {
+        // 1-1 edge is skipped for sorted shuffle
+        return false;
+      }
       if (cRS.getConf().getKeyCols().isEmpty()) {
         // Not supported
         return false;

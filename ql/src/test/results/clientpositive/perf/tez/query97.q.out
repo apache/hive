@@ -62,7 +62,7 @@ Map 11 <- Reducer 10 (BROADCAST_EDGE)
 Reducer 10 <- Map 6 (CUSTOM_SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-Reducer 4 <- Reducer 3 (ONE_TO_ONE_EDGE), Reducer 9 (ONE_TO_ONE_EDGE)
+Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
 Reducer 7 <- Map 6 (CUSTOM_SIMPLE_EDGE)
 Reducer 8 <- Map 11 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
@@ -84,8 +84,8 @@ Stage-0
                 Output:["_col0","_col1","_col2"]
                 Merge Join Operator [MERGEJOIN_68] (rows=19216436912 width=7)
                   Conds:RS_85._col0, _col1=RS_92._col0, _col1(Outer),Output:["_col0","_col2"]
-                <-Reducer 3 [ONE_TO_ONE_EDGE] vectorized
-                  FORWARD [RS_85]
+                <-Reducer 3 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_85]
                     PartitionCols:_col0, _col1
                     Group By Operator [GBY_84] (rows=95493908 width=6)
                       Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
@@ -125,8 +125,8 @@ Stage-0
                                             Select Operator [SEL_72] (rows=317 width=4)
                                               Output:["_col0"]
                                                Please refer to the previous Select Operator [SEL_70]
-                <-Reducer 9 [ONE_TO_ONE_EDGE] vectorized
-                  FORWARD [RS_92]
+                <-Reducer 9 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_92]
                     PartitionCols:_col0, _col1
                     Group By Operator [GBY_91] (rows=49393705 width=7)
                       Output:["_col0","_col1"],keys:KEY._col0, KEY._col1

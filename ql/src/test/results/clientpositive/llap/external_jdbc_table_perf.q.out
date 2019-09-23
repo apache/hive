@@ -1727,8 +1727,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
-        Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
-        Reducer 4 <- Map 9 (SIMPLE_EDGE), Reducer 3 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Map 9 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
         Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -2208,8 +2208,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
-        Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
-        Reducer 4 <- Map 9 (SIMPLE_EDGE), Reducer 3 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Map 9 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
         Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -3511,17 +3511,17 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
-        Reducer 11 <- Map 19 (SIMPLE_EDGE), Reducer 10 (ONE_TO_ONE_EDGE)
+        Reducer 11 <- Map 19 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
         Reducer 12 <- Map 18 (SIMPLE_EDGE), Reducer 11 (SIMPLE_EDGE)
         Reducer 13 <- Reducer 12 (SIMPLE_EDGE)
-        Reducer 14 <- Map 20 (SIMPLE_EDGE), Reducer 10 (ONE_TO_ONE_EDGE)
+        Reducer 14 <- Map 20 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
         Reducer 15 <- Map 18 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE)
         Reducer 16 <- Reducer 15 (SIMPLE_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 10 (ONE_TO_ONE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
         Reducer 3 <- Map 18 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 5 <- Reducer 13 (ONE_TO_ONE_EDGE), Reducer 4 (ONE_TO_ONE_EDGE)
-        Reducer 6 <- Reducer 16 (ONE_TO_ONE_EDGE), Reducer 5 (ONE_TO_ONE_EDGE)
+        Reducer 5 <- Reducer 13 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 16 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
         Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
         Reducer 9 <- Map 17 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 #### A masked pattern was here ####
