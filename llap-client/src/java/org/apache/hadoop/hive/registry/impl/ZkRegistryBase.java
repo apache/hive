@@ -160,7 +160,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     this.stateChangeListeners = new HashSet<>();
     this.pathToInstanceCache = new ConcurrentHashMap<>();
     this.nodeToInstanceCache = new ConcurrentHashMap<>();
-    final String namespace = getRootNamespace(rootNs, nsPrefix);
+    final String namespace = getRootNamespace(conf, rootNs, nsPrefix);
     ACLProvider aclProvider;
     // get acl provider for most outer path that is non-null
     if (userPathPrefix == null) {
@@ -180,8 +180,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     this.zooKeeperClient.getConnectionStateListenable().addListener(new ZkConnectionStateListener());
   }
 
-  public static String getRootNamespace(String userProvidedNamespace, String defaultNamespacePrefix) {
-    final boolean isSecure = UserGroupInformation.isSecurityEnabled();
+  public static String getRootNamespace(Configuration conf, String userProvidedNamespace,
+      String defaultNamespacePrefix) {
+    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
     String rootNs = userProvidedNamespace;
     if (rootNs == null) {
       rootNs = defaultNamespacePrefix + (isSecure ? SASL_NAMESPACE : UNSECURE_NAMESPACE);
@@ -190,7 +191,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private ACLProvider getACLProviderForZKPath(String zkPath) {
-    final boolean isSecure = UserGroupInformation.isSecurityEnabled();
+    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
     return new ACLProvider() {
       @Override
       public List<ACL> getDefaultAcl() {
@@ -366,7 +367,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private void checkAndSetAcls() throws Exception {
-    if (!UserGroupInformation.isSecurityEnabled()) return;
+    if (!ZookeeperUtils.isKerberosEnabled(conf)) {
+      return;
+    }
     // We are trying to check ACLs on the "workers" directory, which noone except us should be
     // able to write to. Higher-level directories shouldn't matter - we don't read them.
     String pathToCheck = workersPath;
