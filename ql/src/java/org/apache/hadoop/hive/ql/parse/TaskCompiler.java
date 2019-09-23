@@ -156,7 +156,10 @@ public abstract class TaskCompiler {
       return;
     }
 
-    optimizeOperatorPlan(pCtx, inputs, outputs);
+    if (!pCtx.getQueryProperties().isAnalyzeCommand()) {
+      LOG.debug("Skipping optimize operator plan for analyze command.");
+      optimizeOperatorPlan(pCtx, inputs, outputs);
+    }
 
     /*
      * In case of a select, use a fetch task instead of a move task.

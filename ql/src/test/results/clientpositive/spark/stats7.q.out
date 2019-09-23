@@ -62,7 +62,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_srcpart_n4
-                  Statistics: Num rows: 392 Data size: 232480 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats Work

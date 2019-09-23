@@ -396,7 +396,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket3_1_n0
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-1
     Stats Work
