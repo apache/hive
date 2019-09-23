@@ -3796,37 +3796,53 @@ Storage Desc Params:
 Table:              	sys.scheduled_queries	 
 Constraint Name:    	sys_pk_scheduled_queries	 
 Column Name:        	scheduled_query_id  	 
-PREHOOK: query: select * from scheduled_queries
+PREHOOK: query: select 
+	scheduled_query_id,
+	schedule_name,
+	enabled,
+	cluster_namespace,
+	`schedule`,
+	`user`,
+	query,
+	next_execution>0
+ from scheduled_queries
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@scheduled_queries
 #### A masked pattern was here ####
-POSTHOOK: query: select * from scheduled_queries
+POSTHOOK: query: select 
+	scheduled_query_id,
+	schedule_name,
+	enabled,
+	cluster_namespace,
+	`schedule`,
+	`user`,
+	query,
+	next_execution>0
+ from scheduled_queries
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_queries
 #### A masked pattern was here ####
-1	asd	false	hive	* * * * * ? *	NULL	select 1	1569249900
+1	asd	false	hive	* * * * * ? *	NULL	select 1	true
 PREHOOK: query: select	scheduled_execution_id,
 	scheduled_query_id,
-	substr(executor_query_id,1,5),
 	state,
 	start_time>0,
-	end_time>start_time,
+	end_time>=start_time,
 	error_message,
-	last_update_time>start_time
+	last_update_time>=start_time
 		from scheduled_executions order by SCHEDULED_EXECUTION_ID limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@scheduled_executions
 #### A masked pattern was here ####
 POSTHOOK: query: select	scheduled_execution_id,
 	scheduled_query_id,
-	substr(executor_query_id,1,5),
 	state,
 	start_time>0,
-	end_time>start_time,
+	end_time>=start_time,
 	error_message,
-	last_update_time>start_time
+	last_update_time>=start_time
 		from scheduled_executions order by SCHEDULED_EXECUTION_ID limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_executions
 #### A masked pattern was here ####
-1	1	hivep	FINISHED	true	false	NULL	NULL
+1	1	FINISHED	true	true	NULL	NULL

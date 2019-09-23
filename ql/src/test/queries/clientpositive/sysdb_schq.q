@@ -16,11 +16,17 @@ create scheduled query asd cron '* * * * * ? *' defined as select 1;
 desc formatted scheduled_queries;
 
 select 
-	*
+	scheduled_query_id,
+	schedule_name,
+	enabled,
+	cluster_namespace,
+	`schedule`,
+	`user`,
+	query,
+	next_execution>0
  from scheduled_queries;
 select	scheduled_execution_id,
 	scheduled_query_id,
-	instr(executor_query_id,'_'),
 	state,
 	start_time>0,
 	end_time>=start_time,
