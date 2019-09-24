@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
@@ -227,11 +228,12 @@ public class WarehouseInstance implements Closeable {
   }
 
   public WarehouseInstance run(String command) throws Throwable {
-    CommandProcessorResponse ret = driver.run(command);
-    if (ret.getException() != null) {
-      throw ret.getException();
+    try {
+      driver.run(command);
+      return this;
+    } catch (CommandProcessorException e) {
+      throw e.getException();
     }
-    return this;
   }
 
   public CommandProcessorResponse runCommand(String command) throws Throwable {
@@ -239,23 +241,25 @@ public class WarehouseInstance implements Closeable {
   }
 
   WarehouseInstance runFailure(String command) throws Throwable {
-    CommandProcessorResponse ret = driver.run(command);
-    if (ret.getException() == null) {
+    try {
+      driver.run(command);
       throw new RuntimeException("command execution passed for a invalid command" + command);
+    } catch (CommandProcessorException e) {
+      return this;
     }
-    return this;
   }
 
   WarehouseInstance runFailure(String command, int errorCode) throws Throwable {
-    CommandProcessorResponse ret = driver.run(command);
-    if (ret.getException() == null) {
+    try {
+      driver.run(command);
       throw new RuntimeException("command execution passed for a invalid command" + command);
+    } catch (CommandProcessorException e) {
+      if (e.getResponseCode() != errorCode) {
+        throw new RuntimeException("Command: " + command + " returned incorrect error code: " +
+            e.getResponseCode() + " instead of " + errorCode);
+      }
+      return this;
     }
-    if (ret.getResponseCode() != errorCode) {
-      throw new RuntimeException("Command: " + command + " returned incorrect error code: "
-              + ret.getResponseCode() + " instead of " + errorCode);
-    }
-    return this;
   }
 
   Tuple dump(String dbName, String lastReplicationId, List<String> withClauseOptions)

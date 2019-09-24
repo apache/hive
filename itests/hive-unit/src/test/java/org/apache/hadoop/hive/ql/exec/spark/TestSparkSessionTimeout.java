@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.junit.Assert;
@@ -42,7 +43,8 @@ import java.util.concurrent.Future;
 public class TestSparkSessionTimeout {
 
   @Test
-  public void testSparkSessionTimeout() throws HiveException, InterruptedException, MalformedURLException {
+  public void testSparkSessionTimeout()
+      throws HiveException, InterruptedException, MalformedURLException, CommandProcessorException {
     String confDir = "../../data/conf/spark/standalone/hive-site.xml";
     HiveConf.setHiveSiteLocation(new File(confDir).toURI().toURL());
 
@@ -82,7 +84,8 @@ public class TestSparkSessionTimeout {
   }
 
   @Test
-  public void testSparkSessionMultipleTimeout() throws HiveException, InterruptedException, MalformedURLException {
+  public void testSparkSessionMultipleTimeout()
+      throws HiveException, InterruptedException, MalformedURLException, CommandProcessorException {
     String confDir = "../../data/conf/spark/standalone/hive-site.xml";
     HiveConf.setHiveSiteLocation(new File(confDir).toURI().toURL());
 
@@ -95,8 +98,8 @@ public class TestSparkSessionTimeout {
     runTestSparkSessionTimeout(conf, 2);
   }
 
-  private void runTestSparkSessionTimeout(HiveConf conf, int sleepRunIteration) throws HiveException,
-          InterruptedException {
+  private void runTestSparkSessionTimeout(HiveConf conf, int sleepRunIteration)
+      throws HiveException, InterruptedException, CommandProcessorException {
     conf.setVar(HiveConf.ConfVars.SPARK_SESSION_TIMEOUT, "5s");
     conf.setVar(HiveConf.ConfVars.SPARK_SESSION_TIMEOUT_PERIOD, "1s");
 
@@ -113,22 +116,19 @@ public class TestSparkSessionTimeout {
       SparkSession sparkSession = SparkUtilities.getSparkSession(conf, SparkSessionManagerImpl
               .getInstance());
 
-      Assert.assertEquals(0,
-              driver.run("create table " + tableName + " (col int)").getResponseCode());
-      Assert.assertEquals(0,
-              driver.run("select * from " + tableName + " order by col").getResponseCode());
+      driver.run("create table " + tableName + " (col int)");
+      driver.run("select * from " + tableName + " order by col");
 
       for (int i = 0; i < sleepRunIteration; i++) {
         Thread.sleep(10000);
 
         Assert.assertFalse(sparkSession.isOpen());
 
-        Assert.assertEquals(0,
-                driver.run("select * from " + tableName + " order by col").getResponseCode());
+        driver.run("select * from " + tableName + " order by col");
       }
     } finally {
       if (driver != null) {
-        Assert.assertEquals(0, driver.run("drop table if exists " + tableName).getResponseCode());
+        driver.run("drop table if exists " + tableName);
         driver.destroy();
       }
     }

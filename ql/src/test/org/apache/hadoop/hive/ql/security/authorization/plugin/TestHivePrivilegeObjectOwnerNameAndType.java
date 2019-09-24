@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -37,7 +36,6 @@ import org.mockito.Mockito;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -85,8 +83,7 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
   }
 
   private static void runCmd(String cmd) throws Exception {
-    CommandProcessorResponse resp = driver.run(cmd);
-    assertEquals(0, resp.getResponseCode());
+    driver.run(cmd);
   }
 
   @AfterClass

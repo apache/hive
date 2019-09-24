@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.hamcrest.Matchers;
@@ -59,8 +60,7 @@ public class TestStatEstimations {
         // @formatter:on
     };
     for (String cmd : cmds) {
-      int ret = driver.run(cmd).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run(cmd);
     }
   }
 
@@ -73,20 +73,18 @@ public class TestStatEstimations {
   public static void dropTables(IDriver driver) throws Exception {
     String tables[] = {"t2" };
     for (String t : tables) {
-      int ret = driver.run("drop table if exists " + t).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run("drop table if exists " + t);
     }
   }
 
-  private PlanMapper getMapperForQuery(IDriver driver, String query) {
-    int ret = driver.run(query).getResponseCode();
-    assertEquals("Checking command success", 0, ret);
+  private PlanMapper getMapperForQuery(IDriver driver, String query) throws CommandProcessorException {
+    driver.run(query);
     PlanMapper pm0 = driver.getContext().getPlanMapper();
     return pm0;
   }
 
   @Test
-  public void testFilterIntIn() throws ParseException {
+  public void testFilterIntIn() throws ParseException, CommandProcessorException {
     IDriver driver = createDriver();
     String query = "explain select a from t2 where a IN (-1,0,1,2,10,20,30,40) order by a";
 

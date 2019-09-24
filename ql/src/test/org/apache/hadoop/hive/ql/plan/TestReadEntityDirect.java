@@ -50,10 +50,8 @@ public class TestReadEntityDirect {
   @BeforeClass
   public static void onetimeSetup() throws Exception {
     Driver driver = createDriver();
-    int ret = driver.run("create table t1(i int)").getResponseCode();
-    assertEquals("Checking command success", 0, ret);
-    ret = driver.run("create view v1 as select * from t1").getResponseCode();
-    assertEquals("Checking command success", 0, ret);
+    driver.run("create table t1(i int)");
+    driver.run("create view v1 as select * from t1");
   }
 
   @AfterClass

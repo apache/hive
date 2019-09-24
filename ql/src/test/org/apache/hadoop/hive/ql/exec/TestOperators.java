@@ -426,23 +426,19 @@ public class TestOperators {
         "tblproperties ('myprop1'='val1', 'myprop2' = 'val2')";
     Driver driver = new Driver(conf);
     CommandProcessorResponse response = driver.run(cmd);
-    assertEquals(0, response.getResponseCode());
     List<Object> result = new ArrayList<Object>();
 
     cmd = "load data local inpath '../data/files/employee.dat' " +
         "overwrite into table fetchOp partition (state='CA')";
     response = driver.run(cmd);
-    assertEquals(0, response.getResponseCode());
 
     cmd = "load data local inpath '../data/files/employee2.dat' " +
         "overwrite into table fetchOp partition (state='OR')";
     response = driver.run(cmd);
-    assertEquals(0, response.getResponseCode());
 
     cmd = "select * from fetchOp";
     driver.setMaxRows(500);
     response = driver.run(cmd);
-    assertEquals(0, response.getResponseCode());
     driver.getResults(result);
     assertEquals(20, result.size());
     driver.close();
