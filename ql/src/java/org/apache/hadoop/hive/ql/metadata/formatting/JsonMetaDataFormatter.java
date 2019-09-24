@@ -70,6 +70,19 @@ import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_
 public class JsonMetaDataFormatter implements MetaDataFormatter {
   private static final Logger LOG = LoggerFactory.getLogger(JsonMetaDataFormatter.class);
 
+  private static final String COLUMN_NAME = "name";
+  private static final String COLUMN_TYPE = "type";
+  private static final String COLUMN_COMMENT = "comment";
+  private static final String COLUMN_MIN = "min";
+  private static final String COLUMN_MAX = "max";
+  private static final String COLUMN_NUM_NULLS = "numNulls";
+  private static final String COLUMN_NUM_TRUES = "numTrues";
+  private static final String COLUMN_NUM_FALSES = "numFalses";
+  private static final String COLUMN_DISTINCT_COUNT = "distinctCount";
+  private static final String COLUMN_AVG_LENGTH = "avgColLen";
+  private static final String COLUMN_MAX_LENGTH = "maxColLen";
+
+
   /**
    * Convert the map to a JSON string.
    */
@@ -247,96 +260,109 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
 
   private Map<String, Object> createColumnInfo(FieldSchema column, ColumnStatisticsData statistics) {
     Map<String, Object> result = MapBuilder.create()
-        .put("name", column.getName())
-        .put("type", column.getType())
-        .put("comment", column.getComment())
+        .put(COLUMN_NAME, column.getName())
+        .put(COLUMN_TYPE, column.getType())
+        .put(COLUMN_COMMENT, column.getComment())
         .build();
 
     if (statistics != null) {
       if (statistics.isSetBinaryStats()) {
         if (statistics.getBinaryStats().isSetNumNulls()) {
-          result.put("numNulls", statistics.getBinaryStats().getNumNulls());
+          result.put(COLUMN_NUM_NULLS, statistics.getBinaryStats().getNumNulls());
         }
         if (statistics.getBinaryStats().isSetAvgColLen()) {
-          result.put("avgColLen", statistics.getBinaryStats().getAvgColLen());
+          result.put(COLUMN_AVG_LENGTH, statistics.getBinaryStats().getAvgColLen());
         }
         if (statistics.getBinaryStats().isSetMaxColLen()) {
-          result.put("maxColLen", statistics.getBinaryStats().getMaxColLen());
+          result.put(COLUMN_MAX_LENGTH, statistics.getBinaryStats().getMaxColLen());
         }
       } else if (statistics.isSetStringStats()) {
         if (statistics.getStringStats().isSetNumNulls()) {
-          result.put("numNulls", statistics.getStringStats().getNumNulls());
+          result.put(COLUMN_NUM_NULLS, statistics.getStringStats().getNumNulls());
         }
         if (statistics.getStringStats().isSetNumDVs()) {
-          result.put("distinctCount", statistics.getStringStats().getNumDVs());
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getStringStats().getNumDVs());
         }
         if (statistics.getStringStats().isSetAvgColLen()) {
-          result.put("avgColLen", statistics.getStringStats().getAvgColLen());
+          result.put(COLUMN_AVG_LENGTH, statistics.getStringStats().getAvgColLen());
         }
         if (statistics.getStringStats().isSetMaxColLen()) {
-          result.put("maxColLen", statistics.getStringStats().getMaxColLen());
+          result.put(COLUMN_MAX_LENGTH, statistics.getStringStats().getMaxColLen());
         }
       } else if (statistics.isSetBooleanStats()) {
         if (statistics.getBooleanStats().isSetNumNulls()) {
-          result.put("numNulls", statistics.getBooleanStats().getNumNulls());
+          result.put(COLUMN_NUM_NULLS, statistics.getBooleanStats().getNumNulls());
         }
         if (statistics.getBooleanStats().isSetNumTrues()) {
-          result.put("numTrues", statistics.getBooleanStats().getNumTrues());
+          result.put(COLUMN_NUM_TRUES, statistics.getBooleanStats().getNumTrues());
         }
         if (statistics.getBooleanStats().isSetNumFalses()) {
-          result.put("numFalses", statistics.getBooleanStats().getNumFalses());
+          result.put(COLUMN_NUM_FALSES, statistics.getBooleanStats().getNumFalses());
         }
       } else if (statistics.isSetDecimalStats()) {
         if (statistics.getDecimalStats().isSetLowValue()) {
-          result.put("min", MetaDataFormatUtils.convertToString(statistics.getDecimalStats().getLowValue()));
+          result.put(COLUMN_MIN, MetaDataFormatUtils.convertToString(statistics.getDecimalStats().getLowValue()));
         }
         if (statistics.getDecimalStats().isSetHighValue()) {
-          result.put("max", MetaDataFormatUtils.convertToString(statistics.getDecimalStats().getHighValue()));
+          result.put(COLUMN_MAX, MetaDataFormatUtils.convertToString(statistics.getDecimalStats().getHighValue()));
         }
         if (statistics.getDecimalStats().isSetNumNulls()) {
-          result.put("numNulls", statistics.getDecimalStats().getNumNulls());
+          result.put(COLUMN_NUM_NULLS, statistics.getDecimalStats().getNumNulls());
         }
         if (statistics.getDecimalStats().isSetNumDVs()) {
-          result.put("distinctCount", statistics.getDecimalStats().getNumDVs());
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getDecimalStats().getNumDVs());
         }
       } else if (statistics.isSetDoubleStats()) {
         if (statistics.getDoubleStats().isSetLowValue()) {
-          result.put("min", statistics.getDoubleStats().getLowValue());
+          result.put(COLUMN_MIN, statistics.getDoubleStats().getLowValue());
         }
         if (statistics.getDoubleStats().isSetHighValue()) {
-          result.put("max", statistics.getDoubleStats().getHighValue());
+          result.put(COLUMN_MAX, statistics.getDoubleStats().getHighValue());
         }
         if (statistics.getDoubleStats().isSetNumNulls()) {
-          result.put("numNulls", statistics.getDoubleStats().getNumNulls());
+          result.put(COLUMN_NUM_NULLS, statistics.getDoubleStats().getNumNulls());
         }
         if (statistics.getDoubleStats().isSetNumDVs()) {
-          result.put("distinctCount", statistics.getDoubleStats().getNumDVs());
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getDoubleStats().getNumDVs());
         }
       } else if (statistics.isSetLongStats()) {
         if (statistics.getLongStats().isSetLowValue()) {
-          result.put("min", statistics.getLongStats().getLowValue());
+          result.put(COLUMN_MIN, statistics.getLongStats().getLowValue());
         }
         if (statistics.getLongStats().isSetHighValue()) {
-          result.put("max", statistics.getLongStats().getHighValue());
+          result.put(COLUMN_MAX, statistics.getLongStats().getHighValue());
         }
         if (statistics.getLongStats().isSetNumNulls()) {
-          result.put("numNulls", statistics.getLongStats().getNumNulls());
+          result.put(COLUMN_NUM_NULLS, statistics.getLongStats().getNumNulls());
         }
         if (statistics.getLongStats().isSetNumDVs()) {
-          result.put("distinctCount", statistics.getLongStats().getNumDVs());
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getLongStats().getNumDVs());
         }
       } else if (statistics.isSetDateStats()) {
         if (statistics.getDateStats().isSetLowValue()) {
-          result.put("min", MetaDataFormatUtils.convertToString(statistics.getDateStats().getLowValue()));
+          result.put(COLUMN_MIN, MetaDataFormatUtils.convertToString(statistics.getDateStats().getLowValue()));
         }
         if (statistics.getDateStats().isSetHighValue()) {
-          result.put("max", MetaDataFormatUtils.convertToString(statistics.getDateStats().getHighValue()));
+          result.put(COLUMN_MAX, MetaDataFormatUtils.convertToString(statistics.getDateStats().getHighValue()));
         }
         if (statistics.getDateStats().isSetNumNulls()) {
-          result.put("numNulls", statistics.getDateStats().getNumNulls());
+          result.put(COLUMN_NUM_NULLS, statistics.getDateStats().getNumNulls());
         }
         if (statistics.getDateStats().isSetNumDVs()) {
-          result.put("distinctCount", statistics.getDateStats().getNumDVs());
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getDateStats().getNumDVs());
+        }
+      } else if (statistics.isSetTimestampStats()) {
+        if (statistics.getTimestampStats().isSetLowValue()) {
+          result.put(COLUMN_MIN, MetaDataFormatUtils.convertToString(statistics.getTimestampStats().getLowValue()));
+        }
+        if (statistics.getTimestampStats().isSetHighValue()) {
+          result.put(COLUMN_MAX, MetaDataFormatUtils.convertToString(statistics.getTimestampStats().getHighValue()));
+        }
+        if (statistics.getTimestampStats().isSetNumNulls()) {
+          result.put(COLUMN_NUM_NULLS, statistics.getTimestampStats().getNumNulls());
+        }
+        if (statistics.getTimestampStats().isSetNumDVs()) {
+          result.put(COLUMN_DISTINCT_COUNT, statistics.getTimestampStats().getNumDVs());
         }
       }
     }

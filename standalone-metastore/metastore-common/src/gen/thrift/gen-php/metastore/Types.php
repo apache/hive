@@ -9856,6 +9856,258 @@ class DateColumnStatsData {
 
 }
 
+class Timestamp {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $secondsSinceEpoch = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'secondsSinceEpoch',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['secondsSinceEpoch'])) {
+        $this->secondsSinceEpoch = $vals['secondsSinceEpoch'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Timestamp';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->secondsSinceEpoch);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Timestamp');
+    if ($this->secondsSinceEpoch !== null) {
+      $xfer += $output->writeFieldBegin('secondsSinceEpoch', TType::I64, 1);
+      $xfer += $output->writeI64($this->secondsSinceEpoch);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class TimestampColumnStatsData {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\Timestamp
+   */
+  public $lowValue = null;
+  /**
+   * @var \metastore\Timestamp
+   */
+  public $highValue = null;
+  /**
+   * @var int
+   */
+  public $numNulls = null;
+  /**
+   * @var int
+   */
+  public $numDVs = null;
+  /**
+   * @var string
+   */
+  public $bitVectors = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'lowValue',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\Timestamp',
+          ),
+        2 => array(
+          'var' => 'highValue',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\Timestamp',
+          ),
+        3 => array(
+          'var' => 'numNulls',
+          'type' => TType::I64,
+          ),
+        4 => array(
+          'var' => 'numDVs',
+          'type' => TType::I64,
+          ),
+        5 => array(
+          'var' => 'bitVectors',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['lowValue'])) {
+        $this->lowValue = $vals['lowValue'];
+      }
+      if (isset($vals['highValue'])) {
+        $this->highValue = $vals['highValue'];
+      }
+      if (isset($vals['numNulls'])) {
+        $this->numNulls = $vals['numNulls'];
+      }
+      if (isset($vals['numDVs'])) {
+        $this->numDVs = $vals['numDVs'];
+      }
+      if (isset($vals['bitVectors'])) {
+        $this->bitVectors = $vals['bitVectors'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'TimestampColumnStatsData';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->lowValue = new \metastore\Timestamp();
+            $xfer += $this->lowValue->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRUCT) {
+            $this->highValue = new \metastore\Timestamp();
+            $xfer += $this->highValue->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->numNulls);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->numDVs);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->bitVectors);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('TimestampColumnStatsData');
+    if ($this->lowValue !== null) {
+      if (!is_object($this->lowValue)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('lowValue', TType::STRUCT, 1);
+      $xfer += $this->lowValue->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->highValue !== null) {
+      if (!is_object($this->highValue)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('highValue', TType::STRUCT, 2);
+      $xfer += $this->highValue->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->numNulls !== null) {
+      $xfer += $output->writeFieldBegin('numNulls', TType::I64, 3);
+      $xfer += $output->writeI64($this->numNulls);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->numDVs !== null) {
+      $xfer += $output->writeFieldBegin('numDVs', TType::I64, 4);
+      $xfer += $output->writeI64($this->numDVs);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->bitVectors !== null) {
+      $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 5);
+      $xfer += $output->writeString($this->bitVectors);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class ColumnStatisticsData {
   static $_TSPEC;
 
@@ -9887,6 +10139,10 @@ class ColumnStatisticsData {
    * @var \metastore\DateColumnStatsData
    */
   public $dateStats = null;
+  /**
+   * @var \metastore\TimestampColumnStatsData
+   */
+  public $timestampStats = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -9926,6 +10182,11 @@ class ColumnStatisticsData {
           'type' => TType::STRUCT,
           'class' => '\metastore\DateColumnStatsData',
           ),
+        8 => array(
+          'var' => 'timestampStats',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\TimestampColumnStatsData',
+          ),
         );
     }
     if (is_array($vals)) {
@@ -9949,6 +10210,9 @@ class ColumnStatisticsData {
       }
       if (isset($vals['dateStats'])) {
         $this->dateStats = $vals['dateStats'];
+      }
+      if (isset($vals['timestampStats'])) {
+        $this->timestampStats = $vals['timestampStats'];
       }
     }
   }
@@ -10028,6 +10292,14 @@ class ColumnStatisticsData {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 8:
+          if ($ftype == TType::STRUCT) {
+            $this->timestampStats = new \metastore\TimestampColumnStatsData();
+            $xfer += $this->timestampStats->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -10095,6 +10367,14 @@ class ColumnStatisticsData {
       }
       $xfer += $output->writeFieldBegin('dateStats', TType::STRUCT, 7);
       $xfer += $this->dateStats->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->timestampStats !== null) {
+      if (!is_object($this->timestampStats)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('timestampStats', TType::STRUCT, 8);
+      $xfer += $this->timestampStats->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
