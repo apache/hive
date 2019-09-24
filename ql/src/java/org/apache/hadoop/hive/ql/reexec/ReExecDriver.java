@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,7 +120,7 @@ public class ReExecDriver implements IDriver {
   }
 
   @Override
-  public CommandProcessorResponse compileAndRespond(String statement) {
+  public CommandProcessorResponse compileAndRespond(String statement) throws CommandProcessorException {
     currentQuery = statement;
     return coreDriver.compileAndRespond(statement);
   }
@@ -145,7 +146,7 @@ public class ReExecDriver implements IDriver {
   }
 
   @Override
-  public CommandProcessorResponse run() {
+  public CommandProcessorResponse run() throws CommandProcessorException {
     executionIndex = 0;
     int maxExecutuions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
 
@@ -157,24 +158,35 @@ public class ReExecDriver implements IDriver {
       }
       coreDriver.getContext().setExecutionIndex(executionIndex);
       LOG.info("Execution #{} of query", executionIndex);
-      CommandProcessorResponse cpr = coreDriver.run();
+      CommandProcessorResponse cpr = null;
+      CommandProcessorException cpe = null;
+      try {
+        cpr = coreDriver.run();
+      } catch (CommandProcessorException e) {
+        cpe = e;
+      }
 
       PlanMapper oldPlanMapper = coreDriver.getPlanMapper();
-      afterExecute(oldPlanMapper, cpr.getResponseCode() == 0);
+      afterExecute(oldPlanMapper, cpr != null);
 
       boolean shouldReExecute = explainReOptimization && executionIndex==1;
-      shouldReExecute |= cpr.getResponseCode() != 0 && shouldReExecute();
+      shouldReExecute |= cpr == null && shouldReExecute();
 
       if (executionIndex >= maxExecutuions || !shouldReExecute) {
-        return cpr;
+        if (cpr != null) {
+          return cpr;
+        } else {
+          throw cpe;
+        }
       }
       LOG.info("Preparing to re-execute query");
       prepareToReExecute();
-      CommandProcessorResponse compile_resp = coreDriver.compileAndRespond(currentQuery);
-      if (compile_resp.failed()) {
+      try {
+        coreDriver.compileAndRespond(currentQuery);
+      } catch (CommandProcessorException e) {
         LOG.error("Recompilation of the query failed; this is unexpected.");
         // FIXME: somehow place pointers that re-execution compilation have failed; the query have been successfully compiled before?
-        return compile_resp;
+        throw e;
       }
 
       PlanMapper newPlanMapper = coreDriver.getPlanMapper();
@@ -213,11 +225,8 @@ public class ReExecDriver implements IDriver {
   }
 
   @Override
-  public CommandProcessorResponse run(String command) {
-    CommandProcessorResponse r0 = compileAndRespond(command);
-    if (r0.getResponseCode() != 0) {
-      return r0;
-    }
+  public CommandProcessorResponse run(String command) throws CommandProcessorException {
+    compileAndRespond(command);
     return run();
   }
 

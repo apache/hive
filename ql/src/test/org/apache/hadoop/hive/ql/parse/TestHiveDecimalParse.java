@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public class TestHiveDecimalParse {
     Driver driver = createDriver();
     try {
       driver.compile(query, true, false);
-    } catch (CommandProcessorResponse cpe) {
+    } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
       Assert.assertTrue(cpe.getErrorMessage(),
           cpe.getErrorMessage().contains("Decimal precision out of allowed range [1,38]"));
@@ -76,7 +76,7 @@ public class TestHiveDecimalParse {
     Driver driver = createDriver();
     try {
       driver.compile(query, true, false);
-    } catch (CommandProcessorResponse cpe) {
+    } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
       Assert.assertTrue(cpe.getErrorMessage(),
           cpe.getErrorMessage().contains("Decimal precision out of allowed range [1,38]"));
@@ -92,7 +92,7 @@ public class TestHiveDecimalParse {
     Driver driver = createDriver();
     try {
       driver.compile(query, true, false);
-    } catch (CommandProcessorResponse cpe) {
+    } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
       Assert.assertTrue(cpe.getErrorMessage(),
           cpe.getErrorMessage().contains("Decimal scale must be less than or equal to precision"));
@@ -108,7 +108,7 @@ public class TestHiveDecimalParse {
     Driver driver = createDriver();
     try {
       driver.compile(query, true, false);
-    } catch (CommandProcessorResponse cpe) {
+    } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
       Assert.assertTrue(cpe.getErrorMessage(),
           cpe.getErrorMessage().contains("extraneous input '-' expecting Number"));
@@ -124,7 +124,7 @@ public class TestHiveDecimalParse {
     Driver driver = createDriver();
     try {
       driver.compile(query, true, false);
-    } catch (CommandProcessorResponse cpe) {
+    } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
       Assert.assertTrue(cpe.getErrorMessage(),
           cpe.getErrorMessage().contains("missing ) at ',' near ',' in column name or constraint"));
@@ -140,7 +140,7 @@ public class TestHiveDecimalParse {
     Driver driver = createDriver();
     try {
       driver.compile(query, true, false);
-    } catch (CommandProcessorResponse cpe) {
+    } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
       Assert.assertTrue(cpe.getErrorMessage(),
           cpe.getErrorMessage().contains("mismatched input '7a' expecting Number near '('"));
@@ -156,7 +156,7 @@ public class TestHiveDecimalParse {
     Driver driver = createDriver();
     try {
       driver.compile(query, true, false);
-    } catch (CommandProcessorResponse cpe) {
+    } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
       Assert.assertTrue(cpe.getErrorMessage(),
           cpe.getErrorMessage().contains("Decimal scale must be less than or equal to precision"));

@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.api.HCatAddPartitionDesc;
@@ -97,7 +97,7 @@ public class TestCommands {
   }
 
   @Test
-  public void testDropDatabaseCommand() throws HCatException {
+  public void testDropDatabaseCommand() throws HCatException, CommandProcessorException {
     String dbName = "cmd_testdb";
     int evid = 999;
     Command testCmd = new DropDatabaseCommand(dbName, evid);
@@ -129,7 +129,7 @@ public class TestCommands {
   }
 
   @Test
-  public void testDropTableCommand() throws HCatException {
+  public void testDropTableCommand() throws HCatException, CommandProcessorException {
     String dbName = "cmd_testdb";
     String tableName = "cmd_testtable";
     int evid = 789;
@@ -209,7 +209,7 @@ public class TestCommands {
   }
 
   @Test
-  public void testDropPartitionCommand() throws HCatException, MetaException {
+  public void testDropPartitionCommand() throws HCatException, MetaException, CommandProcessorException {
     String dbName = "cmd_testdb";
     String tableName = "cmd_testtable";
     int evid = 789;
@@ -301,7 +301,7 @@ public class TestCommands {
   }
 
   @Test
-  public void testDropTableCommand2() throws HCatException, MetaException {
+  public void testDropTableCommand2() throws HCatException, MetaException, CommandProcessorException {
     // Secondary DropTableCommand test for testing repl-drop-tables' effect on partitions inside a partitioned table
     // when there exist partitions inside the table which are older than the drop event.
     // Our goal is this : Create a table t, with repl.last.id=157, say.
@@ -372,7 +372,7 @@ public class TestCommands {
 
 
   @Test
-  public void testBasicReplEximCommands() throws IOException {
+  public void testBasicReplEximCommands() throws IOException, CommandProcessorException {
     // repl export, has repl.last.id and repl.scope=all in it
     // import repl dump, table has repl.last.id on it (will likely be 0)
     int evid = 111;
@@ -398,14 +398,9 @@ public class TestCommands {
 
     HcatTestUtils.createTestDataFile(tempLocation,data);
 
-    CommandProcessorResponse ret = driver.run(
-        "LOAD DATA LOCAL INPATH '"+tempLocation+"' OVERWRITE INTO TABLE "+ dbName+ "." + tableName
-    );
-    assertEquals(ret.getResponseCode() + ":" + ret.getErrorMessage(), null, ret.getException());
+    driver.run("LOAD DATA LOCAL INPATH '"+tempLocation+"' OVERWRITE INTO TABLE "+ dbName+ "." + tableName);
 
-    CommandProcessorResponse selectRet = driver.run("SELECT * from " + dbName + "." + tableName);
-    assertEquals(selectRet.getResponseCode() + ":" + selectRet.getErrorMessage(),
-        null, selectRet.getException());
+    driver.run("SELECT * from " + dbName + "." + tableName);
 
     List<String> values = new ArrayList<String>();
     driver.getResults(values);
@@ -418,8 +413,7 @@ public class TestCommands {
         exportLocation, false, evid);
 
     LOG.info("About to run :" + exportCmd.get().get(0));
-    CommandProcessorResponse ret2 = driver.run(exportCmd.get().get(0));
-    assertEquals(ret2.getResponseCode() + ":" + ret2.getErrorMessage(), null, ret2.getException());
+    driver.run(exportCmd.get().get(0));
 
     List<String> exportPaths = exportCmd.cleanupLocationsAfterEvent();
     assertEquals(1,exportPaths.size());
@@ -432,12 +426,9 @@ public class TestCommands {
     ImportCommand importCmd = new ImportCommand(dbName, importedTableName, null, exportLocation, false, evid);
 
     LOG.info("About to run :" + importCmd.get().get(0));
-    CommandProcessorResponse ret3 = driver.run(importCmd.get().get(0));
-    assertEquals(ret3.getResponseCode() + ":" + ret3.getErrorMessage(), null, ret3.getException());
+    driver.run(importCmd.get().get(0));
 
-    CommandProcessorResponse selectRet2 = driver.run("SELECT * from " + dbName + "." + importedTableName);
-    assertEquals(selectRet2.getResponseCode() + ":" + selectRet2.getErrorMessage(),
-        null, selectRet2.getException());
+    driver.run("SELECT * from " + dbName + "." + importedTableName);
 
     List<String> values2 = new ArrayList<String>();
     driver.getResults(values2);
@@ -453,7 +444,7 @@ public class TestCommands {
   }
 
   @Test
-  public void testMetadataReplEximCommands() throws IOException {
+  public void testMetadataReplEximCommands() throws IOException, CommandProcessorException {
     // repl metadata export, has repl.last.id and repl.scope=metadata
     // import repl metadata dump, table metadata changed, allows override, has repl.last.id
     int evid = 222;
@@ -479,14 +470,9 @@ public class TestCommands {
 
     HcatTestUtils.createTestDataFile(tempLocation,data);
 
-    CommandProcessorResponse ret = driver.run(
-        "LOAD DATA LOCAL INPATH '"+tempLocation+"' OVERWRITE INTO TABLE "+ dbName+ "." + tableName
-    );
-    assertEquals(ret.getResponseCode() + ":" + ret.getErrorMessage(), null, ret.getException());
+    driver.run("LOAD DATA LOCAL INPATH '"+tempLocation+"' OVERWRITE INTO TABLE "+ dbName+ "." + tableName);
 
-    CommandProcessorResponse selectRet = driver.run("SELECT * from " + dbName + "." + tableName);
-    assertEquals(selectRet.getResponseCode() + ":" + selectRet.getErrorMessage(),
-        null, selectRet.getException());
+    driver.run("SELECT * from " + dbName + "." + tableName);
 
     List<String> values = new ArrayList<String>();
     driver.getResults(values);
@@ -499,8 +485,7 @@ public class TestCommands {
         exportLocation, true, evid);
 
     LOG.info("About to run :" + exportMdCmd.get().get(0));
-    CommandProcessorResponse ret2 = driver.run(exportMdCmd.get().get(0));
-    assertEquals(ret2.getResponseCode() + ":" + ret2.getErrorMessage(), null, ret2.getException());
+    driver.run(exportMdCmd.get().get(0));
 
     List<String> exportPaths = exportMdCmd.cleanupLocationsAfterEvent();
     assertEquals(1,exportPaths.size());
@@ -513,12 +498,9 @@ public class TestCommands {
     ImportCommand importMdCmd = new ImportCommand(dbName, importedTableName, null, exportLocation, true, evid);
 
     LOG.info("About to run :" + importMdCmd.get().get(0));
-    CommandProcessorResponse ret3 = driver.run(importMdCmd.get().get(0));
-    assertEquals(ret3.getResponseCode() + ":" + ret3.getErrorMessage(), null, ret3.getException());
+    driver.run(importMdCmd.get().get(0));
 
-    CommandProcessorResponse selectRet2 = driver.run("SELECT * from " + dbName + "." + importedTableName);
-    assertEquals(selectRet2.getResponseCode() + ":" + selectRet2.getErrorMessage(),
-        null, selectRet2.getException());
+    driver.run("SELECT * from " + dbName + "." + importedTableName);
 
     List<String> values2 = new ArrayList<String>();
     driver.getResults(values2);
@@ -530,7 +512,6 @@ public class TestCommands {
 
     assertTrue(importedTable.getTblProps().containsKey("repl.last.id"));
   }
-
 
   @Test
   public void testNoopReplEximCommands() throws Exception {
@@ -546,8 +527,7 @@ public class TestCommands {
         exportLocation, false, evid);
 
     LOG.info("About to run :" + noopExportCmd.get().get(0));
-    CommandProcessorResponse ret = driver.run(noopExportCmd.get().get(0));
-    assertEquals(ret.getResponseCode() + ":" + ret.getErrorMessage(), null, ret.getException());
+    driver.run(noopExportCmd.get().get(0));
 
     List<String> exportPaths = noopExportCmd.cleanupLocationsAfterEvent();
     assertEquals(1,exportPaths.size());
@@ -559,8 +539,7 @@ public class TestCommands {
     ImportCommand noopImportCmd = new ImportCommand(dbName, tableName, null, exportLocation, false, evid);
 
     LOG.info("About to run :" + noopImportCmd.get().get(0));
-    CommandProcessorResponse ret2 = driver.run(noopImportCmd.get().get(0));
-    assertEquals(ret2.getResponseCode() + ":" + ret2.getErrorMessage(), null, ret2.getException());
+    driver.run(noopImportCmd.get().get(0));
 
     Exception onfe = null;
     try {

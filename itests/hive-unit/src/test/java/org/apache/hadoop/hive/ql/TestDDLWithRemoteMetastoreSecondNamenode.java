@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.metadata.*;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import static org.junit.Assert.assertNotNull;
@@ -157,12 +158,13 @@ public class TestDDLWithRemoteMetastoreSecondNamenode {
   }
 
   private void executeQuery(String query) throws Exception {
-    CommandProcessorResponse result =  driver.run(query);
-    assertNotNull("driver.run() was expected to return result for query: " + query, result);
-    assertEquals("Execution of (" + query + ") failed with exit status: "
-          + result.getResponseCode() + ", " + result.getErrorMessage()
-          + ", query: " + query,
-          result.getResponseCode(), 0);
+    try {
+      CommandProcessorResponse result =  driver.run(query);
+      assertNotNull("driver.run() was expected to return result for query: " + query, result);
+    } catch (CommandProcessorException e) {
+      throw new RuntimeException("Execution of (" + query + ") failed with exit status: " +
+          e.getResponseCode() + ", " + e.getErrorMessage() + ", query: " + query);
+    }
   }
 
   private String buildLocationClause(String location) {

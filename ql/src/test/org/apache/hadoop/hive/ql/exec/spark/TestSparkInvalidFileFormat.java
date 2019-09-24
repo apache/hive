@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -37,7 +38,7 @@ import java.io.IOException;
 public class TestSparkInvalidFileFormat {
 
   @Test
-  public void readTextFileAsParquet() throws IOException {
+  public void readTextFileAsParquet() throws IOException, CommandProcessorException {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             SQLStdHiveAuthorizerFactory.class.getName());
@@ -56,21 +57,21 @@ public class TestSparkInvalidFileFormat {
 
     try {
       driver = DriverFactory.newDriver(conf);
-      Assert.assertEquals(0,
-              driver.run("CREATE TABLE test_table (key STRING, value STRING)").getResponseCode());
-      Assert.assertEquals(0, driver.run(
-              "LOAD DATA LOCAL INPATH '" + testFile + "' INTO TABLE test_table").getResponseCode());
-      Assert.assertEquals(0,
-              driver.run("ALTER TABLE test_table SET FILEFORMAT parquet").getResponseCode());
-      Throwable exception = driver.run(
-              "SELECT * FROM test_table ORDER BY key LIMIT 10").getException();
-      Assert.assertTrue(exception instanceof HiveException);
-      Assert.assertTrue(exception.getMessage().contains("Spark job failed due to task failures"));
-      Assert.assertTrue(exception.getMessage().contains("kv1.txt is not a Parquet file. expected " +
+      driver.run("CREATE TABLE test_table (key STRING, value STRING)");
+      driver.run("LOAD DATA LOCAL INPATH '" + testFile + "' INTO TABLE test_table");
+      driver.run("ALTER TABLE test_table SET FILEFORMAT parquet");
+      try {
+        driver.run("SELECT * FROM test_table ORDER BY key LIMIT 10");
+        assert false;
+      } catch (CommandProcessorException e) {
+        Assert.assertTrue(e.getException() instanceof HiveException);
+        Assert.assertTrue(e.getException().getMessage().contains("Spark job failed due to task failures"));
+        Assert.assertTrue(e.getException().getMessage().contains("kv1.txt is not a Parquet file. expected " +
               "magic number at tail [80, 65, 82, 49] but found [95, 57, 55, 10]"));
+      }
     } finally {
       if (driver != null) {
-        Assert.assertEquals(0, driver.run("DROP TABLE IF EXISTS test_table").getResponseCode());
+        driver.run("DROP TABLE IF EXISTS test_table");
         driver.destroy();
       }
       if (fs.exists(tmpDir)) {

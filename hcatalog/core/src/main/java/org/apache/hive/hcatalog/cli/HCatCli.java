@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -281,20 +282,30 @@ public class HCatCli {
     String firstToken = cmd.split("\\s+")[0].trim();
 
     if (firstToken.equalsIgnoreCase("set")) {
-      return new SetProcessor().run(cmd.substring(firstToken.length()).trim()).getResponseCode();
+      try {
+        new SetProcessor().run(cmd.substring(firstToken.length()).trim());
+        return 0;
+      } catch (CommandProcessorException e) {
+        return e.getResponseCode();
+      }
     } else if (firstToken.equalsIgnoreCase("dfs")) {
-      return new DfsProcessor(ss.getConf()).run(cmd.substring(firstToken.length()).trim()).getResponseCode();
+      try {
+        new DfsProcessor(ss.getConf()).run(cmd.substring(firstToken.length()).trim());
+        return 0;
+      } catch (CommandProcessorException e) {
+        return e.getResponseCode();
+      }
     }
 
     HCatDriver driver = new HCatDriver(ss.getConf());
-
-    int ret = driver.run(cmd).getResponseCode();
-
-    if (ret != 0) {
+    try {
+      driver.run(cmd);
+    } catch (CommandProcessorException e) {
       driver.close();
-      sysExit(ss, ret);
+      sysExit(ss, e.getResponseCode());
     }
 
+    int ret = 0;
     ArrayList<String> res = new ArrayList<String>();
     try {
       while (driver.getResults(res)) {
