@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -33,12 +32,11 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
@@ -49,6 +47,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TestRule;
 
 public class TestReOptimization {
@@ -75,8 +74,7 @@ public class TestReOptimization {
         // @formatter:on
     };
     for (String cmd : cmds) {
-      int ret = driver.run(cmd).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run(cmd);
     }
   }
 
@@ -94,15 +92,15 @@ public class TestReOptimization {
   public static void dropTables(IDriver driver) throws Exception {
     String[] tables = new String[] {"tu", "tv", "tw" };
     for (String t : tables) {
-      int ret = driver.run("drop table if exists " + t).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run("drop table if exists " + t);
     }
   }
 
-  private PlanMapper getMapperForQuery(IDriver driver, String query) throws CommandProcessorResponse {
-    CommandProcessorResponse res = driver.run(query);
-    if (res.getResponseCode() != 0) {
-      throw res;
+  private PlanMapper getMapperForQuery(IDriver driver, String query) {
+    try {
+      driver.run(query);
+    } catch (CommandProcessorException e) {
+      throw new RuntimeException("running the query " + query + " was not successful");
     }
     PlanMapper pm0 = driver.getContext().getPlanMapper();
     return pm0;
@@ -152,14 +150,19 @@ public class TestReOptimization {
 
   }
 
-  @Test(expected = CommandProcessorResponse.class)
+  @Rule
+  public ExpectedException exceptionRule = ExpectedException.none();
+
+  @Test
   public void testNotReExecutedIfAssertionError() throws Exception {
     IDriver driver = createDriver("reoptimize");
     String query =
         "select assert_true(${hiveconf:zzz}>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
 
+    exceptionRule.expect(RuntimeException.class);
+    exceptionRule.expectMessage("running the query " + query + " was not successful");
+
     getMapperForQuery(driver, query);
-    assertEquals(1, driver.getContext().getExecutionIndex());
   }
 
   @Test
@@ -192,7 +195,7 @@ public class TestReOptimization {
   private void checkRuntimeStatsReuse(
       boolean expectInSameSession,
       boolean expectNewHs2Session,
-      boolean expectHs2Instance) throws CommandProcessorResponse {
+      boolean expectHs2Instance) throws CommandProcessorException {
     {
       // same session
       IDriver driver = createDriver("reoptimize");
@@ -216,7 +219,7 @@ public class TestReOptimization {
   }
 
   @SuppressWarnings("rawtypes")
-  private void checkUsageOfRuntimeStats(IDriver driver, boolean expected) throws CommandProcessorResponse {
+  private void checkUsageOfRuntimeStats(IDriver driver, boolean expected) throws CommandProcessorException {
     String query = "select sum(u) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
     PlanMapper pm = getMapperForQuery(driver, query);
     assertEquals(1, driver.getContext().getExecutionIndex());
@@ -271,8 +274,6 @@ public class TestReOptimization {
         HiveFilter hf = hfs.get(0);
         FilterOperator fo = fos.get(0);
         OperatorStats os = oss.get(0);
-
-        Optional<OperatorStats> prevOs = driver.getContext().getStatsSource().lookup(RelTreeSignature.of(hf));
 
         long cntFilter = RelMetadataQuery.instance().getRowCount(hf).longValue();
         if (fo.getStatistics() != null) {

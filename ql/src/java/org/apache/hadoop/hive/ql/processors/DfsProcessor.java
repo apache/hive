@@ -42,8 +42,8 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  */
 public class DfsProcessor implements CommandProcessor {
 
-  public static final Logger LOG = LoggerFactory.getLogger(DfsProcessor.class.getName());
-  public static final LogHelper console = new LogHelper(LOG);
+  private static final Logger LOG = LoggerFactory.getLogger(DfsProcessor.class.getName());
+  private static final LogHelper console = new LogHelper(LOG);
   public static final String DFS_RESULT_HEADER = "DFS Output";
 
   private final FsShell dfs;
@@ -60,7 +60,7 @@ public class DfsProcessor implements CommandProcessor {
   }
 
   @Override
-  public CommandProcessorResponse run(String command) {
+  public CommandProcessorResponse run(String command) throws CommandProcessorException {
 
 
     try {
@@ -87,18 +87,19 @@ public class DfsProcessor implements CommandProcessor {
       }
 
       int ret = dfs.run(tokens);
+      System.setOut(oldOut);
       if (ret != 0) {
         console.printError("Command " + command + " failed with exit code = " + ret);
+        throw new CommandProcessorException(ret);
       }
-
-      System.setOut(oldOut);
-      return new CommandProcessorResponse(ret, null, null, dfsSchema);
-
+      return new CommandProcessorResponse(dfsSchema, null);
+    } catch (CommandProcessorException e) {
+      throw e;
     } catch (Exception e) {
       console.printError("Exception raised from DFSShell.run "
           + e.getLocalizedMessage(), org.apache.hadoop.util.StringUtils
           .stringifyException(e));
-      return new CommandProcessorResponse(1);
+      throw new CommandProcessorException(1);
     }
   }
 
