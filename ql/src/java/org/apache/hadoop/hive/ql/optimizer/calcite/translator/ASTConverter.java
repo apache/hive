@@ -160,14 +160,24 @@ public class ASTConverter {
       }
 
       HiveAggregate hiveAgg = (HiveAggregate) groupBy;
-      for (int pos : hiveAgg.getAggregateColumnsOrder()) {
-        RexInputRef iRef = new RexInputRef(groupBy.getGroupSet().nth(pos),
-            groupBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
-        b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
-      }
-      for (int pos = 0; pos < groupBy.getGroupCount(); pos++) {
-        if (!hiveAgg.getAggregateColumnsOrder().contains(pos)) {
+      if (hiveAgg.getAggregateColumnsOrder() != null) {
+        // Aggregation columns may have been sorted in specific order
+        for (int pos : hiveAgg.getAggregateColumnsOrder()) {
           RexInputRef iRef = new RexInputRef(groupBy.getGroupSet().nth(pos),
+              groupBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
+          b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
+        }
+        for (int pos = 0; pos < groupBy.getGroupCount(); pos++) {
+          if (!hiveAgg.getAggregateColumnsOrder().contains(pos)) {
+            RexInputRef iRef = new RexInputRef(groupBy.getGroupSet().nth(pos),
+                groupBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
+            b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
+          }
+        }
+      } else {
+        // Aggregation columns have not been reordered
+        for (int i : groupBy.getGroupSet()) {
+          RexInputRef iRef = new RexInputRef(i,
               groupBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
           b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
         }
