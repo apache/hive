@@ -57,7 +57,7 @@ Plan optimized by CBO.
 Vertex dependency in root stage
 Reducer 11 <- Map 10 (SIMPLE_EDGE), Map 12 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE), Reducer 8 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
 Reducer 7 <- Map 6 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
 Reducer 8 <- Reducer 11 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
@@ -78,8 +78,8 @@ Stage-0
                 Output:["_col1","_col2"]
                 Merge Join Operator [MERGEJOIN_120] (rows=264534 width=284)
                   Conds:RS_32._col1=RS_33._col1(Inner),Output:["_col2","_col6"]
-                <-Reducer 2 [ONE_TO_ONE_EDGE]
-                  FORWARD [RS_32]
+                <-Reducer 2 [SIMPLE_EDGE]
+                  SHUFFLE [RS_32]
                     PartitionCols:_col1
                     Merge Join Operator [MERGEJOIN_116] (rows=56363634 width=4)
                       Conds:RS_123._col0=RS_126._col0(Inner),Output:["_col1"]

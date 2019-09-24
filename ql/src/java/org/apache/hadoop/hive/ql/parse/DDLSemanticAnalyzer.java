@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.FileNotFoundException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -74,14 +72,6 @@ import org.apache.hadoop.hive.ql.ddl.misc.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.MsckDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.ShowConfDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.ShowGrantDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.ShowPrincipalsDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.ShowRoleGrantDesc;
-import org.apache.hadoop.hive.ql.ddl.privilege.ShowRolesDesc;
-import org.apache.hadoop.hive.ql.ddl.process.AbortTransactionsDesc;
-import org.apache.hadoop.hive.ql.ddl.process.KillQueriesDesc;
-import org.apache.hadoop.hive.ql.ddl.process.ShowCompactionsDesc;
-import org.apache.hadoop.hive.ql.ddl.process.ShowTransactionsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.column.AlterTableAddColumnsDesc;
@@ -172,8 +162,6 @@ import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
-import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactory;
-import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -217,7 +205,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Map<Integer, String> TokenToTypeName = new HashMap<Integer, String>();
 
   private final Set<String> reservedPartitionValues;
-  private final HiveAuthorizationTaskFactory hiveAuthorizationTaskFactory;
   private WriteEntity alterTableOutput;
   // Equivalent to acidSinks, but for DDL operations that change data.
   private DDLDescWithWriteId ddlDescWithWriteId;
@@ -290,7 +277,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
-    hiveAuthorizationTaskFactory = createAuthorizationTaskFactory(conf, db);
   }
 
   @Override
@@ -423,20 +409,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowDbLocks(ast);
       break;
-    case HiveParser.TOK_SHOW_COMPACTIONS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowCompactions(ast);
-      break;
-    case HiveParser.TOK_SHOW_TRANSACTIONS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowTxns(ast);
-      break;
-    case HiveParser.TOK_ABORT_TRANSACTIONS:
-      analyzeAbortTxns(ast);
-      break;
-    case HiveParser.TOK_KILL_QUERY:
-      analyzeKillQuery(ast);
-      break;
     case HiveParser.TOK_SHOWCONF:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowConf(ast);
@@ -499,43 +471,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_UNLOCKTABLE:
       analyzeUnlockTable(ast);
       break;
-    case HiveParser.TOK_CREATEROLE:
-      analyzeCreateRole(ast);
-      break;
-    case HiveParser.TOK_DROPROLE:
-      analyzeDropRole(ast);
-      break;
-    case HiveParser.TOK_SHOW_ROLE_GRANT:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowRoleGrant(ast);
-      break;
-    case HiveParser.TOK_SHOW_ROLE_PRINCIPALS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowRolePrincipals(ast);
-      break;
-    case HiveParser.TOK_SHOW_ROLES:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowRoles(ast);
-      break;
-    case HiveParser.TOK_GRANT_ROLE:
-      analyzeGrantRevokeRole(true, ast);
-      break;
-    case HiveParser.TOK_REVOKE_ROLE:
-      analyzeGrantRevokeRole(false, ast);
-      break;
-    case HiveParser.TOK_GRANT:
-      analyzeGrant(ast);
-      break;
-    case HiveParser.TOK_SHOW_GRANT:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowGrant(ast);
-      break;
-    case HiveParser.TOK_REVOKE:
-      analyzeRevoke(ast);
-      break;
-   case HiveParser.TOK_SHOW_SET_ROLE:
-     analyzeSetShowRole(ast);
-     break;
    case HiveParser.TOK_CACHE_METADATA:
      analyzeCacheMetadata(ast);
      break;
@@ -644,106 +579,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       setAcidDdlDesc(columnStatsUpdateWork);
     }
     rootTasks.add(cStatsUpdateTask);
-  }
-
-  private void analyzeSetShowRole(ASTNode ast) throws SemanticException {
-    switch (ast.getChildCount()) {
-    case 0:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      rootTasks.add(hiveAuthorizationTaskFactory.createShowCurrentRoleTask(
-          getInputs(), getOutputs(), ctx.getResFile()));
-      setFetchTask(createFetchTask(ShowRolesDesc.SCHEMA));
-      break;
-    case 1:
-      rootTasks.add(hiveAuthorizationTaskFactory.createSetRoleTask(
-          BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText()), getInputs(), getOutputs()));
-      break;
-    default:
-      throw new SemanticException("Internal error. ASTNode expected to have 0 or 1 child. " + ast.dump());
-    }
-  }
-
-  private void analyzeGrantRevokeRole(boolean grant, ASTNode ast) throws SemanticException {
-    Task<?> task;
-    if(grant) {
-      task = hiveAuthorizationTaskFactory.createGrantRoleTask(ast, getInputs(), getOutputs());
-    } else {
-      task = hiveAuthorizationTaskFactory.createRevokeRoleTask(ast, getInputs(), getOutputs());
-    }
-    if(task != null) {
-      rootTasks.add(task);
-    }
-  }
-
-  private void analyzeShowGrant(ASTNode ast) throws SemanticException {
-    Task<?> task = hiveAuthorizationTaskFactory.
-        createShowGrantTask(ast, ctx.getResFile(), getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-      setFetchTask(createFetchTask(ShowGrantDesc.SCHEMA));
-    }
-  }
-
-  private void analyzeGrant(ASTNode ast) throws SemanticException {
-    Task<?> task = hiveAuthorizationTaskFactory.
-        createGrantTask(ast, getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-    }
-  }
-
-  private void analyzeRevoke(ASTNode ast) throws SemanticException {
-    Task<?> task = hiveAuthorizationTaskFactory.
-        createRevokeTask(ast, getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-    }
-  }
-
-  private void analyzeCreateRole(ASTNode ast) throws SemanticException {
-    Task<?> task = hiveAuthorizationTaskFactory.
-        createCreateRoleTask(ast, getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-    }
-  }
-
-  private void analyzeDropRole(ASTNode ast) throws SemanticException {
-    Task<?> task = hiveAuthorizationTaskFactory.
-        createDropRoleTask(ast, getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-    }
-  }
-
-  private void analyzeShowRoleGrant(ASTNode ast) throws SemanticException {
-    Task<?> task = hiveAuthorizationTaskFactory.
-        createShowRoleGrantTask(ast, ctx.getResFile(), getInputs(), getOutputs());
-    if(task != null) {
-      rootTasks.add(task);
-      setFetchTask(createFetchTask(ShowRoleGrantDesc.SCHEMA));
-    }
-  }
-
-  private void analyzeShowRolePrincipals(ASTNode ast) throws SemanticException {
-    Task<?> roleDDLTask = (Task<?>) hiveAuthorizationTaskFactory
-        .createShowRolePrincipalsTask(ast, ctx.getResFile(), getInputs(), getOutputs());
-
-    if (roleDDLTask != null) {
-      rootTasks.add(roleDDLTask);
-      setFetchTask(createFetchTask(ShowPrincipalsDesc.SCHEMA));
-    }
-  }
-
-  private void analyzeShowRoles(ASTNode ast) throws SemanticException {
-    @SuppressWarnings("unchecked")
-    Task<DDLWork> roleDDLTask = (Task<DDLWork>) hiveAuthorizationTaskFactory
-        .createShowRolesTask(ast, ctx.getResFile(), getInputs(), getOutputs());
-
-    if (roleDDLTask != null) {
-      rootTasks.add(roleDDLTask);
-      setFetchTask(createFetchTask(ShowRolesDesc.SCHEMA));
-    }
   }
 
   private void analyzeExchangePartition(String[] qualified, ASTNode ast) throws SemanticException {
@@ -2731,59 +2566,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ctx.setNeedLockMgr(true);
   }
 
-  /**
-   * Add a task to execute "SHOW COMPACTIONS"
-   * @param ast The parsed command tree.
-   * @throws SemanticException Parsing failed.
-   */
-  private void analyzeShowCompactions(ASTNode ast) throws SemanticException {
-    ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-    setFetchTask(createFetchTask(ShowCompactionsDesc.SCHEMA));
-  }
-
-  /**
-   * Add a task to execute "SHOW COMPACTIONS"
-   * @param ast The parsed command tree.
-   * @throws SemanticException Parsing failed.
-   */
-  private void analyzeShowTxns(ASTNode ast) throws SemanticException {
-    ShowTransactionsDesc desc = new ShowTransactionsDesc(ctx.getResFile());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-    setFetchTask(createFetchTask(ShowTransactionsDesc.SCHEMA));
-  }
-
-  /**
-   * Add a task to execute "ABORT TRANSACTIONS"
-   * @param ast The parsed command tree
-   * @throws SemanticException Parsing failed
-   */
-  private void analyzeAbortTxns(ASTNode ast) throws SemanticException {
-    List<Long> txnids = new ArrayList<Long>();
-    int numChildren = ast.getChildCount();
-    for (int i = 0; i < numChildren; i++) {
-      txnids.add(Long.parseLong(ast.getChild(i).getText()));
-    }
-    AbortTransactionsDesc desc = new AbortTransactionsDesc(txnids);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-  }
-
-   /**
-   * Add a task to execute "Kill query"
-   * @param ast The parsed command tree
-   * @throws SemanticException Parsing failed
-   */
-  private void analyzeKillQuery(ASTNode ast) throws SemanticException {
-    List<String> queryIds = new ArrayList<String>();
-    int numChildren = ast.getChildCount();
-    for (int i = 0; i < numChildren; i++) {
-      queryIds.add(stripQuotes(ast.getChild(i).getText()));
-    }
-    addServiceOutput();
-    KillQueriesDesc desc = new KillQueriesDesc(queryIds);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-  }
-
   private void addServiceOutput() throws SemanticException {
     String hs2Hostname = getHS2Host();
     if (hs2Hostname != null) {
@@ -3965,31 +3747,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     } catch (URISyntaxException e) {
       throw new SemanticException(e);
-    }
-  }
-
-  private HiveAuthorizationTaskFactory createAuthorizationTaskFactory(HiveConf conf, Hive db) {
-    Class<? extends HiveAuthorizationTaskFactory> authProviderClass = conf.
-        getClass(HiveConf.ConfVars.HIVE_AUTHORIZATION_TASK_FACTORY.varname,
-            HiveAuthorizationTaskFactoryImpl.class,
-            HiveAuthorizationTaskFactory.class);
-    String msg = "Unable to create instance of " + authProviderClass.getName() + ": ";
-    try {
-      Constructor<? extends HiveAuthorizationTaskFactory> constructor =
-          authProviderClass.getConstructor(HiveConf.class, Hive.class);
-      return constructor.newInstance(conf, db);
-    } catch (NoSuchMethodException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    } catch (SecurityException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    } catch (InstantiationException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    } catch (IllegalAccessException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    } catch (InvocationTargetException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
     }
   }
 

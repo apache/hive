@@ -996,11 +996,11 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         Assert.assertTrue("At i+1=" + (i+3) + explain.get(i + 3),
             explain.get(i + 3).contains("Reducer 4 <- Reducer 2 (SIMPLE_EDGE)"));
         Assert.assertTrue("At i+1=" + (i+4) + explain.get(i + 4),
-            explain.get(i + 4).contains("Reducer 5 <- Reducer 2 (ONE_TO_ONE_EDGE)"));
+            explain.get(i + 4).contains("Reducer 5 <- Reducer 2 (SIMPLE_EDGE)"));
         Assert.assertTrue("At i+1=" + (i+5) + explain.get(i + 5),
             explain.get(i + 5).contains("Reducer 6 <- Reducer 2 (SIMPLE_EDGE)"));
         Assert.assertTrue("At i+1=" + (i+6) + explain.get(i + 6),
-            explain.get(i + 6).contains("Reducer 7 <- Reducer 2 (ONE_TO_ONE_EDGE)"));
+            explain.get(i + 6).contains("Reducer 7 <- Reducer 2 (SIMPLE_EDGE)"));
         break;
       }
     }

@@ -1787,6 +1787,8 @@ struct AlterTableRequest {
   5: optional EnvironmentContext environmentContext,
   6: optional i64 writeId=-1,
   7: optional string validWriteIdList
+  8: optional list<string> processorCapabilities,
+  9: optional string processorIdentifier
 // TODO: also add cascade here, out of envCtx
 }
 

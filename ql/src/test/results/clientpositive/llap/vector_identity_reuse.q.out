@@ -1,0 +1,489 @@
+PREHOOK: query: drop table if exists  u_table_4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists  u_table_4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table u_table_4(smallint_col_22 smallint, int_col_5 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@u_table_4
+POSTHOOK: query: create table u_table_4(smallint_col_22 smallint, int_col_5 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@u_table_4
+PREHOOK: query: insert into u_table_4 values(238,922)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@u_table_4
+POSTHOOK: query: insert into u_table_4 values(238,922)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@u_table_4
+POSTHOOK: Lineage: u_table_4.int_col_5 SCRIPT []
+POSTHOOK: Lineage: u_table_4.smallint_col_22 SCRIPT []
+PREHOOK: query: drop table u_table_7
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table u_table_7
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table u_table_7 ( bigint_col_3 bigint, int_col_10 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@u_table_7
+POSTHOOK: query: create table u_table_7 ( bigint_col_3 bigint, int_col_10 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@u_table_7
+PREHOOK: query: insert into u_table_7 values (571,198)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@u_table_7
+POSTHOOK: query: insert into u_table_7 values (571,198)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@u_table_7
+POSTHOOK: Lineage: u_table_7.bigint_col_3 SCRIPT []
+POSTHOOK: Lineage: u_table_7.int_col_10 SCRIPT []
+PREHOOK: query: drop table u_table_19
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table u_table_19
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table u_table_19 (bigint_col_18 bigint ,int_col_19 int, STRING_COL_7 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@u_table_19
+POSTHOOK: query: create table u_table_19 (bigint_col_18 bigint ,int_col_19 int, STRING_COL_7 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@u_table_19
+PREHOOK: query: insert into u_table_19 values (922,5,'500')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@u_table_19
+POSTHOOK: query: insert into u_table_19 values (922,5,'500')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@u_table_19
+POSTHOOK: Lineage: u_table_19.bigint_col_18 SCRIPT []
+POSTHOOK: Lineage: u_table_19.int_col_19 SCRIPT []
+POSTHOOK: Lineage: u_table_19.string_col_7 SCRIPT []
+Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
+PREHOOK: query: explain vectorization detail
+SELECT
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@u_table_19
+PREHOOK: Input: default@u_table_4
+PREHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
+SELECT
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@u_table_19
+POSTHOOK: Input: default@u_table_4
+POSTHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a1
+                  filterExpr: (string_col_7 = '500') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 99 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:bigint_col_18:bigint, 1:int_col_19:int, 2:string_col_7:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterStringGroupColEqualStringScalar(col 2:string, val 500)
+                    predicate: (string_col_7 = '500') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 99 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: bigint_col_18 (type: bigint), int_col_19 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Left Outer Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col3 (type: bigint)
+                        Map Join Vectorization:
+                            bigTableKeyColumns: 0:bigint
+                            bigTableRetainColumnNums: [1]
+                            bigTableValueColumns: 1:int
+                            className: VectorMapJoinOuterLongOperator
+                            native: true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
+                            projectedOutput: 1:int, 4:int, 5:smallint, 6:int
+                            smallTableValueMapping: 4:int, 5:smallint, 6:int
+                            hashTableImplementationType: OPTIMIZED
+                        outputColumnNames: _col1, _col2, _col3, _col4
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        Filter Operator
+                          Filter Vectorization:
+                              className: VectorFilterOperator
+                              native: true
+                              predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1:int, val 5), FilterLongColEqualLongScalar(col 6:int, val 10), FilterLongColEqualLongScalar(col 6:bigint, val 571)(children: col 6:int))
+                          predicate: ((_col1 = 5) or (_col4 = 10) or (UDFToLong(_col4) = 571L)) (type: boolean)
+                          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                          Select Operator
+                            expressions: _col2 (type: int), _col3 (type: smallint), _col4 (type: int)
+                            outputColumnNames: _col0, _col1, _col2
+                            Select Vectorization:
+                                className: VectorSelectOperator
+                                native: true
+                                projectedOutputColumnNums: [4, 5, 6]
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                            Map Join Operator
+                              condition map:
+                                   Inner Join 0 to 1
+                              keys:
+                                0 
+                                1 
+                              Map Join Vectorization:
+                                  bigTableRetainColumnNums: [4, 5, 6]
+                                  bigTableValueColumns: 4:int, 5:smallint, 6:int
+                                  className: VectorMapJoinInnerBigOnlyMultiKeyOperator
+                                  native: true
+                                  nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                                  nonOuterSmallTableKeyMapping: []
+                                  projectedOutput: 4:int, 5:smallint, 6:int
+                                  hashTableImplementationType: OPTIMIZED
+                              outputColumnNames: _col0, _col1, _col2
+                              input vertices:
+                                1 Map 4
+                              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                              Select Operator
+                                expressions: _col0 (type: int), CASE WHEN (_col0 is not null) THEN (_col0) ELSE (UDFToInteger(_col1)) END (type: int), _col2 (type: int)
+                                outputColumnNames: _col0, _col1, _col2
+                                Select Vectorization:
+                                    className: VectorSelectOperator
+                                    native: true
+                                    projectedOutputColumnNums: [4, 8, 6]
+                                    selectExpressions: IfExprColumnCondExpr(col 7:boolean, col 4:intcol 5:smallint)(children: IsNotNull(col 4:int) -> 7:boolean, col 4:int, col 5:smallint) -> 8:int
+                                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                                Reduce Output Operator
+                                  key expressions: _col0 (type: int)
+                                  sort order: -
+                                  Reduce Sink Vectorization:
+                                      className: VectorReduceSinkObjectHashOperator
+                                      keyColumns: 4:int
+                                      native: true
+                                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                      valueColumns: 8:int, 6:int
+                                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                                  TopN Hash Memory Usage: 0.1
+                                  value expressions: _col1 (type: int), _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 1, 2]
+                    dataColumns: bigint_col_18:bigint, int_col_19:int, string_col_7:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint]
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: a2
+                  filterExpr: UDFToLong(CASE WHEN (int_col_5 is not null) THEN (int_col_5) ELSE (UDFToInteger(smallint_col_22)) END) is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:smallint_col_22:smallint, 1:int_col_5:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 4:bigint)(children: IfExprColumnCondExpr(col 3:boolean, col 1:intcol 0:smallint)(children: IsNotNull(col 1:int) -> 3:boolean, col 1:int, col 0:smallint) -> 4:int)
+                    predicate: UDFToLong(CASE WHEN (int_col_5 is not null) THEN (int_col_5) ELSE (UDFToInteger(smallint_col_22)) END) is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: int_col_5 (type: int), smallint_col_22 (type: smallint), CASE WHEN (int_col_5 is not null) THEN (int_col_5) ELSE (UDFToInteger(smallint_col_22)) END (type: int), UDFToLong(CASE WHEN (int_col_5 is not null) THEN (int_col_5) ELSE (UDFToInteger(smallint_col_22)) END) (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [1, 0, 6, 8]
+                          selectExpressions: IfExprColumnCondExpr(col 5:boolean, col 1:intcol 0:smallint)(children: IsNotNull(col 1:int) -> 5:boolean, col 1:int, col 0:smallint) -> 6:int, IfExprColumnCondExpr(col 7:boolean, col 1:intcol 0:smallint)(children: IsNotNull(col 1:int) -> 7:boolean, col 1:int, col 0:smallint) -> 8:int
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col3 (type: bigint)
+                        sort order: +
+                        Map-reduce partition columns: _col3 (type: bigint)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            keyColumns: 8:bigint
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 1:int, 0:smallint, 6:int
+                        Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: smallint), _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: smallint_col_22:smallint, int_col_5:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint]
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: a3
+                  filterExpr: (bigint_col_3 = 571L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:bigint_col_3:bigint, 1:int_col_10:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColEqualLongScalar(col 0:bigint, val 571)
+                    predicate: (bigint_col_3 = 571L) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: []
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: bigint_col_3:bigint, int_col_10:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: z
+                reduceColumnSortOrder: -
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:int, VALUE._col0:int, VALUE._col1:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2]
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 100
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: int), 922 (type: int), _col1 (type: int), _col2 (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 3, 1, 2]
+                        selectExpressions: ConstantVectorExpression(val 922) -> 3:int
+                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
+PREHOOK: query: SELECT
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@u_table_19
+PREHOOK: Input: default@u_table_4
+PREHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@u_table_19
+POSTHOOK: Input: default@u_table_4
+POSTHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+922	922	922	922

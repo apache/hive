@@ -19,9 +19,9 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 
@@ -159,7 +159,7 @@ public class TestColumnAccess {
     Assert.assertNotNull(cols.contains("name1"));
   }
 
-  private Map<String, List<String>> getColsFromReadEntity(HashSet<ReadEntity> inputs) {
+  private Map<String, List<String>> getColsFromReadEntity(Set<ReadEntity> inputs) {
     Map<String, List<String>> tableColsMap = new HashMap<String, List<String>>();
     for(ReadEntity entity: inputs) {
       switch (entity.getType()) {

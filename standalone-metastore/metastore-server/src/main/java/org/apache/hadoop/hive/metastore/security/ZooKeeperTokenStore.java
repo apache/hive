@@ -34,6 +34,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 import org.apache.hadoop.security.token.delegation.MetastoreDelegationTokenSupport;
 import org.apache.zookeeper.CreateMode;
@@ -111,7 +112,8 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   }
 
   private void setupJAASConfig(Configuration conf) throws IOException {
-    if (!UserGroupInformation.getLoginUser().isFromKeytab()) {
+    if (!UserGroupInformation.getLoginUser().isFromKeytab() || AuthenticationMethod.SIMPLE.name().equalsIgnoreCase(
+        getNonEmptyConfVar(conf, "hive.security.zookeeper.authentication"))) {
       // The process has not logged in using keytab
       // this should be a test mode, can't use keytab to authenticate
       // with zookeeper.

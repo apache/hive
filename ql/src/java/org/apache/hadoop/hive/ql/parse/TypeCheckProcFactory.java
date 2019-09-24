@@ -1617,7 +1617,7 @@ public class TypeCheckProcFactory {
           assert child.getType() == HiveParser.TOK_TABNAME;
           assert child.getChildCount() == 1;
           String tableAlias = BaseSemanticAnalyzer.unescapeIdentifier(child.getChild(0).getText());
-          HashMap<String, ColumnInfo> columns = input.getFieldMap(tableAlias);
+          Map<String, ColumnInfo> columns = input.getFieldMap(tableAlias);
           if (columns == null) {
             throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(child));
           }

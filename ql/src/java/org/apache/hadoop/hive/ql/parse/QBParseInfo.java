@@ -46,21 +46,21 @@ public class QBParseInfo {
   private ASTNode joinExpr;
   private ASTNode hints;
   private List<ASTNode> hintList;
-  private final HashMap<String, ASTNode> aliasToSrc;
+  private final Map<String, ASTNode> aliasToSrc;
   /**
    * insclause-0 -> TOK_TAB ASTNode
    */
-  private final HashMap<String, ASTNode> nameToDest;
+  private final Map<String, ASTNode> nameToDest;
   /**
    * For 'insert into FOO(x,y) select ...' this stores the
    * insclause-0 -> x,y mapping
    */
   private final Map<String, List<String>> nameToDestSchema;
-  private final HashMap<String, TableSample> nameToSample;
+  private final Map<String, TableSample> nameToSample;
   private final Map<ASTNode, String> exprToColumnAlias;
   private final Map<String, ASTNode> destToSelExpr;
-  private final HashMap<String, ASTNode> destToWhereExpr;
-  private final HashMap<String, ASTNode> destToGroupby;
+  private final Map<String, ASTNode> destToWhereExpr;
+  private final Map<String, ASTNode> destToGroupby;
   private final Set<String> destRollups;
   private final Set<String> destCubes;
   private final Set<String> destGroupingSets;
@@ -74,7 +74,7 @@ public class QBParseInfo {
   private boolean isAnalyzeCommand; // used for the analyze command (statistics)
   private boolean isNoScanAnalyzeCommand; // used for the analyze command (statistics) (noscan)
 
-  private final HashMap<String, TableSpec> tableSpecs; // used for statistics
+  private final Map<String, TableSpec> tableSpecs; // used for statistics
 
   private AnalyzeRewriteContext analyzeRewrite;
 
@@ -82,40 +82,40 @@ public class QBParseInfo {
   /**
    * ClusterBy is a short name for both DistributeBy and SortBy.
    */
-  private final HashMap<String, ASTNode> destToClusterby;
+  private final Map<String, ASTNode> destToClusterby;
   /**
    * DistributeBy controls the hashcode of the row, which determines which
    * reducer the rows will go to.
    */
-  private final HashMap<String, ASTNode> destToDistributeby;
+  private final Map<String, ASTNode> destToDistributeby;
   /**
    * SortBy controls the reduce keys, which affects the order of rows that the
    * reducer receives.
    */
 
-  private final HashMap<String, ASTNode> destToSortby;
+  private final Map<String, ASTNode> destToSortby;
 
   /**
    * Maping from table/subquery aliases to all the associated lateral view nodes.
    */
-  private final HashMap<String, ArrayList<ASTNode>> aliasToLateralViews;
+  private final Map<String, List<ASTNode>> aliasToLateralViews;
 
-  private final HashMap<String, ASTNode> destToLateralView;
+  private final Map<String, ASTNode> destToLateralView;
 
   /* Order by clause */
-  private final HashMap<String, ASTNode> destToOrderby;
+  private final Map<String, ASTNode> destToOrderby;
   // Use SimpleEntry to save the offset and rowcount of limit clause
   // KEY of SimpleEntry: offset
   // VALUE of SimpleEntry: rowcount
-  private final HashMap<String, SimpleEntry<Integer, Integer>> destToLimit;
+  private final Map<String, SimpleEntry<Integer, Integer>> destToLimit;
   private int outerQueryLimit;
 
   // used by GroupBy
-  private final LinkedHashMap<String, LinkedHashMap<String, ASTNode>> destToAggregationExprs;
-  private final HashMap<String, List<ASTNode>> destToDistinctFuncExprs;
+  private final Map<String, Map<String, ASTNode>> destToAggregationExprs;
+  private final Map<String, List<ASTNode>> destToDistinctFuncExprs;
 
   // used by Windowing
-  private final LinkedHashMap<String, LinkedHashMap<String, ASTNode>> destToWindowingExprs;
+  private final Map<String, Map<String, ASTNode>> destToWindowingExprs;
 
 
   @SuppressWarnings("unused")
@@ -144,15 +144,15 @@ public class QBParseInfo {
     destCubes = new HashSet<String>();
     destGroupingSets = new HashSet<String>();
 
-    destToAggregationExprs = new LinkedHashMap<String, LinkedHashMap<String, ASTNode>>();
-    destToWindowingExprs = new LinkedHashMap<String, LinkedHashMap<String, ASTNode>>();
+    destToAggregationExprs = new LinkedHashMap<String, Map<String, ASTNode>>();
+    destToWindowingExprs = new LinkedHashMap<String, Map<String, ASTNode>>();
     destToDistinctFuncExprs = new HashMap<String, List<ASTNode>>();
 
     this.alias = StringInternUtils.internIfNotNull(alias);
     this.isSubQ = isSubQ;
     outerQueryLimit = -1;
 
-    aliasToLateralViews = new HashMap<String, ArrayList<ASTNode>>();
+    aliasToLateralViews = new HashMap<String, List<ASTNode>>();
 
     tableSpecs = new HashMap<String, BaseSemanticAnalyzer.TableSpec>();
 
@@ -166,13 +166,11 @@ public class QBParseInfo {
     destToAggregationExprs.get(clause).clear();
   }
 
-  public void setAggregationExprsForClause(String clause,
-      LinkedHashMap<String, ASTNode> aggregationTrees) {
+  public void setAggregationExprsForClause(String clause, Map<String, ASTNode> aggregationTrees) {
     destToAggregationExprs.put(clause, aggregationTrees);
   }
 
-  public void addAggregationExprsForClause(String clause,
-      LinkedHashMap<String, ASTNode> aggregationTrees) {
+  public void addAggregationExprsForClause(String clause, Map<String, ASTNode> aggregationTrees) {
     if (destToAggregationExprs.containsKey(clause)) {
       destToAggregationExprs.get(clause).putAll(aggregationTrees);
     } else {
@@ -214,12 +212,12 @@ public class QBParseInfo {
     return insertIntoTables.containsKey(fullTableName.toLowerCase());
   }
 
-  public HashMap<String, ASTNode> getAggregationExprsForClause(String clause) {
+  public Map<String, ASTNode> getAggregationExprsForClause(String clause) {
     return destToAggregationExprs.get(clause);
   }
 
   public void addWindowingExprToClause(String clause, ASTNode windowingExprNode) {
-    LinkedHashMap<String, ASTNode> windowingExprs = destToWindowingExprs.get(clause);
+    Map<String, ASTNode> windowingExprs = destToWindowingExprs.get(clause);
     if ( windowingExprs == null ) {
       windowingExprs = new LinkedHashMap<String, ASTNode>();
       destToWindowingExprs.put(clause, windowingExprs);
@@ -227,7 +225,7 @@ public class QBParseInfo {
     windowingExprs.put(windowingExprNode.toStringTree(), windowingExprNode);
   }
 
-  public HashMap<String, ASTNode> getWindowingExprsForClause(String clause) {
+  public Map<String, ASTNode> getWindowingExprsForClause(String clause) {
     return destToWindowingExprs.get(clause);
   }
 
@@ -337,7 +335,7 @@ public class QBParseInfo {
     return destToWhereExpr.get(clause);
   }
 
-  public HashMap<String, ASTNode> getDestToWhereExpr() {
+  public Map<String, ASTNode> getDestToWhereExpr() {
     return destToWhereExpr;
   }
 
@@ -357,7 +355,7 @@ public class QBParseInfo {
     return destGroupingSets;
   }
 
-  public HashMap<String, ASTNode> getDestToGroupBy() {
+  public Map<String, ASTNode> getDestToGroupBy() {
     return destToGroupby;
   }
 
@@ -388,7 +386,7 @@ public class QBParseInfo {
     return destToClusterby.get(clause);
   }
 
-  public HashMap<String, ASTNode> getDestToClusterBy() {
+  public Map<String, ASTNode> getDestToClusterBy() {
     return destToClusterby;
   }
 
@@ -403,7 +401,7 @@ public class QBParseInfo {
     return destToDistributeby.get(clause);
   }
 
-  public HashMap<String, ASTNode> getDestToDistributeBy() {
+  public Map<String, ASTNode> getDestToDistributeBy() {
     return destToDistributeby;
   }
 
@@ -422,11 +420,11 @@ public class QBParseInfo {
     return destToOrderby.get(clause);
   }
 
-  public HashMap<String, ASTNode> getDestToSortBy() {
+  public Map<String, ASTNode> getDestToSortBy() {
     return destToSortby;
   }
 
-  public HashMap<String, ASTNode> getDestToOrderBy() {
+  public Map<String, ASTNode> getDestToOrderBy() {
     return destToOrderby;
   }
 
@@ -578,7 +576,7 @@ public class QBParseInfo {
     return hints;
   }
 
-  public Map<String, ArrayList<ASTNode>> getAliasToLateralViews() {
+  public Map<String, List<ASTNode>> getAliasToLateralViews() {
     return aliasToLateralViews;
   }
 
@@ -587,7 +585,7 @@ public class QBParseInfo {
   }
 
   public void addLateralViewForAlias(String alias, ASTNode lateralView) {
-    ArrayList<ASTNode> lateralViews = aliasToLateralViews.get(alias);
+    List<ASTNode> lateralViews = aliasToLateralViews.get(alias);
     if (lateralViews == null) {
       lateralViews = new ArrayList<ASTNode>();
       aliasToLateralViews.put(alias, lateralViews);
@@ -620,23 +618,23 @@ public class QBParseInfo {
     return tableSpecs.get(tName.next());
   }
 
-  public HashMap<String, SimpleEntry<Integer,Integer>> getDestToLimit() {
+  public Map<String, SimpleEntry<Integer,Integer>> getDestToLimit() {
     return destToLimit;
   }
 
-  public LinkedHashMap<String, LinkedHashMap<String, ASTNode>> getDestToAggregationExprs() {
+  public Map<String, Map<String, ASTNode>> getDestToAggregationExprs() {
     return destToAggregationExprs;
   }
 
-  public HashMap<String, List<ASTNode>> getDestToDistinctFuncExprs() {
+  public Map<String, List<ASTNode>> getDestToDistinctFuncExprs() {
     return destToDistinctFuncExprs;
   }
 
-  public HashMap<String, TableSample> getNameToSample() {
+  public Map<String, TableSample> getNameToSample() {
     return nameToSample;
   }
 
-  public HashMap<String, ASTNode> getDestToLateralView() {
+  public Map<String, ASTNode> getDestToLateralView() {
     return destToLateralView;
   }
 

@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.ppr;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -34,16 +34,16 @@ public class OpWalkerCtx implements NodeProcessorCtx {
    * Map from tablescan operator to partition pruning predicate that is
    * initialized from the ParseContext.
    */
-  private final HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
+  private final Map<TableScanOperator, ExprNodeDesc> opToPartPruner;
 
   /**
    * Constructor.
    */
-  public OpWalkerCtx(HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner) {
+  public OpWalkerCtx(Map<TableScanOperator, ExprNodeDesc> opToPartPruner) {
     this.opToPartPruner = opToPartPruner;
   }
 
-  public HashMap<TableScanOperator, ExprNodeDesc> getOpToPartPruner() {
+  public Map<TableScanOperator, ExprNodeDesc> getOpToPartPruner() {
     return opToPartPruner;
   }
 }

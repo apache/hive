@@ -1120,7 +1120,7 @@ public final class ConstantPropagateProcFactory {
       }
 
       GroupByDesc conf = op.getConf();
-      ArrayList<ExprNodeDesc> keys = conf.getKeys();
+      List<ExprNodeDesc> keys = conf.getKeys();
       for (int i = 0; i < keys.size(); i++) {
         ExprNodeDesc key = keys.get(i);
         ExprNodeDesc newkey = foldExpr(key, colToConstants, cppCtx, op, 0, false);

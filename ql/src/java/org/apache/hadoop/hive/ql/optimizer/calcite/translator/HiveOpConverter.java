@@ -498,7 +498,7 @@ public class HiveOpConverter {
       List<String> keepColumns = new ArrayList<String>();
       final ImmutableBitSet sortColsPos = sortColsPosBuilder.build();
       final ImmutableBitSet sortOutputColsPos = sortOutputColsPosBuilder.build();
-      final ArrayList<ColumnInfo> inputSchema = inputOp.getSchema().getSignature();
+      final List<ColumnInfo> inputSchema = inputOp.getSchema().getSignature();
       for (int pos=0; pos<inputSchema.size(); pos++) {
         if ((sortColsPos.get(pos) && sortOutputColsPos.get(pos)) ||
                 (!sortColsPos.get(pos) && !sortOutputColsPos.get(pos))) {

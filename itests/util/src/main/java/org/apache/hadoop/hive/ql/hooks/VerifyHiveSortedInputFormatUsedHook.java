@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Assert;
 
@@ -33,8 +33,7 @@ public class VerifyHiveSortedInputFormatUsedHook implements ExecuteWithHookConte
 
       // Go through the root tasks, and verify the input format of the map reduce task(s) is
       // HiveSortedInputFormat
-      ArrayList<Task<?>> rootTasks =
-          hookContext.getQueryPlan().getRootTasks();
+      List<Task<?>> rootTasks = hookContext.getQueryPlan().getRootTasks();
       for (Task<?> rootTask : rootTasks) {
         if (rootTask.getWork() instanceof MapredWork) {
           Assert.assertTrue("The root map reduce task's input was not marked as sorted.",

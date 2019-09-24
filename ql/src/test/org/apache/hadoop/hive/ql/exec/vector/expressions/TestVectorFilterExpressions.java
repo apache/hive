@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -653,7 +654,7 @@ public class TestVectorFilterExpressions {
     FilterLongColumnInList f = new FilterLongColumnInList(0);
     f.setInListValues(inList);
     f.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.longTypeInfo});
-    f.transientInit();
+    f.transientInit(new HiveConf());
     VectorExpression expr1 = f;
 
     // Basic case
@@ -756,7 +757,7 @@ public class TestVectorFilterExpressions {
     FilterDoubleColumnInList f = new FilterDoubleColumnInList(0);
     f.setInListValues(inList);
     f.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.doubleTypeInfo});
-    f.transientInit();
+    f.transientInit(new HiveConf());
     VectorExpression expr1 = f;
 
     // Basic sanity check. Other cases are not skipped because it is similar to the case for Long.

@@ -399,7 +399,7 @@ public class MapWork extends BaseWork {
     return llapIoDesc.cached;
   }
 
- public void setNameToSplitSample(HashMap<String, SplitSample> nameToSplitSample) {
+ public void setNameToSplitSample(Map<String, SplitSample> nameToSplitSample) {
     this.nameToSplitSample = nameToSplitSample;
   }
 

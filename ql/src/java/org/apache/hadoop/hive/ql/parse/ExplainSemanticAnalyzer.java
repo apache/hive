@@ -199,6 +199,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         && !config.isDependency()
         && !config.isCbo()
         && !config.isLogical()
+        && !config.isVectorization()
         && !config.isAuthorize()
         && (
              (

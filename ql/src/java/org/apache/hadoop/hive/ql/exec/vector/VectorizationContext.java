@@ -1413,10 +1413,10 @@ import com.google.common.annotations.VisibleForTesting;
           || udfClass.equals(UDFRegExpExtract.class)
           || udfClass.equals(UDFRegExpReplace.class)
           || udfClass.equals(UDFConv.class)
-          || udfClass.equals(UDFFromUnixTime.class) && isIntFamily(arg0Type(expr))
           || isCastToIntFamily(udfClass) && isStringFamily(arg0Type(expr))
           || isCastToFloatFamily(udfClass) && isStringFamily(arg0Type(expr));
-    } else if ((gudf instanceof GenericUDFTimestamp && isStringFamily(arg0Type(expr)))
+    } else if (gudf instanceof GenericUDFFromUnixTime && isIntFamily(arg0Type(expr))
+          || (gudf instanceof GenericUDFTimestamp && isStringFamily(arg0Type(expr)))
 
             /* GenericUDFCase and GenericUDFWhen are implemented with the UDF Adaptor because
              * of their complexity and generality. In the future, variations of these
@@ -2125,9 +2125,7 @@ import com.google.common.annotations.VisibleForTesting;
       vectorExpression.setChildExpressions(children.toArray(new VectorExpression[0]));
     }
 
-    for (VectorExpression ve : children) {
-      ocm.freeOutputColumn(ve.getOutputColumnNum());
-    }
+    freeNonColumns(children.toArray(new VectorExpression[0]));
 
     return vectorExpression;
   }

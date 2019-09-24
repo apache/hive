@@ -120,7 +120,7 @@ Reducer 3 <- Map 14 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Map 15 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
-Reducer 7 <- Reducer 6 (SIMPLE_EDGE), Reducer 9 (ONE_TO_ONE_EDGE)
+Reducer 7 <- Reducer 6 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
 Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
 Reducer 9 <- Reducer 11 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
 
@@ -220,8 +220,8 @@ Stage-0
                                                               Select Operator [SEL_282] (rows=564 width=4)
                                                                 Output:["_col0"]
                                                                  Please refer to the previous Select Operator [SEL_280]
-                <-Reducer 9 [ONE_TO_ONE_EDGE]
-                  FORWARD [RS_106]
+                <-Reducer 9 [SIMPLE_EDGE]
+                  SHUFFLE [RS_106]
                     PartitionCols:_col6, _col7, _col8, _col9, _col14
                     Merge Join Operator [MERGEJOIN_277] (rows=301730 width=717)
                       Conds:RS_307._col0, _col1, _col2, _col3, _col5=RS_318._col0, _col1, _col2, _col3, _col8(Inner),Output:["_col4","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"]

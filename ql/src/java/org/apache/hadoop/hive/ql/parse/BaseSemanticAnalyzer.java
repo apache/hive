@@ -127,7 +127,7 @@ public abstract class BaseSemanticAnalyzer {
 
   protected CompilationOpContext cContext;
   protected Context ctx;
-  protected HashMap<String, String> idToTableNameMap;
+  protected Map<String, String> idToTableNameMap;
   protected QueryProperties queryProperties;
 
   /**
@@ -147,11 +147,11 @@ public abstract class BaseSemanticAnalyzer {
   /**
    * ReadEntities that are passed to the hooks.
    */
-  protected HashSet<ReadEntity> inputs;
+  protected Set<ReadEntity> inputs;
   /**
    * List of WriteEntities that are passed to the hooks.
    */
-  protected HashSet<WriteEntity> outputs;
+  protected Set<WriteEntity> outputs;
   /**
    * Lineage information for the query.
    */
@@ -266,7 +266,7 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  public HashMap<String, String> getIdToTableNameMap() {
+  public Map<String, String> getIdToTableNameMap() {
     return idToTableNameMap;
   }
 
@@ -656,11 +656,11 @@ public abstract class BaseSemanticAnalyzer {
     return str.substring(0, i) + replacement + str.substring(i + length);
   }
 
-  public HashSet<ReadEntity> getInputs() {
+  public Set<ReadEntity> getInputs() {
     return inputs;
   }
 
-  public HashSet<WriteEntity> getOutputs() {
+  public Set<WriteEntity> getOutputs() {
     return outputs;
   }
 
@@ -1943,7 +1943,7 @@ public abstract class BaseSemanticAnalyzer {
         }
         break;
       case HiveParser.TOK_TABCOLVALUE_PAIR:
-        ArrayList<Node> vLNodes = vAstNode.getChildren();
+        List<Node> vLNodes = vAstNode.getChildren();
         for (Node node : vLNodes) {
           if ( ((ASTNode) node).getToken().getType() != HiveParser.TOK_TABCOLVALUES) {
             throw new SemanticException(
@@ -2239,11 +2239,11 @@ public abstract class BaseSemanticAnalyzer {
     return rootTasks;
   }
 
-  public HashSet<ReadEntity> getAllInputs() {
+  public Set<ReadEntity> getAllInputs() {
     return inputs;
   }
 
-  public HashSet<WriteEntity> getAllOutputs() {
+  public Set<WriteEntity> getAllOutputs() {
     return outputs;
   }
 

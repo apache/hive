@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 /**
  * Process input from tez LogicalInput and write output
@@ -52,7 +51,7 @@ public abstract class RecordProcessor extends InterruptibleProcessing {
   protected Map<String, OutputCollector> outMap;
   protected final ProcessorContext processorContext;
 
-  public static final Logger l4j = LoggerFactory.getLogger(RecordProcessor.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RecordProcessor.class);
 
   protected MRTaskReporter reporter;
 
@@ -78,7 +77,7 @@ public abstract class RecordProcessor extends InterruptibleProcessing {
     this.outputs = outputs;
 
     checkAbortCondition();
-    Utilities.tryLoggingClassPaths(jconf, l4j);
+    Utilities.tryLoggingClassPaths(jconf, LOG);
   }
 
   /**
@@ -91,7 +90,7 @@ public abstract class RecordProcessor extends InterruptibleProcessing {
 
   protected void createOutputMap() {
     Preconditions.checkState(outMap == null, "Outputs should only be setup once");
-    outMap = Maps.newHashMap();
+    outMap = new HashMap<>();
     for (Entry<String, LogicalOutput> entry : outputs.entrySet()) {
       TezKVOutputCollector collector = new TezKVOutputCollector(entry.getValue());
       outMap.put(entry.getKey(), collector);
@@ -102,22 +101,17 @@ public abstract class RecordProcessor extends InterruptibleProcessing {
       ObjectCache cache, List<String> cacheKeys) throws HiveException {
     String prefixes = jconf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
     if (prefixes != null) {
-      List<BaseWork> mergeWorkList = new ArrayList<BaseWork>();
+      List<BaseWork> mergeWorkList = new ArrayList<>();
 
       for (final String prefix : prefixes.split(",")) {
-        if (prefix == null || prefix.isEmpty()) {
+        if (prefix.isEmpty()) {
           continue;
         }
 
         key = prefix;
         cacheKeys.add(key);
 
-        mergeWorkList.add((BaseWork) cache.retrieve(key, new Callable<Object>() {
-          @Override
-          public Object call() {
-            return Utilities.getMergeWork(jconf, prefix);
-          }
-        }));
+        mergeWorkList.add(cache.retrieve(key, () -> Utilities.getMergeWork(jconf, prefix)));
       }
 
       return mergeWorkList;

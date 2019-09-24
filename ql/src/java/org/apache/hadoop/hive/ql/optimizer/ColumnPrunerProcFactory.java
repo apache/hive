@@ -139,14 +139,14 @@ public final class ColumnPrunerProcFactory {
       List<FieldNode> colLists = new ArrayList<>();
       GroupByDesc conf = gbOp.getConf();
 
-      ArrayList<ExprNodeDesc> keys = conf.getKeys();
+      List<ExprNodeDesc> keys = conf.getKeys();
       for (ExprNodeDesc key : keys) {
         colLists = mergeFieldNodesWithDesc(colLists, key);
       }
 
-      ArrayList<AggregationDesc> aggrs = conf.getAggregators();
+      List<AggregationDesc> aggrs = conf.getAggregators();
       for (AggregationDesc aggr : aggrs) {
-        ArrayList<ExprNodeDesc> params = aggr.getParameters();
+        List<ExprNodeDesc> params = aggr.getParameters();
         for (ExprNodeDesc param : params) {
           colLists = mergeFieldNodesWithDesc(colLists, param);
         }
@@ -812,10 +812,10 @@ public final class ColumnPrunerProcFactory {
         }
       }
       if (cols.size() < originalOutputColumnNames.size()) {
-        ArrayList<ExprNodeDesc> newColList = new ArrayList<ExprNodeDesc>();
-        ArrayList<String> newOutputColumnNames = new ArrayList<String>();
-        ArrayList<ColumnInfo> rs_oldsignature = op.getSchema().getSignature();
-        ArrayList<ColumnInfo> rs_newsignature = new ArrayList<ColumnInfo>();
+        List<ExprNodeDesc> newColList = new ArrayList<ExprNodeDesc>();
+        List<String> newOutputColumnNames = new ArrayList<String>();
+        List<ColumnInfo> rs_oldsignature = op.getSchema().getSignature();
+        List<ColumnInfo> rs_newsignature = new ArrayList<ColumnInfo>();
         // The pruning needs to preserve the order of columns in the input schema
         Set<String> colNames = new HashSet<String>();
         for (FieldNode col : cols) {
@@ -899,8 +899,8 @@ public final class ColumnPrunerProcFactory {
     Map<String, ExprNodeDesc> oldMap = reduce.getColumnExprMap();
     LOG.info("RS " + reduce.getIdentifier() + " oldColExprMap: " + oldMap);
     RowSchema oldRS = reduce.getSchema();
-    ArrayList<ColumnInfo> old_signature = oldRS.getSignature();
-    ArrayList<ColumnInfo> signature = new ArrayList<ColumnInfo>(old_signature);
+    List<ColumnInfo> old_signature = oldRS.getSignature();
+    List<ColumnInfo> signature = new ArrayList<ColumnInfo>(old_signature);
 
     List<String> valueColNames = reduceConf.getOutputValueColumnNames();
     ArrayList<String> newValueColNames = new ArrayList<String>();
@@ -1071,8 +1071,8 @@ public final class ColumnPrunerProcFactory {
       throws SemanticException {
     RowSchema inputSchema = op.getSchema();
     if (inputSchema != null) {
-      ArrayList<FieldNode> rs = new ArrayList<>();
-      ArrayList<ColumnInfo> inputCols = inputSchema.getSignature();
+      List<FieldNode> rs = new ArrayList<>();
+      List<ColumnInfo> inputCols = inputSchema.getSignature();
       for (ColumnInfo i: inputCols) {
         FieldNode fn = lookupColumn(cols, i.getInternalName());
         if (fn != null) {

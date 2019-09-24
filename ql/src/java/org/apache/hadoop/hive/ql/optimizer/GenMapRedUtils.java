@@ -1305,7 +1305,7 @@ public final class GenMapRedUtils {
     DynamicPartitionCtx dpCtx = fsInputDesc.getDynPartCtx();
     if (dpCtx != null && dpCtx.getNumDPCols() > 0) {
       // adding DP ColumnInfo to the RowSchema signature
-      ArrayList<ColumnInfo> signature = inputRS.getSignature();
+      List<ColumnInfo> signature = inputRS.getSignature();
       String tblAlias = fsInputDesc.getTableInfo().getTableName();
       for (String dpCol : dpCtx.getDPColNames()) {
         ColumnInfo colInfo = new ColumnInfo(dpCol,
