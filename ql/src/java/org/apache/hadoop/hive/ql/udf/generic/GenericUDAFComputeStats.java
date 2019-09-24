@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveDecimalOb
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -83,7 +85,6 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     case SHORT:
     case INT:
     case LONG:
-    case TIMESTAMP:
     case TIMESTAMPLOCALTZ:
       return new GenericUDAFLongStatsEvaluator();
     case FLOAT:
@@ -99,6 +100,8 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       return new GenericUDAFDecimalStatsEvaluator();
     case DATE:
       return new GenericUDAFDateStatsEvaluator();
+    case TIMESTAMP:
+      return new GenericUDAFTimestampStatsEvaluator();
     default:
       throw new UDFArgumentTypeException(0,
           "Only integer/long/timestamp/date/float/double/string/binary/boolean/decimal type argument " +
@@ -381,6 +384,8 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
         partialResult = new Object[6];
         partialResult[0] = new Text();
+        partialResult[1] = null;
+        partialResult[2] = null;
         partialResult[3] = new LongWritable(0);
         partialResult[4] = new BytesWritable();
 
@@ -405,6 +410,8 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
         result = new Object[6];
         result[0] = new Text();
+        result[1] = null;
+        result[2] = null;
         result[3] = new LongWritable(0);
         result[4] = new LongWritable(0);
         result[5] = new BytesWritable();
@@ -1364,6 +1371,80 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       ((NumericStatsAgg)agg).reset("Date");
+    }
+  }
+
+  /**
+   * GenericUDAFTimestampStatsEvaluator
+   * High/low value will be saved in stats DB as long value representing seconds since epoch.
+   */
+  public static class GenericUDAFTimestampStatsEvaluator
+      extends GenericUDAFNumericStatsEvaluator<TimestampWritableV2, TimestampObjectInspector> {
+
+    @Override
+    protected TimestampObjectInspector getValueObjectInspector() {
+      return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
+    }
+
+    @Override
+    protected TimestampObjectInspector getValueObjectInspector(PrimitiveTypeInfo typeInfo) {
+      return getValueObjectInspector();
+    }
+
+    @AggregationType(estimable = true)
+    public class TimestampStatsAgg extends NumericStatsAgg {
+      @Override
+      public int estimate() {
+        JavaDataModel model = JavaDataModel.get();
+        return super.estimate() + model.primitive2() * 2;
+      }
+
+      @Override
+      protected void update(Object p, PrimitiveObjectInspector inputOI) {
+        // TimestampWritableV2 is mutable, TimestampStatsAgg needs its own copy
+        TimestampWritableV2 v = new TimestampWritableV2((TimestampWritableV2) inputOI.getPrimitiveWritableObject(p));
+
+        //Update min counter if new value is less than min seen so far
+        if (min == null || v.compareTo(min) < 0) {
+          min = v;
+        }
+        //Update max counter if new value is greater than max seen so far
+        if (max == null || v.compareTo(max) > 0) {
+          max = v;
+        }
+        // Add value to NumDistinctValue Estimator
+        numDV.addToEstimator(v.getSeconds());
+      }
+
+      @Override
+      protected void updateMin(Object minValue, TimestampObjectInspector minFieldOI) {
+        if ((minValue != null) && (min == null ||
+            min.compareTo(minFieldOI.getPrimitiveWritableObject(minValue)) > 0)) {
+          // TimestampWritableV2 is mutable, TimestampStatsAgg needs its own copy
+          min = new TimestampWritableV2(minFieldOI.getPrimitiveWritableObject(minValue));
+        }
+      }
+
+      @Override
+      protected void updateMax(Object maxValue, TimestampObjectInspector maxFieldOI) {
+        if ((maxValue != null) && (max == null ||
+            max.compareTo(maxFieldOI.getPrimitiveWritableObject(maxValue)) < 0)) {
+          // TimestampWritableV2 is mutable, TimestampStatsAgg needs its own copy
+          max = new TimestampWritableV2(maxFieldOI.getPrimitiveWritableObject(maxValue));
+        }
+      }
+    };
+
+    @Override
+    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
+      AggregationBuffer result = new TimestampStatsAgg();
+      reset(result);
+      return result;
+    }
+
+    @Override
+    public void reset(AggregationBuffer agg) throws HiveException {
+      ((NumericStatsAgg)agg).reset("Timestamp");
     }
   }
   
