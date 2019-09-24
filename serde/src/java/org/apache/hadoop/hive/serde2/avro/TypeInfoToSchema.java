@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import static org.apache.avro.Schema.Field.NULL_DEFAULT_VALUE;
+
 import org.apache.avro.Schema;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
@@ -28,8 +30,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.node.JsonNodeFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -235,14 +235,13 @@ public class TypeInfoToSchema {
   private List<Schema.Field> getFields(Schema.Field schemaField) {
     List<Schema.Field> fields = new ArrayList<Schema.Field>();
 
-    JsonNode nullDefault = JsonNodeFactory.instance.nullNode();
     if (schemaField.schema().getType() == Schema.Type.RECORD) {
       for (Schema.Field field : schemaField.schema().getFields()) {
-        fields.add(new Schema.Field(field.name(), field.schema(), field.doc(), nullDefault));
+        fields.add(new Schema.Field(field.name(), field.schema(), field.doc(), NULL_DEFAULT_VALUE));
       }
     } else {
       fields.add(new Schema.Field(schemaField.name(), schemaField.schema(), schemaField.doc(),
-          nullDefault));
+          NULL_DEFAULT_VALUE));
     }
 
     return fields;
