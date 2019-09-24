@@ -841,9 +841,9 @@ public class PTFTranslator {
    */
   public static StructObjectInspector getStandardStructOI(RowResolver rr) {
     StructObjectInspector oi;
-    ArrayList<ColumnInfo> colLists = rr.getColumnInfos();
-    ArrayList<String> structFieldNames = new ArrayList<String>();
-    ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
+    List<ColumnInfo> colLists = rr.getColumnInfos();
+    List<String> structFieldNames = new ArrayList<String>();
+    List<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
     for (ColumnInfo columnInfo : colLists) {
       String colName = columnInfo.getInternalName();
       ObjectInspector colOI = columnInfo.getObjectInspector();

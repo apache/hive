@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -49,7 +49,7 @@ public class TableSample {
    * In case the table does not have any clustering column, the usage of a table
    * sample clause without an ON part is disallowed by the compiler
    */
-  private ArrayList<ASTNode> exprs;
+  private List<ASTNode> exprs;
 
   /**
    * Flag to indicate that input files can be pruned.
@@ -67,7 +67,7 @@ public class TableSample {
    * @param exprs
    *          The list of expressions in the ON part of the TABLESAMPLE clause
    */
-  public TableSample(String num, String den, ArrayList<ASTNode> exprs) {
+  public TableSample(String num, String den, List<ASTNode> exprs) {
     numerator = Integer.parseInt(num);
     denominator = Integer.parseInt(den);
     this.exprs = exprs;
@@ -122,7 +122,7 @@ public class TableSample {
    * 
    * @return ArrayList&lt;ASTNode&gt;
    */
-  public ArrayList<ASTNode> getExprs() {
+  public List<ASTNode> getExprs() {
     return exprs;
   }
 
@@ -132,7 +132,7 @@ public class TableSample {
    * @param exprs
    *          The expression list
    */
-  public void setExprs(ArrayList<ASTNode> exprs) {
+  public void setExprs(List<ASTNode> exprs) {
     this.exprs = exprs;
   }
 

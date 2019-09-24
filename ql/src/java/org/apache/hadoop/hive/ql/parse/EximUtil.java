@@ -57,11 +57,11 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -91,8 +91,8 @@ public class EximUtil {
   public static class SemanticAnalyzerWrapperContext {
     private HiveConf conf;
     private Hive db;
-    private HashSet<ReadEntity> inputs;
-    private HashSet<WriteEntity> outputs;
+    private Set<ReadEntity> inputs;
+    private Set<WriteEntity> outputs;
     private List<Task<? extends Serializable>> tasks;
     private Logger LOG;
     private Context ctx;
@@ -107,11 +107,11 @@ public class EximUtil {
       return db;
     }
 
-    public HashSet<ReadEntity> getInputs() {
+    public Set<ReadEntity> getInputs() {
       return inputs;
     }
 
-    public HashSet<WriteEntity> getOutputs() {
+    public Set<WriteEntity> getOutputs() {
       return outputs;
     }
 
@@ -136,8 +136,8 @@ public class EximUtil {
     }
 
     public SemanticAnalyzerWrapperContext(HiveConf conf, Hive db,
-                                          HashSet<ReadEntity> inputs,
-                                          HashSet<WriteEntity> outputs,
+                                          Set<ReadEntity> inputs,
+                                          Set<WriteEntity> outputs,
                                           List<Task<? extends Serializable>> tasks,
                                           Logger LOG, Context ctx){
       this.conf = conf;

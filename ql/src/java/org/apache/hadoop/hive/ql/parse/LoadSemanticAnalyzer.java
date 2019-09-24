@@ -24,11 +24,10 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Set;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.codec.DecoderException;
@@ -42,7 +41,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -390,8 +388,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     Task<?> childTask = TaskFactory.get(
-        new MoveWork(getInputs(), getOutputs(), loadTableWork, null, true,
-            isLocal)
+        new MoveWork(getInputs(), getOutputs(), loadTableWork, null, true, isLocal)
     );
 
     rootTasks.add(childTask);
@@ -558,7 +555,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
   }
 
   @Override
-  public HashSet<WriteEntity> getAllOutputs() {
+  public Set<WriteEntity> getAllOutputs() {
     return outputs;
   }
 }
