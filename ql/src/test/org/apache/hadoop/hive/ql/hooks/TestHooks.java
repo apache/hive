@@ -36,8 +36,7 @@ public class TestHooks {
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     Driver driver = createDriver(conf);
-    int ret = driver.run("create table t1(i int)").getResponseCode();
-    assertEquals("Checking command success", 0, ret);
+    driver.run("create table t1(i int)");
   }
 
   @AfterClass

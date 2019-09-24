@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.signature.TestOperatorSignature;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -68,8 +69,7 @@ public class TestOperatorCmp {
         // @formatter:on
     };
     for (String cmd : cmds) {
-      int ret = driver.run(cmd).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run(cmd);
     }
   }
 
@@ -82,20 +82,18 @@ public class TestOperatorCmp {
   public static void dropTables(IDriver driver) throws Exception {
     String tables[] = { "tu", "tv", "tw" };
     for (String t : tables) {
-      int ret = driver.run("drop table if exists " + t).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run("drop table if exists " + t);
     }
   }
 
-  private PlanMapper getMapperForQuery(IDriver driver, String query) {
-    int ret = driver.run(query).getResponseCode();
-    assertEquals("Checking command success", 0, ret);
+  private PlanMapper getMapperForQuery(IDriver driver, String query) throws CommandProcessorException {
+    driver.run(query);
     PlanMapper pm0 = driver.getContext().getPlanMapper();
     return pm0;
   }
 
   @Test
-  public void testUnrelatedFiltersAreNotMatched0() throws ParseException {
+  public void testUnrelatedFiltersAreNotMatched0() throws ParseException, CommandProcessorException {
     IDriver driver = createDriver();
     String query = "select u from tu where id_uv = 1 union all select v from tv where id_uv = 1";
 
@@ -117,7 +115,7 @@ public class TestOperatorCmp {
   }
 
   @Test
-  public void testUnrelatedFiltersAreNotMatched1() throws ParseException {
+  public void testUnrelatedFiltersAreNotMatched1() throws ParseException, CommandProcessorException {
     IDriver driver = createDriver();
     PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
     PlanMapper pm1 = getMapperForQuery(driver, "select v from tv where id_uv = 1 group by v");
@@ -130,7 +128,7 @@ public class TestOperatorCmp {
   }
 
   @Test
-  public void testDifferentFiltersAreNotMatched() throws ParseException {
+  public void testDifferentFiltersAreNotMatched() throws ParseException, CommandProcessorException {
     IDriver driver = createDriver();
     PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
     PlanMapper pm1 = getMapperForQuery(driver, "select u from tu where id_uv = 2 group by u");

@@ -111,7 +111,7 @@ public final class CommandProcessorFactory {
     }
   }
 
-  static Logger LOG = LoggerFactory.getLogger(CommandProcessorFactory.class);
+  private static Logger LOG = LoggerFactory.getLogger(CommandProcessorFactory.class);
 
   public static CommandProcessor get(String[] cmd, @Nonnull HiveConf conf) throws SQLException {
     CommandProcessor result = getForHiveCommand(cmd, conf);

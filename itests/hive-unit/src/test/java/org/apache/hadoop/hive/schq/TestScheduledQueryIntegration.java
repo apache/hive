@@ -21,11 +21,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -63,7 +66,7 @@ public class TestScheduledQueryIntegration {
         // @formatter:on
     };
     for (String cmd : cmds) {
-      driverrun(driver,cmd);
+      driver.run(cmd);
     }
 
   }
@@ -80,7 +83,7 @@ public class TestScheduledQueryIntegration {
   public static void dropTables(IDriver driver) throws Exception {
     String tables[] = { "tu" };
     for (String t : tables) {
-      driverrun(driver, "drop table if exists " + t);
+      driver.run("drop table if exists " + t);
     }
   }
 
@@ -135,7 +138,7 @@ public class TestScheduledQueryIntegration {
     HiveConf conf = envSetup.getTestCtx().hiveConf;
     conf.set("user.name", userName);
     try(IDriver driver = createDriver()) {
-      return driverrun(driver,sql);
+      return driver.run(sql);
     }
   }
 
@@ -172,30 +175,5 @@ public class TestScheduledQueryIntegration {
 
     IDriver driver = DriverFactory.newDriver(conf);
     return driver;
-  }
-
-  private static CommandProcessorResponse driverrun(IDriver driver, String string) throws CommandProcessorException {
-    CommandProcessorResponse ret = driver.run(string);
-    if (ret.getResponseCode() != 0) {
-      throw new CommandProcessorException(ret);
-    }
-    return ret;
-  }
-
-  static class CommandProcessorException extends Exception {
-
-    private CommandProcessorResponse ret;
-
-    public CommandProcessorException(CommandProcessorResponse ret) {
-      this.ret = ret;
-    }
-
-    public String getErrorMessage() {
-      return ret.getErrorMessage();
-    }
-
-    public int getResponseCode() {
-      return ret.getResponseCode();
-    }
   }
 }

@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -130,9 +131,11 @@ public class CoreNegativeCliDriver extends CliAdapter{
 
       qt.cliInit(new File(fpath));
 
-      int ecode = qt.executeClient(fname);
-      if (ecode == 0) {
+      try {
+        qt.executeClient(fname);
         qt.failed(fname, debugHint);
+      } catch (CommandProcessorException e) {
+        // this is the expected outcome
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);
