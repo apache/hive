@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsData
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
 
 public class ColumnStatsMergerFactory {
 
@@ -69,6 +70,10 @@ public class ColumnStatsMergerFactory {
       agg = new DateColumnStatsMerger();
       break;
     }
+    case TIMESTAMP_STATS: {
+      agg = new TimestampColumnStatsMerger();
+      break;
+    }
     default:
       throw new IllegalArgumentException("Unknown stats type " + statsObjNew.getStatsData().getSetField());
     }
@@ -107,6 +112,10 @@ public class ColumnStatsMergerFactory {
 
     case DATE_STATS:
       csd.setDateStats(new DateColumnStatsDataInspector());
+      break;
+
+    case TIMESTAMP_STATS:
+      csd.setTimestampStats(new TimestampColumnStatsDataInspector());
       break;
 
     default:

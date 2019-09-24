@@ -453,8 +453,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 col_name            	ts                  
 data_type           	timestamp           
-min                 	1325379723          
-max                 	1325379723          
+min                 	2012-01-01 01:02:03 
+max                 	2012-01-01 01:02:03 
 num_nulls           	1                   
 distinct_count      	1                   
 avg_col_len         	                    
@@ -908,8 +908,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 col_name            	ts                  
 data_type           	timestamp           
-min                 	1325379723          
-max                 	1325379723          
+min                 	2012-01-01 01:02:03 
+max                 	2012-01-01 01:02:03 
 num_nulls           	1                   
 distinct_count      	1                   
 avg_col_len         	                    
@@ -935,8 +935,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 col_name            	ts                  
 data_type           	timestamp           
-min                 	1357030924          
-max                 	1357030923          
+min                 	2013-01-01 09:02:04 
+max                 	2013-01-01 09:02:03 
 num_nulls           	12                  
 distinct_count      	7                   
 avg_col_len         	                    
