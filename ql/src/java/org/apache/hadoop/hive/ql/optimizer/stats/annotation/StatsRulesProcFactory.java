@@ -2179,7 +2179,7 @@ public class StatsRulesProcFactory {
         Statistics parentStats = parent.getStatistics();
         if (fkInd == pos) {
           // 2.1 This is the new number of rows after PK is joining with FK
-          newrows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
+          newrows = parentStats.getNumRows();
           rowCounts.add(newrows);
           // 2.1 The ndv is the minimum of the PK and the FK.
           distinctVals.add(Math.min(csFK.getCountDistint(), csPK.getCountDistint()));
