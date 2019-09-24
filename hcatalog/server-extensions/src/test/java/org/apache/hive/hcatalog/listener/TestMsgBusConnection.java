@@ -20,7 +20,6 @@
 package org.apache.hive.hcatalog.listener;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import javax.jms.Connection;
@@ -39,7 +38,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.HCatEventMessage;
@@ -114,7 +112,6 @@ public class TestMsgBusConnection {
   }
 
   private void runQuery(String query) throws Exception {
-    CommandProcessorResponse cpr = driver.run(query);
-    assertFalse(cpr.getMessage(), cpr.failed());
+    driver.run(query);
   }
 }

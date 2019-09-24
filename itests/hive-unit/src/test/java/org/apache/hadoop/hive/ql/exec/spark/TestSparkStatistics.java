@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistic;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.junit.Assert;
@@ -42,7 +43,7 @@ public class TestSparkStatistics {
 
   @Ignore("flaky test")
   @Test
-  public void testSparkStatistics() {
+  public void testSparkStatistics() throws CommandProcessorException {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             SQLStdHiveAuthorizerFactory.class.getName());
@@ -60,7 +61,7 @@ public class TestSparkStatistics {
               .withHiveConf(conf).build(),
               null, null);
 
-      Assert.assertEquals(0, driver.run("create table test (col int)").getResponseCode());
+      driver.run("create table test (col int)");
       Assert.assertEquals(0, driver.compile("select * from test order by col", true));
 
       List<SparkTask> sparkTasks = Utilities.getSparkTasks(driver.getPlan().getRootTasks());
@@ -94,7 +95,7 @@ public class TestSparkStatistics {
       Assert.assertTrue(Long.parseLong(statsMap.get(SparkStatisticsNames.EXECUTOR_RUN_TIME)) > 0);
     } finally {
       if (driver != null) {
-        Assert.assertEquals(0, driver.run("drop table if exists test").getResponseCode());
+        driver.run("drop table if exists test");
         driver.destroy();
       }
     }

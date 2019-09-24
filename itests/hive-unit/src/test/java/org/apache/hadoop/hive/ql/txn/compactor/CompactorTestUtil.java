@@ -36,8 +36,7 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.schq.TestScheduledQueryIntegration;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hive.hcatalog.streaming.DelimitedInputWriter;
 import org.apache.hive.hcatalog.streaming.TransactionBatch;
 import org.apache.hive.streaming.HiveStreamingConnection;
@@ -193,9 +192,10 @@ class CompactorTestUtil {
    */
   static void executeStatementOnDriver(String cmd, IDriver driver) throws Exception {
     LOG.debug("Executing: " + cmd);
-    CommandProcessorResponse cpr = driver.run(cmd);
-    if (cpr.getResponseCode() != 0) {
-      throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + cpr);
+    try {
+      driver.run(cmd);
+    } catch (CommandProcessorException e) {
+      throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + e.getErrorCode());
     }
   }
 
@@ -208,9 +208,10 @@ class CompactorTestUtil {
    */
   static List<String> executeStatementOnDriverAndReturnResults(String cmd, IDriver driver) throws Exception {
     LOG.debug("Executing: " + cmd);
-    CommandProcessorResponse cpr = driver.run(cmd);
-    if (cpr.getResponseCode() != 0) {
-      throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + cpr);
+    try {
+      driver.run(cmd);
+    } catch (CommandProcessorException e) {
+      throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + e.getErrorCode());
     }
     List<String> rs = new ArrayList<>();
     driver.getResults(rs);

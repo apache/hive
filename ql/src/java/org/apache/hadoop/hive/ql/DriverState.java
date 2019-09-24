@@ -86,16 +86,35 @@ public class DriverState {
     driverState = State.COMPILING;
   }
 
+  public void compilingWithLocking() {
+    lock();
+    try {
+      driverState = State.COMPILING;
+    } finally {
+      unlock();
+    }
+  }
+
   public boolean isCompiling() {
     return driverState == State.COMPILING;
   }
 
-  public void compilationInterrupted(boolean deferClose) {
-    driverState = deferClose ? State.EXECUTING : State.ERROR;
+  public void compilationInterruptedWithLocking(boolean deferClose) {
+    lock();
+    try {
+      driverState = deferClose ? State.EXECUTING : State.ERROR;
+    } finally {
+      unlock();
+    }
   }
 
-  public void compilationFinished(boolean wasError) {
-    driverState = wasError ? State.ERROR : State.COMPILED;
+  public void compilationFinishedWithLocking(boolean wasError) {
+    lock();
+    try {
+      driverState = wasError ? State.ERROR : State.COMPILED;
+    } finally {
+      unlock();
+    }
   }
 
   public boolean isCompiled() {

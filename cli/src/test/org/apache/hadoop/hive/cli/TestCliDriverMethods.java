@@ -52,6 +52,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Test;
 
@@ -77,7 +79,8 @@ public class TestCliDriverMethods extends TestCase {
   }
 
   // If the command has an associated schema, make sure it gets printed to use
-  public void testThatCliDriverPrintsHeaderForCommandsWithSchema() {
+  @Test
+  public void testThatCliDriverPrintsHeaderForCommandsWithSchema() throws CommandProcessorException {
     Schema mockSchema = mock(Schema.class);
     List<FieldSchema> fieldSchemas = new ArrayList<FieldSchema>();
     String fieldName = "FlightOfTheConchords";
@@ -91,7 +94,8 @@ public class TestCliDriverMethods extends TestCase {
   }
 
   // If the command has no schema, make sure nothing is printed
-  public void testThatCliDriverPrintsNoHeaderForCommandsWithNoSchema() {
+  @Test
+  public void testThatCliDriverPrintsNoHeaderForCommandsWithNoSchema() throws CommandProcessorException {
     Schema mockSchema = mock(Schema.class);
     when(mockSchema.getFieldSchemas()).thenReturn(null);
 
@@ -122,12 +126,15 @@ public class TestCliDriverMethods extends TestCase {
     // Save output as yo cannot print it while System.out and System.err are weird
     String message;
     String errors;
-    int ret;
+
     try {
       CliSessionState.start(ss);
       CliDriver cliDriver = new CliDriver();
       // issue a command with bad options
-      ret = cliDriver.processCmd("!ls --abcdefghijklmnopqrstuvwxyz123456789");
+      cliDriver.processCmd("!ls --abcdefghijklmnopqrstuvwxyz123456789");
+      assertTrue("Comments with '--; should not have been stripped, so command should fail", false);
+    } catch (CommandProcessorException e) {
+      // this is expected to happen
     } finally {
       // restore System.out and System.err
       System.setOut(oldOut);
@@ -135,8 +142,6 @@ public class TestCliDriverMethods extends TestCase {
     }
     message = dataOut.toString("UTF-8");
     errors = dataErr.toString("UTF-8");
-    assertTrue("Comments with '--; should not have been stripped,"
-        + " so command should fail", ret != 0);
     assertTrue("Comments with '--; should not have been stripped,"
         + " so we should have got an error in the output: '" + errors + "'.",
         errors.contains("option"));
@@ -149,10 +154,11 @@ public class TestCliDriverMethods extends TestCase {
    * @param mockSchema
    *          Schema to throw against test
    * @return Output that would have been sent to the user
+   * @throws CommandProcessorException
    * @throws CommandNeedRetryException
    *           won't actually be thrown
    */
-  private PrintStream headerPrintingTestDriver(Schema mockSchema) {
+  private PrintStream headerPrintingTestDriver(Schema mockSchema) throws CommandProcessorException {
     CliDriver cliDriver = new CliDriver();
 
     // We want the driver to try to print the header...
@@ -165,7 +171,6 @@ public class TestCliDriverMethods extends TestCase {
     IDriver proc = mock(IDriver.class);
 
     CommandProcessorResponse cpr = mock(CommandProcessorResponse.class);
-    when(cpr.getResponseCode()).thenReturn(0);
     when(proc.run(anyString())).thenReturn(cpr);
 
     // and then see what happens based on the provided schema

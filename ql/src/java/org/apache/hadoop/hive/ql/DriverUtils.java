@@ -21,7 +21,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,10 +51,11 @@ public class DriverUtils {
       Driver driver = new Driver(qs, user, null, null);
       driver.setCompactionWriteIds(writeIds, compactorTxnId);
       try {
-        CommandProcessorResponse cpr = driver.run(query);
-        if (cpr.getResponseCode() != 0) {
-          LOG.error("Failed to run " + query, cpr.getException());
-          throw new HiveException("Failed to run " + query, cpr.getException());
+        try {
+          driver.run(query);
+        } catch (CommandProcessorException e) {
+          LOG.error("Failed to run " + query, e.getException());
+          throw new HiveException("Failed to run " + query, e.getException());
         }
       } finally {
         driver.close();

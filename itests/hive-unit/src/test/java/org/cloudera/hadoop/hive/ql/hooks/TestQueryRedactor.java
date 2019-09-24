@@ -34,8 +34,7 @@ public class TestQueryRedactor {
   public static void onetimeSetup() throws Exception {
     HiveConf conf = new HiveConf(TestQueryRedactor.class);
     Driver driver = createDriver(conf);
-    int ret = driver.run("create table t1(i int)").getResponseCode();
-    assertEquals("Checking command success", 0, ret);
+    driver.run("create table t1(i int)");
   }
 
   @AfterClass

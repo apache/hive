@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.util.DependencyResolver;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
@@ -991,20 +991,21 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     // Incremental load to non existing db should return database not exist error.
     tuple = primary.dump("someJunkDB", tuple.lastReplicationId);
-    CommandProcessorResponse response =
-        replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation + "'");
-    assertTrue(response.getErrorMessage().toLowerCase()
-        .contains("org.apache.hadoop.hive.ql.ddl.DDLTask. Database does not exist: someJunkDB"
-            .toLowerCase()));
+    try {
+      replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation + "'");
+      assert false;
+    } catch (CommandProcessorException e) {
+      assertTrue(e.getErrorMessage().toLowerCase().contains(
+          "org.apache.hadoop.hive.ql.ddl.DDLTask. Database does not exist: someJunkDB".toLowerCase()));
+    }
 
     // Bootstrap load from an empty dump directory should return empty load directory error.
     tuple = primary.dump("someJunkDB", null);
-    response = replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation+"'");
-    assertTrue(response.getErrorMessage().toLowerCase()
-        .contains(
-            "semanticException no data to load in path"
-                .toLowerCase())
-    );
+    try {
+      replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation+"'");
+    } catch (CommandProcessorException e) {
+      assertTrue(e.getErrorMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
+    }
 
     primary.run(" drop database if exists " + testDbName + " cascade");
   }
