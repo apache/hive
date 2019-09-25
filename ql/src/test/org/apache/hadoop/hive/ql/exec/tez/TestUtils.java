@@ -86,7 +86,9 @@ public class TestUtils {
     LlapServiceInstance inactive = new InactiveServiceInstance(INACTIVE);
     instances.add(inactive);
 
-    LlapZookeeperRegistryImpl dynRegistry = new LlapZookeeperRegistryImpl("dyn", new HiveConf());
+    HiveConf conf = new HiveConf();
+    conf.set(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, "localhost");
+    LlapZookeeperRegistryImpl dynRegistry = new LlapZookeeperRegistryImpl("dyn", conf);
     Endpoint rpcEndpoint = RegistryTypeUtils.ipcEndpoint("llap", new InetSocketAddress(ACTIVE, 4000));
     Endpoint shuffle = RegistryTypeUtils.ipcEndpoint("shuffle", new InetSocketAddress(ACTIVE, 4000));
     Endpoint mng = RegistryTypeUtils.ipcEndpoint("llapmng", new InetSocketAddress(ACTIVE, 4000));
