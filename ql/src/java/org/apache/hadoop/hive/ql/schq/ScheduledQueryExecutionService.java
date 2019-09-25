@@ -51,7 +51,11 @@ public class ScheduledQueryExecutionService implements Closeable {
       while (true) {
         ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
         if (q.isSetExecutionId()) {
-          processQuery(q);
+          try{
+            processQuery(q);
+          } catch (Throwable t) {
+            LOG.error("Unexpected exception during scheduled query processing", t);
+          }
         } else {
           try {
             Thread.sleep(context.getIdleSleepTime());
@@ -64,11 +68,16 @@ public class ScheduledQueryExecutionService implements Closeable {
       }
     }
 
+    QueryState lastState;
     public synchronized void reportQueryProgress() {
       if (info != null) {
+        if(lastState == QueryState.FINISHED || lastState == QueryState.ERRORED) {
+          return;
+        }
         LOG.info("Reporting query progress of {} as {} err:{}", info.getScheduledExecutionId(), info.getState(),
             info.getErrorMessage());
         context.schedulerService.scheduledQueryProgress(info);
+        lastState=info.getState();
       }
     }
 
