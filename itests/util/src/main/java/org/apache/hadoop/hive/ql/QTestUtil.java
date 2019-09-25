@@ -577,7 +577,6 @@ public class QTestUtil {
     featDispatcher.register("dataset", datasetHandler);
     featDispatcher.process(file);
     featDispatcher.beforeTest(this);
-    featDispatcher.beforeTest(this);
 
 
     if (qTestResultProcessor.shouldNotReuseSession(fileName)) {

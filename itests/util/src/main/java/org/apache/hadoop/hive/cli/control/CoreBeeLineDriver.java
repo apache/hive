@@ -271,10 +271,7 @@ public class CoreBeeLineDriver extends CliAdapter {
     featDispatcher.register("dataset", datasetHandler);
     featDispatcher.process(qFile.getInputFile());
 
-    QTestFeatDispatcher featDispatcher = new QTestFeatDispatcher();
-    QTestDatasetHandler datasetHandler = new QTestDatasetHandler(miniHS2.getHiveConf());
-    featDispatcher.register("dataset", datasetHandler);
-    featDispatcher.process(qFile.getInputFile());
+    List<Callable<Void>> commands = new ArrayList<>();
 
     DatasetCollection datasets = datasetHandler.getDatasets();
     for (String table : datasets.getTables()) {
