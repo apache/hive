@@ -122,6 +122,10 @@ public class QTestDatasetHandler implements QTestOptionHandler {
   public void processArguments(String arguments) {
     String[] tables = arguments.split(",");
     for (String string : tables) {
+      string = string.trim();
+      if(string.length()==0) {
+        continue;
+      }
       if (srcTables == null || !srcTables.contains(string)) {
         missingTables.add(string);
       }
