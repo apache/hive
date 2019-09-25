@@ -1,0 +1,49 @@
+PREHOOK: query: DESCRIBE FUNCTION datetime_legacy_hybrid_calendar
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION datetime_legacy_hybrid_calendar
+POSTHOOK: type: DESCFUNCTION
+datetime_legacy_hybrid_calendar(date/timestamp) - Converts a date/timestamp to new proleptic Gregorian calendar 
+assuming that its internal days/milliseconds since epoch is calculated using legacy Gregorian-Julian hybrid calendar.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED datetime_legacy_hybrid_calendar
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED datetime_legacy_hybrid_calendar
+POSTHOOK: type: DESCFUNCTION
+datetime_legacy_hybrid_calendar(date/timestamp) - Converts a date/timestamp to new proleptic Gregorian calendar 
+assuming that its internal days/milliseconds since epoch is calculated using legacy Gregorian-Julian hybrid calendar.
+Converts a date/timestamp to new proleptic Gregorian calendar (ISO 8601 standard), which is produced 
+by extending the Gregorian calendar backward to dates preceding its official introduction in 1582, assuming 
+that its internal days/milliseconds since epoch is calculated using legacy Gregorian-Julian hybrid calendar, 
+i.e., calendar that supports both the Julian and Gregorian calendar systems with the support of a single 
+discontinuity, which corresponds by default to the Gregorian date when the Gregorian calendar was instituted.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFDatetimeLegacyHybridCalendar
+Function type:BUILTIN
+PREHOOK: query: SELECT
+  '0601-03-07' AS dts,
+  CAST('0601-03-07' AS DATE) AS dt,
+  datetime_legacy_hybrid_calendar(CAST('0601-03-07' AS DATE)) AS dtp
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  '0601-03-07' AS dts,
+  CAST('0601-03-07' AS DATE) AS dt,
+  datetime_legacy_hybrid_calendar(CAST('0601-03-07' AS DATE)) AS dtp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0601-03-07	0601-03-07	0601-03-04
+PREHOOK: query: SELECT
+  '0501-03-07 17:03:00.4321' AS tss,
+  CAST('0501-03-07 17:03:00.4321' AS TIMESTAMP) AS ts,
+  datetime_legacy_hybrid_calendar(CAST('0501-03-07 17:03:00.4321' AS TIMESTAMP)) AS tsp
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  '0501-03-07 17:03:00.4321' AS tss,
+  CAST('0501-03-07 17:03:00.4321' AS TIMESTAMP) AS ts,
+  datetime_legacy_hybrid_calendar(CAST('0501-03-07 17:03:00.4321' AS TIMESTAMP)) AS tsp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0501-03-07 17:03:00.4321	0501-03-07 17:03:00.4321	0501-03-05 17:03:00.4321
