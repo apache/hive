@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.feat;
+package org.apache.hadoop.hive.ql.qoption;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
 
-public interface QTestFeatHandler {
+public interface QTestOptionHandler {
 
   void processArguments(String arguments);
 

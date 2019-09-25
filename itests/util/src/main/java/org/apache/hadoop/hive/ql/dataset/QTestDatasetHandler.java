@@ -28,13 +28,13 @@ import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestSystemProperties;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.feat.QTestFeatHandler;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.qoption.QTestOptionHandler;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QTestDatasetHandler implements QTestFeatHandler {
+public class QTestDatasetHandler implements QTestOptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger("QTestDatasetHandler");
 
   private File datasetDir;
