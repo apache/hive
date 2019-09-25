@@ -40,8 +40,8 @@ import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.dataset.Dataset;
 import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
 import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
-import org.apache.hadoop.hive.ql.feat.QTestFeatDispatcher;
 import org.apache.hadoop.hive.ql.hooks.PreExecutePrinter;
+import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hive.beeline.ConvertedOutputFile.Converter;
 import org.apache.hive.beeline.QFile;
 import org.apache.hive.beeline.QFile.QFileBuilder;
@@ -266,7 +266,7 @@ public class CoreBeeLineDriver extends CliAdapter {
 
   private List<Callable<Void>> initDataSetForTest(QFile qFile) throws Exception {
 
-    QTestFeatDispatcher featDispatcher = new QTestFeatDispatcher();
+    QTestOptionDispatcher featDispatcher = new QTestOptionDispatcher();
     QTestDatasetHandler datasetHandler = new QTestDatasetHandler(miniHS2.getHiveConf());
     featDispatcher.register("dataset", datasetHandler);
     featDispatcher.process(qFile.getInputFile());

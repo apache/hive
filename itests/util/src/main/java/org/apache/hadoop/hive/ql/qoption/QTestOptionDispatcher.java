@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.feat;
+package org.apache.hadoop.hive.ql.qoption;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,19 +23,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.ql.QTestUtil;
 
-public class QTestFeatDispatcher {
+public class QTestOptionDispatcher {
 
-  Map<String, QTestFeatHandler> handlers = new HashMap<String, QTestFeatHandler>();
+  Map<String, QTestOptionHandler> handlers = new HashMap<String, QTestOptionHandler>();
 
-  public void register(String prefix, QTestFeatHandler datasetHandler) {
+  public void register(String prefix, QTestOptionHandler datasetHandler) {
     if (handlers.containsKey(prefix)) {
       throw new RuntimeException();
     }
@@ -70,7 +67,7 @@ public class QTestFeatDispatcher {
   }
 
   public void beforeTest(QTestUtil qt) throws Exception {
-    for (QTestFeatHandler h : handlers.values()) {
+    for (QTestOptionHandler h : handlers.values()) {
       h.beforeTest(qt);
     }
   }
