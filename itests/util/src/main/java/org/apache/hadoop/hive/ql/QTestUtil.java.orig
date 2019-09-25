@@ -64,7 +64,11 @@ import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+<<<<<<< HEAD
+import org.apache.hadoop.hive.ql.feat.QTestFeatDispatcher;
 import org.apache.hadoop.hive.ql.hooks.ScheduledQueryCreationRegistryHook;
+=======
+>>>>>>> kgyrtkirk/HIVE-22245-qfeat
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -81,8 +85,11 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
+<<<<<<< HEAD
 import org.apache.hadoop.hive.ql.schq.ScheduledQueryExecutionService;
+=======
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
+>>>>>>> kgyrtkirk/HIVE-22245-qfeat
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -126,9 +133,6 @@ public class QTestUtil {
   private final String cleanupScript;
 
   private boolean isSessionStateStarted = false;
-
-  // FIXME rename
-  private QTestOptionDispatcher dispatcher;
 
   public CliDriver getCliDriver() {
     if (cliDriver == null) {
@@ -221,14 +225,10 @@ public class QTestUtil {
     this.cleanupScript = scriptsDir + File.separator + testArgs.getCleanupScript();
 
     postInit();
+    savedConf = new HiveConf(conf);
     conf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME, "1s");
     conf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL, "1s");
-    savedConf = new HiveConf(conf);
-
-    dispatcher = new QTestOptionDispatcher();
-    dispatcher.register("dataset", datasetHandler);
-    dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider());
-
+    ScheduledQueryExecutionService.startScheduledQueryExecutorService(conf);
   }
 
   private String getScriptsDir() {
@@ -269,7 +269,6 @@ public class QTestUtil {
    * Clear out any side effects of running tests
    */
   public void clearPostTestEffects() throws Exception {
-    dispatcher.afterTest(this);
     miniClusters.postTest(conf);
   }
 
@@ -295,7 +294,7 @@ public class QTestUtil {
       ScheduledQueryMaintenanceRequest request = new ScheduledQueryMaintenanceRequest();
       request.setType(ScheduledQueryMaintenanceRequestType.DELETE);
       ScheduledQuery schq = new ScheduledQuery();
-      schq.setScheduleKey(new ScheduledQueryKey(name, conf.getVar(ConfVars.HIVE_SCHEDULED_QUERIES_NAMESPACE)));
+      schq.setScheduleKey(new ScheduledQueryKey(name, "default"));
       request.setScheduledQuery(schq);
       try {
         db.getMSC().scheduledQueryMaintenance(request);
@@ -581,8 +580,10 @@ public class QTestUtil {
   public String cliInit(File file) throws Exception {
     String fileName = file.getName();
 
-    dispatcher.process(file);
-    dispatcher.beforeTest(this);
+    QTestOptionDispatcher featDispatcher = new QTestOptionDispatcher();
+    featDispatcher.register("dataset", datasetHandler);
+    featDispatcher.process(file);
+    featDispatcher.beforeTest(this);
 
 
     if (qTestResultProcessor.shouldNotReuseSession(fileName)) {

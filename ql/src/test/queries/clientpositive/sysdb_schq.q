@@ -1,3 +1,4 @@
+--! qt:scheduledqueryservice
 --! qt:dataset:src
 
 source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
