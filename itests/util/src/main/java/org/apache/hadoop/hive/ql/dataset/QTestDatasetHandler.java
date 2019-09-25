@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.dataset;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,12 +34,13 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QTestDatasetHandler {
+public class QTestDatasetHandler implements QTestFeatHandler {
   private static final Logger LOG = LoggerFactory.getLogger("QTestDatasetHandler");
 
   private File datasetDir;
   private QTestUtil qt;
   private static Set<String> srcTables;
+  private static Set<String> missingTables = new HashSet<>();
 
   public QTestDatasetHandler(QTestUtil qTestUtil, HiveConf conf) {
     // Use path relative to dataDir directory if it is not specified
@@ -59,6 +61,7 @@ public class QTestDatasetHandler {
     return dataDir;
   }
 
+  @Deprecated
   public void initDataSetForTest(File file, CliDriver cliDriver) throws Exception {
     synchronized (QTestUtil.class) {
       DatasetParser parser = new DatasetParser();
@@ -139,4 +142,29 @@ public class QTestDatasetHandler {
       }
     }
   }
+
+  @Override
+  public void processArguments(String arguments) {
+    String[] tables = arguments.split(",");
+    for (String string : tables) {
+      if (srcTables == null || !srcTables.contains(string)) {
+        missingTables.add(string);
+      }
+    }
+  }
+
+  @Override
+  public void beforeTest(CliDriver cliDriver) throws Exception {
+    synchronized (QTestUtil.class) {
+      qt.newSession(true);
+      for (String table : missingTables) {
+        if (initDataset(table, cliDriver)) {
+          addSrcTable(table);
+        }
+      }
+      missingTables.clear();
+      qt.newSession(true);
+    }
+  }
+
 }

@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
+import org.apache.hadoop.hive.ql.dataset.QTestFeatDispatcher;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -572,8 +573,11 @@ public class QTestUtil {
   public String cliInit(File file) throws Exception {
     String fileName = file.getName();
 
-    datasetHandler.initDataSetForTest(file, getCliDriver());
+    QTestFeatDispatcher featDispatcher = new QTestFeatDispatcher();
+    featDispatcher.register("dataset", datasetHandler);
+    featDispatcher.process(file);
 
+    featDispatcher.beforeTest(getCliDriver());
 
 
     if (qTestResultProcessor.shouldNotReuseSession(fileName)) {
