@@ -28,6 +28,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -88,6 +89,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.io.Files;
 
 /**
  * QTestUtil.
@@ -571,6 +573,8 @@ public class QTestUtil {
     String fileName = file.getName();
 
     datasetHandler.initDataSetForTest(file, getCliDriver());
+
+
 
     if (qTestResultProcessor.shouldNotReuseSession(fileName)) {
       newSession(false);

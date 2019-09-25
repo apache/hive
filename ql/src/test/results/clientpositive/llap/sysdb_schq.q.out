@@ -3846,3 +3846,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_executions
 #### A masked pattern was here ####
 1	1	FINISHED	true	true	NULL	NULL
+PREHOOK: query: alter scheduled query asd disable
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query asd disable
+POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: select schedule_name from scheduled_queries where enabled = false
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@scheduled_queries
+#### A masked pattern was here ####
+POSTHOOK: query: select schedule_name from scheduled_queries where enabled = false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@scheduled_queries
+#### A masked pattern was here ####
+asd
