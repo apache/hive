@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.feat.QTestFeatDispatcher;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -118,7 +119,7 @@ public class QTestUtil {
 
   private boolean isSessionStateStarted = false;
 
-  protected CliDriver getCliDriver() {
+  public CliDriver getCliDriver() {
     if (cliDriver == null) {
       throw new RuntimeException("no clidriver");
     }
@@ -199,7 +200,7 @@ public class QTestUtil {
 
     initConf();
 
-    datasetHandler = new QTestDatasetHandler(this, conf);
+    datasetHandler = new QTestDatasetHandler(conf);
     testFiles = datasetHandler.getDataDir(conf);
     conf.set("test.data.dir", datasetHandler.getDataDir(conf));
 
@@ -541,7 +542,10 @@ public class QTestUtil {
   public String cliInit(File file) throws Exception {
     String fileName = file.getName();
 
-    datasetHandler.initDataSetForTest(file, getCliDriver());
+    QTestFeatDispatcher featDispatcher = new QTestFeatDispatcher();
+    featDispatcher.register("dataset", datasetHandler);
+    featDispatcher.process(file);
+    featDispatcher.beforeTest(this);
 
     if (qTestResultProcessor.shouldNotReuseSession(fileName)) {
       newSession(false);

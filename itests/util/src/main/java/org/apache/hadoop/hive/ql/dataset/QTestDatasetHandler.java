@@ -28,25 +28,25 @@ import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestSystemProperties;
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.feat.QTestFeatHandler;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QTestDatasetHandler {
+public class QTestDatasetHandler implements QTestFeatHandler {
   private static final Logger LOG = LoggerFactory.getLogger("QTestDatasetHandler");
 
   private File datasetDir;
-  private QTestUtil qt;
   private static Set<String> srcTables;
+  private Set<String> missingTables = new HashSet<>();
 
-  public QTestDatasetHandler(QTestUtil qTestUtil, HiveConf conf) {
+  public QTestDatasetHandler(HiveConf conf) {
     // Use path relative to dataDir directory if it is not specified
     String dataDir = getDataDir(conf);
 
     datasetDir = conf.get("test.data.set.files") == null ? new File(dataDir + "/datasets")
       : new File(conf.get("test.data.set.files"));
-    this.qt = qTestUtil;
   }
 
   public String getDataDir(HiveConf conf) {
@@ -57,28 +57,6 @@ public class QTestDatasetHandler {
     }
 
     return dataDir;
-  }
-
-  public void initDataSetForTest(File file, CliDriver cliDriver) throws Exception {
-    synchronized (QTestUtil.class) {
-      DatasetParser parser = new DatasetParser();
-      parser.parse(file);
-
-      DatasetCollection datasets = parser.getDatasets();
-
-      Set<String> missingDatasets = datasets.getTables();
-      missingDatasets.removeAll(getSrcTables());
-      if (missingDatasets.isEmpty()) {
-        return;
-      }
-      qt.newSession(true);
-      for (String table : missingDatasets) {
-        if (initDataset(table, cliDriver)) {
-          addSrcTable(table);
-        }
-      }
-      qt.newSession(true);
-    }
   }
 
   public boolean initDataset(String table, CliDriver cliDriver) throws Exception {
@@ -139,4 +117,35 @@ public class QTestDatasetHandler {
       }
     }
   }
+
+  @Override
+  public void processArguments(String arguments) {
+    String[] tables = arguments.split(",");
+    for (String string : tables) {
+      if (srcTables == null || !srcTables.contains(string)) {
+        missingTables.add(string);
+      }
+    }
+  }
+
+  @Override
+  public void beforeTest(QTestUtil qt) throws Exception {
+    if (!missingTables.isEmpty()) {
+      synchronized (QTestUtil.class) {
+        qt.newSession(true);
+        for (String table : missingTables) {
+          if (initDataset(table, qt.getCliDriver())) {
+            addSrcTable(table);
+          }
+        }
+        missingTables.clear();
+        qt.newSession(true);
+      }
+    }
+  }
+
+  public DatasetCollection getDatasets() {
+    return new DatasetCollection(missingTables);
+  }
+
 }

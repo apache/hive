@@ -15,41 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.feat;
 
-package org.apache.hadoop.hive.ql.dataset;
+import org.apache.hadoop.hive.ql.QTestUtil;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+public interface QTestFeatHandler {
 
-/**
- * DatasetCollection: utility wrapper class for a set of datasets
- */
-public class DatasetCollection {
-  private Set<Dataset> coll = new HashSet<Dataset>();
+  void processArguments(String arguments);
 
-  public DatasetCollection() {
-  }
+  void beforeTest(QTestUtil qt) throws Exception;
 
-  public DatasetCollection(Set<String> datasets) {
-    for (String datasetName : datasets) {
-      add(datasetName);
-    }
-  }
-
-  public void add(Dataset dataset) {
-    coll.add(dataset);
-  }
-
-  public void add(String table) {
-    add(new Dataset(table));
-  }
-
-  public Set<Dataset> getDatasets() {
-    return coll;
-  }
-
-  public Set<String> getTables() {
-    return coll.stream().map(d -> d.getTable()).collect(Collectors.toSet());
-  }
 }
