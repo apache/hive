@@ -542,10 +542,10 @@ public class QTestUtil {
   public String cliInit(File file) throws Exception {
     String fileName = file.getName();
 
-    QTestOptionDispatcher featDispatcher = new QTestOptionDispatcher();
-    featDispatcher.register("dataset", datasetHandler);
-    featDispatcher.process(file);
-    featDispatcher.beforeTest(this);
+    QTestOptionDispatcher dispatcher = new QTestOptionDispatcher();
+    dispatcher.register("dataset", datasetHandler);
+    dispatcher.process(file);
+    dispatcher.beforeTest(this);
 
     if (qTestResultProcessor.shouldNotReuseSession(fileName)) {
       newSession(false);
