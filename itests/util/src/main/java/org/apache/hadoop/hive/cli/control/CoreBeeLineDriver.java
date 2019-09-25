@@ -40,8 +40,6 @@ import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.dataset.Dataset;
 import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
 import org.apache.hadoop.hive.ql.dataset.DatasetParser;
-import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
-import org.apache.hadoop.hive.ql.dataset.QTestFeatDispatcher;
 import org.apache.hadoop.hive.ql.hooks.PreExecutePrinter;
 import org.apache.hive.beeline.ConvertedOutputFile.Converter;
 import org.apache.hive.beeline.QFile;
@@ -266,15 +264,12 @@ public class CoreBeeLineDriver extends CliAdapter {
   }
 
   private List<Callable<Void>> initDataSetForTest(QFile qFile) throws Exception {
-
-    QTestFeatDispatcher featDispatcher = new QTestFeatDispatcher();
-    QTestDatasetHandler datasetHandler = new QTestDatasetHandler(null, miniHS2.getHiveConf());
-    featDispatcher.register("dataset", datasetHandler);
-    featDispatcher.process(qFile.getInputFile());
+    DatasetParser parser = new DatasetParser();
+    parser.parse(qFile.getInputFile());
 
     List<Callable<Void>> commands = new ArrayList<>();
 
-    DatasetCollection datasets = datasetHandler.getDatasets();
+    DatasetCollection datasets = parser.getDatasets();
     for (String table : datasets.getTables()) {
       Callable<Void> command = initDataset(table, qFile);
       if (command != null) {
