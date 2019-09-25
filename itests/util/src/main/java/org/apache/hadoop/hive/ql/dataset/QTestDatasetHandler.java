@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.dataset;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,6 +28,7 @@ import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestSystemProperties;
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.feat.QTestFeatHandler;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -42,7 +42,7 @@ public class QTestDatasetHandler implements QTestFeatHandler {
   @Deprecated
   private QTestUtil qt;
   private static Set<String> srcTables;
-  private static Set<String> missingTables = new HashSet<>();
+  private Set<String> missingTables = new HashSet<>();
 
   public QTestDatasetHandler(QTestUtil qTestUtil, HiveConf conf) {
     // Use path relative to dataDir directory if it is not specified
@@ -157,25 +157,22 @@ public class QTestDatasetHandler implements QTestFeatHandler {
 
   @Override
   public void beforeTest(CliDriver cliDriver) throws Exception {
-    synchronized (QTestUtil.class) {
-      qt.newSession(true);
-      for (String table : missingTables) {
-        if (initDataset(table, cliDriver)) {
-          addSrcTable(table);
+    if (!missingTables.isEmpty()) {
+      synchronized (QTestUtil.class) {
+        qt.newSession(true);
+        for (String table : missingTables) {
+          if (initDataset(table, cliDriver)) {
+            addSrcTable(table);
+          }
         }
+        missingTables.clear();
+        qt.newSession(true);
       }
-      missingTables.clear();
-      qt.newSession(true);
     }
   }
 
   public DatasetCollection getDatasets() {
-    if (srcTables == null) {
-      srcTables = new HashSet<String>();
-    }
-    srcTables.addAll(missingTables);
-    missingTables.clear();
-    return new DatasetCollection(srcTables);
+    return new DatasetCollection(missingTables);
   }
 
 }

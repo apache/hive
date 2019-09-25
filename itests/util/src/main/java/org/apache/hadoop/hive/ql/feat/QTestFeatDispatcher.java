@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.ql.dataset;
+package org.apache.hadoop.hive.ql.feat;
 
 import java.io.BufferedReader;
 import java.io.File;
