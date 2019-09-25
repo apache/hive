@@ -101,11 +101,12 @@ import org.apache.hadoop.mapred.InputFormat;
  * by sub-classes in a {@link org.junit.BeforeClass} initializer
  */
 public abstract class BaseJdbcWithMiniLlap {
-  private static MiniHS2 miniHS2 = null;
+
   private static String dataFileDir;
   private static Path kvDataFilePath;
   private static Path dataTypesFilePath;
 
+  protected static MiniHS2 miniHS2 = null;
   protected static HiveConf conf = null;
   protected static Connection hs2Conn = null;
 
@@ -456,7 +457,7 @@ public abstract class BaseJdbcWithMiniLlap {
     assertArrayEquals(new String[] {"val_0", "3"}, rowCollector.rows.get(0));
   }
 
-  private interface RowProcessor {
+  protected interface RowProcessor {
     void process(Row row);
   }
 
@@ -506,7 +507,8 @@ public abstract class BaseJdbcWithMiniLlap {
 
   protected abstract InputFormat<NullWritable, Row> getInputFormat();
 
-  private int processQuery(String currentDatabase, String query, int numSplits, RowProcessor rowProcessor) throws Exception {
+  protected int processQuery(String currentDatabase, String query, int numSplits, RowProcessor rowProcessor)
+      throws Exception {
     String url = miniHS2.getJdbcURL();
     String user = System.getProperty("user.name");
     String pwd = user;

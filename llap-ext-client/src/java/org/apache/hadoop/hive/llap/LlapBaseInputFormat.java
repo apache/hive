@@ -63,7 +63,6 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.InputSplitWithLocationInfo;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
@@ -116,10 +115,11 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public static final String PWD_KEY = "llap.if.pwd";
   public static final String HANDLE_ID = "llap.if.handleid";
   public static final String DB_KEY = "llap.if.database";
+  public static final String USE_NEW_SPLIT_FORMAT = "llap.if.use.new.split.format";
   public static final String SESSION_QUERIES_FOR_GET_NUM_SPLITS = "llap.session.queries.for.get.num.splits";
   public static final Pattern SET_QUERY_PATTERN = Pattern.compile("^\\s*set\\s+.*=.+$", Pattern.CASE_INSENSITIVE);
 
-  public final String SPLIT_QUERY = "select get_splits(\"%s\",%d)";
+  public static final String SPLIT_QUERY = "select get_llap_splits(\"%s\",%d)";
   public static final LlapServiceInstance[] serviceInstanceArray = new LlapServiceInstance[0];
 
   public LlapBaseInputFormat(String url, String user, String pwd, String query) {
@@ -281,13 +281,43 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
           }
         }
 
+        // In case of USE_NEW_SPLIT_FORMAT=true, following format is used
+        //       type                  split
+        // schema-split             LlapInputSplit -- contains only schema
+        // plan-split               LlapInputSplit -- contains only planBytes[]
+        // 0                        LlapInputSplit -- actual split 1
+        // 1                        LlapInputSplit -- actual split 2
+        // ...                         ...
+        boolean useNewSplitFormat = job.getBoolean(USE_NEW_SPLIT_FORMAT, false);
+
         ResultSet res = stmt.executeQuery(sql);
+        int count = 0;
+        LlapInputSplit schemaSplit = null;
+        LlapInputSplit planSplit = null;
         while (res.next()) {
           // deserialize split
-          DataInput in = new DataInputStream(res.getBinaryStream(1));
-          InputSplitWithLocationInfo is = new LlapInputSplit();
+          DataInput in = new DataInputStream(res.getBinaryStream(2));
+          LlapInputSplit is = new LlapInputSplit();
           is.readFields(in);
-          ins.add(is);
+          if (useNewSplitFormat) {
+            ins.add(is);
+          } else {
+            // to keep the old format, populate schema and planBytes[] in actual splits
+            if (count == 0) {
+              schemaSplit = is;
+              if (numSplits == 0) {
+                ins.add(schemaSplit);
+              }
+            } else if (count == 1) {
+              planSplit = is;
+            } else {
+              is.setSchema(schemaSplit.getSchema());
+              assert planSplit != null;
+              is.setPlanBytes(planSplit.getPlanBytes());
+              ins.add(is);
+            }
+            count++;
+          }
         }
         res.close();
       } catch (Exception e) {
