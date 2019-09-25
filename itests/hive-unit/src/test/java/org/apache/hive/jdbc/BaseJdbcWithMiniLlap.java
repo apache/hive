@@ -634,7 +634,7 @@ public abstract class BaseJdbcWithMiniLlap {
     assertArrayEquals(new String[] {"val_0", "3"}, rowCollector.rows.get(0));
   }
 
-  private interface RowProcessor {
+  protected interface RowProcessor {
     void process(Row row);
   }
 
@@ -684,7 +684,8 @@ public abstract class BaseJdbcWithMiniLlap {
 
   protected abstract InputFormat<NullWritable, Row> getInputFormat();
 
-  private int processQuery(String currentDatabase, String query, int numSplits, RowProcessor rowProcessor) throws Exception {
+  protected int processQuery(String currentDatabase, String query, int numSplits, RowProcessor rowProcessor)
+      throws Exception {
     String url = miniHS2.getJdbcURL();
     String user = System.getProperty("user.name");
     String pwd = user;
