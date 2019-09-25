@@ -38,6 +38,8 @@ public class QTestDatasetHandler implements QTestFeatHandler {
   private static final Logger LOG = LoggerFactory.getLogger("QTestDatasetHandler");
 
   private File datasetDir;
+  // FIXME arg to beforeTest
+  @Deprecated
   private QTestUtil qt;
   private static Set<String> srcTables;
   private static Set<String> missingTables = new HashSet<>();
@@ -165,6 +167,15 @@ public class QTestDatasetHandler implements QTestFeatHandler {
       missingTables.clear();
       qt.newSession(true);
     }
+  }
+
+  public DatasetCollection getDatasets() {
+    if (srcTables == null) {
+      srcTables = new HashSet<String>();
+    }
+    srcTables.addAll(missingTables);
+    missingTables.clear();
+    return new DatasetCollection(srcTables);
   }
 
 }
