@@ -268,7 +268,7 @@ public class CoreBeeLineDriver extends CliAdapter {
   private List<Callable<Void>> initDataSetForTest(QFile qFile) throws Exception {
 
     QTestFeatDispatcher featDispatcher = new QTestFeatDispatcher();
-    QTestDatasetHandler datasetHandler = new QTestDatasetHandler(null, miniHS2.getHiveConf());
+    QTestDatasetHandler datasetHandler = new QTestDatasetHandler(miniHS2.getHiveConf());
     featDispatcher.register("dataset", datasetHandler);
     featDispatcher.process(qFile.getInputFile());
 

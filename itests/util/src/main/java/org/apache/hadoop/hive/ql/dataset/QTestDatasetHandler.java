@@ -38,19 +38,15 @@ public class QTestDatasetHandler implements QTestFeatHandler {
   private static final Logger LOG = LoggerFactory.getLogger("QTestDatasetHandler");
 
   private File datasetDir;
-  // FIXME arg to beforeTest
-  @Deprecated
-  private QTestUtil qt;
   private static Set<String> srcTables;
   private Set<String> missingTables = new HashSet<>();
 
-  public QTestDatasetHandler(QTestUtil qTestUtil, HiveConf conf) {
+  public QTestDatasetHandler(HiveConf conf) {
     // Use path relative to dataDir directory if it is not specified
     String dataDir = getDataDir(conf);
 
     datasetDir = conf.get("test.data.set.files") == null ? new File(dataDir + "/datasets")
       : new File(conf.get("test.data.set.files"));
-    this.qt = qTestUtil;
   }
 
   public String getDataDir(HiveConf conf) {
@@ -61,29 +57,6 @@ public class QTestDatasetHandler implements QTestFeatHandler {
     }
 
     return dataDir;
-  }
-
-  @Deprecated
-  public void initDataSetForTest(File file, CliDriver cliDriver) throws Exception {
-    synchronized (QTestUtil.class) {
-      DatasetParser parser = new DatasetParser();
-      parser.parse(file);
-
-      DatasetCollection datasets = parser.getDatasets();
-
-      Set<String> missingDatasets = datasets.getTables();
-      missingDatasets.removeAll(getSrcTables());
-      if (missingDatasets.isEmpty()) {
-        return;
-      }
-      qt.newSession(true);
-      for (String table : missingDatasets) {
-        if (initDataset(table, cliDriver)) {
-          addSrcTable(table);
-        }
-      }
-      qt.newSession(true);
-    }
   }
 
   public boolean initDataset(String table, CliDriver cliDriver) throws Exception {
@@ -156,12 +129,12 @@ public class QTestDatasetHandler implements QTestFeatHandler {
   }
 
   @Override
-  public void beforeTest(CliDriver cliDriver) throws Exception {
+  public void beforeTest(QTestUtil qt) throws Exception {
     if (!missingTables.isEmpty()) {
       synchronized (QTestUtil.class) {
         qt.newSession(true);
         for (String table : missingTables) {
-          if (initDataset(table, cliDriver)) {
+          if (initDataset(table, qt.getCliDriver())) {
             addSrcTable(table);
           }
         }

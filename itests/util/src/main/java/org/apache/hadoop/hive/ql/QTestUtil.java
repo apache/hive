@@ -127,7 +127,7 @@ public class QTestUtil {
 
   private boolean isSessionStateStarted = false;
 
-  protected CliDriver getCliDriver() {
+  public CliDriver getCliDriver() {
     if (cliDriver == null) {
       throw new RuntimeException("no clidriver");
     }
@@ -208,7 +208,7 @@ public class QTestUtil {
 
     initConf();
 
-    datasetHandler = new QTestDatasetHandler(this, conf);
+    datasetHandler = new QTestDatasetHandler(conf);
     testFiles = datasetHandler.getDataDir(conf);
     conf.set("test.data.dir", datasetHandler.getDataDir(conf));
 
@@ -577,7 +577,7 @@ public class QTestUtil {
     featDispatcher.register("dataset", datasetHandler);
     featDispatcher.process(file);
 
-    featDispatcher.beforeTest(getCliDriver());
+    featDispatcher.beforeTest(this);
 
 
     if (qTestResultProcessor.shouldNotReuseSession(fileName)) {

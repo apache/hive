@@ -66,9 +66,9 @@ public class QTestFeatDispatcher {
     }
   }
 
-  public void beforeTest(CliDriver cliDriver) throws Exception {
+  public void beforeTest(QTestUtil qt) throws Exception {
     for (QTestFeatHandler h : handlers.values()) {
-      h.beforeTest(cliDriver);
+      h.beforeTest(qt);
     }
   }
 
