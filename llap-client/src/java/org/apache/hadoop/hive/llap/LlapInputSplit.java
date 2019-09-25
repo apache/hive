@@ -91,6 +91,14 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
     return tokenBytes;
   }
 
+  public void setPlanBytes(byte[] planBytes) {
+    this.planBytes = planBytes;
+  }
+
+  public void setSchema(Schema schema) {
+    this.schema = schema;
+  }
+
   @Override
   public void write(DataOutput out) throws IOException {
     out.writeInt(splitNum);
