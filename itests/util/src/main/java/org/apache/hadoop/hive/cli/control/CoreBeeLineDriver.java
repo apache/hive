@@ -242,9 +242,9 @@ public class CoreBeeLineDriver extends CliAdapter {
       throw new Exception("Exception running or analyzing the results of the query file: " + qFile
           + "\n" + qFile.getDebugHint(), e);
     }
-    
+
   }
-  
+
   public void runTest(QFile qFile) throws Exception {
     runTest(qFile, null);
   }
@@ -271,8 +271,11 @@ public class CoreBeeLineDriver extends CliAdapter {
     featDispatcher.register("dataset", datasetHandler);
     featDispatcher.process(qFile.getInputFile());
 
-    List<Callable<Void>> commands = new ArrayList<>();
-    //
+    QTestFeatDispatcher featDispatcher = new QTestFeatDispatcher();
+    QTestDatasetHandler datasetHandler = new QTestDatasetHandler(miniHS2.getHiveConf());
+    featDispatcher.register("dataset", datasetHandler);
+    featDispatcher.process(qFile.getInputFile());
+
     DatasetCollection datasets = datasetHandler.getDatasets();
     for (String table : datasets.getTables()) {
       Callable<Void> command = initDataset(table, qFile);

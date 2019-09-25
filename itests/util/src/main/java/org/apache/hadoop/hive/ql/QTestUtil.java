@@ -576,7 +576,7 @@ public class QTestUtil {
     QTestFeatDispatcher featDispatcher = new QTestFeatDispatcher();
     featDispatcher.register("dataset", datasetHandler);
     featDispatcher.process(file);
-
+    featDispatcher.beforeTest(this);
     featDispatcher.beforeTest(this);
 
 
