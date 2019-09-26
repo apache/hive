@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,15 +81,12 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
-import static org.apache.hadoop.hive.metastore.Warehouse.makeSpecFromName;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.compareFieldColumns;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getColumnNamesForTable;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getPvals;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isExternalTable;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.makePartNameMatcher;
-
 
 /**
  * todo: This need review re: thread safety.  Various places (see callsers of
@@ -927,270 +923,6 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   }
 
   /**
-   * This stores partition information for a temp table.
-   */
-  public static final class TempTable {
-    private final org.apache.hadoop.hive.metastore.api.Table tTable;
-    private final PartitionTree pTree;
-
-    private static final String EXTERNAL_PARAM = "EXTERNAL";
-
-    TempTable(org.apache.hadoop.hive.metastore.api.Table t) {
-      assert t != null;
-      this.tTable = t;
-      pTree = t.getPartitionKeysSize() > 0 ? new PartitionTree(tTable) : null;
-    }
-
-    private Partition addPartition(Partition p) throws AlreadyExistsException, MetaException {
-      String partName = makePartName(tTable.getPartitionKeys(), p.getValues());
-      Partition partition = pTree.addPartition(p, partName, false);
-      return partition == null ? pTree.getPartition(partName) : partition;
-    }
-
-    private boolean isExternal() {
-      return tTable.getParameters() != null && "true".equals(tTable.getParameters().get(EXTERNAL_PARAM));
-    }
-
-    private Partition getPartition(String partName) throws MetaException {
-      if (partName == null || partName.isEmpty()) {
-        throw new MetaException("Partition name cannot be null or empty");
-      }
-      return pTree.getPartition(partName);
-    }
-
-    private Partition getPartition(List<String> partVals) throws MetaException {
-      if (partVals == null) {
-        throw new MetaException("Partition values cannot be null");
-      }
-      return pTree.getPartition(partVals);
-    }
-
-    private List<Partition> addPartitions(List<Partition> partitions, boolean ifNotExists)
-        throws MetaException, AlreadyExistsException {
-      return pTree.addPartitions(partitions, ifNotExists);
-    }
-
-    private List<Partition> getPartitionsByNames(List<String> partNames) throws MetaException {
-      if (partNames == null) {
-        throw new MetaException("Partition names cannot be null");
-      }
-      List<Partition> partitions = new ArrayList<>();
-      for (String partName : partNames) {
-        Partition partition = getPartition(partName);
-        if (partition != null) {
-          partitions.add(partition);
-        }
-      }
-      return partitions;
-    }
-
-    private List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals) throws MetaException {
-      return pTree.getPartitionsByPartitionVals(partialPartVals);
-    }
-
-    private Partition getPartitionWithAuthInfo(List<String> partionVals, String userName, List<String> groupNames)
-        throws MetaException {
-      Partition partition = getPartition(partionVals);
-      if (partition == null) {
-        return null;
-      }
-      return checkPrivilegesForPartition(partition, userName, groupNames) ? partition : null;
-    }
-
-    private List<Partition> listPartitions() throws MetaException {
-      return pTree.listPartitions();
-    }
-
-    private List<Partition> listPartitionsWithAuthInfo(String userName, List<String> groupNames) throws MetaException {
-      List<Partition> partitions = listPartitions();
-      List<Partition> result = new ArrayList<>();
-      partitions.forEach(p -> {
-        if (checkPrivilegesForPartition(p, userName, groupNames)) {
-          result.add(p);
-        }
-      });
-      return result;
-    }
-
-    private List<Partition> listPartitionsByPartitionValsWithAuthInfo(List<String> partialVals, String userName,
-        List<String> groupNames) throws MetaException {
-      List<Partition> partitions = pTree.getPartitionsByPartitionVals(partialVals);
-      List<Partition> result = new ArrayList<>();
-      partitions.forEach(p -> {
-        if (checkPrivilegesForPartition(p, userName, groupNames)) {
-          result.add(p);
-        }
-      });
-      return result;
-    }
-
-
-    private boolean checkPrivilegesForPartition(Partition partition, String userName, List<String> groupNames) {
-      if ((userName == null || userName.isEmpty()) && (groupNames == null || groupNames.isEmpty())) {
-        return true;
-      }
-      PrincipalPrivilegeSet privileges = partition.getPrivileges();
-      if (privileges == null) {
-        return true;
-      }
-      if (privileges.isSetUserPrivileges()) {
-        if (!privileges.getUserPrivileges().containsKey(userName)) {
-          return false;
-        }
-      }
-      if (privileges.isSetGroupPrivileges()) {
-        if (groupNames == null) {
-          return false;
-        }
-        for (String group : groupNames) {
-          if (!privileges.getGroupPrivileges().containsKey(group)) {
-            return false;
-          }
-        }
-      }
-      return true;
-    }
-
-    private Partition dropPartition(List<String> partVals) throws MetaException, NoSuchObjectException {
-      return pTree.dropPartition(partVals);
-    }
-
-    private Partition dropPartition(String partitionName) throws MetaException, NoSuchObjectException {
-      Map<String, String> specFromName = makeSpecFromName(partitionName);
-      if (specFromName == null || specFromName.isEmpty()) {
-        throw new NoSuchObjectException("Invalid partition name " + partitionName);
-      }
-      List<String> pVals = new ArrayList<>();
-      for (FieldSchema field : tTable.getPartitionKeys()) {
-        String val = specFromName.get(field.getName());
-        if (val == null) {
-          throw new NoSuchObjectException("Partition name " + partitionName + " and table partition keys " + Arrays
-              .toString(tTable.getPartitionKeys().toArray()) + " does not match");
-        }
-        pVals.add(val);
-      }
-      return pTree.dropPartition(pVals);
-    }
-
-
-    /**
-     * Always clone objects before adding or returning them so that callers don't modify them
-     * via references.
-     */
-    private static final class PartitionTree {
-      private final Map<String, Partition> parts = new LinkedHashMap<>();
-      private final org.apache.hadoop.hive.metastore.api.Table tTable;
-
-      private PartitionTree(org.apache.hadoop.hive.metastore.api.Table t) {
-        this.tTable = t;
-      }
-      private Partition addPartition(Partition partition, String partName,  boolean ifNotExists)
-          throws AlreadyExistsException {
-        partition.setDbName(partition.getDbName().toLowerCase());
-        partition.setTableName(partition.getTableName().toLowerCase());
-        if(!ifNotExists && parts.containsKey(partName)) {
-          throw new AlreadyExistsException("Partition " + partName + " already exists");
-        }
-        return parts.putIfAbsent(partName, partition);
-      }
-      /**
-       * @param partName - "p=1/q=2" full partition name {@link Warehouse#makePartName(List, List)}
-       * @return null if doesn't exist
-       */
-      private Partition getPartition(String partName) {
-        return parts.get(partName);
-      }
-
-      /**
-       * Get a partition matching the partition values.
-       *
-       * @param partVals partition values for this partition, must be in the same order as the
-       *                 partition keys of the table.
-       * @return the partition object, or if not found null.
-       * @throws MetaException
-       */
-      private Partition getPartition(List<String> partVals) throws MetaException {
-        String partName = makePartName(tTable.getPartitionKeys(), partVals);
-        return getPartition(partName);
-      }
-
-      /**
-       * Add partitions to the partition tree.
-       *
-       * @param partitions  The partitions to add
-       * @param ifNotExists only add partitions if they don't exist
-       * @return the partitions that were added
-       * @throws MetaException
-       */
-      private List<Partition> addPartitions(List<Partition> partitions, boolean ifNotExists)
-          throws MetaException, AlreadyExistsException {
-        List<Partition> partitionsAdded = new ArrayList<>();
-        Map<String, Partition> partNameToPartition = new HashMap<>();
-        // validate that the new partition values is not already added to the table
-        for (Partition partition : partitions) {
-          String partName = makePartName(tTable.getPartitionKeys(), partition.getValues());
-          if (!ifNotExists && parts.containsKey(partName)) {
-            throw new AlreadyExistsException("Partition " + partName + " already exists");
-          }
-          partNameToPartition.put(partName, partition);
-        }
-
-        for (Entry<String, Partition> entry : partNameToPartition.entrySet()) {
-          if (addPartition(entry.getValue(), entry.getKey(), ifNotExists) == null) {
-            partitionsAdded.add(entry.getValue());
-          }
-        }
-
-        return partitionsAdded;
-      }
-      /**
-       * Provided values for the 1st N partition columns, will return all matching PartitionS
-       * The list is a partial list of partition values in the same order as partition columns.
-       * Missing values should be represented as "" (empty strings).  May provide fewer values.
-       * So if part cols are a,b,c, {"",2} is a valid list
-       * {@link MetaStoreUtils#getPvals(List, Map)}
-       */
-      private List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals) throws MetaException {
-        if (partialPartVals == null || partialPartVals.isEmpty()) {
-          throw new MetaException("Partition partial vals cannot be null or empty");
-        }
-        String partNameMatcher = makePartNameMatcher(tTable, partialPartVals, ".*");
-        List<Partition> matchedPartitions = new ArrayList<>();
-        for (String key : parts.keySet()) {
-          if (key.matches(partNameMatcher)) {
-            matchedPartitions.add(parts.get(key));
-          }
-        }
-        return matchedPartitions;
-      }
-
-      /**
-       * Get all the partitions.
-       *
-       * @return partitions list
-       */
-      private List<Partition> listPartitions() {
-        return new ArrayList<>(parts.values());
-      }
-
-      /**
-       * Remove a partition from the table.
-       * @param partVals partition values, must be not null
-       * @return the instance of the dropped partition, if the remove was successful, otherwise false
-       * @throws MetaException
-       */
-      private Partition dropPartition(List<String> partVals) throws MetaException, NoSuchObjectException {
-        String partName = makePartName(tTable.getPartitionKeys(), partVals);
-        if (!parts.containsKey(partName)) {
-          throw new NoSuchObjectException(
-              "Partition with partition values " + Arrays.toString(partVals.toArray()) + " is not found.");
-        }
-        return parts.remove(partName);
-      }
-    }
-  }
-
-  /**
    * Hive.loadPartition() calls this.
    * @param partition
    *          The partition to add
@@ -1387,7 +1119,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     List<Partition> partitions = tt.listPartitions();
     List<String> result = new ArrayList<>();
     for (int i = 0; i < ((maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts); i++) {
-      result.add(makePartName(tt.tTable.getPartitionKeys(), partitions.get(i).getValues()));
+      result.add(makePartName(table.getPartitionKeys(), partitions.get(i).getValues()));
     }
     return result;
   }
@@ -1403,7 +1135,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     List<Partition> partitions = tt.getPartitionsByPartitionVals(partVals);
     List<String> result = new ArrayList<>();
     for (int i = 0; i < ((maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts); i++) {
-      result.add(makePartName(tt.tTable.getPartitionKeys(), partitions.get(i).getValues()));
+      result.add(makePartName(table.getPartitionKeys(), partitions.get(i).getValues()));
     }
     return result;
   }
