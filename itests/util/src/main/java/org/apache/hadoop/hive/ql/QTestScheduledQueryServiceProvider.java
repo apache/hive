@@ -21,7 +21,10 @@ public class QTestScheduledQueryServiceProvider implements QTestOptionHandler {
   }
 
   public void afterTest(QTestUtil qt) throws Exception {
-    service.close();
+    if(service != null) {
+      service.close();
+    }
+    service = null;
     enabled = false;
   }
 
