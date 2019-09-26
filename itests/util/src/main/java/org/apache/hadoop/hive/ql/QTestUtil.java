@@ -127,7 +127,6 @@ public class QTestUtil {
 
   private boolean isSessionStateStarted = false;
 
-  // FIXME rename
   private QTestOptionDispatcher dispatcher;
 
   public CliDriver getCliDriver() {
