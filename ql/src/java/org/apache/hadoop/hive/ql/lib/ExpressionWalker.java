@@ -18,11 +18,17 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-public class ExpressionWalker extends DefaultGraphWalker {
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+/**
+ * class for traversing tree
+ * This class assumes that the given node represents TREE and not GRAPH
+ * i.e. there is only single path to reach a node
+ */
+public class ExpressionWalker extends DefaultGraphWalker{
 
   /**
    * Constructor.
@@ -35,63 +41,69 @@ public class ExpressionWalker extends DefaultGraphWalker {
   }
 
 
-  /**
-   * We should bypass subquery since we have already processed and created logical plan
-   * (in genLogicalPlan) for subquery at this point.
-   * SubQueryExprProcessor will use generated plan and creates appropriate ExprNodeSubQueryDesc.
-   */
-  private boolean shouldByPass(Node childNode, Node parentNode) {
-    if(parentNode instanceof ASTNode
-            && ((ASTNode)parentNode).getType() == HiveParser.TOK_SUBQUERY_EXPR) {
-      ASTNode parentOp = (ASTNode)parentNode;
-      //subquery either in WHERE <LHS> IN <SUBQUERY> form OR WHERE EXISTS <SUBQUERY> form
-      //in first case LHS should not be bypassed
-      assert(parentOp.getChildCount() == 2 || parentOp.getChildCount()==3);
-      if(parentOp.getChildCount() == 3 && (ASTNode)childNode == parentOp.getChild(2)) {
-        return false;
-      }
-      return true;
+  private static class NodeLabeled {
+    final private Node nd;
+    private int currChildIdx;
+
+    NodeLabeled(Node nd) {
+      this.nd = nd;
+      this.currChildIdx = -1;
     }
+
+    public void incrementChildIdx() {
+      this.currChildIdx++;
+    }
+
+    public int getCurrChildIdx() {
+      return  this.currChildIdx;
+    }
+
+    public Node getNd() {
+      return this.nd;
+    }
+  }
+
+  protected boolean shouldByPass(Node childNode, Node parentNode) {
     return false;
   }
+
   /**
    * walk the current operator and its descendants.
    *
    * @param nd
-   *          current operator in the graph
+   *          current operator in the tree
    * @throws SemanticException
    */
   protected void walk(Node nd) throws SemanticException {
-    // Push the node in the stack
+    Deque<NodeLabeled> traversalStack = new ArrayDeque<>();
+    traversalStack.push(new NodeLabeled(nd));
+
     opStack.push(nd);
 
-    // While there are still nodes to dispatch...
-    while (!opStack.empty()) {
-      Node node = opStack.peek();
+    while(!traversalStack.isEmpty()) {
+      NodeLabeled currLabeledNode = traversalStack.peek();
+      Node currNode = currLabeledNode.getNd();
+      int currIdx = currLabeledNode.getCurrChildIdx();
 
-      if (node.getChildren() == null ||
-              getDispatchedList().containsAll(node.getChildren())) {
-        // Dispatch current node
-        if (!getDispatchedList().contains(node)) {
-          dispatch(node, opStack);
-          opQueue.add(node);
+      if(currNode.getChildren() != null && currNode.getChildren().size() > currIdx + 1) {
+        Node nextChild = currNode.getChildren().get(currIdx+1);
+        //check if this node should be skipped and not dispatched
+        if(shouldByPass(nextChild, currNode)) {
+          retMap.put(nextChild, null);
+          currLabeledNode.incrementChildIdx();
+          continue;
         }
+        traversalStack.push(new NodeLabeled(nextChild));
+        opStack.push(nextChild);
+        currLabeledNode.incrementChildIdx();
+      } else {
+        // dispatch the node
+        dispatch(currNode, opStack);
+        opQueue.add(currNode);
         opStack.pop();
-        continue;
+        traversalStack.pop();
       }
-
-      // Add a single child and restart the loop
-      for (Node childNode : node.getChildren()) {
-        if (!getDispatchedList().contains(childNode)) {
-          if(shouldByPass(childNode, node)) {
-            retMap.put(childNode, null);
-          } else {
-            opStack.push(childNode);
-          }
-          break;
-        }
-      }
-    } // end while
+    }
   }
 }
 
