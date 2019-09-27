@@ -584,7 +584,7 @@ public class SubQueryUtils {
       List<ASTNode> corrExprs,
       RowResolver sqRR) {
 
-    subQueryAST = (ASTNode) ParseDriver.adaptor.dupTree(subQueryAST);
+    subQueryAST = (ASTNode) SubQueryUtils.adaptor.dupTree(subQueryAST);
     ASTNode qry = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.TOK_QUERY, "TOK_QUERY");
 
@@ -693,7 +693,7 @@ public class SubQueryUtils {
     ASTNode searchCond = isNull(createColRefAST(sqAlias, colAlias));
 
     for(ASTNode e : corrExprs ) {
-      ASTNode p = (ASTNode) ParseDriver.adaptor.dupTree(e);
+      ASTNode p = (ASTNode) SubQueryUtils.adaptor.dupTree(e);
       p = isNull(p);
       searchCond = orAST(searchCond, p);
     }
