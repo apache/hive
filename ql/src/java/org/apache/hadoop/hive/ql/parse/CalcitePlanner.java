@@ -1968,8 +1968,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 10. Sort predicates in filter expressions
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-        calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
-            HepMatchOrder.BOTTOM_UP, HiveFilterSortPredicates.INSTANCE);
+        try {
+          calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
+              HepMatchOrder.BOTTOM_UP, HiveFilterSortPredicates.INSTANCE);
+        } catch (Exception e) {
+          boolean isMissingStats = noColsMissingStats.get() > 0;
+          if (isMissingStats) {
+            LOG.warn("Missing column stats (see previous messages), " +
+                    "skipping sort predicates in filter expressions in CBO");
+            noColsMissingStats.set(0);
+          } else {
+            throw e;
+          }
+        }
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
             "Calcite: Sort predicates within filter operators");
       }
