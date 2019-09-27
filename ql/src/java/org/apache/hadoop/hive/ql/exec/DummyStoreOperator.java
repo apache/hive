@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 
 /**
  * For SortMerge joins, this is a dummy operator, which stores the row for the
@@ -99,8 +98,7 @@ public class DummyStoreOperator extends Operator<DummyStoreDesc> implements Seri
   @Override
   public void process(Object row, int tag) throws HiveException {
     // Store the row. See comments above for why we need a new copy of the row.
-    result.o = ObjectInspectorUtils.copyToStandardObject(row, inputObjInspectors[0],
-        ObjectInspectorCopyOption.WRITABLE);
+    result.o = ObjectInspectorUtils.copyToStandardObject(row, inputObjInspectors[0]);
   }
 
   @Override
