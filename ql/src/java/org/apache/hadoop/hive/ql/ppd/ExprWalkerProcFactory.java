@@ -29,9 +29,9 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
-import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.ExpressionWalker;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -346,7 +346,7 @@ public final class ExprWalkerProcFactory {
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(getDefaultExprProcessor(),
         exprRules, exprContext);
-    GraphWalker egw = new DefaultGraphWalker(disp);
+    GraphWalker egw = new ExpressionWalker(disp);
 
     List<Node> startNodes = new ArrayList<Node>();
     List<ExprNodeDesc> clonedPreds = new ArrayList<ExprNodeDesc>();
