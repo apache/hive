@@ -163,23 +163,17 @@ public class ASTConverter {
       if (hiveAgg.getAggregateColumnsOrder() != null) {
         // Aggregation columns may have been sorted in specific order
         for (int pos : hiveAgg.getAggregateColumnsOrder()) {
-          RexInputRef iRef = new RexInputRef(groupBy.getGroupSet().nth(pos),
-              groupBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
-          b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
+          addRefToBuilder(b, groupBy.getGroupSet().nth(pos));
         }
         for (int pos = 0; pos < groupBy.getGroupCount(); pos++) {
           if (!hiveAgg.getAggregateColumnsOrder().contains(pos)) {
-            RexInputRef iRef = new RexInputRef(groupBy.getGroupSet().nth(pos),
-                groupBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
-            b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
+            addRefToBuilder(b, groupBy.getGroupSet().nth(pos));
           }
         }
       } else {
         // Aggregation columns have not been reordered
         for (int i : groupBy.getGroupSet()) {
-          RexInputRef iRef = new RexInputRef(i,
-              groupBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
-          b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
+          addRefToBuilder(b, i);
         }
       }
 
@@ -267,6 +261,12 @@ public class ASTConverter {
     return hiveAST.getAST();
   }
 
+  private void addRefToBuilder(ASTBuilder b, int i) {
+    RexInputRef iRef = new RexInputRef(i,
+        root.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
+    b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
+  }
+
   private ASTNode buildUDTFAST(String functionName, List<ASTNode> children) {
     ASTNode node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
     node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, functionName));
@@ -275,6 +275,7 @@ public class ASTConverter {
     }
     return node;
   }
+
   private void convertOrderLimitToASTNode(HiveSortLimit order) {
     if (order != null) {
       HiveSortLimit hiveSortLimit = order;
