@@ -2440,9 +2440,7 @@ columnNameOrder
 @init { pushMsg("column name order", state); }
 @after { popMsg(state); }
     : identifier orderSpec=orderSpecification? nullSpec=nullOrdering?
-    -> {$orderSpec.tree == null && $nullSpec.tree == null && nullsLast()}?
-            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_LAST identifier))
-    -> {$orderSpec.tree == null && $nullSpec.tree == null && !nullsLast()}?
+    -> {$orderSpec.tree == null && $nullSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST identifier))
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec identifier))
