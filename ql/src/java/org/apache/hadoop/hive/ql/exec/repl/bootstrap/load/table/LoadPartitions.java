@@ -117,7 +117,7 @@ public class LoadPartitions {
         updateReplicationState(initialReplicationState());
         if (!forNewTable().hasReplicationState()) {
           // Add ReplStateLogTask only if no pending table load tasks left for next cycle
-          Task<? extends Serializable> replLogTask
+          Task<?> replLogTask
                   = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
           tracker.addDependentTask(replLogTask);
         }
@@ -131,7 +131,7 @@ public class LoadPartitions {
           updateReplicationState(initialReplicationState());
           if (!forExistingTable(lastReplicatedPartition).hasReplicationState()) {
             // Add ReplStateLogTask only if no pending table load tasks left for next cycle
-            Task<? extends Serializable> replLogTask
+            Task<?> replLogTask
                     = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
             tracker.addDependentTask(replLogTask);
           }

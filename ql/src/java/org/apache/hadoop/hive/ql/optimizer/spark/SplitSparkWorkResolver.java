@@ -54,7 +54,7 @@ import com.google.common.base.Preconditions;
 public class SplitSparkWorkResolver implements PhysicalPlanResolver {
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
-    for (Task<? extends Serializable> task : pctx.getRootTasks()) {
+    for (Task<?> task : pctx.getRootTasks()) {
       if (task instanceof SparkTask) {
         splitSparkWork(((SparkTask) task).getWork());
       }

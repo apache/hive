@@ -89,10 +89,10 @@ public class IncrementalLoadTasksBuilder {
     numIteration = 0;
   }
 
-  public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log,
+  public Task<?> build(DriverContext driverContext, Hive hive, Logger log,
                                             TaskTracker tracker) throws Exception {
-    Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
-    Task<? extends Serializable> taskChainTail = evTaskRoot;
+    Task<?> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
+    Task<?> taskChainTail = evTaskRoot;
     Long lastReplayedEvent = null;
     this.log = log;
     numIteration++;
@@ -133,13 +133,13 @@ public class IncrementalLoadTasksBuilder {
 
       MessageHandler.Context context = new MessageHandler.Context(dbName, location,
               taskChainTail, eventDmd, conf, hive, driverContext.getCtx(), this.log);
-      List<Task<? extends Serializable>> evTasks = analyzeEventLoad(context);
+      List<Task<?>> evTasks = analyzeEventLoad(context);
 
       if ((evTasks != null) && (!evTasks.isEmpty())) {
         ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger,
                 dir.getPath().getName(),
                 eventDmd.getDumpType().toString());
-        Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
+        Task<?> barrierTask = TaskFactory.get(replStateLogWork, conf);
         AddDependencyToLeaves function = new AddDependencyToLeaves(barrierTask);
         DAGTraversal.traverse(evTasks, function);
         this.log.debug("Updated taskChainTail from {}:{} to {}:{}",
@@ -152,14 +152,14 @@ public class IncrementalLoadTasksBuilder {
 
     if (!hasMoreWork()) {
       ReplRemoveFirstIncLoadPendFlagDesc desc = new ReplRemoveFirstIncLoadPendFlagDesc(dbName);
-      Task<? extends Serializable> updateIncPendTask = TaskFactory.get(new DDLWork(inputs, outputs, desc), conf);
+      Task<?> updateIncPendTask = TaskFactory.get(new DDLWork(inputs, outputs, desc), conf);
       taskChainTail.addDependentTask(updateIncPendTask);
       taskChainTail = updateIncPendTask;
 
       Map<String, String> dbProps = new HashMap<>();
       dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(lastReplayedEvent));
       ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps);
-      Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
+      Task<?> barrierTask = TaskFactory.get(replStateLogWork, conf);
       taskChainTail.addDependentTask(barrierTask);
       this.log.debug("Added {}:{} as a precursor of barrier task {}:{}",
               taskChainTail.getClass(), taskChainTail.getId(),
@@ -200,12 +200,12 @@ public class IncrementalLoadTasksBuilder {
     }
   }
 
-  private List<Task<? extends Serializable>> analyzeEventLoad(MessageHandler.Context context) throws SemanticException {
+  private List<Task<?>> analyzeEventLoad(MessageHandler.Context context) throws SemanticException {
     MessageHandler messageHandler = context.dmd.getDumpType().handler();
-    List<Task<? extends Serializable>> tasks = messageHandler.handle(context);
+    List<Task<?>> tasks = messageHandler.handle(context);
 
     if (context.precursor != null) {
-      for (Task<? extends Serializable> t : tasks) {
+      for (Task<?> t : tasks) {
         context.precursor.addDependentTask(t);
         log.debug("Added {}:{} as a precursor of {}:{}",
                 context.precursor.getClass(), context.precursor.getId(), t.getClass(), t.getId());
@@ -217,9 +217,9 @@ public class IncrementalLoadTasksBuilder {
     return addUpdateReplStateTasks(messageHandler.getUpdatedMetadata(), tasks);
   }
 
-  private Task<? extends Serializable> getMigrationCommitTxnTask(String dbName, String tableName,
+  private Task<?> getMigrationCommitTxnTask(String dbName, String tableName,
                                                     List<Map <String, String>> partSpec, String replState,
-                                                    Task<? extends Serializable> preCursor) throws SemanticException {
+                                                    Task<?> preCursor) throws SemanticException {
     ReplLastIdInfo replLastIdInfo = new ReplLastIdInfo(dbName, Long.parseLong(replState));
     replLastIdInfo.setTable(tableName);
     if (partSpec != null && !partSpec.isEmpty()) {
@@ -234,7 +234,7 @@ public class IncrementalLoadTasksBuilder {
       replLastIdInfo.setPartitionList(partitionList);
     }
 
-    Task<? extends Serializable> updateReplIdTxnTask = TaskFactory.get(new ReplTxnWork(replLastIdInfo, ReplTxnWork
+    Task<?> updateReplIdTxnTask = TaskFactory.get(new ReplTxnWork(replLastIdInfo, ReplTxnWork
             .OperationType.REPL_MIGRATION_COMMIT_TXN), conf);
 
     if (preCursor != null) {
@@ -245,9 +245,9 @@ public class IncrementalLoadTasksBuilder {
     return updateReplIdTxnTask;
   }
 
-  private Task<? extends Serializable> tableUpdateReplStateTask(String dbName, String tableName,
+  private Task<?> tableUpdateReplStateTask(String dbName, String tableName,
                                                     Map<String, String> partSpec, String replState,
-                                                    Task<? extends Serializable> preCursor) throws SemanticException {
+                                                    Task<?> preCursor) throws SemanticException {
     HashMap<String, String> mapProp = new HashMap<>();
     mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
 
@@ -255,7 +255,7 @@ public class IncrementalLoadTasksBuilder {
     AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(fqTableName, partSpec,
         new ReplicationSpec(replState, replState), false, mapProp, false, false, null);
 
-    Task<? extends Serializable> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterTblDesc), conf);
+    Task<?> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterTblDesc), conf);
 
     // Link the update repl state task with dependency collection task
     if (preCursor != null) {
@@ -266,14 +266,14 @@ public class IncrementalLoadTasksBuilder {
     return updateReplIdTask;
   }
 
-  private Task<? extends Serializable> dbUpdateReplStateTask(String dbName, String replState,
-                                                             Task<? extends Serializable> preCursor) {
+  private Task<?> dbUpdateReplStateTask(String dbName, String replState,
+                                                             Task<?> preCursor) {
     HashMap<String, String> mapProp = new HashMap<>();
     mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
 
     AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(dbName, mapProp,
         new ReplicationSpec(replState, replState));
-    Task<? extends Serializable> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterDbDesc), conf);
+    Task<?> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterDbDesc), conf);
 
     // Link the update repl state task with dependency collection task
     if (preCursor != null) {
@@ -284,9 +284,9 @@ public class IncrementalLoadTasksBuilder {
     return updateReplIdTask;
   }
 
-  private List<Task<? extends Serializable>> addUpdateReplStateTasks(
+  private List<Task<?>> addUpdateReplStateTasks(
           UpdatedMetaDataTracker updatedMetaDataTracker,
-          List<Task<? extends Serializable>> importTasks) throws SemanticException {
+          List<Task<?>> importTasks) throws SemanticException {
     // If no import tasks generated by the event then no need to update the repl state to any object.
     if (importTasks.isEmpty()) {
       log.debug("No objects need update of repl state: 0 import tasks");
@@ -302,10 +302,10 @@ public class IncrementalLoadTasksBuilder {
     }
 
     // Create a barrier task for dependency collection of import tasks
-    Task<? extends Serializable> barrierTask = TaskFactory.get(new DependencyCollectionWork(), conf);
+    Task<?> barrierTask = TaskFactory.get(new DependencyCollectionWork(), conf);
 
-    List<Task<? extends Serializable>> tasks = new ArrayList<>();
-    Task<? extends Serializable> updateReplIdTask;
+    List<Task<?>> tasks = new ArrayList<>();
+    Task<?> updateReplIdTask;
 
     for (UpdatedMetaDataTracker.UpdateMetaData updateMetaData : updatedMetaDataTracker.getUpdateMetaDataList()) {
       String replState = updateMetaData.getReplState();

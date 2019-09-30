@@ -67,7 +67,7 @@ public class GenSparkProcContext implements NodeProcessorCtx {
   public final List<Task<MoveWork>> moveTask;
 
   // rootTasks is the entry point for all generated tasks
-  public final List<Task<? extends Serializable>> rootTasks;
+  public final List<Task<?>> rootTasks;
 
   public final Set<ReadEntity> inputs;
   public final Set<WriteEntity> outputs;
@@ -151,7 +151,7 @@ public class GenSparkProcContext implements NodeProcessorCtx {
   public GenSparkProcContext(HiveConf conf,
       ParseContext parseContext,
       List<Task<MoveWork>> moveTask,
-      List<Task<? extends Serializable>> rootTasks,
+      List<Task<?>> rootTasks,
       Set<ReadEntity> inputs,
       Set<WriteEntity> outputs,
       Map<String, TableScanOperator> topOps) {

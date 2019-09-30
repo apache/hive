@@ -56,7 +56,7 @@ public final class SkewJoinProcFactory {
         return null;
       }
       ParseContext parseContext = context.getParseCtx();
-      Task<? extends Serializable> currentTsk = context.getCurrentTask();
+      Task<?> currentTsk = context.getCurrentTask();
       GenMRSkewJoinProcessor.processSkewJoin(op, currentTsk, parseContext);
       return null;
     }

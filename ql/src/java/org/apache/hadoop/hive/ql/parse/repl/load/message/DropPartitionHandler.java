@@ -34,7 +34,7 @@ import java.util.Map;
 
 public class DropPartitionHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     try {
       DropPartitionMessage msg = deserializer.getDropPartitionMessage(context.dmd.getPayload());

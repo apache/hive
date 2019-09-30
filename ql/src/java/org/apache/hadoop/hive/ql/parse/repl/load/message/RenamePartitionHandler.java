@@ -36,7 +36,7 @@ import java.util.Map;
 
 public class RenamePartitionHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
 
     AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());

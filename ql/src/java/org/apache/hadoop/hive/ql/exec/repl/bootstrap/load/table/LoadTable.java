@@ -151,7 +151,7 @@ public class LoadTable {
             context.hiveConf
     );
     if (!isPartitioned(tableDesc)) {
-      Task<? extends Serializable> replLogTask
+      Task<?> replLogTask
               = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
       ckptTask.addDependentTask(replLogTask);
     }

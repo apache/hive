@@ -197,7 +197,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       return;
     }
 
-    Task<? extends Serializable> childTask = mapJoinTask.getChildTasks().get(0);
+    Task<?> childTask = mapJoinTask.getChildTasks().get(0);
     if (!(childTask instanceof MapRedTask)) {
       // Nothing to do if it is not a MapReduce task.
       return;
@@ -334,13 +334,13 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     }
 
     // Step 2.4: Remove this MapJoin task
-    List<Task<? extends Serializable>> parentTasks = mapJoinTask.getParentTasks();
+    List<Task<?>> parentTasks = mapJoinTask.getParentTasks();
     mapJoinTask.setParentTasks(null);
     mapJoinTask.setChildTasks(null);
     childMapRedTask.getParentTasks().remove(mapJoinTask);
     if (parentTasks != null) {
       childMapRedTask.getParentTasks().addAll(parentTasks);
-      for (Task<? extends Serializable> parentTask : parentTasks) {
+      for (Task<?> parentTask : parentTasks) {
         parentTask.getChildTasks().remove(mapJoinTask);
         if (!parentTask.getChildTasks().contains(childMapRedTask)) {
           parentTask.getChildTasks().add(childMapRedTask);
@@ -371,7 +371,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
   }
 
   @Override
-  public Task<? extends Serializable> processCurrentTask(MapRedTask currTask,
+  public Task<?> processCurrentTask(MapRedTask currTask,
       ConditionalTask conditionalTask, Context context)
       throws SemanticException {
 
@@ -386,12 +386,12 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
     // create conditional work list and task list
     List<Serializable> listWorks = new ArrayList<Serializable>();
-    List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> listTasks = new ArrayList<Task<?>>();
 
     // create task to aliases mapping and alias to input file mapping for resolver
     // Must be deterministic order map for consistent q-test output across Java versions
-    HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
-        new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
+    HashMap<Task<?>, Set<String>> taskToAliases =
+        new LinkedHashMap<Task<?>, Set<String>>();
     Map<Path, List<String>> pathToAliases = currWork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork = currWork.getAliasToWork();
 

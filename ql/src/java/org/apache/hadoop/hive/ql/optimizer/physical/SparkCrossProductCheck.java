@@ -59,14 +59,14 @@ public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher 
   public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
     @SuppressWarnings("unchecked")
-    Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
+    Task<?> currTask = (Task<?>) nd;
     if (currTask instanceof SparkTask) {
       SparkWork sparkWork = ((SparkTask) currTask).getWork();
       checkShuffleJoin(sparkWork);
       checkMapJoin((SparkTask) currTask);
     } else if (currTask instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> taskList = ((ConditionalTask) currTask).getListTasks();
-      for (Task<? extends Serializable> task : taskList) {
+      List<Task<?>> taskList = ((ConditionalTask) currTask).getListTasks();
+      for (Task<?> task : taskList) {
         dispatch(task, stack, nodeOutputs);
       }
     }

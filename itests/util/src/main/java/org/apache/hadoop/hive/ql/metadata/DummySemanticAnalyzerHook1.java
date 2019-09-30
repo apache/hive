@@ -56,7 +56,7 @@ public class DummySemanticAnalyzerHook1 extends AbstractSemanticAnalyzerHook {
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-      List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+      List<Task<?>> rootTasks) throws SemanticException {
     count = 0;
     if (!isCreateTable) {
       return;

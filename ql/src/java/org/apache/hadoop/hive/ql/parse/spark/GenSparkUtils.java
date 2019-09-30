@@ -404,7 +404,7 @@ public class GenSparkUtils {
    * This is forked from {@link GenMapRedUtils}. The difference is that it doesn't check
    * 'isLinkedFileSink' and does not set parent dir for the linked file sinks.
    */
-  public static Path createMoveTask(Task<? extends Serializable> currTask, boolean chDir,
+  public static Path createMoveTask(Task<?> currTask, boolean chDir,
       FileSinkOperator fsOp, ParseContext parseCtx, List<Task<MoveWork>> mvTasks,
       HiveConf hconf, DependencyCollectionTask dependencyTask) {
 

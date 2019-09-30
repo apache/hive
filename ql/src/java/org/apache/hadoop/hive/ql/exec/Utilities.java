@@ -2599,24 +2599,24 @@ public final class Utilities {
     return true;
   }
 
-  public static List<TezTask> getTezTasks(List<Task<? extends Serializable>> tasks) {
+  public static List<TezTask> getTezTasks(List<Task<?>> tasks) {
     return getTasks(tasks, new TaskFilterFunction<>(TezTask.class));
   }
 
-  public static List<SparkTask> getSparkTasks(List<Task<? extends Serializable>> tasks) {
+  public static List<SparkTask> getSparkTasks(List<Task<?>> tasks) {
     return getTasks(tasks, new TaskFilterFunction<>(SparkTask.class));
   }
 
-  public static List<ExecDriver> getMRTasks(List<Task<? extends Serializable>> tasks) {
+  public static List<ExecDriver> getMRTasks(List<Task<?>> tasks) {
     return getTasks(tasks, new TaskFilterFunction<>(ExecDriver.class));
   }
 
-  public static int getNumClusterJobs(List<Task<? extends Serializable>> tasks) {
+  public static int getNumClusterJobs(List<Task<?>> tasks) {
     return getMRTasks(tasks).size() + getTezTasks(tasks).size() + getSparkTasks(tasks).size();
   }
 
   static class TaskFilterFunction<T> implements DAGTraversal.Function {
-    private Set<Task<? extends Serializable>> visited = new HashSet<>();
+    private Set<Task<?>> visited = new HashSet<>();
     private Class<T> requiredType;
     private List<T> typeSpecificTasks = new ArrayList<>();
 
@@ -2625,7 +2625,7 @@ public final class Utilities {
     }
 
     @Override
-    public void process(Task<? extends Serializable> task) {
+    public void process(Task<?> task) {
       if (requiredType.isInstance(task) && !typeSpecificTasks.contains(task)) {
         typeSpecificTasks.add((T) task);
       }
@@ -2637,12 +2637,12 @@ public final class Utilities {
     }
 
     @Override
-    public boolean skipProcessing(Task<? extends Serializable> task) {
+    public boolean skipProcessing(Task<?> task) {
       return visited.contains(task);
     }
   }
 
-  private static <T> List<T> getTasks(List<Task<? extends Serializable>> tasks,
+  private static <T> List<T> getTasks(List<Task<?>> tasks,
       TaskFilterFunction<T> function) {
     DAGTraversal.traverse(tasks, function);
     return function.getTasks();
@@ -2831,7 +2831,7 @@ public final class Utilities {
    * @param conf
    * @throws SemanticException
    */
-  public static void reworkMapRedWork(Task<? extends Serializable> task,
+  public static void reworkMapRedWork(Task<?> task,
       boolean reworkMapredWork, HiveConf conf) throws SemanticException {
     if (reworkMapredWork && (task instanceof MapRedTask)) {
       try {

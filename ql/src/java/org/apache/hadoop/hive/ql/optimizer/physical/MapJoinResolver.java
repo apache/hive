@@ -96,7 +96,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
       physicalContext = context;
     }
 
-    private void processCurrentTask(Task<? extends Serializable> currTask,
+    private void processCurrentTask(Task<?> currTask,
         ConditionalTask conditionalTask) throws SemanticException {
       // get current mapred work and its local work
       MapredWork mapredWork = (MapredWork) currTask.getWork();
@@ -145,10 +145,10 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         }
         newLocalWork.setHasStagedAlias(true);
         // get all parent tasks
-        List<Task<? extends Serializable>> parentTasks = currTask.getParentTasks();
+        List<Task<?>> parentTasks = currTask.getParentTasks();
         currTask.setParentTasks(null);
         if (parentTasks != null) {
-          for (Task<? extends Serializable> tsk : parentTasks) {
+          for (Task<?> tsk : parentTasks) {
             // make new generated task depends on all the parent tasks of current task.
             tsk.addDependentTask(localTask);
             // remove the current task from its original parent task's dependent task
@@ -162,7 +162,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
             physicalContext.removeFromRootTask(currTask);
           } else {
             // set list task
-            List<Task<? extends Serializable>> listTask = conditionalTask.getListTasks();
+            List<Task<?>> listTask = conditionalTask.getListTasks();
             ConditionalWork conditionalWork = conditionalTask.getWork();
             int index = listTask.indexOf(currTask);
             listTask.set(index, localTask);
@@ -176,14 +176,14 @@ public class MapJoinResolver implements PhysicalPlanResolver {
               // get bigKeysDirToTaskMap
               ConditionalResolverSkewJoinCtx context = (ConditionalResolverSkewJoinCtx) conditionalTask
                   .getResolverCtx();
-              HashMap<Path, Task<? extends Serializable>> bigKeysDirToTaskMap = context
+              HashMap<Path, Task<?>> bigKeysDirToTaskMap = context
                   .getDirToTaskMap();
               // to avoid concurrent modify the hashmap
-              HashMap<Path, Task<? extends Serializable>> newbigKeysDirToTaskMap = new HashMap<Path, Task<? extends Serializable>>();
+              HashMap<Path, Task<?>> newbigKeysDirToTaskMap = new HashMap<Path, Task<?>>();
               // reset the resolver
-              for (Map.Entry<Path, Task<? extends Serializable>> entry : bigKeysDirToTaskMap
+              for (Map.Entry<Path, Task<?>> entry : bigKeysDirToTaskMap
                   .entrySet()) {
-                Task<? extends Serializable> task = entry.getValue();
+                Task<?> task = entry.getValue();
                 Path key = entry.getKey();
                 if (task.equals(currTask)) {
                   newbigKeysDirToTaskMap.put(key, localTask);
@@ -197,14 +197,14 @@ public class MapJoinResolver implements PhysicalPlanResolver {
               // get bigKeysDirToTaskMap
               ConditionalResolverCommonJoinCtx context = (ConditionalResolverCommonJoinCtx) conditionalTask
                   .getResolverCtx();
-              HashMap<Task<? extends Serializable>, Set<String>> taskToAliases = context.getTaskToAliases();
+              HashMap<Task<?>, Set<String>> taskToAliases = context.getTaskToAliases();
               // to avoid concurrent modify the hashmap
               // Must be deterministic order map for consistent q-test output across Java versions
-              HashMap<Task<? extends Serializable>, Set<String>> newTaskToAliases =
-                  new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
+              HashMap<Task<?>, Set<String>> newTaskToAliases =
+                  new LinkedHashMap<Task<?>, Set<String>>();
               // reset the resolver
-              for (Map.Entry<Task<? extends Serializable>, Set<String>> entry : taskToAliases.entrySet()) {
-                Task<? extends Serializable> task = entry.getKey();
+              for (Map.Entry<Task<?>, Set<String>> entry : taskToAliases.entrySet()) {
+                Task<?> task = entry.getKey();
                 Set<String> key = new HashSet<String>(entry.getValue());
 
                 if (task.equals(currTask)) {
@@ -227,13 +227,13 @@ public class MapJoinResolver implements PhysicalPlanResolver {
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
-      Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
+      Task<?> currTask = (Task<?>) nd;
       // not map reduce task or not conditional task, just skip
       if (currTask.isMapRedTask()) {
         if (currTask instanceof ConditionalTask) {
           // get the list of task
-          List<Task<? extends Serializable>> taskList = ((ConditionalTask) currTask).getListTasks();
-          for (Task<? extends Serializable> tsk : taskList) {
+          List<Task<?>> taskList = ((ConditionalTask) currTask).getListTasks();
+          for (Task<?> tsk : taskList) {
             if (tsk.isMapRedTask()) {
               this.processCurrentTask(tsk, ((ConditionalTask) currTask));
             }
@@ -278,14 +278,14 @@ public class MapJoinResolver implements PhysicalPlanResolver {
    * A container of current task and parse context.
    */
   public static class LocalMapJoinProcCtx implements NodeProcessorCtx {
-    private Task<? extends Serializable> currentTask;
+    private Task<?> currentTask;
     private ParseContext parseCtx;
     private List<Operator<? extends OperatorDesc>> dummyParentOp = null;
     private boolean isFollowedByGroupBy;
 
     private Map<MapJoinOperator, List<Operator<? extends OperatorDesc>>> directWorks;
 
-    public LocalMapJoinProcCtx(Task<? extends Serializable> task, ParseContext parseCtx) {
+    public LocalMapJoinProcCtx(Task<?> task, ParseContext parseCtx) {
       currentTask = task;
       this.parseCtx = parseCtx;
       dummyParentOp = new ArrayList<Operator<? extends OperatorDesc>>();
@@ -293,11 +293,11 @@ public class MapJoinResolver implements PhysicalPlanResolver {
       isFollowedByGroupBy = false;
     }
 
-    public Task<? extends Serializable> getCurrentTask() {
+    public Task<?> getCurrentTask() {
       return currentTask;
     }
 
-    public void setCurrentTask(Task<? extends Serializable> currentTask) {
+    public void setCurrentTask(Task<?> currentTask) {
       this.currentTask = currentTask;
     }
 

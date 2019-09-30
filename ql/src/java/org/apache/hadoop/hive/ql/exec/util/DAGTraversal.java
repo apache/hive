@@ -32,8 +32,8 @@ import java.util.Set;
  * stack overflow's, hence iteration based.
  */
 public class DAGTraversal {
-  public static void traverse(List<Task<? extends Serializable>> tasks, Function function) {
-    List<Task<? extends Serializable>> listOfTasks = new ArrayList<>(tasks);
+  public static void traverse(List<Task<?>> tasks, Function function) {
+    List<Task<?>> listOfTasks = new ArrayList<>(tasks);
     while (!listOfTasks.isEmpty()) {
       // HashSet will make sure that no duplicate children are added. If a task is added multiple
       // time to the children list then it may cause the list to grow exponentially. Lets take an example of
@@ -49,8 +49,8 @@ public class DAGTraversal {
       // the children list and in next iteration ev2.task1 will be added 3 times and ev2.task2 will be added
       // 3 times. So in next iteration ev2.barrierTask will be added 6 times. As it goes like this, the next barrier
       // task will be added 12-15 times and may reaches millions with large number of events.
-      Set<Task<? extends Serializable>> children = new HashSet<>();
-      for (Task<? extends Serializable> task : listOfTasks) {
+      Set<Task<?>> children = new HashSet<>();
+      for (Task<?> task : listOfTasks) {
         // skip processing has to be done first before continuing
         if (function.skipProcessing(task)) {
           continue;
@@ -69,8 +69,8 @@ public class DAGTraversal {
   }
 
   public interface Function {
-    void process(Task<? extends Serializable> task);
+    void process(Task<?> task);
 
-    boolean skipProcessing(Task<? extends Serializable> task);
+    boolean skipProcessing(Task<?> task);
   }
 }

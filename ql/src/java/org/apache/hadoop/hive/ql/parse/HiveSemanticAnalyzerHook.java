@@ -72,5 +72,5 @@ public interface HiveSemanticAnalyzerHook extends Hook {
    */
   public void postAnalyze(
     HiveSemanticAnalyzerHookContext context,
-    List<Task<? extends Serializable>> rootTasks) throws SemanticException;
+    List<Task<?>> rootTasks) throws SemanticException;
 }
