@@ -67,7 +67,6 @@ select ti, si, i, bi from alltypes_orc_n0;
 
 SET hive.exec.schema.evolution=false;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 create table src_part_orc (key int, value string) partitioned by (ds string) stored as orc;
 insert overwrite table src_part_orc partition(ds) select key, value, ds from srcpart where ds is not null;
 

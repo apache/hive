@@ -44,7 +44,6 @@ public class TestStatsReplicationScenariosMigration extends TestStatsReplication
       put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
       put("hive.metastore.client.capability.check", "false");
       put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
       put("hive.strict.checks.bucketing", "false");
       put("hive.mapred.mode", "nonstrict");
       put("mapred.input.dir.recursive", "true");
@@ -56,7 +55,6 @@ public class TestStatsReplicationScenariosMigration extends TestStatsReplication
     Map<String, String> primaryConfigs = new HashMap<String, String>() {{
       put("hive.metastore.client.capability.check", "false");
       put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
       put("hive.strict.checks.bucketing", "false");
       put("hive.mapred.mode", "nonstrict");
       put("mapred.input.dir.recursive", "true");

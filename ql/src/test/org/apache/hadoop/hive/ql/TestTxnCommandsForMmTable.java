@@ -119,7 +119,6 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
   
   void setUpInternalExtended(boolean isOrcFormat) throws Exception {
     hiveConf.setBoolVar(HiveConf.ConfVars.DYNAMICPARTITIONING, true);
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "true");

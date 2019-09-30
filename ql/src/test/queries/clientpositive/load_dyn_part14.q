@@ -7,7 +7,6 @@ create table if not exists nzhang_part14_n0 (key string)
 describe extended nzhang_part14_n0;
 
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 explain
 insert overwrite table nzhang_part14_n0 partition(value) 

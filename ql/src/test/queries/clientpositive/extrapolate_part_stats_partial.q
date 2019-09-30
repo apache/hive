@@ -1,7 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.stats.fetch.column.stats=true;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.aggregate.stats.cache.enabled=false;
 
 

@@ -584,7 +584,8 @@ public class HiveConf extends Configuration {
         "The smaller it is the more load there will be on the jobtracker, the higher it is the less granular the caught will be."),
     DYNAMICPARTITIONING("hive.exec.dynamic.partition", true,
         "Whether or not to allow dynamic partitions in DML/DDL."),
-    DYNAMICPARTITIONINGMODE("hive.exec.dynamic.partition.mode", "strict",
+    DYNAMICPARTITIONINGMODE("hive.exec.dynamic.partition.mode", "nonstrict",
+        new StringSet("strict", "nonstrict"),
         "In strict mode, the user must specify at least one static partition\n" +
         "in case the user accidentally overwrites all partitions.\n" +
         "In nonstrict mode all partitions are allowed to be dynamic."),
@@ -2304,10 +2305,9 @@ public class HiveConf extends Configuration {
         "Currently it only works with Apache Tez. This should always be set to true. \n" +
         "Since it is a new feature, it has been made configurable."),
 
+    @Deprecated
     HIVEOPTSORTDYNAMICPARTITION("hive.optimize.sort.dynamic.partition", false,
-        "When enabled dynamic partitioning column will be globally sorted.\n" +
-        "This way we can keep only one record writer open for each partition value\n" +
-        "in the reducer thereby reducing the memory pressure on reducers."),
+        "Deprecated. Use hive.optimize.sort.dynamic.partition.threshold instead."),
     HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD("hive.optimize.sort.dynamic.partition.threshold", 0,
                                 "When enabled dynamic partitioning column will be globally sorted.\n" +
                                     "This way we can keep only one record writer open for each partition value\n" +

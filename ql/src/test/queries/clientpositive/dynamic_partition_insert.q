@@ -12,7 +12,6 @@ LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABL
 LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131;
 LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131;
 
-SET hive.exec.dynamic.partition.mode=nonstrict;
 INSERT OVERWRITE TABLE t2_n78 partition(p1) SELECT *,c1 AS p1 FROM t1_n131 DISTRIBUTE BY p1;
 SELECT * FROM t2_n78;
 -- no partition spec
