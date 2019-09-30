@@ -93,12 +93,12 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
    */
   private static class Scope {
     boolean database = false, table = false, partition = false;
-    List<Task<? extends Serializable>> rootTasks = new ArrayList<>();
+    List<Task<?>> rootTasks = new ArrayList<>();
   }
 
   @Override
   public int execute(DriverContext driverContext) {
-    Task<? extends Serializable> rootTask = work.getRootTask();
+    Task<?> rootTask = work.getRootTask();
     if (rootTask != null) {
       rootTask.setChildTasks(null);
     }
@@ -466,19 +466,19 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
    */
   private void setUpDependencies(TaskTracker parentTasks, TaskTracker childTasks) {
     if (parentTasks.hasTasks()) {
-      for (Task<? extends Serializable> parentTask : parentTasks.tasks()) {
-        for (Task<? extends Serializable> childTask : childTasks.tasks()) {
+      for (Task<?> parentTask : parentTasks.tasks()) {
+        for (Task<?> childTask : childTasks.tasks()) {
           parentTask.addDependentTask(childTask);
         }
       }
     } else {
-      for (Task<? extends Serializable> childTask : childTasks.tasks()) {
+      for (Task<?> childTask : childTasks.tasks()) {
         parentTasks.addTask(childTask);
       }
     }
   }
 
-  private void createBuilderTask(List<Task<? extends Serializable>> rootTasks) {
+  private void createBuilderTask(List<Task<?>> rootTasks) {
     // Use loadTask as dependencyCollection
     Task<ReplLoadWork> loadTask = TaskFactory.get(work, conf);
     DAGTraversal.traverse(rootTasks, new AddDependencyToLeaves(loadTask));
@@ -507,7 +507,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         }
       }
 
-      List<Task<? extends Serializable>> childTasks = new ArrayList<>();
+      List<Task<?>> childTasks = new ArrayList<>();
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
 
       // First start the distcp tasks to copy the files related to external table. The distcp tasks should be
@@ -548,7 +548,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           AlterDatabaseSetPropertiesDesc alterDbDesc =
                   new AlterDatabaseSetPropertiesDesc(dbName, mapProp,
                           new ReplicationSpec(lastEventid, lastEventid));
-          Task<? extends Serializable> updateReplIdTask =
+          Task<?> updateReplIdTask =
                   TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc), conf);
 
           DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(updateReplIdTask));

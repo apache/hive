@@ -76,7 +76,7 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
-      Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
+      Task<?> task = (Task<?>) nd;
 
       if (!task.isMapRedTask() || task instanceof ConditionalTask
           || ((MapredWork) task.getWork()).getReduceWork() == null) {
@@ -140,20 +140,20 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
    * A container of current task and parse context.
    */
   public static class SkewJoinProcCtx implements NodeProcessorCtx {
-    private Task<? extends Serializable> currentTask;
+    private Task<?> currentTask;
     private ParseContext parseCtx;
 
-    public SkewJoinProcCtx(Task<? extends Serializable> task,
+    public SkewJoinProcCtx(Task<?> task,
         ParseContext parseCtx) {
       currentTask = task;
       this.parseCtx = parseCtx;
     }
 
-    public Task<? extends Serializable> getCurrentTask() {
+    public Task<?> getCurrentTask() {
       return currentTask;
     }
 
-    public void setCurrentTask(Task<? extends Serializable> currentTask) {
+    public void setCurrentTask(Task<?> currentTask) {
       this.currentTask = currentTask;
     }
 

@@ -356,11 +356,11 @@ public class TestReplicationScenarios {
       if (validate(rootTask)) {
         return true;
       }
-      List<Task<? extends Serializable>> childTasks = rootTask.getChildTasks();
+      List<Task<?>> childTasks = rootTask.getChildTasks();
       if (childTasks == null) {
         return false;
       }
-      for (Task<? extends Serializable> childTask : childTasks) {
+      for (Task<?> childTask : childTasks) {
         if (hasTask(childTask)) {
           return true;
         }

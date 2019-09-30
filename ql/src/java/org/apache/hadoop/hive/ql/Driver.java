@@ -1552,10 +1552,10 @@ public class Driver implements IDriver {
     if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_LOCK_MAPRED_ONLY)) {
       return true;
     }
-    Queue<Task<? extends Serializable>> taskQueue = new LinkedList<Task<? extends Serializable>>();
+    Queue<Task<?>> taskQueue = new LinkedList<Task<?>>();
     taskQueue.addAll(plan.getRootTasks());
     while (taskQueue.peek() != null) {
-      Task<? extends Serializable> tsk = taskQueue.remove();
+      Task<?> tsk = taskQueue.remove();
       if (tsk.requireLock()) {
         return true;
       }
@@ -1768,7 +1768,7 @@ public class Driver implements IDriver {
       SessionState.get().setLocalMapRedErrors(new HashMap<>());
 
       // Add root Tasks to runnable
-      for (Task<? extends Serializable> tsk : plan.getRootTasks()) {
+      for (Task<?> tsk : plan.getRootTasks()) {
         // This should never happen, if it does, it's a bug with the potential to produce
         // incorrect results.
         assert tsk.getParentTasks() == null || tsk.getParentTasks().isEmpty();
@@ -1785,7 +1785,7 @@ public class Driver implements IDriver {
       // Loop while you either have tasks running, or tasks queued up
       while (driverCxt.isRunning()) {
         // Launch upto maxthreads tasks
-        Task<? extends Serializable> task;
+        Task<?> task;
         while ((task = driverCxt.getRunnable(maxthreads)) != null) {
           TaskRunner runner = launchTask(task, queryId, noName, jobname, jobs, driverCxt);
           if (!runner.isRunning()) {
@@ -1813,14 +1813,14 @@ public class Driver implements IDriver {
 
         queryDisplay.setTaskResult(tskRun.getTask().getId(), tskRun.getTaskResult());
 
-        Task<? extends Serializable> tsk = tskRun.getTask();
+        Task<?> tsk = tskRun.getTask();
         TaskResult result = tskRun.getTaskResult();
 
         int exitVal = result.getExitVal();
         checkInterrupted("when checking the execution result.", hookContext, perfLogger);
 
         if (exitVal != 0) {
-          Task<? extends Serializable> backupTask = tsk.getAndInitBackupTask();
+          Task<?> backupTask = tsk.getAndInitBackupTask();
           if (backupTask != null) {
             String errorMessage = getErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
             console.printError(errorMessage);
@@ -1870,7 +1870,7 @@ public class Driver implements IDriver {
         }
 
         if (tsk.getChildTasks() != null) {
-          for (Task<? extends Serializable> child : tsk.getChildTasks()) {
+          for (Task<?> child : tsk.getChildTasks()) {
             if (DriverContext.isLaunchable(child)) {
               driverCxt.addToRunnable(child);
             }
@@ -2023,20 +2023,20 @@ public class Driver implements IDriver {
     }
   }
 
-  private void setQueryDisplays(List<Task<? extends Serializable>> tasks) {
+  private void setQueryDisplays(List<Task<?>> tasks) {
     if (tasks != null) {
-      Set<Task<? extends Serializable>> visited = new HashSet<Task<? extends Serializable>>();
+      Set<Task<?>> visited = new HashSet<Task<?>>();
       while (!tasks.isEmpty()) {
         tasks = setQueryDisplays(tasks, visited);
       }
     }
   }
 
-  private List<Task<? extends Serializable>> setQueryDisplays(
-          List<Task<? extends Serializable>> tasks,
-          Set<Task<? extends Serializable>> visited) {
-    List<Task<? extends Serializable>> childTasks = new ArrayList<>();
-    for (Task<? extends Serializable> task : tasks) {
+  private List<Task<?>> setQueryDisplays(
+          List<Task<?>> tasks,
+          Set<Task<?>> visited) {
+    List<Task<?>> childTasks = new ArrayList<>();
+    for (Task<?> task : tasks) {
       if (visited.contains(task)) {
         continue;
       }
@@ -2103,7 +2103,7 @@ public class Driver implements IDriver {
    * @param cxt
    *          the driver context
    */
-  private TaskRunner launchTask(Task<? extends Serializable> tsk, String queryId, boolean noName,
+  private TaskRunner launchTask(Task<?> tsk, String queryId, boolean noName,
       String jobname, int jobs, DriverContext cxt) throws HiveException {
     if (SessionState.get() != null) {
       SessionState.get().getHiveHistory().startTask(queryId, tsk, tsk.getClass().getName());
@@ -2437,7 +2437,7 @@ public class Driver implements IDriver {
   public boolean hasResultSet() {
 
     // TODO explain should use a FetchTask for reading
-    for (Task<? extends Serializable> task : plan.getRootTasks()) {
+    for (Task<?> task : plan.getRootTasks()) {
       if (task.getClass() == ExplainTask.class) {
         return true;
       }

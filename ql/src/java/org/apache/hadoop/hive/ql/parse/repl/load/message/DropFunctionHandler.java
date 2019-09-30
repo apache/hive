@@ -31,7 +31,7 @@ import java.util.List;
 
 public class DropFunctionHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     DropFunctionMessage msg = deserializer.getDropFunctionMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;

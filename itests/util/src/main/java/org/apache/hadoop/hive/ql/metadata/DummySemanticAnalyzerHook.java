@@ -61,7 +61,7 @@ public class DummySemanticAnalyzerHook extends AbstractSemanticAnalyzerHook{
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-      List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+      List<Task<?>> rootTasks) throws SemanticException {
 
     if(hook != null) {
       hook.postAnalyze(context, rootTasks);
@@ -91,7 +91,7 @@ class DummyCreateTableHook extends AbstractSemanticAnalyzerHook{
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-      List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+      List<Task<?>> rootTasks) throws SemanticException {
     CreateTableDesc desc = (CreateTableDesc) ((DDLTask)rootTasks.get(rootTasks.size()-1)).getWork().getDDLDesc();
     Map<String,String> tblProps = desc.getTblProps();
     if(tblProps == null) {

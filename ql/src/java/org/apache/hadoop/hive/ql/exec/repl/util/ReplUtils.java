@@ -186,22 +186,22 @@ public class ReplUtils {
   private static void addOpenTxnTaskForMigration(String actualDbName, String actualTblName,
                                             HiveConf conf,
                                          UpdatedMetaDataTracker updatedMetaDataTracker,
-                                         List<Task<? extends Serializable>> taskList,
-                                         Task<? extends Serializable> childTask) {
-    Task<? extends Serializable> replTxnTask = TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName,
+                                         List<Task<?>> taskList,
+                                         Task<?> childTask) {
+    Task<?> replTxnTask = TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName,
             ReplTxnWork.OperationType.REPL_MIGRATION_OPEN_TXN), conf);
     replTxnTask.addDependentTask(childTask);
     updatedMetaDataTracker.setNeedCommitTxn(true);
     taskList.add(replTxnTask);
   }
 
-  public static List<Task<? extends Serializable>> addOpenTxnTaskForMigration(String actualDbName,
+  public static List<Task<?>> addOpenTxnTaskForMigration(String actualDbName,
                                                                   String actualTblName, HiveConf conf,
                                                                   UpdatedMetaDataTracker updatedMetaDataTracker,
-                                                                  Task<? extends Serializable> childTask,
+                                                                  Task<?> childTask,
                                                                   org.apache.hadoop.hive.metastore.api.Table tableObj)
           throws IOException, TException {
-    List<Task<? extends Serializable>> taskList = new ArrayList<>();
+    List<Task<?>> taskList = new ArrayList<>();
     taskList.add(childTask);
     if (isTableMigratingToTransactional(conf, tableObj) && updatedMetaDataTracker != null) {
       addOpenTxnTaskForMigration(actualDbName, actualTblName, conf, updatedMetaDataTracker,
@@ -210,13 +210,13 @@ public class ReplUtils {
     return taskList;
   }
 
-  public static List<Task<? extends Serializable>> addTasksForLoadingColStats(ColumnStatistics colStats,
+  public static List<Task<?>> addTasksForLoadingColStats(ColumnStatistics colStats,
                                                                               HiveConf conf,
                                                                               UpdatedMetaDataTracker updatedMetadata,
                                                                               org.apache.hadoop.hive.metastore.api.Table tableObj,
                                                                               long writeId)
           throws IOException, TException {
-    List<Task<? extends Serializable>> taskList = new ArrayList<>();
+    List<Task<?>> taskList = new ArrayList<>();
     boolean isMigratingToTxn = ReplUtils.isTableMigratingToTransactional(conf, tableObj);
     ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats, isMigratingToTxn);
     work.setWriteId(writeId);
