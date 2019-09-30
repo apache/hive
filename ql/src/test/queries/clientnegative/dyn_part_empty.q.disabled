@@ -15,7 +15,6 @@
 -- limitations under the License.
 
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.stats.autogether=false;
 set hive.error.on.empty.partition=true;
 

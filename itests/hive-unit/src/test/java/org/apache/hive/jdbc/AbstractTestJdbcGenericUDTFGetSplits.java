@@ -142,7 +142,6 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
 
   protected List<String> getConfigs(String... more) {
     List<String> setCmds = new ArrayList<>();
-    setCmds.add("set hive.exec.dynamic.partition.mode=nonstrict");
     setCmds.add("set mapred.min.split.size=10");
     setCmds.add("set mapred.max.split.size=10");
     setCmds.add("set tez.grouping.min-size=10");

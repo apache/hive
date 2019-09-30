@@ -133,7 +133,6 @@ public class TestStreamingDynamicPartitioning {
     TxnDbUtil.setConfValues(conf);
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
-    conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     dbFolder.create();
     loc1 = dbFolder.newFolder(dbName + ".db").toString();
 

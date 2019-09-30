@@ -188,7 +188,6 @@ DROP TABLE tcheck;
 
 -- micro-managed table
 set hive.create.as.insert.only=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 create table part_mm(key int check (key > 0 and key < 5000) enforced) partitioned by (key_mm int)
     stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only");
 explain insert into table part_mm partition(key_mm=455) select key from src order by value limit 3;
