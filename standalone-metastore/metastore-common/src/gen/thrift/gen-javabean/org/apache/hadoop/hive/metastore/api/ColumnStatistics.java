@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
   private ColumnStatisticsDesc statsDesc; // required
   private List<ColumnStatisticsObj> statsObj; // required
   private boolean isStatsCompliant; // optional
-  private String engine; // required
+  private String engine; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -124,7 +124,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __ISSTATSCOMPLIANT_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.IS_STATS_COMPLIANT};
+  private static final _Fields optionals[] = {_Fields.IS_STATS_COMPLIANT,_Fields.ENGINE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -135,7 +135,7 @@ import org.slf4j.LoggerFactory;
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnStatisticsObj.class))));
     tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.ENGINE, new org.apache.thrift.meta_data.FieldMetaData("engine", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.ENGINE, new org.apache.thrift.meta_data.FieldMetaData("engine", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ColumnStatistics.class, metaDataMap);
@@ -146,13 +146,11 @@ import org.slf4j.LoggerFactory;
 
   public ColumnStatistics(
     ColumnStatisticsDesc statsDesc,
-    List<ColumnStatisticsObj> statsObj,
-    String engine)
+    List<ColumnStatisticsObj> statsObj)
   {
     this();
     this.statsDesc = statsDesc;
     this.statsObj = statsObj;
-    this.engine = engine;
   }
 
   /**
@@ -537,14 +535,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.isStatsCompliant);
       first = false;
     }
-    if (!first) sb.append(", ");
-    sb.append("engine:");
-    if (this.engine == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.engine);
+    if (isSetEngine()) {
+      if (!first) sb.append(", ");
+      sb.append("engine:");
+      if (this.engine == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.engine);
+      }
+      first = false;
     }
-    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -557,10 +557,6 @@ import org.slf4j.LoggerFactory;
 
     if (!isSetStatsObj()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'statsObj' is unset! Struct:" + toString());
-    }
-
-    if (!isSetEngine()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'engine' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -685,9 +681,11 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldEnd();
       }
       if (struct.engine != null) {
-        oprot.writeFieldBegin(ENGINE_FIELD_DESC);
-        oprot.writeString(struct.engine);
-        oprot.writeFieldEnd();
+        if (struct.isSetEngine()) {
+          oprot.writeFieldBegin(ENGINE_FIELD_DESC);
+          oprot.writeString(struct.engine);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -714,14 +712,19 @@ import org.slf4j.LoggerFactory;
           _iter296.write(oprot);
         }
       }
-      oprot.writeString(struct.engine);
       BitSet optionals = new BitSet();
       if (struct.isSetIsStatsCompliant()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetEngine()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetIsStatsCompliant()) {
         oprot.writeBool(struct.isStatsCompliant);
+      }
+      if (struct.isSetEngine()) {
+        oprot.writeString(struct.engine);
       }
     }
 
@@ -743,12 +746,14 @@ import org.slf4j.LoggerFactory;
         }
       }
       struct.setStatsObjIsSet(true);
-      struct.engine = iprot.readString();
-      struct.setEngineIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.isStatsCompliant = iprot.readBool();
         struct.setIsStatsCompliantIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.engine = iprot.readString();
+        struct.setEngineIsSet(true);
       }
     }
   }
