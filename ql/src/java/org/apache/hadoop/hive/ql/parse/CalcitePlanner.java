@@ -354,12 +354,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   @SuppressWarnings("nls")
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     if (runCBO) {
-      super.analyzeInternal(ast, new PlannerContextFactory() {
-        @Override
-        public PlannerContext create() {
-          return new PreCboCtx();
-        }
-      });
+      super.analyzeInternal(ast, PreCboCtx::new);
     } else {
       super.analyzeInternal(ast);
     }
@@ -1786,8 +1781,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       try {
         calciteGenPlan = genLogicalPlan(getQB(), true, null, null);
         // if it is to create view, we do not use table alias
-        resultSchema = SemanticAnalyzer.convertRowSchemaToResultSetSchema(
-            relToHiveRR.get(calciteGenPlan),
+        resultSchema = convertRowSchemaToResultSetSchema(relToHiveRR.get(calciteGenPlan),
             getQB().isView() || getQB().isMaterializedView() ? false : HiveConf.getBoolVar(conf,
                 HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
       } catch (SemanticException e) {
@@ -2927,8 +2921,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               fields.get(i).getFieldName(),
               TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i).getFieldObjectInspector()),
               tableAlias, false);
-          colInfo.setSkewedCol((SemanticAnalyzer.isSkewedCol(tableAlias, qb, colName)) ? true
-              : false);
+          colInfo.setSkewedCol(isSkewedCol(tableAlias, qb, colName));
           rr.put(tableAlias, colName, colInfo);
           cInfoLst.add(colInfo);
         }
@@ -3283,7 +3276,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Output types. They will be the concatenation of the input refs types and
       // the types of the expressions for the lateral view generated rows
       // Generate all expressions from lateral view
-      ExprNodeDesc valuesExpr = genExprNodeDesc(valuesClause, inputRR, false);
+      ExprNodeDesc valuesExpr = genExprNodeDesc(valuesClause, inputRR, false, false);
       RexCall convertedOriginalValuesExpr = (RexCall) new RexNodeConverter(this.cluster, inputRel.getRowType(),
               inputPosMap, 0, false).convert(valuesExpr);
       RelDataType valuesRowType = ((ArraySqlType) convertedOriginalValuesExpr.getType()).getComponentType();
@@ -3762,7 +3755,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // As we said before, here we use genSelectLogicalPlan to rewrite AllColRef
           srcRel = genSelectLogicalPlan(qb, srcRel, srcRel, null, null, true).getKey();
           RowResolver rr = this.relToHiveRR.get(srcRel);
-          qbp.setSelExprForClause(detsClauseName, SemanticAnalyzer.genSelectDIAST(rr));
+          qbp.setSelExprForClause(detsClauseName, genSelectDIAST(rr));
         }
       }
 
@@ -4610,7 +4603,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         } else {
           // 6.3 Get rid of TOK_SELEXPR
           expr = (ASTNode) child.getChild(0);
-          String[] colRef = SemanticAnalyzer.getColAlias(child, getAutogenColAliasPrfxLbl(),
+          String[] colRef = getColAlias(child, getAutogenColAliasPrfxLbl(),
                   inputRR, autogenColAliasPrfxIncludeFuncName(), i);
           tabAlias = colRef[0];
           colAlias = colRef[1];
@@ -4647,7 +4640,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL
                   && !hasAsClause
                   && !inputRR.getIsExprResolver()
-                  && SemanticAnalyzer.isRegex(
+                  && isRegex(
                   unescapeIdentifier(expr.getChild(0).getText()), conf)) {
             // In case the expression is a regex COL.
             // This can only happen without AS clause
@@ -4660,7 +4653,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   .getChild(0).getText().toLowerCase()))
                   && !hasAsClause
                   && !inputRR.getIsExprResolver()
-                  && SemanticAnalyzer.isRegex(
+                  && isRegex(
                   unescapeIdentifier(expr.getChild(1).getText()), conf)) {
             // In case the expression is TABLE.COL (col can be regex).
             // This can only happen without AS clause
