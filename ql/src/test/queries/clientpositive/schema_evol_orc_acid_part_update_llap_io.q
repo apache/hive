@@ -13,7 +13,6 @@ SET hive.vectorized.use.vectorized.input.format=true;
 SET hive.vectorized.use.vector.serde.deserialize=false;
 SET hive.vectorized.use.row.serde.deserialize=false;
 SET hive.vectorized.execution.enabled=false;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=true;
 set hive.default.fileformat=orc;
 set hive.llap.io.enabled=true;
@@ -127,7 +126,6 @@ create table missing_ddl_2(name string, age int);
 insert overwrite table missing_ddl_2 select value, key from srcbucket;
 alter table missing_ddl_2 add columns (gps double);
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.optimize.sort.dynamic.partition=true;
 
 DROP TABLE IF EXISTS all100kjson_textfile_orc;

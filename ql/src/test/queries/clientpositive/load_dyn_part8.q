@@ -10,7 +10,6 @@ describe extended nzhang_part8_n0;
 
 set hive.merge.mapfiles=false;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 explain extended
 from srcpart

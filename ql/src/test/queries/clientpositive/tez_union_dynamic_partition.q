@@ -7,7 +7,6 @@ select * from dummy_n2;
 
 create table partunion1(id1 int) partitioned by (part1 string);
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 explain insert into table partunion1 partition(part1)
 select temps.* from (

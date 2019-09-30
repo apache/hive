@@ -1,7 +1,6 @@
 --! qt:dataset:srcpart
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 drop table if exists target;

@@ -9,7 +9,6 @@ set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 set tez.grouping.min-size=1;
 set tez.grouping.max-size=2;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
@@ -49,7 +48,6 @@ drop table simple_mm;
 -- simple DP (no bucketing)
 drop table dp_mm;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 set hive.merge.mapredfiles=false;
 set hive.merge.sparkfiles=false;

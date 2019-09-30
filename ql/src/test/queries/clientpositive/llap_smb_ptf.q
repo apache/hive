@@ -1,4 +1,3 @@
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 CREATE TABLE cogs_alc_rqst_trgt_offs(
   cogs_alc_rqst_trgt_offs_id int,

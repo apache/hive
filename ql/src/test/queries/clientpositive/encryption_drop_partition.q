@@ -3,7 +3,6 @@
 -- we're setting this so that TestNegativeCliDriver.vm doesn't stop processing after DROP TABLE fails;
 
 set hive.cli.errors.ignore=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.mapred.mode=nonstrict;
 DROP TABLE IF EXISTS encrypted_table_dp;
 CREATE TABLE encrypted_table_dp (key INT, value STRING) partitioned by (p STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table_dp';
