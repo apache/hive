@@ -39,7 +39,7 @@ public class RemoteHiveMetaStoreDualAuthTest extends TestRemoteHiveMetaStore {
   protected static String correctPassword = "correct_passwd";
   protected static String wrongPassword = "wrong_password";
   protected static String wrongUser = "wrong_user";
-  private static MiniHiveKdc miniKDC;
+  private static MiniHiveKdc miniKDC = null;
   protected static Configuration clientConf;
   protected static String hiveMetastorePrincipal;
   protected static String hiveMetastoreKeytab;
@@ -48,25 +48,27 @@ public class RemoteHiveMetaStoreDualAuthTest extends TestRemoteHiveMetaStore {
 
   @Before
   public void setUp() throws Exception {
-    miniKDC = new MiniHiveKdc();
-    hiveMetastorePrincipal =
-            miniKDC.getFullyQualifiedServicePrincipal(miniKDC.getHiveMetastoreServicePrincipal());
-    hiveMetastoreKeytab = miniKDC.getKeyTabFile(
-            miniKDC.getServicePrincipalForUser(miniKDC.getHiveMetastoreServicePrincipal()));
-    wrongKeytab = miniKDC.getKeyTabFile(MiniHiveKdc.HIVE_TEST_USER_2);
-    // We don't expect wrongUser to be part of KDC
-    wrongPrincipal = miniKDC.getFullyQualifiedServicePrincipal(wrongUser);
+    if (null == miniKDC) {
+      miniKDC = new MiniHiveKdc();
+      hiveMetastorePrincipal =
+              miniKDC.getFullyQualifiedServicePrincipal(miniKDC.getHiveMetastoreServicePrincipal());
+      hiveMetastoreKeytab = miniKDC.getKeyTabFile(
+              miniKDC.getServicePrincipalForUser(miniKDC.getHiveMetastoreServicePrincipal()));
+      wrongKeytab = miniKDC.getKeyTabFile(MiniHiveKdc.HIVE_TEST_USER_2);
+      // We don't expect wrongUser to be part of KDC
+      wrongPrincipal = miniKDC.getFullyQualifiedServicePrincipal(wrongUser);
 
-    initConf();
-    MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
-    clientConf = new Configuration(conf);
+      initConf();
+      MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
+      clientConf = new Configuration(conf);
 
-    MetastoreConf.setVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION, "CONFIG");
-    MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_USERNAME, correctUser);
-    MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_PASSWORD, correctPassword);
-    MetastoreConf.setBoolVar(conf, ConfVars.USE_THRIFT_SASL, true);
-    MetastoreConf.setVar(conf, ConfVars.KERBEROS_PRINCIPAL, hiveMetastorePrincipal);
-    MetastoreConf.setVar(conf, ConfVars.KERBEROS_KEYTAB_FILE, hiveMetastoreKeytab);
+      MetastoreConf.setVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION, "CONFIG");
+      MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_USERNAME, correctUser);
+      MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_PASSWORD, correctPassword);
+      MetastoreConf.setBoolVar(conf, ConfVars.USE_THRIFT_SASL, true);
+      MetastoreConf.setVar(conf, ConfVars.KERBEROS_PRINCIPAL, hiveMetastorePrincipal);
+      MetastoreConf.setVar(conf, ConfVars.KERBEROS_KEYTAB_FILE, hiveMetastoreKeytab);
+    }
     super.setUp();
   }
 }

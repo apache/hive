@@ -37,17 +37,19 @@ public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
 
   @Before
   public void setUp() throws Exception {
-    miniKDC = new MiniHiveKdc();
-    String hiveMetastorePrincipal =
-            miniKDC.getFullyQualifiedServicePrincipal(miniKDC.getHiveMetastoreServicePrincipal());
-    String hiveMetastoreKeytab = miniKDC.getKeyTabFile(
-            miniKDC.getServicePrincipalForUser(miniKDC.getHiveMetastoreServicePrincipal()));
+    if (null == miniKDC) {
+      miniKDC = new MiniHiveKdc();
+      String hiveMetastorePrincipal =
+              miniKDC.getFullyQualifiedServicePrincipal(miniKDC.getHiveMetastoreServicePrincipal());
+      String hiveMetastoreKeytab = miniKDC.getKeyTabFile(
+              miniKDC.getServicePrincipalForUser(miniKDC.getHiveMetastoreServicePrincipal()));
 
-    initConf();
-    MetastoreConf.setBoolVar(conf, ConfVars.USE_THRIFT_SASL, true);
-    MetastoreConf.setVar(conf, ConfVars.KERBEROS_PRINCIPAL, hiveMetastorePrincipal);
-    MetastoreConf.setVar(conf, ConfVars.KERBEROS_KEYTAB_FILE, hiveMetastoreKeytab);
-    MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
+      initConf();
+      MetastoreConf.setBoolVar(conf, ConfVars.USE_THRIFT_SASL, true);
+      MetastoreConf.setVar(conf, ConfVars.KERBEROS_PRINCIPAL, hiveMetastorePrincipal);
+      MetastoreConf.setVar(conf, ConfVars.KERBEROS_KEYTAB_FILE, hiveMetastoreKeytab);
+      MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
+    }
     super.setUp();
   }
 
