@@ -1891,4 +1891,12 @@ public final class FunctionRegistry {
         return null; // helps identify unsupported functions
     }
   }
+
+  public static boolean supportsWithinGroup(String functionName) throws SemanticException {
+    WindowFunctionInfo windowInfo = getWindowFunctionInfo(functionName);
+    if (windowInfo != null) {
+      return windowInfo.supportsWithinGroup();
+    }
+    return false;
+  }
 }
