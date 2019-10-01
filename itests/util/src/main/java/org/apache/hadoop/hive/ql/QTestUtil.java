@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
+import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -118,7 +119,7 @@ public class QTestUtil {
 
   private boolean isSessionStateStarted = false;
 
-  protected CliDriver getCliDriver() {
+  public CliDriver getCliDriver() {
     if (cliDriver == null) {
       throw new RuntimeException("no clidriver");
     }
@@ -199,7 +200,7 @@ public class QTestUtil {
 
     initConf();
 
-    datasetHandler = new QTestDatasetHandler(this, conf);
+    datasetHandler = new QTestDatasetHandler(conf);
     testFiles = datasetHandler.getDataDir(conf);
     conf.set("test.data.dir", datasetHandler.getDataDir(conf));
 
@@ -541,7 +542,10 @@ public class QTestUtil {
   public String cliInit(File file) throws Exception {
     String fileName = file.getName();
 
-    datasetHandler.initDataSetForTest(file, getCliDriver());
+    QTestOptionDispatcher dispatcher = new QTestOptionDispatcher();
+    dispatcher.register("dataset", datasetHandler);
+    dispatcher.process(file);
+    dispatcher.beforeTest(this);
 
     if (qTestResultProcessor.shouldNotReuseSession(fileName)) {
       newSession(false);
