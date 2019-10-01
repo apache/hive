@@ -106,11 +106,11 @@ POSTHOOK: Lineage: encrypted_table1.value SIMPLE [(src)src.FieldSchema(name:valu
 PREHOOK: query: SELECT COUNT(*) FROM encrypted_table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encrypted_table1
-#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table1/.hive-staging
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM encrypted_table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encrypted_table1
-#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table1/.hive-staging
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: TRUNCATE TABLE encrypted_table1
 PREHOOK: type: TRUNCATETABLE
@@ -121,11 +121,11 @@ POSTHOOK: Output: default@encrypted_table1
 PREHOOK: query: SELECT COUNT(*) FROM encrypted_table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encrypted_table1
-#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table1/.hive-staging
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM encrypted_table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encrypted_table1
-#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table1/.hive-staging
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: INSERT OVERWRITE TABLE encrypted_table1 SELECT * FROM src
 PREHOOK: type: QUERY

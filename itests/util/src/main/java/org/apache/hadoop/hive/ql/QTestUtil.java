@@ -112,6 +112,8 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
+import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
+import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
 import org.apache.hadoop.hive.ql.dataset.DatasetParser;
@@ -205,8 +207,10 @@ public class QTestUtil {
   private boolean isSessionStateStarted = false;
   private static final String javaVersion = getJavaVersion();
   private QOutProcessor qOutProcessor;
+  protected QTestReplaceHandler replaceHandler;
   private final String initScript;
   private final String cleanupScript;
+  QTestOptionDispatcher dispatcher = new QTestOptionDispatcher();
 
   private MiniDruidCluster druidCluster;
   private SingleNodeKafkaCluster kafkaCluster;
@@ -486,7 +490,8 @@ public class QTestUtil {
     this.outDir = testArgs.getOutDir();
     this.logDir = testArgs.getLogDir();
     this.srcUDFs = getSrcUDFs();
-    this.qOutProcessor = new QOutProcessor(fsType);
+    this.replaceHandler = new QTestReplaceHandler();
+    this.qOutProcessor = new QOutProcessor(fsType, replaceHandler);
 
     // HIVE-14443 move this fall-back logic to CliConfigs
     if (testArgs.getConfDir() != null && !testArgs.getConfDir().isEmpty()) {
@@ -540,6 +545,8 @@ public class QTestUtil {
             new File(new File(dataDir).getAbsolutePath() + "/datasets") :
             new File(conf.get("test.data.set.files"));
 
+    dispatcher.register("dataset", new FakeDatasetHandler());
+    dispatcher.register("replace", replaceHandler);
     String scriptsDir = getScriptsDir();
 
     this.initScript = scriptsDir + File.separator + testArgs.getInitScript();
@@ -1090,6 +1097,7 @@ public class QTestUtil {
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
     StatsSources.clearGlobalStats();
+    dispatcher.afterTest(this);
   }
 
   protected void initConfFromSetup() throws Exception {
@@ -1281,6 +1289,8 @@ public class QTestUtil {
     String fileName = file.getName();
 
     initDataSetForTest(file);
+    dispatcher.process(file);
+    dispatcher.beforeTest(this);
 
     if (qNoSessionReuseQuerySet.contains(fileName)) {
       newSession(false);

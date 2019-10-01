@@ -52,12 +52,12 @@ PREHOOK: query: select * from encryptedTable order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encryptedtable
 PREHOOK: Input: default@encryptedtable@ds=today
-#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from encryptedTable order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encryptedtable
 POSTHOOK: Input: default@encryptedtable@ds=today
-#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 501	val_501	today
 502	val_502	today
 PREHOOK: query: insert into table encryptedTable partition (ds='yesterday')
@@ -77,13 +77,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@encryptedtable
 PREHOOK: Input: default@encryptedtable@ds=today
 PREHOOK: Input: default@encryptedtable@ds=yesterday
-#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from encryptedTable order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encryptedtable
 POSTHOOK: Input: default@encryptedtable@ds=today
 POSTHOOK: Input: default@encryptedtable@ds=yesterday
-#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238	val_238	yesterday
 238	val_238	yesterday
 501	val_501	today

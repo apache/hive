@@ -25,11 +25,11 @@ POSTHOOK: Output: default@encrypted_table_n0
 PREHOOK: query: SELECT * FROM encrypted_table_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encrypted_table_n0
-#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM encrypted_table_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encrypted_table_n0
-#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238	val_238
 86	val_86
 311	val_311
@@ -541,11 +541,11 @@ POSTHOOK: Output: default@encrypted_table_n0
 PREHOOK: query: SELECT * FROM encrypted_table_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encrypted_table_n0
-#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM encrypted_table_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encrypted_table_n0
-#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238	val_238
 86	val_86
 311	val_311

@@ -1,3 +1,5 @@
+--! qt:replace:/((rawData|total)Size\s+)[0-9]{2,}/$1__SOME_NUMBER__/
+
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;

@@ -50,12 +50,12 @@ PREHOOK: query: ANALYZE TABLE encrypted_table_n1 COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@encrypted_table_n1
 PREHOOK: Output: default@encrypted_table_n1
-#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: ANALYZE TABLE encrypted_table_n1 COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@encrypted_table_n1
 POSTHOOK: Output: default@encrypted_table_n1
-#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DESCRIBE FORMATTED encrypted_table_n1 key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@encrypted_table_n1

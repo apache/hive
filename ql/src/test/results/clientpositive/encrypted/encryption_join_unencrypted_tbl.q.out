@@ -27,11 +27,11 @@ POSTHOOK: Lineage: encrypted_table.value SIMPLE [(src)src.FieldSchema(name:value
 PREHOOK: query: SELECT * FROM encrypted_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encrypted_table
-#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM encrypted_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encrypted_table
-#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238	val_238
 86	val_86
 311	val_311
