@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
@@ -494,11 +495,25 @@ public enum ETypeConverter {
             public void addBinary(Binary value) {
               HiveDecimalWritable decimalWritable =
                   new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
-              double doubleValue = decimalWritable.doubleValue();
-              double absDoubleValue = (doubleValue < 0) ? (doubleValue * -1) : doubleValue;
+              setValue(decimalWritable.doubleValue(), decimalWritable.floatValue());
+            }
 
-              if ((absDoubleValue >= minValue) && (absDoubleValue <= maxValue)) {
-                parent.set(index, new FloatWritable(decimalWritable.floatValue()));
+            @Override
+            public void addInt(final int value) {
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              setValue(hiveDecimal.doubleValue(), hiveDecimal.floatValue());
+            }
+
+            @Override
+            public void addLong(final long value) {
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              setValue(hiveDecimal.doubleValue(), hiveDecimal.floatValue());
+            }
+
+            private void setValue(double doubleValue, float floatValue) {
+              double absDoubleValue = (doubleValue < 0) ? (doubleValue * -1) : doubleValue;
+              if (((absDoubleValue >= minValue) && (absDoubleValue <= maxValue)) || absDoubleValue == 0d) {
+                parent.set(index, new FloatWritable(floatValue));
               } else {
                 parent.set(index, null);
               }
@@ -512,6 +527,18 @@ public enum ETypeConverter {
                   new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
               parent.set(index, new DoubleWritable(decimalWritable.doubleValue()));
             }
+
+            @Override
+            public void addInt(final int value) {
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              parent.set(index, new DoubleWritable(hiveDecimal.doubleValue()));
+            }
+
+            @Override
+            public void addLong(final long value) {
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              parent.set(index, new DoubleWritable(hiveDecimal.doubleValue()));
+            }
           };
         case serdeConstants.BIGINT_TYPE_NAME:
           return new PrimitiveConverter() {
@@ -519,55 +546,55 @@ public enum ETypeConverter {
             public void addBinary(Binary value) {
               HiveDecimalWritable decimalWritable =
                   new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
-              double doubleValue = decimalWritable.doubleValue();
-              if ((doubleValue >= minValue) && (doubleValue <= maxValue) &&
-                  (doubleValue % 1 == 0)) {
-                parent.set(index, new LongWritable(decimalWritable.longValue()));
+              setValue(decimalWritable.doubleValue(), decimalWritable.longValue());
+            }
+
+            @Override
+            public void addInt(final int value) {
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              setValue(hiveDecimal.doubleValue(), hiveDecimal.longValue());
+            }
+
+            @Override
+            public void addLong(final long value) {
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              setValue(hiveDecimal.doubleValue(), hiveDecimal.longValue());
+            }
+
+            private void setValue(double doubleValue, long longValue) {
+              if ((doubleValue >= minValue) && (doubleValue <= maxValue) && (doubleValue % 1 == 0)) {
+                parent.set(index, new LongWritable(longValue));
               } else {
                 parent.set(index, null);
               }
             }
           };
         case serdeConstants.INT_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addBinary(Binary value) {
-              HiveDecimalWritable decimalWritable =
-                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
-              double doubleValue = decimalWritable.doubleValue();
-              if ((doubleValue >= minValue) && (doubleValue <= maxValue) &&
-                  (doubleValue % 1 == 0)) {
-                parent.set(index, new IntWritable(decimalWritable.intValue()));
-              } else {
-                parent.set(index, null);
-              }
-            }
-          };
         case serdeConstants.SMALLINT_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addBinary(Binary value) {
-              HiveDecimalWritable decimalWritable =
-                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
-              double doubleValue = decimalWritable.doubleValue();
-              if ((doubleValue >= minValue) && (doubleValue <= maxValue) &&
-                  (doubleValue % 1 == 0)) {
-                parent.set(index, new IntWritable(decimalWritable.intValue()));
-              } else {
-                parent.set(index, null);
-              }
-            }
-          };
         case serdeConstants.TINYINT_TYPE_NAME:
           return new PrimitiveConverter() {
             @Override
             public void addBinary(Binary value) {
               HiveDecimalWritable decimalWritable =
                   new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
-              double doubleValue = decimalWritable.doubleValue();
-              if ((doubleValue >= minValue) && (doubleValue <= maxValue) &&
-                  (doubleValue % 1 == 0)) {
-                parent.set(index, new IntWritable(decimalWritable.intValue()));
+              setValue(decimalWritable.doubleValue(), decimalWritable.intValue());
+            }
+
+            @Override
+            public void addInt(final int value) {
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              setValue(hiveDecimal.doubleValue(), hiveDecimal.intValue());
+            }
+
+            @Override
+            public void addLong(final long value) {
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              setValue(hiveDecimal.doubleValue(), hiveDecimal.intValue());
+            }
+
+            private void setValue(double doubleValue, int intValue) {
+              if ((doubleValue >= minValue) && (doubleValue <= maxValue) && (doubleValue % 1 == 0)) {
+                parent.set(index, new IntWritable(intValue));
               } else {
                 parent.set(index, null);
               }
@@ -580,6 +607,24 @@ public enum ETypeConverter {
               return HiveDecimalUtils.enforcePrecisionScale(
                   new HiveDecimalWritable(binary.getBytes(), type.getDecimalMetadata().getScale()),
                   (DecimalTypeInfo) hiveTypeInfo);
+            }
+
+            @Override
+            public void addInt(final int value) {
+              addDecimal(value);
+            }
+
+            @Override
+            public void addLong(final long value) {
+              addDecimal(value);
+            }
+
+            private void addDecimal(long value) {
+              DecimalTypeInfo decimalInfo = (DecimalTypeInfo) hiveTypeInfo;
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, decimalInfo.scale());
+              HiveDecimalWritable result = HiveDecimalUtils.enforcePrecisionScale(new HiveDecimalWritable(hiveDecimal),
+                  (DecimalTypeInfo) hiveTypeInfo);
+              parent.set(index, result);
             }
           };
         }
