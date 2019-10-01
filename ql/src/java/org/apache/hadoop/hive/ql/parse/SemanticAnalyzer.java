@@ -941,8 +941,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         || exprTokenType == HiveParser.TOK_FUNCTIONDI
         || exprTokenType == HiveParser.TOK_FUNCTIONSTAR) {
       assert (expressionTree.getChildCount() != 0);
-      if (expressionTree.getChild(expressionTree.getChildCount()-1).getType()
-          == HiveParser.TOK_WINDOWSPEC) {
+      Tree lastChild = expressionTree.getChild(expressionTree.getChildCount() - 1);
+      if (lastChild.getType() == HiveParser.TOK_WINDOWSPEC) {
         // If it is a windowing spec, we include it in the list
         // Further, we will examine its children AST nodes to check whether
         // there are aggregation functions within
@@ -951,6 +951,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           doPhase1GetAllAggregations((ASTNode) child, qb, aggregations, wdwFns, expressionTree);
         }
         return;
+      } else if (lastChild.getType() == HiveParser.TOK_WITHIN_GROUP) {
+        transformWithinGroup(expressionTree, lastChild);
       }
       if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
         boolean parentIsWindowSpec = wndParent != null;
@@ -993,6 +995,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return true;
     }
     return false;
+  }
+
+  private void transformWithinGroup(ASTNode expressionTree, Tree withinGroupNode) throws SemanticException {
+    Tree functionNameNode = expressionTree.getChild(0);
+    if (!FunctionRegistry.supportsWithinGroup(functionNameNode.getText())) {
+      throw new SemanticException(ErrorMsg.WITHIN_GROUP_NOT_ALLOWED, functionNameNode.getText());
+    }
+
+    Tree tabSortColNameNode = withinGroupNode.getChild(0);
+    ASTNode sortKey = (ASTNode) tabSortColNameNode.getChild(0).getChild(0);
+    expressionTree.deleteChild(withinGroupNode.getChildIndex());
+    // backward compatibility: the sortkey is the first paramater of the percentile_cont and percentile_disc functions
+    expressionTree.insertChild(1, sortKey);
+    expressionTree.addChild(ASTBuilder.createAST(HiveParser.NumberLiteral,
+            Integer.toString(DirectionUtils.tokenToCode(tabSortColNameNode.getType()))));
   }
 
   private List<ASTNode> doPhase1GetDistinctFuncExprs(

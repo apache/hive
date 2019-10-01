@@ -264,8 +264,9 @@ function
           )
         | dist=KW_DISTINCT (selectExpression (COMMA selectExpression)*)?
       )
-    RPAREN (KW_OVER ws=window_specification)?
+    RPAREN ((KW_OVER ws=window_specification) | (within=KW_WITHIN KW_GROUP LPAREN KW_ORDER KW_BY colRef=columnRefOrder RPAREN))?
            -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName $ws?)
+           -> {$within != null}? ^(TOK_FUNCTION functionName (selectExpression+)? ^(TOK_WITHIN_GROUP $colRef))
            -> {$dist == null}? ^(TOK_FUNCTION functionName (selectExpression+)? $ws?)
                             -> ^(TOK_FUNCTIONDI functionName (selectExpression+)? $ws?)
     ;
@@ -902,6 +903,7 @@ nonReserved
     | KW_EXECUTED | KW_SCHEDULED | KW_CRON | KW_EVERY | KW_AT | KW_EXECUTE
     | KW_RESOURCE | KW_PLAN | KW_PLANS | KW_QUERY_PARALLELISM | KW_ACTIVATE | KW_MOVE | KW_DO
     | KW_POOL | KW_ALLOC_FRACTION | KW_SCHEDULING_POLICY | KW_PATH | KW_MAPPING | KW_WORKLOAD | KW_MANAGEMENT | KW_ACTIVE | KW_UNMANAGED
+    | KW_WITHIN
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

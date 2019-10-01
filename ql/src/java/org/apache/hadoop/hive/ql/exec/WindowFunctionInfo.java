@@ -27,6 +27,7 @@ public class WindowFunctionInfo extends FunctionInfo {
   private final boolean supportsWindow;
   private final boolean pivotResult;
   private final boolean impliesOrder;
+  private final boolean supportsWithinGroup;
 
   public WindowFunctionInfo(FunctionType functionType, String functionName,
       GenericUDAFResolver resolver, FunctionResource[] resources) {
@@ -36,6 +37,7 @@ public class WindowFunctionInfo extends FunctionInfo {
     supportsWindow = def == null ? true : def.supportsWindow();
     pivotResult = def == null ? false : def.pivotResult();
     impliesOrder = def == null ? false : def.impliesOrder();
+    supportsWithinGroup = def == null ? false : def.supportsWithinGroup();
   }
 
   public boolean isSupportsWindow() {
@@ -48,5 +50,9 @@ public class WindowFunctionInfo extends FunctionInfo {
 
   public boolean isImpliesOrder() {
     return impliesOrder;
+  }
+
+  public boolean supportsWithinGroup() {
+    return supportsWithinGroup;
   }
 }
