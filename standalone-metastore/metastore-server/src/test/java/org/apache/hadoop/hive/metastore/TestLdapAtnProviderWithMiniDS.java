@@ -33,6 +33,7 @@ import org.apache.directory.server.core.integ.FrameworkRunner;
 import org.apache.hadoop.hive.metastore.ldap.LdapAuthenticationTestCase;
 import org.apache.hadoop.hive.metastore.ldap.User;
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.assertTrue;
@@ -72,6 +73,18 @@ import static org.junit.Assert.assertTrue;
     "ldap/microsoft.schema.ldif",
     "ldap/ad.example.com.ldif"
 })
+
+// standalone-metastore/metastore-server/src/test/resources/log4j2.properties sets root logger
+// level to debug. All the logs are captured by CapturingLogAppender which creates an ArrayList
+// out of those. The classes in org .apache.directory produce a lot of debug output. Hence
+// running this test causes Java Heap OOM. If we change the logging level to "info" in log4j2
+// .properties file, org.apache.hadoop.hive.metastore.metrics.TestMetrics fails since that relies
+// on DEBUG level logging being captured. Even we if disable CapturingLogAppender, the debug
+// output slows down the test and it takes a lot of time. So, for now disabling this test. This
+// test is copy of org.apache.hive.service.auth.TestLdapAtnProviderWithMiniDS, which is passing.
+// Once we deduplicate the LDAP code, this separate test will not be required. Till then we keep
+// it here in case somebody wants to run it.
+@Ignore
 public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
   private static final String GROUP1_NAME = "group1";
