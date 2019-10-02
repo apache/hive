@@ -30,8 +30,8 @@ public class LongColumnStatsMerger extends ColumnStatsMerger {
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     LongColumnStatsDataInspector aggregateData = longInspectorFromStats(aggregateColStats);
     LongColumnStatsDataInspector newData = longInspectorFromStats(newColStats);
-    aggregateData.setLowValue(Math.min(aggregateData.getLowValue(), newData.getLowValue()));
-    aggregateData.setHighValue(Math.max(aggregateData.getHighValue(), newData.getHighValue()));
+    setLowValue(aggregateData, newData);
+    setHighValue(aggregateData, newData);
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
     if (aggregateData.getNdvEstimator() == null || newData.getNdvEstimator() == null) {
       aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
@@ -50,5 +50,27 @@ public class LongColumnStatsMerger extends ColumnStatsMerger {
           + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
       aggregateData.setNumDVs(ndv);
     }
+
+    aggregateColStats.getStatsData().setLongStats(aggregateData);
+  }
+
+  private void setLowValue(LongColumnStatsDataInspector aggregateData, LongColumnStatsDataInspector newData) {
+    if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
+      return;
+    }
+    long lowValue = Math.min(
+        aggregateData.isSetLowValue() ? aggregateData.getLowValue() : Long.MAX_VALUE,
+        newData.isSetLowValue() ? newData.getLowValue() : Long.MAX_VALUE);
+    aggregateData.setLowValue(lowValue);
+  }
+
+  private void setHighValue(LongColumnStatsDataInspector aggregateData, LongColumnStatsDataInspector newData) {
+    if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
+      return;
+    }
+    long highValue = Math.max(
+        aggregateData.isSetHighValue() ? aggregateData.getHighValue() : Long.MIN_VALUE,
+        newData.isSetHighValue() ? newData.getHighValue() : Long.MIN_VALUE);
+    aggregateData.setHighValue(highValue);
   }
 }
