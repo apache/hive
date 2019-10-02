@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -37,7 +38,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.makePartName
  * via references.
  */
 final class PartitionTree {
-  private final Map<String, org.apache.hadoop.hive.metastore.api.Partition> parts = new LinkedHashMap<>();
+  private Map<String, org.apache.hadoop.hive.metastore.api.Partition> parts = new LinkedHashMap<>();
   private final org.apache.hadoop.hive.metastore.api.Table tTable;
 
   PartitionTree(org.apache.hadoop.hive.metastore.api.Table t) {
@@ -67,7 +68,7 @@ final class PartitionTree {
    * @param partVals partition values for this partition, must be in the same order as the
    *                 partition keys of the table.
    * @return the partition object, or if not found null.
-   * @throws MetaException
+   * @throws MetaException partition values are incorrect.
    */
   Partition getPartition(List<String> partVals) throws MetaException {
     String partName = makePartName(tTable.getPartitionKeys(), partVals);
@@ -80,7 +81,8 @@ final class PartitionTree {
    * @param partitions  The partitions to add
    * @param ifNotExists only add partitions if they don't exist
    * @return the partitions that were added
-   * @throws MetaException
+   * @throws MetaException partition metadata is incorrect
+   * @throws AlreadyExistsException if the partition with the same name already exists.
    */
   List<Partition> addPartitions(List<Partition> partitions, boolean ifNotExists)
       throws MetaException, AlreadyExistsException {
@@ -138,7 +140,7 @@ final class PartitionTree {
    * Remove a partition from the table.
    * @param partVals partition values, must be not null
    * @return the instance of the dropped partition, if the remove was successful, otherwise false
-   * @throws MetaException
+   * @throws MetaException partition with the provided partition values cannot be found.
    */
   Partition dropPartition(List<String> partVals) throws MetaException, NoSuchObjectException {
     String partName = makePartName(tTable.getPartitionKeys(), partVals);
@@ -147,5 +149,88 @@ final class PartitionTree {
           "Partition with partition values " + Arrays.toString(partVals.toArray()) + " is not found.");
     }
     return parts.remove(partName);
+  }
+
+  /**
+   * Alter an existing partition. The flow is following:
+   * <p>
+   *   1) search for existing partition
+   *   2) if found delete it
+   *   3) insert new partition
+   * </p>
+   * @param oldPartitionVals the values of existing partition, which is altered, must be not null.
+   * @param newPartition the new partition, must be not null.
+   * @param isRename true, if rename is requested, meaning that all properties of partition can be changed, except
+   *                 of its location.
+   * @throws MetaException table or db name is altered.
+   * @throws InvalidOperationException the new partition values are null, or the old partition cannot be found.
+   */
+  void alterPartition(List<String> oldPartitionVals, Partition newPartition, boolean isRename)
+      throws MetaException, InvalidOperationException, NoSuchObjectException {
+    if (oldPartitionVals == null || oldPartitionVals.isEmpty()) {
+      throw new InvalidOperationException("Old partition values cannot be null or empty.");
+    }
+    if (newPartition == null) {
+      throw new InvalidOperationException("New partition cannot be null.");
+    }
+    Partition oldPartition = getPartition(oldPartitionVals);
+    if (oldPartition == null) {
+      throw new InvalidOperationException(
+          "Partition with partition values " + Arrays.toString(oldPartitionVals.toArray()) + " is not found.");
+    }
+    if (!oldPartition.getDbName().equals(newPartition.getDbName())) {
+      throw new MetaException("Db name cannot be altered.");
+    }
+    if (!oldPartition.getTableName().equals(newPartition.getTableName())) {
+      throw new MetaException("Table name cannot be altered.");
+    }
+    if (isRename) {
+      newPartition.getSd().setLocation(oldPartition.getSd().getLocation());
+    }
+    dropPartition(oldPartitionVals);
+    String partName = makePartName(tTable.getPartitionKeys(), newPartition.getValues());
+    if (parts.containsKey(partName)) {
+      throw new InvalidOperationException("Partition " + partName + " already exists");
+    }
+    parts.put(partName, newPartition);
+  }
+
+  /**
+   * Alter multiple partitions. This operation is transactional.
+   * @param newParts list of new partitions, must be not null.
+   * @throws MetaException table or db name is altered.
+   * @throws InvalidOperationException the new partition values are null, or the old partition cannot be found.
+   * @throws NoSuchObjectException the old partition cannot be found.
+   */
+  void alterPartitions(List<Partition> newParts)
+      throws MetaException, InvalidOperationException, NoSuchObjectException {
+    //altering partitions in a batch must be transactional, therefore bofore starting the altering, clone the original
+    //partitions map. If something fails, revert it back.
+    Map<String, Partition> clonedPartitions = new LinkedHashMap<>();
+    parts.forEach((key, value) -> clonedPartitions.put(key, new Partition(value)));
+    for (Partition partition : newParts) {
+      try {
+        if (partition == null) {
+          throw new InvalidOperationException("New partition cannot be null.");
+        }
+        alterPartition(partition.getValues(), partition, false);
+      } catch (MetaException | InvalidOperationException | NoSuchObjectException e) {
+        parts = clonedPartitions;
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Rename an existing partition.
+   * @param oldPartitionVals the values of existing partition, which is renamed, must be not null.
+   * @param newPart the new partition, must be not null.
+   * @throws MetaException table or db name is altered.
+   * @throws InvalidOperationException the new partition values are null, or the old partition cannot be altered.
+   * @throws NoSuchObjectException the old partition cannot be found.
+   */
+  void renamePartition(List<String> oldPartitionVals, Partition newPart)
+      throws MetaException, InvalidOperationException, NoSuchObjectException {
+    alterPartition(oldPartitionVals, newPart, true);
   }
 }

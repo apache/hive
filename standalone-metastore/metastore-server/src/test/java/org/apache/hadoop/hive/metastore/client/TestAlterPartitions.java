@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
-import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,7 +47,6 @@ import org.apache.thrift.transport.TTransportException;
 import com.google.common.collect.Lists;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,12 +68,12 @@ import static org.junit.Assert.fail;
 @RunWith(Parameterized.class)
 @Category(MetastoreCheckinTest.class)
 public class TestAlterPartitions extends MetaStoreClientTest {
-  private static final int NEW_CREATE_TIME = 123456789;
+  protected static final int NEW_CREATE_TIME = 123456789;
   private AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
 
-  private static final String DB_NAME = "testpartdb";
-  private static final String TABLE_NAME = "testparttable";
+  protected static final String DB_NAME = "testpartdb";
+  protected static final String TABLE_NAME = "testparttable";
   private static final List<String> PARTCOL_SCHEMA = Lists.newArrayList("yyyy", "mm", "dd");
 
   public TestAlterPartitions(String name, AbstractMetaStoreService metaStore) {
@@ -88,8 +86,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client = metaStore.getClient();
 
     // Clean up the database
-    client.dropDatabase(DB_NAME, true, true, true);
-    metaStore.cleanWarehouseDirs();
+    cleanDB();
     createDB(DB_NAME);
   }
 
@@ -108,13 +105,34 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     }
   }
 
-  private void createDB(String dbName) throws TException {
+  public AbstractMetaStoreService getMetaStore() {
+    return metaStore;
+  }
+
+  public void setMetaStore(AbstractMetaStoreService metaStore) {
+    this.metaStore = metaStore;
+  }
+
+  protected IMetaStoreClient getClient() {
+    return client;
+  }
+
+  protected void setClient(IMetaStoreClient client) {
+    this.client = client;
+  }
+
+  protected void cleanDB() throws Exception{
+    client.dropDatabase(DB_NAME, true, true, true);
+    metaStore.cleanWarehouseDirs();
+  }
+
+  protected void createDB(String dbName) throws TException {
     new DatabaseBuilder().
             setName(dbName).
             create(client, metaStore.getConf());
   }
 
-  private Table createTestTable(IMetaStoreClient client, String dbName, String tableName,
+  protected Table createTestTable(IMetaStoreClient client, String dbName, String tableName,
                                        List<String> partCols, boolean setPartitionLevelPrivilages)
           throws Exception {
     TableBuilder builder = new TableBuilder()
@@ -134,14 +152,25 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     return table;
   }
 
-  private void addPartition(IMetaStoreClient client, Table table, List<String> values)
+  protected void addPartition(IMetaStoreClient client, Table table, List<String> values)
           throws TException {
     PartitionBuilder partitionBuilder = new PartitionBuilder().inTable(table);
     values.forEach(val -> partitionBuilder.addValue(val));
     client.add_partition(partitionBuilder.build(metaStore.getConf()));
   }
 
-  private List<List<String>> createTable4PartColsParts(IMetaStoreClient client) throws
+  protected void addPartitions(IMetaStoreClient client, Table table, List<String> values) throws Exception {
+    List<Partition> partitions = new ArrayList<>();
+    for (int i = 0; i < values.size(); i++) {
+      partitions.add(new PartitionBuilder().inTable(table)
+          .addValue(values.get(i))
+          .setLocation(MetaStoreTestUtils.getTestWarehouseDir(values.get(i) + i))
+          .build(metaStore.getConf()));
+    }
+    client.add_partitions(partitions);
+  }
+
+  protected List<List<String>> createTable4PartColsParts(IMetaStoreClient client) throws
           Exception {
     Table t = createTestTable(client, DB_NAME, TABLE_NAME, PARTCOL_SCHEMA, false);
     List<List<String>> testValues = Lists.newArrayList(
@@ -165,7 +194,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     }
   }
 
-  private static void makeTestChangesOnPartition(Partition partition) {
+  protected static void makeTestChangesOnPartition(Partition partition) {
     partition.getParameters().put("hmsTestParam001", "testValue001");
     partition.setCreateTime(NEW_CREATE_TIME);
     partition.setLastAccessTime(NEW_CREATE_TIME);
@@ -173,8 +202,8 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     partition.getSd().getCols().add(new FieldSchema("newcol", "string", ""));
   }
 
-  private void assertPartitionUnchanged(Partition partition, List<String> testValues,
-                                               List<String> partCols) throws MetaException {
+  protected void assertPartitionUnchanged(Partition partition, List<String> testValues,
+                                               List<String> partCols) throws Exception {
     assertFalse(partition.getParameters().containsKey("hmsTestParam001"));
 
     List<String> expectedKVPairs = new ArrayList<>();
@@ -189,8 +218,8 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     assertEquals(2, partition.getSd().getCols().size());
   }
 
-  private void assertPartitionChanged(Partition partition, List<String> testValues,
-                                      List<String> partCols) throws MetaException {
+  protected void assertPartitionChanged(Partition partition, List<String> testValues,
+                                      List<String> partCols) throws Exception {
     assertEquals("testValue001", partition.getParameters().get("hmsTestParam001"));
 
     List<String> expectedKVPairs = new ArrayList<>();
@@ -230,6 +259,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   }
 
   @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void otherCatalog() throws TException {
     String catName = "alter_partition_catalog";
     Catalog cat = new CatalogBuilder()
@@ -307,24 +337,10 @@ public class TestAlterPartitions extends MetaStoreClientTest {
 
   @SuppressWarnings("deprecation")
   @Test
-  public void deprecatedCalls() throws TException {
+  public void deprecatedCalls() throws Exception {
     String tableName = "deprecated_table";
-    Table table = new TableBuilder()
-        .setTableName(tableName)
-        .addCol("id", "int")
-        .addCol("name", "string")
-        .addPartCol("partcol", "string")
-        .create(client, metaStore.getConf());
-
-    Partition[] parts = new Partition[5];
-    for (int i = 0; i < 5; i++) {
-      parts[i] = new PartitionBuilder()
-          .inTable(table)
-          .addValue("a" + i)
-          .setLocation(MetaStoreTestUtils.getTestWarehouseDir("a" + i))
-          .build(metaStore.getConf());
-    }
-    client.add_partitions(Arrays.asList(parts));
+    Table table = createTestTable(getClient(), DEFAULT_DATABASE_NAME, tableName, Arrays.asList("partcol"), false);
+    addPartitions(getClient(), table, Arrays.asList("a0", "a1", "a2", "a3", "a4"));
 
     Partition newPart =
         client.getPartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("a0"));
@@ -397,6 +413,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   }
 
   @Test(expected = InvalidOperationException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAlterPartitionBogusCatalogName() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
@@ -683,6 +700,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   }
 
   @Test(expected = InvalidOperationException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAlterPartitionsBogusCatalogName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
@@ -859,6 +877,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   }
 
   @Test(expected = InvalidOperationException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testAlterPartitionsWithEnvironmentCtxBogusCatalogName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
@@ -1078,6 +1097,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   }
 
   @Test(expected = InvalidOperationException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testRenamePartitionBogusCatalogName() throws Exception {
     List<List<String>> oldValues = createTable4PartColsParts(client);
     List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
