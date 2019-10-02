@@ -29,16 +29,11 @@ import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.dec
 public class DecimalColumnStatsMerger extends ColumnStatsMerger {
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
-    DecimalColumnStatsDataInspector aggregateData =
-        decimalInspectorFromStats(aggregateColStats);
-    DecimalColumnStatsDataInspector newData =
-        decimalInspectorFromStats(newColStats);
+    DecimalColumnStatsDataInspector aggregateData = decimalInspectorFromStats(aggregateColStats);
+    DecimalColumnStatsDataInspector newData = decimalInspectorFromStats(newColStats);
 
-    Decimal lowValue = getMin(aggregateData.getLowValue(), newData.getLowValue());
-    aggregateData.setLowValue(lowValue);
-
-    Decimal highValue = getMax(aggregateData.getHighValue(), newData.getHighValue());
-    aggregateData.setHighValue(highValue);
+    setLowValue(aggregateData, newData);
+    setHighValue(aggregateData, newData);
 
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
 
@@ -59,29 +54,43 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
           + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
       aggregateData.setNumDVs(ndv);
     }
+
+    aggregateColStats.getStatsData().setDecimalStats(aggregateData);
   }
 
-  Decimal getMax(Decimal firstValue, Decimal secondValue) {
-    if (firstValue == null && secondValue == null) {
-      return null;
+  public void setLowValue(DecimalColumnStatsDataInspector aggregateData, DecimalColumnStatsDataInspector newData) {
+    if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
+      return;
     }
 
-    if (firstValue != null && secondValue != null) {
-      return firstValue.compareTo(secondValue) > 0 ? firstValue : secondValue;
+    Decimal aggregateLowValue = aggregateData.getLowValue();
+    Decimal newLowValue = newData.getLowValue();
+
+    Decimal mergedLowValue = null;
+    if (aggregateData.isSetLowValue() && newData.isSetLowValue()) {
+      mergedLowValue = aggregateLowValue.compareTo(newLowValue) > 0 ? newLowValue : aggregateLowValue;
+    } else {
+      mergedLowValue = aggregateLowValue == null ? newLowValue : aggregateLowValue;
     }
 
-    return firstValue == null ? secondValue : firstValue;
+    aggregateData.setLowValue(mergedLowValue);
   }
 
-  Decimal getMin(Decimal firstValue, Decimal secondValue) {
-    if (firstValue == null && secondValue == null) {
-      return null;
+  public void setHighValue(DecimalColumnStatsDataInspector aggregateData, DecimalColumnStatsDataInspector newData) {
+    if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
+      return;
     }
 
-    if (firstValue != null && secondValue != null) {
-      return firstValue.compareTo(secondValue) > 0 ? secondValue : firstValue;
+    Decimal aggregateHighValue = aggregateData.getHighValue();
+    Decimal newHighValue = newData.getHighValue();
+
+    Decimal mergedHighValue = null;
+    if (aggregateData.isSetHighValue() && newData.isSetHighValue()) {
+      mergedHighValue = aggregateHighValue.compareTo(newHighValue) > 0 ? aggregateHighValue : newHighValue;
+    } else {
+      mergedHighValue = aggregateHighValue == null ? newHighValue : aggregateHighValue;
     }
 
-    return firstValue == null ? secondValue : firstValue;
+    aggregateData.setHighValue(mergedHighValue);
   }
 }

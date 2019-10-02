@@ -339,7 +339,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	s                   	 	 	 	 	 	 	 	 	 	 
 data_type           	smallint            	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
+min                 	3                   	 	 	 	 	 	 	 	 	 	 
 max                 	3                   	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -358,7 +358,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	i                   	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
+min                 	45                  	 	 	 	 	 	 	 	 	 	 
 max                 	45                  	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -377,7 +377,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	b                   	 	 	 	 	 	 	 	 	 	 
 data_type           	bigint              	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
+min                 	456                 	 	 	 	 	 	 	 	 	 	 
 max                 	456                 	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -396,7 +396,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	f                   	 	 	 	 	 	 	 	 	 	 
 data_type           	float               	 	 	 	 	 	 	 	 	 	 
-min                 	0.0                 	 	 	 	 	 	 	 	 	 	 
+min                 	45454.3984375       	 	 	 	 	 	 	 	 	 	 
 max                 	45454.3984375       	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -415,7 +415,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	d                   	 	 	 	 	 	 	 	 	 	 
 data_type           	double              	 	 	 	 	 	 	 	 	 	 
-min                 	0.0                 	 	 	 	 	 	 	 	 	 	 
+min                 	454.6565            	 	 	 	 	 	 	 	 	 	 
 max                 	454.6565            	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -453,7 +453,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	ts                  	 	 	 	 	 	 	 	 	 	 
 data_type           	timestamp           	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
+min                 	1325379723          	 	 	 	 	 	 	 	 	 	 
 max                 	1325379723          	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -586,7 +586,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	t                   	 	 	 	 	 	 	 	 	 	 
 data_type           	tinyint             	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
+min                 	2                   	 	 	 	 	 	 	 	 	 	 
 max                 	2                   	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -632,7 +632,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	s                   	 	 	 	 	 	 	 	 	 	 
 data_type           	smallint            	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
+min                 	3                   	 	 	 	 	 	 	 	 	 	 
 max                 	3                   	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -678,7 +678,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	i                   	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
+min                 	45                  	 	 	 	 	 	 	 	 	 	 
 max                 	45                  	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -724,7 +724,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	b                   	 	 	 	 	 	 	 	 	 	 
 data_type           	bigint              	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
+min                 	456                 	 	 	 	 	 	 	 	 	 	 
 max                 	456                 	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -770,7 +770,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	f                   	 	 	 	 	 	 	 	 	 	 
 data_type           	float               	 	 	 	 	 	 	 	 	 	 
-min                 	0.0                 	 	 	 	 	 	 	 	 	 	 
+min                 	45454.3984375       	 	 	 	 	 	 	 	 	 	 
 max                 	45454.3984375       	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -816,7 +816,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	d                   	 	 	 	 	 	 	 	 	 	 
 data_type           	double              	 	 	 	 	 	 	 	 	 	 
-min                 	0.0                 	 	 	 	 	 	 	 	 	 	 
+min                 	454.6565            	 	 	 	 	 	 	 	 	 	 
 max                 	454.6565            	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
@@ -908,7 +908,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	ts                  	 	 	 	 	 	 	 	 	 	 
 data_type           	timestamp           	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
+min                 	1325379723          	 	 	 	 	 	 	 	 	 	 
 max                 	1325379723          	 	 	 	 	 	 	 	 	 	 
 num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 

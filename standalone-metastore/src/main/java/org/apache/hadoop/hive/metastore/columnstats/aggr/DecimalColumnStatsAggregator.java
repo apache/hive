@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
+import org.apache.hadoop.hive.metastore.columnstats.merge.DecimalColumnStatsMerger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,7 +103,7 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
         DecimalColumnStatsDataInspector newData = decimalInspectorFromStats(cso);
         lowerBound = Math.max(lowerBound, newData.getNumDVs());
         higherBound += newData.getNumDVs();
-        if ((newData.getHighValue() != null) && (newData.getLowValue() != null)) {
+        if (newData.isSetLowValue() && newData.isSetHighValue()) {
           densityAvgSum += (MetaStoreUtils.decimalToDouble(newData.getHighValue()) - MetaStoreUtils
               .decimalToDouble(newData.getLowValue())) / newData.getNumDVs();
         }
@@ -112,19 +113,10 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
         } else {
-          if ((aggregateData.getLowValue() != null) && (newData.getLowValue() != null) && (MetaStoreUtils
-              .decimalToDouble(aggregateData.getLowValue()) < MetaStoreUtils.decimalToDouble(newData.getLowValue()))) {
-            aggregateData.setLowValue(aggregateData.getLowValue());
-          } else {
-            aggregateData.setLowValue(newData.getLowValue());
-          }
-          if ((aggregateData.getHighValue() != null) && (newData.getHighValue() != null)
-              && (MetaStoreUtils.decimalToDouble(aggregateData.getHighValue()) > MetaStoreUtils
-                  .decimalToDouble(newData.getHighValue()))) {
-            aggregateData.setHighValue(aggregateData.getHighValue());
-          } else {
-            aggregateData.setHighValue(newData.getHighValue());
-          }
+          DecimalColumnStatsMerger merger = new DecimalColumnStatsMerger();
+          merger.setLowValue(aggregateData, newData);
+          merger.setHighValue(aggregateData, newData);
+
           aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
           aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
         }
