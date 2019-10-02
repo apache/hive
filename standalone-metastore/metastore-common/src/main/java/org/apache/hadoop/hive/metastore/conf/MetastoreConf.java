@@ -168,9 +168,9 @@ public class MetastoreConf {
       ConfVars.KERBEROS_KEYTAB_FILE,
       ConfVars.KERBEROS_PRINCIPAL,
       ConfVars.USE_THRIFT_SASL,
-      ConfVars.USE_THRIFT_PASSWORD_AUTH,
-      ConfVars.THRIFT_AUTH_USERNAME,
-      ConfVars.THRIFT_AUTH_PASSWORD,
+      ConfVars.METASTORE_CLIENT_USE_PLAIN_AUTH,
+      ConfVars.THRIFT_AUTH_CONFIG_USERNAME,
+      ConfVars.THRIFT_AUTH_CONFIG_PASSWORD,
       ConfVars.TOKEN_SIGNATURE,
       ConfVars.CACHE_PINOBJTYPES,
       ConfVars.CONNECTION_POOLING_TYPE,
@@ -1139,18 +1139,26 @@ public class MetastoreConf {
     // We should somehow unify next two options.
     USE_THRIFT_SASL("metastore.sasl.enabled", "hive.metastore.sasl.enabled", false,
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
-    USE_THRIFT_PASSWORD_AUTH("metastore.use.password.auth", "hive.metastore.use.password.auth",
-            false, "If true, the metastore Thrift interface will be secured with SASL. Clients " +
-            "must authenticate providing username and password"),
-    THRIFT_AUTH_USERNAME("metastore.auth.username", "hive.metastore.auth.username", "somevalue",
-            "Username" +
-            " used by client to connect to the metastore if " + USE_THRIFT_PASSWORD_AUTH + " is " +
-                    "true. On the metastore server if " + THRIFT_METASTORE_AUTHENTICATION + " is " +
-                    "set to CONFIG, client's username is matched against this value."),
-    THRIFT_AUTH_PASSWORD("metastore.auth.password", "hive.metastore.auth.password", "somevalue",
-            "Password used by client to connect to the metastore if " + USE_THRIFT_PASSWORD_AUTH + " is true." +
-                    " On the metastore server if " + THRIFT_METASTORE_AUTHENTICATION + " is " +
-                    "set to CONFIG, client's password is matched against this value."),
+    METASTORE_CLIENT_USE_PLAIN_AUTH("metastore.client.use.plain.auth",
+            "metastore.client.use.plain.auth", false,
+            "If true, clients will authenticate using plain authentication, by providing username" +
+                    " and password."),
+    METASTORE_CLIENT_PLAIN_USERNAME("metastore.client.plain.username",
+            "metastore.client.plain.username",  "",
+            "The username used by the metastore client when " +
+                    METASTORE_CLIENT_USE_PLAIN_AUTH + " is true."),
+    METASTORE_CLIENT_PLAIN_PASSWORD("metastore.client.plain.password",
+            "metastore.client.plain.password",  "",
+            "The password used by the metastore client when " +
+                    METASTORE_CLIENT_USE_PLAIN_AUTH + " is true."),
+    THRIFT_AUTH_CONFIG_USERNAME("metastore.authentication.config.username",
+            "hive.metastore.authentication.config.username", "",
+            "If " + THRIFT_METASTORE_AUTHENTICATION + " is set to CONFIG, username provided by " +
+                    "client is matched against this value."),
+    THRIFT_AUTH_CONFIG_PASSWORD("metastore.authentication.config.password",
+             "hive.metastore.authentication.config.password", "",
+            "If " + THRIFT_METASTORE_AUTHENTICATION + " is set to CONFIG, password provided by " +
+                    "the client is matched against this value."),
     USE_THRIFT_FRAMED_TRANSPORT("metastore.thrift.framed.transport.enabled",
         "hive.metastore.thrift.framed.transport.enabled", false,
         "If true, the metastore Thrift interface will use TFramedTransport. When false (default) a standard TTransport is used."),

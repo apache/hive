@@ -553,7 +553,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     TTransportException tte = null;
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
     boolean useSasl = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_SASL);
-    boolean usePasswordAuth = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_PASSWORD_AUTH);
+    boolean usePasswordAuth = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_USE_PLAIN_AUTH);
     boolean useFramedTransport = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
@@ -595,8 +595,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           if (usePasswordAuth) {
             // we are using PLAIN Sasl connection with user/password
             LOG.debug("HMSC::open(): Creating plain authentication thrift connection.");
-            String userName = MetastoreConf.getVar(conf, ConfVars.THRIFT_AUTH_USERNAME);
-            String passwd = MetastoreConf.getVar(conf, ConfVars.THRIFT_AUTH_PASSWORD);
+            String userName = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
+            String passwd = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_PASSWORD);
             // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
             try {
               transport = MetaStorePlainSaslHelper.getPlainTransport(userName, passwd, transport);

@@ -50,11 +50,11 @@ public class TestRemoteHiveMetaStoreCustomAuth extends TestRemoteHiveMetaStore {
   protected HiveMetaStoreClient createClient() throws Exception {
     boolean gotException = false;
     MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
-    MetastoreConf.setBoolVar(conf, ConfVars.USE_THRIFT_PASSWORD_AUTH, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_CLIENT_USE_PLAIN_AUTH, true);
 
     try {
-      MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_USERNAME, wrongUser);
-      MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_PASSWORD, wrongPassword);
+      MetastoreConf.setVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME, wrongUser);
+      MetastoreConf.setVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_PASSWORD, wrongPassword);
       HiveMetaStoreClient tmpClient = new HiveMetaStoreClient(conf);
     } catch (Exception e) {
       gotException = true;
@@ -62,8 +62,8 @@ public class TestRemoteHiveMetaStoreCustomAuth extends TestRemoteHiveMetaStore {
     // Trying to log in using wrong username and password should fail
     Assert.assertTrue(gotException);
 
-    MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_USERNAME, correctUser);
-    MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_PASSWORD, correctPassword);
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME, correctUser);
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_PASSWORD, correctPassword);
     return new HiveMetaStoreClient(conf);
   }
 

@@ -19,19 +19,12 @@
 package org.apache.hive.minikdc;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStorePasswdAuthenticationProvider;
 import org.apache.hadoop.hive.metastore.TestRemoteHiveMetaStore;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
-
-import javax.security.sasl.AuthenticationException;
-import java.util.HashMap;
-import java.util.Map;
 
 @Category(MetastoreCheckinTest.class)
 public class RemoteHiveMetaStoreDualAuthTest extends TestRemoteHiveMetaStore {
@@ -63,8 +56,8 @@ public class RemoteHiveMetaStoreDualAuthTest extends TestRemoteHiveMetaStore {
       clientConf = new Configuration(conf);
 
       MetastoreConf.setVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION, "CONFIG");
-      MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_USERNAME, correctUser);
-      MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_PASSWORD, correctPassword);
+      MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_CONFIG_USERNAME, correctUser);
+      MetastoreConf.setVar(conf, ConfVars.THRIFT_AUTH_CONFIG_PASSWORD, correctPassword);
       MetastoreConf.setBoolVar(conf, ConfVars.USE_THRIFT_SASL, true);
       MetastoreConf.setVar(conf, ConfVars.KERBEROS_PRINCIPAL, hiveMetastorePrincipal);
       MetastoreConf.setVar(conf, ConfVars.KERBEROS_KEYTAB_FILE, hiveMetastoreKeytab);

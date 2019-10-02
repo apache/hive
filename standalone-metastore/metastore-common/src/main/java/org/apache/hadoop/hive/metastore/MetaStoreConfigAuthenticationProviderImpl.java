@@ -34,19 +34,19 @@ import org.slf4j.LoggerFactory;
 public class MetaStoreConfigAuthenticationProviderImpl implements MetaStorePasswdAuthenticationProvider {
   private final String userName;
   private final String password;
-  protected static final Logger LOG = LoggerFactory.getLogger(MetaStoreCustomAuthenticationProviderImpl.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(MetaStoreConfigAuthenticationProviderImpl.class);
 
   @SuppressWarnings("unchecked")
   MetaStoreConfigAuthenticationProviderImpl(Configuration conf) throws AuthenticationException {
-    userName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_AUTH_USERNAME);
-    password = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_AUTH_PASSWORD);
+    userName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_USERNAME);
+    password = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_PASSWORD);
 
     if (null == userName || userName.isEmpty()) {
-      throw new AuthenticationException("No username specified in " + MetastoreConf.ConfVars.THRIFT_AUTH_USERNAME);
+      throw new AuthenticationException("No username specified in " + MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_USERNAME);
     }
 
     if (null == password || password.isEmpty()) {
-      throw new AuthenticationException("No password specified in " + MetastoreConf.ConfVars.THRIFT_AUTH_USERNAME);
+      throw new AuthenticationException("No password specified in " + MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_USERNAME);
     }
   }
 
