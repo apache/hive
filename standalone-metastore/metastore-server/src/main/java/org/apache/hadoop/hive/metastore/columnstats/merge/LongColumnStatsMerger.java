@@ -30,7 +30,7 @@ public class LongColumnStatsMerger extends ColumnStatsMerger {
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     LongColumnStatsDataInspector aggregateData = longInspectorFromStats(aggregateColStats);
     LongColumnStatsDataInspector newData = longInspectorFromStats(newColStats);
-    aggregateData.setLowValue(Math.min(aggregateData.getLowValue(), newData.getLowValue()));
+    setMinValue(aggregateData, newData);
     aggregateData.setHighValue(Math.max(aggregateData.getHighValue(), newData.getHighValue()));
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
     if (aggregateData.getNdvEstimator() == null || newData.getNdvEstimator() == null) {
@@ -50,5 +50,17 @@ public class LongColumnStatsMerger extends ColumnStatsMerger {
           + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
       aggregateData.setNumDVs(ndv);
     }
+
+    aggregateColStats.getStatsData().setLongStats(aggregateData);
+  }
+
+  private void setMinValue(LongColumnStatsDataInspector aggregateData, LongColumnStatsDataInspector newData) {
+    if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
+      return;
+    }
+    long lowValue = Math.min(
+        aggregateData.isSetLowValue() ? aggregateData.getLowValue() : Long.MAX_VALUE,
+        newData.isSetLowValue() ? newData.getLowValue() : Long.MAX_VALUE);
+    aggregateData.setLowValue(lowValue);
   }
 }

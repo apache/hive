@@ -29,10 +29,8 @@ import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.dec
 public class DecimalColumnStatsMerger extends ColumnStatsMerger {
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
-    DecimalColumnStatsDataInspector aggregateData =
-        decimalInspectorFromStats(aggregateColStats);
-    DecimalColumnStatsDataInspector newData =
-        decimalInspectorFromStats(newColStats);
+    DecimalColumnStatsDataInspector aggregateData = decimalInspectorFromStats(aggregateColStats);
+    DecimalColumnStatsDataInspector newData = decimalInspectorFromStats(newColStats);
 
     Decimal lowValue = getMin(aggregateData.getLowValue(), newData.getLowValue());
     aggregateData.setLowValue(lowValue);
@@ -59,6 +57,8 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
           + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
       aggregateData.setNumDVs(ndv);
     }
+
+    aggregateColStats.getStatsData().setDecimalStats(aggregateData);
   }
 
   Decimal getMax(Decimal firstValue, Decimal secondValue) {

@@ -54,6 +54,8 @@ public class DateColumnStatsMerger extends ColumnStatsMerger {
           + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
       aggregateData.setNumDVs(ndv);
     }
+
+    aggregateColStats.getStatsData().setDateStats(aggregateData);
   }
 
   private Date min(Date v1, Date v2) {
