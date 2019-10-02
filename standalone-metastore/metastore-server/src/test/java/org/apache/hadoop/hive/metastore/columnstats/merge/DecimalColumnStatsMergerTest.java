@@ -36,6 +36,19 @@ public class DecimalColumnStatsMergerTest {
   private static final Decimal DECIMAL_5 = DecimalUtils.getDecimal(5, 0);
   private static final Decimal DECIMAL_20 = DecimalUtils.getDecimal(2, 1);
 
+  private static final DecimalColumnStatsDataInspector DATA_3 = new DecimalColumnStatsDataInspector();
+  private static final DecimalColumnStatsDataInspector DATA_5 = new DecimalColumnStatsDataInspector();
+  private static final DecimalColumnStatsDataInspector DATA_20 = new DecimalColumnStatsDataInspector();
+
+  static {
+    DATA_3.setLowValue(DECIMAL_3);
+    DATA_3.setHighValue(DECIMAL_3);
+    DATA_5.setLowValue(DECIMAL_5);
+    DATA_5.setHighValue(DECIMAL_5);
+    DATA_20.setLowValue(DECIMAL_20);
+    DATA_20.setHighValue(DECIMAL_20);
+  }
+
   private DecimalColumnStatsMerger merger = new DecimalColumnStatsMerger();
 
   @Test
@@ -165,57 +178,90 @@ public class DecimalColumnStatsMergerTest {
 
   @Test
   public void testCompareSimple() {
-    Assert.assertEquals(DECIMAL_5, merger.getMax(DECIMAL_3, DECIMAL_5));
+    DecimalColumnStatsDataInspector data1 = new DecimalColumnStatsDataInspector(DATA_3);
+    DecimalColumnStatsDataInspector data2 = new DecimalColumnStatsDataInspector(DATA_5);
+    merger.setHighValue(data1, data2);
+    Assert.assertEquals(DECIMAL_5, data1.getHighValue());
   }
 
   @Test
   public void testCompareSimpleFlipped() {
-    Assert.assertEquals(DECIMAL_5, merger.getMax(DECIMAL_5, DECIMAL_3));
+    DecimalColumnStatsDataInspector data1 = new DecimalColumnStatsDataInspector(DATA_5);
+    DecimalColumnStatsDataInspector data2 = new DecimalColumnStatsDataInspector(DATA_3);
+    merger.setHighValue(data1, data2);
+    Assert.assertEquals(DECIMAL_5, data1.getHighValue());
   }
 
   @Test
   public void testCompareSimpleReversed() {
-    Assert.assertEquals(DECIMAL_3, merger.getMin(DECIMAL_3, DECIMAL_5));
+    DecimalColumnStatsDataInspector data1 = new DecimalColumnStatsDataInspector(DATA_3);
+    DecimalColumnStatsDataInspector data2 = new DecimalColumnStatsDataInspector(DATA_5);
+    merger.setLowValue(data1, data2);
+    Assert.assertEquals(DECIMAL_3, data1.getLowValue());
   }
 
   @Test
   public void testCompareSimpleFlippedReversed() {
-    Assert.assertEquals(DECIMAL_3, merger.getMin(DECIMAL_5, DECIMAL_3));
+    DecimalColumnStatsDataInspector data1 = new DecimalColumnStatsDataInspector(DATA_5);
+    DecimalColumnStatsDataInspector data2 = new DecimalColumnStatsDataInspector(DATA_3);
+    merger.setLowValue(data1, data2);
+    Assert.assertEquals(DECIMAL_3, data1.getLowValue());
   }
 
   @Test
   public void testCompareUnscaledValue() {
-    Assert.assertEquals(DECIMAL_20, merger.getMax(DECIMAL_3, DECIMAL_20));
+    DecimalColumnStatsDataInspector data1 = new DecimalColumnStatsDataInspector(DATA_3);
+    DecimalColumnStatsDataInspector data2 = new DecimalColumnStatsDataInspector(DATA_20);
+    merger.setHighValue(data1, data2);
+    Assert.assertEquals(DECIMAL_20, data1.getHighValue());
   }
 
   @Test
   public void testCompareNullsMin() {
-    Assert.assertNull(merger.getMin(null, null));
+    DecimalColumnStatsDataInspector data1 = new DecimalColumnStatsDataInspector();
+    DecimalColumnStatsDataInspector data2 = new DecimalColumnStatsDataInspector();
+    merger.setLowValue(data1, data2);
+    Assert.assertNull(data1.getLowValue());
   }
 
   @Test
   public void testCompareNullsMax() {
-    Assert.assertNull(merger.getMax(null, null));
+    DecimalColumnStatsDataInspector data1 = new DecimalColumnStatsDataInspector();
+    DecimalColumnStatsDataInspector data2 = new DecimalColumnStatsDataInspector();
+    merger.setHighValue(data1, data2);
+    Assert.assertNull(data1.getHighValue());
   }
 
   @Test
   public void testCompareFirstNullMin() {
-    Assert.assertEquals(DECIMAL_3, merger.getMin(null, DECIMAL_3));
+    DecimalColumnStatsDataInspector data1 = new DecimalColumnStatsDataInspector();
+    DecimalColumnStatsDataInspector data2 = new DecimalColumnStatsDataInspector(DATA_3);
+    merger.setLowValue(data1, data2);
+    Assert.assertEquals(DECIMAL_3, data1.getLowValue());
   }
 
   @Test
   public void testCompareSecondNullMin() {
-    Assert.assertEquals(DECIMAL_3, merger.getMin(DECIMAL_3, null));
+    DecimalColumnStatsDataInspector data1 = new DecimalColumnStatsDataInspector(DATA_3);
+    DecimalColumnStatsDataInspector data2 = new DecimalColumnStatsDataInspector();
+    merger.setLowValue(data1, data2);
+    Assert.assertEquals(DECIMAL_3, data1.getLowValue());
   }
 
   @Test
   public void testCompareFirstNullMax() {
-    Assert.assertEquals(DECIMAL_3, merger.getMax(null, DECIMAL_3));
+    DecimalColumnStatsDataInspector data1 = new DecimalColumnStatsDataInspector(DATA_3);
+    DecimalColumnStatsDataInspector data2 = new DecimalColumnStatsDataInspector();
+    merger.setHighValue(data1, data2);
+    Assert.assertEquals(DECIMAL_3, data1.getHighValue());
   }
 
   @Test
   public void testCompareSecondNullMax() {
-    Assert.assertEquals(DECIMAL_3, merger.getMax(DECIMAL_3, null));
+    DecimalColumnStatsDataInspector data1 = new DecimalColumnStatsDataInspector();
+    DecimalColumnStatsDataInspector data2 = new DecimalColumnStatsDataInspector(DATA_3);
+    merger.setHighValue(data1, data2);
+    Assert.assertEquals(DECIMAL_3, data1.getHighValue());
   }
 
   private DecimalColumnStatsDataInspector createData(ColumnStatisticsObj objNulls, Decimal lowValue,
