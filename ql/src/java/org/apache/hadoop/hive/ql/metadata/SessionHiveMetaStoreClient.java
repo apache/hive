@@ -1340,6 +1340,49 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     throw new MetaException("Exchanging partitions between temporary and non-temporary tables is not supported.");
   }
 
+  @Override
+  public void alter_partition(String catName, String dbName, String tblName, Partition newPart,
+      EnvironmentContext environmentContext) throws TException {
+    alter_partition(catName, dbName, tblName, newPart, environmentContext, null);
+  }
+
+  @Override
+  public void alter_partition(String catName, String dbName, String tblName, Partition newPart,
+      EnvironmentContext environmentContext, String writeIdList)
+      throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      super.alter_partition(catName, dbName, tblName, newPart, environmentContext, writeIdList);
+      return;
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    tt.alterPartition(newPart);
+  }
+
+  @Override
+  public void alter_partitions(String catName, String dbName, String tblName, List<Partition> newParts,
+      EnvironmentContext environmentContext, String writeIdList, long writeId) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      super.alter_partitions(catName, dbName, tblName, newParts, environmentContext, writeIdList, writeId);
+      return;
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    tt.alterPartitions(newParts);
+  }
+
+  @Override
+  public void renamePartition(String catName, String dbname, String tableName, List<String> partitionVals,
+      Partition newPart, String validWriteIds) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbname, tableName);
+    if (table == null) {
+      super.renamePartition(catName, dbname, tableName, partitionVals, newPart, validWriteIds);
+      return;
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    tt.renamePartition(partitionVals, newPart);
+  }
+
   private List<Partition> exchangePartitions(Map<String, String> partitionSpecs,
       org.apache.hadoop.hive.metastore.api.Table sourceTable, TempTable sourceTempTable,
       org.apache.hadoop.hive.metastore.api.Table destTable, TempTable destTempTable) throws TException {

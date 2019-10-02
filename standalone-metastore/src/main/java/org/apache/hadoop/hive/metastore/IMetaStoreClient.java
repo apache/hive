@@ -2244,7 +2244,7 @@ public interface IMetaStoreClient {
    * @param newPart
    *          new partition
    * @throws InvalidOperationException
-   *           if srcFs and destFs are different
+   *           if srcFs and destFs are different, or trying to rename to an already existing partition name
    * @throws MetaException
    *          if error in updating metadata
    * @throws TException
@@ -2267,7 +2267,7 @@ public interface IMetaStoreClient {
    * @param newPart
    *          new partition
    * @throws InvalidOperationException
-   *           if srcFs and destFs are different
+   *           if srcFs and destFs are different, or trying to rename to an already existing partition name
    * @throws MetaException
    *          if error in updating metadata
    * @throws TException
