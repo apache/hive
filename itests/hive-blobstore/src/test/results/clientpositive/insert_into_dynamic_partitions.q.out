@@ -111,6 +111,7 @@ STAGE PLANS:
                     null sort order: aaa
                     sort order: +++
                     Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     tag: -1
                     auto parallelism: false
       Path -> Alias:
