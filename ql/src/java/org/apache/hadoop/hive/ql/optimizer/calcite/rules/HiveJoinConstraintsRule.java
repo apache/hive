@@ -117,7 +117,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
     // These boolean values represent corresponding left, right input which is potential FK
     boolean leftInputPotentialFK = topRefs.intersects(leftBits);
     boolean rightInputPotentialFK = topRefs.intersects(rightBits);
-    if (leftInputPotentialFK && rightInputPotentialFK && joinType == JoinRelType.INNER) {
+    if (leftInputPotentialFK && rightInputPotentialFK && (joinType == JoinRelType.INNER || joinType == JoinRelType.SEMI)) {
       // Both inputs are referenced. Before making a decision, try to swap
       // references in join condition if it is an inner join, i.e. if a join
       // condition column is referenced above the join, then we can just
@@ -198,6 +198,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
 
     final Mode mode;
     switch (joinType) {
+    case SEMI:
     case INNER:
       if (leftInputPotentialFK && rightInputPotentialFK) {
         // Bails out as it references columns from both sides (or no columns)

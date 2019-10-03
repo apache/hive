@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 import java.util.List;
 
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdSize;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -31,6 +30,7 @@ import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableNullableList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
@@ -78,8 +78,7 @@ public class HiveRelMdSize extends RelMdSize {
     return list.build();
   }
 
-  @Override
-  public List<Double> averageColumnSizes(SemiJoin rel, RelMetadataQuery mq) {
+  public List<Double> averageColumnSizes(HiveSemiJoin rel, RelMetadataQuery mq) {
     final RelNode left = rel.getLeft();
     final List<Double> lefts =
         mq.getAverageColumnSizes(left);

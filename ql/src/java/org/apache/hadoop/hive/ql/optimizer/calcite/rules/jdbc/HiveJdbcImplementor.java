@@ -109,7 +109,7 @@ public class HiveJdbcImplementor extends JdbcImplementor {
     SqlNode sqlCondition = null;
     SqlLiteral condType = JoinConditionType.ON.symbol(POS);
     JoinType joinType = joinType(e.getJoinType());
-    if (e.getJoinType() == JoinRelType.INNER && e.getCondition().isAlwaysTrue()) {
+    if ((e.getJoinType() == JoinRelType.INNER || e.isSemiJoin()) && e.getCondition().isAlwaysTrue()) {
       joinType = JoinType.COMMA;
       condType = JoinConditionType.NONE.symbol(POS);
     } else {

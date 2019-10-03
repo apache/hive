@@ -2697,7 +2697,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         calciteJoinType = JoinRelType.FULL;
         break;
       case LEFTSEMI:
-        calciteJoinType = JoinRelType.INNER;
+        calciteJoinType = JoinRelType.SEMI;
         leftSemiJoin = true;
         break;
       case INNER:
@@ -2731,8 +2731,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 ImmutableList.of(remainingEquiCond, nonEquiConds), false) :
             nonEquiConds;
         topRel = HiveSemiJoin.getSemiJoin(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-            inputRels[0], inputRels[1], calciteJoinCond, ImmutableIntList.copyOf(leftKeys),
-            ImmutableIntList.copyOf(rightKeys));
+            inputRels[0], inputRels[1], calciteJoinCond);
 
         // Create join RR: we need to check whether we need to update left RR in case
         // previous call to projectNonColumnEquiConditions updated it

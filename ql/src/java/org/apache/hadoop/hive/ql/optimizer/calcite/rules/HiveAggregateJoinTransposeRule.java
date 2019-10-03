@@ -100,7 +100,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
 
     // If it is not an inner join, we do not push the
     // aggregate operator
-    if (join.getJoinType() != JoinRelType.INNER) {
+    if (join.getJoinType() != JoinRelType.INNER && !join.isSemiJoin()) {
       return;
     }
 

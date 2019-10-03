@@ -547,7 +547,7 @@ public class HiveRelOptUtil extends RelOptUtil {
     final PKFKJoinInfo cannotExtract =
         PKFKJoinInfo.of(false, null, null);
 
-    if (joinType != JoinRelType.INNER) {
+    if (joinType != JoinRelType.INNER && !join.isSemiJoin()) {
       // If it is not an inner, we transform it as the metadata
       // providers for expressions do not pull information through
       // outer join (as it would not be correct)
@@ -741,7 +741,7 @@ public class HiveRelOptUtil extends RelOptUtil {
     final RelNode nonFkInput = leftInputPotentialFK ? join.getRight() : join.getLeft();
     final RewritablePKFKJoinInfo nonRewritable = RewritablePKFKJoinInfo.of(false, null);
 
-    if (joinType != JoinRelType.INNER) {
+    if (joinType != JoinRelType.INNER && !join.isSemiJoin()) {
       // If it is not an inner, we transform it as the metadata
       // providers for expressions do not pull information through
       // outer join (as it would not be correct)
@@ -848,7 +848,7 @@ public class HiveRelOptUtil extends RelOptUtil {
             if (ecT.getEquivalenceClassesMap().containsKey(uniqueKeyColumnRef) &&
                 ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).contains(foreignKeyColumnRef)) {
               if (foreignKeyColumnType.isNullable()) {
-                if (joinType == JoinRelType.INNER) {
+                if (joinType == JoinRelType.INNER || join.isSemiJoin()) {
                   // If it is nullable and it is an INNER, we just need a IS NOT NULL filter
                   RexNode originalCondOp = refToRex.get(foreignKeyColumnRef);
                   assert originalCondOp != null;

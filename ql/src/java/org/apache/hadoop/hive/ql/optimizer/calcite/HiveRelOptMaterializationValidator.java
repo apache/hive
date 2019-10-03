@@ -108,7 +108,7 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   @Override
   public RelNode visit(HiveJoin join) {
-    if (join.getJoinType() != JoinRelType.INNER) {
+    if (join.getJoinType() != JoinRelType.INNER && !join.isSemiJoin()) {
       setAutomaticRewritingInvalidReason(join.getJoinType() + " join type is not supported by rewriting algorithm.");
     }
     checkExpr(join.getCondition());

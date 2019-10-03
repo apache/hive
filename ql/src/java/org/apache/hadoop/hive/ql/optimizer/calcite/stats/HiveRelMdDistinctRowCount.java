@@ -25,7 +25,6 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdDistinctRowCount;
@@ -41,6 +40,7 @@ import org.apache.calcite.util.NumberUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
@@ -85,16 +85,13 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
   @Override
   public Double getDistinctRowCount(Join rel, RelMetadataQuery mq, ImmutableBitSet groupKey,
       RexNode predicate) {
+    if (rel instanceof HiveSemiJoin) {
+      return super.getDistinctRowCount(rel, mq, groupKey, predicate);
+    }
+
     if (rel instanceof HiveJoin) {
-      HiveJoin hjRel = (HiveJoin) rel;
-      //TODO: Improve this
-      if (rel instanceof SemiJoin) {
-        return mq.getDistinctRowCount(hjRel.getLeft(), groupKey,
-            rel.getCluster().getRexBuilder().makeLiteral(true));
-      } else {
-        return getJoinDistinctRowCount(mq, rel, rel.getJoinType(),
-            groupKey, predicate, true);
-      }
+      return getJoinDistinctRowCount(mq, rel, rel.getJoinType(),
+          groupKey, predicate, true);
     }
 
     return mq.getDistinctRowCount(rel, groupKey, predicate);
@@ -116,7 +113,7 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
    *                  otherwise use <code>left NDV * right NDV</code>.
    * @return number of distinct rows
    */
-  public static Double getJoinDistinctRowCount(RelMetadataQuery mq,
+  private static Double getJoinDistinctRowCount(RelMetadataQuery mq,
       RelNode joinRel, JoinRelType joinType, ImmutableBitSet groupKey,
       RexNode predicate, boolean useMaxNdv) {
     Double distRowCount = null;

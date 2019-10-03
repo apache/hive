@@ -50,7 +50,6 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.server.CalciteServerStatement;
-import org.apache.calcite.sql.SemiJoinType;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -1141,11 +1140,10 @@ public class HiveSubQRemoveRelBuilder {
       }
       if(createSemiJoin) {
         join = correlateFactory.createCorrelate(left.rel, right.rel, id,
-            requiredColumns, SemiJoinType.SEMI);
+            requiredColumns, JoinRelType.SEMI);
       } else {
         join = correlateFactory.createCorrelate(left.rel, right.rel, id,
-            requiredColumns, SemiJoinType.of(joinType));
-
+            requiredColumns, joinType);
       }
     } else {
       join = joinFactory.createJoin(left.rel, right.rel, condition,
@@ -1297,9 +1295,8 @@ public class HiveSubQRemoveRelBuilder {
    */
   public HiveSubQRemoveRelBuilder empty() {
     final RelNode input = build();
-    final RelNode sort = HiveRelFactories.HIVE_SORT_FACTORY.createSort(
-        input, RelCollations.of(), null, literal(0));
-    return this.push(sort);
+    final RelNode filter = HiveRelFactories.HIVE_FILTER_FACTORY.createFilter(input, literal(false));
+    return this.push(filter);
   }
 
 

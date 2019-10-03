@@ -88,7 +88,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveSemiJoin(condition=[=($0, $1)], joinType=[inner])
+  HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
     HiveProject(p_partkey=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
         HiveTableScan(table=[[default, part]], table:alias=[part])

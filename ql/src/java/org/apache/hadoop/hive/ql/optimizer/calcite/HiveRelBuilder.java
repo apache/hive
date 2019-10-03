@@ -113,9 +113,8 @@ public class HiveRelBuilder extends RelBuilder {
   @Override
   public RelBuilder empty() {
     final RelNode input = build();
-    final RelNode sort = HiveRelFactories.HIVE_SORT_FACTORY.createSort(
-            input, RelCollations.of(), null, literal(0));
-    return this.push(sort);
+    final RelNode filter = HiveRelFactories.HIVE_FILTER_FACTORY.createFilter(input, literal(false));
+    return this.push(filter);
   }
 
   public static SqlFunction getFloorSqlFunction(TimeUnitRange flag) {

@@ -37,7 +37,6 @@ import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
@@ -175,8 +174,8 @@ public class HiveOpConverter {
       return visit((HiveMultiJoin) rn);
     } else if (rn instanceof HiveJoin) {
       return visit((HiveJoin) rn);
-    } else if (rn instanceof SemiJoin) {
-      return visit((SemiJoin)rn);
+    } else if (rn instanceof HiveSemiJoin) {
+      return visit((HiveSemiJoin) rn);
     } else if (rn instanceof HiveFilter) {
       return visit((HiveFilter) rn);
     } else if (rn instanceof HiveSortLimit) {
@@ -332,8 +331,7 @@ public class HiveOpConverter {
     return translateJoin(joinRel);
   }
 
-
-  OpAttr visit(SemiJoin joinRel) throws SemanticException {
+  OpAttr visit(HiveSemiJoin joinRel) throws SemanticException {
     return translateJoin(joinRel);
   }
 
@@ -365,8 +363,8 @@ public class HiveOpConverter {
     // 3. Virtual columns
     Set<Integer> newVcolsInCalcite = new HashSet<Integer>();
     newVcolsInCalcite.addAll(inputs[0].vcolsInCalcite);
-    if (joinRel instanceof HiveMultiJoin ||
-            !(joinRel instanceof SemiJoin)) {
+    if (joinRel instanceof HiveMultiJoin || 
+            !((joinRel instanceof Join) && ((Join) joinRel).isSemiJoin())) {
       int shift = inputs[0].inputs.get(0).getSchema().getSignature().size();
       for (int i = 1; i < inputs.length; i++) {
         newVcolsInCalcite.addAll(HiveCalciteUtil.shiftVColsSet(inputs[i].vcolsInCalcite, shift));
@@ -904,7 +902,7 @@ public class HiveOpConverter {
       noOuterJoin = !hmj.isOuterJoin();
     } else {
       joinCondns = new JoinCondDesc[1];
-      semiJoin = join instanceof SemiJoin;
+      semiJoin = (join instanceof Join) && ((Join) join).isSemiJoin();
       JoinType joinType;
       if (semiJoin) {
         joinType = JoinType.LEFTSEMI;

@@ -118,7 +118,7 @@ public abstract class HiveSemiJoinRule extends RelOptRule {
       call.transformTo(topOperator.copy(topOperator.getTraitSet(), ImmutableList.of(left)));
       return;
     }
-    if (join.getJoinType() != JoinRelType.INNER) {
+    if (join.getJoinType() != JoinRelType.INNER && !join.isSemiJoin()) {
       return;
     }
 
