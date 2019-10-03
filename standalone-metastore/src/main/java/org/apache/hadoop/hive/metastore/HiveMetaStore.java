@@ -1353,6 +1353,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       final Path dbPath = wh.determineDatabasePath(cat, db);
       final Path dbExternalPath = wh.determineDatabaseExternalPath(db);
       db.setLocationUri(dbPath.toString());
+      if (db.getOwnerName() == null){
+        try {
+          db.setOwnerName(SecurityUtils.getUGI().getShortUserName());
+        }catch (Exception e){
+          LOG.warn("Failed to get owner name for create database operation.", e);
+        }
+      }
       long time = System.currentTimeMillis()/1000;
       db.setCreateTime((int) time);
       boolean success = false;
