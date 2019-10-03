@@ -20,17 +20,14 @@ package org.apache.hive.minikdc;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.TestRemoteHiveMetaStore;
-import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.Before;
-import org.junit.experimental.categories.Category;
 
-@Category(MetastoreCheckinTest.class)
 public class RemoteHiveMetaStoreDualAuthTest extends TestRemoteHiveMetaStore {
+  // These names are tied with the .jceks file used by the subclasses. So, do not change those.
   protected static String correctUser = "correct_user";
   protected static String correctPassword = "correct_passwd";
-  protected static String wrongPassword = "wrong_password";
   protected static String wrongUser = "wrong_user";
   private static MiniHiveKdc miniKDC = null;
   protected static Configuration clientConf;

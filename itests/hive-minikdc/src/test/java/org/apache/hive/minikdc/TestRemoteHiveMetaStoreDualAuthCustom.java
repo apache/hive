@@ -19,14 +19,12 @@
 package org.apache.hive.minikdc;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.experimental.categories.Category;
 
-@Category(MetastoreCheckinTest.class)
 public class TestRemoteHiveMetaStoreDualAuthCustom extends RemoteHiveMetaStoreDualAuthTest {
 
   @Before
@@ -41,10 +39,12 @@ public class TestRemoteHiveMetaStoreDualAuthCustom extends RemoteHiveMetaStoreDu
     MetastoreConf.setBoolVar(clientConf, ConfVars.USE_THRIFT_SASL, false);
     MetastoreConf.setBoolVar(clientConf, ConfVars.METASTORE_CLIENT_USE_PLAIN_AUTH, true);
     MetastoreConf.setBoolVar(clientConf, ConfVars.EXECUTE_SET_UGI, false);
+    String tmpDir = System.getProperty("build.dir");
+    String credentialsPath = "jceks://file" + tmpDir + "/test-classes/creds/hms_plain_auth_test.jceks";
+    clientConf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, credentialsPath);
 
     try {
       MetastoreConf.setVar(clientConf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME, wrongUser);
-      MetastoreConf.setVar(clientConf, ConfVars.METASTORE_CLIENT_PLAIN_PASSWORD, wrongPassword);
       HiveMetaStoreClient tmpClient = new HiveMetaStoreClient(clientConf);
     } catch (Exception e) {
       gotException = true;
@@ -53,7 +53,6 @@ public class TestRemoteHiveMetaStoreDualAuthCustom extends RemoteHiveMetaStoreDu
     Assert.assertTrue(gotException);
 
     MetastoreConf.setVar(clientConf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME, correctUser);
-    MetastoreConf.setVar(clientConf, ConfVars.METASTORE_CLIENT_PLAIN_PASSWORD, correctPassword);
     return new HiveMetaStoreClient(clientConf);
   }
 }

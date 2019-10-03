@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
@@ -51,10 +52,12 @@ public class TestRemoteHiveMetaStoreCustomAuth extends TestRemoteHiveMetaStore {
     boolean gotException = false;
     MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
     MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_CLIENT_USE_PLAIN_AUTH, true);
+    String tmpDir = System.getProperty("build.dir");
+    String credentialsPath = "jceks://file" + tmpDir + "/test-classes/creds/hms_plain_auth_test.jceks";
+    conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, credentialsPath);
 
     try {
       MetastoreConf.setVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME, wrongUser);
-      MetastoreConf.setVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_PASSWORD, wrongPassword);
       HiveMetaStoreClient tmpClient = new HiveMetaStoreClient(conf);
     } catch (Exception e) {
       gotException = true;
@@ -63,7 +66,6 @@ public class TestRemoteHiveMetaStoreCustomAuth extends TestRemoteHiveMetaStore {
     Assert.assertTrue(gotException);
 
     MetastoreConf.setVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME, correctUser);
-    MetastoreConf.setVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_PASSWORD, correctPassword);
     return new HiveMetaStoreClient(conf);
   }
 

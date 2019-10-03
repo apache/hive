@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,8 +170,7 @@ public class MetastoreConf {
       ConfVars.KERBEROS_PRINCIPAL,
       ConfVars.USE_THRIFT_SASL,
       ConfVars.METASTORE_CLIENT_USE_PLAIN_AUTH,
-      ConfVars.THRIFT_AUTH_CONFIG_USERNAME,
-      ConfVars.THRIFT_AUTH_CONFIG_PASSWORD,
+      ConfVars.METASTORE_CLIENT_PLAIN_USERNAME,
       ConfVars.TOKEN_SIGNATURE,
       ConfVars.CACHE_PINOBJTYPES,
       ConfVars.CONNECTION_POOLING_TYPE,
@@ -1145,12 +1145,10 @@ public class MetastoreConf {
                     " and password."),
     METASTORE_CLIENT_PLAIN_USERNAME("metastore.client.plain.username",
             "metastore.client.plain.username",  "",
-            "The username used by the metastore client when " +
-                    METASTORE_CLIENT_USE_PLAIN_AUTH + " is true."),
-    METASTORE_CLIENT_PLAIN_PASSWORD("metastore.client.plain.password",
-            "metastore.client.plain.password",  "",
-            "The password used by the metastore client when " +
-                    METASTORE_CLIENT_USE_PLAIN_AUTH + " is true."),
+        "The username used by the metastore client when " +
+                    METASTORE_CLIENT_USE_PLAIN_AUTH + " is true. The password is obtained from " +
+                    CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH + " using username as the " +
+                    "alias."),
     THRIFT_AUTH_CONFIG_USERNAME("metastore.authentication.config.username",
             "hive.metastore.authentication.config.username", "",
             "If " + THRIFT_METASTORE_AUTHENTICATION + " is set to CONFIG, username provided by " +

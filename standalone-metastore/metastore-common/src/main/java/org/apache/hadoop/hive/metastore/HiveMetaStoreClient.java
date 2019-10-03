@@ -596,11 +596,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             // we are using PLAIN Sasl connection with user/password
             LOG.debug("HMSC::open(): Creating plain authentication thrift connection.");
             String userName = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
-            String passwd = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_PASSWORD);
-            // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
+            // The password is not directly provided. It should be obtained from a keystore pointed
+            // by configuration "hadoop.security.credential.provider.path".
             try {
+              String passwd = null;
+              char[] pwdCharArray = conf.getPassword(userName);
+              if (null != pwdCharArray) {
+               passwd = new String(pwdCharArray);
+              }
+              if (null == passwd) {
+                LOG.warn("No password found for user " + userName);
+                passwd = "";
+              }
+              // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
               transport = MetaStorePlainSaslHelper.getPlainTransport(userName, passwd, transport);
-            } catch (SaslException sasle) {
+            } catch (IOException sasle) {
+              // IOException covers SaslException
               LOG.error("Couldn't create client transport", sasle);
               throw new MetaException(sasle.toString());
             }

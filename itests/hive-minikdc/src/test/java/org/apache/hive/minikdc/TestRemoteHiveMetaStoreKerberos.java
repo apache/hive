@@ -20,18 +20,10 @@ package org.apache.hive.minikdc;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TestRemoteHiveMetaStore;
-import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.experimental.categories.Category;
 
-import javax.security.sasl.AuthenticationException;
-import java.util.HashMap;
-import java.util.Map;
-
-@Category(MetastoreCheckinTest.class)
 public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
   private static MiniHiveKdc miniKDC;
 
