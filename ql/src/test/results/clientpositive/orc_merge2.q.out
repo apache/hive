@@ -94,6 +94,7 @@ STAGE PLANS:
               key expressions: _col2 (type: int), _col3 (type: int)
               sort order: ++
               Map-reduce partition columns: _col2 (type: int), _col3 (type: int)
+              Statistics: Num rows: 500 Data size: 51500 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: int), _col1 (type: string)
       Reduce Operator Tree:
         Select Operator

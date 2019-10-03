@@ -536,6 +536,7 @@ STAGE PLANS:
               key expressions: _col2 (type: string)
               sort order: +
               Map-reduce partition columns: _col2 (type: string)
+              Statistics: Num rows: 316 Data size: 143780 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: string), _col1 (type: string)
       Execution mode: vectorized
       Reduce Operator Tree:

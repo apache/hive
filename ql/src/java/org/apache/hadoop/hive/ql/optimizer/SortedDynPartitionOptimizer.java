@@ -329,6 +329,8 @@ public class SortedDynPartitionOptimizer extends Transform {
       // update partition column info in FS descriptor
       fsOp.getConf().setPartitionCols(rsOp.getConf().getPartitionCols());
 
+      rsOp.setStatistics(rsOp.getParentOperators().get(0).getStatistics());
+
       LOG.info("Inserted " + rsOp.getOperatorId() + " and " + selOp.getOperatorId()
           + " as parent of " + fsOp.getOperatorId() + " and child of " + fsParent.getOperatorId());
 
