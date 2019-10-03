@@ -160,6 +160,17 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertEquals("Comparing owner type", PrincipalType.USER, createdDatabase.getOwnerType());
   }
 
+  @Test
+  public void testCreateDatabaseOwnerName() throws Exception{
+    DatabaseBuilder databaseBuilder = new DatabaseBuilder()
+        .setCatalogName("hive")
+        .setName("dummy")
+        .setOwnerName(null);
+
+    Database db = databaseBuilder.create(client, metaStore.getConf());
+    Assert.assertNotNull("Owner name should be filled", db.getOwnerName());
+  }
+
   @Test(expected = MetaException.class)
   public void testCreateDatabaseNullName() throws Exception {
     Database database = testDatabases[0];
