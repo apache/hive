@@ -2955,7 +2955,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(p_partkey=[$0])
-  HiveSemiJoin(condition=[=($1, $2)], joinType=[inner])
+  HiveSemiJoin(condition=[=($1, $2)], joinType=[semi])
     HiveProject(p_partkey=[$0], p_name=[$1])
       HiveFilter(condition=[IS NOT NULL($1)])
         HiveTableScan(table=[[default, part]], table:alias=[pp])
@@ -3017,7 +3017,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveSemiJoin(condition=[=($0, $1)], joinType=[inner])
+  HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
     HiveProject(p_partkey=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
         HiveTableScan(table=[[default, part]], table:alias=[pp])
