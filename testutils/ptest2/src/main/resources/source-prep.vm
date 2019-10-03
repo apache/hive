@@ -22,8 +22,8 @@ then
   export JAVA_HOME=$javaHome
   export PATH=$JAVA_HOME/bin/:$PATH
 fi
-export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m ${antEnvOpts}"
-export MAVEN_OPTS="-Xmx1g ${mavenEnvOpts}"
+export ANT_OPTS="-Xmx2g -XX:MaxPermSize=256m ${antEnvOpts}"
+export MAVEN_OPTS="-Xmx2g ${mavenEnvOpts}"
 cd $workingDir/
 (
   if [[ "$clearLibraryCache" == "true" ]]
