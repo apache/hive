@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +67,7 @@ import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -81,6 +83,7 @@ import org.slf4j.LoggerFactory;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.makeSpecFromName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.compareFieldColumns;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getColumnNamesForTable;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -1381,6 +1384,61 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     }
     TempTable tt = getPartitionedTempTable(table);
     tt.renamePartition(partitionVals, newPart);
+  }
+
+  @Override
+  public Partition appendPartition(String catName, String dbName, String tableName, List<String> partVals)
+      throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
+    if (table == null) {
+      return super.appendPartition(catName, dbName, tableName, partVals);
+    }
+    if (partVals == null || partVals.isEmpty()) {
+      throw new MetaException("The partition values must be not null or empty.");
+    }
+    assertTempTablePartitioned(table);
+    Partition partition = new PartitionBuilder().inTable(table).setValues(partVals).build(conf);
+    return appendPartitionToTempTable(table, partition);
+  }
+
+  @Override
+  public Partition appendPartition(String catName, String dbName, String tableName, String partitionName)
+      throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
+    if (table == null) {
+      return super.appendPartition(catName, dbName, tableName, partitionName);
+    }
+    if (partitionName == null || partitionName.isEmpty()) {
+      throw new MetaException("The partition must be not null or empty.");
+    }
+    assertTempTablePartitioned(table);
+    Map<String, String> specFromName = makeSpecFromName(partitionName);
+    if (specFromName == null || specFromName.isEmpty()) {
+      throw new InvalidObjectException("Invalid partition name " + partitionName);
+    }
+    List<String> pVals = new ArrayList<>();
+    for (FieldSchema field : table.getPartitionKeys()) {
+      String val = specFromName.get(field.getName());
+      if (val == null) {
+        throw new InvalidObjectException("Partition name " + partitionName + " and table partition keys " + Arrays
+            .toString(table.getPartitionKeys().toArray()) + " does not match");
+      }
+      pVals.add(val);
+    }
+    Partition partition = new PartitionBuilder().inTable(table).setValues(pVals).build(conf);
+    return appendPartitionToTempTable(table, partition);
+  }
+
+  private Partition appendPartitionToTempTable(org.apache.hadoop.hive.metastore.api.Table table, Partition partition)
+      throws MetaException, AlreadyExistsException {
+    TempTable tt = getPartitionedTempTable(table);
+    if (tt == null) {
+      throw new IllegalStateException("TempTable not found for " + getCatalogQualifiedTableName(table));
+    }
+    Path partitionLocation = getPartitionLocation(table, partition, false);
+    partition = tt.addPartition(deepCopy(partition));
+    createAndSetLocationForAddedPartition(partition, partitionLocation);
+    return partition;
   }
 
   private List<Partition> exchangePartitions(Map<String, String> partitionSpecs,
