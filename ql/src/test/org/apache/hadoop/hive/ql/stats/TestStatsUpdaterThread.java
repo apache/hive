@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -275,6 +276,12 @@ public class TestStatsUpdaterThread {
         dbName, tblName, Lists.newArrayList("p=1", "p=2", "p=3"),
         Lists.newArrayList("s"), Constants.HIVE_ENGINE, currentWriteIds);
     assertEquals(1, stats.size());
+
+    // Test with null list of partNames
+    stats = msClient.getPartitionColumnStatistics(
+        dbName, tblName, Collections.emptyList(),
+        Lists.newArrayList("s"), currentWriteIds);
+    assertEquals(0, stats.size());
 
     // New reader.
     currentWriteIds = msClient.getValidWriteIds(fqName).toString();

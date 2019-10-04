@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -91,7 +90,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
@@ -1124,8 +1122,7 @@ public class StatsRulesProcFactory {
         ExprNodeGenericFuncDesc genFunc = (ExprNodeGenericFuncDesc) child;
         GenericUDF udf = genFunc.getGenericUDF();
 
-        if (udf instanceof GenericUDFOPEqual ||
-            udf instanceof GenericUDFOPEqualNS) {
+        if (udf instanceof GenericUDFOPEqual) {
           String colName = null;
           boolean isConst = false;
           Object prevConst = null;

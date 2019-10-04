@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.avro.generic.GenericData;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 
 /**
@@ -56,8 +55,6 @@ public class CheckConstraint implements Serializable {
   public CheckConstraint() {}
 
   public CheckConstraint(List<SQLCheckConstraint> checkConstraintsList) {
-    this.tableName = tableName;
-    this.databaseName = databaseName;
     checkConstraints = new TreeMap<String, List<CheckConstraintCol>>();
     checkExpressionList = new ArrayList<>();
     if (checkConstraintsList == null) {
