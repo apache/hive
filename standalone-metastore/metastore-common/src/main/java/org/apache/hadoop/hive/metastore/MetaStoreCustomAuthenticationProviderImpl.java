@@ -45,7 +45,7 @@ public class MetaStoreCustomAuthenticationProviderImpl implements MetaStorePassw
   @SuppressWarnings("unchecked")
   MetaStoreCustomAuthenticationProviderImpl(Configuration conf) throws AuthenticationException {
     String customProviderName = MetastoreConf.getVar(conf,
-            MetastoreConf.ConfVars.THRIFT_CUSTOM_AUTHENTICATION_CLASS);
+            MetastoreConf.ConfVars.METASTORE_CUSTOM_AUTHENTICATION_CLASS);
     Class<? extends MetaStorePasswdAuthenticationProvider> customHandlerClass;
     try {
       customHandlerClass = JavaUtils.getClass(customProviderName,

@@ -169,7 +169,7 @@ public class MetastoreConf {
       ConfVars.KERBEROS_KEYTAB_FILE,
       ConfVars.KERBEROS_PRINCIPAL,
       ConfVars.USE_THRIFT_SASL,
-      ConfVars.METASTORE_CLIENT_USE_PLAIN_AUTH,
+      ConfVars.METASTORE_CLIENT_AUTH_MODE,
       ConfVars.METASTORE_CLIENT_PLAIN_USERNAME,
       ConfVars.TOKEN_SIGNATURE,
       ConfVars.CACHE_PINOBJTYPES,
@@ -646,7 +646,7 @@ public class MetastoreConf {
                 "          (Use with property metastore.custom.authentication.class)\n" +
                 "  CONFIG: username and password is specified in the config" +
                 "  NOSASL:  Raw transport"),
-    THRIFT_CUSTOM_AUTHENTICATION_CLASS("metastore.custom.authentication.class",
+    METASTORE_CUSTOM_AUTHENTICATION_CLASS("metastore.custom.authentication.class",
             "hive.metastore.custom.authentication.class",
             "",
         "Custom authentication class. Used when property\n" +
@@ -1139,14 +1139,15 @@ public class MetastoreConf {
     // We should somehow unify next two options.
     USE_THRIFT_SASL("metastore.sasl.enabled", "hive.metastore.sasl.enabled", false,
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
-    METASTORE_CLIENT_USE_PLAIN_AUTH("metastore.client.use.plain.auth",
-            "metastore.client.use.plain.auth", false,
-            "If true, clients will authenticate using plain authentication, by providing username" +
-                    " and password."),
+    METASTORE_CLIENT_AUTH_MODE("metastore.client.auth.mode",
+            "hive.metastore.client.auth.mode", "NOSASL",
+            new StringSetValidator("NOSASL", "PLAIN", "KERBEROS"),
+            "If PLAIN, clients will authenticate using plain authentication, by providing username" +
+                    " and password. Any other value is ignored right now but may be used later."),
     METASTORE_CLIENT_PLAIN_USERNAME("metastore.client.plain.username",
-            "metastore.client.plain.username",  "",
+            "hive.metastore.client.plain.username",  "",
         "The username used by the metastore client when " +
-                    METASTORE_CLIENT_USE_PLAIN_AUTH + " is true. The password is obtained from " +
+                METASTORE_CLIENT_AUTH_MODE + " is true. The password is obtained from " +
                     CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH + " using username as the " +
                     "alias."),
     THRIFT_AUTH_CONFIG_USERNAME("metastore.authentication.config.username",

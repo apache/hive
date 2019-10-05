@@ -49,7 +49,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.login.LoginException;
-import javax.security.sasl.SaslException;
 
 import com.google.common.base.Preconditions;
 
@@ -551,13 +550,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private void open() throws MetaException {
     isConnected = false;
     TTransportException tte = null;
+    MetaException recentME = null;
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
     boolean useSasl = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_SASL);
-    boolean usePasswordAuth = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_USE_PLAIN_AUTH);
+    String clientAuthMode = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
+    boolean usePasswordAuth = false;
     boolean useFramedTransport = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
         ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+
+    if (clientAuthMode != null) {
+      usePasswordAuth = clientAuthMode.equalsIgnoreCase("PLAIN");
+    }
 
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
@@ -596,6 +601,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             // we are using PLAIN Sasl connection with user/password
             LOG.debug("HMSC::open(): Creating plain authentication thrift connection.");
             String userName = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
+
+            if (null == userName || userName.isEmpty()) {
+              throw new MetaException("No user specified for plain transport.");
+            }
+
             // The password is not directly provided. It should be obtained from a keystore pointed
             // by configuration "hadoop.security.credential.provider.path".
             try {
@@ -605,8 +615,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                passwd = new String(pwdCharArray);
               }
               if (null == passwd) {
-                LOG.warn("No password found for user " + userName);
-                passwd = "";
+                throw new MetaException("No password found for user " + userName);
               }
               // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
               transport = MetaStorePlainSaslHelper.getPlainTransport(userName, passwd, transport);
@@ -699,6 +708,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             }
           }
         } catch (MetaException e) {
+          recentME = e;
           LOG.error("Failed to connect to metastore with URI (" + store
               + ") in attempt " + attempt, e);
         }
@@ -716,8 +726,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
 
     if (!isConnected) {
+      // Either tte or recentME should be set but protect from a bug which causes both of them to
+      // be null. When MetaException wraps TTransportException, tte will be set so stringify that
+      // directly.
+      String exceptionString = "Unknown exception";
+      if (tte != null) {
+        exceptionString = StringUtils.stringifyException(tte);
+      } else if (recentME != null) {
+        exceptionString = StringUtils.stringifyException(recentME);
+      }
       throw new MetaException("Could not connect to meta store using any of the URIs provided." +
-          " Most recent failure: " + StringUtils.stringifyException(tte));
+          " Most recent failure: " + exceptionString);
     }
 
     snapshotActiveConf();

@@ -45,21 +45,23 @@ public class MetaStoreConfigAuthenticationProviderImpl implements MetaStorePassw
       throw new AuthenticationException("No username specified in " + MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_USERNAME);
     }
 
-    if (null == password || password.isEmpty()) {
-      throw new AuthenticationException("No password specified in " + MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_USERNAME);
+    if (null == password) {
+      throw new AuthenticationException("No password specified in " + MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_PASSWORD);
     }
   }
 
   @Override
   public void Authenticate(String authUser, String authPassword) throws AuthenticationException {
     if (!userName.equals(authUser)) {
-      throw new AuthenticationException("Invalid user " + authUser);
+      LOG.debug("Invalid user " + authUser);
+      throw new AuthenticationException("Invalid credentials");
     }
 
     if (!password.equals(authPassword)) {
-      throw new AuthenticationException("Invalid password " + authPassword);
+      LOG.debug("Invalid password for user " + authUser);
+      throw new AuthenticationException("Invalid credentials");
     }
 
-    LOG.info("User " + authUser + " successfully authenticated.");
+    LOG.debug("User " + authUser + " successfully authenticated.");
   }
 }
