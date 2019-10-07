@@ -33,11 +33,11 @@ import org.apache.hadoop.io.LongWritable;
 /**
  * GenericUDAFPercentileDisc.
  */
+@Description(
+        name = "dense_rank",
+        value = "_FUNC_(input, pc) - "
+                + "Returns the percentile of expr at pc (range: [0,1]) without interpolation.")
 @WindowFunctionDescription(
-        description = @Description(
-                name = "dense_rank",
-                value = "_FUNC_(input, pc) - "
-                        + "Returns the percentile of expr at pc (range: [0,1]) without interpolation."),
         supportsWindow = false,
         pivotResult = true,
         supportsWithinGroup = true)

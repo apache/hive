@@ -38,10 +38,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 
+@Description(
+        name = "rank",
+        value = "_FUNC_(x)")
 @WindowFunctionDescription(
-  description = @Description(
-    name = "rank",
-    value = "_FUNC_(x)"),
   supportsWindow = false,
   pivotResult = true,
   rankingFunction = true,

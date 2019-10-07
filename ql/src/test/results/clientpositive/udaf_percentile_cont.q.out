@@ -2,12 +2,12 @@ PREHOOK: query: DESCRIBE FUNCTION percentile_cont
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION percentile_cont
 POSTHOOK: type: DESCFUNCTION
-There is no documentation for function 'percentile_cont'
+percentile_cont(input, pc) - Returns the percentile of expr at pc (range: [0,1]).
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED percentile_cont
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED percentile_cont
 POSTHOOK: type: DESCFUNCTION
-There is no documentation for function 'percentile_cont'
+percentile_cont(input, pc) - Returns the percentile of expr at pc (range: [0,1]).
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFPercentileCont
 Function type:BUILTIN
 PREHOOK: query: SELECT CAST(key AS INT) DIV 10,

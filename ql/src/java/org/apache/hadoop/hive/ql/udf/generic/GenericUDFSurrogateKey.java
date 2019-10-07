@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -36,6 +37,13 @@ import org.apache.hadoop.io.LongWritable;
  * The return value is sequence within a query with a unique staring point based on write_id and task_id
  */
 @UDFType(deterministic = false)
+@Description(
+        name = "surrogate_key",
+        value = "_FUNC_() - " +
+                "automatically generate numerical Ids for rows as you enter data into a table",
+        extended = "Example: CREATE TABLE students \n" +
+                "(`ID` BIGINT DEFAULT SURROGATE_KEY(),\n" +
+                " name VARCHAR(64));")
 public class GenericUDFSurrogateKey extends GenericUDF {
   private static final int DEFAULT_WRITE_ID_BITS = 24;
   private static final int DEFAULT_TASK_ID_BITS = 16;
