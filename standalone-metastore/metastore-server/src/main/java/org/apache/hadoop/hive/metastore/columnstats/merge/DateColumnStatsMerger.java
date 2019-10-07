@@ -32,10 +32,9 @@ public class DateColumnStatsMerger extends ColumnStatsMerger {
     DateColumnStatsDataInspector aggregateData = dateInspectorFromStats(aggregateColStats);
     DateColumnStatsDataInspector newData = dateInspectorFromStats(newColStats);
 
-    Date lowValue = min(aggregateData.getLowValue(), newData.getLowValue());
-    aggregateData.setLowValue(lowValue);
-    Date highValue = max(aggregateData.getHighValue(), newData.getHighValue());
-    aggregateData.setHighValue(highValue);
+    setLowValue(aggregateData, newData);
+    setHighValue(aggregateData, newData);
+
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
     if (aggregateData.getNdvEstimator() == null || newData.getNdvEstimator() == null) {
       aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
@@ -54,27 +53,43 @@ public class DateColumnStatsMerger extends ColumnStatsMerger {
           + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
       aggregateData.setNumDVs(ndv);
     }
+
+    aggregateColStats.getStatsData().setDateStats(aggregateData);
   }
 
-  private Date min(Date v1, Date v2) {
-    if (v1 == null || v2 == null) {
-      if (v1 != null) {
-        return v1;
-      } else {
-        return v2;
-      }
+  private void setLowValue(DateColumnStatsDataInspector aggregateData, DateColumnStatsDataInspector newData) {
+    if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
+      return;
     }
-    return v1.compareTo(v2) < 0 ? v1 : v2;
+
+    Date aggregateLowValue = aggregateData.getLowValue();
+    Date newLowValue = newData.getLowValue();
+
+    Date mergedLowValue = null;
+    if (aggregateData.isSetLowValue() && newData.isSetLowValue()) {
+      mergedLowValue = aggregateLowValue.compareTo(newLowValue) > 0 ? newLowValue : aggregateLowValue;
+    } else {
+      mergedLowValue = aggregateLowValue == null ? newLowValue : aggregateLowValue;
+    }
+
+    aggregateData.setLowValue(mergedLowValue);
   }
 
-  private Date max(Date v1, Date v2) {
-    if (v1 == null || v2 == null) {
-      if (v1 != null) {
-        return v1;
-      } else {
-        return v2;
-      }
+  private void setHighValue(DateColumnStatsDataInspector aggregateData, DateColumnStatsDataInspector newData) {
+    if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
+      return;
     }
-    return v1.compareTo(v2) > 0 ? v1 : v2;
+
+    Date aggregateHighValue = aggregateData.getHighValue();
+    Date newHighValue = newData.getHighValue();
+
+    Date mergedHighValue = null;
+    if (aggregateData.isSetHighValue() && newData.isSetHighValue()) {
+      mergedHighValue = aggregateHighValue.compareTo(newHighValue) > 0 ? aggregateHighValue : newHighValue;
+    } else {
+      mergedHighValue = aggregateHighValue == null ? newHighValue : aggregateHighValue;
+    }
+
+    aggregateData.setHighValue(mergedHighValue);
   }
 }

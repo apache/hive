@@ -705,7 +705,7 @@ public class MatchPath extends TableFunctionEvaluator
     TypeCheckCtx selectListInputTypeCheckCtx;
     StructObjectInspector selectListInputOI;
 
-    ArrayList<WindowExpressionSpec> selectSpec;
+    List<WindowExpressionSpec> selectSpec;
 
     ResultExprInfo resultExprInfo;
 

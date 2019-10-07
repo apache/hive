@@ -67,7 +67,7 @@ public class GenMRRedSink3 implements NodeProcessor {
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(union);
 
-    Task<? extends Serializable> unionTask = null;
+    Task<?> unionTask = null;
     if(mapredCtx != null) {
       unionTask = mapredCtx.getCurrTask();
     } else {
@@ -76,9 +76,9 @@ public class GenMRRedSink3 implements NodeProcessor {
 
 
     MapredWork plan = (MapredWork) unionTask.getWork();
-    HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap = ctx
+    HashMap<Operator<? extends OperatorDesc>, Task<?>> opTaskMap = ctx
         .getOpTaskMap();
-    Task<? extends Serializable> reducerTask = opTaskMap.get(reducer);
+    Task<?> reducerTask = opTaskMap.get(reducer);
 
     ctx.setCurrTask(unionTask);
 

@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.ExpressionWalker;
+import org.apache.hadoop.hive.ql.lib.SubqueryExpressionWalker;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -236,7 +236,7 @@ public class TypeCheckProcFactory {
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(tf.getDefaultExprProcessor(),
         opRules, tcCtx);
-    GraphWalker ogw = new ExpressionWalker(disp);
+    GraphWalker ogw = new SubqueryExpressionWalker(disp);
 
     // Create a list of top nodes
     ArrayList<Node> topNodes = Lists.<Node>newArrayList(expr);
@@ -1617,7 +1617,7 @@ public class TypeCheckProcFactory {
           assert child.getType() == HiveParser.TOK_TABNAME;
           assert child.getChildCount() == 1;
           String tableAlias = BaseSemanticAnalyzer.unescapeIdentifier(child.getChild(0).getText());
-          HashMap<String, ColumnInfo> columns = input.getFieldMap(tableAlias);
+          Map<String, ColumnInfo> columns = input.getFieldMap(tableAlias);
           if (columns == null) {
             throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(child));
           }

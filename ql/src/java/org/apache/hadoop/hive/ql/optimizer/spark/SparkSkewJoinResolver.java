@@ -77,7 +77,7 @@ public class SparkSkewJoinResolver implements PhysicalPlanResolver {
         throws SemanticException {
 
       @SuppressWarnings("unchecked")
-      Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
+      Task<?> task = (Task<?>) nd;
       if (task instanceof SparkTask) {
         SparkWork sparkWork = ((SparkTask) task).getWork();
         SparkSkewJoinProcCtx skewJoinProcCtx =
@@ -114,7 +114,7 @@ public class SparkSkewJoinResolver implements PhysicalPlanResolver {
     // need a map from the reducer to the corresponding ReduceWork
     private Map<Operator<?>, ReduceWork> reducerToReduceWork;
 
-    public SparkSkewJoinProcCtx(Task<? extends Serializable> task,
+    public SparkSkewJoinProcCtx(Task<?> task,
                                 ParseContext parseCtx) {
       super(task, parseCtx);
       reducerToReduceWork = new HashMap<Operator<?>, ReduceWork>();

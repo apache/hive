@@ -33,7 +33,7 @@ import java.util.List;
 
 public class RenameTableHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     AlterTableMessage msg = deserializer.getAlterTableMessage(context.dmd.getPayload());
     try {

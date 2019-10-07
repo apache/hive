@@ -134,9 +134,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOWPARTITIONS:
       case HiveParser.TOK_SHOWLOCKS:
       case HiveParser.TOK_SHOWDBLOCKS:
-      case HiveParser.TOK_SHOW_COMPACTIONS:
-      case HiveParser.TOK_SHOW_TRANSACTIONS:
-      case HiveParser.TOK_ABORT_TRANSACTIONS:
       case HiveParser.TOK_SHOWCONF:
       case HiveParser.TOK_SHOWVIEWS:
       case HiveParser.TOK_SHOWMATERIALIZEDVIEWS:
@@ -144,20 +141,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_UNLOCKTABLE:
       case HiveParser.TOK_TRUNCATETABLE:
       case HiveParser.TOK_CACHE_METADATA:
-      case HiveParser.TOK_KILL_QUERY:
-      case HiveParser.TOK_CREATE_RP:
-      case HiveParser.TOK_SHOW_RP:
-      case HiveParser.TOK_ALTER_RP:
-      case HiveParser.TOK_DROP_RP:
-      case HiveParser.TOK_CREATE_TRIGGER:
-      case HiveParser.TOK_ALTER_TRIGGER:
-      case HiveParser.TOK_DROP_TRIGGER:
-      case HiveParser.TOK_CREATE_POOL:
-      case HiveParser.TOK_ALTER_POOL:
-      case HiveParser.TOK_DROP_POOL:
-      case HiveParser.TOK_CREATE_MAPPING:
-      case HiveParser.TOK_ALTER_MAPPING:
-      case HiveParser.TOK_DROP_MAPPING:
         return new DDLSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_ANALYZE:

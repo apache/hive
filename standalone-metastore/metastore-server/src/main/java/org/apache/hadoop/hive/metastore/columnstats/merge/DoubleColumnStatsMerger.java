@@ -30,8 +30,8 @@ public class DoubleColumnStatsMerger extends ColumnStatsMerger {
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     DoubleColumnStatsDataInspector aggregateData = doubleInspectorFromStats(aggregateColStats);
     DoubleColumnStatsDataInspector newData = doubleInspectorFromStats(newColStats);
-    aggregateData.setLowValue(Math.min(aggregateData.getLowValue(), newData.getLowValue()));
-    aggregateData.setHighValue(Math.max(aggregateData.getHighValue(), newData.getHighValue()));
+    setLowValue(aggregateData, newData);
+    setHighValue(aggregateData, newData);
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
     if (aggregateData.getNdvEstimator() == null || newData.getNdvEstimator() == null) {
       aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
@@ -50,5 +50,27 @@ public class DoubleColumnStatsMerger extends ColumnStatsMerger {
           + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
       aggregateData.setNumDVs(ndv);
     }
+
+    aggregateColStats.getStatsData().setDoubleStats(aggregateData);
+  }
+
+  private void setLowValue(DoubleColumnStatsDataInspector aggregateData, DoubleColumnStatsDataInspector newData) {
+    if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
+      return;
+    }
+    double lowValue = Math.min(
+        aggregateData.isSetLowValue() ? aggregateData.getLowValue() : Double.MAX_VALUE,
+        newData.isSetLowValue() ? newData.getLowValue() : Double.MAX_VALUE);
+    aggregateData.setLowValue(lowValue);
+  }
+
+  private void setHighValue(DoubleColumnStatsDataInspector aggregateData, DoubleColumnStatsDataInspector newData) {
+    if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
+      return;
+    }
+    double highValue = Math.max(
+        aggregateData.isSetHighValue() ? aggregateData.getHighValue() : Double.MIN_VALUE,
+        newData.isSetHighValue() ? newData.getHighValue() : Double.MIN_VALUE);
+    aggregateData.setLowValue(highValue);
   }
 }

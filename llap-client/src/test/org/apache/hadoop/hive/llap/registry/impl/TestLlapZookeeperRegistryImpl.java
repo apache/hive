@@ -50,6 +50,7 @@ public class TestLlapZookeeperRegistryImpl {
 
   @Before
   public void setUp() throws Exception {
+    hiveConf.set(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, "localhost");
     registry = new LlapZookeeperRegistryImpl("TestLlapZookeeperRegistryImpl", hiveConf);
 
     server = new TestingServer();

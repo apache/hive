@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  **/
 
 public class TaskRunner extends Thread {
-  protected Task<? extends Serializable> tsk;
+  protected Task<?> tsk;
   protected TaskResult result;
   protected SessionState ss;
   private static AtomicLong taskCounter = new AtomicLong(0);
@@ -50,14 +50,14 @@ public class TaskRunner extends Thread {
 
   private final DriverContext driverCtx;
 
-  public TaskRunner(Task<? extends Serializable> tsk, DriverContext ctx) {
+  public TaskRunner(Task<?> tsk, DriverContext ctx) {
     this.tsk = tsk;
     this.result = new TaskResult();
     ss = SessionState.get();
     driverCtx = ctx;
   }
 
-  public Task<? extends Serializable> getTask() {
+  public Task<?> getTask() {
     return tsk;
   }
 

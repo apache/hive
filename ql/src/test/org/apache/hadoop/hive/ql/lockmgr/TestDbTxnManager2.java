@@ -98,7 +98,6 @@ public class TestDbTxnManager2 {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     TxnDbUtil.setConfValues(conf);
-    conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
   }
   @Before
   public void setUp() throws Exception {

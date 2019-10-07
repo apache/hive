@@ -1,6 +1,5 @@
 --! qt:dataset:srcpart
 set hive.optimize.constant.propagation=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 create table dest_n1(key string, value string) partitioned by (ds string);
 

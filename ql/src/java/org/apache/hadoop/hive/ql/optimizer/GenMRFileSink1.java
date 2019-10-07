@@ -74,7 +74,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(fsOp.getParentOperators().get(0));
-    Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
+    Task<?> currTask = mapredCtx.getCurrTask();
     
     ctx.setCurrTask(currTask);
     ctx.addRootIfPossible(currTask);
@@ -88,9 +88,9 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     // If this file sink desc has been processed due to a linked file sink desc,
     // use that task
-    Map<FileSinkDesc, Task<? extends Serializable>> fileSinkDescs = ctx.getLinkedFileDescTasks();
+    Map<FileSinkDesc, Task<?>> fileSinkDescs = ctx.getLinkedFileDescTasks();
     if (fileSinkDescs != null) {
-      Task<? extends Serializable> childTask = fileSinkDescs.get(fsOp.getConf());
+      Task<?> childTask = fileSinkDescs.get(fsOp.getConf());
       processLinkedFileDesc(ctx, childTask);
       return true;
     }
@@ -119,10 +119,10 @@ public class GenMRFileSink1 implements NodeProcessor {
     // There are linked file sink operators and child tasks are present
     if (fileSinkDesc.isLinkedFileSink() && (currTask.getChildTasks() != null) &&
         (currTask.getChildTasks().size() == 1)) {
-      Map<FileSinkDesc, Task<? extends Serializable>> linkedFileDescTasks =
+      Map<FileSinkDesc, Task<?>> linkedFileDescTasks =
         ctx.getLinkedFileDescTasks();
       if (linkedFileDescTasks == null) {
-        linkedFileDescTasks = new HashMap<FileSinkDesc, Task<? extends Serializable>>();
+        linkedFileDescTasks = new HashMap<FileSinkDesc, Task<?>>();
         ctx.setLinkedFileDescTasks(linkedFileDescTasks);
       }
 
@@ -145,8 +145,8 @@ public class GenMRFileSink1 implements NodeProcessor {
    * Use the task created by the first linked file descriptor
    */
   private void processLinkedFileDesc(GenMRProcContext ctx,
-      Task<? extends Serializable> childTask) throws SemanticException {
-    Task<? extends Serializable> currTask = ctx.getCurrTask();
+      Task<?> childTask) throws SemanticException {
+    Task<?> currTask = ctx.getCurrTask();
     TableScanOperator currTopOp = ctx.getCurrTopOp();
     if (currTopOp != null && !ctx.isSeenOp(currTask, currTopOp)) {
       String currAliasId = ctx.getCurrAliasId();
@@ -176,7 +176,7 @@ public class GenMRFileSink1 implements NodeProcessor {
       NodeProcessorCtx opProcCtx, boolean chDir) throws SemanticException {
 
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
-    Task<? extends Serializable> currTask = ctx.getCurrTask();
+    Task<?> currTask = ctx.getCurrTask();
 
     // If the directory needs to be changed, send the new directory
     Path dest = null;
@@ -195,7 +195,7 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     TableScanOperator currTopOp = ctx.getCurrTopOp();
     String currAliasId = ctx.getCurrAliasId();
-    HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+    HashMap<Operator<? extends OperatorDesc>, Task<?>> opTaskMap =
         ctx.getOpTaskMap();
 
     // In case of multi-table insert, the path to alias mapping is needed for
@@ -203,7 +203,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     // reducer, treat it as a plan with null reducer
     // If it is a map-only job, the task needs to be processed
     if (currTopOp != null) {
-      Task<? extends Serializable> mapTask = opTaskMap.get(null);
+      Task<?> mapTask = opTaskMap.get(null);
       if (mapTask == null) {
         if (!ctx.isSeenOp(currTask, currTopOp)) {
           GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currTask, false, ctx);

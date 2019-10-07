@@ -23,9 +23,9 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
@@ -33,20 +33,20 @@ import org.apache.hadoop.io.LongWritable;
 /**
  * GenericUDAFPercentileDisc.
  */
-@Description(name = "percentile_disc", value = "_FUNC_(input, pc) - "
-    + "Returns the percentile of expr at pc (range: [0,1]) without interpolation.")
+@Description(
+        name = "dense_rank",
+        value = "_FUNC_(input, pc) - "
+                + "Returns the percentile of expr at pc (range: [0,1]) without interpolation.")
+@WindowFunctionDescription(
+        supportsWindow = false,
+        pivotResult = true,
+        supportsWithinGroup = true)
 public class GenericUDAFPercentileDisc extends GenericUDAFPercentileCont {
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
-    if (parameters.length != 2) {
-      throw new UDFArgumentTypeException(parameters.length - 1, "Exactly 2 argument is expected.");
-    }
+    validateParameterTypes(parameters);
 
-    if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(0, "Only primitive type arguments are accepted but "
-          + parameters[0].getTypeName() + " is passed.");
-    }
     switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
     case BYTE:
     case SHORT:

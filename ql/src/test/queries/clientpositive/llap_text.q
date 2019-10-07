@@ -1,7 +1,6 @@
 --! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.fetch.task.conversion=none;
 
 SET hive.llap.io.enabled=false;

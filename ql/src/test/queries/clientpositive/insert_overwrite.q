@@ -1,4 +1,3 @@
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.stats.column.autogather=false;
 set hive.stats.autogather=false;
 set hive.compute.query.using.stats=false;

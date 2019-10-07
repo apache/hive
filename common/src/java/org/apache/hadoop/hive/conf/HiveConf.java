@@ -584,7 +584,8 @@ public class HiveConf extends Configuration {
         "The smaller it is the more load there will be on the jobtracker, the higher it is the less granular the caught will be."),
     DYNAMICPARTITIONING("hive.exec.dynamic.partition", true,
         "Whether or not to allow dynamic partitions in DML/DDL."),
-    DYNAMICPARTITIONINGMODE("hive.exec.dynamic.partition.mode", "strict",
+    DYNAMICPARTITIONINGMODE("hive.exec.dynamic.partition.mode", "nonstrict",
+        new StringSet("strict", "nonstrict"),
         "In strict mode, the user must specify at least one static partition\n" +
         "in case the user accidentally overwrites all partitions.\n" +
         "In nonstrict mode all partitions are allowed to be dynamic."),
@@ -2304,10 +2305,9 @@ public class HiveConf extends Configuration {
         "Currently it only works with Apache Tez. This should always be set to true. \n" +
         "Since it is a new feature, it has been made configurable."),
 
+    @Deprecated
     HIVEOPTSORTDYNAMICPARTITION("hive.optimize.sort.dynamic.partition", false,
-        "When enabled dynamic partitioning column will be globally sorted.\n" +
-        "This way we can keep only one record writer open for each partition value\n" +
-        "in the reducer thereby reducing the memory pressure on reducers."),
+        "Deprecated. Use hive.optimize.sort.dynamic.partition.threshold instead."),
     HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD("hive.optimize.sort.dynamic.partition.threshold", 0,
                                 "When enabled dynamic partitioning column will be globally sorted.\n" +
                                     "This way we can keep only one record writer open for each partition value\n" +
@@ -2582,7 +2582,11 @@ public class HiveConf extends Configuration {
         "this is set to false, however unless MAPREDUCE-7086 fix is present, queries that\n" +
         "read MM tables with original files will fail. The default in Hive 3.0 is false."),
 
-     // Zookeeper related configs
+    // Zookeeper related configs
+    HIVE_ZOOKEEPER_USE_KERBEROS("hive.zookeeper.kerberos.enabled", true,
+        "If ZooKeeper is configured for Kerberos authentication. This could be useful when cluster\n" +
+        "is kerberized, but Zookeeper is not."),
+
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", "",
         "List of ZooKeeper servers to talk to. This is needed for: \n" +
         "1. Read/write locks - when hive.lock.manager is set to \n" +
@@ -4206,6 +4210,9 @@ public class HiveConf extends Configuration {
         "hive.llap.queue.metrics.percentiles.intervals"),
     LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
         "Specify the number of threads to use for low-level IO thread pool."),
+    LLAP_USE_KERBEROS("hive.llap.kerberos.enabled", true,
+        "If LLAP is configured for Kerberos authentication. This could be useful when cluster\n" +
+        "is kerberized, but LLAP is not."),
     LLAP_KERBEROS_PRINCIPAL(HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME, "",
         "The name of the LLAP daemon's service principal."),
     LLAP_KERBEROS_KEYTAB_FILE("hive.llap.daemon.keytab.file", "",

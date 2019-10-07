@@ -68,8 +68,8 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
   }
 
   @Override
-  public void transientInit() throws HiveException {
-    super.transientInit();
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
 
     colVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(inputTypeInfos[0]);
   }

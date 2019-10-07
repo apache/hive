@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.security;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +31,7 @@ import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
@@ -62,7 +62,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   private volatile CuratorFramework zkSession;
   private String zkConnectString;
   private int connectTimeoutMillis;
-  private List<ACL> newNodeAcl = Arrays.asList(new ACL(Perms.ALL, Ids.AUTH_IDS));
+  private List<ACL> newNodeAcl;
 
   /**
    * ACLProvider permissions will be used in case parent dirs need to be created
@@ -80,6 +80,27 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
     }
   };
 
+  /**
+   * Default ACLs for CuratorFrameworkFactory.
+   */
+  private List<ACL> getDefaultAcl(Configuration conf) {
+    List<ACL> nodeAcls = new ArrayList<>();
+    if (isKerberosEnabled(conf)) {
+      nodeAcls.add(new ACL(Perms.ALL, Ids.AUTH_IDS));
+    } else {
+      nodeAcls.addAll(Ids.OPEN_ACL_UNSAFE);
+    }
+    return nodeAcls;
+  }
+
+  private boolean isKerberosEnabled(Configuration conf) {
+    try {
+      return UserGroupInformation.getLoginUser().isFromKeytab() &&
+          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS);
+    } catch (IOException e) {
+      return false;
+    }
+  }
 
   private final String WHEN_ZK_DSTORE_MSG = "when zookeeper based delegation token storage is enabled"
       + "(hive.cluster.delegation.token.store.class=" + ZooKeeperTokenStore.class.getName() + ")";
@@ -111,7 +132,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   }
 
   private void setupJAASConfig(Configuration conf) throws IOException {
-    if (!UserGroupInformation.getLoginUser().isFromKeytab()) {
+    if (!isKerberosEnabled(conf)) {
       // The process has not logged in using keytab
       // this should be a test mode, can't use keytab to authenticate
       // with zookeeper.
@@ -453,10 +474,10 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
         conf.getInt(
             MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS,
             CuratorFrameworkFactory.builder().getConnectionTimeoutMs());
+
     String aclStr = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ACL, null);
-    if (StringUtils.isNotBlank(aclStr)) {
-      this.newNodeAcl = parseACLs(aclStr);
-    }
+    this.newNodeAcl = StringUtils.isNotBlank(aclStr)? parseACLs(aclStr) : getDefaultAcl(conf);
+
     rootNode =
         conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE,
             MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT) + serverMode;

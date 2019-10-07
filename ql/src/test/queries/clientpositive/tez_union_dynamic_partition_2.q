@@ -8,7 +8,6 @@ select * from dummy_n7;
 
 create table partunion1_n0(id1 int) partitioned by (part1 string) stored as orc;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.merge.tezfiles=true;
 
 explain insert into table partunion1_n0 partition(part1)

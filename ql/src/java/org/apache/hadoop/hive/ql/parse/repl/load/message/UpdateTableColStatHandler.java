@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class UpdateTableColStatHandler extends AbstractMessageHandler {
     @Override
-    public List<Task<? extends Serializable>> handle(Context context)
+    public List<Task<?>> handle(Context context)
             throws SemanticException {
         UpdateTableColumnStatMessage utcsm =
                 deserializer.getUpdateTableColumnStatMessage(context.dmd.getPayload());

@@ -1,4 +1,3 @@
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.stats.fetch.column.stats=true;
 
 create table date_dim_n1 (d_date date) partitioned by (d_date_sk bigint) stored as orc;

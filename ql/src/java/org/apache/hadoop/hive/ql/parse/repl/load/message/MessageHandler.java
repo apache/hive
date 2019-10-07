@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 public interface MessageHandler {
 
-  List<Task<? extends Serializable>> handle(Context withinContext) throws SemanticException;
+  List<Task<?>> handle(Context withinContext) throws SemanticException;
 
   Set<ReadEntity> readEntities();
 
@@ -48,7 +48,7 @@ public interface MessageHandler {
   class Context {
     public String location;
     public final String dbName;
-    public final Task<? extends Serializable> precursor;
+    public final Task<?> precursor;
     public DumpMetaData dmd;
     final HiveConf hiveConf;
     final Hive db;
@@ -56,7 +56,7 @@ public interface MessageHandler {
     final Logger log;
 
     public Context(String dbName, String location,
-        Task<? extends Serializable> precursor, DumpMetaData dmd, HiveConf hiveConf,
+        Task<?> precursor, DumpMetaData dmd, HiveConf hiveConf,
         Hive db, org.apache.hadoop.hive.ql.Context nestedContext, Logger log) {
       this.dbName = dbName;
       this.location = location;

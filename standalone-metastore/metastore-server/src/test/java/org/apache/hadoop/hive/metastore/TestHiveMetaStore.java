@@ -115,7 +115,7 @@ import static org.mockito.Mockito.verify;
 public abstract class TestHiveMetaStore {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStore.class);
   protected static HiveMetaStoreClient client;
-  protected static Configuration conf = MetastoreConf.newMetastoreConf();
+  protected static Configuration conf = null;
   protected static Warehouse warehouse;
   protected static boolean isThriftClient = false;
 
@@ -129,6 +129,7 @@ public abstract class TestHiveMetaStore {
 
   @Before
   public void setUp() throws Exception {
+    initConf();
     warehouse = new Warehouse(conf);
 
     // set some values to use for getting conf. vars
@@ -144,6 +145,12 @@ public abstract class TestHiveMetaStore {
     MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
     MetastoreConf.setLongVar(conf, ConfVars.LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
     MetastoreConf.setVar(conf, ConfVars.STORAGE_SCHEMA_READER_IMPL, "no.such.class");
+  }
+
+  protected void initConf() {
+    if (null == conf) {
+      conf = MetastoreConf.newMetastoreConf();
+    }
   }
 
   @Test

@@ -56,16 +56,16 @@ public class TestExchangePartitions extends MetaStoreClientTest {
   private AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
 
-  private static final String DB_NAME = "test_partition_db";
+  protected static final String DB_NAME = "test_partition_db";
   private static final String STRING_COL_TYPE = "string";
-  private static final String INT_COL_TYPE = "int";
-  private static final String YEAR_COL_NAME = "year";
-  private static final String MONTH_COL_NAME = "month";
-  private static final String DAY_COL_NAME = "day";
-  private static final short MAX = -1;
-  private static Table sourceTable;
-  private static Table destTable;
-  private static Partition[] partitions;
+  protected static final String INT_COL_TYPE = "int";
+  protected static final String YEAR_COL_NAME = "year";
+  protected static final String MONTH_COL_NAME = "month";
+  protected static final String DAY_COL_NAME = "day";
+  protected static final short MAX = -1;
+  private Table sourceTable;
+  private Table destTable;
+  private Partition[] partitions;
 
   public TestExchangePartitions(String name, AbstractMetaStoreService metaStore) {
     this.metaStore = metaStore;
@@ -79,10 +79,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     // Clean up the database
     client.dropDatabase(DB_NAME, true, true, true);
     metaStore.cleanWarehouseDirs();
-    createDB(DB_NAME);
-    sourceTable = createSourceTable();
-    destTable = createDestTable();
-    partitions = createTestPartitions();
+    createTestTables();
   }
 
   @After
@@ -98,6 +95,30 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     } finally {
       client = null;
     }
+  }
+
+  protected IMetaStoreClient getClient() {
+    return client;
+  }
+
+  protected void setClient(IMetaStoreClient client) {
+    this.client = client;
+  }
+
+  protected AbstractMetaStoreService getMetaStore() {
+    return metaStore;
+  }
+
+  protected  Table getSourceTable() {
+    return sourceTable;
+  }
+
+  protected Table getDestTable() {
+    return destTable;
+  }
+
+  protected Partition[] getPartitions() {
+    return partitions;
   }
 
   // Tests for the List<Partition> exchange_partitions(Map<String, String> partitionSpecs, String
@@ -1164,6 +1185,13 @@ public class TestExchangePartitions extends MetaStoreClientTest {
   }
 
   // Helper methods
+  protected void createTestTables() throws Exception {
+    createDB(DB_NAME);
+    sourceTable = createSourceTable();
+    destTable = createDestTable();
+    partitions = createTestPartitions();
+  }
+
   private void createDB(String dbName) throws TException {
     new DatabaseBuilder()
         .setName(dbName)
@@ -1178,7 +1206,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     return createTable(DB_NAME, "test_part_exch_table_dest", getYearMonthAndDayPartCols(), null);
   }
 
-  private Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
+  protected Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
       String location) throws Exception {
     List<FieldSchema> cols = new ArrayList<>();
     cols.add(new FieldSchema("test_id", INT_COL_TYPE, "test col id"));
@@ -1186,7 +1214,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     return createTable(dbName, tableName, partCols, cols, location);
   }
 
-  private Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
+  protected Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
       List<FieldSchema> cols, String location) throws Exception {
     new TableBuilder()
         .setDbName(dbName)
@@ -1226,7 +1254,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     return parts;
   }
 
-  private Partition createPartition(Table table, List<String> values, String location)
+  protected Partition createPartition(Table table, List<String> values, String location)
       throws Exception {
     Partition partition = buildPartition(table, values, location);
     client.add_partition(partition);
@@ -1249,7 +1277,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     return partition;
   }
 
-  private void checkExchangedPartitions(Table sourceTable, Table destTable,
+  protected void checkExchangedPartitions(Table sourceTable, Table destTable,
       List<Partition> partitions) throws Exception {
 
     for (Partition partition : partitions) {
@@ -1286,7 +1314,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     }
   }
 
-  private void checkRemainingPartitions(Table sourceTable, Table destTable,
+  protected void checkRemainingPartitions(Table sourceTable, Table destTable,
       List<Partition> partitions) throws Exception {
 
     for (Partition partition : partitions) {
@@ -1312,11 +1340,11 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     }
   }
 
-  private static Map<String, String> getPartitionSpec(Partition partition) {
+  protected static Map<String, String> getPartitionSpec(Partition partition) {
     return getPartitionSpec(partition.getValues());
   }
 
-  private static Map<String, String> getPartitionSpec(List<String> values) {
+  protected static Map<String, String> getPartitionSpec(List<String> values) {
     Map<String, String> partitionSpecs = new HashMap<>();
     List<FieldSchema> partCols = getYearMonthAndDayPartCols();
     for (int i = 0; i < partCols.size(); i++) {
@@ -1327,7 +1355,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     return partitionSpecs;
   }
 
-  private static List<FieldSchema> getYearMonthAndDayPartCols() {
+  protected static List<FieldSchema> getYearMonthAndDayPartCols() {
     List<FieldSchema> cols = new ArrayList<>();
     cols.add(new FieldSchema(YEAR_COL_NAME, STRING_COL_TYPE, "year part col"));
     cols.add(new FieldSchema(MONTH_COL_NAME, STRING_COL_TYPE, "month part col"));

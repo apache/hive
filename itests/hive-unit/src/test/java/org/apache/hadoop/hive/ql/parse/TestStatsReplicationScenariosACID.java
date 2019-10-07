@@ -44,8 +44,6 @@ public class TestStatsReplicationScenariosACID extends TestStatsReplicationScena
               "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
     overrides.put(MetastoreConf.ConfVars.CAPABILITY_CHECK.getHiveName(), "false");
     overrides.put(HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT.varname, "1s");
-    overrides.put(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname, "nonstrict");
-
 
     internalBeforeClassSetup(overrides, overrides, TestStatsReplicationScenariosACID.class, true,
             AcidTableKind.FULL_ACID);

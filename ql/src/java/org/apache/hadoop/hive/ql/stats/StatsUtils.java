@@ -269,11 +269,14 @@ public class StatsUtils {
 
       if (needColStats) {
         colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache, fetchColStats);
-        estimateStatsForMissingCols(neededColumns, colStats, table, conf, nr, schema);
+        if (estimateStats) {
+          estimateStatsForMissingCols(neededColumns, colStats, table, conf, nr, schema);
+        }
         // we should have stats for all columns (estimated or actual)
-        assert (neededColumns.size() == colStats.size());
-        long betterDS = getDataSizeFromColumnStats(nr, colStats);
-        ds = (betterDS < 1 || colStats.isEmpty()) ? ds : betterDS;
+        if (neededColumns.size() == colStats.size()) {
+          long betterDS = getDataSizeFromColumnStats(nr, colStats);
+          ds = (betterDS < 1 || colStats.isEmpty()) ? ds : betterDS;
+        }
       }
 
       stats = new Statistics(nr, ds, numErasureCodedFiles);

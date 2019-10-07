@@ -9,7 +9,6 @@ from (select '2011-01-11', '2011-01-11+14:18:26' from src tablesample (1 rows)
 create table sc_part_n0 (key string) partitioned by (ts string) stored as rcfile;
 
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 set hive.decode.partition.name=false;
 insert overwrite table sc_part_n0 partition(ts) select * from sc_n0;

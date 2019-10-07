@@ -71,6 +71,14 @@
                 <groupId>tomcat</groupId>
                 <artifactId>jasper-runtime</artifactId>
               </exclusion>
+              <exclusion>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-framework</artifactId>
+              </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -78,12 +86,40 @@
             <artifactId>hive-exec</artifactId>
             <version>${hdp.hive.version}</version>
             <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-framework</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <version>${hdp.hadoop.version}</version>
             <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-client</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-recipes</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-framework</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <!-- w/o this we get this, even though mapreduce.framework.name=mapred.job.tracker=local
@@ -111,6 +147,12 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
             <artifactId>hadoop-mapreduce-client-common</artifactId>
             <version>2.7.2</version>
             <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.orc</groupId>

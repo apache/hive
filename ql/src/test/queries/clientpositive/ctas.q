@@ -64,7 +64,6 @@ create table nzhang_ctas7 as select key, `to` from nzhang_ctas6;
 -- ACID CTAS
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.stats.autogather=false;
 
 create table acid_ctas_part partitioned by (k)

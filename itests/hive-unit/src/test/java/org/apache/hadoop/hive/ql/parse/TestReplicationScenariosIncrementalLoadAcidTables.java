@@ -76,7 +76,6 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
         put("hive.metastore.client.capability.check", "false");
         put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-        put("hive.exec.dynamic.partition.mode", "nonstrict");
         put("hive.strict.checks.bucketing", "false");
         put("hive.mapred.mode", "nonstrict");
         put("mapred.input.dir.recursive", "true");

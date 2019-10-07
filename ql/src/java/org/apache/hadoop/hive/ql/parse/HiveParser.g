@@ -417,9 +417,14 @@ TOK_BLOCKING;
 TOK_KILL_QUERY;
 TOK_CREATE_RP;
 TOK_SHOW_RP;
-TOK_ALTER_RP;
+TOK_ALTER_RP_ENABLE;
+TOK_ALTER_RP_DISABLE;
+TOK_ALTER_RP_RENAME;
+TOK_ALTER_RP_SET;
+TOK_ALTER_RP_UNSET;
+TOK_ALTER_RP_REPLACE;
+TOK_ALTER_RP_VALIDATE;
 TOK_DROP_RP;
-TOK_VALIDATE;
 TOK_ACTIVATE;
 TOK_QUERY_PARALLELISM;
 TOK_RENAME;
@@ -430,6 +435,8 @@ TOK_DROP_TRIGGER;
 TOK_TRIGGER_EXPRESSION;
 TOK_CREATE_POOL;
 TOK_ALTER_POOL;
+TOK_ALTER_POOL_ADD_TRIGGER;
+TOK_ALTER_POOL_DROP_TRIGGER;
 TOK_DROP_POOL;
 TOK_ALLOC_FRACTION;
 TOK_SCHEDULING_POLICY;
@@ -442,6 +449,7 @@ TOK_REPLACE;
 TOK_LIKERP;
 TOK_UNMANAGED;
 TOK_INPUTFORMAT;
+TOK_WITHIN_GROUP;
 }
 
 
@@ -2463,9 +2471,7 @@ columnNameOrder
 @init { pushMsg("column name order", state); }
 @after { popMsg(state); }
     : identifier orderSpec=orderSpecification? nullSpec=nullOrdering?
-    -> {$orderSpec.tree == null && $nullSpec.tree == null && nullsLast()}?
-            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_LAST identifier))
-    -> {$orderSpec.tree == null && $nullSpec.tree == null && !nullsLast()}?
+    -> {$orderSpec.tree == null && $nullSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST identifier))
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec identifier))

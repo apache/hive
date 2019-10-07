@@ -24,7 +24,6 @@ select * from ctas_table order by key;
 
 
 set hive.exec.dynamic.partition=true;
-SET hive.exec.dynamic.partition.mode=nonstrict;
 
 create table ctas_part (key int, value string) partitioned by (modkey bigint);
 
