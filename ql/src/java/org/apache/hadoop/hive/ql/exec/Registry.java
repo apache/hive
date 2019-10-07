@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 
+import org.apache.hive.common.util.AnnotationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -161,10 +162,21 @@ public class Registry {
       Class<? extends UDF> UDFClass, boolean isOperator, String displayName,
       FunctionResource... resources) {
     validateClass(UDFClass, UDF.class);
+    validateDescription(UDFClass);
     FunctionInfo fI = new FunctionInfo(functionType, displayName,
         new GenericUDFBridge(displayName, isOperator, UDFClass.getName()), resources);
     addFunction(functionName, fI);
     return fI;
+  }
+
+  private void validateDescription(Class<?> input) {
+    Description description = AnnotationUtils.getAnnotation(input, Description.class);
+    if (description == null) {
+      LOG.warn("UDF Class {}"
+              + " does not have description. Please annotate the class with the " +
+              "org.apache.hadoop.hive.ql.exec.Description annotation and provide the description of the function.",
+              input.getCanonicalName());
+    }
   }
 
   public FunctionInfo registerGenericUDF(String functionName,
@@ -176,6 +188,7 @@ public class Registry {
   private FunctionInfo registerGenericUDF(String functionName, FunctionType functionType,
       Class<? extends GenericUDF> genericUDFClass, FunctionResource... resources) {
     validateClass(genericUDFClass, GenericUDF.class);
+    validateDescription(genericUDFClass);
     FunctionInfo fI = new FunctionInfo(functionType, functionName,
         ReflectionUtil.newInstance(genericUDFClass, null), resources);
     addFunction(functionName, fI);
@@ -207,6 +220,7 @@ public class Registry {
   private FunctionInfo registerGenericUDTF(String functionName, FunctionType functionType,
       Class<? extends GenericUDTF> genericUDTFClass, FunctionResource... resources) {
     validateClass(genericUDTFClass, GenericUDTF.class);
+    validateDescription(genericUDTFClass);
     FunctionInfo fI = new FunctionInfo(functionType, functionName,
         ReflectionUtil.newInstance(genericUDTFClass, null), resources);
     addFunction(functionName, fI);
@@ -221,6 +235,7 @@ public class Registry {
 
   private FunctionInfo registerGenericUDAF(String functionName, FunctionType functionType,
       GenericUDAFResolver genericUDAFResolver, FunctionResource... resources) {
+    validateDescription(genericUDAFResolver.getClass());
     FunctionInfo function =
         new WindowFunctionInfo(functionType, functionName, genericUDAFResolver, resources);
     addFunction(functionName, function);

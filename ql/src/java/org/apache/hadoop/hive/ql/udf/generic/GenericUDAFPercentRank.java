@@ -31,18 +31,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 
+@Description(
+        name = "percent_rank",
+        value = "_FUNC_(x) PERCENT_RANK is similar to CUME_DIST, but it uses rank values rather " +
+                "than row counts in its numerator. PERCENT_RANK of a row is calculated as: " +
+                "(rank of row in its partition - 1) / (number of rows in the partition - 1)")
 @WindowFunctionDescription(
-  description = @Description(
-    name = "percent_rank",
-    value = "_FUNC_(x) PERCENT_RANK is similar to CUME_DIST, but it uses rank values rather " +
-            "than row counts in its numerator. PERCENT_RANK of a row is calculated as: " +
-            "(rank of row in its partition - 1) / (number of rows in the partition - 1)"
-  ),
-  supportsWindow = false,
-  pivotResult = true,
-  rankingFunction = true,
-  impliesOrder = true
-)
+        supportsWindow = false,
+        pivotResult = true,
+        rankingFunction = true,
+        impliesOrder = true)
 public class GenericUDAFPercentRank extends GenericUDAFRank {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFPercentRank.class.getName());

@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction;
 @Target(ElementType.TYPE)
 @Documented
 public @interface WindowFunctionDescription {
-  Description description ();
   /**
    * controls whether this function can be applied to a Window.
    * <p>

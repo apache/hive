@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
@@ -25,6 +26,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 @UDFType(deterministic = false)
+@Description(name = "bucket_number",
+        value = "_FUNC_(x) - returns NULL")
 public class GenericUDFBucketNumber extends GenericUDF{
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
