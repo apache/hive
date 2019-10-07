@@ -14,7 +14,6 @@
 package org.apache.hadoop.hive.registry.impl;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,12 +54,12 @@ public class ZookeeperUtils {
   }
 
   /**
-   * Check if Kerberos is enabled.
+   * Check if Kerberos authentication is enabled.
    */
   public static boolean isKerberosEnabled(Configuration conf) {
     try {
-      return UserGroupInformation.getLoginUser().isFromKeytab() && !AuthenticationMethod.SIMPLE.name().equalsIgnoreCase(
-          HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SECURITY_ZOOKEEPER_AUTHENTICATION));
+      return UserGroupInformation.getLoginUser().isFromKeytab() &&
+          HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS);
     } catch (IOException e) {
       return false;
     }

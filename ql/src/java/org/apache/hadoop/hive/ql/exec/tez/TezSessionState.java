@@ -430,8 +430,7 @@ public class TezSessionState implements TezSession {
 
   protected final Credentials createLlapCredentials(boolean llapMode,
       TezConfiguration tezConfig) throws IOException {
-    if (!UserGroupInformation.isSecurityEnabled()
-         || !tezConfig.getBoolean(ConfVars.LLAP_KERBEROS_ENABLED.varname, true)) {
+    if (!isKerberosEnabled(tezConfig)) {
       return null;
     }
     Credentials llapCredentials = new Credentials();
@@ -483,6 +482,9 @@ public class TezSessionState implements TezSession {
     LOG.info("User of session id " + sessionId + " is " + user);
   }
 
+  private boolean isKerberosEnabled(Configuration conf) {
+    return UserGroupInformation.isSecurityEnabled() && HiveConf.getBoolVar(conf, ConfVars.LLAP_USE_KERBEROS);
+  }
 
   private static Token<LlapTokenIdentifier> getLlapToken(
       String user, final Configuration conf) throws IOException {
@@ -863,7 +865,7 @@ public class TezSessionState implements TezSession {
     fs.mkdirs(tezDir, fsPermission);
     // Make sure the path is normalized (we expect validation to pass since we just created it).
     tezDir = DagUtils.validateTargetDir(tezDir, conf).getPath();
-    
+
     // Directory removal will be handled by cleanup at the SessionState level.
     return tezDir;
   }

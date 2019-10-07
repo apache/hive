@@ -2543,10 +2543,8 @@ public class HiveConf extends Configuration {
         "read MM tables with original files will fail. The default in Hive 3.0 is false."),
 
     // Zookeeper related configs
-    HIVE_SECURITY_ZOOKEEPER_AUTHENTICATION("hive.security.zookeeper.authentication",
-        "DEFAULT", new StringSet("DEFAULT", "SIMPLE"),
-        "Whether the authentication type for Zookeeper is different from the cluster wide\n" +
-        "`hadoop.security.authentication` configuration. This could be useful when cluster\n" +
+    HIVE_ZOOKEEPER_USE_KERBEROS("hive.zookeeper.kerberos.enabled", true,
+        "If ZooKeeper is configured for Kerberos authentication. This could be useful when cluster\n" +
         "is kerberized, but Zookeeper is not."),
 
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", "",
@@ -2734,7 +2732,7 @@ public class HiveConf extends Configuration {
     COMPACTOR_CRUD_QUERY_BASED("hive.compactor.crud.query.based", false,
         "Means Major compaction on full CRUD tables is done as a query, "
         + "and minor compaction will be disabled."),
-    SPLIT_GROUPING_MODE("hive.split.grouping.mode", "query", new StringSet("query", "compactor"), 
+    SPLIT_GROUPING_MODE("hive.split.grouping.mode", "query", new StringSet("query", "compactor"),
         "This is set to compactor from within the query based compactor. This enables the Tez SplitGrouper "
         + "to group splits based on their bucket number, so that all rows from different bucket files "
         + " for the same bucket number can end up in the same bucket file after the compaction."),
@@ -4160,7 +4158,9 @@ public class HiveConf extends Configuration {
         "hive.llap.queue.metrics.percentiles.intervals"),
     LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
         "Specify the number of threads to use for low-level IO thread pool."),
-    LLAP_KERBEROS_ENABLED("hive.llap.kerberos.enabled", true, "Just for DWX so we can disable there."),
+    LLAP_USE_KERBEROS("hive.llap.kerberos.enabled", true,
+        "If LLAP is configured for Kerberos authentication. This could be useful when cluster\n" +
+        "is kerberized, but LLAP is not."),
     LLAP_KERBEROS_PRINCIPAL(HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME, "",
         "The name of the LLAP daemon's service principal."),
     LLAP_KERBEROS_KEYTAB_FILE("hive.llap.daemon.keytab.file", "",
