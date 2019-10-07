@@ -160,6 +160,10 @@ public class MiniHiveKdc {
     return HIVE_TEST_USER_1;
   }
 
+  String getHiveMetastoreServicePrincipal() {
+    return HIVE_METASTORE_SERVICE_PRINCIPAL;
+  }
+
   /**
    * Create a MiniHS2 with the hive service principal and keytab in MiniHiveKdc
    * @param miniHiveKdc

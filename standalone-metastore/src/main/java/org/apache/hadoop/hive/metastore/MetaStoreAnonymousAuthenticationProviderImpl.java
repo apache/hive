@@ -18,20 +18,16 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
+import javax.security.sasl.AuthenticationException;
 
-@Category(MetastoreCheckinTest.class)
-public class TestRemoteHiveMetaStoreZKBindHost extends TestRemoteHiveMetaStoreZK {
+/**
+ * This authentication provider allows any combination of username and password.
+ */
+public class MetaStoreAnonymousAuthenticationProviderImpl implements MetaStorePasswdAuthenticationProvider {
 
-    @Before
-    public void setUp() throws Exception {
-      initConf();
-      // Test that the metastore gets bound to the configured address.
-      MetastoreConf.setVar(conf, ConfVars.THRIFT_BIND_HOST, "localhost");
-      super.setUp();
-    }
+  @Override
+  public void Authenticate(String user, String password) throws AuthenticationException {
+    // no-op authentication
+  }
+
 }

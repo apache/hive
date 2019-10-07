@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
 import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +72,9 @@ public class MetastoreConf {
 
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreConf.class);
   private static final Pattern TIME_UNIT_SUFFIX = Pattern.compile("([0-9]+)([a-zA-Z]+)");
+
+  public static final String METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
+          "metastore.authentication.ldap.userMembershipKey";
 
   private static final Map<String, ConfVars> metaConfs = new HashMap<>();
   private static URL hiveDefaultURL = null;
@@ -141,6 +145,8 @@ public class MetastoreConf {
       ConfVars.KERBEROS_KEYTAB_FILE,
       ConfVars.KERBEROS_PRINCIPAL,
       ConfVars.USE_THRIFT_SASL,
+      ConfVars.METASTORE_CLIENT_AUTH_MODE,
+      ConfVars.METASTORE_CLIENT_PLAIN_USERNAME,
       ConfVars.TOKEN_SIGNATURE,
       ConfVars.CACHE_PINOBJTYPES,
       ConfVars.CONNECTION_POOLING_TYPE,
@@ -571,6 +577,97 @@ public class MetastoreConf {
         "hive-metastore/_HOST@EXAMPLE.COM",
         "The service principal for the metastore Thrift server. \n" +
             "The special string _HOST will be replaced automatically with the correct host name."),
+    THRIFT_METASTORE_AUTHENTICATION("metastore.authentication", "hive.metastore.authentication",
+            "NOSASL",
+      new StringSetValidator("NOSASL", "NONE", "LDAP", "KERBEROS", "CUSTOM"),
+        "Client authentication types.\n" +
+                "  NONE: no authentication check\n" +
+                "  LDAP: LDAP/AD based authentication\n" +
+                "  KERBEROS: Kerberos/GSSAPI authentication\n" +
+                "  CUSTOM: Custom authentication provider\n" +
+                "          (Use with property metastore.custom.authentication.class)\n" +
+                "  CONFIG: username and password is specified in the config" +
+                "  NOSASL:  Raw transport"),
+    METASTORE_CUSTOM_AUTHENTICATION_CLASS("metastore.custom.authentication.class",
+            "hive.metastore.custom.authentication.class",
+            "",
+        "Custom authentication class. Used when property\n" +
+        "'metastore.authentication' is set to 'CUSTOM'. Provided class\n" +
+        "must be a proper implementation of the interface\n" +
+        "org.apache.hadoop.hive.metastore.MetaStorePasswdAuthenticationProvider. MetaStore\n" +
+        "will call its Authenticate(user, passed) method to authenticate requests.\n" +
+        "The implementation may optionally implement Hadoop's\n" +
+        "org.apache.hadoop.conf.Configurable class to grab MetaStore's Configuration object."),
+    METASTORE_PLAIN_LDAP_URL("metastore.authentication.ldap.url",
+            "metastore.authentication.ldap.url", "",
+"LDAP connection URL(s),\n" +
+        "this value could contain URLs to multiple LDAP servers instances for HA,\n" +
+        "each LDAP URL is separated by a SPACE character. URLs are used in the \n" +
+        " order specified until a connection is successful."),
+    METASTORE_PLAIN_LDAP_BASEDN("metastore.authentication.ldap.baseDN",
+            "metastore.authentication.ldap.baseDN", "", "LDAP base DN"),
+    METASTORE_PLAIN_LDAP_DOMAIN("metastore.authentication.ldap.Domain",
+            "hive.metastore.authentication.ldap.Domain", "", ""),
+    METASTORE_PLAIN_LDAP_GROUPDNPATTERN("metastore.authentication.ldap.groupDNPattern",
+            "hive.metastore.authentication.ldap.groupDNPattern", "",
+"COLON-separated list of patterns to use to find DNs for group entities in this directory.\n" +
+        "Use %s where the actual group name is to be substituted for.\n" +
+        "For example: CN=%s,CN=Groups,DC=subdomain,DC=domain,DC=com."),
+    METASTORE_PLAIN_LDAP_GROUPFILTER("metastore.authentication.ldap.groupFilter",
+            "hive.metastore.authentication.ldap.groupFilter", "",
+"COMMA-separated list of LDAP Group names (short name not full DNs).\n" +
+        "For example: HiveAdmins,HadoopAdmins,Administrators"),
+    METASTORE_PLAIN_LDAP_USERDNPATTERN("metastore.authentication.ldap.userDNPattern",
+            "metastore.authentication.ldap.userDNPattern", "",
+"COLON-separated list of patterns to use to find DNs for users in this directory.\n" +
+        "Use %s where the actual group name is to be substituted for.\n" +
+        "For example: CN=%s,CN=Users,DC=subdomain,DC=domain,DC=com."),
+    METASTORE_PLAIN_LDAP_USERFILTER("metastore.authentication.ldap.userFilter",
+            "hive.metastore.authentication.ldap.userFilter", "",
+"COMMA-separated list of LDAP usernames (just short names, not full DNs).\n" +
+        "For example: hiveuser,impalauser,hiveadmin,hadoopadmin"),
+    METASTORE_PLAIN_LDAP_GUIDKEY("metastore.authentication.ldap.guidKey",
+            "hive.metastore.authentication.ldap.guidKey", "uid",
+            "LDAP attribute name whose values are unique in this LDAP server.\n" +
+                    "For example: uid or CN."),
+    METASTORE_PLAIN_LDAP_GROUPMEMBERSHIP_KEY("metastore.authentication.ldap.groupMembershipKey",
+            "metastore.authentication.ldap.groupMembershipKey",
+            "member",
+    "LDAP attribute name on the group object that contains the list of distinguished names\n" +
+            "for the user, group, and contact objects that are members of the group.\n" +
+            "For example: member, uniqueMember or memberUid"),
+    METASTORE_PLAIN_LDAP_USERMEMBERSHIP_KEY(METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME,
+            "hive." + METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME,
+            "",
+            "LDAP attribute name on the user object that contains groups of which the user is\n" +
+                    "a direct member, except for the primary group, which is represented by the\n" +
+                    "primaryGroupId.\n" +
+                    "For example: memberOf"),
+    METASTORE_PLAIN_LDAP_GROUPCLASS_KEY("metastore.authentication.ldap.groupClassKey",
+            "hive.metastore.authentication.ldap.groupClassKey",
+            "groupOfNames",
+    "LDAP attribute name on the group entry that is to be used in LDAP group searches.\n" +
+            "For example: group, groupOfNames or groupOfUniqueNames."),
+    METASTORE_PLAIN_LDAP_CUSTOMLDAPQUERY("metastore.authentication.ldap.customLDAPQuery",
+            "hive.metastore.authentication.ldap.customLDAPQuery", "",
+    "A full LDAP query that LDAP Atn provider uses to execute against LDAP Server.\n" +
+            "If this query returns a null resultset, the LDAP Provider fails the Authentication\n" +
+            "request, succeeds if the user is part of the resultset." +
+            "For example: (&(objectClass=group)(objectClass=top)(instanceType=4)(cn=Domain*)) \n" +
+            "(&(objectClass=person)(|(sAMAccountName=admin)(|(memberOf=CN=Domain Admins,CN=Users,DC=domain,DC=com)" +
+            "(memberOf=CN=Administrators,CN=Builtin,DC=domain,DC=com))))"),
+    METASTORE_PLAIN_LDAP_BIND_USER("metastore.authentication.ldap.binddn",
+            "hive.metastore.authentication.ldap.binddn", "",
+"The user with which to bind to the LDAP server, and search for the full domain name " +
+        "of the user being authenticated.\n" +
+        "This should be the full domain name of the user, and should have search access across all " +
+        "users in the LDAP tree.\n" +
+        "If not specified, then the user being authenticated will be used as the bind user.\n" +
+        "For example: CN=bindUser,CN=Users,DC=subdomain,DC=domain,DC=com"),
+    METASTORE_PLAIN_LDAP_BIND_PASSWORD("metastore.authentication.ldap.bindpw",
+            "hive.metastore.authentication.ldap.bindpw", "",
+"The password for the bind user, to be used to search for the full name of the user being authenticated.\n" +
+        "If the username is specified, this parameter must also be specified."),
     LIMIT_PARTITION_REQUEST("metastore.limit.partition.request",
         "hive.metastore.limit.partition.request", -1,
         "This limits the number of partitions (whole partition objects) that can be requested " +
@@ -968,8 +1065,28 @@ public class MetastoreConf {
             "More users can be added in ADMIN role later."),
     USE_SSL("metastore.use.SSL", "hive.metastore.use.SSL", false,
         "Set this to true for using SSL encryption in HMS server."),
+    // We should somehow unify next two options.
     USE_THRIFT_SASL("metastore.sasl.enabled", "hive.metastore.sasl.enabled", false,
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
+    METASTORE_CLIENT_AUTH_MODE("metastore.client.auth.mode",
+            "hive.metastore.client.auth.mode", "NOSASL",
+            new StringSetValidator("NOSASL", "PLAIN", "KERBEROS"),
+            "If PLAIN, clients will authenticate using plain authentication, by providing username" +
+                    " and password. Any other value is ignored right now but may be used later."),
+    METASTORE_CLIENT_PLAIN_USERNAME("metastore.client.plain.username",
+            "hive.metastore.client.plain.username",  "",
+        "The username used by the metastore client when " +
+                METASTORE_CLIENT_AUTH_MODE + " is true. The password is obtained from " +
+                    CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH + " using username as the " +
+                    "alias."),
+    THRIFT_AUTH_CONFIG_USERNAME("metastore.authentication.config.username",
+            "hive.metastore.authentication.config.username", "",
+            "If " + THRIFT_METASTORE_AUTHENTICATION + " is set to CONFIG, username provided by " +
+                    "client is matched against this value."),
+    THRIFT_AUTH_CONFIG_PASSWORD("metastore.authentication.config.password",
+             "hive.metastore.authentication.config.password", "",
+            "If " + THRIFT_METASTORE_AUTHENTICATION + " is set to CONFIG, password provided by " +
+                    "the client is matched against this value."),
     USE_THRIFT_FRAMED_TRANSPORT("metastore.thrift.framed.transport.enabled",
         "hive.metastore.thrift.framed.transport.enabled", false,
         "If true, the metastore Thrift interface will use TFramedTransport. When false (default) a standard TTransport is used."),
