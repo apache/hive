@@ -16,22 +16,31 @@
  * limitations under the License.
  */
 
+// This file is a copy of HiveAuthConstants, except for changes in the names. We need to
+//  deduplicate this code somehow.
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
+public class AuthConstants {
+  public enum AuthTypes {
+    NOSASL("NOSASL"),
+    NONE("NONE"),
+    LDAP("LDAP"),
+    KERBEROS("KERBEROS"),
+    CUSTOM("CUSTOM"),
+    PAM("PAM"),
+    CONFIG("CONFIG");
 
-@Category(MetastoreCheckinTest.class)
-public class TestRemoteHiveMetaStoreZKBindHost extends TestRemoteHiveMetaStoreZK {
+    private final String authType;
 
-    @Before
-    public void setUp() throws Exception {
-      initConf();
-      // Test that the metastore gets bound to the configured address.
-      MetastoreConf.setVar(conf, ConfVars.THRIFT_BIND_HOST, "localhost");
-      super.setUp();
+    AuthTypes(String authType) {
+      this.authType = authType;
     }
+
+    public String getAuthName() {
+      return authType;
+    }
+  }
+
+  public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
+  public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
 }

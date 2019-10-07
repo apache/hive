@@ -15,23 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.metastore.ldap;
 
-package org.apache.hadoop.hive.metastore;
+import javax.security.sasl.AuthenticationException;
 
-import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
+/**
+ * The object that filters LDAP users.
+ * <br>
+ * The assumption is that this user was already authenticated by a previous bind operation.
+ */
+public interface Filter {
 
-@Category(MetastoreCheckinTest.class)
-public class TestRemoteHiveMetaStoreZKBindHost extends TestRemoteHiveMetaStoreZK {
-
-    @Before
-    public void setUp() throws Exception {
-      initConf();
-      // Test that the metastore gets bound to the configured address.
-      MetastoreConf.setVar(conf, ConfVars.THRIFT_BIND_HOST, "localhost");
-      super.setUp();
-    }
+  /**
+   * Applies this filter to the authenticated user.
+   * @param client LDAP client that will be used for execution of LDAP queries.
+   * @param user username
+   * @throws AuthenticationException
+   */
+  void apply(DirSearch client, String user) throws AuthenticationException;
 }
