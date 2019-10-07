@@ -1347,8 +1347,13 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode child = (ASTNode) ast.getChild(i);
       int directionCode = DirectionUtils.tokenToCode(child.getToken().getType());
       child = (ASTNode) child.getChild(0);
+      if (child.getToken().getType() != HiveParser.TOK_NULLS_FIRST && directionCode == DirectionUtils.ASCENDING_CODE) {
+        throw new SemanticException(
+                "create/alter bucketed table: not supported NULLS LAST for SORTED BY in ASC order");
+      }
       if (child.getToken().getType() != HiveParser.TOK_NULLS_LAST && directionCode == DirectionUtils.DESCENDING_CODE) {
-        throw new SemanticException("create/alter table: not supported NULLS FIRST for ORDER BY in DESC order");
+        throw new SemanticException(
+                "create/alter bucketed table: not supported NULLS FIRST for SORTED BY in DESC order");
       }
       colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(), directionCode));
     }
