@@ -51,3 +51,30 @@ Example:
   'BLack and BLue'
 Function class:org.apache.hadoop.hive.ql.udf.UDFReplace
 Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION dense_rank
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION dense_rank
+POSTHOOK: type: DESCFUNCTION
+dense_rank(x) The difference between RANK and DENSE_RANK is that DENSE_RANK leaves no gaps in ranking sequence when there are ties. That is, if you were ranking a competition using DENSE_RANK and had three people tie for second place, you would say that all three were in second place and that the next person came in third.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED dense_rank
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED dense_rank
+POSTHOOK: type: DESCFUNCTION
+dense_rank(x) The difference between RANK and DENSE_RANK is that DENSE_RANK leaves no gaps in ranking sequence when there are ties. That is, if you were ranking a competition using DENSE_RANK and had three people tie for second place, you would say that all three were in second place and that the next person came in third.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFDenseRank
+Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION surrogate_key
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION surrogate_key
+POSTHOOK: type: DESCFUNCTION
+surrogate_key() - automatically generate numerical Ids for rows as you enter data into a table
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED surrogate_key
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED surrogate_key
+POSTHOOK: type: DESCFUNCTION
+surrogate_key() - automatically generate numerical Ids for rows as you enter data into a table
+Example: CREATE TABLE students 
+(`ID` BIGINT DEFAULT SURROGATE_KEY(),
+ name VARCHAR(64));
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSurrogateKey
+Function type:BUILTIN

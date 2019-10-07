@@ -37,15 +37,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.IntWritable;
 
+@Description(
+        name = "row_number",
+        value = "_FUNC_() - The ROW_NUMBER function assigns a unique number (sequentially, starting "
+                + "from 1, as defined by ORDER BY) to each row within the partition.")
 @WindowFunctionDescription(
-  description = @Description(
-    name = "row_number",
-    value = "_FUNC_() - The ROW_NUMBER function assigns a unique number (sequentially, starting "
-            + "from 1, as defined by ORDER BY) to each row within the partition."
-  ),
-  supportsWindow = false,
-  pivotResult = true
-)
+        supportsWindow = false,
+        pivotResult = true)
 public class GenericUDAFRowNumber extends AbstractGenericUDAFResolver {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFRowNumber.class.getName());

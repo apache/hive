@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -29,6 +30,11 @@ import org.apache.hadoop.io.LongWritable;
 /**
  * GenericUDFEpochMilli.
  */
+@Description(name = "to_epoch_milli",
+        value = "_FUNC_(timestamp) - Converts the specified timestamp to number of milliseconds since 1970-01-01",
+        extended = "Example:\n"
+                + "  > SELECT _FUNC_(cast('2012-02-11 04:30:00' as timestamp));" +
+                "1328934600000")
 public class GenericUDFEpochMilli extends GenericUDF {
 
   private transient final LongWritable result = new LongWritable();
