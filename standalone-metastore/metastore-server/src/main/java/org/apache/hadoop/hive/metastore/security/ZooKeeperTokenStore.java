@@ -31,9 +31,9 @@ import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 import org.apache.hadoop.security.token.delegation.MetastoreDelegationTokenSupport;
 import org.apache.zookeeper.CreateMode;
@@ -85,7 +85,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
    */
   private List<ACL> getDefaultAcl(Configuration conf) {
     List<ACL> nodeAcls = new ArrayList<>();
-    if (isZkSecurityEnabled(conf)) {
+    if (isKerberosEnabled(conf)) {
       nodeAcls.add(new ACL(Perms.ALL, Ids.AUTH_IDS));
     } else {
       nodeAcls.addAll(Ids.OPEN_ACL_UNSAFE);
@@ -93,13 +93,10 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
     return nodeAcls;
   }
 
-  /**
-   * Check if ZooKeeper is configured with Kerberos authentication.
-   */
-  private boolean isZkSecurityEnabled(Configuration conf) {
+  private boolean isKerberosEnabled(Configuration conf) {
     try {
-      return UserGroupInformation.getLoginUser().isFromKeytab() && !AuthenticationMethod.SIMPLE.name().equalsIgnoreCase(
-        getNonEmptyConfVar(conf, "hive.security.zookeeper.authentication"));
+      return UserGroupInformation.getLoginUser().isFromKeytab() &&
+          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS);
     } catch (IOException e) {
       return false;
     }
@@ -135,7 +132,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   }
 
   private void setupJAASConfig(Configuration conf) throws IOException {
-    if (!isZkSecurityEnabled(conf)) {
+    if (!isKerberosEnabled(conf)) {
       // The process has not logged in using keytab
       // this should be a test mode, can't use keytab to authenticate
       // with zookeeper.

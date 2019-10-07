@@ -1046,6 +1046,10 @@ public class MetastoreConf {
             "",
             "Specifies which dynamic service discovery method to use. Currently we support only " +
                     "\"zookeeper\" to specify ZooKeeper based service discovery."),
+    THRIFT_ZOOKEEPER_USE_KERBEROS("metastore.zookeeper.kerberos.enabled",
+            "hive.zookeeper.kerberos.enabled", true,
+            "If ZooKeeper is configured for Kerberos authentication. This could be useful when cluster\n" +
+            "is kerberized, but Zookeeper is not."),
     THRIFT_ZOOKEEPER_CLIENT_PORT("metastore.zookeeper.client.port",
             "hive.metastore.zookeeper.client.port", "2181",
             "The port of ZooKeeper servers to talk to.\n" +
