@@ -27,7 +27,7 @@ public interface MetaStorePasswdAuthenticationProvider {
    * If a user is to be granted, return nothing/throw nothing.
    * When a user is to be disallowed, throw an appropriate {@link AuthenticationException}.
    * <br>
-   * For an example implementation, see {@link LdapAuthenticationProviderImpl}.
+   * For an example implementation, see {@link MetaStoreLdapAuthenticationProviderImpl}.
    *
    * @param user     The username received over the connection request
    * @param password The password received over the connection request

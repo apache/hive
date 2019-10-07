@@ -37,7 +37,8 @@ import java.io.IOException;
 
 public class TestRemoteHiveMetaStoreDualAuthCustom extends RemoteHiveMetaStoreDualAuthTest {
   private static String testDataDir = new File(
-          System.getProperty("java.io.tmpdir") + File.separator + TestRemoteHiveMetaStoreDualAuthCustom.class.getCanonicalName() + "-"
+          System.getProperty("java.io.tmpdir") + File.separator +
+                  TestRemoteHiveMetaStoreDualAuthCustom.class.getCanonicalName() + "-"
                   + System.currentTimeMillis()).getPath().replaceAll("\\\\", "/");
 
   @BeforeClass

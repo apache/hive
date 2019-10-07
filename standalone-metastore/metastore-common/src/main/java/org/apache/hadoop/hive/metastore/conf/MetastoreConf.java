@@ -657,7 +657,7 @@ public class MetastoreConf {
         "The implementation may optionally implement Hadoop's\n" +
         "org.apache.hadoop.conf.Configurable class to grab MetaStore's Configuration object."),
     METASTORE_PLAIN_LDAP_URL("metastore.authentication.ldap.url",
-            "metastore.authentication.ldap.url","",
+            "metastore.authentication.ldap.url", "",
 "LDAP connection URL(s),\n" +
         "this value could contain URLs to multiple LDAP servers instances for HA,\n" +
         "each LDAP URL is separated by a SPACE character. URLs are used in the \n" +
@@ -707,7 +707,7 @@ public class MetastoreConf {
     "LDAP attribute name on the group entry that is to be used in LDAP group searches.\n" +
             "For example: group, groupOfNames or groupOfUniqueNames."),
     METASTORE_PLAIN_LDAP_CUSTOMLDAPQUERY("metastore.authentication.ldap.customLDAPQuery",
-            "hive.metastore.authentication.ldap.customLDAPQuery","",
+            "hive.metastore.authentication.ldap.customLDAPQuery", "",
     "A full LDAP query that LDAP Atn provider uses to execute against LDAP Server.\n" +
             "If this query returns a null resultset, the LDAP Provider fails the Authentication\n" +
             "request, succeeds if the user is part of the resultset." +

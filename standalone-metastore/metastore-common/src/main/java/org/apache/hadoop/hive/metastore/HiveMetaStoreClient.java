@@ -561,7 +561,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
 
     if (clientAuthMode != null) {
-      usePasswordAuth = clientAuthMode.equalsIgnoreCase("PLAIN");
+      usePasswordAuth = "PLAIN".equalsIgnoreCase(clientAuthMode);
     }
 
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
@@ -612,7 +612,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               String passwd = null;
               char[] pwdCharArray = conf.getPassword(userName);
               if (null != pwdCharArray) {
-               passwd = new String(pwdCharArray);
+                passwd = new String(pwdCharArray);
               }
               if (null == passwd) {
                 throw new MetaException("No password found for user " + userName);

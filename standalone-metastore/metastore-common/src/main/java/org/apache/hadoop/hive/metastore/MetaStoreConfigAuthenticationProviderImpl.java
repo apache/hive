@@ -42,11 +42,13 @@ public class MetaStoreConfigAuthenticationProviderImpl implements MetaStorePassw
     password = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_PASSWORD);
 
     if (null == userName || userName.isEmpty()) {
-      throw new AuthenticationException("No username specified in " + MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_USERNAME);
+      throw new AuthenticationException("No username specified in " +
+              MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_USERNAME);
     }
 
     if (null == password) {
-      throw new AuthenticationException("No password specified in " + MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_PASSWORD);
+      throw new AuthenticationException("No password specified in " +
+              MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_PASSWORD);
     }
   }
 

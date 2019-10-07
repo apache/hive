@@ -149,7 +149,7 @@ public abstract class TestHiveMetaStore {
 
   protected void initConf() {
     if (null == conf) {
-     conf = MetastoreConf.newMetastoreConf();
+      conf = MetastoreConf.newMetastoreConf();
     }
   }
 

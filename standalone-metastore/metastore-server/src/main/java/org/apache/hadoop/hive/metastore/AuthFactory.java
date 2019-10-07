@@ -26,14 +26,12 @@ import javax.security.sasl.AuthenticationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
-import org.apache.thrift.TProcessor;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TTransport;
@@ -57,9 +55,9 @@ public class AuthFactory {
   private final String transportMode;
   private String hadoopAuth;
   private MetastoreDelegationTokenManager delegationTokenManager = null;
-  boolean useFramedTransport;
-  boolean executeSetUGI;
-  Configuration conf;
+  private boolean useFramedTransport;
+  private boolean executeSetUGI;
+  private Configuration conf;
 
   public AuthFactory(HadoopThriftAuthBridge bridge, Configuration conf, Object baseHandler)
           throws HiveMetaException, TTransportException {
@@ -114,8 +112,7 @@ public class AuthFactory {
         delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler,
             HadoopThriftAuthBridge.Server.ServerMode.METASTORE);
         saslServer.setSecretManager(delegationTokenManager.getSecretManager());
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         throw new TTransportException("Failed to start token manager", e);
       }
     }
@@ -151,7 +148,7 @@ public class AuthFactory {
               authTypeStr, null, new HashMap<String, String>(),
               new MetaStorePlainSaslHelper.PlainServerCallbackHandler(authTypeStr, conf));
         } catch (AuthenticationException e) {
-          throw new LoginException ("Error setting callback handler" + e);
+          throw new LoginException("Error setting callback handler" + e);
         }
       } else {
         throw new LoginException("Unsupported authentication type " + authTypeStr);

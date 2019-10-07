@@ -18,7 +18,6 @@
 package  org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.security.Security;
 import java.util.HashMap;
 
@@ -35,11 +34,8 @@ import javax.security.sasl.SaslException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetaStoreAuthenticationProviderFactory.AuthMethods;
 import org.apache.hadoop.hive.metastore.MetaStorePlainSaslServer.SaslPlainProvider;
-import org.apache.thrift.TProcessor;
-import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.transport.TSaslClientTransport;
 import org.apache.thrift.transport.TSaslServerTransport;
-import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 import org.slf4j.Logger;

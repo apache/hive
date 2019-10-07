@@ -46,7 +46,8 @@ public class TestRemoteHiveMetaStoreCustomAuth extends TestRemoteHiveMetaStore {
   private static String wrongPassword = "wrong_password";
   private static String wrongUser = "wrong_user";
   private static String testDataDir = new File(
-          System.getProperty("java.io.tmpdir") + File.separator + TestRemoteHiveMetaStoreCustomAuth.class.getCanonicalName() + "-"
+          System.getProperty("java.io.tmpdir") + File.separator +
+                  TestRemoteHiveMetaStoreCustomAuth.class.getCanonicalName() + "-"
                   + System.currentTimeMillis()).getPath().replaceAll("\\\\", "/");
 
   @BeforeClass
