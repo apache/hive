@@ -36,6 +36,7 @@ public class TestRemoteHiveMetaStoreZK extends TestRemoteHiveMetaStore {
             zkServer = new TestingServer();
             // Add ZK specific configurations, so that the metastore can register itself to ZK when
             // started.
+            initConf();
             MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, zkServer.getConnectString());
             MetastoreConf.setVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE, this.getClass().getSimpleName());
             MetastoreConf.setVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE, "zookeeper");

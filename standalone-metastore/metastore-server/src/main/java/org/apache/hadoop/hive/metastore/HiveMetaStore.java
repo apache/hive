@@ -160,7 +160,6 @@ import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
-import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -191,7 +190,6 @@ import org.apache.thrift.server.ServerContext;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
@@ -239,23 +237,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   static final int UNLIMITED_MAX_PARTITIONS = -1;
   private static ZooKeeperHiveHelper zooKeeperHelper = null;
   private static String msHost = null;
-
-  private static final class ChainedTTransportFactory extends TTransportFactory {
-    private final TTransportFactory parentTransFactory;
-    private final TTransportFactory childTransFactory;
-
-    private ChainedTTransportFactory(
-        TTransportFactory parentTransFactory,
-        TTransportFactory childTransFactory) {
-      this.parentTransFactory = parentTransFactory;
-      this.childTransFactory = childTransFactory;
-    }
-
-    @Override
-    public TTransport getTransport(TTransport trans) {
-      return childTransFactory.getTransport(parentTransFactory.getTransport(trans));
-    }
-  }
 
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
     if (!srcDB.getName().equalsIgnoreCase(destDB.getName())) {
@@ -9937,10 +9918,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
     int maxWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MAX_THREADS);
     boolean tcpKeepAlive = MetastoreConf.getBoolVar(conf, ConfVars.TCP_KEEP_ALIVE);
-    boolean useFramedTransport = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
-    useSasl = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_SASL);
+    HiveMetaStore.HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver",
+            conf,false);
+    AuthFactory authFactory = new AuthFactory(bridge, conf, baseHandler);
+    useSasl = authFactory.isSASLWithKerberizedHadoop();
 
     if (useSasl) {
       // we are in secure mode. Login using keytab
@@ -9948,10 +9931,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           .getServerPrincipal(MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL), "0.0.0.0");
       String keyTabFile = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
       UserGroupInformation.loginUserFromKeytab(kerberosName, keyTabFile);
+      saslServer = authFactory.getSaslServer();
+      delegationTokenManager = authFactory.getDelegationTokenManager();
     }
 
     TProcessor processor;
-    TTransportFactory transFactory;
+    TTransportFactory transFactory = authFactory.getAuthTransFactory(useSSL, conf);
     final TProtocolFactory protocolFactory;
     final TProtocolFactory inputProtoFactory;
     if (useCompactProtocol) {
@@ -9961,44 +9946,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       protocolFactory = new TBinaryProtocol.Factory();
       inputProtoFactory = new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize);
     }
-    HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
-        false);
     IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
 
     TServerSocket serverSocket;
 
     if (useSasl) {
-      // we are in secure mode.
-      if (useFramedTransport) {
-        throw new HiveMetaException("Framed transport is not supported with SASL enabled.");
-      }
-      saslServer = bridge.createServer(
-          MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE),
-          MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL),
-          MetastoreConf.getVar(conf, ConfVars.CLIENT_KERBEROS_PRINCIPAL));
-      // Start delegation token manager
-      delegationTokenManager = new MetastoreDelegationTokenManager();
-      delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler, HadoopThriftAuthBridge.Server.ServerMode.METASTORE);
-      saslServer.setSecretManager(delegationTokenManager.getSecretManager());
-      transFactory = saslServer.createTransportFactory(
-              MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
       processor = saslServer.wrapProcessor(
         new ThriftHiveMetastore.Processor<>(handler));
-
       LOG.info("Starting DB backed MetaStore Server in Secure Mode");
     } else {
       // we are in unsecure mode.
       if (MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)) {
-        transFactory = useFramedTransport ?
-            new ChainedTTransportFactory(new TFramedTransport.Factory(),
-                new TUGIContainingTransport.Factory())
-            : new TUGIContainingTransport.Factory();
-
         processor = new TUGIBasedProcessor<>(handler);
         LOG.info("Starting DB backed MetaStore Server with SetUGI enabled");
       } else {
-        transFactory = useFramedTransport ?
-            new TFramedTransport.Factory() : new TTransportFactory();
         processor = new TSetIpAddressProcessor<>(handler);
         LOG.info("Starting DB backed MetaStore Server");
       }

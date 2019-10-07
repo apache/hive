@@ -15,23 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.metastore.ldap;
 
-package org.apache.hadoop.hive.metastore;
+public final class Credentials {
 
-import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
+  private final String user;
+  private final String password;
 
-@Category(MetastoreCheckinTest.class)
-public class TestRemoteHiveMetaStoreZKBindHost extends TestRemoteHiveMetaStoreZK {
+  private Credentials(String user, String password) {
+    this.user = user;
+    this.password = password;
+  }
 
-    @Before
-    public void setUp() throws Exception {
-      initConf();
-      // Test that the metastore gets bound to the configured address.
-      MetastoreConf.setVar(conf, ConfVars.THRIFT_BIND_HOST, "localhost");
-      super.setUp();
-    }
+  public static Credentials of(String user, String password) {
+    return new Credentials(user, password);
+  }
+
+  public String getUser() {
+    return user;
+  }
+
+  public String getPassword() {
+    return password;
+  }
 }
