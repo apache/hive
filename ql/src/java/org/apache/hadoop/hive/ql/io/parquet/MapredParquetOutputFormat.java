@@ -68,6 +68,15 @@ public class MapredParquetOutputFormat extends FileOutputFormat<NullWritable, Pa
     realOutputFormat.checkOutputSpecs(ShimLoader.getHadoopShims().getHCatShim().createJobContext(job, null));
   }
 
+  /**
+   *
+   * @param ignored Unused parameter
+   * @param job JobConf - expecting mandatory parameter PARQUET_HIVE_SCHEMA
+   * @param name Path to write to
+   * @param progress Progress
+   * @return
+   * @throws IOException
+   */
   @Override
   public RecordWriter<NullWritable, ParquetHiveRecord> getRecordWriter(
       final FileSystem ignored,
@@ -75,7 +84,7 @@ public class MapredParquetOutputFormat extends FileOutputFormat<NullWritable, Pa
       final String name,
       final Progressable progress
       ) throws IOException {
-    throw new RuntimeException("Should never be used");
+    return new ParquetRecordWriterWrapper(realOutputFormat, job, name, progress);
   }
 
   /**

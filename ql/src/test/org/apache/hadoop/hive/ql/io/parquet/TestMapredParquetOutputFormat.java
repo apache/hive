@@ -44,16 +44,6 @@ public class TestMapredParquetOutputFormat {
     new MapredParquetOutputFormat((ParquetOutputFormat<ParquetHiveRecord>) mock(ParquetOutputFormat.class));
   }
 
-  @Test
-  public void testGetRecordWriterThrowsException() {
-    try {
-      new MapredParquetOutputFormat().getRecordWriter(null, null, null, null);
-      fail("should throw runtime exception.");
-    } catch (Exception e) {
-      assertEquals("Should never be used", e.getMessage());
-    }
-  }
-
   @SuppressWarnings("unchecked")
   @Test
   public void testGetHiveRecordWriter() throws IOException {

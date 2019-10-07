@@ -14,12 +14,15 @@
 package org.apache.hadoop.hive.ql.io.parquet.write;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
@@ -71,6 +74,27 @@ public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, Pa
       throw new IOException(e);
     }
   }
+
+  public ParquetRecordWriterWrapper(
+          final ParquetOutputFormat<ParquetHiveRecord> realOutputFormat,
+          final JobConf jobConf,
+          final String name,
+          final Progressable progress) throws IOException {
+    this(realOutputFormat, jobConf, name, progress, getParquetProperties(jobConf));
+  }
+
+  private static Properties getParquetProperties(JobConf jobConf) {
+    Properties tblProperties = new Properties();
+    Iterator<Map.Entry<String, String>> it = jobConf.iterator();
+    while (it.hasNext()) {
+      Map.Entry<String, String> entry = it.next();
+      if (ParquetTableUtils.isParquetProperty(entry.getKey())) {
+        tblProperties.put(entry.getKey(), entry.getValue());
+      }
+    }
+    return tblProperties;
+  }
+
 
   private void initializeSerProperties(JobContext job, Properties tableProperties) {
     String blockSize = tableProperties.getProperty(ParquetOutputFormat.BLOCK_SIZE);

@@ -24,6 +24,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.convert.HiveSchemaConverter;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
+import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriteSupport;
 import org.apache.orc.OrcConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
@@ -37,6 +41,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import com.google.common.collect.Maps;
 
 /**
  * This class is a place to put all the code associated with
@@ -119,6 +125,27 @@ public class SpecialCases {
           AvroSerDe.getSchemaFromCols(properties, colNames, colTypes, null).toString());
       }
 
+
+    } else if (ofclass == MapredParquetOutputFormat.class) {
+      //Handle table properties
+      Properties tblProperties = new Properties();
+      Map<String, String> tableProps = jobInfo.getTableInfo().getTable().getParameters();
+      for (String key : tableProps.keySet()) {
+        if (ParquetTableUtils.isParquetProperty(key)) {
+          tblProperties.put(key, tableProps.get(key));
+        }
+      }
+
+      //Handle table schema
+      List<String> colNames = jobInfo.getOutputSchema().getFieldNames();
+      List<TypeInfo> colTypes = new ArrayList<TypeInfo>();
+      for (HCatFieldSchema field : jobInfo.getOutputSchema().getFields()){
+        colTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getTypeString()));
+      }
+      String parquetSchema = HiveSchemaConverter.convert(colNames, colTypes).toString();
+      jobProperties.put(DataWritableWriteSupport.PARQUET_HIVE_SCHEMA, parquetSchema);
+
+      jobProperties.putAll(Maps.fromProperties(tblProperties));
 
     }
   }
