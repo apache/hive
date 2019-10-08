@@ -138,7 +138,6 @@
     <commons-compress.version>1.18</commons-compress.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.4</commons-io.version>
-    <commons-lang.version>2.6</commons-lang.version>
     <commons-lang3.version>3.9</commons-lang3.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
@@ -347,11 +346,6 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons-io.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-lang</groupId>
-        <artifactId>commons-lang</artifactId>
-        <version>${commons-lang.version}</version>
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>
