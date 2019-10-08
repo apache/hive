@@ -34,11 +34,6 @@
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- inter-project -->
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>${commons-lang.version}</version>
-    </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
