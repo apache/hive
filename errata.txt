@@ -99,3 +99,4 @@ e7081035bb9768bc014f0aba11417418ececbaf0 master     HIVE-17109 https://issues.ap
 f33db1f68c68b552b9888988f818c03879749461 master     HIVE-18617 https://issues.apache.org/jira/browse/HIVE-18617
 1eea5a80ded2df33d57b2296b3bed98cb18383fd master     HIVE-19157 https://issues.apache.org/jira/browse/HIVE-19157
 4853a44b2fcfa702d23965ab0d3835b6b57954c4 master     HIVE-21823 https://issues.apache.org/jira/browse/HIVE-21823
+bd432c9203584c531f51559d8c97c398202f0794 master     HIVE-22267 https://issues.apache.org/jira/browse/HIVE-22267
