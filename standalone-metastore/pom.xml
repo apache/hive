@@ -88,7 +88,7 @@
     <junit.version>4.11</junit.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3-1</libthrift.version>
-    <log4j2.version>2.8.2</log4j2.version>
+    <log4j2.version>2.12.1</log4j2.version>
     <mockito-core.version>1.10.19</mockito-core.version>
     <orc.version>1.5.1</orc.version>
     <protobuf.version>2.5.0</protobuf.version>
