@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.parquet.write.ParquetRecordWriterWrapper;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -117,10 +118,10 @@ abstract class FileRecordWriterContainer extends RecordWriterContainer {
       value.remove(colToDel);
     }
 
-    // The key given by user is ignored
     try {
-      localWriter.write(NullWritable.get(),
-          localSerDe.serialize(value.getAll(), localObjectInspector));
+      // The key given by user is ignored - in case of Parquet we need to supply null
+      Object keyToWrite = localWriter instanceof ParquetRecordWriterWrapper ? null : NullWritable.get();
+      localWriter.write(keyToWrite, localSerDe.serialize(value.getAll(), localObjectInspector));
     } catch (SerDeException e) {
       throw new IOException("Failed to serialize object", e);
     }

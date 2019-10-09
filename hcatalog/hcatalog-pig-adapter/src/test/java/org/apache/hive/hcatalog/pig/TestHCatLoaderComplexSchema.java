@@ -77,9 +77,6 @@ public class TestHCatLoaderComplexSchema {
           add("testMapNullKey");
         }});
         put(IOConstants.PARQUETFILE, new HashSet<String>() {{
-          add("testSyntheticComplexSchema");
-          add("testTupleInBagInTupleInBag");
-          add("testMapWithComplexData");
           add("testMapNullKey");
         }});
       }};
