@@ -168,16 +168,23 @@ TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
 TOK_ALTERTABLE_PARTCOLTYPE;
 TOK_ALTERTABLE_MERGEFILES;
+TOK_ALTERPARTITION_MERGEFILES;
 TOK_ALTERTABLE_TOUCH;
 TOK_ALTERTABLE_ARCHIVE;
 TOK_ALTERTABLE_UNARCHIVE;
 TOK_ALTERTABLE_SERDEPROPERTIES;
+TOK_ALTERPARTITION_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
+TOK_ALTERPARTITION_SERIALIZER;
 TOK_ALTERTABLE_UPDATECOLSTATS;
+TOK_ALTERPARTITION_UPDATECOLSTATS;
 TOK_ALTERTABLE_UPDATESTATS;
+TOK_ALTERPARTITION_UPDATESTATS;
 TOK_TABLE_PARTITION;
 TOK_ALTERTABLE_FILEFORMAT;
+TOK_ALTERPARTITION_FILEFORMAT;
 TOK_ALTERTABLE_LOCATION;
+TOK_ALTERPARTITION_LOCATION;
 TOK_ALTERTABLE_PROPERTIES;
 TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION;
 TOK_ALTERTABLE_DROPPROPERTIES;
@@ -185,6 +192,7 @@ TOK_ALTERTABLE_SKEWED;
 TOK_ALTERTABLE_EXCHANGEPARTITION;
 TOK_ALTERTABLE_SKEWED_LOCATION;
 TOK_ALTERTABLE_BUCKETS;
+TOK_ALTERPARTITION_BUCKETS;
 TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_ALTERTABLE_COMPACT;
 TOK_ALTERTABLE_DROPCONSTRAINT;
@@ -321,9 +329,10 @@ TOK_PRIV_OBJECT;
 TOK_PRIV_OBJECT_COL;
 TOK_GRANT_ROLE;
 TOK_REVOKE_ROLE;
+TOK_SET_ROLE;
 TOK_SHOW_ROLE_GRANT;
 TOK_SHOW_ROLES;
-TOK_SHOW_SET_ROLE;
+TOK_SHOW_CURRENT_ROLE;
 TOK_SHOW_ROLE_PRINCIPALS;
 TOK_SHOWDBLOCKS;
 TOK_DESCDATABASE;
@@ -408,9 +417,14 @@ TOK_BLOCKING;
 TOK_KILL_QUERY;
 TOK_CREATE_RP;
 TOK_SHOW_RP;
-TOK_ALTER_RP;
+TOK_ALTER_RP_ENABLE;
+TOK_ALTER_RP_DISABLE;
+TOK_ALTER_RP_RENAME;
+TOK_ALTER_RP_SET;
+TOK_ALTER_RP_UNSET;
+TOK_ALTER_RP_REPLACE;
+TOK_ALTER_RP_VALIDATE;
 TOK_DROP_RP;
-TOK_VALIDATE;
 TOK_ACTIVATE;
 TOK_QUERY_PARALLELISM;
 TOK_RENAME;
@@ -421,6 +435,8 @@ TOK_DROP_TRIGGER;
 TOK_TRIGGER_EXPRESSION;
 TOK_CREATE_POOL;
 TOK_ALTER_POOL;
+TOK_ALTER_POOL_ADD_TRIGGER;
+TOK_ALTER_POOL_DROP_TRIGGER;
 TOK_DROP_POOL;
 TOK_ALLOC_FRACTION;
 TOK_SCHEDULING_POLICY;
@@ -433,6 +449,7 @@ TOK_REPLACE;
 TOK_LIKERP;
 TOK_UNMANAGED;
 TOK_INPUTFORMAT;
+TOK_WITHIN_GROUP;
 }
 
 
@@ -1185,24 +1202,25 @@ alterTableStatementSuffix
     | alterStatementPartitionKeyType
     | alterStatementSuffixDropConstraint
     | alterStatementSuffixAddConstraint
-    | partitionSpec? alterTblPartitionStatementSuffix -> alterTblPartitionStatementSuffix partitionSpec?
+    | alterTblPartitionStatementSuffix[false]
+    | partitionSpec alterTblPartitionStatementSuffix[true] -> alterTblPartitionStatementSuffix partitionSpec
     | alterStatementSuffixSetOwner
     ;
 
-alterTblPartitionStatementSuffix
+alterTblPartitionStatementSuffix[boolean partition]
 @init {pushMsg("alter table partition statement suffix", state);}
 @after {popMsg(state);}
-  : alterStatementSuffixFileFormat
-  | alterStatementSuffixLocation
-  | alterStatementSuffixMergeFiles
-  | alterStatementSuffixSerdeProperties
+  : alterStatementSuffixFileFormat[partition]
+  | alterStatementSuffixLocation[partition]
+  | alterStatementSuffixMergeFiles[partition]
+  | alterStatementSuffixSerdeProperties[partition]
   | alterStatementSuffixRenamePart
-  | alterStatementSuffixBucketNum
+  | alterStatementSuffixBucketNum[partition]
   | alterTblPartitionStatementSuffixSkewedLocation
   | alterStatementSuffixClusterbySortby
   | alterStatementSuffixCompact
-  | alterStatementSuffixUpdateStatsCol
-  | alterStatementSuffixUpdateStats
+  | alterStatementSuffixUpdateStatsCol[partition]
+  | alterStatementSuffixUpdateStats[partition]
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
   | alterStatementSuffixUpdateColumns
@@ -1306,18 +1324,20 @@ alterStatementSuffixRenameCol
     ->^(TOK_ALTERTABLE_RENAMECOL $oldName $newName colType $comment? alterColumnConstraint? alterStatementChangeColPosition? restrictOrCascade?)
     ;
 
-alterStatementSuffixUpdateStatsCol
+alterStatementSuffixUpdateStatsCol[boolean partition]
 @init { pushMsg("update column statistics", state); }
 @after { popMsg(state); }
     : KW_UPDATE KW_STATISTICS KW_FOR KW_COLUMN? colName=identifier KW_SET tableProperties (KW_COMMENT comment=StringLiteral)?
-    ->^(TOK_ALTERTABLE_UPDATECOLSTATS $colName tableProperties $comment?)
+    -> {partition}? ^(TOK_ALTERPARTITION_UPDATECOLSTATS $colName tableProperties $comment?)
+    ->              ^(TOK_ALTERTABLE_UPDATECOLSTATS $colName tableProperties $comment?)
     ;
 
-alterStatementSuffixUpdateStats
+alterStatementSuffixUpdateStats[boolean partition]
 @init { pushMsg("update basic statistics", state); }
 @after { popMsg(state); }
     : KW_UPDATE KW_STATISTICS KW_SET tableProperties
-    ->^(TOK_ALTERTABLE_UPDATESTATS tableProperties)
+    -> {partition}? ^(TOK_ALTERPARTITION_UPDATESTATS tableProperties)
+    ->              ^(TOK_ALTERTABLE_UPDATESTATS tableProperties)
     ;
 
 alterStatementChangeColPosition
@@ -1405,13 +1425,15 @@ alterMaterializedViewSuffixRebuild
     : KW_REBUILD -> ^(TOK_ALTER_MATERIALIZED_VIEW_REBUILD)
     ;
 
-alterStatementSuffixSerdeProperties
+alterStatementSuffixSerdeProperties[boolean partition]
 @init { pushMsg("alter serdes statement", state); }
 @after { popMsg(state); }
     : KW_SET KW_SERDE serdeName=StringLiteral (KW_WITH KW_SERDEPROPERTIES tableProperties)?
-    -> ^(TOK_ALTERTABLE_SERIALIZER $serdeName tableProperties?)
+    -> {partition}? ^(TOK_ALTERPARTITION_SERIALIZER $serdeName tableProperties?)
+    ->              ^(TOK_ALTERTABLE_SERIALIZER $serdeName tableProperties?)
     | KW_SET KW_SERDEPROPERTIES tableProperties
-    -> ^(TOK_ALTERTABLE_SERDEPROPERTIES tableProperties)
+    -> {partition}? ^(TOK_ALTERPARTITION_SERDEPROPERTIES tableProperties)
+    ->              ^(TOK_ALTERTABLE_SERDEPROPERTIES tableProperties)
     ;
 
 tablePartitionPrefix
@@ -1421,12 +1443,13 @@ tablePartitionPrefix
   ->^(TOK_TABLE_PARTITION tableName partitionSpec?)
   ;
 
-alterStatementSuffixFileFormat
+alterStatementSuffixFileFormat[boolean partition]
 @init {pushMsg("alter fileformat statement", state); }
 @after {popMsg(state);}
-	: KW_SET KW_FILEFORMAT fileFormat
-	-> ^(TOK_ALTERTABLE_FILEFORMAT fileFormat)
-	;
+  : KW_SET KW_FILEFORMAT fileFormat
+  -> {partition}? ^(TOK_ALTERPARTITION_FILEFORMAT fileFormat)
+  ->              ^(TOK_ALTERTABLE_FILEFORMAT fileFormat)
+  ;
 
 alterStatementSuffixClusterbySortby
 @init {pushMsg("alter partition cluster by sort by statement", state);}
@@ -1464,11 +1487,12 @@ skewedLocationMap
       key=skewedValueLocationElement EQUAL value=StringLiteral -> ^(TOK_SKEWED_LOCATION_MAP $key $value)
     ;
 
-alterStatementSuffixLocation
+alterStatementSuffixLocation[boolean partition]
 @init {pushMsg("alter location", state);}
 @after {popMsg(state);}
   : KW_SET KW_LOCATION newLoc=StringLiteral
-  -> ^(TOK_ALTERTABLE_LOCATION $newLoc)
+  -> {partition}? ^(TOK_ALTERPARTITION_LOCATION $newLoc)
+  ->              ^(TOK_ALTERTABLE_LOCATION $newLoc)
   ;
 
 	
@@ -1506,18 +1530,20 @@ alterStatementSuffixStatsPart
     ->^(TOK_ALTERTABLE_UPDATECOLSTATS $colName tableProperties $comment?)
     ;
 
-alterStatementSuffixMergeFiles
+alterStatementSuffixMergeFiles[boolean partition]
 @init { pushMsg("", state); }
 @after { popMsg(state); }
     : KW_CONCATENATE
-    -> ^(TOK_ALTERTABLE_MERGEFILES)
+    -> {partition}? ^(TOK_ALTERPARTITION_MERGEFILES)
+    ->              ^(TOK_ALTERTABLE_MERGEFILES)
     ;
 
-alterStatementSuffixBucketNum
+alterStatementSuffixBucketNum[boolean partition]
 @init { pushMsg("", state); }
 @after { popMsg(state); }
     : KW_INTO num=Number KW_BUCKETS
-    -> ^(TOK_ALTERTABLE_BUCKETS $num)
+    -> {partition}? ^(TOK_ALTERPARTITION_BUCKETS $num)
+    ->              ^(TOK_ALTERTABLE_BUCKETS $num)
     ;
 
 blocking
@@ -1750,7 +1776,7 @@ showCurrentRole
 @init {pushMsg("show current role", state);}
 @after {popMsg(state);}
     : KW_SHOW KW_CURRENT KW_ROLES
-    -> ^(TOK_SHOW_SET_ROLE)
+    -> ^(TOK_SHOW_CURRENT_ROLE)
     ;
 
 setRole
@@ -1758,11 +1784,11 @@ setRole
 @after {popMsg(state);}
     : KW_SET KW_ROLE 
     (
-    (KW_ALL) => (all=KW_ALL) -> ^(TOK_SHOW_SET_ROLE Identifier[$all.text])
+    (KW_ALL) => (all=KW_ALL) -> ^(TOK_SET_ROLE Identifier[$all.text])
     |
-    (KW_NONE) => (none=KW_NONE) -> ^(TOK_SHOW_SET_ROLE Identifier[$none.text])
+    (KW_NONE) => (none=KW_NONE) -> ^(TOK_SET_ROLE Identifier[$none.text])
     |
-    identifier -> ^(TOK_SHOW_SET_ROLE identifier)
+    identifier -> ^(TOK_SET_ROLE identifier)
     )
     ;
 
@@ -2445,9 +2471,7 @@ columnNameOrder
 @init { pushMsg("column name order", state); }
 @after { popMsg(state); }
     : identifier orderSpec=orderSpecification? nullSpec=nullOrdering?
-    -> {$orderSpec.tree == null && $nullSpec.tree == null && nullsLast()}?
-            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_LAST identifier))
-    -> {$orderSpec.tree == null && $nullSpec.tree == null && !nullsLast()}?
+    -> {$orderSpec.tree == null && $nullSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST identifier))
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec identifier))

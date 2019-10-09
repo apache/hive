@@ -174,28 +174,43 @@ public class LeafFilterFactory {
       Type parquetType) throws HiveException {
     switch (type){
       case LONG:
-        if (parquetType.asPrimitiveType().getPrimitiveTypeName() ==
-            PrimitiveType.PrimitiveTypeName.INT32) {
-          return new IntFilterPredicateLeafBuilder();
-        } else {
-          return new LongFilterPredicateLeafBuilder();
-        }
       case FLOAT:
-        if (parquetType.asPrimitiveType().getPrimitiveTypeName() ==
-            PrimitiveType.PrimitiveTypeName.FLOAT) {
-          return new FloatFilterPredicateLeafBuilder();
-        } else {
-          return new DoubleFilterPredicateLeafBuilder();
-        }
       case STRING:  // string, char, varchar
-        return new BinaryFilterPredicateLeafBuilder();
       case BOOLEAN:
-        return new BooleanFilterPredicateLeafBuilder();
+        return getLeafFilterBuilderByParquetType(parquetType);
       case DATE:
       case DECIMAL:
       case TIMESTAMP:
       default:
         String msg = "Conversion to Parquet FilterPredicate not supported for " + type;
+        LOG.debug(msg);
+        throw new HiveException(msg);
+    }
+  }
+
+  /**
+   * Creates FilterPredicateLeafBuilder as per Parquet FileSchema type
+   * @param parquetType
+   * @return
+   * @throws HiveException
+   */
+  private FilterPredicateLeafBuilder getLeafFilterBuilderByParquetType(Type parquetType) throws HiveException {
+    switch (parquetType.asPrimitiveType().getPrimitiveTypeName()){
+      case INT32: // TINYINT, SMALLINT, INT
+        return new IntFilterPredicateLeafBuilder();
+      case INT64: // LONG
+        return new LongFilterPredicateLeafBuilder();
+      case FLOAT:
+        return new FloatFilterPredicateLeafBuilder();
+      case DOUBLE:
+        return new DoubleFilterPredicateLeafBuilder();
+      case BINARY: // STRING, CHAR, VARCHAR
+        return new BinaryFilterPredicateLeafBuilder();
+      case BOOLEAN:
+        return new BooleanFilterPredicateLeafBuilder();
+      default:
+        String msg = "Conversion to Parquet FilterPredicate not supported for "
+            + parquetType.asPrimitiveType().getPrimitiveTypeName();
         LOG.debug(msg);
         throw new HiveException(msg);
     }

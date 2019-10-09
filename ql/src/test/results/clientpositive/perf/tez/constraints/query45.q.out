@@ -54,7 +54,7 @@ Vertex dependency in root stage
 Map 11 <- Reducer 14 (BROADCAST_EDGE)
 Reducer 12 <- Map 11 (SIMPLE_EDGE), Map 13 (SIMPLE_EDGE)
 Reducer 14 <- Map 13 (CUSTOM_SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (ONE_TO_ONE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
@@ -103,8 +103,8 @@ Stage-0
                                       Output:["_col0","_col1"]
                                       TableScan [TS_0] (rows=462000 width=104)
                                         default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_item_id"]
-                                <-Reducer 6 [ONE_TO_ONE_EDGE] vectorized
-                                  FORWARD [RS_128]
+                                <-Reducer 6 [SIMPLE_EDGE] vectorized
+                                  SHUFFLE [RS_128]
                                     PartitionCols:_col0
                                     Select Operator [SEL_127] (rows=5 width=104)
                                       Output:["_col0","_col1"]

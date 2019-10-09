@@ -56,12 +56,12 @@ public class GenMRRedSink2 implements NodeProcessor {
     Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(0));
-    Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
+    Task<?> currTask = mapredCtx.getCurrTask();
     String currAliasId = mapredCtx.getCurrAliasId();
     Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
-    Map<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap = ctx
+    Map<Operator<? extends OperatorDesc>, Task<?>> opTaskMap = ctx
         .getOpTaskMap();
-    Task<? extends Serializable> oldTask = opTaskMap.get(reducer);
+    Task<?> oldTask = opTaskMap.get(reducer);
 
     ctx.setCurrAliasId(currAliasId);
     ctx.setCurrTask(currTask);

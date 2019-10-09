@@ -1,0 +1,34 @@
+set hive.auto.convert.join=true;
+set hive.auto.convert.sortmerge.join=true;
+set hive.default.rcfile.serde=org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
+set hive.enforce.sortmergebucketmapjoin=true;
+set hive.exec.reducers.bytes.per.reducer=67108864;
+set hive.fetch.output.serde=org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+set hive.limit.optimize.enable=true;
+set hive.limit.pushdown.memory.usage=0.04;
+set hive.llap.io.enabled=true;
+set hive.map.aggr.hash.min.reduction=0.99;
+set hive.mapjoin.bucket.cache.size=10000;
+set hive.mapjoin.hybridgrace.hashtable=false;
+set hive.merge.mapfiles=false;
+set hive.merge.nway.joins=false;
+set hive.optimize.bucketmapjoin=true;
+set hive.optimize.index.filter=true;
+set hive.stats.fetch.bitvector=false;
+set hive.stats.fetch.column.stats=true;
+set hive.support.quoted.identifiers=none;
+set hive.tez.auto.reducer.parallelism=true;
+set hive.tez.bucket.pruning=true;
+set hive.vectorized.execution.enabled=true;
+set hive.vectorized.execution.mapjoin.minmax.enabled=true;
+set hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled=true;
+set hive.vectorized.groupby.checkinterval=4096;
+
+drop table if exists TLIMITOFFSET;
+create table if not exists TLIMITOFFSET (name string, id int, flag string) STORED AS orc;
+create table if not exists TLIMITOFFSETSTAGE (name string, id int, flag string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n' STORED AS TEXTFILE ;
+LOAD DATA LOCAL INPATH '../../data/files/tjoin3.txt' OVERWRITE INTO TABLE TLIMITOFFSETSTAGE;
+INSERT INTO TABLE TLIMITOFFSET SELECT * from TLIMITOFFSETSTAGE;
+
+SELECT name,id FROM TLIMITOFFSET where name='testname' ORDER BY id LIMIT 20;
+SELECT name,id FROM TLIMITOFFSET where name='testname' ORDER BY id LIMIT 20 OFFSET 10;

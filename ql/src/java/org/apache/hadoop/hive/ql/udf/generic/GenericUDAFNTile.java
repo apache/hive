@@ -38,17 +38,15 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 
+@Description(
+        name = "rank",
+        value = "_FUNC_(x) NTILE allows easy calculation of tertiles, quartiles, deciles and other "
+                +"common summary statistics. This function divides an ordered partition into a "
+                + "specified number of groups called buckets and assigns a bucket number to each row "
+                + "in the partition.")
 @WindowFunctionDescription(
-  description = @Description(
-    name = "rank",
-    value = "_FUNC_(x) NTILE allows easy calculation of tertiles, quartiles, deciles and other "
-            +"common summary statistics. This function divides an ordered partition into a "
-            + "specified number of groups called buckets and assigns a bucket number to each row "
-            + "in the partition."
-  ),
-  supportsWindow = false,
-  pivotResult = true
-)
+        supportsWindow = false,
+        pivotResult = true)
 public class GenericUDAFNTile extends AbstractGenericUDAFResolver {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFNTile.class.getName());

@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.thrift;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.security.PrivilegedExceptionAction;
@@ -35,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.NewCookie;
 
+import com.google.common.io.ByteStreams;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -238,6 +240,14 @@ public class ThriftHttpServlet extends TServlet {
       // to send a request with empty header
       if (!(e instanceof HttpEmptyAuthenticationException)) {
         LOG.error("Error: ", e);
+      }
+      // Wait until all the data is received and then respond with 401
+      if (request.getContentLength() < 0) {
+        try {
+          ByteStreams.skipFully(request.getInputStream(), Integer.MAX_VALUE);
+        } catch (EOFException ex) {
+          LOG.info(ex.getMessage());
+        }
       }
       // Send a 401 to the client
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

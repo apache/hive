@@ -14,22 +14,31 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
+
 <FindBugsFilter>
-    <Match>
-       <Class name="~org.apache.hadoop.hive.metastore.parser.*" />
-    </Match>
-     <Match>
-        <Class name="org.apache.hadoop.hive.ql.parse.HiveLexer" />
-    </Match>
-     <Match>
-        <Class name="org.apache.hadoop.hive.ql.parse.HiveParser" />
-    </Match>
-    <Match>
-        <Class name="~org.apache.hadoop.hive.metastore.api.*" />
-    </Match>
-     <Match>
-        <Class name="~org.apache.hadoop.hive.ql.plan.api.*" />
-    </Match>
-    
-    
+  <Match>
+    <Class name="~org.apache.hadoop.hive.metastore.parser.*" />
+  </Match>
+  <Match>
+    <Class name="~org.apache.hadoop.hive.metastore.api.*" />
+  </Match>
+  <Match>
+    <Class name="~org.apache.hadoop.hive.ql.parse.HiveParser.*" />
+  </Match>
+  <Match>
+    <Class name="~org.apache.hadoop.hive.ql.parse.HiveLexer.*" />
+  </Match>
+  <Match>
+    <Class name="~org.apache.hadoop.hive.ql.parse.HintParser.*" />
+  </Match>
+  <Match>
+    <Package name="org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen" />
+  </Match>
+  <Match>
+    <Package name="org.apache.hadoop.hive.ql.exec.vector.expressions.gen" />
+  </Match>
+  <Match>
+    <Class name="~org.apache.hadoop.hive.ql.plan.api.*" />
+  </Match>
 </FindBugsFilter>
+

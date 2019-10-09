@@ -16,7 +16,12 @@
  */
 package org.apache.hadoop.hive.accumulo;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.List;
 import java.sql.Date;
 import java.sql.Timestamp;
 
@@ -43,6 +48,10 @@ public class AccumuloTestSetup extends QTestMiniClusters.QTestSetup {
 
   public static final String PASSWORD = "password";
   public static final String TABLE_NAME = "accumuloHiveTable";
+  public static final List<String> EXTRA_ZOOKEEPER_CONFIG = Arrays.asList(
+    "4lw.commands.whitelist=*",
+    "admin.enableServer=false"
+  );
 
   private MiniAccumuloCluster miniCluster;
 
@@ -68,12 +77,33 @@ public class AccumuloTestSetup extends QTestMiniClusters.QTestSetup {
       cfg.setNumTservers(1);
 
       miniCluster = new MiniAccumuloCluster(cfg);
+      appendZooKeeperConf(EXTRA_ZOOKEEPER_CONFIG, tmpDir);
       miniCluster.start();
 
       createAccumuloTable(miniCluster.getConnector("root", PASSWORD));
     }
 
     updateConf(conf);
+  }
+
+  /**
+   * Update ZooKeeper config file with the provided lines
+   *
+   * (unfortunately Accumulo Mini Cluster does not allow to customize the ZooKeeper config
+   * or to add additional system properties for the JVM of ZooKeeper, so we have to append the
+   * ZooKeeper config file directly)
+   */
+  private void appendZooKeeperConf(List<String> newLines, File tmpDir) throws Exception {
+    try (FileWriter f = new FileWriter(tmpDir.getAbsolutePath()+"/conf/zoo.cfg", true);
+         BufferedWriter b = new BufferedWriter(f);
+         PrintWriter p = new PrintWriter(b);) {
+
+      p.println("");
+      for(String line : newLines) {
+        p.println(line);
+
+      }
+    }
   }
 
   /**

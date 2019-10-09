@@ -429,6 +429,13 @@ public abstract class HadoopThriftAuthBridge {
     }
 
     /**
+     * Similar to the above function, except use client facing UGI.
+     */
+    public TTransportFactory wrapTransportFactoryInClientUGI(TTransportFactory transFactory) {
+      return new TUGIAssumingTransportFactory(transFactory, clientValidationUGI);
+    }
+
+    /**
      * Wrap a TProcessor in such a way that, before processing any RPC, it
      * assumes the UserGroupInformation of the user authenticated by
      * the SASL transport.

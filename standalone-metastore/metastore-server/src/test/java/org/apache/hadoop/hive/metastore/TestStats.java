@@ -195,7 +195,9 @@ public class TestStats {
 
     for (Column col : cols) objs.add(col.generate());
 
-    return new ColumnStatistics(desc, objs, ENGINE);
+    ColumnStatistics columnStatistics = new ColumnStatistics(desc, objs);
+    columnStatistics.setEngine(ENGINE);
+    return columnStatistics;
   }
 
   private void dropStats(String catName, String dbName, String tableName, String partName,

@@ -246,11 +246,11 @@ POSTHOOK: query: select unix_timestamp(current_timestamp()),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-1325379723	1	2	3
-1325379723	1	2	3
-1325379723	1	2	3
-1325379723	1	2	3
-1325379723	1	2	3
+1325408523	1	2	3
+1325408523	1	2	3
+1325408523	1	2	3
+1325408523	1	2	3
+1325408523	1	2	3
 PREHOOK: query: select to_date(current_timestamp()),
                            year(current_timestamp()),
                            month(current_timestamp()),

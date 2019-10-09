@@ -574,7 +574,7 @@ public class TestUtilities {
     verify(pool).shutdownNow();
   }
 
-  private Task<? extends Serializable> getDependencyCollectionTask(){
+  private Task<?> getDependencyCollectionTask(){
     return TaskFactory.get(new DependencyCollectionWork());
   }
 
@@ -587,7 +587,7 @@ public class TestUtilities {
    *      \            /
    *       ---->DTc----
    */
-  private List<Task<? extends Serializable>> getTestDiamondTaskGraph(Task<? extends Serializable> providedTask){
+  private List<Task<?>> getTestDiamondTaskGraph(Task<?> providedTask){
     // Note: never instantiate a task without TaskFactory.get() if you're not
     // okay with .equals() breaking. Doing it via TaskFactory.get makes sure
     // that an id is generated, and two tasks of the same type don't show
@@ -595,12 +595,12 @@ public class TestUtilities {
     // array. Without this, DTa, DTb, and DTc would show up as one item in
     // the list of children. Thus, we're instantiating via a helper method
     // that instantiates via TaskFactory.get()
-    Task<? extends Serializable> root = getDependencyCollectionTask();
-    Task<? extends Serializable> DTa = getDependencyCollectionTask();
-    Task<? extends Serializable> DTb = getDependencyCollectionTask();
-    Task<? extends Serializable> DTc = getDependencyCollectionTask();
-    Task<? extends Serializable> DTd = getDependencyCollectionTask();
-    Task<? extends Serializable> DTe = getDependencyCollectionTask();
+    Task<?> root = getDependencyCollectionTask();
+    Task<?> DTa = getDependencyCollectionTask();
+    Task<?> DTb = getDependencyCollectionTask();
+    Task<?> DTc = getDependencyCollectionTask();
+    Task<?> DTd = getDependencyCollectionTask();
+    Task<?> DTe = getDependencyCollectionTask();
 
     root.addDependentTask(DTa);
     root.addDependentTask(DTb);
@@ -614,7 +614,7 @@ public class TestUtilities {
 
     providedTask.addDependentTask(DTe);
 
-    List<Task<? extends Serializable>> retVals = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> retVals = new ArrayList<Task<?>>();
     retVals.add(root);
     return retVals;
   }
@@ -626,21 +626,21 @@ public class TestUtilities {
    */
   public class CountingWrappingTask extends DependencyCollectionTask {
     int count;
-    Task<? extends Serializable> wrappedDep = null;
+    Task<?> wrappedDep = null;
 
-    public CountingWrappingTask(Task<? extends Serializable> dep) {
+    public CountingWrappingTask(Task<?> dep) {
       count = 0;
       wrappedDep = dep;
       super.addDependentTask(wrappedDep);
     }
 
     @Override
-    public boolean addDependentTask(Task<? extends Serializable> dependent) {
+    public boolean addDependentTask(Task<?> dependent) {
       return wrappedDep.addDependentTask(dependent);
     }
 
     @Override
-    public List<Task<? extends Serializable>> getDependentTasks() {
+    public List<Task<?>> getDependentTasks() {
       count++;
       System.err.println("YAH:getDepTasks got called!");
       (new Exception()).printStackTrace(System.err);

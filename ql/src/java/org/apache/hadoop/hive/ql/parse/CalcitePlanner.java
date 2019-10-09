@@ -354,12 +354,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   @SuppressWarnings("nls")
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     if (runCBO) {
-      super.analyzeInternal(ast, new PlannerContextFactory() {
-        @Override
-        public PlannerContext create() {
-          return new PreCboCtx();
-        }
-      });
+      super.analyzeInternal(ast, PreCboCtx::new);
     } else {
       super.analyzeInternal(ast);
     }
@@ -1604,8 +1599,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
   // SemanticAnalyzer
   Operator<?> handleInsertStatement(String dest, Operator<?> input, RowResolver inputRR, QB qb)
       throws SemanticException {
-    ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
-    ArrayList<ColumnInfo> columns = inputRR.getColumnInfos();
+    List<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
+    List<ColumnInfo> columns = inputRR.getColumnInfos();
     for (int i = 0; i < columns.size(); i++) {
       ColumnInfo col = columns.get(i);
       colList.add(new ExprNodeColumnDesc(col));
@@ -1614,7 +1609,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     RowResolver out_rwsch = handleInsertStatementSpec(colList, dest, inputRR, qb, selExprList);
 
-    ArrayList<String> columnNames = new ArrayList<String>();
+    List<String> columnNames = new ArrayList<String>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
     for (int i = 0; i < colList.size(); i++) {
       String outputCol = getColumnInternalName(i);
@@ -1786,8 +1781,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       try {
         calciteGenPlan = genLogicalPlan(getQB(), true, null, null);
         // if it is to create view, we do not use table alias
-        resultSchema = SemanticAnalyzer.convertRowSchemaToResultSetSchema(
-            relToHiveRR.get(calciteGenPlan),
+        resultSchema = convertRowSchemaToResultSetSchema(relToHiveRR.get(calciteGenPlan),
             getQB().isView() || getQB().isMaterializedView() ? false : HiveConf.getBoolVar(conf,
                 HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
       } catch (SemanticException e) {
@@ -1968,8 +1962,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 10. Sort predicates in filter expressions
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-        calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
-            HepMatchOrder.BOTTOM_UP, HiveFilterSortPredicates.INSTANCE);
+        try {
+          calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
+              HepMatchOrder.BOTTOM_UP, HiveFilterSortPredicates.INSTANCE);
+        } catch (Exception e) {
+          boolean isMissingStats = noColsMissingStats.get() > 0;
+          if (isMissingStats) {
+            LOG.warn("Missing column stats (see previous messages), " +
+                    "skipping sort predicates in filter expressions in CBO");
+            noColsMissingStats.set(0);
+          } else {
+            throw e;
+          }
+        }
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
             "Calcite: Sort predicates within filter operators");
       }
@@ -2493,8 +2498,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // SetOp Rel
       RowResolver leftRR = this.relToHiveRR.get(leftRel);
       RowResolver rightRR = this.relToHiveRR.get(rightRel);
-      HashMap<String, ColumnInfo> leftmap = leftRR.getFieldMap(leftalias);
-      HashMap<String, ColumnInfo> rightmap = rightRR.getFieldMap(rightalias);
+      Map<String, ColumnInfo> leftmap = leftRR.getFieldMap(leftalias);
+      Map<String, ColumnInfo> rightmap = rightRR.getFieldMap(rightalias);
 
       // 2. Validate that SetOp is feasible according to Hive (by using type
       // info from RR)
@@ -2916,8 +2921,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               fields.get(i).getFieldName(),
               TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i).getFieldObjectInspector()),
               tableAlias, false);
-          colInfo.setSkewedCol((SemanticAnalyzer.isSkewedCol(tableAlias, qb, colName)) ? true
-              : false);
+          colInfo.setSkewedCol(isSkewedCol(tableAlias, qb, colName));
           rr.put(tableAlias, colName, colInfo);
           cInfoLst.add(colInfo);
         }
@@ -3272,7 +3276,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Output types. They will be the concatenation of the input refs types and
       // the types of the expressions for the lateral view generated rows
       // Generate all expressions from lateral view
-      ExprNodeDesc valuesExpr = genExprNodeDesc(valuesClause, inputRR, false);
+      ExprNodeDesc valuesExpr = genExprNodeDesc(valuesClause, inputRR, false, false);
       RexCall convertedOriginalValuesExpr = (RexCall) new RexNodeConverter(this.cluster, inputRel.getRowType(),
               inputPosMap, 0, false).convert(valuesExpr);
       RelDataType valuesRowType = ((ArraySqlType) convertedOriginalValuesExpr.getType()).getComponentType();
@@ -3677,7 +3681,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           GenericUDAFEvaluator genericUDAFEvaluator = null;
           if (aggName.toLowerCase().equals(FunctionRegistry.LEAD_FUNC_NAME)
               || aggName.toLowerCase().equals(FunctionRegistry.LAG_FUNC_NAME)) {
-            ArrayList<ObjectInspector> originalParameterTypeInfos = SemanticAnalyzer
+            List<ObjectInspector> originalParameterTypeInfos = SemanticAnalyzer
                 .getWritableObjectInspector(aggParameters);
             genericUDAFEvaluator = FunctionRegistry.getGenericWindowingEvaluator(aggName,
                 originalParameterTypeInfos, isDistinct, isAllColumns);
@@ -3751,7 +3755,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // As we said before, here we use genSelectLogicalPlan to rewrite AllColRef
           srcRel = genSelectLogicalPlan(qb, srcRel, srcRel, null, null, true).getKey();
           RowResolver rr = this.relToHiveRR.get(srcRel);
-          qbp.setSelExprForClause(detsClauseName, SemanticAnalyzer.genSelectDIAST(rr));
+          qbp.setSelExprForClause(detsClauseName, genSelectDIAST(rr));
         }
       }
 
@@ -3762,7 +3766,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       List<ASTNode> grpByAstExprs = getGroupByForClause(qbp, detsClauseName);
-      HashMap<String, ASTNode> aggregationTrees = qbp.getAggregationExprsForClause(detsClauseName);
+      Map<String, ASTNode> aggregationTrees = qbp.getAggregationExprsForClause(detsClauseName);
       boolean hasGrpByAstExprs = (grpByAstExprs != null && !grpByAstExprs.isEmpty()) ? true : false;
       boolean hasAggregationTrees = (aggregationTrees != null && !aggregationTrees.isEmpty()) ? true
           : false;
@@ -3825,7 +3829,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         int groupingColsSize = gbExprNDescLst.size();
         List<Long> groupingSets = null;
         if (cubeRollupGrpSetPresent) {
-          groupingSets = getGroupByGroupingSetsForClause(qbp, detsClauseName).getSecond();
+          groupingSets = getGroupByGroupingSetsForClause(qbp, detsClauseName).getRight();
         }
 
         // 6. Construct aggregation function Info
@@ -4599,7 +4603,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         } else {
           // 6.3 Get rid of TOK_SELEXPR
           expr = (ASTNode) child.getChild(0);
-          String[] colRef = SemanticAnalyzer.getColAlias(child, getAutogenColAliasPrfxLbl(),
+          String[] colRef = getColAlias(child, getAutogenColAliasPrfxLbl(),
                   inputRR, autogenColAliasPrfxIncludeFuncName(), i);
           tabAlias = colRef[0];
           colAlias = colRef[1];
@@ -4636,7 +4640,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL
                   && !hasAsClause
                   && !inputRR.getIsExprResolver()
-                  && SemanticAnalyzer.isRegex(
+                  && isRegex(
                   unescapeIdentifier(expr.getChild(0).getText()), conf)) {
             // In case the expression is a regex COL.
             // This can only happen without AS clause
@@ -4649,7 +4653,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   .getChild(0).getText().toLowerCase()))
                   && !hasAsClause
                   && !inputRR.getIsExprResolver()
-                  && SemanticAnalyzer.isRegex(
+                  && isRegex(
                   unescapeIdentifier(expr.getChild(1).getText()), conf)) {
             // In case the expression is TABLE.COL (col can be regex).
             // This can only happen without AS clause
@@ -4818,11 +4822,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // ObjectInspector that can be used to initialize the UDTF. Then, the
       // resulting output object inspector can be used to make the RowResolver
       // for the UDTF operator
-      ArrayList<ColumnInfo> inputCols = selectRR.getColumnInfos();
+      List<ColumnInfo> inputCols = selectRR.getColumnInfos();
 
       // Create the object inspector for the input columns and initialize the
       // UDTF
-      ArrayList<String> colNames = new ArrayList<String>();
+      List<String> colNames = new ArrayList<String>();
       ObjectInspector[] colOIs = new ObjectInspector[inputCols.size()];
       for (int i = 0; i < inputCols.size(); i++) {
         colNames.add(inputCols.get(i).getInternalName());
@@ -4848,7 +4852,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       // Generate the output column info's / row resolver using internal names.
-      ArrayList<ColumnInfo> udtfCols = new ArrayList<ColumnInfo>();
+      List<ColumnInfo> udtfCols = new ArrayList<ColumnInfo>();
 
       Iterator<String> colAliasesIter = colAliases.iterator();
       for (StructField sf : outputOI.getAllStructFieldRefs()) {
@@ -5174,12 +5178,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         List<ExprNodeDesc> col_list, RowResolver inputRR) {
       // Build a map of Hive column Names (ExprNodeColumnDesc Name)
       // to the positions of those projections in the input
-      Map<Integer, ExprNodeDesc> hashCodeTocolumnDescMap = new HashMap<Integer, ExprNodeDesc>();
+      Multimap<Integer, ExprNodeColumnDesc> hashCodeTocolumnDescMap = ArrayListMultimap.create();
       ExprNodeDescUtils.getExprNodeColumnDesc(col_list, hashCodeTocolumnDescMap);
       ImmutableMap.Builder<String, Integer> hiveColNameToInputPosMapBuilder = new ImmutableMap.Builder<String, Integer>();
       String exprNodecolName;
-      for (ExprNodeDesc exprDesc : hashCodeTocolumnDescMap.values()) {
-        exprNodecolName = ((ExprNodeColumnDesc) exprDesc).getColumn();
+      for (ExprNodeColumnDesc exprDesc : hashCodeTocolumnDescMap.values()) {
+        exprNodecolName = exprDesc.getColumn();
         hiveColNameToInputPosMapBuilder.put(exprNodecolName, inputRR.getPosition(exprNodecolName));
       }
 

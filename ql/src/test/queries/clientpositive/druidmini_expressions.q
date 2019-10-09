@@ -155,8 +155,8 @@ SELECT SUM((`druid_table_alias`.`cdouble` * `druid_table_alias`.`cdouble`)) AS `
 FROM `default`.`druid_table_alltypesorc` `druid_table_alias`
 GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE);
 
-explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_alltypesorc  order by date_1, date_2 limit 3;
-SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_alltypesorc  order by date_1, date_2 limit 3;
+explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2, cast(`__time` as date) as orig_date, CAST((cdouble / 1000) AS INT) as offset from druid_table_alltypesorc  order by date_1, date_2 limit 3;
+SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2, cast(`__time` as date) as orig_date, CAST((cdouble / 1000) AS INT) as offset from druid_table_alltypesorc  order by date_1, date_2 limit 3;
 
   -- Boolean Values
 -- Expected results of this query are wrong due to https://issues.apache.org/jira/browse/CALCITE-2319

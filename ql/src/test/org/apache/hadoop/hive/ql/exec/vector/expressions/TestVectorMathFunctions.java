@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.serde2.RandomTypeUtil;
@@ -62,6 +63,8 @@ import org.junit.Test;
 
 
 public class TestVectorMathFunctions {
+
+  private HiveConf hiveConf = new HiveConf();
 
   private static final double eps = 1.0e-7;
   private static boolean equalsWithinTolerance(double a, double b) {
@@ -829,7 +832,7 @@ public class TestVectorMathFunctions {
     BytesColumnVector resultV = (BytesColumnVector) b.cols[2];
     b.cols[0].noNulls = true;
     VectorExpression expr = new FuncBin(1, 2);
-    expr.transientInit();
+    expr.transientInit(hiveConf);
     expr.evaluate(b);
     String s = new String(resultV.vector[1], resultV.start[1], resultV.length[1]);
     Assert.assertEquals("11111111", s);
@@ -843,7 +846,7 @@ public class TestVectorMathFunctions {
     BytesColumnVector resultV = (BytesColumnVector) b.cols[2];
     b.cols[1].noNulls = true;
     VectorExpression expr = new FuncHex(1, 2);
-    expr.transientInit();
+    expr.transientInit(hiveConf);
     expr.evaluate(b);
     String s = new String(resultV.vector[1], resultV.start[1], resultV.length[1]);
     Assert.assertEquals("FF", s);

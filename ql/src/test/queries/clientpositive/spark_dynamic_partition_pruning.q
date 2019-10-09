@@ -194,7 +194,6 @@ select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) fro
 -- different file format
 create table srcpart_parquet (key int, value string) partitioned by (ds string, hr int) stored as parquet;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.vectorized.execution.enabled=false;
 set hive.exec.max.dynamic.partitions=1000;
 

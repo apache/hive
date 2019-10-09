@@ -57,6 +57,11 @@ public class ColAndCol extends VectorExpression {
 
     LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum1];
     LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum2];
+    doEvaluate(batch, inputColVector1, inputColVector2);
+  }
+
+  protected void doEvaluate(VectorizedRowBatch batch, LongColumnVector inputColVector1,
+      LongColumnVector inputColVector2) {
     int[] sel = batch.selected;
     int n = batch.size;
     long[] vector1 = inputColVector1.vector;

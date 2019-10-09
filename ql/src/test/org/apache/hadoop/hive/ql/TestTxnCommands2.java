@@ -1600,7 +1600,6 @@ public class TestTxnCommands2 {
     runStatementOnDriver("create temporary table if not exists data1 (x int)");
     runStatementOnDriver("insert into data1 values (1),(2),(1)");
     d.destroy();
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     d = new Driver(hiveConf);
 
     runStatementOnDriver(" from data1 " +
@@ -1632,7 +1631,6 @@ public class TestTxnCommands2 {
   @Ignore
   public void testDynamicPartitions() throws Exception {
     d.destroy();
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     //In DbTxnManager.acquireLocks() we have
     // 1 ReadEntity: default@values__tmp__table__1
     // 1 WriteEntity: default@acidtblpart Type=TABLE WriteType=INSERT isDP=false
@@ -1674,7 +1672,6 @@ public class TestTxnCommands2 {
   @Test
   public void testDynamicPartitionsMerge() throws Exception {
     d.destroy();
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1'),(4,4,'p2')");
 
     List<String> r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
@@ -1698,7 +1695,6 @@ public class TestTxnCommands2 {
   @Test
   public void testDynamicPartitionsMerge2() throws Exception {
     d.destroy();
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] targetVals = {{1,1,1},{2,2,2},{3,3,1},{4,4,2}};
     runStatementOnDriver("insert into " + Table.ACIDNESTEDPART + " partition(p=1,q) " + makeValuesClause(targetVals));
 

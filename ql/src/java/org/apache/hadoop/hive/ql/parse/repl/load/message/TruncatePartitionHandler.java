@@ -34,7 +34,7 @@ import java.util.Map;
 
 public class TruncatePartitionHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
+  public List<Task<?>> handle(Context context) throws SemanticException {
     AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
     String actualTblName = msg.getTable();

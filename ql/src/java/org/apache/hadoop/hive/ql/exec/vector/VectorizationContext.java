@@ -1413,10 +1413,10 @@ import com.google.common.annotations.VisibleForTesting;
           || udfClass.equals(UDFRegExpExtract.class)
           || udfClass.equals(UDFRegExpReplace.class)
           || udfClass.equals(UDFConv.class)
-          || udfClass.equals(UDFFromUnixTime.class) && isIntFamily(arg0Type(expr))
           || isCastToIntFamily(udfClass) && isStringFamily(arg0Type(expr))
           || isCastToFloatFamily(udfClass) && isStringFamily(arg0Type(expr));
-    } else if ((gudf instanceof GenericUDFTimestamp && isStringFamily(arg0Type(expr)))
+    } else if (gudf instanceof GenericUDFFromUnixTime && isIntFamily(arg0Type(expr))
+          || (gudf instanceof GenericUDFTimestamp && isStringFamily(arg0Type(expr)))
 
             /* GenericUDFCase and GenericUDFWhen are implemented with the UDF Adaptor because
              * of their complexity and generality. In the future, variations of these
@@ -1966,10 +1966,10 @@ import com.google.common.annotations.VisibleForTesting;
         builder.setInputExpressionType(i, InputExpressionType.COLUMN);
       } else if (child instanceof ExprNodeConstantDesc) {
         if (isNullConst(child)) {
-          // Cannot handle NULL scalar parameter.
-          return null;
+          builder.setInputExpressionType(i, InputExpressionType.NULLSCALAR);
+        }else {
+          builder.setInputExpressionType(i, InputExpressionType.SCALAR);
         }
-        builder.setInputExpressionType(i, InputExpressionType.SCALAR);
       } else if (child instanceof ExprNodeDynamicValueDesc) {
         builder.setInputExpressionType(i, InputExpressionType.DYNAMICVALUE);
       } else {
@@ -2125,9 +2125,7 @@ import com.google.common.annotations.VisibleForTesting;
       vectorExpression.setChildExpressions(children.toArray(new VectorExpression[0]));
     }
 
-    for (VectorExpression ve : children) {
-      ocm.freeOutputColumn(ve.getOutputColumnNum());
-    }
+    freeNonColumns(children.toArray(new VectorExpression[0]));
 
     return vectorExpression;
   }
@@ -4067,10 +4065,10 @@ import com.google.common.annotations.VisibleForTesting;
     } else if (varcharTypePattern.matcher(typeString).matches()) {
       return ((HiveVarchar) constDesc.getValue()).getValue().getBytes(StandardCharsets.UTF_8);
     } else if (typeString.equalsIgnoreCase("boolean")) {
-      if (constDesc.getValue().equals(Boolean.TRUE)) {
-        return 1;
-      } else {
-        return 0;
+      if (constDesc.getValue() == null) {
+        return null;
+      }else{
+        return constDesc.getValue().equals(Boolean.TRUE) ? 1 : 0;
       }
     } else if (decimalTypePattern.matcher(typeString).matches()) {
       return constDesc.getValue();

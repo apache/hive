@@ -168,7 +168,7 @@ public class NullScanTaskDispatcher implements Dispatcher {
   @Override
   public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
-    Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
+    Task<?> task = (Task<?>) nd;
 
     // create a the context for walking operators
     ParseContext parseContext = physicalContext.getParseContext();

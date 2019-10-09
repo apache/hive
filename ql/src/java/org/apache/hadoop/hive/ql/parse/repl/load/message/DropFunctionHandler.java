@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.function.DropFunctionDesc;
+import org.apache.hadoop.hive.ql.ddl.function.drop.DropFunctionDesc;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -31,7 +31,7 @@ import java.util.List;
 
 public class DropFunctionHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     DropFunctionMessage msg = deserializer.getDropFunctionMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;

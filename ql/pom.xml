@@ -120,11 +120,6 @@
        <version>${commons-lang3.version}</version>
     </dependency>
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>${commons-lang.version}</version>
-    </dependency>
-    <dependency>
       <groupId>javolution</groupId>
       <artifactId>javolution</artifactId>
       <version>${javolution.version}</version>
@@ -132,6 +127,11 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-1.2-api</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
       <version>${log4j2.version}</version>
     </dependency>
     <dependency>
@@ -987,6 +987,9 @@
                   <include>io.airlift:aircompressor</include>
                   <include>org.codehaus.jackson:jackson-core-asl</include>
                   <include>org.codehaus.jackson:jackson-mapper-asl</include>
+                  <include>com.fasterxml.jackson.core:jackson-core</include>
+                  <include>com.fasterxml.jackson.core:jackson-annotations</include>
+                  <include>com.fasterxml.jackson.core:jackson-databind</include>
                   <include>com.google.guava:guava</include>
                   <include>net.sf.opencsv:opencsv</include>
                   <include>org.apache.hive:hive-spark-client</include>
@@ -996,6 +999,10 @@
                   <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
                   <include>com.google.re2j:re2j</include>
+                  <include>io.dropwizard.metrics:metrics-core</include>
+                  <include>io.dropwizard.metrics:metrics-jvm</include>
+                  <include>io.dropwizard.metrics:metrics-json</include>
+                  <include>com.zaxxer:HikariCP</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -1006,6 +1013,22 @@
                 <relocation>
                   <pattern>org.objenesis</pattern>
                   <shadedPattern>org.apache.hive.org.objenesis</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.fasterxml.jackson</pattern>
+                  <shadedPattern>org.apache.hive.com.fasterxml.jackson</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.codahale.metrics</pattern>
+                  <shadedPattern>org.apache.hive.com.codahale.metrics</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.zaxxer.hikari</pattern>
+                  <shadedPattern>org.apache.hive.com.zaxxer.hikari</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.guava</pattern>
+                  <shadedPattern>org.apache.hive.com.google.guava</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
@@ -1032,7 +1055,7 @@
           </execution>
           <execution>
             <id>add-test-sources</id>
-            <phase>generate-test-sources</phase>
+            <phase>generate-sources</phase>
             <goals>
               <goal>add-test-source</goal>
             </goals>

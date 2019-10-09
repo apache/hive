@@ -184,7 +184,6 @@ import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfWeek;
 import org.apache.hadoop.hive.ql.udf.UDFDegrees;
 import org.apache.hadoop.hive.ql.udf.UDFExp;
-import org.apache.hadoop.hive.ql.udf.UDFFromUnixTime;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
@@ -431,7 +430,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFSecond.class);
     supportedGenericUDFs.add(UDFWeekOfYear.class);
     supportedGenericUDFs.add(GenericUDFToUnixTimeStamp.class);
-    supportedGenericUDFs.add(UDFFromUnixTime.class);
+    supportedGenericUDFs.add(GenericUDFFromUnixTime.class);
 
     supportedGenericUDFs.add(GenericUDFDateAdd.class);
     supportedGenericUDFs.add(GenericUDFDateSub.class);
@@ -990,7 +989,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
-      Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
+      Task<?> currTask = (Task<?>) nd;
       if (currTask instanceof MapRedTask) {
         MapredWork mapredWork = ((MapRedTask) currTask).getWork();
 
@@ -3178,7 +3177,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
 
-    ArrayList<ExprNodeDesc> parameters = aggDesc.getParameters();
+    List<ExprNodeDesc> parameters = aggDesc.getParameters();
 
     if (parameters != null && !validateExprNodeDesc(parameters, "Aggregation Function UDF " + udfName + " parameter")) {
       return false;
@@ -4604,7 +4603,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     // For now, we don't support group by on DECIMAL_64 keys.
     VectorExpression[] vecKeyExpressions =
         vContext.getVectorExpressionsUpConvertDecimal64(keysDesc);
-    ArrayList<AggregationDesc> aggrDesc = groupByDesc.getAggregators();
+    List<AggregationDesc> aggrDesc = groupByDesc.getAggregators();
     final int size = aggrDesc.size();
 
     VectorAggregationDesc[] vecAggrDescs = new VectorAggregationDesc[size];
@@ -4821,7 +4820,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<WindowFunctionDef> windowsFunctions = windowTableFunctionDef.getWindowFunctions();
     final int functionCount = windowsFunctions.size();
 
-    ArrayList<ColumnInfo> outputSignature = ptfOp.getSchema().getSignature();
+    List<ColumnInfo> outputSignature = ptfOp.getSchema().getSignature();
     final int outputSize = outputSignature.size();
 
     /*

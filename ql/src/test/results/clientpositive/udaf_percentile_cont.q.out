@@ -13,6 +13,7 @@ Function type:BUILTIN
 PREHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
        percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
@@ -22,65 +23,67 @@ PREHOOK: Input: default@src
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
        percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0	0.0	4.5	9.0
-1	10.0	15.0	19.0
-10	100.0	103.0	105.0
-11	111.0	117.0	119.0
-12	120.0	127.0	129.0
-13	131.0	137.0	138.0
-14	143.0	146.0	149.0
-15	150.0	154.0	158.0
-16	160.0	166.5	169.0
-17	170.0	175.0	179.0
-18	180.0	186.5	189.0
-19	190.0	194.5	199.0
-2	20.0	26.0	28.0
-20	200.0	205.0	209.0
-21	213.0	216.5	219.0
-22	221.0	224.0	229.0
-23	230.0	234.0	239.0
-24	241.0	244.0	249.0
-25	252.0	256.0	258.0
-26	260.0	264.0	266.0
-27	272.0	275.0	278.0
-28	280.0	283.5	289.0
-29	291.0	297.0	298.0
-3	30.0	35.0	37.0
-30	302.0	307.0	309.0
-31	310.0	316.0	318.0
-32	321.0	324.0	327.0
-33	331.0	333.0	339.0
-34	341.0	345.0	348.0
-35	351.0	353.0	356.0
-36	360.0	367.0	369.0
-37	373.0	376.0	379.0
-38	382.0	384.0	389.0
-39	392.0	396.0	399.0
-4	41.0	42.5	47.0
-40	400.0	403.5	409.0
-41	411.0	415.5	419.0
-42	421.0	425.5	429.0
-43	430.0	435.0	439.0
-44	443.0	446.0	449.0
-45	452.0	455.0	459.0
-46	460.0	467.5	469.0
-47	470.0	477.0	479.0
-48	480.0	484.0	489.0
-49	490.0	494.5	498.0
-5	51.0	54.0	58.0
-6	64.0	66.5	69.0
-7	70.0	73.0	78.0
-8	80.0	84.0	87.0
-9	90.0	95.0	98.0
+0	0.0	4.5	4.5	9.0
+1	10.0	15.0	15.0	19.0
+10	100.0	103.0	103.0	105.0
+11	111.0	117.0	117.0	119.0
+12	120.0	127.0	127.0	129.0
+13	131.0	137.0	137.0	138.0
+14	143.0	146.0	146.0	149.0
+15	150.0	154.0	154.0	158.0
+16	160.0	166.5	166.5	169.0
+17	170.0	175.0	175.0	179.0
+18	180.0	186.5	186.5	189.0
+19	190.0	194.5	194.5	199.0
+2	20.0	26.0	26.0	28.0
+20	200.0	205.0	205.0	209.0
+21	213.0	216.5	216.5	219.0
+22	221.0	224.0	224.0	229.0
+23	230.0	234.0	234.0	239.0
+24	241.0	244.0	244.0	249.0
+25	252.0	256.0	256.0	258.0
+26	260.0	264.0	264.0	266.0
+27	272.0	275.0	275.0	278.0
+28	280.0	283.5	283.5	289.0
+29	291.0	297.0	297.0	298.0
+3	30.0	35.0	35.0	37.0
+30	302.0	307.0	307.0	309.0
+31	310.0	316.0	316.0	318.0
+32	321.0	324.0	324.0	327.0
+33	331.0	333.0	333.0	339.0
+34	341.0	345.0	345.0	348.0
+35	351.0	353.0	353.0	356.0
+36	360.0	367.0	367.0	369.0
+37	373.0	376.0	376.0	379.0
+38	382.0	384.0	384.0	389.0
+39	392.0	396.0	396.0	399.0
+4	41.0	42.5	42.5	47.0
+40	400.0	403.5	403.5	409.0
+41	411.0	415.5	415.5	419.0
+42	421.0	425.5	425.5	429.0
+43	430.0	435.0	435.0	439.0
+44	443.0	446.0	446.0	449.0
+45	452.0	455.0	455.0	459.0
+46	460.0	467.5	467.5	469.0
+47	470.0	477.0	477.0	479.0
+48	480.0	484.0	484.0	489.0
+49	490.0	494.5	494.5	498.0
+5	51.0	54.0	54.0	58.0
+6	64.0	66.5	66.5	69.0
+7	70.0	73.0	73.0	78.0
+8	80.0	84.0	84.0	87.0
+9	90.0	95.0	95.0	98.0
 PREHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
        percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
@@ -90,65 +93,67 @@ PREHOOK: Input: default@src
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
        percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0	0.0	4.5	9.0
-1	10.0	15.0	19.0
-10	100.0	103.0	105.0
-11	111.0	117.0	119.0
-12	120.0	127.0	129.0
-13	131.0	137.0	138.0
-14	143.0	146.0	149.0
-15	150.0	154.0	158.0
-16	160.0	166.5	169.0
-17	170.0	175.0	179.0
-18	180.0	186.5	189.0
-19	190.0	194.5	199.0
-2	20.0	26.0	28.0
-20	200.0	205.0	209.0
-21	213.0	216.5	219.0
-22	221.0	224.0	229.0
-23	230.0	234.0	239.0
-24	241.0	244.0	249.0
-25	252.0	256.0	258.0
-26	260.0	264.0	266.0
-27	272.0	275.0	278.0
-28	280.0	283.5	289.0
-29	291.0	297.0	298.0
-3	30.0	35.0	37.0
-30	302.0	307.0	309.0
-31	310.0	316.0	318.0
-32	321.0	324.0	327.0
-33	331.0	333.0	339.0
-34	341.0	345.0	348.0
-35	351.0	353.0	356.0
-36	360.0	367.0	369.0
-37	373.0	376.0	379.0
-38	382.0	384.0	389.0
-39	392.0	396.0	399.0
-4	41.0	42.5	47.0
-40	400.0	403.5	409.0
-41	411.0	415.5	419.0
-42	421.0	425.5	429.0
-43	430.0	435.0	439.0
-44	443.0	446.0	449.0
-45	452.0	455.0	459.0
-46	460.0	467.5	469.0
-47	470.0	477.0	479.0
-48	480.0	484.0	489.0
-49	490.0	494.5	498.0
-5	51.0	54.0	58.0
-6	64.0	66.5	69.0
-7	70.0	73.0	78.0
-8	80.0	84.0	87.0
-9	90.0	95.0	98.0
+0	0.0	4.5	4.5	9.0
+1	10.0	15.0	15.0	19.0
+10	100.0	103.0	103.0	105.0
+11	111.0	117.0	117.0	119.0
+12	120.0	127.0	127.0	129.0
+13	131.0	137.0	137.0	138.0
+14	143.0	146.0	146.0	149.0
+15	150.0	154.0	154.0	158.0
+16	160.0	166.5	166.5	169.0
+17	170.0	175.0	175.0	179.0
+18	180.0	186.5	186.5	189.0
+19	190.0	194.5	194.5	199.0
+2	20.0	26.0	26.0	28.0
+20	200.0	205.0	205.0	209.0
+21	213.0	216.5	216.5	219.0
+22	221.0	224.0	224.0	229.0
+23	230.0	234.0	234.0	239.0
+24	241.0	244.0	244.0	249.0
+25	252.0	256.0	256.0	258.0
+26	260.0	264.0	264.0	266.0
+27	272.0	275.0	275.0	278.0
+28	280.0	283.5	283.5	289.0
+29	291.0	297.0	297.0	298.0
+3	30.0	35.0	35.0	37.0
+30	302.0	307.0	307.0	309.0
+31	310.0	316.0	316.0	318.0
+32	321.0	324.0	324.0	327.0
+33	331.0	333.0	333.0	339.0
+34	341.0	345.0	345.0	348.0
+35	351.0	353.0	353.0	356.0
+36	360.0	367.0	367.0	369.0
+37	373.0	376.0	376.0	379.0
+38	382.0	384.0	384.0	389.0
+39	392.0	396.0	396.0	399.0
+4	41.0	42.5	42.5	47.0
+40	400.0	403.5	403.5	409.0
+41	411.0	415.5	415.5	419.0
+42	421.0	425.5	425.5	429.0
+43	430.0	435.0	435.0	439.0
+44	443.0	446.0	446.0	449.0
+45	452.0	455.0	455.0	459.0
+46	460.0	467.5	467.5	469.0
+47	470.0	477.0	477.0	479.0
+48	480.0	484.0	484.0	489.0
+49	490.0	494.5	494.5	498.0
+5	51.0	54.0	54.0	58.0
+6	64.0	66.5	66.5	69.0
+7	70.0	73.0	73.0	78.0
+8	80.0	84.0	84.0	87.0
+9	90.0	95.0	95.0	98.0
 PREHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
        percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
@@ -158,65 +163,67 @@ PREHOOK: Input: default@src
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
        percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0	0.0	4.5	9.0
-1	10.0	15.0	19.0
-10	100.0	103.0	105.0
-11	111.0	117.0	119.0
-12	120.0	127.0	129.0
-13	131.0	137.0	138.0
-14	143.0	146.0	149.0
-15	150.0	154.0	158.0
-16	160.0	166.5	169.0
-17	170.0	175.0	179.0
-18	180.0	186.5	189.0
-19	190.0	194.5	199.0
-2	20.0	26.0	28.0
-20	200.0	205.0	209.0
-21	213.0	216.5	219.0
-22	221.0	224.0	229.0
-23	230.0	234.0	239.0
-24	241.0	244.0	249.0
-25	252.0	256.0	258.0
-26	260.0	264.0	266.0
-27	272.0	275.0	278.0
-28	280.0	283.5	289.0
-29	291.0	297.0	298.0
-3	30.0	35.0	37.0
-30	302.0	307.0	309.0
-31	310.0	316.0	318.0
-32	321.0	324.0	327.0
-33	331.0	333.0	339.0
-34	341.0	345.0	348.0
-35	351.0	353.0	356.0
-36	360.0	367.0	369.0
-37	373.0	376.0	379.0
-38	382.0	384.0	389.0
-39	392.0	396.0	399.0
-4	41.0	42.5	47.0
-40	400.0	403.5	409.0
-41	411.0	415.5	419.0
-42	421.0	425.5	429.0
-43	430.0	435.0	439.0
-44	443.0	446.0	449.0
-45	452.0	455.0	459.0
-46	460.0	467.5	469.0
-47	470.0	477.0	479.0
-48	480.0	484.0	489.0
-49	490.0	494.5	498.0
-5	51.0	54.0	58.0
-6	64.0	66.5	69.0
-7	70.0	73.0	78.0
-8	80.0	84.0	87.0
-9	90.0	95.0	98.0
+0	0.0	4.5	4.5	9.0
+1	10.0	15.0	15.0	19.0
+10	100.0	103.0	103.0	105.0
+11	111.0	117.0	117.0	119.0
+12	120.0	127.0	127.0	129.0
+13	131.0	137.0	137.0	138.0
+14	143.0	146.0	146.0	149.0
+15	150.0	154.0	154.0	158.0
+16	160.0	166.5	166.5	169.0
+17	170.0	175.0	175.0	179.0
+18	180.0	186.5	186.5	189.0
+19	190.0	194.5	194.5	199.0
+2	20.0	26.0	26.0	28.0
+20	200.0	205.0	205.0	209.0
+21	213.0	216.5	216.5	219.0
+22	221.0	224.0	224.0	229.0
+23	230.0	234.0	234.0	239.0
+24	241.0	244.0	244.0	249.0
+25	252.0	256.0	256.0	258.0
+26	260.0	264.0	264.0	266.0
+27	272.0	275.0	275.0	278.0
+28	280.0	283.5	283.5	289.0
+29	291.0	297.0	297.0	298.0
+3	30.0	35.0	35.0	37.0
+30	302.0	307.0	307.0	309.0
+31	310.0	316.0	316.0	318.0
+32	321.0	324.0	324.0	327.0
+33	331.0	333.0	333.0	339.0
+34	341.0	345.0	345.0	348.0
+35	351.0	353.0	353.0	356.0
+36	360.0	367.0	367.0	369.0
+37	373.0	376.0	376.0	379.0
+38	382.0	384.0	384.0	389.0
+39	392.0	396.0	396.0	399.0
+4	41.0	42.5	42.5	47.0
+40	400.0	403.5	403.5	409.0
+41	411.0	415.5	415.5	419.0
+42	421.0	425.5	425.5	429.0
+43	430.0	435.0	435.0	439.0
+44	443.0	446.0	446.0	449.0
+45	452.0	455.0	455.0	459.0
+46	460.0	467.5	467.5	469.0
+47	470.0	477.0	477.0	479.0
+48	480.0	484.0	484.0	489.0
+49	490.0	494.5	494.5	498.0
+5	51.0	54.0	54.0	58.0
+6	64.0	66.5	66.5	69.0
+7	70.0	73.0	73.0	78.0
+8	80.0	84.0	84.0	87.0
+9	90.0	95.0	95.0	98.0
 PREHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
        percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
@@ -226,196 +233,344 @@ PREHOOK: Input: default@src
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
        percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0	0.0	4.5	9.0
-1	10.0	15.0	19.0
-10	100.0	103.0	105.0
-11	111.0	117.0	119.0
-12	120.0	127.0	129.0
-13	131.0	137.0	138.0
-14	143.0	146.0	149.0
-15	150.0	154.0	158.0
-16	160.0	166.5	169.0
-17	170.0	175.0	179.0
-18	180.0	186.5	189.0
-19	190.0	194.5	199.0
-2	20.0	26.0	28.0
-20	200.0	205.0	209.0
-21	213.0	216.5	219.0
-22	221.0	224.0	229.0
-23	230.0	234.0	239.0
-24	241.0	244.0	249.0
-25	252.0	256.0	258.0
-26	260.0	264.0	266.0
-27	272.0	275.0	278.0
-28	280.0	283.5	289.0
-29	291.0	297.0	298.0
-3	30.0	35.0	37.0
-30	302.0	307.0	309.0
-31	310.0	316.0	318.0
-32	321.0	324.0	327.0
-33	331.0	333.0	339.0
-34	341.0	345.0	348.0
-35	351.0	353.0	356.0
-36	360.0	367.0	369.0
-37	373.0	376.0	379.0
-38	382.0	384.0	389.0
-39	392.0	396.0	399.0
-4	41.0	42.5	47.0
-40	400.0	403.5	409.0
-41	411.0	415.5	419.0
-42	421.0	425.5	429.0
-43	430.0	435.0	439.0
-44	443.0	446.0	449.0
-45	452.0	455.0	459.0
-46	460.0	467.5	469.0
-47	470.0	477.0	479.0
-48	480.0	484.0	489.0
-49	490.0	494.5	498.0
-5	51.0	54.0	58.0
-6	64.0	66.5	69.0
-7	70.0	73.0	78.0
-8	80.0	84.0	87.0
-9	90.0	95.0	98.0
+0	0.0	4.5	4.5	9.0
+1	10.0	15.0	15.0	19.0
+10	100.0	103.0	103.0	105.0
+11	111.0	117.0	117.0	119.0
+12	120.0	127.0	127.0	129.0
+13	131.0	137.0	137.0	138.0
+14	143.0	146.0	146.0	149.0
+15	150.0	154.0	154.0	158.0
+16	160.0	166.5	166.5	169.0
+17	170.0	175.0	175.0	179.0
+18	180.0	186.5	186.5	189.0
+19	190.0	194.5	194.5	199.0
+2	20.0	26.0	26.0	28.0
+20	200.0	205.0	205.0	209.0
+21	213.0	216.5	216.5	219.0
+22	221.0	224.0	224.0	229.0
+23	230.0	234.0	234.0	239.0
+24	241.0	244.0	244.0	249.0
+25	252.0	256.0	256.0	258.0
+26	260.0	264.0	264.0	266.0
+27	272.0	275.0	275.0	278.0
+28	280.0	283.5	283.5	289.0
+29	291.0	297.0	297.0	298.0
+3	30.0	35.0	35.0	37.0
+30	302.0	307.0	307.0	309.0
+31	310.0	316.0	316.0	318.0
+32	321.0	324.0	324.0	327.0
+33	331.0	333.0	333.0	339.0
+34	341.0	345.0	345.0	348.0
+35	351.0	353.0	353.0	356.0
+36	360.0	367.0	367.0	369.0
+37	373.0	376.0	376.0	379.0
+38	382.0	384.0	384.0	389.0
+39	392.0	396.0	396.0	399.0
+4	41.0	42.5	42.5	47.0
+40	400.0	403.5	403.5	409.0
+41	411.0	415.5	415.5	419.0
+42	421.0	425.5	425.5	429.0
+43	430.0	435.0	435.0	439.0
+44	443.0	446.0	446.0	449.0
+45	452.0	455.0	455.0	459.0
+46	460.0	467.5	467.5	469.0
+47	470.0	477.0	477.0	479.0
+48	480.0	484.0	484.0	489.0
+49	490.0	494.5	494.5	498.0
+5	51.0	54.0	54.0	58.0
+6	64.0	66.5	66.5	69.0
+7	70.0	73.0	73.0	78.0
+8	80.0	84.0	84.0	87.0
+9	90.0	95.0	95.0	98.0
 PREHOOK: query: SELECT CAST(key AS INT) DIV 10,
-       percentile_cont(NULL, 0.0)
+       percentile_cont(NULL, 0.0),
+       percentile_cont(0.0) WITHIN GROUP (ORDER BY NULL)
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
-       percentile_cont(NULL, 0.0)
+       percentile_cont(NULL, 0.0),
+       percentile_cont(0.0) WITHIN GROUP (ORDER BY NULL)
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0	NULL
-1	NULL
-10	NULL
-11	NULL
-12	NULL
-13	NULL
-14	NULL
-15	NULL
-16	NULL
-17	NULL
-18	NULL
-19	NULL
-2	NULL
-20	NULL
-21	NULL
-22	NULL
-23	NULL
-24	NULL
-25	NULL
-26	NULL
-27	NULL
-28	NULL
-29	NULL
-3	NULL
-30	NULL
-31	NULL
-32	NULL
-33	NULL
-34	NULL
-35	NULL
-36	NULL
-37	NULL
-38	NULL
-39	NULL
-4	NULL
-40	NULL
-41	NULL
-42	NULL
-43	NULL
-44	NULL
-45	NULL
-46	NULL
-47	NULL
-48	NULL
-49	NULL
-5	NULL
-6	NULL
-7	NULL
-8	NULL
-9	NULL
+0	NULL	NULL
+1	NULL	NULL
+10	NULL	NULL
+11	NULL	NULL
+12	NULL	NULL
+13	NULL	NULL
+14	NULL	NULL
+15	NULL	NULL
+16	NULL	NULL
+17	NULL	NULL
+18	NULL	NULL
+19	NULL	NULL
+2	NULL	NULL
+20	NULL	NULL
+21	NULL	NULL
+22	NULL	NULL
+23	NULL	NULL
+24	NULL	NULL
+25	NULL	NULL
+26	NULL	NULL
+27	NULL	NULL
+28	NULL	NULL
+29	NULL	NULL
+3	NULL	NULL
+30	NULL	NULL
+31	NULL	NULL
+32	NULL	NULL
+33	NULL	NULL
+34	NULL	NULL
+35	NULL	NULL
+36	NULL	NULL
+37	NULL	NULL
+38	NULL	NULL
+39	NULL	NULL
+4	NULL	NULL
+40	NULL	NULL
+41	NULL	NULL
+42	NULL	NULL
+43	NULL	NULL
+44	NULL	NULL
+45	NULL	NULL
+46	NULL	NULL
+47	NULL	NULL
+48	NULL	NULL
+49	NULL	NULL
+5	NULL	NULL
+6	NULL	NULL
+7	NULL	NULL
+8	NULL	NULL
+9	NULL	NULL
 PREHOOK: query: SELECT CAST(key AS INT) DIV 10,
-       percentile_cont(IF(CAST(key AS INT) DIV 10 < 5, 1, NULL), 0.5)
+       percentile_cont(IF(CAST(key AS INT) DIV 10 < 5, 1, NULL), 0.5),
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY IF(CAST(key AS INT) DIV 10 < 5, 1, NULL))
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
-       percentile_cont(IF(CAST(key AS INT) DIV 10 < 5, 1, NULL), 0.5)
+       percentile_cont(IF(CAST(key AS INT) DIV 10 < 5, 1, NULL), 0.5),
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY IF(CAST(key AS INT) DIV 10 < 5, 1, NULL))
 FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0	1.0
-1	1.0
-10	NULL
-11	NULL
-12	NULL
-13	NULL
-14	NULL
-15	NULL
-16	NULL
-17	NULL
-18	NULL
-19	NULL
-2	1.0
-20	NULL
-21	NULL
-22	NULL
-23	NULL
-24	NULL
-25	NULL
-26	NULL
-27	NULL
-28	NULL
-29	NULL
-3	1.0
-30	NULL
-31	NULL
-32	NULL
-33	NULL
-34	NULL
-35	NULL
-36	NULL
-37	NULL
-38	NULL
-39	NULL
-4	1.0
-40	NULL
-41	NULL
-42	NULL
-43	NULL
-44	NULL
-45	NULL
-46	NULL
-47	NULL
-48	NULL
-49	NULL
-5	NULL
-6	NULL
-7	NULL
-8	NULL
-9	NULL
-PREHOOK: query: select percentile_cont(cast(key as bigint), 0.5) from src where false
+0	1.0	1.0
+1	1.0	1.0
+10	NULL	NULL
+11	NULL	NULL
+12	NULL	NULL
+13	NULL	NULL
+14	NULL	NULL
+15	NULL	NULL
+16	NULL	NULL
+17	NULL	NULL
+18	NULL	NULL
+19	NULL	NULL
+2	1.0	1.0
+20	NULL	NULL
+21	NULL	NULL
+22	NULL	NULL
+23	NULL	NULL
+24	NULL	NULL
+25	NULL	NULL
+26	NULL	NULL
+27	NULL	NULL
+28	NULL	NULL
+29	NULL	NULL
+3	1.0	1.0
+30	NULL	NULL
+31	NULL	NULL
+32	NULL	NULL
+33	NULL	NULL
+34	NULL	NULL
+35	NULL	NULL
+36	NULL	NULL
+37	NULL	NULL
+38	NULL	NULL
+39	NULL	NULL
+4	1.0	1.0
+40	NULL	NULL
+41	NULL	NULL
+42	NULL	NULL
+43	NULL	NULL
+44	NULL	NULL
+45	NULL	NULL
+46	NULL	NULL
+47	NULL	NULL
+48	NULL	NULL
+49	NULL	NULL
+5	NULL	NULL
+6	NULL	NULL
+7	NULL	NULL
+8	NULL	NULL
+9	NULL	NULL
+PREHOOK: query: select percentile_cont(cast(key as bigint), 0.5),
+       percentile_cont(0.5) within group (order by cast(key as bigint))
+from src where false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select percentile_cont(cast(key as bigint), 0.5) from src where false
+POSTHOOK: query: select percentile_cont(cast(key as bigint), 0.5),
+       percentile_cont(0.5) within group (order by cast(key as bigint))
+from src where false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-NULL
+NULL	NULL
+PREHOOK: query: CREATE TABLE t_test (value int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_test
+POSTHOOK: query: CREATE TABLE t_test (value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_test
+PREHOOK: query: INSERT INTO t_test VALUES (NULL), (3), (8), (13), (7), (6), (20), (NULL), (NULL), (10), (7), (15), (16), (8), (7), (8), (NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_test
+POSTHOOK: query: INSERT INTO t_test VALUES (NULL), (3), (8), (13), (7), (6), (20), (NULL), (NULL), (10), (7), (15), (16), (8), (7), (8), (NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_test
+POSTHOOK: Lineage: t_test.value SCRIPT []
+PREHOOK: query: EXPLAIN SELECT
+percentile_cont(value, 0.0),
+percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value NULLS FIRST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value NULLS LAST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value) = percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value ASC),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value ASC) = percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS FIRST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS LAST)
+FROM t_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT
+percentile_cont(value, 0.0),
+percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value NULLS FIRST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value NULLS LAST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value) = percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value ASC),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value ASC) = percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS FIRST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS LAST)
+FROM t_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t_test
+            Statistics: Num rows: 17 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: value (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 17 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: percentile_cont(_col0, 0), percentile_cont(_col0, 0.2), percentile_cont(_col0, 0.2, 1), percentile_cont(_col0, 0.2, 0)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 3152 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 3152 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: struct<counts:map<bigint,bigint>,percentiles:array<double>,isascending:boolean>), _col1 (type: struct<counts:map<bigint,bigint>,percentiles:array<double>,isascending:boolean>), _col2 (type: struct<counts:map<bigint,bigint>,percentiles:array<double>,isascending:boolean>), _col3 (type: struct<counts:map<bigint,bigint>,percentiles:array<double>,isascending:boolean>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: percentile_cont(VALUE._col0), percentile_cont(VALUE._col1), percentile_cont(VALUE._col2), percentile_cont(VALUE._col3)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col0 (type: double), _col1 (type: double), _col2 (type: double), _col2 (type: double), _col2 (type: double), (_col2 = _col1) (type: boolean), _col2 (type: double), (_col2 = _col1) (type: boolean), _col3 (type: double), _col3 (type: double), _col3 (type: double)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+            Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT
+percentile_cont(value, 0.0),
+percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value NULLS FIRST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value NULLS LAST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value) = percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value ASC),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value ASC) = percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS FIRST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS LAST)
+FROM t_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+percentile_cont(value, 0.0),
+percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value NULLS FIRST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value NULLS LAST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value) = percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value ASC),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value ASC) = percentile_cont(value, 0.2),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS FIRST),
+percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS LAST)
+FROM t_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+#### A masked pattern was here ####
+3.0	7.0	7.0	7.0	7.0	true	7.0	true	14.2	14.2	14.2
+PREHOOK: query: DROP TABLE t_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_test
+PREHOOK: Output: default@t_test
+POSTHOOK: query: DROP TABLE t_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: default@t_test

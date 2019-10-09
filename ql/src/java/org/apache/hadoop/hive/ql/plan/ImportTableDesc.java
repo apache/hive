@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.conf.Constants;
@@ -326,7 +327,7 @@ public class ImportTableDesc {
     return dbName;
   }
 
-  public Task<? extends Serializable> getCreateTableTask(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+  public Task<?> getCreateTableTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       HiveConf conf) {
     switch (getDescType()) {
     case TABLE:

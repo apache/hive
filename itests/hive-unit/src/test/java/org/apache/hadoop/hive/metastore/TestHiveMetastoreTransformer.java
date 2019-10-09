@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient.GetTablesRequestBuilder;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ExtendedTableInfo;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -54,6 +55,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
 import org.apache.hadoop.util.StringUtils;
 
 import com.google.common.collect.Lists;
@@ -89,7 +92,7 @@ public class TestHiveMetastoreTransformer {
     MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS,
         "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer");
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_IN_TEST, false);
-    MetastoreConf.setVar(conf, ConfVars.WAREHOUSE_EXTERNAL, ext_wh.getAbsolutePath());
+    MetastoreConf.setVar(conf, ConfVars.WAREHOUSE_EXTERNAL, ext_wh.getCanonicalPath());
     client = new HiveMetaStoreClient(conf);
   }
 
@@ -135,7 +138,6 @@ public class TestHiveMetastoreTransformer {
       Table tbl = createTableWithCapabilities(tProps);
 
       setHMSClient("testTranformerWithOldTables", (new String[] { "HIVEBUCKET2", "EXTREAD", "EXTWRITE"}));
-
       Table tbl2 = client.getTable(dbName, tblName);
       assertEquals("Created and retrieved tables do not match:" + tbl2.getTableName() + ":" + tblName,
           tbl2.getTableName(), tblName);
@@ -920,13 +922,20 @@ public class TestHiveMetastoreTransformer {
       Table tbl2 = client.getTable(dbName, tblName);
       assertEquals("Table type expected to be EXTERNAL", "EXTERNAL_TABLE", tbl2.getTableType());
 
-      tblName = "test_create_table_mgd_woc";
+      tblName = "test_create_table_mgd_wc";
       type = TableType.MANAGED_TABLE;
       tProps.put("TBLNAME", tblName);
       tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
       table_params = new StringBuilder();
       table_params.append("key1=val1");
+      table_params.append(";");
+      table_params.append("transactional_properties=default");
       tProps.put("PROPERTIES", table_params.toString());
+
+      List<String> capabilities = new ArrayList<>();
+      capabilities.add("HIVEFULLACIDWRITE");
+      setHMSClient("TestCreateTableMGD#1", (String[])(capabilities.toArray(new String[0])));
+
       table = createTableWithCapabilities(tProps);
 
       // retrieve the table
@@ -936,6 +945,24 @@ public class TestHiveMetastoreTransformer {
       assertTrue("external.table.purge is expected to be true",
           tbl2.getParameters().get("external.table.purge").equalsIgnoreCase("TRUE"));
       assertTrue("Table params expected to contain original properties", tbl2.getParameters().get("key1").equals("val1"));
+
+      resetHMSClient();
+
+      capabilities = new ArrayList<>();
+      capabilities.add("HIVEMANAGEDINSERTWRITE");
+      setHMSClient("TestCreateTableMGD#2", (String[])(capabilities.toArray(new String[0])));
+
+      table = createTableWithCapabilities(tProps);
+
+      // retrieve the table
+      tbl2 = client.getTable(dbName, tblName);
+      assertEquals("Table type expected to be converted to EXTERNAL", "EXTERNAL_TABLE", tbl2.getTableType());
+      assertNotNull("external.table.purge is expected to be non-null", tbl2.getParameters().get("external.table.purge"));
+      assertTrue("external.table.purge is expected to be true",
+          tbl2.getParameters().get("external.table.purge").equalsIgnoreCase("TRUE"));
+      assertTrue("Table params expected to contain original properties", tbl2.getParameters().get("key1").equals("val1"));
+
+      resetHMSClient();
 
       // Test for FULL ACID tables
       tblName = "test_create_table_acid_mgd_woc";
@@ -955,7 +982,7 @@ public class TestHiveMetastoreTransformer {
         LOG.info("Create table expected to fail as ACID table cannot be created without possessing capabilities");
       }
 
-      List<String> capabilities = new ArrayList<>();
+      capabilities = new ArrayList<>();
       capabilities.add("CONNECTORWRITE");
       setHMSClient("TestCreateTableACID#1", (String[])(capabilities.toArray(new String[0])));
 
@@ -1117,6 +1144,7 @@ public class TestHiveMetastoreTransformer {
         LOG.info("Create view expected to succeed but has failed.");
         fail("Create view expected to succeed but has failed. <" + e.getMessage() +">");
       }
+      resetHMSClient();
     } catch (Exception e) {
       System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
       System.err.println("testCreateTable() failed.");
@@ -1127,11 +1155,184 @@ public class TestHiveMetastoreTransformer {
   }
 
   @Test
+  public void testTransformerAlterTable() throws Exception {
+    try {
+      resetHMSClient();
+
+      final String dbName = "dbalter";
+      String tblName = "test_alter_mgd_table";
+      TableType type = TableType.MANAGED_TABLE;
+      StringBuilder table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      Map<String, Object> tProps = new HashMap<>();
+      tProps.put("DBNAME", dbName);
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", type);
+      tProps.put("PROPERTIES", table_params.toString());
+
+      Table table = createTableWithCapabilities(tProps); // should be converted to external table
+
+      // retrieve the table
+      Table tbl2 = client.getTable(dbName, tblName);
+      assertEquals("Table type expected to be EXTERNAL", "EXTERNAL_TABLE", tbl2.getTableType());
+      String tableLocation = tbl2.getSd().getLocation();
+      int idx = (tableLocation.indexOf(":") > 0) ? tableLocation.indexOf(":") : 0;
+      tableLocation = tableLocation.substring(idx+1);
+
+      String newLocation = wh.getAbsolutePath().concat(File.separator).concat(dbName).concat(File.separator)
+          .concat(tblName);
+      table.getSd().setLocation(newLocation);
+      try {
+        client.alter_table(dbName, tblName, table);
+        fail("alter_table expected to fail due to location:" + newLocation);
+      } catch (Exception e) {
+        e.printStackTrace();
+        LOG.info("alter_table failed with exception, as expected");
+      }
+
+      // retrieve the table and check that the location was not altered
+      tbl2 = client.getTable(dbName, tblName);
+      idx = (tbl2.getSd().getLocation().indexOf(":") > 0) ? tbl2.getSd().getLocation().indexOf(":") : 0;
+      assertEquals("Table location expected to be in external warehouse", tableLocation, tbl2.getSd().getLocation().substring(idx+1));
+
+      newLocation = tableLocation.concat("_new");
+      table.getSd().setLocation((new File(newLocation)).getCanonicalPath());
+      try {
+        client.alter_table(dbName, tblName, table);
+        LOG.info("alter_table with new location succeeded as expected");
+      } catch (Exception e) {
+        fail("alter_table expected to succeed with new location:" + newLocation);
+      }
+
+      // retrieve the table and check that the location was altered
+      tbl2 = client.getTable(dbName, tblName);
+      idx = (tbl2.getSd().getLocation().indexOf(":") > 0) ? tbl2.getSd().getLocation().indexOf(":") : 0;
+      assertEquals("Table location expected to be in external warehouse", newLocation, tbl2.getSd().getLocation().substring(idx+1));
+
+      tblName = "test_create_insert_table";
+      type = TableType.MANAGED_TABLE;
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
+      table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      table_params.append(";");
+      table_params.append("transactional_properties=insert_only");
+      tProps.put("PROPERTIES", table_params.toString());
+
+      List<String> capabilities = new ArrayList<>();
+      capabilities.add("HIVEMANAGEDINSERTWRITE");
+      setHMSClient("TestAlterTableMGD#1", (String[])(capabilities.toArray(new String[0])));
+
+      table = createTableWithCapabilities(tProps);
+
+      // retrieve the table
+      tbl2 = client.getTable(dbName, tblName);
+      tableLocation = tbl2.getSd().getLocation();
+      idx = (tableLocation.indexOf(":") > 0) ? tableLocation.indexOf(":") : 0;
+      tableLocation = tableLocation.substring(idx+1);
+
+      assertEquals("Table type expected to be MANAGED", "MANAGED_TABLE", tbl2.getTableType());
+
+      newLocation = ext_wh.getAbsolutePath().concat(File.separator).concat(dbName).concat(File.separator)
+          .concat(tblName);
+      table.getSd().setLocation(newLocation);
+      try {
+        client.alter_table(dbName, tblName, table);
+        fail("alter_table expected to fail but succeeded with new location:" + newLocation);
+      } catch (Exception e) {
+        LOG.info("alter_table failed with exception as expected");
+      }
+
+      // retrieve the table and ensure location has not been changed.
+      tbl2 = client.getTable(dbName, tblName);
+      assertEquals("Table type expected to be MANAGED", "MANAGED_TABLE", tbl2.getTableType());
+      idx = (tbl2.getSd().getLocation().indexOf(":") > 0) ? tbl2.getSd().getLocation().indexOf(":") : 0;
+      assertEquals("Table location expected to remain unaltered", tableLocation, tbl2.getSd().getLocation().substring(idx+1));
+
+      newLocation = tableLocation + "_new";
+      table.getSd().setLocation(newLocation);
+      try {
+        client.alter_table(dbName, tblName, table);
+        LOG.info("alter_table succeeded with new location as expected");
+      } catch (Exception e) {
+        fail("alter_table expected to succeed but failed with new location:" + newLocation);
+      }
+      // retrieve the table and ensure location has not been changed.
+      tbl2 = client.getTable(dbName, tblName);
+      assertEquals("Table type expected to be MANAGED", "MANAGED_TABLE", tbl2.getTableType());
+      idx = (tbl2.getSd().getLocation().indexOf(":") > 0) ? tbl2.getSd().getLocation().indexOf(":") : 0;
+      assertEquals("Table location expected to be new location", newLocation, tbl2.getSd().getLocation().substring(idx+1));
+      resetHMSClient();
+
+      tblName = "test_create_acid_table";
+      type = TableType.MANAGED_TABLE;
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
+      table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      table_params.append(";");
+      table_params.append("transactional=true");
+      tProps.put("PROPERTIES", table_params.toString());
+
+      capabilities = new ArrayList<>();
+      capabilities.add("HIVEFULLACIDWRITE");
+      setHMSClient("TestAlterTableMGD#1", (String[])(capabilities.toArray(new String[0])));
+
+      table = createTableWithCapabilities(tProps);
+
+      // retrieve the table
+      tbl2 = client.getTable(dbName, tblName);
+      tableLocation = tbl2.getSd().getLocation();
+      idx = (tableLocation.indexOf(":") > 0) ? tableLocation.indexOf(":") : 0;
+      tableLocation = tableLocation.substring(idx+1);
+
+      assertEquals("Table type expected to be MANAGED", "MANAGED_TABLE", tbl2.getTableType());
+
+      newLocation = ext_wh.getAbsolutePath().concat(File.separator).concat(dbName).concat(File.separator)
+          .concat(tblName);
+      table.getSd().setLocation(newLocation);
+      try {
+        client.alter_table(dbName, tblName, table);
+        fail("alter_table expected to fail but succeeded with new location:" + newLocation);
+      } catch (Exception e) {
+        LOG.info("alter_table failed with exception as expected");
+      }
+
+      // retrieve the table and ensure location has not been changed.
+      tbl2 = client.getTable(dbName, tblName);
+      assertEquals("Table type expected to be MANAGED", "MANAGED_TABLE", tbl2.getTableType());
+      idx = (tbl2.getSd().getLocation().indexOf(":") > 0) ? tbl2.getSd().getLocation().indexOf(":") : 0;
+      assertEquals("Table location expected to remain unaltered", tableLocation, tbl2.getSd().getLocation().substring(idx+1));
+
+      newLocation = tableLocation + "_new";
+      table.getSd().setLocation(newLocation);
+      try {
+        client.alter_table(dbName, tblName, table);
+        LOG.info("alter_table succeeded with new location as expected");
+      } catch (Exception e) {
+        e.printStackTrace();
+        fail("alter_table expected to succeed but failed with new location:" + newLocation);
+      }
+      // retrieve the table and ensure location has not been changed.
+      tbl2 = client.getTable(dbName, tblName);
+      assertEquals("Table type expected to be MANAGED", "MANAGED_TABLE", tbl2.getTableType());
+      idx = (tbl2.getSd().getLocation().indexOf(":") > 0) ? tbl2.getSd().getLocation().indexOf(":") : 0;
+      assertEquals("Table location expected to be new location", newLocation, tbl2.getSd().getLocation().substring(idx+1));
+    } catch (Exception e) {
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      System.err.println("testAlterTable() failed.");
+      fail("testAlterTable failed:" + e.getMessage());
+    } finally {
+      resetHMSClient();
+    }
+  }
+
+  @Test
   public void testTransformerDatabase() throws Exception {
     try {
       resetHMSClient();
 
-      final String dbName = "testdb";
+      String dbName = "testdb";
       try {
         silentDropDatabase(dbName);
       } catch (Exception e) {
@@ -1272,11 +1473,199 @@ public class TestHiveMetastoreTransformer {
     }
   }
 
+  @Test
+  public void testTransformerWithNonHiveCatalogs() throws Exception {
+    try {
+      resetHMSClient();
+      Table table, tbl2;
+      String tblName = "non_hive_exttable";
+      String sparkDbName = "sparkdb";
+      String catalog = "sparkcat";
+      Map<String, Object> tProps = new HashMap<>();
+      TableType type = TableType.EXTERNAL_TABLE;
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", type);
+      tProps.put("CATALOG", catalog);
+      tProps.put("DBNAME", sparkDbName);
+      StringBuilder table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      table_params.append(";");
+      table_params.append("EXTERNAL").append("=").append("TRUE");
+      tProps.put("PROPERTIES", table_params.toString());
+
+      List<String> capabilities = new ArrayList<>();
+      setHMSClient("TestCreateTableNonHive#1", (String[])(capabilities.toArray(new String[0])));
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        LOG.info("Create non-hive table is expected to succeed and has succeeded"); // no transformation for views
+      } catch (Exception e) {
+        fail("Create non-hive table expected to succeed but has failed. <" + e.getMessage() +">");
+      }
+
+      tbl2 = client.getTable(catalog, sparkDbName, tblName);
+      assertEquals("TableName expected to be " + tblName, tblName, tbl2.getTableName());
+      assertEquals("TableType expected to be EXTERNAL", TableType.EXTERNAL_TABLE.name(), tbl2.getTableType());
+      assertNull("Table's ReadCapabilities is expected to be null", tbl2.getRequiredReadCapabilities());
+      assertNull("Table's WriteCapabilities is expected to be null", tbl2.getRequiredWriteCapabilities());
+
+      String newLocation = wh.getAbsolutePath().concat(File.separator).concat(sparkDbName).concat(File.separator)
+          .concat(tblName);
+      tbl2.getSd().setLocation(newLocation);
+
+      setHMSClient("TestAlterTableNonHive#1", (String[])(capabilities.toArray(new String[0])));
+      try {
+        client.alter_table(catalog, sparkDbName, tblName, tbl2);
+        LOG.info("alter_table succeeded with new location in managed warehouse as expected");
+      } catch (Exception e) {
+        fail("alter_table expected to succeed but failed with new location:" + newLocation);
+      }
+
+      tbl2 = client.getTable(catalog, sparkDbName, tblName);
+      assertEquals("TableType expected to be EXTERNAL", TableType.EXTERNAL_TABLE.name(), tbl2.getTableType());
+      int idx = (tbl2.getSd().getLocation().indexOf(":") > 0) ? tbl2.getSd().getLocation().indexOf(":") : 0;
+      assertEquals("Table location expected to be in external warehouse", newLocation, tbl2.getSd().getLocation().substring(idx+1));
+
+      tblName = "non_hive_mgdtable";
+      tProps = new HashMap<>();
+      type = TableType.MANAGED_TABLE;
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", type);
+      tProps.put("CATALOG", catalog);
+      tProps.put("DBNAME", sparkDbName);
+      tProps.put("DROPDB", Boolean.FALSE);
+      table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      table_params.append(";");
+      tProps.put("PROPERTIES", table_params.toString());
+
+      capabilities.add("CONNECTORWRITE");
+      setHMSClient("TestCreateTableNonHive#2", (String[])(capabilities.toArray(new String[0])));
+
+      try {
+        table = createTableWithCapabilities(tProps);
+        LOG.info("Create non-hive MGD table is expected to succeed and has succeeded"); // no transformation for views
+      } catch (Exception e) {
+        fail("Create non-hive MGD table expected to succeed but has failed. <" + e.getMessage() +">");
+      }
+
+      tbl2 = client.getTable(catalog, sparkDbName, tblName);
+      assertEquals("TableName expected to be " + tblName, tblName, tbl2.getTableName());
+      assertEquals("TableType expected to be MANAGED", TableType.MANAGED_TABLE.name(), tbl2.getTableType());
+      assertNull("Table's ReadCapabilities is expected to be null", tbl2.getRequiredReadCapabilities());
+      assertNull("Table's WriteCapabilities is expected to be null", tbl2.getRequiredWriteCapabilities());
+
+
+      // TESTS to ensure AlterTable does not go thru translation for non-hive catalog objects
+      setHMSClient("TestAlterTableNonHive#2", (String[])(capabilities.toArray(new String[0])));
+      tbl2 = client.getTable(catalog, sparkDbName, tblName);
+      newLocation = ext_wh.getAbsolutePath().concat(File.separator).concat(sparkDbName).concat(File.separator)
+          .concat(tblName);
+      tbl2.getSd().setLocation(newLocation);
+
+      try {
+        client.alter_table(catalog, sparkDbName, tblName, tbl2);
+        LOG.info("alter_table succeeded with new location in external warehouse as expected");
+      } catch (Exception e) {
+        fail("alter_table expected to succeed but failed with new location:" + newLocation);
+      }
+
+      tbl2 = client.getTable(catalog, sparkDbName, tblName);
+      assertEquals("TableType expected to be MANAGED", TableType.MANAGED_TABLE.name(), tbl2.getTableType());
+      idx = (tbl2.getSd().getLocation().indexOf(":") > 0) ? tbl2.getSd().getLocation().indexOf(":") : 0;
+      assertEquals("Table location expected to be in managed warehouse", newLocation, tbl2.getSd().getLocation().substring(idx+1));
+
+      // Test getTablesExt with many tables.
+      sparkDbName = "sparkdbext";
+      tblName = "test_get_tables_ext";
+      int count = 10;
+
+      tProps = new HashMap<>();
+      capabilities = new ArrayList<>();
+      capabilities.add("EXTREAD");
+      tProps.put("CATALOG", catalog);
+      tProps.put("DBNAME", sparkDbName);
+      tProps.put("TBLNAME", tblName);
+      type = TableType.MANAGED_TABLE;
+      tProps.put("TABLECOUNT", count);
+      tProps.put("TBLTYPE", type);
+      table_params = new StringBuilder();
+      table_params.append("key1=val1");
+      table_params.append(";");
+      tProps.put("PROPERTIES", table_params.toString());
+
+      setHMSClient("test_get_tables_ext", (String[])(capabilities.toArray(new String[0])));
+
+      List<String> tables = createTables(tProps);
+      int requestedFields = (new GetTablesRequestBuilder().with(GetTablesExtRequestFields.PROCESSOR_CAPABILITIES)).bitValue();
+      List<ExtendedTableInfo> extTables = client.getTablesExt(catalog, sparkDbName, "*", requestedFields, 2000);
+      LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
+      assertEquals("Return list size does not match expected size:extTables", count, extTables.size());
+      for (ExtendedTableInfo tableInfo : extTables) {
+        assertNull("Return object should not have read capabilities", tableInfo.getRequiredReadCapabilities());
+        assertNull("Return object should not have write capabilities", tableInfo.getRequiredWriteCapabilities());
+        assertEquals("AccessType not expected to be set", 0, tableInfo.getAccessType());
+      }
+
+      requestedFields = (new GetTablesRequestBuilder().with(GetTablesExtRequestFields.ACCESS_TYPE)).bitValue();
+      extTables = client.getTablesExt(catalog, sparkDbName, "*", requestedFields, 2000);
+      LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
+      assertEquals("Return list size does not match expected size", count, extTables.size());
+      for (ExtendedTableInfo tableInfo : extTables) {
+        assertNull("Return object should not have read capabilities", tableInfo.getRequiredReadCapabilities());
+        assertNull("Return object should not have write capabilities", tableInfo.getRequiredWriteCapabilities());
+        assertTrue("AccessType not expected to be set", tableInfo.getAccessType() <= 0);
+      }
+
+      requestedFields = (new GetTablesRequestBuilder().with(GetTablesExtRequestFields.ALL)).bitValue();
+      extTables = client.getTablesExt(catalog, sparkDbName, "*", requestedFields, 2000);
+      LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
+      assertEquals("Return list size does not match expected size", count, extTables.size());
+      for (ExtendedTableInfo tableInfo : extTables) {
+        assertTrue("AccessType not expected to be set", tableInfo.getAccessType() <= 0);
+      }
+
+      extTables = client.getTablesExt(catalog, sparkDbName, "*", requestedFields, (count - 3));
+      LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
+      assertEquals("Return list size does not match expected size", (count - 3), extTables.size());
+      for (ExtendedTableInfo tableInfo : extTables) {
+        assertTrue("AccessType not expected to be set", tableInfo.getAccessType() <= 0);
+      }
+
+      extTables = client.getTablesExt(catalog, sparkDbName, "*", requestedFields, -1);
+      LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
+      assertEquals("Return list size does not match expected size", count, extTables.size());
+
+      count = 300;
+      tProps.put("TBLNAME", "test_limit");
+      tProps.put("TABLECOUNT", count);
+      tables = createTables(tProps);
+      assertEquals("Unexpected number of tables created", count, tables.size());
+
+      extTables = client.getTablesExt(catalog, sparkDbName, "test_limit*", requestedFields, count);
+      assertEquals("Unexpected number of tables returned", count, extTables.size());
+
+      extTables = client.getTablesExt(catalog, sparkDbName, "test_limit*", requestedFields, (count/2));
+      assertEquals("Unexpected number of tables returned", (count/2), extTables.size());
+
+      extTables = client.getTablesExt(catalog, sparkDbName, "test_limit*", requestedFields, 1);
+      assertEquals("Unexpected number of tables returned", 1, extTables.size());
+
+    } catch (Exception e) {
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      System.err.println("testCreateTable() failed.");
+      fail("testCreateTable failed:" + e.getMessage());
+    } finally {
+      resetHMSClient();
+    }
+  }
+
   private List<String> createTables(Map<String, Object> props) throws Exception {
     int count = ((Integer)props.get("TABLECOUNT")).intValue();
     String tblName  = (String)props.get("TBLNAME");
     List<String> caps = (List<String>)props.get("CAPABILITIES");
     StringBuilder table_params = new StringBuilder();
+    table_params.append((String)props.get("PROPERTIES"));
     if (caps != null)
       table_params.append(CAPABILITIES_KEY).append("=").append(String.join(",", caps));
     props.put("PROPERTIES", table_params.toString());
@@ -1298,12 +1687,13 @@ public class TestHiveMetastoreTransformer {
   }
 
   private Table createTableWithCapabilities(Map<String, Object> props) throws Exception {
-      String catalog = (String)props.getOrDefault("CATALOG", "testcat");
+      String catalog = (String)props.getOrDefault("CATALOG", MetaStoreUtils.getDefaultCatalog(conf));
       String dbName = (String)props.getOrDefault("DBNAME", "simpdb");
       String tblName = (String)props.getOrDefault("TBLNAME", "test_table");
       TableType type = (TableType)props.getOrDefault("TBLTYPE", TableType.MANAGED_TABLE);
       int buckets = ((Integer)props.getOrDefault("BUCKETS", -1)).intValue();
       String properties = (String)props.getOrDefault("PROPERTIES", "");
+      String location = (String)(props.get("LOCATION"));
       boolean dropDb = ((Boolean)props.getOrDefault("DROPDB", Boolean.TRUE)).booleanValue();
       int partitionCount = ((Integer)props.getOrDefault("PARTITIONS", 0)).intValue();
 
@@ -1311,7 +1701,7 @@ public class TestHiveMetastoreTransformer {
 
       if (type == TableType.EXTERNAL_TABLE) {
         if (!properties.contains("EXTERNAL=TRUE")) {
-          properties.concat(";EXTERNAL=TRUE");
+          properties.concat(";EXTERNAL=TRUE;");
         }
       }
 
@@ -1322,6 +1712,29 @@ public class TestHiveMetastoreTransformer {
           String[] keyValue = prop.split("=");
           table_params.put(keyValue[0], keyValue[1]);
         }
+      }
+
+      Catalog cat = null;
+      try {
+        cat = client.getCatalog(catalog);
+      } catch (NoSuchObjectException e) {
+        LOG.info("Catalog does not exist, creating a new one");
+        try {
+          if (cat == null) {
+            cat = new Catalog();
+            cat.setName(catalog.toLowerCase());
+            Warehouse wh = new Warehouse(conf);
+            cat.setLocationUri(wh.getWhRootExternal().toString() + File.separator + catalog);
+            cat.setDescription("Non-hive catalog");
+            client.createCatalog(cat);
+            LOG.info("Catalog " + catalog + " created");
+          }
+        } catch (Exception ce) {
+          LOG.warn("Catalog " + catalog + " could not be created");
+        }
+      } catch (Exception e) {
+        LOG.error("Creation of a new catalog failed, aborting test");
+        throw e;
       }
 
       try {
@@ -1340,6 +1753,7 @@ public class TestHiveMetastoreTransformer {
       if (dropDb)
         new DatabaseBuilder()
           .setName(dbName)
+          .setCatalogName(catalog)
           .create(client, conf);
 
       try {
@@ -1358,14 +1772,19 @@ public class TestHiveMetastoreTransformer {
       client.createType(typ1);
 
       TableBuilder builder = new TableBuilder()
+          .setCatName(catalog)
           .setDbName(dbName)
           .setTableName(tblName)
           .setCols(typ1.getFields())
           .setType(type.name())
+          .setLocation(location)
           .setNumBuckets(buckets)
           .setTableParams(table_params)
           .addBucketCol("name")
           .addStorageDescriptorParam("test_param_1", "Use this for comments etc");
+
+      if (location != null)
+        builder.setLocation(location);
 
       if (buckets > 0)
         builder.setNumBuckets(buckets).addBucketCol("name");
@@ -1385,7 +1804,7 @@ public class TestHiveMetastoreTransformer {
       }
 
       Table tbl = builder.create(client, conf);
-      LOG.info("Table " + tblName + " created:type=" + type.name());
+      LOG.info("Table " + tbl.getTableName() + " created:type=" + tbl.getTableType());
 
       if (partitionCount > 0) {
         List<Partition> partitions = new ArrayList<>();
@@ -1405,7 +1824,8 @@ public class TestHiveMetastoreTransformer {
         // object when the client is a thrift client and the code below relies
         // on the location being present in the 'tbl' object - so get the table
         // from the metastore
-        tbl = client.getTable(dbName, tblName);
+        tbl = client.getTable(catalog, dbName, tblName);
+        LOG.info("Fetched Table " + tbl.getTableName() + " created:type=" + tbl.getTableType());
       }
     return tbl;
   }

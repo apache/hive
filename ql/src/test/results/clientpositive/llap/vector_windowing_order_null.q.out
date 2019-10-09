@@ -827,7 +827,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_n21
 #### A masked pattern was here ####
 ts	s	sum_window_0
-2013-03-01 09:11:58.70307	calvin laertes	197097
 2013-03-01 09:11:58.70307	calvin steinbeck	262874
 2013-03-01 09:11:58.70307	david falkner	328506
 2013-03-01 09:11:58.70307	fred nixon	394118
@@ -837,6 +836,7 @@ ts	s	sum_window_0
 2013-03-01 09:11:58.70307	jessica laertes	656771
 2013-03-01 09:11:58.70307	jessica polk	722558
 2013-03-01 09:11:58.70307	katie king	788310
+2013-03-01 09:11:58.70307	katie white	853920
 PREHOOK: query: explain vectorization detail
 select s, i, round(sum(d) over (partition by s order by i desc nulls last) , 3) from over10k_n21 limit 5
 PREHOOK: type: QUERY

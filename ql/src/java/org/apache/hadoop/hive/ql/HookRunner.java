@@ -228,7 +228,7 @@ public class HookRunner {
   }
 
   public void runPostAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx,
-      List<Task<? extends Serializable>> allRootTasks) throws HiveException {
+      List<Task<?>> allRootTasks) throws HiveException {
     initialize();
     try {
       for (HiveSemanticAnalyzerHook hook : saHooks) {

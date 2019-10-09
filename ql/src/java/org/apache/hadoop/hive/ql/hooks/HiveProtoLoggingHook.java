@@ -71,7 +71,6 @@ import static org.apache.hadoop.hive.ql.plan.HiveOperation.DROPMACRO;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.DROPROLE;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.DROPTABLE;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.DROPVIEW;
-import static org.apache.hadoop.hive.ql.plan.HiveOperation.DROPVIEW_PROPERTIES;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.EXPORT;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.IMPORT;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.KILL_QUERY;
@@ -150,7 +149,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
         ALTERPARTITION_SERDEPROPERTIES, ALTERTABLE_CLUSTER_SORT, ANALYZE_TABLE, CACHE_METADATA,
         ALTERTABLE_BUCKETNUM, ALTERPARTITION_BUCKETNUM, CREATEFUNCTION, DROPFUNCTION,
         RELOADFUNCTION, CREATEMACRO, DROPMACRO, CREATEVIEW, DROPVIEW, ALTERVIEW_PROPERTIES,
-        DROPVIEW_PROPERTIES, LOCKTABLE, UNLOCKTABLE, CREATEROLE, DROPROLE, ALTERTABLE_FILEFORMAT,
+        LOCKTABLE, UNLOCKTABLE, CREATEROLE, DROPROLE, ALTERTABLE_FILEFORMAT,
         ALTERPARTITION_FILEFORMAT, ALTERTABLE_LOCATION, ALTERPARTITION_LOCATION, CREATETABLE,
         TRUNCATETABLE, CREATETABLE_AS_SELECT, QUERY, ALTERDATABASE, ALTERDATABASE_OWNER,
         ALTERTABLE_MERGEFILES, ALTERPARTITION_MERGEFILES, ALTERTABLE_SKEWED,

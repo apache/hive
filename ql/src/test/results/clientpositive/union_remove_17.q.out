@@ -68,6 +68,7 @@ STAGE PLANS:
                     key expressions: _col2 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col2 (type: string)
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: string), _col1 (type: bigint)
           TableScan
             alias: inputtbl1_n3
@@ -86,6 +87,7 @@ STAGE PLANS:
                     key expressions: _col2 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col2 (type: string)
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: string), _col1 (type: bigint)
       Reduce Operator Tree:
         Select Operator

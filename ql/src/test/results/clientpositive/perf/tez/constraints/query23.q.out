@@ -126,7 +126,7 @@ Map 27 <- Reducer 33 (BROADCAST_EDGE)
 Map 35 <- Reducer 14 (BROADCAST_EDGE)
 Map 36 <- Reducer 13 (BROADCAST_EDGE)
 Reducer 10 <- Map 35 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
-Reducer 11 <- Reducer 10 (SIMPLE_EDGE), Reducer 24 (ONE_TO_ONE_EDGE)
+Reducer 11 <- Reducer 10 (SIMPLE_EDGE), Reducer 24 (SIMPLE_EDGE)
 Reducer 12 <- Reducer 11 (SIMPLE_EDGE), Reducer 31 (SIMPLE_EDGE), Union 5 (CONTAINS)
 Reducer 13 <- Reducer 10 (CUSTOM_SIMPLE_EDGE)
 Reducer 14 <- Map 8 (CUSTOM_SIMPLE_EDGE)
@@ -142,7 +142,7 @@ Reducer 24 <- Reducer 23 (SIMPLE_EDGE)
 Reducer 26 <- Map 25 (CUSTOM_SIMPLE_EDGE)
 Reducer 28 <- Map 27 (SIMPLE_EDGE), Map 32 (SIMPLE_EDGE)
 Reducer 29 <- Map 34 (SIMPLE_EDGE), Reducer 28 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 18 (ONE_TO_ONE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 18 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 30 <- Reducer 29 (SIMPLE_EDGE)
 Reducer 31 <- Reducer 29 (SIMPLE_EDGE)
 Reducer 33 <- Map 32 (CUSTOM_SIMPLE_EDGE)
@@ -208,8 +208,8 @@ Stage-0
                                             Select Operator [SEL_379] (rows=50 width=4)
                                               Output:["_col0"]
                                                Please refer to the previous Select Operator [SEL_375]
-                      <-Reducer 24 [ONE_TO_ONE_EDGE] vectorized
-                        FORWARD [RS_456]
+                      <-Reducer 24 [SIMPLE_EDGE] vectorized
+                        SHUFFLE [RS_456]
                           PartitionCols:_col0
                           Group By Operator [GBY_455] (rows=225322 width=3)
                             Output:["_col0"],keys:KEY._col0
@@ -407,8 +407,8 @@ Stage-0
                                             Select Operator [SEL_377] (rows=50 width=4)
                                               Output:["_col0"]
                                                Please refer to the previous Select Operator [SEL_375]
-                      <-Reducer 18 [ONE_TO_ONE_EDGE] vectorized
-                        FORWARD [RS_419]
+                      <-Reducer 18 [SIMPLE_EDGE] vectorized
+                        SHUFFLE [RS_419]
                           PartitionCols:_col0
                           Group By Operator [GBY_418] (rows=225322 width=3)
                             Output:["_col0"],keys:KEY._col0

@@ -24,9 +24,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetOwnerDesc;
-import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseSetPropertiesDesc;
-import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.alter.owner.AlterDatabaseSetOwnerDesc;
+import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.database.create.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -43,7 +43,7 @@ import java.util.List;
 public class CreateDatabaseHandler extends AbstractMessageHandler {
 
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     MetaData metaData;
     try {

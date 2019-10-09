@@ -194,7 +194,7 @@ public class OperationManager extends AbstractService {
   }
 
   private String getQueryId(Operation operation) {
-    return operation.getParentSession().getHiveConf().getVar(ConfVars.HIVEQUERYID);
+    return operation.getQueryId();
   }
 
   private void addOperation(Operation operation) {

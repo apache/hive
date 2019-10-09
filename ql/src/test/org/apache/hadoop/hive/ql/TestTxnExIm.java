@@ -126,7 +126,6 @@ public class TestTxnExIm extends TxnCommandsBaseForTests {
    */
   @Test
   public void testExportPart() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 2, 1}, {3, 4, 2}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");
@@ -154,7 +153,6 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1519423568221/
    */
   @Test
   public void testExportPartPartial() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 2, 1, 1}, {3, 4, 2, 2}, {5, 6, 1, 2}, {7, 8, 2, 2}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");
@@ -214,7 +212,6 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
    */
   @Test
   public void testExportPartPartial2() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 2, 1, 1}, {3, 4, 2, 2}, {5, 6, 1, 2}, {7, 8, 2, 2}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");
@@ -232,7 +229,6 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
   }
   @Test
   public void testExportPartPartial3() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] rows1 = {{1, 1, 1, 2}, {3, 2, 3, 8}, {5, 1, 2, 6}, {7, 2, 2, 8}};
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists TImport ");

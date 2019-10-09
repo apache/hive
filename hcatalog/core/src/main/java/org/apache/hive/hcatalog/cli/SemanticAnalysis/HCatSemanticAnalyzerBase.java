@@ -55,7 +55,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-              List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+              List<Task<?>> rootTasks) throws SemanticException {
     super.postAnalyze(context, rootTasks);
 
     //Authorize the operation.
@@ -86,7 +86,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
   * @see https://issues.apache.org/jira/browse/HCATALOG-245
   */
   protected void authorizeDDL(HiveSemanticAnalyzerHookContext context,
-                List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+                List<Task<?>> rootTasks) throws SemanticException {
 
     if (!HCatAuthUtil.isAuthorizationEnabled(context.getConf())) {
       return;
@@ -96,7 +96,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
     try {
       hive = context.getHive();
 
-      for (Task<? extends Serializable> task : rootTasks) {
+      for (Task<?> task : rootTasks) {
         if (task.getWork() instanceof DDLWork) {
           DDLWork work = (DDLWork) task.getWork();
           if (work != null) {

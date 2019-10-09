@@ -35,12 +35,12 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Common utilities for Privilege related ddl operations.
  */
-final class PrivilegeUtils {
+public final class PrivilegeUtils {
   private PrivilegeUtils() {
     throw new UnsupportedOperationException("PrivilegeUtils should not be instantiated");
   }
 
-  static HiveAuthorizer getSessionAuthorizer(HiveConf conf) {
+  public static HiveAuthorizer getSessionAuthorizer(HiveConf conf) {
     HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
     if (authorizer == null) {
       authorizer = new HiveV1Authorizer(conf);
@@ -49,7 +49,7 @@ final class PrivilegeUtils {
     return authorizer;
   }
 
-  static void writeListToFileAfterSort(List<String> entries, String resFile, DDLOperationContext context)
+  public static void writeListToFileAfterSort(List<String> entries, String resFile, DDLOperationContext context)
       throws IOException {
     Collections.sort(entries);
 
@@ -64,7 +64,7 @@ final class PrivilegeUtils {
   private static final HiveAuthorizationTranslator DEFAULT_AUTHORIZATION_TRANSLATOR =
       new DefaultHiveAuthorizationTranslator();
 
-  static HiveAuthorizationTranslator getAuthorizationTranslator(HiveAuthorizer authorizer)
+  public static HiveAuthorizationTranslator getAuthorizationTranslator(HiveAuthorizer authorizer)
       throws HiveAuthzPluginException {
     if (authorizer.getHiveAuthorizationTranslator() == null) {
       return DEFAULT_AUTHORIZATION_TRANSLATOR;

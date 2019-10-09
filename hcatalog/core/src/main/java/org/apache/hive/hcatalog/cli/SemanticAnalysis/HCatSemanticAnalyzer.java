@@ -21,10 +21,10 @@ package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.database.DescDatabaseDesc;
-import org.apache.hadoop.hive.ql.ddl.database.DropDatabaseDesc;
-import org.apache.hadoop.hive.ql.ddl.database.ShowDatabasesDesc;
-import org.apache.hadoop.hive.ql.ddl.database.SwitchDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.desc.DescDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.drop.DropDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.show.ShowDatabasesDesc;
+import org.apache.hadoop.hive.ql.ddl.database.use.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.table.info.DescTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.info.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.ddl.table.info.ShowTablesDesc;
@@ -152,7 +152,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-              List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+              List<Task<?>> rootTasks) throws SemanticException {
 
     try {
 

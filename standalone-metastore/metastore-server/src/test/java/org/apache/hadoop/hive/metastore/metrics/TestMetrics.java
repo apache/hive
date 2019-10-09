@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.metastore.metrics;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -53,6 +55,7 @@ public class TestMetrics {
         MetastoreConf.ConfVars.METRICS_SLF4J_LOG_FREQUENCY_MINS, REPORT_INTERVAL, TimeUnit.SECONDS);
 
     // 1. Verify the default level (INFO)
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METRICS_SLF4J_LOG_LEVEL, "INFO");
     validateSlf4jReporter(conf, Level.INFO);
 
     // 2. Verify an overridden level (DEBUG)
@@ -60,8 +63,8 @@ public class TestMetrics {
     validateSlf4jReporter(conf, Level.DEBUG);
   }
 
-  private void validateSlf4jReporter(Configuration conf, Level level) throws InterruptedException {
-    Metrics.initialize(conf);
+  private void validateSlf4jReporter(Configuration conf, Level level) throws Exception {
+    initializeMetrics(conf);
     Counter counter = Metrics.getOrCreateCounter("my-counter");
     counter.inc(5);
     // Make sure it has a chance to dump it.
@@ -87,7 +90,7 @@ public class TestMetrics {
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_INTERVAL, REPORT_INTERVAL,
         TimeUnit.SECONDS);
 
-    Metrics.initialize(conf);
+    initializeMetrics(conf);
     Counter counter = Metrics.getOrCreateCounter("my-counter");
 
     for (int i = 0; i < 5; i++) {
@@ -101,6 +104,35 @@ public class TestMetrics {
   }
 
   @Test
+  public void testJsonStructure() throws Exception {
+    File jsonReportFile = File.createTempFile("TestMetrics", ".json");
+    String jsonFile = jsonReportFile.getAbsolutePath();
+
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METRICS_REPORTERS, "json");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION, jsonFile);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_INTERVAL,
+        REPORT_INTERVAL, TimeUnit.SECONDS);
+
+    initializeMetrics(conf);
+
+    Counter openConnections = Metrics.getOpenConnectionsCounter();
+    openConnections.inc();
+
+    Thread.sleep(REPORT_INTERVAL * 1000 + REPORT_INTERVAL * 1000 / 2);
+
+    String json = new String(MetricsTestUtils.getFileData(jsonFile, 200, 10));
+
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "buffers.direct.capacity");
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "memory.heap.used");
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "threads.count");
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "classLoading.loaded");
+
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER,
+        MetricsConstants.OPEN_CONNECTIONS, 1);
+  }
+
+  @Test
   public void allReporters() throws Exception {
     String jsonFile = System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") +
         "TestMetricsOutput.json";
@@ -108,7 +140,7 @@ public class TestMetrics {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METRICS_REPORTERS, "json,jmx,console,hadoop");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION, jsonFile);
 
-    Metrics.initialize(conf);
+    initializeMetrics(conf);
 
     Assert.assertEquals(4, Metrics.getReporters().size());
   }
@@ -125,7 +157,7 @@ public class TestMetrics {
             "org.apache.hadoop.hive.common.metrics.metrics2.Metrics2Reporter");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION, jsonFile);
 
-    Metrics.initialize(conf);
+    initializeMetrics(conf);
 
     Assert.assertEquals(4, Metrics.getReporters().size());
   }
@@ -139,7 +171,7 @@ public class TestMetrics {
         "JSON_FILE,JMX,CONSOLE,HADOOP2");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION, jsonFile);
 
-    Metrics.initialize(conf);
+    initializeMetrics(conf);
 
     Assert.assertEquals(4, Metrics.getReporters().size());
   }
@@ -150,7 +182,7 @@ public class TestMetrics {
         "TestMetricsOutput.json";
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION, jsonFile);
-    Metrics.initialize(conf);
+    initializeMetrics(conf);
 
     Assert.assertEquals(2, Metrics.getReporters().size());
   }
@@ -173,9 +205,19 @@ public class TestMetrics {
     }
 
     static void verifyMetricsJson(String json, MetricsCategory category, String metricsName,
-                                         Object expectedValue) throws Exception {
+        Object expectedValue) throws Exception {
       JsonNode jsonNode = getJsonNode(json, category, metricsName);
-      Assert.assertEquals(expectedValue.toString(), jsonNode.asText());
+      Assert.assertTrue(String.format("%s.%s.%s should not be empty", category.category,
+          metricsName, category.metricsHandle), !jsonNode.asText().isEmpty());
+
+      if (expectedValue != null) {
+        Assert.assertEquals(expectedValue.toString(), jsonNode.asText());
+      }
+    }
+
+    static void verifyMetricsJson(String json, MetricsCategory category, String metricsName)
+        throws Exception {
+      verifyMetricsJson(json, category, metricsName, null);
     }
 
     static JsonNode getJsonNode(String json, MetricsCategory category, String metricsName) throws Exception {
@@ -194,5 +236,15 @@ public class TestMetrics {
       } while (tries > 0 && !file.exists());
       return Files.readAllBytes(Paths.get(path));
     }
+  }
+
+  private void initializeMetrics(Configuration conf) throws Exception {
+    Field field = Metrics.class.getDeclaredField("self");
+    field.setAccessible(true);
+
+    Constructor<?> cons = Metrics.class.getDeclaredConstructor(Configuration.class);
+    cons.setAccessible(true);
+
+    field.set(null, cons.newInstance(conf));
   }
 }

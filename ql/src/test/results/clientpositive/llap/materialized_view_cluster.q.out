@@ -611,18 +611,55 @@ POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cluster_mv_3
-Found 1 items
+Found 2 items
 #### A masked pattern was here ####
 val_201201
+val_203203
+val_203203
+val_203203
+val_203203
+val_205205
+val_205205
+val_205205
+val_205205
+val_209209
+val_209209
+val_209209
+val_209209
+val_213213
+val_213213
+val_213213
+val_213213
+val_218218
+val_221221
+val_221221
+val_221221
+val_221221
+val_223223
+val_223223
+val_223223
+val_223223
+val_226226
+val_233233
+val_233233
+val_233233
+val_233233
+val_237237
+val_237237
+val_237237
+val_237237
+val_239239
+val_239239
+val_239239
+val_239239
+val_241241
+val_242242
+val_242242
+val_242242
+val_242242
+val_247247
+val_248248
 val_202202
-val_203203
-val_203203
-val_203203
-val_203203
-val_205205
-val_205205
-val_205205
-val_205205
 val_207207
 val_207207
 val_207207
@@ -636,14 +673,6 @@ val_208208
 val_208208
 val_208208
 val_208208
-val_209209
-val_209209
-val_209209
-val_209209
-val_213213
-val_213213
-val_213213
-val_213213
 val_214214
 val_216216
 val_216216
@@ -653,25 +682,15 @@ val_217217
 val_217217
 val_217217
 val_217217
-val_218218
 val_219219
 val_219219
 val_219219
 val_219219
-val_221221
-val_221221
-val_221221
-val_221221
 val_222222
-val_223223
-val_223223
-val_223223
-val_223223
 val_224224
 val_224224
 val_224224
 val_224224
-val_226226
 val_228228
 val_229229
 val_229229
@@ -702,33 +721,14 @@ val_230230
 val_230230
 val_230230
 val_230230
-val_233233
-val_233233
-val_233233
-val_233233
 val_235235
-val_237237
-val_237237
-val_237237
-val_237237
-val_238238
-val_238238
-val_238238
-val_238238
 val_238_n238
 val_238_n238
-val_239239
-val_239239
-val_239239
-val_239239
-val_241241
-val_242242
-val_242242
-val_242242
-val_242242
+val_238238
+val_238238
+val_238238
+val_238238
 val_244244
-val_247247
-val_248248
 val_249249
 PREHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n2')
 PREHOOK: type: QUERY
@@ -1006,7 +1006,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:

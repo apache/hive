@@ -19,9 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
 import java.io.IOException;
@@ -54,6 +52,7 @@ import javax.security.auth.login.LoginException;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -70,7 +69,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.metastore.utils.LogUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -319,7 +317,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     List<URI> metastoreURIArray = new ArrayList<URI>();
     try {
-      int i = 0;
       for (String s : metastoreUrisString) {
         URI tmpUri = new URI(s);
         if (tmpUri.getScheme() == null) {
@@ -346,9 +343,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       }
 
       if (MetastoreConf.getVar(conf, ConfVars.THRIFT_URI_SELECTION).equalsIgnoreCase("RANDOM")) {
-        List uriList = Arrays.asList(metastoreUris);
+        List<URI> uriList = Arrays.asList(metastoreUris);
         Collections.shuffle(uriList);
-        metastoreUris = (URI[]) uriList.toArray();
+        metastoreUris = uriList.toArray(new URI[uriList.size()]);
       }
     } catch (IllegalArgumentException e) {
       throw (e);
@@ -494,6 +491,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     AlterTableRequest req = new AlterTableRequest(dbname, tbl_name, new_tbl);
     req.setCatName(MetaStoreUtils.getDefaultCatalog(conf));
     req.setEnvironmentContext(envContext);
+    if (processorCapabilities != null) {
+      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      req.setProcessorIdentifier(processorIdentifier);
+    }
     client.alter_table_req(req);
   }
 
@@ -504,6 +505,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     AlterTableRequest req = new AlterTableRequest(dbName, tblName, newTable);
     req.setCatName(catName);
     req.setEnvironmentContext(envContext);
+    if (processorCapabilities != null) {
+      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      req.setProcessorIdentifier(processorIdentifier);
+    }
     client.alter_table_req(req);
   }
 
@@ -519,6 +524,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setCatName(catName);
     req.setValidWriteIdList(validWriteIds);
     req.setEnvironmentContext(envContext);
+    if (processorCapabilities != null) {
+      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      req.setProcessorIdentifier(processorIdentifier);
+    }
     client.alter_table_req(req);
   }
 
@@ -541,12 +550,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private void open() throws MetaException {
     isConnected = false;
     TTransportException tte = null;
+    MetaException recentME = null;
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
     boolean useSasl = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_SASL);
+    String clientAuthMode = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
+    boolean usePasswordAuth = false;
     boolean useFramedTransport = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
         ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+
+    if (clientAuthMode != null) {
+      usePasswordAuth = "PLAIN".equalsIgnoreCase(clientAuthMode);
+    }
 
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
@@ -581,7 +597,34 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
           }
 
-          if (useSasl) {
+          if (usePasswordAuth) {
+            // we are using PLAIN Sasl connection with user/password
+            LOG.debug("HMSC::open(): Creating plain authentication thrift connection.");
+            String userName = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
+
+            if (null == userName || userName.isEmpty()) {
+              throw new MetaException("No user specified for plain transport.");
+            }
+
+            // The password is not directly provided. It should be obtained from a keystore pointed
+            // by configuration "hadoop.security.credential.provider.path".
+            try {
+              String passwd = null;
+              char[] pwdCharArray = conf.getPassword(userName);
+              if (null != pwdCharArray) {
+                passwd = new String(pwdCharArray);
+              }
+              if (null == passwd) {
+                throw new MetaException("No password found for user " + userName);
+              }
+              // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
+              transport = MetaStorePlainSaslHelper.getPlainTransport(userName, passwd, transport);
+            } catch (IOException sasle) {
+              // IOException covers SaslException
+              LOG.error("Couldn't create client transport", sasle);
+              throw new MetaException(sasle.toString());
+            }
+          } else if (useSasl) {
             // Wrap thrift connection with SASL for secure connection.
             try {
               HadoopThriftAuthBridge.Client authBridge =
@@ -647,7 +690,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             }
           }
 
-          if (isConnected && !useSasl && MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)) {
+          if (isConnected && !useSasl && !usePasswordAuth &&
+                  MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)) {
             // Call set_ugi, only in unsecure mode.
             try {
               UserGroupInformation ugi = SecurityUtils.getUGI();
@@ -664,6 +708,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             }
           }
         } catch (MetaException e) {
+          recentME = e;
           LOG.error("Failed to connect to metastore with URI (" + store
               + ") in attempt " + attempt, e);
         }
@@ -681,8 +726,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
 
     if (!isConnected) {
+      // Either tte or recentME should be set but protect from a bug which causes both of them to
+      // be null. When MetaException wraps TTransportException, tte will be set so stringify that
+      // directly.
+      String exceptionString = "Unknown exception";
+      if (tte != null) {
+        exceptionString = StringUtils.stringifyException(tte);
+      } else if (recentME != null) {
+        exceptionString = StringUtils.stringifyException(recentME);
+      }
       throw new MetaException("Could not connect to meta store using any of the URIs provided." +
-          " Most recent failure: " + StringUtils.stringifyException(tte));
+          " Most recent failure: " + exceptionString);
     }
 
     snapshotActiveConf();
@@ -1481,7 +1535,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<Partition> dropPartitions(String dbName, String tblName,
-                                        List<ObjectPair<Integer, byte[]>> partExprs,
+                                        List<Pair<Integer, byte[]>> partExprs,
                                         PartitionDropOptions options)
       throws TException {
     return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs, options);
@@ -1489,7 +1543,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
+      List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
       boolean ifExists, boolean needResult) throws NoSuchObjectException, MetaException, TException {
 
     return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs,
@@ -1502,7 +1556,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
+      List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
       boolean ifExists) throws NoSuchObjectException, MetaException, TException {
     // By default, we need the results from dropPartitions();
     return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs,
@@ -1513,14 +1567,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-                                        List<ObjectPair<Integer, byte[]>> partExprs,
+                                        List<Pair<Integer, byte[]>> partExprs,
                                         PartitionDropOptions options) throws TException {
     RequestPartsSpec rps = new RequestPartsSpec();
     List<DropPartitionsExpr> exprs = new ArrayList<>(partExprs.size());
-    for (ObjectPair<Integer, byte[]> partExpr : partExprs) {
+    for (Pair<Integer, byte[]> partExpr : partExprs) {
       DropPartitionsExpr dpe = new DropPartitionsExpr();
-      dpe.setExpr(partExpr.getSecond());
-      dpe.setPartArchiveLevel(partExpr.getFirst());
+      dpe.setExpr(partExpr.getRight());
+      dpe.setPartArchiveLevel(partExpr.getLeft());
       exprs.add(dpe);
     }
     rps.setExprs(exprs);

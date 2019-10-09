@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,15 +40,11 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Checks whenever operator ids are not reused.
  */
 public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
-
-  private static final Logger LOG = LoggerFactory.getLogger(NoOperatorReuseCheckerHook.class);
 
   static class UniqueOpIdChecker implements NodeProcessor {
 
@@ -74,8 +69,8 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
 
     List<Node> rootOps = Lists.newArrayList();
 
-    ArrayList<Task<? extends Serializable>> roots = hookContext.getQueryPlan().getRootTasks();
-    for (Task<? extends Serializable> task : roots) {
+    List<Task<?>> roots = hookContext.getQueryPlan().getRootTasks();
+    for (Task<?> task : roots) {
 
       Object work = task.getWork();
       if (work instanceof MapredWork) {

@@ -597,7 +597,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
+  protected void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
 
@@ -690,7 +690,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void setInputFormat(Task<? extends Serializable> task) {
+  protected void setInputFormat(Task<?> task) {
     if (task instanceof TezTask) {
       TezWork work = ((TezTask)task).getWork();
       List<BaseWork> all = work.getAllWork();
@@ -706,15 +706,15 @@ public class TezCompiler extends TaskCompiler {
         }
       }
     } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks
+      List<Task<?>> listTasks
         = ((ConditionalTask) task).getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
+      for (Task<?> tsk : listTasks) {
         setInputFormat(tsk);
       }
     }
 
     if (task.getChildTasks() != null) {
-      for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+      for (Task<?> childTask : task.getChildTasks()) {
         setInputFormat(childTask);
       }
     }
@@ -737,7 +737,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void decideExecMode(List<Task<? extends Serializable>> rootTasks, Context ctx,
+  protected void decideExecMode(List<Task<?>> rootTasks, Context ctx,
       GlobalLimitCtx globalLimitCtx)
       throws SemanticException {
     // currently all Tez work is on the cluster
@@ -745,7 +745,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void optimizeTaskPlan(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
+  protected void optimizeTaskPlan(List<Task<?>> rootTasks, ParseContext pCtx,
       Context ctx) throws SemanticException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
@@ -896,11 +896,9 @@ public class TezCompiler extends TaskCompiler {
 
   private static class TerminalOpsInfo {
     public Set<TerminalOperator<?>> terminalOps;
-    public Set<ReduceSinkOperator> rsOps;
 
-    TerminalOpsInfo(Set<TerminalOperator<?>> terminalOps, Set<ReduceSinkOperator> rsOps) {
+    TerminalOpsInfo(Set<TerminalOperator<?>> terminalOps) {
       this.terminalOps = terminalOps;
-      this.rsOps = rsOps;
     }
   }
 
@@ -928,7 +926,7 @@ public class TezCompiler extends TaskCompiler {
       OperatorUtils.findWorkOperatorsAndSemiJoinEdges(selOp,
               pCtx.getRsToSemiJoinBranchInfo(), workRSOps, workTerminalOps);
 
-      TerminalOpsInfo candidate = new TerminalOpsInfo(workTerminalOps, workRSOps);
+      TerminalOpsInfo candidate = new TerminalOpsInfo(workTerminalOps);
 
       // A work may contain multiple semijoin edges, traverse rsOps and add for each
       for (ReduceSinkOperator rsFound : workRSOps) {
@@ -1094,7 +1092,7 @@ public class TezCompiler extends TaskCompiler {
       // <Parent Ops>-SEL-GB1-RS1-GB2-RS2
       GroupByOperator gbOp = (GroupByOperator) stack.get(stack.size() - 2);
       GroupByDesc gbDesc = gbOp.getConf();
-      ArrayList<AggregationDesc> aggregationDescs = gbDesc.getAggregators();
+      List<AggregationDesc> aggregationDescs = gbDesc.getAggregators();
       for (AggregationDesc agg : aggregationDescs) {
         if (!isBloomFilterAgg(agg)) {
           continue;

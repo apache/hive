@@ -109,8 +109,8 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
@@ -314,15 +314,17 @@ public final class Utilities {
       return;
     }
 
-    try {
-      FileSystem fs = mapPath.getFileSystem(conf);
-      if (fs.exists(mapPath)) {
-        fs.delete(mapPath, true);
-      }
-      if (fs.exists(reducePath)) {
-        fs.delete(reducePath, true);
-      }
 
+    try {
+      if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+        FileSystem fs = mapPath.getFileSystem(conf);
+        if (fs.exists(mapPath)) {
+          fs.delete(mapPath, true);
+        }
+        if (fs.exists(reducePath)) {
+          fs.delete(reducePath, true);
+        }
+      }
     } catch (Exception e) {
       LOG.warn("Failed to clean-up tmp directories.", e);
     } finally {
@@ -2597,24 +2599,24 @@ public final class Utilities {
     return true;
   }
 
-  public static List<TezTask> getTezTasks(List<Task<? extends Serializable>> tasks) {
+  public static List<TezTask> getTezTasks(List<Task<?>> tasks) {
     return getTasks(tasks, new TaskFilterFunction<>(TezTask.class));
   }
 
-  public static List<SparkTask> getSparkTasks(List<Task<? extends Serializable>> tasks) {
+  public static List<SparkTask> getSparkTasks(List<Task<?>> tasks) {
     return getTasks(tasks, new TaskFilterFunction<>(SparkTask.class));
   }
 
-  public static List<ExecDriver> getMRTasks(List<Task<? extends Serializable>> tasks) {
+  public static List<ExecDriver> getMRTasks(List<Task<?>> tasks) {
     return getTasks(tasks, new TaskFilterFunction<>(ExecDriver.class));
   }
 
-  public static int getNumClusterJobs(List<Task<? extends Serializable>> tasks) {
+  public static int getNumClusterJobs(List<Task<?>> tasks) {
     return getMRTasks(tasks).size() + getTezTasks(tasks).size() + getSparkTasks(tasks).size();
   }
 
   static class TaskFilterFunction<T> implements DAGTraversal.Function {
-    private Set<Task<? extends Serializable>> visited = new HashSet<>();
+    private Set<Task<?>> visited = new HashSet<>();
     private Class<T> requiredType;
     private List<T> typeSpecificTasks = new ArrayList<>();
 
@@ -2623,7 +2625,7 @@ public final class Utilities {
     }
 
     @Override
-    public void process(Task<? extends Serializable> task) {
+    public void process(Task<?> task) {
       if (requiredType.isInstance(task) && !typeSpecificTasks.contains(task)) {
         typeSpecificTasks.add((T) task);
       }
@@ -2635,12 +2637,12 @@ public final class Utilities {
     }
 
     @Override
-    public boolean skipProcessing(Task<? extends Serializable> task) {
+    public boolean skipProcessing(Task<?> task) {
       return visited.contains(task);
     }
   }
 
-  private static <T> List<T> getTasks(List<Task<? extends Serializable>> tasks,
+  private static <T> List<T> getTasks(List<Task<?>> tasks,
       TaskFilterFunction<T> function) {
     DAGTraversal.traverse(tasks, function);
     return function.getTasks();
@@ -2829,7 +2831,7 @@ public final class Utilities {
    * @param conf
    * @throws SemanticException
    */
-  public static void reworkMapRedWork(Task<? extends Serializable> task,
+  public static void reworkMapRedWork(Task<?> task,
       boolean reworkMapredWork, HiveConf conf) throws SemanticException {
     if (reworkMapredWork && (task instanceof MapRedTask)) {
       try {
@@ -3265,7 +3267,7 @@ public final class Utilities {
 
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
-    LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
+    DriverState driverState = DriverState.getDriverState();
     // AliasToWork contains all the aliases
     Collection<String> aliasToWork = work.getAliasToWork().keySet();
     if (!skipDummy) {
@@ -3285,7 +3287,7 @@ public final class Utilities {
       boolean hasLogged = false;
 
       for (Map.Entry<Path, List<String>> e : pathToAliases) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (driverState != null && driverState.isAborted()) {
           throw new IOException("Operation is Canceled.");
         }
 
@@ -3341,7 +3343,7 @@ public final class Utilities {
       finalPathsToAdd.addAll(getInputPathsWithPool(job, work, hiveScratchDir, ctx, skipDummy, pathsToAdd, pool));
     } else {
       for (final Path path : pathsToAdd) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (driverState != null && driverState.isAborted()) {
           throw new IOException("Operation is Canceled.");
         }
         Path newPath = new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy).call();
@@ -3359,12 +3361,12 @@ public final class Utilities {
   static List<Path> getInputPathsWithPool(JobConf job, MapWork work, Path hiveScratchDir,
                                            Context ctx, boolean skipDummy, List<Path> pathsToAdd,
                                            ExecutorService pool) throws IOException, ExecutionException, InterruptedException {
-    LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
+    DriverState driverState = DriverState.getDriverState();
     List<Path> finalPathsToAdd = new ArrayList<>();
     try {
       Map<GetInputPathsCallable, Future<Path>> getPathsCallableToFuture = new LinkedHashMap<>();
       for (final Path path : pathsToAdd) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (driverState != null && driverState.isAborted()) {
           throw new IOException("Operation is Canceled.");
         }
         GetInputPathsCallable callable = new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy);
@@ -3373,7 +3375,7 @@ public final class Utilities {
       pool.shutdown();
 
       for (Map.Entry<GetInputPathsCallable, Future<Path>> future : getPathsCallableToFuture.entrySet()) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (driverState != null && driverState.isAborted()) {
           throw new IOException("Operation is Canceled.");
         }
 

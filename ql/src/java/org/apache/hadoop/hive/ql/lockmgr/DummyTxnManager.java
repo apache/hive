@@ -28,8 +28,8 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -144,7 +144,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public void acquireLocks(QueryPlan plan, Context ctx, String username, LockedDriverState lDrvState) throws LockException {
+  public void acquireLocks(QueryPlan plan, Context ctx, String username, DriverState driverState) throws LockException {
     // Make sure we've built the lock manager
     getLockManager();
 
@@ -208,7 +208,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     }
 
     dedupLockObjects(lockObjects);
-    List<HiveLock> hiveLocks = lockMgr.lock(lockObjects, false, lDrvState);
+    List<HiveLock> hiveLocks = lockMgr.lock(lockObjects, false, driverState);
 
     if (hiveLocks == null) {
       throw new LockException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());

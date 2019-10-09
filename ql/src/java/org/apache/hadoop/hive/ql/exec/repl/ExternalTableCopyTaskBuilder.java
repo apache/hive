@@ -56,8 +56,8 @@ public class ExternalTableCopyTaskBuilder {
     this.conf = conf;
   }
 
-  List<Task<? extends Serializable>> tasks(TaskTracker tracker) {
-    List<Task<? extends Serializable>> tasks = new ArrayList<>();
+  List<Task<?>> tasks(TaskTracker tracker) {
+    List<Task<?>> tasks = new ArrayList<>();
     Iterator<DirCopyWork> itr = work.getPathsToCopyIterator();
     while (tracker.canAddMoreTasks() && itr.hasNext()) {
       DirCopyWork dirCopyWork = itr.next();

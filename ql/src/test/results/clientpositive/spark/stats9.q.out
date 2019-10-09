@@ -37,7 +37,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_srcbucket
-                  Statistics: Num rows: 391 Data size: 116030 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-1
     Stats Work

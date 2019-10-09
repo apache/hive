@@ -48,6 +48,7 @@ STAGE PLANS:
                       key expressions: _col2 (type: string), _col3 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized
         Reducer 2 
@@ -183,7 +184,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_t1
-                  Statistics: Num rows: 392 Data size: 232480 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats Work

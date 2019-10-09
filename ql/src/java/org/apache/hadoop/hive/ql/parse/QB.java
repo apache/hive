@@ -456,4 +456,11 @@ public class QB {
     }
     return aliasToTabs.size()==0 && aliasToSubq.size()==0;
   }
+
+  // returns false when the query block doesn't have
+  // a table defined, e.g. "select 5"
+  public boolean hasTableDefined() {
+    return !(aliases.size() == 1 && aliases.get(0).equals(SemanticAnalyzer.DUMMY_TABLE));
+  }
+
 }

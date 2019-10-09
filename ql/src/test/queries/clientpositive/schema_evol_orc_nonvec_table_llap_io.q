@@ -7,7 +7,6 @@ SET hive.vectorized.use.vector.serde.deserialize=false;
 SET hive.vectorized.use.row.serde.deserialize=false;
 set hive.fetch.task.conversion=none;
 SET hive.vectorized.execution.enabled=false;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=true;
 set hive.default.fileformat=orc;
 set hive.llap.io.enabled=true;

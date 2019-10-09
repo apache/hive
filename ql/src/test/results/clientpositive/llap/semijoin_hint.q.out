@@ -1744,7 +1744,7 @@ STAGE PLANS:
       Edges:
         Map 6 <- Reducer 5 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
-        Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
         Reducer 5 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -2821,7 +2821,7 @@ STAGE PLANS:
       Edges:
         Map 5 <- Reducer 7 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
-        Reducer 3 <- Map 6 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Map 6 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
         Reducer 7 <- Map 6 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -3256,7 +3256,7 @@ STAGE PLANS:
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 2 (ONE_TO_ONE_EDGE)
+        Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
         Reducer 9 <- Map 8 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -3265,6 +3265,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
+                  filterExpr: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)
@@ -3597,7 +3598,7 @@ STAGE PLANS:
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 2 (ONE_TO_ONE_EDGE)
+        Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
         Reducer 9 <- Map 8 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -3606,6 +3607,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
+                  filterExpr: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)

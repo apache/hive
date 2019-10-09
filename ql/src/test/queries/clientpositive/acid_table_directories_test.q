@@ -1,7 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 set hive.qtest.additional.partial.mask.pattern=.*acidparttable\/p=(100|200)\/base.*,.*acidparttable/p=(100|200)/delta.*;
 set hive.qtest.additional.partial.mask.replacement.text=ACID BASE DIR,ACID DELTA DIR;

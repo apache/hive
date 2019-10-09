@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import static org.apache.hadoop.hive.ql.util.DirectionUtils.DESCENDING_CODE;
+
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -43,16 +45,24 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantIntObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.LongWritable;
 
 /**
  * GenericUDAFPercentileCont.
  */
-@Description(name = "percentile_cont", value = "_FUNC_(input, pc) "
-    + "- Returns the percentile of expr at pc (range: [0,1]).")
+@Description(
+        name = "dense_rank",
+        value = "_FUNC_(input, pc) "
+                + "- Returns the percentile of expr at pc (range: [0,1]).")
+@WindowFunctionDescription(
+        supportsWindow = false,
+        pivotResult = true,
+        supportsWithinGroup = true)
 public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
 
   private static final Comparator<LongWritable> LONG_COMPARATOR;
@@ -70,14 +80,8 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
-    if (parameters.length != 2) {
-      throw new UDFArgumentTypeException(parameters.length - 1, "Exactly 2 argument is expected.");
-    }
+    validateParameterTypes(parameters);
 
-    if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(0, "Only primitive type arguments are accepted but "
-          + parameters[0].getTypeName() + " is passed.");
-    }
     switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
     case BYTE:
     case SHORT:
@@ -98,6 +102,20 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric arguments are accepted but " + parameters[0].getTypeName() + " is passed.");
+    }
+  }
+
+  protected void validateParameterTypes(TypeInfo[] parameters) throws UDFArgumentTypeException {
+    if (parameters.length < 2) {
+      throw new UDFArgumentTypeException(parameters.length - 1, "Not enough arguments.");
+    }
+    if (parameters.length > 3) {
+      throw new UDFArgumentTypeException(parameters.length - 1, "Too many arguments.");
+    }
+
+    if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
+      throw new UDFArgumentTypeException(0, "Only primitive type arguments are accepted but "
+          + parameters[0].getTypeName() + " is passed.");
     }
   }
 
@@ -137,12 +155,17 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
   public abstract static class PercentileContEvaluator<T, U> extends GenericUDAFEvaluator {
     PercentileCalculator<U> calc = getCalculator();
 
+    protected PercentileContEvaluator(Comparator<Entry<U, LongWritable>> comparator) {
+      this.comparator = comparator;
+    }
+
     /**
      * A state class to store intermediate aggregation results.
      */
     public class PercentileAgg extends AbstractAggregationBuffer {
       Map<U, LongWritable> counts;
       List<DoubleWritable> percentiles;
+      boolean isAscending;
     }
 
     // For PARTIAL1 and COMPLETE
@@ -160,6 +183,10 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
     protected transient StructObjectInspector soi;
     protected transient StructField countsField;
     protected transient StructField percentilesField;
+    protected transient StructField isAscendingField;
+
+    private final transient Comparator<Entry<U, LongWritable>> comparator;
+    protected transient boolean isAscending;
 
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       super.init(m, parameters);
@@ -167,13 +194,14 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
       initInspectors(parameters);
 
       if (mode == Mode.PARTIAL1 || mode == Mode.PARTIAL2) {// ...for partial result
-        partialResult = new Object[2];
+        partialResult = new Object[3];
 
         ArrayList<ObjectInspector> foi = getPartialInspectors();
 
         ArrayList<String> fname = new ArrayList<String>();
         fname.add("counts");
         fname.add("percentiles");
+        fname.add("isAscending");
 
         return ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
       } else { // ...for final result
@@ -192,16 +220,25 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
 
     protected abstract U copyInput(U input);
 
-    protected abstract void sortEntries(List<Entry<U, LongWritable>> entriesList);
+    private void sortEntries(List<Entry<U, LongWritable>> entriesList, boolean isAscending) {
+      entriesList.sort(isAscending ? comparator : comparator.reversed());
+    }
 
     protected void initInspectors(ObjectInspector[] parameters) {
       if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {// ...for real input data
         inputOI = (PrimitiveObjectInspector) parameters[0];
+        if (parameters.length == 2) { // Order direction was not given, default to asc
+          isAscending = true;
+        } else {
+          isAscending = ((WritableConstantIntObjectInspector) parameters[2]).
+                  getWritableConstantValue().get() != DESCENDING_CODE;
+        }
       } else { // ...for partial result as input
         soi = (StructObjectInspector) parameters[0];
 
         countsField = soi.getStructFieldRef("counts");
         percentilesField = soi.getStructFieldRef("percentiles");
+        isAscendingField = soi.getStructFieldRef("isAscending");
 
         countsOI = (MapObjectInspector) countsField.getFieldObjectInspector();
         percentilesOI = (ListObjectInspector) percentilesField.getFieldObjectInspector();
@@ -211,6 +248,7 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
       PercentileAgg agg = new PercentileAgg();
+      agg.isAscending = isAscending;
       return agg;
     }
 
@@ -264,6 +302,7 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
 
       Object objCounts = soi.getStructFieldData(partial, countsField);
       Object objPercentiles = soi.getStructFieldData(partial, percentilesField);
+      Object objIsAscending = soi.getStructFieldData(partial, isAscendingField);
 
       Map<U, LongWritable> counts = (Map<U, LongWritable>) countsOI.getMap(objCounts);
       List<DoubleWritable> percentiles =
@@ -278,6 +317,7 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
       if (percAgg.percentiles == null) {
         percAgg.percentiles = new ArrayList<DoubleWritable>(percentiles);
       }
+      percAgg.isAscending = ((BooleanWritable)objIsAscending).get();
 
       for (Map.Entry<U, LongWritable> e : counts.entrySet()) {
         increment(percAgg, e.getKey(), e.getValue().get());
@@ -297,7 +337,7 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
       Set<Map.Entry<U, LongWritable>> entries = percAgg.counts.entrySet();
       List<Map.Entry<U, LongWritable>> entriesList =
           new ArrayList<Map.Entry<U, LongWritable>>(entries);
-      sortEntries(entriesList);
+      sortEntries(entriesList, percAgg.isAscending);
 
       // Accumulate the counts.
       long total = getTotal(entriesList);
@@ -317,6 +357,7 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
       PercentileAgg percAgg = (PercentileAgg) agg;
       partialResult[0] = percAgg.counts;
       partialResult[1] = percAgg.percentiles;
+      partialResult[2] = new BooleanWritable(percAgg.isAscending);
 
       return partialResult;
     }
@@ -353,6 +394,10 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
   public static class PercentileContLongEvaluator
       extends PercentileContEvaluator<Long, LongWritable> {
 
+    public PercentileContLongEvaluator() {
+      super(new LongComparator());
+    }
+
     protected ArrayList<ObjectInspector> getPartialInspectors() {
       ArrayList<ObjectInspector> foi = new ArrayList<ObjectInspector>();
 
@@ -361,6 +406,7 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
           PrimitiveObjectInspectorFactory.writableLongObjectInspector));
       foi.add(ObjectInspectorFactory.getStandardListObjectInspector(
           PrimitiveObjectInspectorFactory.writableDoubleObjectInspector));
+      foi.add(PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
       return foi;
     }
 
@@ -376,10 +422,6 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
       return new LongWritable(input.get());
     }
 
-    protected void sortEntries(List<Entry<LongWritable, LongWritable>> entriesList) {
-      Collections.sort(entriesList, new LongComparator());
-    }
-
     @Override
     protected PercentileCalculator<LongWritable> getCalculator() {
       return new PercentileContLongCalculator();
@@ -391,6 +433,10 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
    */
   public static class PercentileContDoubleEvaluator
       extends PercentileContEvaluator<Double, DoubleWritable> {
+    public PercentileContDoubleEvaluator() {
+      super(new DoubleComparator());
+    }
+
     @Override
     protected ArrayList<ObjectInspector> getPartialInspectors() {
       ArrayList<ObjectInspector> foi = new ArrayList<ObjectInspector>();
@@ -400,6 +446,7 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
           PrimitiveObjectInspectorFactory.writableLongObjectInspector));
       foi.add(ObjectInspectorFactory.getStandardListObjectInspector(
           PrimitiveObjectInspectorFactory.writableDoubleObjectInspector));
+      foi.add(PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
       return foi;
     }
 
@@ -415,10 +462,6 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
 
     protected DoubleWritable copyInput(DoubleWritable input) {
       return new DoubleWritable(input.get());
-    }
-
-    protected void sortEntries(List<Entry<DoubleWritable, LongWritable>> entriesList) {
-      Collections.sort(entriesList, new DoubleComparator());
     }
 
     @Override

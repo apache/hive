@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.function.CreateFunctionDesc;
+import org.apache.hadoop.hive.ql.ddl.function.create.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -56,7 +56,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
   }
 
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     try {
       FunctionDescBuilder builder = new FunctionDescBuilder(context);
@@ -91,7 +91,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
          *  add the 'many' to parent/root tasks. The execution environment will make sure that the child barrier task will not get executed unless all parents of the barrier task are complete,
          *  which should only happen when the last task is finished, at which point the child of the barrier task is picked up.
          */
-        Task<? extends Serializable> barrierTask =
+        Task<?> barrierTask =
             TaskFactory.get(new DependencyCollectionWork(), context.hiveConf);
         builder.replCopyTasks.forEach(t -> t.addDependentTask(barrierTask));
         barrierTask.addDependentTask(createTask);

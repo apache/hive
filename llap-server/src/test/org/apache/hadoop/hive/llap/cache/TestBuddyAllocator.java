@@ -105,7 +105,7 @@ public class TestBuddyAllocator {
     allocSameSize(a, arenaCount * 2, allocLog2);
   }
 
-  @Test
+  /*  HIVE-22286: Disabled test until HIVE-22175 is resolved @Test */
   public void testMTT() {
     final int min = 3, max = 8, maxAlloc = 1 << max, allocsPerSize = 3;
     final BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc,

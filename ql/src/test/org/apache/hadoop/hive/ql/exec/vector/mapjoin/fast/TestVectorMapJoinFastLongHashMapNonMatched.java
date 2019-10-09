@@ -104,7 +104,7 @@ public class TestVectorMapJoinFastLongHashMapNonMatched extends CommonFastHashTa
 
     VerifyFastLongHashMap verifyTable = new VerifyFastLongHashMap();
 
-    for (int i = 0; i < 18; ++i) {
+    for (int i = 0; i < 6; ++i) {
       long key;
       while (true) {
         key = random.nextLong();

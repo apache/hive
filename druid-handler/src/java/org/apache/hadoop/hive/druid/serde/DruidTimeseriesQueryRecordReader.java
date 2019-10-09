@@ -44,8 +44,8 @@ public class DruidTimeseriesQueryRecordReader
 
   @Override
   public boolean nextKeyValue() {
-    if (queryResultsIterator.hasNext()) {
-      current = queryResultsIterator.next();
+    if (getQueryResultsIterator().hasNext()) {
+      current = getQueryResultsIterator().next();
       return true;
     }
     return false;
@@ -83,7 +83,7 @@ public class DruidTimeseriesQueryRecordReader
 
   @Override
   public float getProgress() throws IOException {
-    return queryResultsIterator.hasNext() ? 0 : 1;
+    return getQueryResultsIterator().hasNext() ? 0 : 1;
   }
 
 }

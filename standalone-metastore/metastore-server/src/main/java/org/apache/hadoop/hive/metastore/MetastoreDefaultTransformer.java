@@ -37,12 +37,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransformer {
   public static final Logger LOG = LoggerFactory.getLogger(MetastoreDefaultTransformer.class);
   private IHMSHandler hmsHandler = null;
+  private String defaultCatalog = null;
 
   private static final String CONNECTORREAD = "CONNECTORREAD".intern();
   private static final String CONNECTORWRITE = "CONNECTORWRITE".intern();
@@ -75,6 +77,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   private List<String> insertOnlyList = new ArrayList<>();
   public MetastoreDefaultTransformer(IHMSHandler handler) throws HiveMetaException {
     this.hmsHandler = handler;
+    this.defaultCatalog = MetaStoreUtils.getDefaultCatalog(handler.getConf());
 
     acidWriteList.addAll(ACIDCOMMONWRITELIST);
     acidList.addAll(acidWriteList);
@@ -93,14 +96,20 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     Map<Table, List<String>> ret = new HashMap<Table, List<String>>();
 
     for (Table table : objects) {
+      List<String> generated = new ArrayList<String>();
+      List<String> requiredReads = new ArrayList<>();
+      List<String> requiredWrites = new ArrayList<>();
+
+      if (!defaultCatalog.equalsIgnoreCase(table.getCatName())) {
+        ret.put(table, generated);
+        continue;
+      }
+
       Map<String, String> params = table.getParameters();
       String tableType = table.getTableType();
       String tCapabilities = params.get(OBJCAPABILITIES);
       int numBuckets = table.getSd().getNumBuckets();
       boolean isBucketed = (numBuckets > 0) ? true : false;
-      List<String> generated = new ArrayList<String>();
-      List<String> requiredReads = new ArrayList<>();
-      List<String> requiredWrites = new ArrayList<>();
 
       LOG.info("Table " + table.getTableName() + ",#bucket=" + numBuckets + ",isBucketed:" + isBucketed + ",tableType=" + tableType + ",tableCapabilities=" + tCapabilities);
 
@@ -434,7 +443,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
   @Override
   public List<Partition> transformPartitions(List<Partition> objects, Table table, List<String> processorCapabilities, String processorId) throws MetaException {
-    if (processorCapabilities != null && processorCapabilities.contains(MANAGERAWMETADATA)) {
+    if ((processorCapabilities != null && processorCapabilities.contains(MANAGERAWMETADATA)) ||
+        !defaultCatalog.equalsIgnoreCase(table.getCatName())) {
+      LOG.debug("Table belongs to non-default catalog, skipping translation");
       return objects;
     }
 
@@ -535,6 +546,11 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
   @Override
   public Table transformCreateTable(Table table, List<String> processorCapabilities, String processorId) throws MetaException {
+    if (!defaultCatalog.equalsIgnoreCase(table.getCatName())) {
+      LOG.debug("Table belongs to non-default catalog, skipping");
+      return table;
+    }
+
     Table newTable = new Table(table);
     LOG.info("Starting translation for CreateTable for processor " + processorId + " with " + processorCapabilities
         + " on table " + newTable.getTableName());
@@ -543,38 +559,38 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       params = new HashMap<>();
     String tableType = newTable.getTableType();
     String txnal = null;
+    String txn_properties = null;
+    boolean isInsertAcid = false;
 
     if (TableType.MANAGED_TABLE.name().equals(tableType)) {
-      LOG.info("Table is a MANAGED_TABLE");
+      LOG.debug("Table is a MANAGED_TABLE");
       txnal = params.get(TABLE_IS_TRANSACTIONAL);
-      if (txnal == null || txnal.equalsIgnoreCase("FALSE")) { // non-ACID MANAGED TABLE
-        if (processorCapabilities == null || (!processorCapabilities.contains(HIVEMANAGEDINSERTWRITE) &&
-            !processorCapabilities.contains(HIVEFULLACIDWRITE))) {
-          LOG.info("Converting " + newTable.getTableName() + " to EXTERNAL tableType for " + processorId);
-          newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
-          params.remove(TABLE_IS_TRANSACTIONAL);
-          params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
-          params.put("EXTERNAL", "TRUE");
-          params.put(EXTERNAL_TABLE_PURGE, "TRUE");
-          params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
-          newTable.setParameters(params);
-          LOG.info("Modified table params are:" + params.toString());
-          if (table.getSd().getLocation() == null) {
-            try {
-              Path newPath = hmsHandler.getWh().getDefaultTablePath(table.getDbName(), table.getTableName(), true);
-              newTable.getSd().setLocation(newPath.toString());
-              LOG.info("Modified location from to " + newPath);
-            } catch (Exception e) {
-              LOG.warn("Exception determining external table location:" + e.getMessage());
-            }
+      txn_properties = params.get(TABLE_TRANSACTIONAL_PROPERTIES);
+      isInsertAcid = (txn_properties != null && txn_properties.equalsIgnoreCase("insert_only"));
+      if ((txnal == null || txnal.equalsIgnoreCase("FALSE")) && !isInsertAcid) { // non-ACID MANAGED TABLE
+        LOG.info("Converting " + newTable.getTableName() + " to EXTERNAL tableType for " + processorId);
+        newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
+        params.remove(TABLE_IS_TRANSACTIONAL);
+        params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
+        params.put("EXTERNAL", "TRUE");
+        params.put(EXTERNAL_TABLE_PURGE, "TRUE");
+        params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
+        newTable.setParameters(params);
+        LOG.info("Modified table params are:" + params.toString());
+        if (table.getSd().getLocation() == null) {
+          try {
+            Path newPath = hmsHandler.getWh().getDefaultTablePath(table.getDbName(), table.getTableName(), true);
+            newTable.getSd().setLocation(newPath.toString());
+            LOG.info("Modified location from null to " + newPath);
+          } catch (Exception e) {
+            LOG.warn("Exception determining external table location:" + e.getMessage());
           }
         }
       } else { // ACID table
         if (processorCapabilities == null || processorCapabilities.isEmpty()) {
           throw new MetaException("Processor has no capabilities, cannot create an ACID table.");
         }
-        String txntype = params.get(TABLE_TRANSACTIONAL_PROPERTIES);
-        if (txntype != null && txntype.equalsIgnoreCase("insert_only")) { // MICRO_MANAGED Tables
+        if (isInsertAcid) { // MICRO_MANAGED Tables
           if (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE)) {
             LOG.info("Processor has required capabilities to be able to create INSERT-only tables");
             return newTable;
@@ -592,11 +608,55 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           }
         }
       }
-    } else {
+    } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
       LOG.info("Table to be created is of type " + tableType + " but not " + TableType.MANAGED_TABLE.toString());
+      String tableLocation = table.getSd().getLocation();
+      String externalWHRoot = hmsHandler.getWh().getWhRootExternal().toString();
+
+      if (tableLocation != null && !tableLocation.startsWith(externalWHRoot)) {
+        throw new MetaException(
+            "An external table's location needs to be under the external warehouse root directory," + "table:"
+                + table.getTableName() + ",location:" + tableLocation + ",Hive warehouse:" + externalWHRoot);
+      }
+
     }
     LOG.info("Transformer returning table:" + newTable.toString());
     return newTable;
+  }
+
+  @Override
+  public Table transformAlterTable(Table table, List<String> processorCapabilities, String processorId) throws MetaException {
+    if (!defaultCatalog.equalsIgnoreCase(table.getCatName())) {
+      LOG.debug("Table belongs to non-default catalog, skipping translation");
+      return table;
+    }
+
+    LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
+        + " on table " + table.getTableName());
+    String tableType = table.getTableType();
+
+    if (TableType.MANAGED_TABLE.name().equals(tableType)) {
+      LOG.debug("Table is a MANAGED_TABLE");
+      Path tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
+      Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
+      if (!tableLocation.toString().startsWith(whRootPath.toString())) {
+        throw new MetaException(
+            "A managed table's location needs to be under the hive warehouse root directory," + "table:"
+                + table.getTableName() + ",location:" + tableLocation + ",Hive warehouse:" + whRootPath);
+      }
+    } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
+      LOG.debug("Table is a EXTERNAL TABLE");
+      Path tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
+      Path externalWHRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRootExternal());
+
+      if (tableLocation != null && !tableLocation.toString().startsWith(externalWHRootPath.toString())) {
+        throw new MetaException(
+            "An external table's location needs to be under the external warehouse root directory," + "table:"
+                + table.getTableName() + ",location:" + tableLocation + ",Hive external warehouse:" + externalWHRootPath);
+      }
+    }
+    LOG.debug("Transformer returning table:" + table.toString());
+    return table;
   }
 
   /**
@@ -604,7 +664,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
    */
   @Override
   public Database transformDatabase(Database db, List<String> processorCapabilities, String processorId) throws MetaException {
-    if (processorCapabilities != null && processorCapabilities.contains(MANAGERAWMETADATA)) {
+    if ((processorCapabilities != null && processorCapabilities.contains(MANAGERAWMETADATA)) ||
+        !defaultCatalog.equalsIgnoreCase(db.getCatalogName())) {
+      LOG.debug("Database belongs to non-default catalog, skipping translation");
       return db;
     }
 

@@ -219,7 +219,7 @@ STAGE PLANS:
       Edges:
         Map 11 <- Union 5 (CONTAINS)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Union 5 (CONTAINS)
         Reducer 6 <- Union 5 (SIMPLE_EDGE)
         Reducer 9 <- Map 10 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
@@ -535,7 +535,7 @@ STAGE PLANS:
       Edges:
         Reducer 12 <- Map 11 (SIMPLE_EDGE), Union 5 (CONTAINS)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Union 5 (CONTAINS)
         Reducer 6 <- Union 5 (SIMPLE_EDGE)
         Reducer 9 <- Map 10 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)

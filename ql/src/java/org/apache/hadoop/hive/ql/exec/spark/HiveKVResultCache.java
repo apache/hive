@@ -24,8 +24,8 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.hadoop.fs.FileUtil;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 
@@ -49,8 +49,8 @@ class HiveKVResultCache {
   @VisibleForTesting
   static final int IN_MEMORY_NUM_ROWS = 1024;
 
-  private ObjectPair<HiveKey, BytesWritable>[] writeBuffer;
-  private ObjectPair<HiveKey, BytesWritable>[] readBuffer;
+  private MutablePair<HiveKey, BytesWritable>[] writeBuffer;
+  private MutablePair<HiveKey, BytesWritable>[] readBuffer;
 
   private File parentFile;
   private File tmpFile;
@@ -67,16 +67,16 @@ class HiveKVResultCache {
   private Output output;
 
   public HiveKVResultCache() {
-    writeBuffer = new ObjectPair[IN_MEMORY_NUM_ROWS];
-    readBuffer = new ObjectPair[IN_MEMORY_NUM_ROWS];
+    writeBuffer = new MutablePair[IN_MEMORY_NUM_ROWS];
+    readBuffer = new MutablePair[IN_MEMORY_NUM_ROWS];
     for (int i = 0; i < IN_MEMORY_NUM_ROWS; i++) {
-      writeBuffer[i] = new ObjectPair<HiveKey, BytesWritable>();
-      readBuffer[i] = new ObjectPair<HiveKey, BytesWritable>();
+      writeBuffer[i] = new MutablePair<HiveKey, BytesWritable>();
+      readBuffer[i] = new MutablePair<HiveKey, BytesWritable>();
     }
   }
 
   private void switchBufferAndResetCursor() {
-    ObjectPair<HiveKey, BytesWritable>[] tmp = readBuffer;
+    MutablePair<HiveKey, BytesWritable>[] tmp = readBuffer;
     rowsInReadBuffer = writeCursor;
     readBuffer = writeBuffer;
     readBufferUsed = true;
@@ -152,11 +152,11 @@ class HiveKVResultCache {
             setupOutput();
           }
           for (int i = 0; i < IN_MEMORY_NUM_ROWS; i++) {
-            ObjectPair<HiveKey, BytesWritable> pair = writeBuffer[i];
-            writeHiveKey(output, pair.getFirst());
-            writeValue(output, pair.getSecond());
-            pair.setFirst(null);
-            pair.setSecond(null);
+            MutablePair<HiveKey, BytesWritable> pair = writeBuffer[i];
+            writeHiveKey(output, pair.getLeft());
+            writeValue(output, pair.getRight());
+            pair.setLeft(null);
+            pair.setRight(null);
           }
           writeCursor = 0;
         } catch (Exception e) {
@@ -165,9 +165,9 @@ class HiveKVResultCache {
         }
       }
     }
-    ObjectPair<HiveKey, BytesWritable> pair = writeBuffer[writeCursor++];
-    pair.setFirst(key);
-    pair.setSecond(value);
+    MutablePair<HiveKey, BytesWritable> pair = writeBuffer[writeCursor++];
+    pair.setLeft(key);
+    pair.setRight(value);
   }
 
   public synchronized void clear() {
@@ -224,9 +224,9 @@ class HiveKVResultCache {
         if (input != null) {
           // Load next batch from disk
           for (int i = 0; i < IN_MEMORY_NUM_ROWS; i++) {
-            ObjectPair<HiveKey, BytesWritable> pair = readBuffer[i];
-            pair.setFirst(readHiveKey(input));
-            pair.setSecond(readValue(input));
+            MutablePair<HiveKey, BytesWritable> pair = readBuffer[i];
+            pair.setLeft(readHiveKey(input));
+            pair.setRight(readValue(input));
           }
           if (input.eof()) {
             input.close();
@@ -236,11 +236,10 @@ class HiveKVResultCache {
           readBufferUsed = true;
           readCursor = 0;
         } else if (writeCursor == 1) {
-          ObjectPair<HiveKey, BytesWritable> pair = writeBuffer[0];
-          Tuple2<HiveKey, BytesWritable> row = new Tuple2<HiveKey, BytesWritable>(
-            pair.getFirst(), pair.getSecond());
-          pair.setFirst(null);
-          pair.setSecond(null);
+          MutablePair<HiveKey, BytesWritable> pair = writeBuffer[0];
+          Tuple2<HiveKey, BytesWritable> row = new Tuple2<HiveKey, BytesWritable>(pair.getLeft(), pair.getRight());
+          pair.setLeft(null);
+          pair.setRight(null);
           writeCursor = 0;
           return row;
         } else {
@@ -252,11 +251,10 @@ class HiveKVResultCache {
         throw new RuntimeException("Failed to load rows from disk", e);
       }
     }
-    ObjectPair<HiveKey, BytesWritable> pair = readBuffer[readCursor];
-    Tuple2<HiveKey, BytesWritable> row = new Tuple2<HiveKey, BytesWritable>(
-      pair.getFirst(), pair.getSecond());
-    pair.setFirst(null);
-    pair.setSecond(null);
+    MutablePair<HiveKey, BytesWritable> pair = readBuffer[readCursor];
+    Tuple2<HiveKey, BytesWritable> row = new Tuple2<HiveKey, BytesWritable>(pair.getLeft(), pair.getRight());
+    pair.setLeft(null);
+    pair.setRight(null);
     if (++readCursor >= rowsInReadBuffer) {
       readBufferUsed = false;
       rowsInReadBuffer = 0;

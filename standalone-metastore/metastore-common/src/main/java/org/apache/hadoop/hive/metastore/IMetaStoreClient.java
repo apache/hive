@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -34,7 +35,6 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
 
 /**
@@ -1892,7 +1892,7 @@ public interface IMetaStoreClient {
    * @throws TException Thrift transport error.
    */
   List<Partition> dropPartitions(String dbName, String tblName,
-                                 List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
+                                 List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
                                  boolean ifExists) throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -1913,7 +1913,7 @@ public interface IMetaStoreClient {
    * @throws TException Thrift transport error.
    */
   default List<Partition> dropPartitions(String catName, String dbName, String tblName,
-                                         List<ObjectPair<Integer, byte[]>> partExprs,
+                                         List<Pair<Integer, byte[]>> partExprs,
                                          boolean deleteData, boolean ifExists)
       throws NoSuchObjectException, MetaException, TException {
     return dropPartitions(catName, dbName, tblName, partExprs,
@@ -1943,7 +1943,7 @@ public interface IMetaStoreClient {
    */
   @Deprecated
   List<Partition> dropPartitions(String dbName, String tblName,
-      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
+      List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
       boolean ifExists, boolean needResults) throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -1966,7 +1966,7 @@ public interface IMetaStoreClient {
    * @throws TException Thrift transport error.
    */
   default List<Partition> dropPartitions(String catName, String dbName, String tblName,
-                                         List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
+                                         List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
                                          boolean ifExists, boolean needResults)
       throws NoSuchObjectException, MetaException, TException {
     return dropPartitions(catName, dbName, tblName, partExprs,
@@ -1988,7 +1988,7 @@ public interface IMetaStoreClient {
    * @throws TException On failure
    */
   List<Partition> dropPartitions(String dbName, String tblName,
-                                 List<ObjectPair<Integer, byte[]>> partExprs,
+                                 List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException;
 
@@ -2005,7 +2005,7 @@ public interface IMetaStoreClient {
    * @throws TException On failure
    */
   List<Partition> dropPartitions(String catName, String dbName, String tblName,
-                                 List<ObjectPair<Integer, byte[]>> partExprs,
+                                 List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException;
 
@@ -2230,7 +2230,7 @@ public interface IMetaStoreClient {
    * @param newPart
    *          new partition
    * @throws InvalidOperationException
-   *           if srcFs and destFs are different
+   *           if srcFs and destFs are different, or trying to rename to an already existing partition name
    * @throws MetaException
    *          if error in updating metadata
    * @throws TException
@@ -2253,7 +2253,7 @@ public interface IMetaStoreClient {
    * @param newPart
    *          new partition
    * @throws InvalidOperationException
-   *           if srcFs and destFs are different
+   *           if srcFs and destFs are different, or trying to rename to an already existing partition name
    * @throws MetaException
    *          if error in updating metadata
    * @throws TException

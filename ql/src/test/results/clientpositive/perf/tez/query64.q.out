@@ -277,7 +277,7 @@ Reducer 14 <- Map 53 (SIMPLE_EDGE), Reducer 13 (SIMPLE_EDGE)
 Reducer 15 <- Map 36 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE)
 Reducer 16 <- Reducer 15 (SIMPLE_EDGE)
 Reducer 18 <- Map 17 (SIMPLE_EDGE), Reducer 39 (SIMPLE_EDGE)
-Reducer 19 <- Reducer 18 (SIMPLE_EDGE), Reducer 46 (ONE_TO_ONE_EDGE)
+Reducer 19 <- Reducer 18 (SIMPLE_EDGE), Reducer 46 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 17 (SIMPLE_EDGE)
 Reducer 20 <- Map 50 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
 Reducer 21 <- Map 34 (SIMPLE_EDGE), Reducer 20 (SIMPLE_EDGE)
@@ -286,7 +286,7 @@ Reducer 23 <- Map 37 (SIMPLE_EDGE), Reducer 22 (SIMPLE_EDGE)
 Reducer 24 <- Map 52 (SIMPLE_EDGE), Reducer 23 (SIMPLE_EDGE)
 Reducer 25 <- Map 17 (CUSTOM_SIMPLE_EDGE)
 Reducer 26 <- Map 17 (SIMPLE_EDGE), Reducer 42 (SIMPLE_EDGE)
-Reducer 27 <- Reducer 26 (SIMPLE_EDGE), Reducer 49 (ONE_TO_ONE_EDGE)
+Reducer 27 <- Reducer 26 (SIMPLE_EDGE), Reducer 49 (SIMPLE_EDGE)
 Reducer 28 <- Map 50 (SIMPLE_EDGE), Reducer 27 (SIMPLE_EDGE)
 Reducer 29 <- Map 34 (SIMPLE_EDGE), Reducer 28 (SIMPLE_EDGE)
 Reducer 3 <- Map 17 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
@@ -566,8 +566,8 @@ Stage-0
                                                                                               Select Operator [SEL_1124] (rows=652 width=4)
                                                                                                 Output:["_col0"]
                                                                                                  Please refer to the previous Select Operator [SEL_1119]
-                                                                    <-Reducer 46 [ONE_TO_ONE_EDGE] vectorized
-                                                                      FORWARD [RS_1178]
+                                                                    <-Reducer 46 [SIMPLE_EDGE] vectorized
+                                                                      SHUFFLE [RS_1178]
                                                                         PartitionCols:_col0
                                                                         Select Operator [SEL_1177] (rows=13257 width=4)
                                                                           Output:["_col0"]
@@ -747,8 +747,8 @@ Stage-0
                                                                                               Select Operator [SEL_1126] (rows=652 width=4)
                                                                                                 Output:["_col0"]
                                                                                                  Please refer to the previous Select Operator [SEL_1120]
-                                                                    <-Reducer 49 [ONE_TO_ONE_EDGE] vectorized
-                                                                      FORWARD [RS_1209]
+                                                                    <-Reducer 49 [SIMPLE_EDGE] vectorized
+                                                                      SHUFFLE [RS_1209]
                                                                         PartitionCols:_col0
                                                                         Select Operator [SEL_1208] (rows=13257 width=4)
                                                                           Output:["_col0"]

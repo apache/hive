@@ -1144,34 +1144,33 @@ end
 
 class Table
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  ID = 1
-  TABLENAME = 2
-  DBNAME = 3
-  OWNER = 4
-  CREATETIME = 5
-  LASTACCESSTIME = 6
-  RETENTION = 7
-  SD = 8
-  PARTITIONKEYS = 9
-  PARAMETERS = 10
-  VIEWORIGINALTEXT = 11
-  VIEWEXPANDEDTEXT = 12
-  TABLETYPE = 13
-  PRIVILEGES = 14
-  TEMPORARY = 15
-  REWRITEENABLED = 16
-  CREATIONMETADATA = 17
-  CATNAME = 18
-  OWNERTYPE = 19
-  WRITEID = 20
-  ISSTATSCOMPLIANT = 21
-  COLSTATS = 22
-  ACCESSTYPE = 23
-  REQUIREDREADCAPABILITIES = 24
-  REQUIREDWRITECAPABILITIES = 25
+  TABLENAME = 1
+  DBNAME = 2
+  OWNER = 3
+  CREATETIME = 4
+  LASTACCESSTIME = 5
+  RETENTION = 6
+  SD = 7
+  PARTITIONKEYS = 8
+  PARAMETERS = 9
+  VIEWORIGINALTEXT = 10
+  VIEWEXPANDEDTEXT = 11
+  TABLETYPE = 12
+  PRIVILEGES = 13
+  TEMPORARY = 14
+  REWRITEENABLED = 15
+  CREATIONMETADATA = 16
+  CATNAME = 17
+  OWNERTYPE = 18
+  WRITEID = 19
+  ISSTATSCOMPLIANT = 20
+  COLSTATS = 21
+  ACCESSTYPE = 22
+  REQUIREDREADCAPABILITIES = 23
+  REQUIREDWRITECAPABILITIES = 24
+  ID = 25
 
   FIELDS = {
-    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     OWNER => {:type => ::Thrift::Types::STRING, :name => 'owner'},
@@ -1195,7 +1194,8 @@ class Table
     COLSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'colStats', :class => ::ColumnStatistics, :optional => true},
     ACCESSTYPE => {:type => ::Thrift::Types::BYTE, :name => 'accessType', :optional => true},
     REQUIREDREADCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredReadCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1632,7 +1632,7 @@ class ColumnStatistics
     STATSDESC => {:type => ::Thrift::Types::STRUCT, :name => 'statsDesc', :class => ::ColumnStatisticsDesc},
     STATSOBJ => {:type => ::Thrift::Types::LIST, :name => 'statsObj', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatisticsObj}},
     ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true},
-    ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine'}
+    ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1640,7 +1640,6 @@ class ColumnStatistics
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field statsDesc is unset!') unless @statsDesc
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field statsObj is unset!') unless @statsObj
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field engine is unset!') unless @engine
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -5577,6 +5576,8 @@ class AlterTableRequest
   ENVIRONMENTCONTEXT = 5
   WRITEID = 6
   VALIDWRITEIDLIST = 7
+  PROCESSORCAPABILITIES = 8
+  PROCESSORIDENTIFIER = 9
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
@@ -5585,7 +5586,9 @@ class AlterTableRequest
     TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'table', :class => ::Table},
     ENVIRONMENTCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environmentContext', :class => ::EnvironmentContext, :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
+    PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true}
   }
 
   def struct_fields; FIELDS; end

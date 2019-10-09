@@ -49,7 +49,7 @@ import com.google.common.annotations.VisibleForTesting;
  *
  *XXX: copied from the only used class by qtestutil from hbase-tests
  */
-class MiniZooKeeperCluster {
+public class MiniZooKeeperCluster {
   private static final Logger LOG = LoggerFactory.getLogger(MiniZooKeeperCluster.class);
 
   private static final int TICK_TIME = 2000;
@@ -168,6 +168,9 @@ class MiniZooKeeperCluster {
 
   // / XXX: From o.a.zk.t.ClientBase
   private static void setupTestEnv() {
+    // With ZooKeeper 3.5 we need to whitelist the 4 letter commands we use
+    System.setProperty("zookeeper.4lw.commands.whitelist", "*");
+
     // during the tests we run with 100K prealloc in the logs.
     // on windows systems prealloc of 64M was seen to take ~15seconds
     // resulting in test failure (client timeout on first session).
@@ -381,7 +384,7 @@ class MiniZooKeeperCluster {
   }
 
   // XXX: From o.a.zk.t.ClientBase
-  private static boolean waitForServerDown(int port, long timeout) throws IOException {
+  public static boolean waitForServerDown(int port, long timeout) throws IOException {
     long start = System.currentTimeMillis();
     while (true) {
       try {
@@ -410,7 +413,7 @@ class MiniZooKeeperCluster {
   }
 
   // XXX: From o.a.zk.t.ClientBase
-  private static boolean waitForServerUp(int port, long timeout) throws IOException {
+  public static boolean waitForServerUp(int port, long timeout) throws IOException {
     long start = System.currentTimeMillis();
     while (true) {
       try {

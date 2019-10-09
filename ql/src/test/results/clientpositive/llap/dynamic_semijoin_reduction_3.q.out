@@ -58,7 +58,7 @@ STAGE PLANS:
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 2 (ONE_TO_ONE_EDGE)
+        Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
         Reducer 9 <- Map 8 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -67,6 +67,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
+                  filterExpr: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)
@@ -380,7 +381,7 @@ STAGE PLANS:
       Edges:
         Map 1 <- Reducer 6 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
         Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -389,6 +390,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
+                  filterExpr: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a BETWEEN DynamicValue(RS_3_s_a_min) AND DynamicValue(RS_3_s_a_max) and in_bloom_filter(a, DynamicValue(RS_3_s_a_bloom_filter))) (type: boolean)
@@ -584,7 +586,7 @@ STAGE PLANS:
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 3 (SIMPLE_EDGE)
         Reducer 6 <- Reducer 3 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 3 (ONE_TO_ONE_EDGE)
+        Reducer 7 <- Reducer 3 (SIMPLE_EDGE)
         Reducer 8 <- Reducer 7 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
