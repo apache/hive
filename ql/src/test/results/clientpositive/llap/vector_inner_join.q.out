@@ -75,7 +75,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 2)
                     predicate: (c > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: int)
                       outputColumnNames: _col0
@@ -83,7 +83,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -102,7 +102,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col1 (type: int)
                           outputColumnNames: _col0
@@ -110,13 +110,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumnNums: [0]
-                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-                            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -153,7 +153,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 2)
                     predicate: (a > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int)
                       outputColumnNames: _col0
@@ -161,7 +161,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
@@ -171,7 +171,7 @@ STAGE PLANS:
                             keyColumns: 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -250,7 +250,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 2)
                     predicate: (c > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: int)
                       outputColumnNames: _col0
@@ -258,7 +258,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Semi Join 0 to 1
@@ -321,7 +321,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 2)
                     predicate: (a > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int)
                       outputColumnNames: _col0
@@ -329,7 +329,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
@@ -339,7 +339,7 @@ STAGE PLANS:
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
                         keys: _col0 (type: int)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.5
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -467,7 +467,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 2)
                     predicate: (c > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: int)
                       outputColumnNames: _col0
@@ -475,7 +475,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -495,7 +495,7 @@ STAGE PLANS:
                         outputColumnNames: _col1, _col2
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col1 (type: string), _col2 (type: int)
                           outputColumnNames: _col0, _col1
@@ -503,13 +503,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumnNums: [3, 0]
-                          Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-                            Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -546,7 +546,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1:int, val 2)
                     predicate: (a > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -554,7 +554,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -565,7 +565,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:string
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -645,7 +645,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1:int, val 2)
                     predicate: (a > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -653,7 +653,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -664,7 +664,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:string
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -698,7 +698,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 2)
                     predicate: (c > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: int), v2 (type: string)
                       outputColumnNames: _col0, _col1
@@ -706,7 +706,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -727,13 +727,13 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
                           0 Map 1
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -816,7 +816,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 2)
                     predicate: (c > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: int), v2 (type: string), (c * 5) (type: int)
                       outputColumnNames: _col0, _col1, _col2
@@ -825,7 +825,7 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [0, 1, 3]
                           selectExpressions: LongColMultiplyLongScalar(col 0:int, val 5) -> 3:int
-                      Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -846,7 +846,7 @@ STAGE PLANS:
                         outputColumnNames: _col1, _col2, _col3, _col5
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col3 (type: string), _col5 (type: int), _col2 (type: int), _col1 (type: string)
                           outputColumnNames: _col0, _col1, _col2, _col3
@@ -854,13 +854,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumnNums: [4, 5, 3, 1]
-                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-                            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -897,7 +897,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1:int, val 2)
                     predicate: (a > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: v1 (type: string), a (type: int), (a * 2) (type: int)
                       outputColumnNames: _col0, _col1, _col2
@@ -906,7 +906,7 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [0, 1, 3]
                           selectExpressions: LongColMultiplyLongScalar(col 1:int, val 2) -> 3:int
-                      Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -917,7 +917,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:string, 3:int
-                        Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col2 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -997,7 +997,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 2)
                     predicate: (c > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: int), v2 (type: string)
                       outputColumnNames: _col0, _col1
@@ -1005,7 +1005,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1026,7 +1026,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col2 (type: string), _col1 (type: string), _col0 (type: int)
                           outputColumnNames: _col0, _col1, _col2
@@ -1034,13 +1034,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumnNums: [3, 1, 0]
-                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-                            Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1077,7 +1077,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1:int, val 2)
                     predicate: (a > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -1085,7 +1085,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -1096,7 +1096,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:string
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1176,7 +1176,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 2)
                     predicate: (c > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: int), v2 (type: string)
                       outputColumnNames: _col0, _col1
@@ -1184,7 +1184,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1205,7 +1205,7 @@ STAGE PLANS:
                         outputColumnNames: _col1, _col2, _col3
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col3 (type: int), _col2 (type: string), _col1 (type: string)
                           outputColumnNames: _col0, _col1, _col2
@@ -1213,13 +1213,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumnNums: [0, 3, 1]
-                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-                            Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1256,7 +1256,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1:int, val 2)
                     predicate: (a > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -1264,7 +1264,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -1275,7 +1275,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:string
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1355,7 +1355,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1:int, val 2)
                     predicate: (a > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -1363,7 +1363,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -1374,7 +1374,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:string
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1408,7 +1408,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 2)
                     predicate: (c > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: int), v2 (type: string)
                       outputColumnNames: _col0, _col1
@@ -1416,7 +1416,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1437,7 +1437,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col2, _col3
                         input vertices:
                           0 Map 1
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: string), _col3 (type: string), _col2 (type: int)
                           outputColumnNames: _col0, _col1, _col2
@@ -1445,13 +1445,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumnNums: [3, 1, 0]
-                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-                            Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1534,7 +1534,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1:int, val 2)
                     predicate: (a > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -1542,7 +1542,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -1553,7 +1553,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:string
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1587,7 +1587,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 2)
                     predicate: (c > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: int), v2 (type: string)
                       outputColumnNames: _col0, _col1
@@ -1595,7 +1595,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1616,7 +1616,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col3
                         input vertices:
                           0 Map 1
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col1 (type: int), _col0 (type: string), _col3 (type: string)
                           outputColumnNames: _col0, _col1, _col2
@@ -1624,13 +1624,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumnNums: [0, 3, 1]
-                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-                            Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

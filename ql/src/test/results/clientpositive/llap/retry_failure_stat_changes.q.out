@@ -237,42 +237,42 @@ POSTHOOK: Input: default@tx_n2
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 2 <- Map 1 (BROADCAST_EDGE)
-Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
+Map 1 <- Map 3 (BROADCAST_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 3 llap
+      Reducer 2 llap
       File Output Operator [FS_15]
         Select Operator [SEL_14] (rows=1 width=4)
           Output:["_col0"]
           Group By Operator [GBY_13] (rows=1 width=8)
             Output:["_col0"],aggregations:["sum(VALUE._col0)"]
-          <-Map 2 [CUSTOM_SIMPLE_EDGE] llap
+          <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
             PARTITION_ONLY_SHUFFLE [RS_12]
               Group By Operator [GBY_11] (rows=1 width=8)
                 Output:["_col0"],aggregations:["sum(_col0)"]
-                Select Operator [SEL_9] (rows=2 width=8)
+                Select Operator [SEL_9] (rows=1 width=8)
                   Output:["_col0"]
-                  Map Join Operator [MAPJOIN_30] (rows=2 width=8)
-                    Conds:RS_6._col0=SEL_5._col0(Inner),Output:["_col1","_col3"]
-                  <-Map 1 [BROADCAST_EDGE] llap
-                    BROADCAST [RS_6]
+                  Map Join Operator [MAPJOIN_30] (rows=1 width=8)
+                    Conds:SEL_2._col0=RS_7._col0(Inner),Output:["_col1","_col3"]
+                  <-Map 3 [BROADCAST_EDGE] llap
+                    BROADCAST [RS_7]
                       PartitionCols:_col0
-                      Select Operator [SEL_2] (rows=2 width=8)
+                      Select Operator [SEL_5] (rows=1 width=8)
                         Output:["_col0","_col1"]
-                        Filter Operator [FIL_18] (rows=2 width=8)
-                          predicate:((u < 10) and a is not null)
-                          TableScan [TS_0] (rows=8 width=8)
-                            default@tx_n2,tx_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["a","u"]
-                  <-Select Operator [SEL_5] (rows=5 width=8)
+                        Filter Operator [FIL_19] (rows=1 width=8)
+                          predicate:((p > 2) and a is not null)
+                          TableScan [TS_3] (rows=5 width=8)
+                            default@px,px,Tbl:COMPLETE,Col:COMPLETE,Output:["a","p"]
+                  <-Select Operator [SEL_2] (rows=2 width=8)
                       Output:["_col0","_col1"]
-                      Filter Operator [FIL_19] (rows=5 width=8)
-                        predicate:((p > 2) and a is not null)
-                        TableScan [TS_3] (rows=5 width=8)
-                          default@px,px,Tbl:COMPLETE,Col:COMPLETE,Output:["a","p"]
+                      Filter Operator [FIL_18] (rows=2 width=8)
+                        predicate:((u < 10) and a is not null)
+                        TableScan [TS_0] (rows=8 width=8)
+                          default@tx_n2,tx_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["a","u"]
 
 PREHOOK: query: select assert_true_oom(1 > sum(u*p)) from tx_n2 join px on (tx_n2.a=px.a) where u<10 and p>2
 PREHOOK: type: QUERY
@@ -280,17 +280,17 @@ PREHOOK: Input: default@px
 PREHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
 Status: Failed
-Vertex failed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
+Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
 ], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
-]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 3] killed/failed due to:OWN_TASK_FAILURE]
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]
 DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
 ], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
-]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 3] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
 PREHOOK: query: select assert_true_oom(2000 > sum(u*p)) from tx_n2 join px on (tx_n2.a=px.a) where u<10 and p>2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@px
