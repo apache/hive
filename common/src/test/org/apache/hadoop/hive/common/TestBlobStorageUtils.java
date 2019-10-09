@@ -40,7 +40,7 @@ public class TestBlobStorageUtils {
 
   @Before
   public void setUp() {
-    conf.set(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES.varname, "s3a,swift");
+    conf.set(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES.varname, "s3a,swift,abfss,wasb");
     conf.setBoolean(HiveConf.ConfVars.HIVE_BLOBSTORE_USE_BLOBSTORE_AS_SCRATCHDIR.varname, false);
   }
 
@@ -49,6 +49,7 @@ public class TestBlobStorageUtils {
     // Valid paths
     assertTrue(isBlobStoragePath(conf, new Path("s3a://bucket/path")));
     assertTrue(isBlobStoragePath(conf, new Path("swift://bucket/path")));
+    assertTrue(isBlobStoragePath(conf, new Path("abfss://bucket/path")));
 
     // Invalid paths
     assertFalse(isBlobStoragePath(conf, new Path("/tmp/a-path")));
@@ -70,6 +71,9 @@ public class TestBlobStorageUtils {
     doReturn("swift").when(fs).getScheme();
     assertTrue(isBlobStorageFileSystem(conf, fs));
 
+    doReturn("wasb").when(fs).getScheme();
+    assertTrue(isBlobStorageFileSystem(conf, fs));
+
     /* Invalid FileSystem schemes */
 
     doReturn("hdfs").when(fs).getScheme();
@@ -86,6 +90,7 @@ public class TestBlobStorageUtils {
     // Valid schemes
     assertTrue(isBlobStorageScheme(conf, "s3a"));
     assertTrue(isBlobStorageScheme(conf, "swift"));
+    assertTrue(isBlobStorageScheme(conf, "abfss"));
 
     // Invalid schemes
     assertFalse(isBlobStorageScheme(conf, "hdfs"));

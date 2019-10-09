@@ -4813,7 +4813,7 @@ public class HiveConf extends Configuration {
 
     /* BLOBSTORE section */
 
-    HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "s3,s3a,s3n",
+    HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "abfs,abfss,s3,s3a,s3n,wasb,wasbs",
             "Comma-separated list of supported blobstore schemes."),
 
     HIVE_BLOBSTORE_USE_BLOBSTORE_AS_SCRATCHDIR("hive.blobstore.use.blobstore.as.scratchdir", false,
