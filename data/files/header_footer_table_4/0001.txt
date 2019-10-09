@@ -1,0 +1,7 @@
+header_int,header_name,header_choice
+12,alex,daily
+3,barry,yearly
+5,chelsea,monthly
+8,xavier,monthly
+footer_int,footer_name,footer_choice
+footer2_int,footer2_name,footer2_choice
