@@ -24,11 +24,11 @@ STAGE PLANS:
             Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
-              Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 35 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: l_extendedprice (type: double)
                 outputColumnNames: l_extendedprice
-                Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 35 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(l_extendedprice)
                   minReductionHashAggr: 0.99
@@ -97,11 +97,11 @@ STAGE PLANS:
             Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
-              Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 35 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: l_extendedprice (type: double)
                 outputColumnNames: l_extendedprice
-                Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 35 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(l_extendedprice)
                   minReductionHashAggr: 0.99

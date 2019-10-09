@@ -269,11 +269,11 @@ STAGE PLANS:
                   Statistics: Num rows: 122880 Data size: 1467736 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((cint > 10) and cbigint is not null) (type: boolean)
-                    Statistics: Num rows: 30577 Data size: 365240 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 45873 Data size: 547936 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hash(cint,csmallint,cbigint) (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 30577 Data size: 365240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 45873 Data size: 547936 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col0)
                         minReductionHashAggr: 0.99
@@ -347,11 +347,11 @@ STAGE PLANS:
                   Statistics: Num rows: 122880 Data size: 30929630 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((cint > 10) and cbigint is not null) (type: boolean)
-                    Statistics: Num rows: 30577 Data size: 7696590 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 45873 Data size: 11546630 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hash(ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2) (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 30577 Data size: 7696590 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 45873 Data size: 11546630 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col0)
                         minReductionHashAggr: 0.99
@@ -425,11 +425,11 @@ STAGE PLANS:
                   Statistics: Num rows: 122880 Data size: 9173100 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((cint > 5) and (cint < 10)) (type: boolean)
-                    Statistics: Num rows: 13653 Data size: 1019300 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 30720 Data size: 2293300 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hash(cstring2) (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 13653 Data size: 1019300 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 30720 Data size: 2293300 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col0)
                         minReductionHashAggr: 0.99
@@ -753,11 +753,11 @@ STAGE PLANS:
                   Statistics: Num rows: 245760 Data size: 2935456 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((cint > 10) and cbigint is not null) (type: boolean)
-                    Statistics: Num rows: 61153 Data size: 730452 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 91747 Data size: 1095872 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hash(cint,csmallint,cbigint) (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 61153 Data size: 730452 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 91747 Data size: 1095872 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col0)
                         minReductionHashAggr: 0.99
@@ -831,11 +831,11 @@ STAGE PLANS:
                   Statistics: Num rows: 245760 Data size: 61859030 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((cint > 10) and cbigint is not null) (type: boolean)
-                    Statistics: Num rows: 61153 Data size: 15392750 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 91747 Data size: 23093340 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hash(ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2) (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 61153 Data size: 15392750 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 91747 Data size: 23093340 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col0)
                         minReductionHashAggr: 0.99
@@ -909,11 +909,11 @@ STAGE PLANS:
                   Statistics: Num rows: 245760 Data size: 18346100 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((cint > 5) and (cint < 10)) (type: boolean)
-                    Statistics: Num rows: 27306 Data size: 2038500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 61440 Data size: 4586600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hash(cstring2) (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 27306 Data size: 2038500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 61440 Data size: 4586600 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col0)
                         minReductionHashAggr: 0.99

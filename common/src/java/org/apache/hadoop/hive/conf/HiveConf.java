@@ -2537,6 +2537,11 @@ public class HiveConf extends Configuration {
         "When estimating output rows for a join involving multiple columns, the default behavior assumes" +
         "the columns are independent. Setting this flag to true will cause the estimator to assume" +
         "the columns are correlated."),
+    HIVE_STATS_RANGE_SELECTIVITY_UNIFORM_DISTRIBUTION("hive.stats.filter.range.uniform", true,
+        "When estimating output rows from a condition, if a range predicate is applied over a column and the\n" +
+        "minimum and maximum values for that column are available, assume uniform distribution of values\n" +
+        "across that range and scales number of rows proportionally. If this is set to false, default\n" +
+        "selectivity value is used."),
     // in the absence of uncompressed/raw data size, total file size will be used for statistics
     // annotation. But the file may be compressed, encoded and serialized which may be lesser in size
     // than the actual uncompressed/raw data size. This factor will be multiplied to file size to estimate

@@ -31,34 +31,35 @@ public class AnnotateStatsProcCtx implements NodeProcessorCtx {
 
   private ParseContext pctx;
   private HiveConf conf;
-  private Statistics andExprStats = null;
+  private boolean uniformWithinRange;
+  private Statistics andExprStats;
   private Set<String> affectedColumns;
 
 
   public AnnotateStatsProcCtx(ParseContext pctx) {
-    this.setParseContext(pctx);
+    this.pctx = pctx;
     if(pctx != null) {
-      this.setConf(pctx.getConf());
+      this.conf = pctx.getConf();
+      this.uniformWithinRange = HiveConf.getBoolVar(this.conf,
+          HiveConf.ConfVars.HIVE_STATS_RANGE_SELECTIVITY_UNIFORM_DISTRIBUTION);
     } else {
-      this.setConf(null);
+      this.conf = null;
+      this.uniformWithinRange = false;
     }
-    affectedColumns = new HashSet<>();
+    this.andExprStats = null;
+    this.affectedColumns = new HashSet<>();
   }
 
   public HiveConf getConf() {
     return conf;
   }
 
-  public void setConf(HiveConf conf) {
-    this.conf = conf;
+  public boolean isUniformWithinRange() {
+    return uniformWithinRange;
   }
 
   public ParseContext getParseContext() {
     return pctx;
-  }
-
-  public void setParseContext(ParseContext pctx) {
-    this.pctx = pctx;
   }
 
   public Statistics getAndExprStats() {

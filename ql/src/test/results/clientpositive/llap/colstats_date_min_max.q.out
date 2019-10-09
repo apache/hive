@@ -162,8 +162,8 @@ Stage-0
             PARTITION_ONLY_SHUFFLE [RS_12]
               Group By Operator [GBY_11] (rows=1 width=8)
                 Output:["_col0"],aggregations:["count()"]
-                Select Operator [SEL_10] (rows=3 width=56)
-                  Filter Operator [FIL_9] (rows=3 width=56)
+                Select Operator [SEL_10] (rows=2 width=56)
+                  Filter Operator [FIL_9] (rows=2 width=56)
                     predicate:(d < DATE'2010-10-03')
                     TableScan [TS_0] (rows=10 width=56)
                       default@d1,d1,Tbl:COMPLETE,Col:COMPLETE,Output:["d"]
