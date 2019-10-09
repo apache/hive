@@ -80,7 +80,7 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -94,7 +94,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SplitLocationInfo;
-import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -311,9 +310,10 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     DriverCleanup driverCleanup = new DriverCleanup(driver, txnManager, splitsAppId.toString());
     boolean needsCleanup = true;
     try {
-      CommandProcessorResponse cpr = driver.compileAndRespond(query, false);
-      if (cpr.getResponseCode() != 0) {
-        throw new HiveException("Failed to compile query: " + cpr.getException());
+      try {
+        driver.compileAndRespond(query, false);
+      } catch (CommandProcessorException e) {
+        throw new HiveException("Failed to compile query: " + e.getException());
       }
 
       QueryPlan plan = driver.getPlan();
@@ -345,17 +345,18 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         driver.releaseLocksAndCommitOrRollback(false);
         driver.releaseResources();
         HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
-        cpr = driver.run(ctas, false);
-
-        if(cpr.getResponseCode() != 0) {
-          throw new HiveException("Failed to create temp table: " + cpr.getException());
+        try {
+          driver.run(ctas, false);
+        } catch (CommandProcessorException e) {
+          throw new HiveException("Failed to create temp table: " + e.getException());
         }
 
         HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, "llap");
         query = "select * from " + tableName;
-        cpr = driver.compileAndRespond(query, true);
-        if(cpr.getResponseCode() != 0) {
-          throw new HiveException("Failed to create temp table: "+cpr.getException());
+        try {
+          driver.compileAndRespond(query, true);
+        } catch (CommandProcessorException e) {
+          throw new HiveException("Failed to create temp table: " + e.getException());
         }
 
         plan = driver.getPlan();
@@ -373,7 +374,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         // The read will have READ_COMMITTED level semantics.
         try {
           driver.lockAndRespond();
-        } catch (CommandProcessorResponse cpr1) {
+        } catch (CommandProcessorException cpr1) {
           throw new HiveException("Failed to acquire locks", cpr1);
         }
 

@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestSystemProperties;
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionHandler;
 import org.junit.Assert;
@@ -68,10 +69,11 @@ public class QTestDatasetHandler implements QTestOptionHandler {
       throw new RuntimeException(String.format("dataset file not found %s", tableFile), e);
     }
 
-    CommandProcessorResponse result = cliDriver.processLine(commands);
-    LOG.info("Result from cliDrriver.processLine in initFromDatasets=" + result);
-    if (result.getResponseCode() != 0) {
-      Assert.fail("Failed during initFromDatasets processLine with code=" + result);
+    try {
+      CommandProcessorResponse result = cliDriver.processLine(commands);
+      LOG.info("Result from cliDrriver.processLine in initFromDatasets=" + result);
+    } catch (CommandProcessorException e) {
+      Assert.fail("Failed during initFromDatasets processLine with code=" + e);
     }
 
     return true;
@@ -146,6 +148,10 @@ public class QTestDatasetHandler implements QTestOptionHandler {
         qt.newSession(true);
       }
     }
+  }
+
+  @Override
+  public void afterTest(QTestUtil qt) throws Exception {
   }
 
   public DatasetCollection getDatasets() {

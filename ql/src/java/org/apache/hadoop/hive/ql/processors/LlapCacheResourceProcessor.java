@@ -61,7 +61,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 public class LlapCacheResourceProcessor implements CommandProcessor {
-  public static final Logger LOG = LoggerFactory.getLogger(LlapCacheResourceProcessor.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LlapCacheResourceProcessor.class);
   private Options CACHE_OPTIONS = new Options();
   private HelpFormatter helpFormatter = new HelpFormatter();
 
@@ -69,28 +69,26 @@ public class LlapCacheResourceProcessor implements CommandProcessor {
     CACHE_OPTIONS.addOption("purge", "purge", false, "Purge LLAP IO cache");
   }
 
-  private CommandProcessorResponse returnErrorResponse(final String errmsg) {
-    return new CommandProcessorResponse(1, "LLAP Cache Processor Helper Failed:" + errmsg, null);
-  }
-
   @Override
-  public CommandProcessorResponse run(String command) {
+  public CommandProcessorResponse run(String command) throws CommandProcessorException {
     SessionState ss = SessionState.get();
     command = new VariableSubstitution(() -> SessionState.get().getHiveVariables()).substitute(ss.getConf(), command);
     String[] tokens = command.split("\\s+");
     if (tokens.length < 1) {
-      return returnErrorResponse("Command arguments are empty.");
+      throw new CommandProcessorException("LLAP Cache Processor Helper Failed: Command arguments are empty.");
     }
     String params[] = Arrays.copyOfRange(tokens, 1, tokens.length);
     try {
       return llapCacheCommandHandler(ss, params);
+    } catch (CommandProcessorException e) {
+      throw e;
     } catch (Exception e) {
-      return returnErrorResponse(e.getMessage());
+      throw new CommandProcessorException("LLAP Cache Processor Helper Failed: " + e.getMessage());
     }
   }
 
-  private CommandProcessorResponse llapCacheCommandHandler(final SessionState ss,
-    final String[] params) throws ParseException {
+  private CommandProcessorResponse llapCacheCommandHandler(SessionState ss, String[] params)
+      throws ParseException, CommandProcessorException {
     CommandLine args = parseCommandArgs(CACHE_OPTIONS, params);
     boolean purge = args.hasOption("purge");
     String hs2Host = null;
@@ -109,19 +107,17 @@ public class LlapCacheResourceProcessor implements CommandProcessor {
       try {
         LlapRegistryService llapRegistryService = LlapRegistryService.getClient(ss.getConf());
         llapCachePurge(ss, llapRegistryService);
-        return createProcessorSuccessResponse();
+        return new CommandProcessorResponse(getSchema(), null);
       } catch (Exception e) {
         LOG.error("Error while purging LLAP IO Cache. err: ", e);
-        return returnErrorResponse("Error while purging LLAP IO Cache. err: " + e.getMessage());
+        throw new CommandProcessorException(
+            "LLAP Cache Processor Helper Failed: Error while purging LLAP IO Cache. err: " + e.getMessage());
       }
     } else {
       String usage = getUsageAsString();
-      return returnErrorResponse("Unsupported sub-command option. " + usage);
+      throw new CommandProcessorException(
+          "LLAP Cache Processor Helper Failed: Unsupported sub-command option. " + usage);
     }
-  }
-
-  private CommandProcessorResponse createProcessorSuccessResponse() {
-    return new CommandProcessorResponse(0, null, null, getSchema());
   }
 
   private Schema getSchema() {

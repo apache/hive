@@ -118,11 +118,7 @@ public class TestE2EScenarios {
   }
 
   private void driverRun(String cmd) throws Exception {
-    int retCode = driver.run(cmd).getResponseCode();
-    if (retCode != 0) {
-      throw new IOException("Failed to run ["
-        + cmd + "], return code from hive driver : [" + retCode + "]");
-    }
+    driver.run(cmd);
   }
 
   private void pigDump(String tableName) throws IOException {

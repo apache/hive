@@ -21,7 +21,7 @@ import org.apache.hadoop.hive.kudu.KuduTestSetup;
 import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -113,9 +113,11 @@ public class CoreKuduNegativeCliDriver extends CliAdapter {
       System.err.println("Begin query: " + fname);
       qt.addFile(fpath);
       qt.cliInit(new File(fpath));
-      int ecode = qt.executeClient(fname).getResponseCode();
-      if (ecode == 0) {
+      try {
+        qt.executeClient(fname);
         qt.failed(fname, null);
+      } catch (CommandProcessorException e) {
+        // this is the expected behaviour
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);

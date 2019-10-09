@@ -96,7 +96,7 @@ public class TestLocalHiveSparkClient {
       SparkSession sparkSession = SparkUtilities.getSparkSession(conf,
           SparkSessionManagerImpl.getInstance());
 
-      Assert.assertEquals(0, driver.run("show tables").getResponseCode());
+      driver.run("show tables");
       barrier.await();
 
       SparkContext sparkContext = getSparkContext(sparkSession);
