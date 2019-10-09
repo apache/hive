@@ -148,6 +148,10 @@ public class QTestDatasetHandler implements QTestOptionHandler {
     }
   }
 
+  @Override
+  public void afterTest(QTestUtil qt) throws Exception {
+  }
+
   public DatasetCollection getDatasets() {
     return new DatasetCollection(missingTables);
   }

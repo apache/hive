@@ -35,6 +35,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
+import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 
 /**
  * QOutProcessor: produces the final q.out from original q.out by postprocessing (e.g. masks)
@@ -135,14 +136,13 @@ public class QOutProcessor {
       "^minimumLag.*"
   });
 
-  public QOutProcessor(FsType fsType) {
+  private final QTestReplaceHandler replaceHandler;
+
+  public QOutProcessor(FsType fsType, QTestReplaceHandler replaceHandler) {
     this.fsType = fsType;
+    this.replaceHandler = replaceHandler;
   }
 
-  public QOutProcessor() {
-    this.fsType = FsType.HDFS;
-  }
-  
   private Pattern[] toPattern(String[] patternStrs) {
     Pattern[] patterns = new Pattern[patternStrs.length];
     for (int i = 0; i < patternStrs.length; i++) {
@@ -255,7 +255,9 @@ public class QOutProcessor {
         result.line = pattern.matcher(result.line).replaceAll(MASK_PATTERN);
       }
     }
-    
+
+    result.line = replaceHandler.processLine(result.line);
+
     return result;
   }
 

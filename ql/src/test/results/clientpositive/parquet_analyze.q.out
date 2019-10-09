@@ -93,8 +93,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
-	rawDataSize         	5936                
-	totalSize           	6761                
+	rawDataSize         	__SOME_NUMBER__                
+	totalSize           	__SOME_NUMBER__                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -141,8 +141,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
-	rawDataSize         	5936                
-	totalSize           	6761                
+	rawDataSize         	__SOME_NUMBER__                
+	totalSize           	__SOME_NUMBER__                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

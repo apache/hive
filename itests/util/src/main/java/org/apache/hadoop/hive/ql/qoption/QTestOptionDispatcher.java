@@ -72,4 +72,10 @@ public class QTestOptionDispatcher {
     }
   }
 
+  public void afterTest(QTestUtil qt) throws Exception {
+    for (QTestOptionHandler h : handlers.values()) {
+      h.afterTest(qt);
+    }
+  }
+
 }
