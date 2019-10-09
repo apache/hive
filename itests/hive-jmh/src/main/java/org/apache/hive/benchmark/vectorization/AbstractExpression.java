@@ -20,6 +20,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -163,6 +164,15 @@ public abstract class AbstractExpression {
       for (int j = 0; j < length; j++) {
         columnVector.vector[i][j] = (byte)(random.nextInt(+ 'c' - 'a' + 1) + 'a');
       }
+    }
+    return columnVector;
+  }
+
+  protected Decimal64ColumnVector getDecimal64ColumnVector() {
+    Decimal64ColumnVector columnVector = new Decimal64ColumnVector(VectorizedRowBatch.DEFAULT_SIZE,10,2);
+    Random random = new Random();
+    for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
+      columnVector.vector[i] = random.nextLong()%(1_000_000_000_0L - 1);
     }
     return columnVector;
   }

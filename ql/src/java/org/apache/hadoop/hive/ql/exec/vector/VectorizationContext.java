@@ -1781,7 +1781,8 @@ import com.google.common.annotations.VisibleForTesting;
       if (!isDecimal64ScaleEstablished) {
         decimal64ColumnScale = returnDecimalTypeInfo.getScale();
         isDecimal64ScaleEstablished = true;
-      } else if (returnDecimalTypeInfo.getScale() != decimal64ColumnScale) {
+      } else if (returnDecimalTypeInfo.getScale() != decimal64ColumnScale
+        && !(genericUdf instanceof GenericUDFOPDivide)) {
         return null;
       }
       returnDataTypePhysicalVariation = DataTypePhysicalVariation.DECIMAL_64;

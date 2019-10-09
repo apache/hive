@@ -15,12 +15,15 @@ package org.apache.hive.benchmark.vectorization;
 
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColAddDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumnChecked;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.Decimal64ColDivideDecimal64Scalar;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.runner.Runner;
@@ -123,6 +126,20 @@ public class VectorizedArithmeticBench {
           getLongColumnVector());
       expression = new LongColAddLongColumn(0, 1, 2);
       expression.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    }
+  }
+
+  public static class Decimal64ColDivideDecimal64ScalarBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      int prec1 = 10, prec2 = 2, scale1 = 2, scale2 = 1;
+      rowBatch = buildRowBatch(new Decimal64ColumnVector(prec1,scale1), 1, getDecimal64ColumnVector());
+      expression = new Decimal64ColDivideDecimal64Scalar(0, 200, 1);
+      expression.setInputTypeInfos(new DecimalTypeInfo(prec1,scale1),new DecimalTypeInfo(prec2,scale2));
+      int intDig = prec1 - scale1 + scale2;
+      int scale = Math.max(6, scale1 + prec2 + 1);
+      int prec = intDig + scale;
+      expression.setOutputTypeInfo(new DecimalTypeInfo(prec,scale));
     }
   }
 
