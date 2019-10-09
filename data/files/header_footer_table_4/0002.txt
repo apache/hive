@@ -1,0 +1,7 @@
+header_int,header_name,header_choice
+9,derek,yearly
+11,ethan,monthly
+1,faith,yearly
+21,yves,daily
+footer_int,footer_name,footer_choice
+footer2_int,footer2_name,footer2_choice

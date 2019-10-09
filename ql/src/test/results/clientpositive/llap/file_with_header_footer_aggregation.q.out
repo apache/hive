@@ -1,0 +1,849 @@
+PREHOOK: query: CREATE TABLE numbrs (numbr int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@numbrs
+POSTHOOK: query: CREATE TABLE numbrs (numbr int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@numbrs
+PREHOOK: query: INSERT INTO numbrs VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10), (11), (12), (NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numbrs
+POSTHOOK: query: INSERT INTO numbrs VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10), (11), (12), (NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numbrs
+POSTHOOK: Lineage: numbrs.numbr SCRIPT []
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@header_footer_table_4
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@header_footer_table_4
+PREHOOK: query: SELECT * FROM header_footer_table_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+12	alex	daily
+3	barry	yearly
+5	chelsea	monthly
+8	xavier	monthly
+9	derek	yearly
+11	ethan	monthly
+1	faith	yearly
+21	yves	daily
+PREHOOK: query: SELECT * FROM header_footer_table_4 ORDER BY header_int LIMIT 8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4 ORDER BY header_int LIMIT 8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	faith	yearly
+3	barry	yearly
+5	chelsea	monthly
+8	xavier	monthly
+9	derek	yearly
+11	ethan	monthly
+12	alex	daily
+21	yves	daily
+PREHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice = 'header_choice'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice = 'header_choice'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice = 'monthly'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice = 'monthly'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5	chelsea	monthly
+8	xavier	monthly
+11	ethan	monthly
+PREHOOK: query: SELECT COUNT(*) FROM header_footer_table_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*) FROM header_footer_table_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+8
+PREHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice is NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice is NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: SELECT AVG(header_int) FROM header_footer_table_4 GROUP BY header_choice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT AVG(header_int) FROM header_footer_table_4 GROUP BY header_choice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+8.0
+16.5
+4.333333333333333
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT * FROM header_footer_table_4 A, header_footer_table_4 B ORDER BY A.header_int, B.header_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4 A, header_footer_table_4 B ORDER BY A.header_int, B.header_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	faith	yearly	1	faith	yearly
+1	faith	yearly	3	barry	yearly
+1	faith	yearly	5	chelsea	monthly
+1	faith	yearly	8	xavier	monthly
+1	faith	yearly	9	derek	yearly
+1	faith	yearly	11	ethan	monthly
+1	faith	yearly	12	alex	daily
+1	faith	yearly	21	yves	daily
+3	barry	yearly	1	faith	yearly
+3	barry	yearly	3	barry	yearly
+3	barry	yearly	5	chelsea	monthly
+3	barry	yearly	8	xavier	monthly
+3	barry	yearly	9	derek	yearly
+3	barry	yearly	11	ethan	monthly
+3	barry	yearly	12	alex	daily
+3	barry	yearly	21	yves	daily
+5	chelsea	monthly	1	faith	yearly
+5	chelsea	monthly	3	barry	yearly
+5	chelsea	monthly	5	chelsea	monthly
+5	chelsea	monthly	8	xavier	monthly
+5	chelsea	monthly	9	derek	yearly
+5	chelsea	monthly	11	ethan	monthly
+5	chelsea	monthly	12	alex	daily
+5	chelsea	monthly	21	yves	daily
+8	xavier	monthly	1	faith	yearly
+8	xavier	monthly	3	barry	yearly
+8	xavier	monthly	5	chelsea	monthly
+8	xavier	monthly	8	xavier	monthly
+8	xavier	monthly	9	derek	yearly
+8	xavier	monthly	11	ethan	monthly
+8	xavier	monthly	12	alex	daily
+8	xavier	monthly	21	yves	daily
+9	derek	yearly	1	faith	yearly
+9	derek	yearly	3	barry	yearly
+9	derek	yearly	5	chelsea	monthly
+9	derek	yearly	8	xavier	monthly
+9	derek	yearly	9	derek	yearly
+9	derek	yearly	11	ethan	monthly
+9	derek	yearly	12	alex	daily
+9	derek	yearly	21	yves	daily
+11	ethan	monthly	1	faith	yearly
+11	ethan	monthly	3	barry	yearly
+11	ethan	monthly	5	chelsea	monthly
+11	ethan	monthly	8	xavier	monthly
+11	ethan	monthly	9	derek	yearly
+11	ethan	monthly	11	ethan	monthly
+11	ethan	monthly	12	alex	daily
+11	ethan	monthly	21	yves	daily
+12	alex	daily	1	faith	yearly
+12	alex	daily	3	barry	yearly
+12	alex	daily	5	chelsea	monthly
+12	alex	daily	8	xavier	monthly
+12	alex	daily	9	derek	yearly
+12	alex	daily	11	ethan	monthly
+12	alex	daily	12	alex	daily
+12	alex	daily	21	yves	daily
+21	yves	daily	1	faith	yearly
+21	yves	daily	3	barry	yearly
+21	yves	daily	5	chelsea	monthly
+21	yves	daily	8	xavier	monthly
+21	yves	daily	9	derek	yearly
+21	yves	daily	11	ethan	monthly
+21	yves	daily	12	alex	daily
+21	yves	daily	21	yves	daily
+PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 LEFT JOIN numbrs ON numbr = header_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Input: default@numbrs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 LEFT JOIN numbrs ON numbr = header_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Input: default@numbrs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+faith	1
+barry	3
+chelsea	5
+xavier	8
+derek	9
+ethan	11
+alex	12
+yves	21
+PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 RIGHT JOIN numbrs ON numbr = header_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Input: default@numbrs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 RIGHT JOIN numbrs ON numbr = header_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Input: default@numbrs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	NULL
+faith	1
+NULL	NULL
+barry	3
+NULL	NULL
+chelsea	5
+NULL	NULL
+NULL	NULL
+xavier	8
+derek	9
+NULL	NULL
+ethan	11
+alex	12
+PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 INNER JOIN numbrs ON numbr = header_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Input: default@numbrs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 INNER JOIN numbrs ON numbr = header_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Input: default@numbrs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+faith	1
+barry	3
+chelsea	5
+xavier	8
+derek	9
+ethan	11
+alex	12
+PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 FULL JOIN numbrs ON numbr = header_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Input: default@numbrs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 FULL JOIN numbrs ON numbr = header_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Input: default@numbrs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	NULL
+faith	1
+NULL	NULL
+barry	3
+NULL	NULL
+chelsea	5
+NULL	NULL
+NULL	NULL
+xavier	8
+derek	9
+NULL	NULL
+ethan	11
+alex	12
+yves	21
+PREHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+monthly	24
+daily	33
+yearly	13
+PREHOOK: query: SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+monthly	24
+daily	33
+yearly	13
+PREHOOK: query: SELECT header_name, header_choice FROM header_footer_table_4 ORDER BY header_int LIMIT 8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_name, header_choice FROM header_footer_table_4 ORDER BY header_int LIMIT 8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+faith	yearly
+barry	yearly
+chelsea	monthly
+xavier	monthly
+derek	yearly
+ethan	monthly
+alex	daily
+yves	daily
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@transition
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@transition
+PREHOOK: query: INSERT INTO transition SELECT header_choice, header_name FROM header_footer_table_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: default@transition
+POSTHOOK: query: INSERT INTO transition SELECT header_choice, header_name FROM header_footer_table_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: default@transition
+POSTHOOK: Lineage: transition.name EXPRESSION [(header_footer_table_4)header_footer_table_4.FieldSchema(name:header_name, type:string, comment:null), ]
+POSTHOOK: Lineage: transition.title SIMPLE [(header_footer_table_4)header_footer_table_4.FieldSchema(name:header_choice, type:varchar(10), comment:null), ]
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT * FROM transition A, transition B ORDER BY A.title, A.name, B.title, B.name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@transition
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM transition A, transition B ORDER BY A.title, A.name, B.title, B.name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@transition
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+daily	alex	daily	alex
+daily	alex	daily	yves
+daily	alex	monthly	chelsea
+daily	alex	monthly	ethan
+daily	alex	monthly	xavier
+daily	alex	yearly	barry
+daily	alex	yearly	derek
+daily	alex	yearly	faith
+daily	yves	daily	alex
+daily	yves	daily	yves
+daily	yves	monthly	chelsea
+daily	yves	monthly	ethan
+daily	yves	monthly	xavier
+daily	yves	yearly	barry
+daily	yves	yearly	derek
+daily	yves	yearly	faith
+monthly	chelsea	daily	alex
+monthly	chelsea	daily	yves
+monthly	chelsea	monthly	chelsea
+monthly	chelsea	monthly	ethan
+monthly	chelsea	monthly	xavier
+monthly	chelsea	yearly	barry
+monthly	chelsea	yearly	derek
+monthly	chelsea	yearly	faith
+monthly	ethan	daily	alex
+monthly	ethan	daily	yves
+monthly	ethan	monthly	chelsea
+monthly	ethan	monthly	ethan
+monthly	ethan	monthly	xavier
+monthly	ethan	yearly	barry
+monthly	ethan	yearly	derek
+monthly	ethan	yearly	faith
+monthly	xavier	daily	alex
+monthly	xavier	daily	yves
+monthly	xavier	monthly	chelsea
+monthly	xavier	monthly	ethan
+monthly	xavier	monthly	xavier
+monthly	xavier	yearly	barry
+monthly	xavier	yearly	derek
+monthly	xavier	yearly	faith
+yearly	barry	daily	alex
+yearly	barry	daily	yves
+yearly	barry	monthly	chelsea
+yearly	barry	monthly	ethan
+yearly	barry	monthly	xavier
+yearly	barry	yearly	barry
+yearly	barry	yearly	derek
+yearly	barry	yearly	faith
+yearly	derek	daily	alex
+yearly	derek	daily	yves
+yearly	derek	monthly	chelsea
+yearly	derek	monthly	ethan
+yearly	derek	monthly	xavier
+yearly	derek	yearly	barry
+yearly	derek	yearly	derek
+yearly	derek	yearly	faith
+yearly	faith	daily	alex
+yearly	faith	daily	yves
+yearly	faith	monthly	chelsea
+yearly	faith	monthly	ethan
+yearly	faith	monthly	xavier
+yearly	faith	yearly	barry
+yearly	faith	yearly	derek
+yearly	faith	yearly	faith
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@transition2
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@transition2
+PREHOOK: query: INSERT INTO transition2 SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: default@transition2
+POSTHOOK: query: INSERT INTO transition2 SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: default@transition2
+POSTHOOK: Lineage: transition2.header_choice SIMPLE [(header_footer_table_4)header_footer_table_4.FieldSchema(name:header_choice, type:varchar(10), comment:null), ]
+POSTHOOK: Lineage: transition2.sum_header_int EXPRESSION [(header_footer_table_4)header_footer_table_4.FieldSchema(name:header_int, type:int, comment:null), ]
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT * FROM transition2 A, transition2 B ORDER BY A.sum_header_int, A.header_choice, B.sum_header_int, B.header_choice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@transition2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM transition2 A, transition2 B ORDER BY A.sum_header_int, A.header_choice, B.sum_header_int, B.header_choice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@transition2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+yearly	13	yearly	13
+yearly	13	monthly	24
+yearly	13	daily	33
+monthly	24	yearly	13
+monthly	24	monthly	24
+monthly	24	daily	33
+daily	33	yearly	13
+daily	33	monthly	24
+daily	33	daily	33
+PREHOOK: query: DROP TABLE transition
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@transition
+PREHOOK: Output: default@transition
+POSTHOOK: query: DROP TABLE transition
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@transition
+POSTHOOK: Output: default@transition
+PREHOOK: query: DROP TABLE transition2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@transition2
+PREHOOK: Output: default@transition2
+POSTHOOK: query: DROP TABLE transition2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@transition2
+POSTHOOK: Output: default@transition2
+PREHOOK: query: SELECT * FROM header_footer_table_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+12	alex	daily
+3	barry	yearly
+5	chelsea	monthly
+8	xavier	monthly
+9	derek	yearly
+11	ethan	monthly
+1	faith	yearly
+21	yves	daily
+PREHOOK: query: SELECT * FROM header_footer_table_4 ORDER BY header_int LIMIT 8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4 ORDER BY header_int LIMIT 8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	faith	yearly
+3	barry	yearly
+5	chelsea	monthly
+8	xavier	monthly
+9	derek	yearly
+11	ethan	monthly
+12	alex	daily
+21	yves	daily
+PREHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice = 'header_choice'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice = 'header_choice'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice = 'monthly'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice = 'monthly'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5	chelsea	monthly
+8	xavier	monthly
+11	ethan	monthly
+PREHOOK: query: SELECT COUNT(*) FROM header_footer_table_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*) FROM header_footer_table_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+8
+PREHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice is NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice is NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: SELECT AVG(header_int) FROM header_footer_table_4 GROUP BY header_choice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT AVG(header_int) FROM header_footer_table_4 GROUP BY header_choice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+8.0
+16.5
+4.333333333333333
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT * FROM header_footer_table_4 A, header_footer_table_4 B ORDER BY A.header_int, B.header_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM header_footer_table_4 A, header_footer_table_4 B ORDER BY A.header_int, B.header_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	faith	yearly	1	faith	yearly
+1	faith	yearly	3	barry	yearly
+1	faith	yearly	5	chelsea	monthly
+1	faith	yearly	8	xavier	monthly
+1	faith	yearly	9	derek	yearly
+1	faith	yearly	11	ethan	monthly
+1	faith	yearly	12	alex	daily
+1	faith	yearly	21	yves	daily
+3	barry	yearly	1	faith	yearly
+3	barry	yearly	3	barry	yearly
+3	barry	yearly	5	chelsea	monthly
+3	barry	yearly	8	xavier	monthly
+3	barry	yearly	9	derek	yearly
+3	barry	yearly	11	ethan	monthly
+3	barry	yearly	12	alex	daily
+3	barry	yearly	21	yves	daily
+5	chelsea	monthly	1	faith	yearly
+5	chelsea	monthly	3	barry	yearly
+5	chelsea	monthly	5	chelsea	monthly
+5	chelsea	monthly	8	xavier	monthly
+5	chelsea	monthly	9	derek	yearly
+5	chelsea	monthly	11	ethan	monthly
+5	chelsea	monthly	12	alex	daily
+5	chelsea	monthly	21	yves	daily
+8	xavier	monthly	1	faith	yearly
+8	xavier	monthly	3	barry	yearly
+8	xavier	monthly	5	chelsea	monthly
+8	xavier	monthly	8	xavier	monthly
+8	xavier	monthly	9	derek	yearly
+8	xavier	monthly	11	ethan	monthly
+8	xavier	monthly	12	alex	daily
+8	xavier	monthly	21	yves	daily
+9	derek	yearly	1	faith	yearly
+9	derek	yearly	3	barry	yearly
+9	derek	yearly	5	chelsea	monthly
+9	derek	yearly	8	xavier	monthly
+9	derek	yearly	9	derek	yearly
+9	derek	yearly	11	ethan	monthly
+9	derek	yearly	12	alex	daily
+9	derek	yearly	21	yves	daily
+11	ethan	monthly	1	faith	yearly
+11	ethan	monthly	3	barry	yearly
+11	ethan	monthly	5	chelsea	monthly
+11	ethan	monthly	8	xavier	monthly
+11	ethan	monthly	9	derek	yearly
+11	ethan	monthly	11	ethan	monthly
+11	ethan	monthly	12	alex	daily
+11	ethan	monthly	21	yves	daily
+12	alex	daily	1	faith	yearly
+12	alex	daily	3	barry	yearly
+12	alex	daily	5	chelsea	monthly
+12	alex	daily	8	xavier	monthly
+12	alex	daily	9	derek	yearly
+12	alex	daily	11	ethan	monthly
+12	alex	daily	12	alex	daily
+12	alex	daily	21	yves	daily
+21	yves	daily	1	faith	yearly
+21	yves	daily	3	barry	yearly
+21	yves	daily	5	chelsea	monthly
+21	yves	daily	8	xavier	monthly
+21	yves	daily	9	derek	yearly
+21	yves	daily	11	ethan	monthly
+21	yves	daily	12	alex	daily
+21	yves	daily	21	yves	daily
+PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 LEFT JOIN numbrs ON numbr = header_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Input: default@numbrs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 LEFT JOIN numbrs ON numbr = header_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Input: default@numbrs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+faith	1
+barry	3
+chelsea	5
+xavier	8
+derek	9
+ethan	11
+alex	12
+yves	21
+PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 RIGHT JOIN numbrs ON numbr = header_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Input: default@numbrs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 RIGHT JOIN numbrs ON numbr = header_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Input: default@numbrs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	NULL
+faith	1
+NULL	NULL
+barry	3
+NULL	NULL
+chelsea	5
+NULL	NULL
+NULL	NULL
+xavier	8
+derek	9
+NULL	NULL
+ethan	11
+alex	12
+PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 INNER JOIN numbrs ON numbr = header_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Input: default@numbrs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 INNER JOIN numbrs ON numbr = header_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Input: default@numbrs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+faith	1
+barry	3
+chelsea	5
+xavier	8
+derek	9
+ethan	11
+alex	12
+PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 FULL JOIN numbrs ON numbr = header_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Input: default@numbrs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 FULL JOIN numbrs ON numbr = header_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Input: default@numbrs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	NULL
+faith	1
+NULL	NULL
+barry	3
+NULL	NULL
+chelsea	5
+NULL	NULL
+NULL	NULL
+xavier	8
+derek	9
+NULL	NULL
+ethan	11
+alex	12
+yves	21
+PREHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+monthly	24
+daily	33
+yearly	13
+PREHOOK: query: SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+monthly	24
+daily	33
+yearly	13
+PREHOOK: query: SELECT header_name, header_choice FROM header_footer_table_4 ORDER BY header_int LIMIT 8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT header_name, header_choice FROM header_footer_table_4 ORDER BY header_int LIMIT 8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+faith	yearly
+barry	yearly
+chelsea	monthly
+xavier	monthly
+derek	yearly
+ethan	monthly
+alex	daily
+yves	daily
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@transition
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@transition
+PREHOOK: query: INSERT INTO transition SELECT header_choice, header_name FROM header_footer_table_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: default@transition
+POSTHOOK: query: INSERT INTO transition SELECT header_choice, header_name FROM header_footer_table_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: default@transition
+POSTHOOK: Lineage: transition.name EXPRESSION [(header_footer_table_4)header_footer_table_4.FieldSchema(name:header_name, type:string, comment:null), ]
+POSTHOOK: Lineage: transition.title SIMPLE [(header_footer_table_4)header_footer_table_4.FieldSchema(name:header_choice, type:varchar(10), comment:null), ]
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT * FROM transition A, transition B ORDER BY A.title, A.name, B.title, B.name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@transition
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM transition A, transition B ORDER BY A.title, A.name, B.title, B.name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@transition
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+daily	alex	daily	alex
+daily	alex	daily	yves
+daily	alex	monthly	chelsea
+daily	alex	monthly	ethan
+daily	alex	monthly	xavier
+daily	alex	yearly	barry
+daily	alex	yearly	derek
+daily	alex	yearly	faith
+daily	yves	daily	alex
+daily	yves	daily	yves
+daily	yves	monthly	chelsea
+daily	yves	monthly	ethan
+daily	yves	monthly	xavier
+daily	yves	yearly	barry
+daily	yves	yearly	derek
+daily	yves	yearly	faith
+monthly	chelsea	daily	alex
+monthly	chelsea	daily	yves
+monthly	chelsea	monthly	chelsea
+monthly	chelsea	monthly	ethan
+monthly	chelsea	monthly	xavier
+monthly	chelsea	yearly	barry
+monthly	chelsea	yearly	derek
+monthly	chelsea	yearly	faith
+monthly	ethan	daily	alex
+monthly	ethan	daily	yves
+monthly	ethan	monthly	chelsea
+monthly	ethan	monthly	ethan
+monthly	ethan	monthly	xavier
+monthly	ethan	yearly	barry
+monthly	ethan	yearly	derek
+monthly	ethan	yearly	faith
+monthly	xavier	daily	alex
+monthly	xavier	daily	yves
+monthly	xavier	monthly	chelsea
+monthly	xavier	monthly	ethan
+monthly	xavier	monthly	xavier
+monthly	xavier	yearly	barry
+monthly	xavier	yearly	derek
+monthly	xavier	yearly	faith
+yearly	barry	daily	alex
+yearly	barry	daily	yves
+yearly	barry	monthly	chelsea
+yearly	barry	monthly	ethan
+yearly	barry	monthly	xavier
+yearly	barry	yearly	barry
+yearly	barry	yearly	derek
+yearly	barry	yearly	faith
+yearly	derek	daily	alex
+yearly	derek	daily	yves
+yearly	derek	monthly	chelsea
+yearly	derek	monthly	ethan
+yearly	derek	monthly	xavier
+yearly	derek	yearly	barry
+yearly	derek	yearly	derek
+yearly	derek	yearly	faith
+yearly	faith	daily	alex
+yearly	faith	daily	yves
+yearly	faith	monthly	chelsea
+yearly	faith	monthly	ethan
+yearly	faith	monthly	xavier
+yearly	faith	yearly	barry
+yearly	faith	yearly	derek
+yearly	faith	yearly	faith
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@transition2
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@transition2
+PREHOOK: query: INSERT INTO transition2 SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_4
+PREHOOK: Output: default@transition2
+POSTHOOK: query: INSERT INTO transition2 SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_4
+POSTHOOK: Output: default@transition2
+POSTHOOK: Lineage: transition2.header_choice SIMPLE [(header_footer_table_4)header_footer_table_4.FieldSchema(name:header_choice, type:varchar(10), comment:null), ]
+POSTHOOK: Lineage: transition2.sum_header_int EXPRESSION [(header_footer_table_4)header_footer_table_4.FieldSchema(name:header_int, type:int, comment:null), ]
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT * FROM transition2 A, transition2 B ORDER BY A.sum_header_int, A.header_choice, B.sum_header_int, B.header_choice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@transition2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM transition2 A, transition2 B ORDER BY A.sum_header_int, A.header_choice, B.sum_header_int, B.header_choice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@transition2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+yearly	13	yearly	13
+yearly	13	monthly	24
+yearly	13	daily	33
+monthly	24	yearly	13
+monthly	24	monthly	24
+monthly	24	daily	33
+daily	33	yearly	13
+daily	33	monthly	24
+daily	33	daily	33
