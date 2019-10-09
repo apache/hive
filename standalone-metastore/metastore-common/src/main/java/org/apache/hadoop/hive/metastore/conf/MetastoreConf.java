@@ -938,6 +938,9 @@ public class MetastoreConf {
         "hive.serdes.using.metastore.for.schema",
         "org.apache.hadoop.hive.ql.io.orc.OrcSerde," +
             "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe," +
+            "org.apache.hadoop.hive.serde2.text.CsvDelimitedTextSerde," +
+            "org.apache.hadoop.hive.serde2.text.TsvDelimitedTextSerde," +
+            "org.apache.hadoop.hive.serde2.text.DelimitedTextSerde," +
             "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe," +
             "org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe," +
             "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe," +

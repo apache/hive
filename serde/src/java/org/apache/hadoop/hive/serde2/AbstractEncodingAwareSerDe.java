@@ -34,7 +34,10 @@ import com.google.common.base.Charsets;
  * AbstractEncodingAwareSerDe aware the encoding from table properties,
  * transform data from specified charset to UTF-8 during serialize, and
  * transform data from UTF-8 to specified charset during deserialize.
+ *
+ * @see org.apache.hadoop.hive.serde2.text.AbstractEncodingAwareSerDe
  */
+@Deprecated
 public abstract class AbstractEncodingAwareSerDe extends AbstractSerDe {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractEncodingAwareSerDe.class);
   protected Charset charset;
