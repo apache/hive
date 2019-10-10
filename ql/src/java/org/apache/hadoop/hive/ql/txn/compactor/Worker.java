@@ -147,7 +147,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
         // Check that the table or partition isn't sorted, as we don't yet support that.
         if (sd.getSortCols() != null && !sd.getSortCols().isEmpty()) {
-          LOG.error("Attempt to compact sorted table, which is not yet supported!");
+          LOG.error("Attempt to compact sorted table "+ci.getFullTableName()+", which is not yet supported!");
           msc.markCleaned(CompactionInfo.compactionInfoToStruct(ci));
           continue;
         }
