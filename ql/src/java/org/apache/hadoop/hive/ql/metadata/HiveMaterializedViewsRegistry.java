@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -88,6 +89,7 @@ import com.google.common.collect.ImmutableList;
 public final class HiveMaterializedViewsRegistry {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveMaterializedViewsRegistry.class);
+  private static final String CLASS_NAME = HiveMaterializedViewsRegistry.class.getName();
 
   /* Singleton */
   private static final HiveMaterializedViewsRegistry SINGLETON = new HiveMaterializedViewsRegistry();
@@ -161,10 +163,12 @@ public final class HiveMaterializedViewsRegistry {
 
     @Override
     public void run() {
+      SessionState ss = new SessionState(db.getConf());
+      ss.setIsHiveServerQuery(true); // All is served from HS2, we do not need e.g. Tez sessions
+      SessionState.start(ss);
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
       try {
-        SessionState ss = new SessionState(db.getConf());
-        ss.setIsHiveServerQuery(true); // All is served from HS2, we do not need e.g. Tez sessions
-        SessionState.start(ss);
         if (initialized.get()) {
           for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
             RelOptMaterialization existingMV = getRewritingMaterializedView(mvTable.getDbName(), mvTable.getTableName());
@@ -196,6 +200,7 @@ public final class HiveMaterializedViewsRegistry {
           LOG.error("Problem connecting to the metastore when initializing the view registry", e);
         }
       }
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
     }
   }
 
