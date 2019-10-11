@@ -67,10 +67,8 @@ public abstract class MapJoinKey {
   private static final HashSet<PrimitiveCategory> SUPPORTED_PRIMITIVES
       = new HashSet<PrimitiveCategory>();
   static {
-    // All but decimal.
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.BOOLEAN);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.VOID);
-    SUPPORTED_PRIMITIVES.add(PrimitiveCategory.BOOLEAN);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.BYTE);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.SHORT);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.INT);
@@ -85,6 +83,13 @@ public abstract class MapJoinKey {
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.BINARY);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.VARCHAR);
     SUPPORTED_PRIMITIVES.add(PrimitiveCategory.CHAR);
+    /**
+     * No matter what scale/precision join keys are, they end up cast to common in query plan.
+     * We should be ok comparing them byte by byte. See
+     * {@link org.apache.hadoop.hive.ql.exec.FunctionRegistry#getCommonClassForComparison(TypeInfo, TypeInfo)}
+     * Q test: mapjoin_decimal_vectorized.q
+     */
+    SUPPORTED_PRIMITIVES.add(PrimitiveCategory.DECIMAL);
   }
 
   public static boolean isSupportedField(ObjectInspector foi) {
