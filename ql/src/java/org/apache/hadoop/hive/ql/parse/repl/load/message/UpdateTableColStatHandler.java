@@ -40,6 +40,10 @@ public class UpdateTableColStatHandler extends AbstractMessageHandler {
 
         // Update tablename and database name in the statistics object
         ColumnStatistics colStats = utcsm.getColumnStatistics();
+        // In older version of hive, engine might not have set.
+        if (colStats.getEngine() == null) {
+            colStats.setEngine(org.apache.hadoop.hive.conf.Constants.HIVE_ENGINE);
+        }
         ColumnStatisticsDesc colStatsDesc = colStats.getStatsDesc();
         colStatsDesc.setDbName(context.dbName);
         if (!context.isDbNameEmpty()) {

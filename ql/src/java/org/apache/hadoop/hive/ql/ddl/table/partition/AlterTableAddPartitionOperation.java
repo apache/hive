@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -128,6 +129,11 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
     }
     if (partitionSpec.getColStats() != null) {
       partition.setColStats(partitionSpec.getColStats());
+
+      ColumnStatistics statistics = partition.getColStats();
+      if (statistics != null && statistics.getEngine() == null) {
+        statistics.setEngine(org.apache.hadoop.hive.conf.Constants.HIVE_ENGINE);
+      }
       // Statistics will have an associated write Id for a transactional table. We need it to update column statistics.
       partition.setWriteId(partitionSpec.getWriteId());
     }
