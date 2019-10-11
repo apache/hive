@@ -77,7 +77,6 @@ public class TableHandler extends AbstractMessageHandler {
       x.setEventType(eventType);
 
       // REPL LOAD is not partition level. It is always DB or table level. So, passing null for partition specs.
-      // Also, REPL LOAD doesn't support external table and hence no location set as well.
       ImportSemanticAnalyzer.prepareImport(false, isLocationSet, isExternal, false,
           (context.precursor != null), parsedLocation, null, context.dbName,
           null, context.location, x, updatedMetadata, context.getTxnMgr(), tuple.writeId);

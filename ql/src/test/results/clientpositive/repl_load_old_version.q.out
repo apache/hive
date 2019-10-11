@@ -69,12 +69,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@tbl5
 #### A masked pattern was here ####
 1
-PREHOOK: query: select * from tbl6 order by fld
+PREHOOK: query: select * from tbl6 order by fld1
 PREHOOK: type: QUERY
 PREHOOK: Input: test_db@tbl6
+PREHOOK: Input: test_db@tbl6@fld1=1
+PREHOOK: Input: test_db@tbl6@fld1=2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tbl6 order by fld
+POSTHOOK: query: select * from tbl6 order by fld1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@tbl6
+POSTHOOK: Input: test_db@tbl6@fld1=1
+POSTHOOK: Input: test_db@tbl6@fld1=2
 #### A masked pattern was here ####
-1
+1	1
+1	2
