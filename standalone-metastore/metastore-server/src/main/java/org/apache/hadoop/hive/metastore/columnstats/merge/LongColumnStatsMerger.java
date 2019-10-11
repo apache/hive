@@ -54,7 +54,7 @@ public class LongColumnStatsMerger extends ColumnStatsMerger {
     aggregateColStats.getStatsData().setLongStats(aggregateData);
   }
 
-  private void setLowValue(LongColumnStatsDataInspector aggregateData, LongColumnStatsDataInspector newData) {
+  public void setLowValue(LongColumnStatsDataInspector aggregateData, LongColumnStatsDataInspector newData) {
     if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
       return;
     }
@@ -64,7 +64,7 @@ public class LongColumnStatsMerger extends ColumnStatsMerger {
     aggregateData.setLowValue(lowValue);
   }
 
-  private void setHighValue(LongColumnStatsDataInspector aggregateData, LongColumnStatsDataInspector newData) {
+  public void setHighValue(LongColumnStatsDataInspector aggregateData, LongColumnStatsDataInspector newData) {
     if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
       return;
     }

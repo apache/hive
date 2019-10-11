@@ -54,7 +54,7 @@ public class DoubleColumnStatsMerger extends ColumnStatsMerger {
     aggregateColStats.getStatsData().setDoubleStats(aggregateData);
   }
 
-  private void setLowValue(DoubleColumnStatsDataInspector aggregateData, DoubleColumnStatsDataInspector newData) {
+  public void setLowValue(DoubleColumnStatsDataInspector aggregateData, DoubleColumnStatsDataInspector newData) {
     if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
       return;
     }
@@ -64,13 +64,13 @@ public class DoubleColumnStatsMerger extends ColumnStatsMerger {
     aggregateData.setLowValue(lowValue);
   }
 
-  private void setHighValue(DoubleColumnStatsDataInspector aggregateData, DoubleColumnStatsDataInspector newData) {
+  public void setHighValue(DoubleColumnStatsDataInspector aggregateData, DoubleColumnStatsDataInspector newData) {
     if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
       return;
     }
     double highValue = Math.max(
         aggregateData.isSetHighValue() ? aggregateData.getHighValue() : Double.MIN_VALUE,
         newData.isSetHighValue() ? newData.getHighValue() : Double.MIN_VALUE);
-    aggregateData.setLowValue(highValue);
+    aggregateData.setHighValue(highValue);
   }
 }
