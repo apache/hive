@@ -3217,6 +3217,10 @@ public class HiveConf extends Configuration {
         "The implementation that we should use for the materialized views registry. \n" +
         "  DEFAULT: Default cache for materialized views\n" +
         "  DUMMY: Do not cache materialized views and hence forward requests to metastore"),
+    HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH("hive.server2.materializedviews.registry.refresh.period", "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Period, specified in seconds, between successive refreshes of the registry to pull new materializations " +
+        "from the metastore that may have been created by other HS2 instances."),
 
     // HiveServer2 WebUI
     HIVE_SERVER2_WEBUI_BIND_HOST("hive.server2.webui.host", "0.0.0.0", "The host address the HiveServer2 WebUI will listen on"),

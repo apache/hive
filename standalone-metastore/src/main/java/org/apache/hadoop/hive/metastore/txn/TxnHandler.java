@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -1920,14 +1921,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return null;
     }
 
-    // Parse validTxnList
-    final ValidReadTxnList validTxnList =
-        new ValidReadTxnList(validTxnListStr);
-
-    // Parse validReaderWriteIdList from creation metadata
-    final ValidTxnWriteIdList validReaderWriteIdList =
-        new ValidTxnWriteIdList(creationMetadata.getValidTxnList());
-
     // We are composing a query that returns a single row if an update happened after
     // the materialization was created. Otherwise, query returns 0 rows.
     Connection dbConn = null;
@@ -1935,12 +1928,48 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     ResultSet rs = null;
     try {
       dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+
+      // Parse validReaderWriteIdList from creation metadata
+      final ValidTxnWriteIdList validReaderWriteIdList =
+          new ValidTxnWriteIdList(creationMetadata.getValidTxnList());
+
+      // Parse validTxnList
+      final ValidReadTxnList currentValidTxnList = new ValidReadTxnList(validTxnListStr);
+      // Get the valid write id list for the tables in current state
+      final List<TableValidWriteIds> currentTblValidWriteIdsList = new ArrayList<>();
+      for (String fullTableName : creationMetadata.getTablesUsed()) {
+        currentTblValidWriteIdsList.add(getValidWriteIdsForTable(dbConn, fullTableName, currentValidTxnList));
+      }
+      final ValidTxnWriteIdList currentValidReaderWriteIdList = TxnUtils.createValidTxnWriteIdList(
+          currentValidTxnList.getHighWatermark(), currentTblValidWriteIdsList);
+
       List<String> params = new ArrayList<>();
       StringBuilder query = new StringBuilder();
       // compose a query that select transactions containing an update...
       query.append("select ctc_update_delete from COMPLETED_TXN_COMPONENTS where ctc_update_delete='Y' AND (");
       int i = 0;
       for (String fullyQualifiedName : creationMetadata.getTablesUsed()) {
+        ValidWriteIdList tblValidWriteIdList =
+            validReaderWriteIdList.getTableValidWriteIdList(fullyQualifiedName);
+        if (tblValidWriteIdList == null) {
+          LOG.warn("ValidWriteIdList for table {} not present in creation metadata, this should not happen", fullyQualifiedName);
+          return null;
+        }
+
+        // First, we check whether the low watermark has moved for any of the tables.
+        // If it has, we return true, since it is not incrementally refreshable, e.g.,
+        // one of the commits that are not available may be an update/delete.
+        ValidWriteIdList currentTblValidWriteIdList =
+            currentValidReaderWriteIdList.getTableValidWriteIdList(fullyQualifiedName);
+        if (currentTblValidWriteIdList == null) {
+          LOG.warn("Current ValidWriteIdList for table {} not present in creation metadata, this should not happen", fullyQualifiedName);
+          return null;
+        }
+        if (!Objects.equals(currentTblValidWriteIdList.getMinOpenWriteId(), tblValidWriteIdList.getMinOpenWriteId())) {
+          LOG.debug("Minimum open write id do not match for table {}", fullyQualifiedName);
+          return null;
+        }
+
         // ...for each of the tables that are part of the materialized view,
         // where the transaction had to be committed after the materialization was created...
         if (i != 0) {
@@ -1951,12 +1980,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         query.append(" (ctc_database=? AND ctc_table=?");
         params.add(names[0]);
         params.add(names[1]);
-        ValidWriteIdList tblValidWriteIdList =
-            validReaderWriteIdList.getTableValidWriteIdList(fullyQualifiedName);
-        if (tblValidWriteIdList == null) {
-          LOG.warn("ValidWriteIdList for table {} not present in creation metadata, this should not happen");
-          return null;
-        }
         query.append(" AND (ctc_writeid > " + tblValidWriteIdList.getHighWatermark());
         query.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :
             " OR ctc_writeid IN(" + StringUtils.join(",",
@@ -1966,10 +1989,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
       // ... and where the transaction has already been committed as per snapshot taken
       // when we are running current query
-      query.append(") AND ctc_txnid <= " + validTxnList.getHighWatermark());
-      query.append(validTxnList.getInvalidTransactions().length == 0 ? " " :
+      query.append(") AND ctc_txnid <= " + currentValidTxnList.getHighWatermark());
+      query.append(currentValidTxnList.getInvalidTransactions().length == 0 ? " " :
           " AND ctc_txnid NOT IN(" + StringUtils.join(",",
-              Arrays.asList(ArrayUtils.toObject(validTxnList.getInvalidTransactions()))) + ") ");
+              Arrays.asList(ArrayUtils.toObject(currentValidTxnList.getInvalidTransactions()))) + ") ");
 
       // Execute query
       String s = query.toString();

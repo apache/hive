@@ -467,12 +467,18 @@ POSTHOOK: Input: default@cmv_mat_view_n3
 POSTHOOK: Output: default@cmv_mat_view_n3
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
     Alter Materialized View Rewrite
       name: default.cmv_mat_view_n3
       enable: true
+
+  Stage: Stage-1
+    Materialized View Update
+      name: default.cmv_mat_view_n3
+      retrieveAndInclude: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n3 ENABLE REWRITE
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE

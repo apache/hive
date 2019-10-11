@@ -43,6 +43,7 @@ public class PerfLogger {
   public static final String PARSE = "parse";
   public static final String ANALYZE = "semanticAnalyze";
   public static final String OPTIMIZER = "optimizer";
+  public static final String MATERIALIZED_VIEWS_REGISTRY_REFRESH = "MaterializedViewsRegistryRefresh";
   public static final String DO_AUTHORIZATION = "doAuthorization";
   public static final String DRIVER_EXECUTE = "Driver.execute";
   public static final String INPUT_SUMMARY = "getInputSummary";

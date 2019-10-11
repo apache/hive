@@ -2236,7 +2236,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final RelOptCluster optCluster = basePlan.getCluster();
       final PerfLogger perfLogger = SessionState.getPerfLogger();
 
+      final boolean useMaterializedViewsRegistry = !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
+          .equals("DUMMY");
       final RelNode calcitePreMVRewritingPlan = basePlan;
+      final List<String> tablesUsedQuery = getTablesUsed(basePlan);
       final boolean mvRebuild = mvRebuildMode != MaterializationRebuildMode.NONE;
 
       // Add views to planner
@@ -2246,13 +2249,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // We only retrieve the materialization corresponding to the rebuild. In turn,
           // we pass 'true' for the forceMVContentsUpToDate parameter, as we cannot allow the
           // materialization contents to be stale for a rebuild if we want to use it.
-          materializations = db.getValidMaterializedView(mvRebuildDbName, mvRebuildName,
-              getTablesUsed(basePlan), true, getTxnMgr());
+          RelOptMaterialization materialization = db.getMaterializedViewForRebuild(
+              mvRebuildDbName, mvRebuildName, tablesUsedQuery, getTxnMgr());
+          if (materialization != null) {
+            materializations.add(materialization);
+          }
         } else {
-          // This is not a rebuild, we retrieve all the materializations. In turn, we do not need
-          // to force the materialization contents to be up-to-date, as this is not a rebuild, and
-          // we apply the user parameters (HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW) instead.
-          materializations = db.getAllValidMaterializedViews(getTablesUsed(basePlan), false, getTxnMgr());
+          // This is not a rebuild, we retrieve all the materializations.
+          // In turn, we do not need to force the materialization contents to be up-to-date,
+          // as this is not a rebuild, and we apply the user parameters
+          // (HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW) instead.
+          if (useMaterializedViewsRegistry) {
+            materializations = db.getPreprocessedMaterializedViewsFromRegistry(tablesUsedQuery, getTxnMgr());
+          } else {
+            materializations = db.getPreprocessedMaterializedViews(tablesUsedQuery, getTxnMgr());
+          }
         }
         // We need to use the current cluster for the scan operator on views,
         // otherwise the planner will throw an Exception (different planners)
@@ -2299,80 +2310,101 @@ public class CalcitePlanner extends SemanticAnalyzer {
       } catch (HiveException e) {
         LOG.warn("Exception loading materialized views", e);
       }
-      if (!materializations.isEmpty()) {
-        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
-        if (mvRebuild) {
-          // If it is a materialized view rebuild, we use the HepPlanner, since we only have
-          // one MV and we would like to use it to create incremental maintenance plans
-          HepPlanner hepPlanner = createHepPlanner(basePlan.getCluster(), true, mdProvider, null,
-              HepMatchOrder.TOP_DOWN, HiveMaterializedViewRule.MATERIALIZED_VIEW_REWRITING_RULES);
-          // Add materialization for rebuild to planner
-          assert materializations.size() == 1;
-          hepPlanner.addMaterialization(materializations.get(0));
-          // Optimize plan
-          hepPlanner.setRoot(basePlan);
-          basePlan = hepPlanner.findBestExp();
-        } else {
-          // If this is not a rebuild, we use Volcano planner as the decision
-          // on whether to use MVs or not and which MVs to use should be cost-based
-          optCluster.invalidateMetadataQuery();
-          RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
+      if (materializations.isEmpty()) {
+        // There are no materializations, we can return the original plan
+        return calcitePreMVRewritingPlan;
+      }
 
-          // Add materializations to planner
-          for (RelOptMaterialization materialization : materializations) {
-            planner.addMaterialization(materialization);
-          }
-          // Add rule to split aggregate with grouping sets (if any)
-          planner.addRule(HiveAggregateSplitRule.INSTANCE);
-          // Add view-based rewriting rules to planner
-          for (RelOptRule rule : HiveMaterializedViewRule.MATERIALIZED_VIEW_REWRITING_RULES) {
-            planner.addRule(rule);
-          }
-          // Partition pruner rule
-          planner.addRule(HiveFilterProjectTSTransposeRule.INSTANCE);
-          planner.addRule(new HivePartitionPruneRule(conf));
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
-          // Optimize plan
-          planner.setRoot(basePlan);
-          basePlan = planner.findBestExp();
-          // Remove view-based rewriting rules from planner
-          planner.clear();
+      if (mvRebuild) {
+        // If it is a materialized view rebuild, we use the HepPlanner, since we only have
+        // one MV and we would like to use it to create incremental maintenance plans
+        HepPlanner hepPlanner = createHepPlanner(basePlan.getCluster(), true, mdProvider, null,
+            HepMatchOrder.TOP_DOWN, HiveMaterializedViewRule.MATERIALIZED_VIEW_REWRITING_RULES);
+        // Add materialization for rebuild to planner
+        assert materializations.size() == 1;
+        hepPlanner.addMaterialization(materializations.get(0));
+        // Optimize plan
+        hepPlanner.setRoot(basePlan);
+        basePlan = hepPlanner.findBestExp();
+      } else {
+        // If this is not a rebuild, we use Volcano planner as the decision
+        // on whether to use MVs or not and which MVs to use should be cost-based
+        optCluster.invalidateMetadataQuery();
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
 
-          // Restore default cost model
-          optCluster.invalidateMetadataQuery();
-          RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
+        // Add materializations to planner
+        for (RelOptMaterialization materialization : materializations) {
+          planner.addMaterialization(materialization);
         }
+        // Add rule to split aggregate with grouping sets (if any)
+        planner.addRule(HiveAggregateSplitRule.INSTANCE);
+        // Add view-based rewriting rules to planner
+        for (RelOptRule rule : HiveMaterializedViewRule.MATERIALIZED_VIEW_REWRITING_RULES) {
+          planner.addRule(rule);
+        }
+        // Partition pruner rule
+        planner.addRule(HiveFilterProjectTSTransposeRule.INSTANCE);
+        planner.addRule(new HivePartitionPruneRule(conf));
 
-        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
+        // Optimize plan
+        planner.setRoot(basePlan);
+        basePlan = planner.findBestExp();
+        // Remove view-based rewriting rules from planner
+        planner.clear();
 
-        if (!RelOptUtil.toString(calcitePreMVRewritingPlan).equals(RelOptUtil.toString(basePlan))) {
-          // A rewriting was produced, we will check whether it was part of an incremental rebuild
-          // to try to replace INSERT OVERWRITE by INSERT or MERGE
-          if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD &&
-              HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL)) {
-            // First we need to check if it is valid to convert to MERGE/INSERT INTO.
-            // If we succeed, we modify the plan and afterwards the AST.
-            // MV should be an acid table.
-            MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor();
-            visitor.go(basePlan);
-            if (visitor.isRewritingAllowed()) {
-              // Trigger rewriting to remove UNION branch with MV
-              if (visitor.isContainsAggregate()) {
-                basePlan = hepPlan(basePlan, false, mdProvider, null,
-                    HepMatchOrder.TOP_DOWN, HiveAggregateIncrementalRewritingRule.INSTANCE);
-                mvRebuildMode = MaterializationRebuildMode.AGGREGATE_REBUILD;
-              } else {
-                basePlan = hepPlan(basePlan, false, mdProvider, null,
-                    HepMatchOrder.TOP_DOWN, HiveNoAggregateIncrementalRewritingRule.INSTANCE);
-                mvRebuildMode = MaterializationRebuildMode.NO_AGGREGATE_REBUILD;
-              }
+        // Restore default cost model
+        optCluster.invalidateMetadataQuery();
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
+      }
+
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
+
+      List<Table> materializedViewsUsedOriginalPlan = getMaterializedViewsUsed(calcitePreMVRewritingPlan);
+      List<Table> materializedViewsUsedAfterRewrite = getMaterializedViewsUsed(basePlan);
+      if (materializedViewsUsedOriginalPlan.size() == materializedViewsUsedAfterRewrite.size()) {
+        // Materialized view-based rewriting did not happen, we can return the original plan
+        return calcitePreMVRewritingPlan;
+      }
+
+      // A rewriting was produced, we will check whether it was part of an incremental rebuild
+      // to try to replace INSERT OVERWRITE by INSERT or MERGE
+      if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL)) {
+          // First we need to check if it is valid to convert to MERGE/INSERT INTO.
+          // If we succeed, we modify the plan and afterwards the AST.
+          // MV should be an acid table.
+          MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor();
+          visitor.go(basePlan);
+          if (visitor.isRewritingAllowed()) {
+            // Trigger rewriting to remove UNION branch with MV
+            if (visitor.isContainsAggregate()) {
+              basePlan = hepPlan(basePlan, false, mdProvider, null,
+                  HepMatchOrder.TOP_DOWN, HiveAggregateIncrementalRewritingRule.INSTANCE);
+              mvRebuildMode = MaterializationRebuildMode.AGGREGATE_REBUILD;
+            } else {
+              basePlan = hepPlan(basePlan, false, mdProvider, null,
+                  HepMatchOrder.TOP_DOWN, HiveNoAggregateIncrementalRewritingRule.INSTANCE);
+              mvRebuildMode = MaterializationRebuildMode.NO_AGGREGATE_REBUILD;
             }
           }
-          // Now we trigger some needed optimization rules again
-          basePlan = applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
+        }
+      } else if (useMaterializedViewsRegistry) {
+        // Before proceeding we need to check whether materialized views used are up-to-date
+        // wrt information in metastore
+        try {
+          if (!db.validateMaterializedViewsFromRegistry(materializedViewsUsedAfterRewrite, tablesUsedQuery, getTxnMgr())) {
+            return calcitePreMVRewritingPlan;
+          }
+        } catch (HiveException e) {
+          LOG.warn("Exception validating materialized views", e);
+          return calcitePreMVRewritingPlan;
         }
       }
+      // Now we trigger some needed optimization rules again
+      basePlan = applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
 
       if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_REBUILD) {
         // Make a cost-based decision factoring the configuration property
@@ -2381,7 +2413,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelMetadataQuery mq = RelMetadataQuery.instance();
         RelOptCost costOriginalPlan = mq.getCumulativeCost(calcitePreMVRewritingPlan);
         final double factorSelectivity = (double) HiveConf.getFloatVar(
-          conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
+            conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
         RelOptCost costRebuildPlan = mq.getCumulativeCost(basePlan).multiplyBy(factorSelectivity);
         if (costOriginalPlan.isLe(costRebuildPlan)) {
           basePlan = calcitePreMVRewritingPlan;
@@ -2407,6 +2439,30 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }.go(plan);
       return tablesUsed;
+    }
+
+    private List<Table> getMaterializedViewsUsed(RelNode plan) {
+      List<Table> materializedViewsUsed = new ArrayList<>();
+      new RelVisitor() {
+        @Override
+        public void visit(RelNode node, int ordinal, RelNode parent) {
+          if (node instanceof TableScan) {
+            TableScan ts = (TableScan) node;
+            Table table = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
+            if (table.isMaterializedView()) {
+              materializedViewsUsed.add(table);
+            }
+          } else if (node instanceof DruidQuery) {
+            DruidQuery dq = (DruidQuery) node;
+            Table table = ((RelOptHiveTable) dq.getTable()).getHiveTableMD();
+            if (table.isMaterializedView()) {
+              materializedViewsUsed.add(table);
+            }
+          }
+          super.visit(node, ordinal, parent);
+        }
+      }.go(plan);
+      return materializedViewsUsed;
     }
 
     /**

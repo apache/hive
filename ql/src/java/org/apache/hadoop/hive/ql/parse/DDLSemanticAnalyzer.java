@@ -151,6 +151,7 @@ import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc.
 import org.apache.hadoop.hive.ql.ddl.view.AlterMaterializedViewRewriteDesc;
 import org.apache.hadoop.hive.ql.ddl.view.DropMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.ddl.view.DropViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.ddl.workloadmanagement.AlterPoolAddTriggerDesc;
 import org.apache.hadoop.hive.ql.ddl.workloadmanagement.AlterPoolDropTriggerDesc;
 import org.apache.hadoop.hive.ql.ddl.workloadmanagement.AlterResourcePlanDesc;
@@ -4372,7 +4373,22 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     inputs.add(new ReadEntity(materializedViewTable));
     outputs.add(new WriteEntity(materializedViewTable, WriteEntity.WriteType.DDL_EXCLUSIVE));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterMVRewriteDesc)));
+
+    // Create task for alterMVRewriteDesc
+    DDLWork work = new DDLWork(getInputs(), getOutputs(), alterMVRewriteDesc);
+    Task<?> targetTask = TaskFactory.get(work);
+
+    // Create task to update rewrite flag as dependant of previous one
+    String tableName = alterMVRewriteDesc.getMaterializedViewName();
+    boolean retrieveAndInclude = alterMVRewriteDesc.isRewriteEnable();
+    boolean disableRewrite = !alterMVRewriteDesc.isRewriteEnable();
+    MaterializedViewUpdateDesc materializedViewUpdateDesc =
+        new MaterializedViewUpdateDesc(tableName, retrieveAndInclude, disableRewrite, false);
+    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), materializedViewUpdateDesc);
+    targetTask.addDependentTask(TaskFactory.get(ddlWork, conf));
+
+    // Add root task
+    rootTasks.add(targetTask);
   }
 
 }
