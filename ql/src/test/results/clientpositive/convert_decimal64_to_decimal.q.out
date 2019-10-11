@@ -209,9 +209,8 @@ STAGE PLANS:
                       bigTableValueExpressions: col 14:smallint
                       className: VectorMapJoinOperator
                       native: false
-                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
-                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
-                      nativeNotSupportedKeyTypes: DECIMAL
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col1
                   Statistics: Num rows: 958 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
@@ -369,9 +368,8 @@ STAGE PLANS:
                       bigTableValueExpressions: col 14:smallint
                       className: VectorMapJoinOperator
                       native: false
-                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
-                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
-                      nativeNotSupportedKeyTypes: DECIMAL
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col1
                   Statistics: Num rows: 958 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
