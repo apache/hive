@@ -1614,6 +1614,150 @@ public class Hive {
 
   /**
    * Get the materialized views that have been enabled for rewriting from the
+   * cache (registry). It will preprocess them to discard those that are
+   * outdated and augment those that need to be augmented, e.g., if incremental
+   * rewriting is enabled.
+   *
+   * @return the list of materialized views available for rewriting from the registry
+   * @throws HiveException
+   */
+  public List<RelOptMaterialization> getPreprocessedMaterializedViewsFromRegistry(
+      List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+    // From cache
+    List<RelOptMaterialization> materializedViews =
+        HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews();
+    if (materializedViews.isEmpty()) {
+      // Bail out: empty list
+      return new ArrayList<>();
+    }
+    // Add to final result
+    return filterAugmentMaterializedViews(materializedViews, tablesUsed, txnMgr);
+  }
+
+  private List<RelOptMaterialization> filterAugmentMaterializedViews(List<RelOptMaterialization> materializedViews,
+        List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+    final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    final ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsed, validTxnsList);
+    final boolean tryIncrementalRewriting =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_INCREMENTAL);
+    final long defaultTimeWindow =
+        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW,
+            TimeUnit.MILLISECONDS);
+    try {
+      // Final result
+      List<RelOptMaterialization> result = new ArrayList<>();
+      for (RelOptMaterialization materialization : materializedViews) {
+        final RelNode viewScan = materialization.tableRel;
+        final Table materializedViewTable;
+        if (viewScan instanceof Project) {
+          // There is a Project on top (due to nullability)
+          materializedViewTable = ((RelOptHiveTable) viewScan.getInput(0).getTable()).getHiveTableMD();
+        } else {
+          materializedViewTable = ((RelOptHiveTable) viewScan.getTable()).getHiveTableMD();
+        }
+        final Boolean outdated = isOutdatedMaterializedView(materializedViewTable, currentTxnWriteIds,
+            defaultTimeWindow, tablesUsed, false);
+        if (outdated == null) {
+          continue;
+        }
+
+        final CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
+        if (outdated) {
+          // The MV is outdated, see whether we should consider it for rewriting or not
+          if (!tryIncrementalRewriting) {
+            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " ignored for rewriting as its contents are outdated");
+            continue;
+          }
+          // We will rewrite it to include the filters on transaction list
+          // so we can produce partial rewritings.
+          // This would be costly since we are doing it for every materialized view
+          // that is outdated, but it only happens for more than one materialized view
+          // if rewriting with outdated materialized views is enabled (currently
+          // disabled by default).
+          materialization = augmentMaterializationWithTimeInformation(
+              materialization, validTxnsList, new ValidTxnWriteIdList(
+                  creationMetadata.getValidTxnList()));
+        }
+        result.add(materialization);
+      }
+      return result;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Validate that the materialized views retrieved from registry are still up-to-date.
+   * For those that are not, the method loads them from the metastore into the registry.
+   *
+   * @return true if they are up-to-date, otherwise false
+   * @throws HiveException
+   */
+  public boolean validateMaterializedViewsFromRegistry(List<Table> cachedMaterializedViewTables,
+      List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+    final long defaultTimeWindow =
+        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW,
+            TimeUnit.MILLISECONDS);
+    final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    final ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsed, validTxnsList);
+    try {
+      // Final result
+      boolean result = true;
+      for (Table cachedMaterializedViewTable : cachedMaterializedViewTables) {
+        // Retrieve the materialized view table from the metastore
+        final Table materializedViewTable = getTable(
+            cachedMaterializedViewTable.getDbName(), cachedMaterializedViewTable.getTableName());
+        if (materializedViewTable == null || !materializedViewTable.isRewriteEnabled()) {
+          // This could happen if materialized view has been deleted or rewriting has been disabled.
+          // We remove it from the registry and set result to false.
+          HiveMaterializedViewsRegistry.get().dropMaterializedView(cachedMaterializedViewTable);
+          result = false;
+        } else {
+          final Boolean outdated = isOutdatedMaterializedView(cachedMaterializedViewTable,
+              currentTxnWriteIds, defaultTimeWindow, tablesUsed, false);
+          if (outdated == null) {
+            result = false;
+            continue;
+          }
+          // If the cached materialized view was not outdated wrt the query snapshot,
+          // then we know that the metastore version should be either the same or
+          // more recent. If it is more recent, snapshot isolation will shield us
+          // from the reading its contents after snapshot was acquired, but we will
+          // update the registry so we have most recent version.
+          // On the other hand, if the materialized view in the cache was outdated,
+          // we can only use it if the version that was in the cache is the same one
+          // that we can find in the metastore.
+          if (outdated) {
+            if (!cachedMaterializedViewTable.equals(materializedViewTable)) {
+              // We ignore and update the registry
+              HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, cachedMaterializedViewTable, materializedViewTable);
+              result = false;
+            } else {
+              // Obtain additional information if we should try incremental rewriting / rebuild
+              // We will not try partial rewriting if there were update/delete operations on source tables
+              Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
+                  materializedViewTable.getCreationMetadata(), conf.get(ValidTxnList.VALID_TXNS_KEY));
+              if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified()) {
+                // We ignore (as it did not meet the requirements), but we do not need to update it in the
+                // registry, since it is up-to-date
+                result = false;
+              }
+            }
+          } else if (!cachedMaterializedViewTable.equals(materializedViewTable)) {
+            // Update the registry
+            HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, cachedMaterializedViewTable, materializedViewTable);
+          }
+        }
+      }
+      return result;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Get the materialized views that have been enabled for rewriting from the
    * metastore. If the materialized view is in the cache, we do not need to
    * parse it to generate a logical plan for the rewriting. Instead, we
    * return the version present in the cache. Further, information provided
@@ -1623,33 +1767,42 @@ public class Hive {
    * @return the list of materialized views available for rewriting
    * @throws HiveException
    */
-  public List<RelOptMaterialization> getAllValidMaterializedViews(List<String> tablesUsed, boolean forceMVContentsUpToDate,
-      HiveTxnManager txnMgr) throws HiveException {
-    // Final result
-    List<RelOptMaterialization> result = new ArrayList<>();
-    try {
-      // From metastore (for security)
-      List<Table> materializedViews = getAllMaterializedViewObjectsForRewriting();
-      if (materializedViews.isEmpty()) {
-        // Bail out: empty list
-        return result;
-      }
-      result.addAll(getValidMaterializedViews(materializedViews,
-          tablesUsed, forceMVContentsUpToDate, txnMgr));
-      return result;
-    } catch (Exception e) {
-      throw new HiveException(e);
+  public List<RelOptMaterialization> getPreprocessedMaterializedViews(
+      List<String> tablesUsed, HiveTxnManager txnMgr)
+      throws HiveException {
+    // From metastore
+    List<Table> materializedViewTables =
+        getAllMaterializedViewObjectsForRewriting();
+    if (materializedViewTables.isEmpty()) {
+      // Bail out: empty list
+      return new ArrayList<>();
     }
+    // Return final result
+    return getValidMaterializedViews(materializedViewTables, tablesUsed, false, txnMgr);
   }
 
-  public List<RelOptMaterialization> getValidMaterializedView(String dbName, String materializedViewName,
-      List<String> tablesUsed, boolean forceMVContentsUpToDate, HiveTxnManager txnMgr) throws HiveException {
-    return getValidMaterializedViews(ImmutableList.of(getTable(dbName, materializedViewName)),
-            tablesUsed, forceMVContentsUpToDate, txnMgr);
+  /**
+   * Get the target materialized view from the metastore. Although it may load the plan
+   * from the registry, it is guaranteed that it will always return an up-to-date version
+   * wrt metastore.
+   *
+   * @return the materialized view for rebuild
+   * @throws HiveException
+   */
+  public RelOptMaterialization getMaterializedViewForRebuild(String dbName, String materializedViewName,
+      List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+    List<RelOptMaterialization> validMaterializedViews = getValidMaterializedViews(
+        ImmutableList.of(getTable(dbName, materializedViewName)), tablesUsed, true, txnMgr);
+    if (validMaterializedViews.isEmpty()) {
+      return null;
+    }
+    assert validMaterializedViews.size() == 1;
+    return validMaterializedViews.get(0);
   }
 
   private List<RelOptMaterialization> getValidMaterializedViews(List<Table> materializedViewTables,
-      List<String> tablesUsed, boolean forceMVContentsUpToDate, HiveTxnManager txnMgr) throws HiveException {
+      List<String> tablesUsed, boolean forceMVContentsUpToDate, HiveTxnManager txnMgr)
+      throws HiveException {
     final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     final ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsed, validTxnsList);
     final boolean tryIncrementalRewriting =
@@ -1672,7 +1825,7 @@ public class Hive {
         final CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
         if (outdated) {
           // The MV is outdated, see whether we should consider it for rewriting or not
-          boolean ignore = false;
+          boolean ignore;
           if (forceMVContentsUpToDate && !tryIncrementalRebuild) {
             // We will not try partial rewriting for rebuild if incremental rebuild is disabled
             ignore = true;
@@ -1706,8 +1859,7 @@ public class Hive {
           } else {
             cachedMaterializedViewTable = (RelOptHiveTable) viewScan.getTable();
           }
-          if (cachedMaterializedViewTable.getHiveTableMD().getCreateTime() ==
-              materializedViewTable.getCreateTime()) {
+          if (cachedMaterializedViewTable.getHiveTableMD().equals(materializedViewTable)) {
             // It is in the cache and up to date
             if (outdated) {
               // We will rewrite it to include the filters on transaction list
@@ -1722,31 +1874,23 @@ public class Hive {
         }
 
         // It was not present in the cache (maybe because it was added by another HS2)
-        // or it is not up to date.
-        if (HiveMaterializedViewsRegistry.get().isInitialized()) {
-          // But the registry was fully initialized, thus we need to add it
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " was not in the cache");
+        // or it is not up to date. We need to add it
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+              " was not in the cache");
+        }
+        materialization = HiveMaterializedViewsRegistry.get().createMaterialization(
+            conf, materializedViewTable);
+        if (materialization != null) {
+          HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, null, materializedViewTable);
+          if (outdated) {
+            // We will rewrite it to include the filters on transaction list
+            // so we can produce partial rewritings
+            materialization = augmentMaterializationWithTimeInformation(
+                materialization, validTxnsList, new ValidTxnWriteIdList(
+                    creationMetadata.getValidTxnList()));
           }
-          materialization = HiveMaterializedViewsRegistry.get().createMaterializedView(
-              conf, materializedViewTable);
-          if (materialization != null) {
-            if (outdated) {
-              // We will rewrite it to include the filters on transaction list
-              // so we can produce partial rewritings
-              materialization = augmentMaterializationWithTimeInformation(
-                  materialization, validTxnsList, new ValidTxnWriteIdList(
-                      creationMetadata.getValidTxnList()));
-            }
-            result.add(materialization);
-          }
-        } else {
-          // Otherwise the registry has not been initialized, skip for the time being
-          if (LOG.isWarnEnabled()) {
-            LOG.info("Materialized view " + materializedViewTable.getFullyQualifiedName() + " was skipped "
-                + "because cache has not been loaded yet");
-          }
+          result.add(materialization);
         }
       }
       return result;
