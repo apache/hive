@@ -7,4 +7,4 @@ select * from tbl2 order by fld;
 select * from tbl3 order by fld;
 select * from tbl4 order by fld;
 select * from tbl5 order by fld;
-select * from tbl6 order by fld;
+select * from tbl6 order by fld1;
