@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -139,7 +138,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
 
     try {
       TextMetaDataTable mdt = new TextMetaDataTable();
-      mdt.addRow("# Table Name", "Table Type");
+      if (!SessionState.get().isHiveServerQuery()) {
+        mdt.addRow("# Table Name", "Table Type");
+      }
       for (Table table : tables) {
         final String tableName = table.getTableName();
         final String tableType = table.getTableType().toString();
@@ -167,7 +168,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
 
     try {
       TextMetaDataTable mdt = new TextMetaDataTable();
-      mdt.addRow("# MV Name", "Rewriting Enabled", "Mode");
+      if (!SessionState.get().isHiveServerQuery()) {
+        mdt.addRow("# MV Name", "Rewriting Enabled", "Mode");
+      }
       for (Table mv : materializedViews) {
         final String mvName = mv.getTableName();
         final String rewriteEnabled = mv.isRewriteEnabled() ? "Yes" : "No";
@@ -202,27 +205,27 @@ class TextMetaDataFormatter implements MetaDataFormatter {
   }
 
   @Override
-  public void describeTable(DataOutputStream outStream,  String colPath, String tableName, Table tbl, Partition part,
+  public void describeTable(DataOutputStream outStream, String colPath, String tableName, Table tbl, Partition part,
       List<FieldSchema> cols, boolean isFormatted, boolean isExt, boolean isOutputPadded,
       List<ColumnStatisticsObj> colStats) throws HiveException {
     try {
       List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
       String output = "";
 
-      boolean isColStatsAvailable = CollectionUtils.isNotEmpty(colStats);
+      boolean needColStats = isFormatted && colPath != null;
 
       TextMetaDataTable mdt = new TextMetaDataTable();
-      if (isFormatted && !isColStatsAvailable) {
+      if (needColStats) {
+        mdt.addRow(DescTableDesc.COLUMN_STATISTICS_HEADERS.toArray(new String[]{}));
+      } else if (isFormatted && !SessionState.get().isHiveServerQuery()) {
         output = "# ";
-      }
-      if (isFormatted) {
-        mdt.addRow(DescTableDesc.getSchema(isColStatsAvailable).split("#")[0].split(","));
+        mdt.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
       }
       for (FieldSchema col : cols) {
-        mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, isColStatsAvailable,
+        mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, needColStats,
             MetaDataFormatUtils.getColumnStatisticsObject(col.getName(), col.getType(), colStats)));
       }
-      if (isColStatsAvailable) {
+      if (needColStats) {
         mdt.transpose();
       }
       output += mdt.renderTable(isOutputPadded);
@@ -231,7 +234,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         if ((partCols != null) && !partCols.isEmpty() && showPartColsSeparately) {
           mdt = new TextMetaDataTable();
           output += MetaDataFormatUtils.LINE_DELIM + "# Partition Information" + MetaDataFormatUtils.LINE_DELIM + "# ";
-          mdt.addRow(DescTableDesc.getSchema(false).split("#")[0].split(","));
+          mdt.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
           for (FieldSchema col : partCols) {
             mdt.addRow(MetaDataFormatUtils.extractColumnValues(col));
           }
