@@ -78,7 +78,6 @@ PREHOOK: Input: escape_comments_db@escape_comments_tbl1
 POSTHOOK: query: describe formatted escape_comments_tbl1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
-# col_name	data_type	comment
 col1	string	a\nb';
 	NULL	NULL
 # Partition Information	NULL	NULL
@@ -138,7 +137,6 @@ PREHOOK: Input: escape_comments_db@escape_comments_view1
 POSTHOOK: query: describe formatted escape_comments_view1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: escape_comments_db@escape_comments_view1
-# col_name	data_type	comment
 col1	string	a\nb
 	NULL	NULL
 # Detailed Table Information	NULL	NULL

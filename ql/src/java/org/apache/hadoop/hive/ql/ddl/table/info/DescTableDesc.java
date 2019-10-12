@@ -19,12 +19,15 @@
 package org.apache.hadoop.hive.ql.ddl.table.info;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * DDL task description for DESC table_name commands.
@@ -33,13 +36,12 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class DescTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private static final String SCHEMA = "col_name,data_type,comment#string:string:string";
-  private static final String COL_STATS_SCHEMA = "col_name,data_type,min,max,num_nulls," +
-      "distinct_count,avg_col_len,max_col_len,num_trues,num_falses,bitVector,comment" +
-      "#string:string:string:string:string:string:string:string:string:string:string:string";
-  public static String getSchema(boolean colStats) {
-    return colStats ? COL_STATS_SCHEMA : SCHEMA;
-  }
+  public static final String SCHEMA = "col_name,data_type,comment#string:string:string";
+  public static final String COLUMN_STATISTICS_SCHEMA = "column_property,value#string:string";
+  public static final List<String> COLUMN_STATISTICS_HEADERS = ImmutableList.of(
+      "col_name", "data_type", "min", "max", "num_nulls", "distinct_count", "avg_col_len", "max_col_len", "num_trues",
+      "num_falses", "bit_vector", "comment"
+  );
 
   private final String resFile;
   private final String tableName;

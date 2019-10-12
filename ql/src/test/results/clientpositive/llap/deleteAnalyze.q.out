@@ -74,19 +74,19 @@ PREHOOK: Input: default@testdeci2_n0
 POSTHOOK: query: describe formatted testdeci2_n0 amount
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@testdeci2_n0
-col_name            	amount              	 	 	 	 	 	 	 	 	 	 
-data_type           	decimal(10,3)       	 	 	 	 	 	 	 	 	 	 
-min                 	12.123              	 	 	 	 	 	 	 	 	 	 
-max                 	123.123             	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	2                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"amount\":\"true\",\"id\":\"true\",\"item\":\"true\",\"sales_tax\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	amount              
+data_type           	decimal(10,3)       
+min                 	12.123              
+max                 	123.123             
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"amount\":\"true\",\"id\":\"true\",\"item\":\"true\",\"sales_tax\":\"true\"}}
 PREHOOK: query: analyze table testdeci2_n0 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@testdeci2_n0

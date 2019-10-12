@@ -297,93 +297,93 @@ PREHOOK: Input: default@partcoltypenum
 POSTHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcoltypenum
 POSTHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
-col_name            	value               	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.766666666666667   	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.766666666666667   
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted partcoltypenum tint
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcoltypenum
 POSTHOOK: query: describe formatted partcoltypenum tint
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
-col_name            	tint                	 	 	 	 	 	 	 	 	 	 
-data_type           	tinyint             	 	 	 	 	 	 	 	 	 	 
-min                 	110                 	 	 	 	 	 	 	 	 	 	 
-max                 	110                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	                    	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"tint\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	tint                
+data_type           	tinyint             
+min                 	110                 
+max                 	110                 
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"tint\":\"true\"}}
 PREHOOK: query: describe formatted partcoltypenum sint
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcoltypenum
 POSTHOOK: query: describe formatted partcoltypenum sint
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
-col_name            	sint                	 	 	 	 	 	 	 	 	 	 
-data_type           	smallint            	 	 	 	 	 	 	 	 	 	 
-min                 	22000               	 	 	 	 	 	 	 	 	 	 
-max                 	22000               	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	                    	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sint\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	sint                
+data_type           	smallint            
+min                 	22000               
+max                 	22000               
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sint\":\"true\"}}
 PREHOOK: query: describe formatted partcoltypenum bint
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcoltypenum
 POSTHOOK: query: describe formatted partcoltypenum bint
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
-col_name            	bint                	 	 	 	 	 	 	 	 	 	 
-data_type           	bigint              	 	 	 	 	 	 	 	 	 	 
-min                 	330000000000        	 	 	 	 	 	 	 	 	 	 
-max                 	330000000000        	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	                    	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bint\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	bint                
+data_type           	bigint              
+min                 	330000000000        
+max                 	330000000000        
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bint\":\"true\"}}
 PREHOOK: query: alter table partcoltypenum change key key decimal(10,0)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@partcoltypenum
@@ -494,19 +494,19 @@ PREHOOK: Input: default@partcoltypenum
 POSTHOOK: query: describe formatted partcoltypenum tint
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
-col_name            	tint                	 	 	 	 	 	 	 	 	 	 
-data_type           	decimal(3,0)        	 	 	 	 	 	 	 	 	 	 
-min                 	110                 	 	 	 	 	 	 	 	 	 	 
-max                 	110                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	                    	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"tint\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	tint                
+data_type           	decimal(3,0)        
+min                 	110                 
+max                 	110                 
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"tint\":\"true\"}}
 PREHOOK: query: show partitions partcoltypenum partition (tint=110BD, sint=22000S, bint=330000000000L)
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@partcoltypenum
