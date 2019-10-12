@@ -79,16 +79,16 @@ PREHOOK: Input: default@t1_n53
 POSTHOOK: query: desc formatted t1_n53 value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t1_n53
-col_name            	value               	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	0                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	0.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	0                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"data\":\"true\",\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	0                   
+avg_col_len         	0.0                 
+max_col_len         	0                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"data\":\"true\",\"key\":\"true\",\"value\":\"true\"}}

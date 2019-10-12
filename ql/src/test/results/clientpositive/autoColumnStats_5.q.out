@@ -202,19 +202,19 @@ PREHOOK: Input: default@partitioned1_n1
 POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1_n1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
-col_name            	a                   	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	4                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+column_property	value
+col_name            	a                   
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: alter table partitioned1_n1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned1_n1
@@ -461,19 +461,19 @@ PREHOOK: Input: default@partitioned1_n1
 POSTHOOK: query: desc formatted partitioned1_n1 partition(part=2) c
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1_n1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
-col_name            	c                   	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	10                  	 	 	 	 	 	 	 	 	 	 
-max                 	40                  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+column_property	value
+col_name            	c                   
+data_type           	int                 
+min                 	10                  
+max                 	40                  
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -672,25 +672,35 @@ PREHOOK: Input: default@partitioned1_n1
 POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1_n1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
-col_name            	a                   	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	6                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	6                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+column_property	value
+col_name            	a                   
+data_type           	int                 
+min                 	1                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: desc formatted partitioned1_n1 partition(part=1) c
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partitioned1_n1
 POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1) c
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1_n1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-c                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
+column_property	value
+col_name            	c                   
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   

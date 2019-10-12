@@ -54,18 +54,18 @@ PREHOOK: Input: default@src_stat_part_n1
 POSTHOOK: query: describe formatted src_stat_part_n1 PARTITION(partitionId=1) key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part_n1
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	16                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	1.72                	 	 	 	 	 	 	 	 	 	 
-max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	16                  
+avg_col_len         	1.72                
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: ANALYZE TABLE src_stat_part_n1 partition (partitionId) COMPUTE STATISTICS for columns key, value
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stat_part_n1
@@ -90,36 +90,36 @@ PREHOOK: Input: default@src_stat_part_n1
 POSTHOOK: query: describe formatted src_stat_part_n1 PARTITION(partitionId=1) key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part_n1
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	16                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	1.72                	 	 	 	 	 	 	 	 	 	 
-max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	16                  
+avg_col_len         	1.72                
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted src_stat_part_n1 PARTITION(partitionId=2) value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_part_n1
 POSTHOOK: query: describe formatted src_stat_part_n1 PARTITION(partitionId=2) value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part_n1
-col_name            	value               	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	19                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.92                	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	19                  
+avg_col_len         	4.92                
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: create table src_stat_string_part(key string, value string) partitioned by (partitionName string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

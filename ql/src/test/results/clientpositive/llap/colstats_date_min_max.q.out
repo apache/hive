@@ -85,19 +85,19 @@ PREHOOK: Input: default@d1
 POSTHOOK: query: desc formatted d1 d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@d1
-col_name            	d                   	 	 	 	 	 	 	 	 	 	 
-data_type           	date                	 	 	 	 	 	 	 	 	 	 
-min                 	2010-10-01          	 	 	 	 	 	 	 	 	 	 
-max                 	2010-10-10          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	d                   
+data_type           	date                
+min                 	2010-10-01          
+max                 	2010-10-10          
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\"}}
 PREHOOK: query: explain
 select 'stats: FIL ~0 read',count(1) from d1 where d < '2010-03-01'
 PREHOOK: type: QUERY

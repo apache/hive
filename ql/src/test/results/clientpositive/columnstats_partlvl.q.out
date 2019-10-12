@@ -630,36 +630,36 @@ PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-col_name            	employeeID          	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	16                  	 	 	 	 	 	 	 	 	 	 
-max                 	34                  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	12                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeID          
+data_type           	int                 
+min                 	16                  
+max                 	34                  
+num_nulls           	1                   
+distinct_count      	12                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeName
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-col_name            	employeeName        	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	12                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.3076923076923075  	 	 	 	 	 	 	 	 	 	 
-max_col_len         	6                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeName        
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	12                  
+avg_col_len         	4.3076923076923075  
+max_col_len         	6                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
@@ -759,36 +759,36 @@ PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted Employee_Part partition(employeeSalary=2000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-col_name            	employeeID          	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	16                  	 	 	 	 	 	 	 	 	 	 
-max                 	34                  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	12                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeID          
+data_type           	int                 
+min                 	16                  
+max                 	34                  
+num_nulls           	1                   
+distinct_count      	12                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_Part partition(employeeSalary=4000.0) employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted Employee_Part partition(employeeSalary=4000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-col_name            	employeeID          	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	16                  	 	 	 	 	 	 	 	 	 	 
-max                 	34                  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	12                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeID          
+data_type           	int                 
+min                 	16                  
+max                 	34                  
+num_nulls           	1                   
+distinct_count      	12                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
@@ -880,19 +880,19 @@ PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted Employee_Part employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-col_name            	employeeID          	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	16                  	 	 	 	 	 	 	 	 	 	 
-max                 	34                  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	2                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	12                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeID          
+data_type           	int                 
+min                 	16                  
+max                 	34                  
+num_nulls           	2                   
+distinct_count      	12                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}
 PREHOOK: query: create database if not exists dummydb
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:dummydb
@@ -925,19 +925,19 @@ PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted default.Employee_Part partition (employeeSalary=2000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-col_name            	employeeID          	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	16                  	 	 	 	 	 	 	 	 	 	 
-max                 	34                  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	12                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeID          
+data_type           	int                 
+min                 	16                  
+max                 	34                  
+num_nulls           	1                   
+distinct_count      	12                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}
 PREHOOK: query: analyze table default.Employee_Part  compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@employee_part

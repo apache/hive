@@ -90,7 +90,7 @@ public final class MetaDataFormatUtils {
   private MetaDataFormatUtils() {
   }
 
-  private static String convertToString(Decimal val) {
+  public static String convertToString(Decimal val) {
     if (val == null) {
       return "";
     }
@@ -103,7 +103,7 @@ public final class MetaDataFormatUtils {
     }
   }
 
-  private static String convertToString(org.apache.hadoop.hive.metastore.api.Date val) {
+  public static String convertToString(org.apache.hadoop.hive.metastore.api.Date val) {
     if (val == null) {
       return "";
     }

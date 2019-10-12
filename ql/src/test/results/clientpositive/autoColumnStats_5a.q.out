@@ -1046,16 +1046,16 @@ PREHOOK: Input: default@partitioned1
 POSTHOOK: query: desc formatted partitioned1 partition(part=1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
-col_name            	a                   	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	4                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+column_property	value
+col_name            	a                   
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   

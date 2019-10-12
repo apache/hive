@@ -64,7 +64,6 @@ POSTHOOK: Input: default@smb_bucket_1_n3
 #### A masked pattern was here ####
 # Detailed Table Information	NULL	NULL
 # Storage Information	NULL	NULL
-# col_name	data_type	comment
 Bucket Columns:     	[key]               	NULL
 Compressed:         	No                  	NULL
 #### A masked pattern was here ####

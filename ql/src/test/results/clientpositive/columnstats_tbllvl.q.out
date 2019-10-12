@@ -317,57 +317,57 @@ PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: describe formatted UserVisits_web_text_none destURL
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
-col_name            	destURL             	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	55                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	48.945454545454545  	 	 	 	 	 	 	 	 	 	 
-max_col_len         	96                  	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	destURL             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	55                  
+avg_col_len         	48.945454545454545  
+max_col_len         	96                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
 PREHOOK: query: describe formatted UserVisits_web_text_none adRevenue
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: describe formatted UserVisits_web_text_none adRevenue
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
-col_name            	adRevenue           	 	 	 	 	 	 	 	 	 	 
-data_type           	float               	 	 	 	 	 	 	 	 	 	 
-min                 	13.099044799804688  	 	 	 	 	 	 	 	 	 	 
-max                 	492.98870849609375  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	55                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	adRevenue           
+data_type           	float               
+min                 	13.099044799804688  
+max                 	492.98870849609375  
+num_nulls           	0                   
+distinct_count      	55                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
 PREHOOK: query: describe formatted UserVisits_web_text_none avgTimeOnSite
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: describe formatted UserVisits_web_text_none avgTimeOnSite
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
-col_name            	avgTimeOnSite       	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	9                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	9                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	avgTimeOnSite       
+data_type           	int                 
+min                 	1                   
+max                 	9                   
+num_nulls           	0                   
+distinct_count      	9                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
 PREHOOK: query: CREATE TABLE empty_tab(
    a int,
    b double,
@@ -485,19 +485,19 @@ PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: describe formatted default.UserVisits_web_text_none destURL
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
-col_name            	destURL             	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	55                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	48.945454545454545  	 	 	 	 	 	 	 	 	 	 
-max_col_len         	96                  	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	destURL             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	55                  
+avg_col_len         	48.945454545454545  
+max_col_len         	96                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
 PREHOOK: query: CREATE TABLE UserVisits_in_dummy_db (
   sourceIP string,
   destURL string,
@@ -819,57 +819,57 @@ PREHOOK: Input: dummydb@uservisits_in_dummy_db
 POSTHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db destURL
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
-col_name            	destURL             	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	55                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	48.945454545454545  	 	 	 	 	 	 	 	 	 	 
-max_col_len         	96                  	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	destURL             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	55                  
+avg_col_len         	48.945454545454545  
+max_col_len         	96                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
 PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db adRevenue
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
 POSTHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db adRevenue
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
-col_name            	adRevenue           	 	 	 	 	 	 	 	 	 	 
-data_type           	float               	 	 	 	 	 	 	 	 	 	 
-min                 	13.099044799804688  	 	 	 	 	 	 	 	 	 	 
-max                 	492.98870849609375  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	55                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	adRevenue           
+data_type           	float               
+min                 	13.099044799804688  
+max                 	492.98870849609375  
+num_nulls           	0                   
+distinct_count      	55                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
 PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db avgTimeOnSite
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
 POSTHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db avgTimeOnSite
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
-col_name            	avgTimeOnSite       	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	9                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	9                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	avgTimeOnSite       
+data_type           	int                 
+min                 	1                   
+max                 	9                   
+num_nulls           	0                   
+distinct_count      	9                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
 PREHOOK: query: drop table dummydb.UserVisits_in_dummy_db
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db

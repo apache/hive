@@ -119,19 +119,19 @@ PREHOOK: Input: default@tab_date
 POSTHOOK: query: describe formatted tab_date fl_date
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tab_date
-col_name            	fl_date             	 	 	 	 	 	 	 	 	 	 
-data_type           	date                	 	 	 	 	 	 	 	 	 	 
-min                 	2000-11-20          	 	 	 	 	 	 	 	 	 	 
-max                 	2010-10-29          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	19                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	fl_date             
+data_type           	date                
+min                 	2000-11-20          
+max                 	2010-10-29          
+num_nulls           	0                   
+distinct_count      	19                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"fl_date\":\"true\"}}
 PREHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 PREHOOK: Input: default@tab_date
@@ -146,16 +146,16 @@ PREHOOK: Input: default@tab_date
 POSTHOOK: query: describe formatted tab_date fl_date
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tab_date
-col_name            	fl_date             	 	 	 	 	 	 	 	 	 	 
-data_type           	date                	 	 	 	 	 	 	 	 	 	 
-min                 	1970-01-01          	 	 	 	 	 	 	 	 	 	 
-max                 	2015-01-01          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	19                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	fl_date             
+data_type           	date                
+min                 	1970-01-01          
+max                 	2015-01-01          
+num_nulls           	0                   
+distinct_count      	19                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"fl_date\":\"true\"}}

@@ -197,18 +197,18 @@ PREHOOK: Input: default@employee_part_n0
 POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='4000.0', country='USA') employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part_n0
-col_name            	employeeName        	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	7                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	5.142857142857143   	 	 	 	 	 	 	 	 	 	 
-max_col_len         	6                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeName        
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	7                   
+avg_col_len         	5.142857142857143   
+max_col_len         	6                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: explain	
 analyze table Employee_Part_n0 partition (employeeSalary='2000.0') compute statistics for columns employeeID
 PREHOOK: type: ANALYZE_TABLE
@@ -309,36 +309,36 @@ PREHOOK: Input: default@employee_part_n0
 POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='2000.0', country='USA') employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part_n0
-col_name            	employeeID          	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	16                  	 	 	 	 	 	 	 	 	 	 
-max                 	34                  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	12                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeID          
+data_type           	int                 
+min                 	16                  
+max                 	34                  
+num_nulls           	1                   
+distinct_count      	12                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='2000.0', country='UK') employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part_n0
 POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='2000.0', country='UK') employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part_n0
-col_name            	employeeID          	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	16                  	 	 	 	 	 	 	 	 	 	 
-max                 	31                  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	7                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeID          
+data_type           	int                 
+min                 	16                  
+max                 	31                  
+num_nulls           	0                   
+distinct_count      	7                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: explain	
 analyze table Employee_Part_n0 partition (employeeSalary) compute statistics for columns employeeID
 PREHOOK: type: ANALYZE_TABLE
@@ -470,18 +470,18 @@ PREHOOK: Input: default@employee_part_n0
 POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='3000.0', country='UK') employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part_n0
-col_name            	employeeID          	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	16                  	 	 	 	 	 	 	 	 	 	 
-max                 	34                  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	12                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeID          
+data_type           	int                 
+min                 	16                  
+max                 	34                  
+num_nulls           	1                   
+distinct_count      	12                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: explain	
 analyze table Employee_Part_n0 partition (employeeSalary,country) compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
@@ -613,18 +613,18 @@ PREHOOK: Input: default@employee_part_n0
 POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='3500.0', country='UK') employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part_n0
-col_name            	employeeName        	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	12                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	5.142857142857143   	 	 	 	 	 	 	 	 	 	 
-max_col_len         	6                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeName        
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	12                  
+avg_col_len         	5.142857142857143   
+max_col_len         	6                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: drop table Employee_n0
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table Employee_n0
@@ -707,18 +707,18 @@ PREHOOK: Input: default@employee_n0
 POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='3500.0', country='UK') employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_n0
-col_name            	employeeName        	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	12                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	5.142857142857143   	 	 	 	 	 	 	 	 	 	 
-max_col_len         	6                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeName        
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	12                  
+avg_col_len         	5.142857142857143   
+max_col_len         	6                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_n0 partition(employeeSalary='3000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -777,18 +777,18 @@ PREHOOK: Input: default@employee_n0
 POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='3000.0', country='USA') employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_n0
-col_name            	employeeName        	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	12                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	5.142857142857143   	 	 	 	 	 	 	 	 	 	 
-max_col_len         	6                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeName        
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	12                  
+avg_col_len         	5.142857142857143   
+max_col_len         	6                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: alter table Employee_n0 add columns (c int ,d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@employee_n0
@@ -826,51 +826,51 @@ PREHOOK: Input: default@employee_n0
 POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_n0
-col_name            	employeeName        	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	9                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.777777777777778   	 	 	 	 	 	 	 	 	 	 
-max_col_len         	6                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	employeeName        
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	9                   
+avg_col_len         	4.777777777777778   
+max_col_len         	6                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') c
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_n0
 POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') c
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_n0
-col_name            	c                   	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	2000                	 	 	 	 	 	 	 	 	 	 
-max                 	4000                	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	3                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	c                   
+data_type           	int                 
+min                 	2000                
+max                 	4000                
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') d
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_n0
 POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_n0
-col_name            	d                   	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	2                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	2.4444444444444446  	 	 	 	 	 	 	 	 	 	 
-max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	d                   
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	2.4444444444444446  
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
