@@ -2258,10 +2258,11 @@ public abstract class BaseSemanticAnalyzer {
 
   /**
    * Create a FetchTask for a given schema.
-   *
-   * @param schema string
    */
-  protected FetchTask createFetchTask(String schema) {
+  protected FetchTask createFetchTask(String tableSchema) {
+    String schema =
+        "json".equals(conf.get(HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text")) ? "json#string" : tableSchema;
+
     Properties prop = new Properties();
     // Sets delimiter to tab (ascii 9)
     prop.setProperty(serdeConstants.SERIALIZATION_FORMAT, Integer.toString(Utilities.tabCode));

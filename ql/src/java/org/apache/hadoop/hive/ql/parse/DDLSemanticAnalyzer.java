@@ -1633,7 +1633,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     DescTableDesc descTblDesc = new DescTableDesc(ctx.getResFile(), tableName, partSpec, colPath, isExt, isFormatted);
     Task<?> ddlTask = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), descTblDesc));
     rootTasks.add(ddlTask);
-    String schema = DescTableDesc.getSchema(showColStats);
+    String schema = showColStats ? DescTableDesc.COLUMN_STATISTICS_SCHEMA : DescTableDesc.SCHEMA;
     setFetchTask(createFetchTask(schema));
     LOG.info("analyzeDescribeTable done");
   }

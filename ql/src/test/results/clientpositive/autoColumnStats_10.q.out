@@ -144,28 +144,38 @@ PREHOOK: Input: default@p_n1
 POSTHOOK: query: desc formatted p_n1 insert_num
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p_n1
-col_name            	insert_num          	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	1                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	insert_num          
+data_type           	int                 
+min                 	1                   
+max                 	1                   
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
 PREHOOK: query: desc formatted p_n1 c1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@p_n1
 POSTHOOK: query: desc formatted p_n1 c1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p_n1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-c1                  	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	c1                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
 PREHOOK: query: insert into p_n1 values (2,11,111)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -220,28 +230,38 @@ PREHOOK: Input: default@p_n1
 POSTHOOK: query: desc formatted p_n1 insert_num
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p_n1
-col_name            	insert_num          	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	2                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	2                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	insert_num          
+data_type           	int                 
+min                 	1                   
+max                 	2                   
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
 PREHOOK: query: desc formatted p_n1 c1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@p_n1
 POSTHOOK: query: desc formatted p_n1 c1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p_n1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-c1                  	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	c1                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
 PREHOOK: query: drop table p_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@p_n1
@@ -392,18 +412,38 @@ PREHOOK: Input: default@p_n1
 POSTHOOK: query: desc formatted p_n1 insert_num
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p_n1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-insert_num          	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
+col_name            	insert_num          
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 PREHOOK: query: desc formatted p_n1 c1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@p_n1
 POSTHOOK: query: desc formatted p_n1 c1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p_n1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-c1                  	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
+col_name            	c1                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 PREHOOK: query: insert into p_n1 values (2,11,111)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -458,15 +498,35 @@ PREHOOK: Input: default@p_n1
 POSTHOOK: query: desc formatted p_n1 insert_num
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p_n1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-insert_num          	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
+col_name            	insert_num          
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 PREHOOK: query: desc formatted p_n1 c1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@p_n1
 POSTHOOK: query: desc formatted p_n1 c1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p_n1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-c1                  	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
+col_name            	c1                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
