@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.merge.LongColumnStatsMerger;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,9 +107,10 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
         } else {
-          aggregateData.setLowValue(Math.min(aggregateData.getLowValue(), newData.getLowValue()));
-          aggregateData
-              .setHighValue(Math.max(aggregateData.getHighValue(), newData.getHighValue()));
+          LongColumnStatsMerger merger = new LongColumnStatsMerger();
+          merger.setLowValue(aggregateData, newData);
+          merger.setHighValue(aggregateData, newData);
+
           aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
           aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
         }

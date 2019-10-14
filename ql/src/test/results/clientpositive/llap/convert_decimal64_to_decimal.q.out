@@ -187,12 +187,16 @@ STAGE PLANS:
                           0 _col0 (type: decimal(9,2))
                           1 _col1 (type: decimal(9,2))
                         Map Join Vectorization:
+                            bigTableKeyColumns: 20:decimal(9,2)
                             bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 3:decimal(9,2)/DECIMAL_64) -> 20:decimal(9,2)
-                            className: VectorMapJoinOperator
-                            native: false
-                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
-                            nativeConditionsNotMet: Optimized Table and Supports Key Types IS false
-                            nativeNotSupportedKeyTypes: DECIMAL
+                            bigTableRetainColumnNums: []
+                            className: VectorMapJoinInnerMultiKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                            nonOuterSmallTableKeyMapping: []
+                            projectedOutput: 21:smallint
+                            smallTableValueMapping: 21:smallint
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
@@ -200,7 +204,7 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: count(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFCount(col 0:smallint) -> bigint
+                              aggregators: VectorUDAFCount(col 21:smallint) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false
@@ -403,12 +407,15 @@ STAGE PLANS:
                           0 _col0 (type: decimal(9,2))
                           1 _col1 (type: decimal(9,2))
                         Map Join Vectorization:
-                            bigTableKeyExpressions: col 3:decimal(9,2)
-                            className: VectorMapJoinOperator
-                            native: false
-                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
-                            nativeConditionsNotMet: Optimized Table and Supports Key Types IS false
-                            nativeNotSupportedKeyTypes: DECIMAL
+                            bigTableKeyColumns: 3:decimal(9,2)
+                            bigTableRetainColumnNums: []
+                            className: VectorMapJoinInnerMultiKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                            nonOuterSmallTableKeyMapping: []
+                            projectedOutput: 20:smallint
+                            smallTableValueMapping: 20:smallint
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
@@ -416,7 +423,7 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: count(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFCount(col 0:smallint) -> bigint
+                              aggregators: VectorUDAFCount(col 20:smallint) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false

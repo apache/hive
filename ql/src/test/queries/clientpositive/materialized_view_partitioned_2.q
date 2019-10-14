@@ -32,8 +32,8 @@ SELECT * FROM src_txn_2 where value > 'val_220' and value < 'val_230';
 
 SELECT * FROM src_txn_2 where value > 'val_220' and value < 'val_230';
 
--- SHOULD CHOOSE partition_mv_4 SINCE IT IS THE MOST EFFICIENT
--- READING ONLY ONE PARTITION
+-- SHOULD CHOOSE partition_mv_1, partition_mv_3 OR partition_mv_4
+-- SINCE IT IS THE MOST EFFICIENT READING ONLY ONE PARTITION
 EXPLAIN
 SELECT * FROM src_txn_2 where key > 224 and key < 226;
 

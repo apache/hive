@@ -24,8 +24,6 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.decimalInspectorFromStats;
 
 public class DecimalColumnStatsMerger extends ColumnStatsMerger {
@@ -60,8 +58,7 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
     aggregateColStats.getStatsData().setDecimalStats(aggregateData);
   }
 
-  @VisibleForTesting
-  void setLowValue(DecimalColumnStatsDataInspector aggregateData, DecimalColumnStatsDataInspector newData) {
+  public void setLowValue(DecimalColumnStatsDataInspector aggregateData, DecimalColumnStatsDataInspector newData) {
     if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
       return;
     }
@@ -79,8 +76,7 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
     aggregateData.setLowValue(mergedLowValue);
   }
 
-  @VisibleForTesting
-  void setHighValue(DecimalColumnStatsDataInspector aggregateData, DecimalColumnStatsDataInspector newData) {
+  public void setHighValue(DecimalColumnStatsDataInspector aggregateData, DecimalColumnStatsDataInspector newData) {
     if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
       return;
     }
