@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.parquet.filter2.predicate.FilterApi;
 import org.apache.parquet.filter2.predicate.FilterPredicate;
 
@@ -33,19 +34,20 @@ public abstract class FilterPredicateLeafBuilder {
    * @param op         IN or BETWEEN
    * @param literals
    * @param columnName
+   * @param columnType
    * @return
    */
   public FilterPredicate buildPredicate(PredicateLeaf.Operator op, List<Object> literals,
-                                        String columnName) throws Exception {
+                                        String columnName, TypeInfo columnType) throws Exception {
     FilterPredicate result = null;
     switch (op) {
       case IN:
         for (Object literal : literals) {
           if (result == null) {
-            result = buildPredict(PredicateLeaf.Operator.EQUALS, literal, columnName);
+            result = buildPredict(PredicateLeaf.Operator.EQUALS, literal, columnName, columnType);
           } else {
             result = or(result, buildPredict(PredicateLeaf.Operator.EQUALS, literal,
-                columnName));
+                columnName, columnType));
           }
         }
         return result;
@@ -58,8 +60,8 @@ public abstract class FilterPredicateLeafBuilder {
         Object min = literals.get(0);
         Object max = literals.get(1);
         FilterPredicate lt = not(buildPredict(PredicateLeaf.Operator.LESS_THAN,
-            min, columnName));
-        FilterPredicate gt = buildPredict(PredicateLeaf.Operator.LESS_THAN_EQUALS, max, columnName);
+            min, columnName, columnType));
+        FilterPredicate gt = buildPredict(PredicateLeaf.Operator.LESS_THAN_EQUALS, max, columnName, columnType);
         result = FilterApi.and(gt, lt);
         return result;
       default:
@@ -73,8 +75,9 @@ public abstract class FilterPredicateLeafBuilder {
    * @param op         EQUALS, NULL_SAFE_EQUALS, LESS_THAN, LESS_THAN_EQUALS, IS_NULL
    * @param constant
    * @param columnName
+   * @param columnType
    * @return null or a FilterPredicate, null means no filter will be executed
    */
   public abstract FilterPredicate buildPredict(PredicateLeaf.Operator op, Object constant,
-                                               String columnName) throws Exception;
+                                               String columnName, TypeInfo columnType) throws Exception;
 }

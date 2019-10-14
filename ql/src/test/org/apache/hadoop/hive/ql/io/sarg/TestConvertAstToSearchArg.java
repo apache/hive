@@ -18,14 +18,16 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
@@ -33,6 +35,8 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.parquet.filter2.predicate.FilterPredicate;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
@@ -553,7 +557,11 @@ public class TestConvertAstToSearchArg {
         MessageTypeParser.parseMessageType("message test { required int32 id;" +
             " required binary first_name; }");
 
-      FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+    Map<String, TypeInfo> columnTypes = new HashMap<>();
+    columnTypes.put("id", TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    columnTypes.put("first_name", TypeInfoFactory.getPrimitiveTypeInfo("string"));
+
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes);
     String[] conditions = new String[]{
       "eq(first_name, Binary{\"john\"})",    /* first_name = 'john' */
       "not(lteq(first_name, Binary{\"greg\"}))", /* 'greg' < first_name */
@@ -848,7 +856,11 @@ public class TestConvertAstToSearchArg {
     MessageType schema =
         MessageTypeParser.parseMessageType("message test { required int32 id;" +
             " required binary first_name; }");
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+    Map<String, TypeInfo> columnTypes = new HashMap<>();
+    columnTypes.put("id", TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    columnTypes.put("first_name", TypeInfoFactory.getPrimitiveTypeInfo("string"));
+
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes);
     String expected = String.format("or(or(or(%1$s, %2$s), %3$s), %4$s)", conditions);
     assertEquals(expected, p.toString());
 
@@ -1280,8 +1292,12 @@ public class TestConvertAstToSearchArg {
     MessageType schema =
         MessageTypeParser.parseMessageType("message test { required int32 id;" +
             " required binary first_name; required binary last_name;}");
+    Map<String, TypeInfo> columnTypes = new HashMap<>();
+    columnTypes.put("id", TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    columnTypes.put("first_name", TypeInfoFactory.getPrimitiveTypeInfo("string"));
+    columnTypes.put("last_name", TypeInfoFactory.getPrimitiveTypeInfo("string"));
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes);
     String expected = String.format("and(and(and(%1$s, %2$s), %3$s), %4$s)", conditions);
     assertEquals(expected, p.toString());
 
@@ -1505,8 +1521,12 @@ public class TestConvertAstToSearchArg {
     MessageType schema =
         MessageTypeParser.parseMessageType("message test { required int32 id;" +
             " required binary first_name; }");
+    Map<String, TypeInfo> columnTypes = new HashMap<>();
+    columnTypes.put("id", TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    columnTypes.put("first_name", TypeInfoFactory.getPrimitiveTypeInfo("string"));
+
     FilterPredicate p =
-        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes);
     String expected = String.format("and(and(%1$s, %2$s), %3$s)", conditions);
     assertEquals(expected, p.toString());
 
@@ -1768,7 +1788,12 @@ public class TestConvertAstToSearchArg {
     MessageType schema =
         MessageTypeParser.parseMessageType("message test { required int32 id;" +
             " required binary first_name; }");
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+    Map<String, TypeInfo> columnTypes = new HashMap<>();
+    columnTypes.put("id", TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    columnTypes.put("first_name", TypeInfoFactory.getPrimitiveTypeInfo("string"));
+
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes
+        );
     String expected =
       "and(lteq(first_name, Binary{\"greg\"}), not(lt(first_name, Binary{\"david\"})))";
     assertEquals(p.toString(), expected);
@@ -2251,7 +2276,11 @@ public class TestConvertAstToSearchArg {
     MessageType schema =
         MessageTypeParser.parseMessageType("message test { required int32 id;" +
             " required binary first_name; }");
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+    Map<String, TypeInfo> columnTypes = new HashMap<>();
+    columnTypes.put("id", TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    columnTypes.put("first_name", TypeInfoFactory.getPrimitiveTypeInfo("string"));
+
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes);
     String expected = "and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(" +
       "or(or(or(lt(id, 18), lt(id, 10)), lt(id, 13)), lt(id, 16)), " +
       "or(or(or(lt(id, 18), lt(id, 11)), lt(id, 13)), lt(id, 16))), " +
@@ -2410,7 +2439,11 @@ public class TestConvertAstToSearchArg {
     MessageType schema =
         MessageTypeParser.parseMessageType("message test { required int32 id;" +
             " required binary first_name; }");
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+    Map<String, TypeInfo> columnTypes = new HashMap<>();
+    columnTypes.put("id", TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    columnTypes.put("first_name", TypeInfoFactory.getPrimitiveTypeInfo("string"));
+
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes);
     assertNull(p);
 
     assertEquals("YES_NO_NULL",
@@ -2668,7 +2701,11 @@ public class TestConvertAstToSearchArg {
     MessageType schema =
         MessageTypeParser.parseMessageType("message test { required int32 id;" +
             " required binary first_name; }");
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+    Map<String, TypeInfo> columnTypes = new HashMap<>();
+    columnTypes.put("id", TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    columnTypes.put("first_name", TypeInfoFactory.getPrimitiveTypeInfo("string"));
+
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes);
     String expected = "and(not(lt(id, 10)), not(lt(id, 10)))";
     assertEquals(expected, p.toString());
 
