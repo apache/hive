@@ -1178,6 +1178,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>de.skuzzle.enforcer</groupId>
+            <artifactId>restrict-imports-enforcer-rule</artifactId>
+            <version>0.9.0</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <id>enforce-no-snapshots</id>
@@ -1231,6 +1238,26 @@
                 </bannedDependencies>
               </rules>
               <fail>true</fail>
+            </configuration>
+          </execution>
+          <execution>
+            <id>check-banned-imports</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <restrictImports implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                  <reason>Do not use shaded imports</reason>
+                  <bannedImports>
+                    <bannedImport>**.shaded.**</bannedImport>
+                    <bannedImport>org.spark_project.guava.**</bannedImport>
+                    <bannedImport>jersey.repackaged.com.google.**</bannedImport>
+                  </bannedImports>
+                  <includeTestCode>true</includeTestCode>
+                </restrictImports>
+              </rules>
             </configuration>
           </execution>
         </executions>
