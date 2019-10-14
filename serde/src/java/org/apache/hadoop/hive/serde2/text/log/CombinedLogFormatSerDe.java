@@ -57,7 +57,7 @@ public class CombinedLogFormatSerDe extends AbstractRegexTextSerDe {
 
   private final static String LOG_REGEX =
       "^(\\S+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})\\] \"(.*)\" "
-          + "(\\d{3}) (\\S+) \"(\\S+)\" \"(.*)\"$";
+          + "(\\d{3}) (\\S+) \"(.*)\" \"(.*)\"$";
 
   private static final int EXPECTED_COL_COUNT = 9;
 

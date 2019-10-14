@@ -90,6 +90,9 @@ public abstract class AbstractRegexTextSerDe
           fields.add(group);
         }
       }
+    } else {
+      LOG.debug("Processed a blank line");
+      fields.addAll(Collections.nCopies(columnCount, null));
     }
 
     final int fieldCountDelta = getColumnNames().size() - fields.size();
