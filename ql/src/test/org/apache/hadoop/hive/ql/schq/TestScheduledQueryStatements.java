@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
@@ -61,8 +60,7 @@ public class TestScheduledQueryStatements {
         // @formatter:on
     };
     for (String cmd : cmds) {
-      int ret = driver.run(cmd).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run(cmd)
     }
 
     ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
@@ -78,69 +76,39 @@ public class TestScheduledQueryStatements {
   public static void dropTables(IDriver driver) throws Exception {
     String tables[] = { "tu" };
     for (String t : tables) {
-      int ret = driver.run("drop table if exists " + t).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run("drop table if exists " + t)
     }
   }
 
   @Test
   public void testSimpleCreate() throws ParseException, Exception {
     IDriver driver = createDriver();
-
-    CommandProcessorResponse ret;
-    ret = driver.run("create scheduled query simplecreate cron '* * * * * ? *' as select 1 from tu");
-    if (ret.getResponseCode() != 0) {
-      throw ret;
-    }
+    driver.run("create scheduled query simplecreate cron '* * * * * ? *' as select 1 from tu");
   }
 
-  @Test(expected = CommandProcessorResponse.class)
+  @Test(expected = CommandProcessorException.class)
   public void testNonExistentTable1() throws ParseException, Exception {
     IDriver driver = createDriver();
-    CommandProcessorResponse ret =
-        driver.run("create scheduled query nonexist cron '* * * * * ? *' as select 1 from nonexist");
-    if (ret.getResponseCode() != 0) {
-      throw ret;
-    }
+    driver.run("create scheduled query nonexist cron '* * * * * ? *' as select 1 from nonexist");
   }
 
-  @Test(expected = CommandProcessorResponse.class)
+  @Test(expected = CommandProcessorExcpetion.class)
   public void testNonExistentTable2() throws ParseException, Exception {
     IDriver driver = createDriver();
-
-    CommandProcessorResponse ret;
-    ret = driver.run("use asd");
-    if (ret.getResponseCode() != 0) {
-      fail("use database failed");
-    }
-
-    ret = driver.run("create scheduled query nonexist2 cron '* * * * * ? *' as select 1 from tu");
-    if (ret.getResponseCode() != 0) {
-      throw ret;
-    }
+    driver.run("use asd");
+    driver.run("create scheduled query nonexist2 cron '* * * * * ? *' as select 1 from tu");
   }
 
   @Test
   public void testCreateFromNonDefaultDatabase() throws ParseException, Exception {
     IDriver driver = createDriver();
 
-    CommandProcessorResponse ret;
-    ret = driver.run("use asd");
+    driver.run("use asd");
 
-    if (ret.getResponseCode() != 0) {
-      fail("use database failed");
-    }
+    driver.run("create table tt (a integer)");
 
-    ret = driver.run("create table tt (a integer)");
-    if (ret.getResponseCode() != 0) {
-      fail("create failed");
-    }
-
-    // the scheduled query may reference a table inside the current database; the 
-    ret = driver.run("create scheduled query nonDef cron '* * * * * ? *' as select 1 from tt");
-    if (ret.getResponseCode() != 0) {
-      fail("create failed");
-    }
+    // the scheduled query may reference a table inside the current database
+    driver.run("create scheduled query nonDef cron '* * * * * ? *' as select 1 from tt");
 
     try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
       Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("nonDef", "hive"));
@@ -150,28 +118,20 @@ public class TestScheduledQueryStatements {
 
   }
 
-  @Test
+  @Test(expected = CommandProcessorExcpetion.class)
   public void testDoubleCreate() throws ParseException, Exception {
     IDriver driver = createDriver();
-
-    CommandProcessorResponse ret;
-    ret = driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
-    assertEquals(0, ret.getResponseCode());
-    ret = driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
-    assertNotEquals("expected to fail", 0, ret.getResponseCode());
+    driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
+    driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
   }
 
   @Test
   public void testAlter() throws ParseException, Exception {
     IDriver driver = createDriver();
 
-    CommandProcessorResponse ret;
-    ret = driver.run("create scheduled query alter1 cron '* * * * * ? *' as select 1 from tu");
-    assertEquals(0, ret.getResponseCode());
-    ret = driver.run("alter scheduled query alter1 executed as 'user3'");
-    assertEquals(0, ret.getResponseCode());
-    ret = driver.run("alter scheduled query alter1 defined as select 22 from tu");
-    assertEquals(0, ret.getResponseCode());
+    driver.run("create scheduled query alter1 cron '* * * * * ? *' as select 1 from tu");
+    driver.run("alter scheduled query alter1 executed as 'user3'");
+    driver.run("alter scheduled query alter1 defined as select 22 from tu");
 
     try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
       Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("alter1", "hive"));
@@ -188,14 +148,9 @@ public class TestScheduledQueryStatements {
 
     setupAuthorization();
 
-    CommandProcessorResponse ret;
-    ret = driver.run("create table t1 (a integer)");
-    assertEquals(0, ret.getResponseCode());
-
+    driver.run("create table t1 (a integer)");
     conf.set("user.name", "user1");
-    ret = driver.run("drop table t1");
-    assertEquals(0, ret.getResponseCode());
-
+    driver.run("drop table t1");
   }
 
   private void setupAuthorization() {
