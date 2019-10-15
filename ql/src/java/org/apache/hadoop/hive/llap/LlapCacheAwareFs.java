@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.io.Allocator;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
@@ -61,7 +62,7 @@ public class LlapCacheAwareFs extends FileSystem {
       new ConcurrentHashMap<>();
 
   public static Path registerFile(DataCache cache, Path path, Object fileKey,
-      TreeMap<Long, Long> index, Configuration conf, String tag) throws IOException {
+      TreeMap<Long, Long> index, Configuration conf, CacheTag tag) throws IOException {
     long splitId = currentSplitId.incrementAndGet();
     CacheAwareInputStream stream = new CacheAwareInputStream(
         cache, conf, index, path, fileKey, -1, tag);
@@ -170,14 +171,14 @@ public class LlapCacheAwareFs extends FileSystem {
     private final TreeMap<Long, Long> chunkIndex;
     private final Path path;
     private final Object fileKey;
-    private final String tag;
+    private final CacheTag tag;
     private final Configuration conf;
     private final DataCache cache;
     private final int bufferSize;
     private long position = 0;
 
     public CacheAwareInputStream(DataCache cache, Configuration conf,
-        TreeMap<Long, Long> chunkIndex, Path path, Object fileKey, int bufferSize, String tag) {
+        TreeMap<Long, Long> chunkIndex, Path path, Object fileKey, int bufferSize, CacheTag tag) {
       this.cache = cache;
       this.fileKey = fileKey;
       this.chunkIndex = chunkIndex;
