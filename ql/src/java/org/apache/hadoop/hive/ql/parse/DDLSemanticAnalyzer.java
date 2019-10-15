@@ -62,9 +62,6 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.misc.CacheMetadataDesc;
-import org.apache.hadoop.hive.ql.ddl.misc.MsckDesc;
-import org.apache.hadoop.hive.ql.ddl.misc.ShowConfDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -266,7 +263,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // the user specified a catalog
       String catName = MetaStoreUtils.getDefaultCatalog(conf);
       String tableName = getDotName(qualified);
-      HashMap<String, String> partSpec = null;
+      Map<String, String> partSpec = null;
       ASTNode partSpecNode = (ASTNode)input.getChild(2);
       if (partSpecNode != null) {
         //  We can use alter table partition rename to convert/normalize the legacy partition
@@ -384,10 +381,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowDbLocks(ast);
       break;
-    case HiveParser.TOK_SHOWCONF:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowConf(ast);
-      break;
     case HiveParser.TOK_SHOWVIEWS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowViews(ast);
@@ -395,10 +388,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOWMATERIALIZEDVIEWS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowMaterializedViews(ast);
-      break;
-    case HiveParser.TOK_MSCK:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeMetastoreCheck(ast);
       break;
     case HiveParser.TOK_ALTERVIEW: {
       String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
@@ -430,33 +419,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_UNLOCKTABLE:
       analyzeUnlockTable(ast);
       break;
-   case HiveParser.TOK_CACHE_METADATA:
-     analyzeCacheMetadata(ast);
-     break;
    default:
       throw new SemanticException("Unsupported command: " + ast);
     }
     if (fetchTask != null && !rootTasks.isEmpty()) {
       rootTasks.get(rootTasks.size() - 1).setFetchSource(true);
     }
-  }
-
-  private void analyzeCacheMetadata(ASTNode ast) throws SemanticException {
-    Table tbl = AnalyzeCommandUtils.getTable(ast, this);
-    Map<String,String> partSpec = null;
-    CacheMetadataDesc desc;
-    // In 2 cases out of 3, we could pass the path and type directly to metastore...
-    if (AnalyzeCommandUtils.isPartitionLevelStats(ast)) {
-      partSpec = AnalyzeCommandUtils.getPartKeyValuePairsFromAST(tbl, ast, conf);
-      Partition part = getPartition(tbl, partSpec, true);
-      desc = new CacheMetadataDesc(tbl.getDbName(), tbl.getTableName(), part.getName());
-      inputs.add(new ReadEntity(part));
-    } else {
-      // Should we get all partitions for a partitioned table?
-      desc = new CacheMetadataDesc(tbl.getDbName(), tbl.getTableName(), tbl.isPartitioned());
-      inputs.add(new ReadEntity(tbl));
-    }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 
   private void analyzeAlterTableUpdateStats(ASTNode ast, String tblName, Map<String, String> partSpec)
@@ -871,7 +839,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
-  private void analyzeAlterTableProps(String[] qualified, HashMap<String, String> partSpec,
+  private void analyzeAlterTableProps(String[] qualified, Map<String, String> partSpec,
       ASTNode ast, boolean expectView, boolean isUnset) throws SemanticException {
 
     String tableName = getDotName(qualified);
@@ -1128,7 +1096,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeAlterTablePartMergeFiles(ASTNode ast,
-      String tableName, HashMap<String, String> partSpec)
+      String tableName, Map<String, String> partSpec)
       throws SemanticException {
 
     Path oldTblPartLoc = null;
@@ -1295,7 +1263,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeAlterTableCompact(ASTNode ast, String tableName,
-      HashMap<String, String> partSpec) throws SemanticException {
+      Map<String, String> partSpec) throws SemanticException {
 
     String type = unescapeSQLString(ast.getChild(0).getText()).toLowerCase();
 
@@ -1383,7 +1351,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeAlterTableUpdateColumns(ASTNode ast, String tableName,
-      HashMap<String, String> partSpec) throws SemanticException {
+      Map<String, String> partSpec) throws SemanticException {
 
     boolean isCascade = false;
     if (null != ast.getFirstChildWithType(HiveParser.TOK_CASCADE)) {
@@ -1500,7 +1468,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(e.getMessage(), e);
         }
 
-        HashMap<String, String> partSpec = null;
+        Map<String, String> partSpec = null;
         try {
           partSpec = getValidatedPartSpec(tab, partNode, db.getConf(), false);
         } catch (SemanticException e) {
@@ -1638,33 +1606,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.info("analyzeDescribeTable done");
   }
 
-  public static HashMap<String, String> getPartSpec(ASTNode partspec)
-      throws SemanticException {
-    if (partspec == null) {
-      return null;
-    }
-    HashMap<String, String> partSpec = new LinkedHashMap<String, String>();
-    for (int i = 0; i < partspec.getChildCount(); ++i) {
-      ASTNode partspec_val = (ASTNode) partspec.getChild(i);
-      String key = partspec_val.getChild(0).getText();
-      String val = null;
-      if (partspec_val.getChildCount() > 1) {
-        val = stripQuotes(partspec_val.getChild(1).getText());
-      }
-      partSpec.put(key.toLowerCase(), val);
-    }
-    return partSpec;
-  }
-
-  public static HashMap<String, String> getValidatedPartSpec(Table table, ASTNode astNode,
-      HiveConf conf, boolean shouldBeFull) throws SemanticException {
-    HashMap<String, String> partSpec = getPartSpec(astNode);
-    if (partSpec != null && !partSpec.isEmpty()) {
-      validatePartSpec(table, partSpec, astNode, conf, shouldBeFull);
-    }
-    return partSpec;
-  }
-
   private void analyzeShowPartitions(ASTNode ast) throws SemanticException {
     ShowPartitionsDesc showPartsDesc;
     String tableName = getUnescapedName((ASTNode) ast.getChild(0));
@@ -1779,7 +1720,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableNames = getUnescapedName((ASTNode) ast.getChild(0));
     String dbName = SessionState.get().getCurrentDatabase();
     int children = ast.getChildCount();
-    HashMap<String, String> partSpec = null;
+    Map<String, String> partSpec = null;
     if (children >= 2) {
       if (children > 3) {
         throw new SemanticException(ErrorMsg.INVALID_AST_TREE.getMsg());
@@ -1833,7 +1774,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void analyzeShowLocks(ASTNode ast) throws SemanticException {
     String tableName = null;
-    HashMap<String, String> partSpec = null;
+    Map<String, String> partSpec = null;
     boolean isExtended = false;
 
     if (ast.getChildCount() >= 1) {
@@ -1898,13 +1839,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);
-  }
-
-  private void analyzeShowConf(ASTNode ast) throws SemanticException {
-    String confName = stripQuotes(ast.getChild(0).getText());
-    ShowConfDesc showConfDesc = new ShowConfDesc(ctx.getResFile(), confName);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showConfDesc)));
-    setFetchTask(createFetchTask(ShowConfDesc.SCHEMA));
   }
 
   private void analyzeShowViews(ASTNode ast) throws SemanticException {
@@ -2011,17 +1945,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ctx.setNeedLockMgr(true);
   }
 
-  private String getHS2Host() throws SemanticException {
-    if (SessionState.get().isHiveServerQuery()) {
-      return SessionState.get().getHiveServer2Host();
-    }
-    if (conf.getBoolVar(ConfVars.HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE)) {
-      // dummy value for use in tests
-      return "dummyHostnameForTest";
-    }
-    throw new SemanticException("Kill query is only supported in HiveServer2 (not hive cli)");
-  }
-
   /**
    * Add the task according to the parsed command tree. This is used for the CLI
    * command "UNLOCK TABLE ..;".
@@ -2067,7 +1990,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeAlterTableRenameCol(String catName, String[] qualified, ASTNode ast,
-      HashMap<String, String> partSpec) throws SemanticException {
+      Map<String, String> partSpec) throws SemanticException {
     String newComment = null;
     boolean first = false;
     String flagCol = null;
@@ -2184,7 +2107,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeAlterTableRenamePart(ASTNode ast, String tblName,
-      HashMap<String, String> oldPartSpec) throws SemanticException {
+      Map<String, String> oldPartSpec) throws SemanticException {
     Table tab = getTable(tblName, true);
     validateAlterTableType(tab, AlterTableType.RENAMEPARTITION);
     Map<String, String> newPartSpec =
@@ -2631,112 +2554,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Check if MSCK is called to add partitions.
-   *
-   * @param keyWord
-   *   could be ADD, DROP or SYNC.  ADD or SYNC will indicate that add partition is on.
-   *
-   * @return true if add is on; false otherwise
-   */
-  private static boolean isMsckAddPartition(int keyWord) {
-    switch (keyWord) {
-    case HiveParser.KW_DROP:
-      return false;
-    case HiveParser.KW_SYNC:
-    case HiveParser.KW_ADD:
-    default:
-      return true;
-    }
-  }
-
-  /**
-   * Check if MSCK is called to drop partitions.
-   *
-   * @param keyWord
-   *   could be ADD, DROP or SYNC.  DROP or SYNC will indicate that drop partition is on.
-   *
-   * @return true if drop is on; false otherwise
-   */
-  private static boolean isMsckDropPartition(int keyWord) {
-    switch (keyWord) {
-    case HiveParser.KW_DROP:
-    case HiveParser.KW_SYNC:
-      return true;
-    case HiveParser.KW_ADD:
-    default:
-      return false;
-    }
-  }
-
-  /**
-   * Verify that the information in the metastore matches up with the data on
-   * the fs.
-   *
-   * @param ast
-   *          Query tree.
-   * @throws SemanticException
-   */
-  private void analyzeMetastoreCheck(CommonTree ast) throws SemanticException {
-    String tableName = null;
-
-    boolean addPartitions = true;
-    boolean dropPartitions = false;
-
-    boolean repair = false;
-    if (ast.getChildCount() > 0) {
-      repair = ast.getChild(0).getType() == HiveParser.KW_REPAIR;
-      if (!repair) {
-        tableName = getUnescapedName((ASTNode) ast.getChild(0));
-
-        if (ast.getChildCount() > 1) {
-          addPartitions = isMsckAddPartition(ast.getChild(1).getType());
-          dropPartitions = isMsckDropPartition(ast.getChild(1).getType());
-        }
-      } else if (ast.getChildCount() > 1) {
-        tableName = getUnescapedName((ASTNode) ast.getChild(1));
-
-        if (ast.getChildCount() > 2) {
-          addPartitions = isMsckAddPartition(ast.getChild(2).getType());
-          dropPartitions = isMsckDropPartition(ast.getChild(2).getType());
-        }
-      }
-    }
-    Table tab = getTable(tableName);
-    List<Map<String, String>> specs = getPartitionSpecs(tab, ast);
-    if (repair && AcidUtils.isTransactionalTable(tab)) {
-      outputs.add(new WriteEntity(tab, WriteType.DDL_EXCLUSIVE));
-    } else {
-      outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
-    }
-    MsckDesc checkDesc = new MsckDesc(tableName, specs, ctx.getResFile(), repair, addPartitions, dropPartitions);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), checkDesc)));
-  }
-
-  /**
-   * Get the partition specs from the tree.
-   *
-   * @param ast
-   *          Tree to extract partitions from.
-   * @return A list of partition name to value mappings.
-   * @throws SemanticException
-   */
-  private List<Map<String, String>> getPartitionSpecs(Table tbl, CommonTree ast)
-      throws SemanticException {
-    List<Map<String, String>> partSpecs = new ArrayList<Map<String, String>>();
-    int childIndex = 0;
-    // get partition metadata if partition specified
-    for (childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
-      ASTNode partSpecNode = (ASTNode)ast.getChild(childIndex);
-      // sanity check
-      if (partSpecNode.getType() == HiveParser.TOK_PARTSPEC) {
-        Map<String,String> partSpec = getValidatedPartSpec(tbl, partSpecNode, conf, false);
-        partSpecs.add(partSpec);
-      }
-    }
-    return partSpecs;
-  }
-
-  /**
    * Get the partition specs from the tree. This stores the full specification
    * with the comparator operator into the output list.
    *
@@ -3084,7 +2901,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private void analyzeAlterTableSkewedLocation(ASTNode ast, String tableName,
-      HashMap<String, String> partSpec) throws SemanticException {
+      Map<String, String> partSpec) throws SemanticException {
     /**
      * Throw an error if the user tries to use the DDL with
      * hive.internal.ddl.list.bucketing.enable set to false.
