@@ -4,4 +4,4 @@ TBLPROPERTIES ("kudu.table_name" = "default.kudu_kv")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@kv_table
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException java.io.IOException: Kudu master addresses are not specified with hive.kudu.master.addresses.default)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException java.io.IOException: Kudu master addresses are not specified in the table property (kudu.master_addresses), or default configuration (hive.kudu.master.addresses.default).)

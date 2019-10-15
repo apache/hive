@@ -141,7 +141,6 @@ public class TestObjectStore {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     setupRandomObjectStoreUrl();
-    Deadline.registerIfNot(100000);
 
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
@@ -342,14 +341,15 @@ public class TestObjectStore {
    * Tests partition operations
    */
   @Test
-  public void testPartitionOps() throws MetaException, InvalidObjectException,
-      NoSuchObjectException, InvalidInputException {
+  public void testPartitionOps() throws Exception {
     Database db1 = new DatabaseBuilder()
         .setName(DB1)
         .setDescription("description")
         .setLocation("locationurl")
         .build(conf);
-    objectStore.createDatabase(db1);
+    try (AutoCloseable c = deadline()) {
+      objectStore.createDatabase(db1);
+    }
     StorageDescriptor sd = createFakeSd("location");
     HashMap<String, String> tableParams = new HashMap<>();
     tableParams.put("EXTERNAL", "false");
@@ -358,38 +358,55 @@ public class TestObjectStore {
     Table tbl1 =
         new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2),
             tableParams, null, null, "MANAGED_TABLE");
-    objectStore.createTable(tbl1);
+    try (AutoCloseable c = deadline()) {
+      objectStore.createTable(tbl1);
+    }
     HashMap<String, String> partitionParams = new HashMap<>();
     partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
     List<String> value1 = Arrays.asList("US", "CA");
     Partition part1 = new Partition(value1, DB1, TABLE1, 111, 111, sd, partitionParams);
     part1.setCatName(DEFAULT_CATALOG_NAME);
-    objectStore.addPartition(part1);
+    try (AutoCloseable c = deadline()) {
+      objectStore.addPartition(part1);
+    }
     List<String> value2 = Arrays.asList("US", "MA");
     Partition part2 = new Partition(value2, DB1, TABLE1, 222, 222, sd, partitionParams);
     part2.setCatName(DEFAULT_CATALOG_NAME);
-    objectStore.addPartition(part2);
+    try (AutoCloseable c = deadline()) {
+      objectStore.addPartition(part2);
+    }
 
-    Deadline.startTimer("getPartition");
-    List<Partition> partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+    List<Partition> partitions;
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+    }
     Assert.assertEquals(2, partitions.size());
     Assert.assertEquals(111, partitions.get(0).getCreateTime());
     Assert.assertEquals(222, partitions.get(1).getCreateTime());
 
-    int numPartitions = objectStore.getNumPartitionsByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1, "");
+    int numPartitions;
+    try (AutoCloseable c = deadline()) {
+      numPartitions = objectStore.getNumPartitionsByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1, "");
+    }
     Assert.assertEquals(partitions.size(), numPartitions);
 
-    numPartitions = objectStore.getNumPartitionsByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country = \"US\"");
+    try (AutoCloseable c = deadline()) {
+      numPartitions = objectStore.getNumPartitionsByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country = \"US\"");
+    }
     Assert.assertEquals(2, numPartitions);
 
-    objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value1);
-    partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value1);
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+    }
     Assert.assertEquals(1, partitions.size());
     Assert.assertEquals(222, partitions.get(0).getCreateTime());
 
-    objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value2);
-    objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
-    objectStore.dropDatabase(db1.getCatalogName(), DB1);
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value2);
+      objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+      objectStore.dropDatabase(db1.getCatalogName(), DB1);
+    }
   }
 
   /**
@@ -460,77 +477,73 @@ public class TestObjectStore {
 
   /**
    * Checks if the JDO cache is able to handle directSQL partition drops in one session.
-   * @throws MetaException
-   * @throws InvalidObjectException
-   * @throws NoSuchObjectException
-   * @throws SQLException
    */
   @Test
   public void testDirectSQLDropPartitionsCacheInSession()
-      throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
+      throws Exception {
     createPartitionedTable(false, false);
     // query the partitions with JDO
-    Deadline.startTimer("getPartition");
-    List<Partition> partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-        10, false, true);
+    List<Partition> partitions;
+    try(AutoCloseable c =deadline()) {
+      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          10, false, true);
+    }
     Assert.assertEquals(3, partitions.size());
 
     // drop partitions with directSql
-    objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-        Arrays.asList("test_part_col=a0", "test_part_col=a1"), true, false);
-
-    // query the partitions with JDO, checking the cache is not causing any problem
-    partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-        10, false, true);
+    try(AutoCloseable c =deadline()) {
+      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1"), true, false);
+    }
+    try (AutoCloseable c = deadline()) {
+      // query the partitions with JDO, checking the cache is not causing any problem
+      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+    }
     Assert.assertEquals(1, partitions.size());
   }
 
   /**
    * Checks if the JDO cache is able to handle directSQL partition drops cross sessions.
-   * @throws MetaException
-   * @throws InvalidObjectException
-   * @throws NoSuchObjectException
-   * @throws SQLException
    */
   @Test
   public void testDirectSQLDropPartitionsCacheCrossSession()
-      throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
+      throws Exception {
     ObjectStore objectStore2 = new ObjectStore();
     objectStore2.setConf(conf);
 
     createPartitionedTable(false, false);
     // query the partitions with JDO in the 1st session
-    Deadline.startTimer("getPartition");
-    List<Partition> partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-        10, false, true);
+    List<Partition> partitions;
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+    }
     Assert.assertEquals(3, partitions.size());
 
     // query the partitions with JDO in the 2nd session
-    partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10,
-        false, true);
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+    }
     Assert.assertEquals(3, partitions.size());
 
     // drop partitions with directSql in the 1st session
-    objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-        Arrays.asList("test_part_col=a0", "test_part_col=a1"), true, false);
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1"), true, false);
+    }
 
     // query the partitions with JDO in the 2nd session, checking the cache is not causing any
     // problem
-    partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-        10, false, true);
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+    }
     Assert.assertEquals(1, partitions.size());
   }
 
   /**
    * Checks if the directSQL partition drop removes every connected data from the RDBMS tables.
-   * @throws MetaException
-   * @throws InvalidObjectException
-   * @throws NoSuchObjectException
-   * @throws SQLException
    */
   @Test
-  public void testDirectSQLDropParitionsCleanup() throws MetaException, InvalidObjectException,
-      NoSuchObjectException, SQLException, InvalidInputException {
+  public void testDirectSQLDropParitionsCleanup() throws Exception {
 
     createPartitionedTable(true, true);
 
@@ -550,9 +563,10 @@ public class TestObjectStore {
     checkBackendTableSize("SERDES", 4); // Table has a serde
 
     // drop the partitions
-    Deadline.startTimer("dropPartitions");
-    objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-        Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"), true, false);
+    try(AutoCloseable c =deadline()) {
+	    objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+	        Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"), true, false);
+    }
 
     // Check, if every data is dropped connected to the partitions
     checkBackendTableSize("PARTITIONS", 0);
@@ -574,17 +588,17 @@ public class TestObjectStore {
    * Creates DB1 database, TABLE1 table with 3 partitions.
    * @param withPrivileges Should we create privileges as well
    * @param withStatistics Should we create statitics as well
-   * @throws MetaException
-   * @throws InvalidObjectException
    */
   private void createPartitionedTable(boolean withPrivileges, boolean withStatistics)
-      throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
+      throws Exception {
     Database db1 = new DatabaseBuilder()
                        .setName(DB1)
                        .setDescription("description")
                        .setLocation("locationurl")
                        .build(conf);
-    objectStore.createDatabase(db1);
+    try (AutoCloseable c = deadline()) {
+      objectStore.createDatabase(db1);
+    }
     Table tbl1 =
         new TableBuilder()
             .setDbName(DB1)
@@ -596,8 +610,9 @@ public class TestObjectStore {
             .addCol("test_skewed_col", "int", "test skewed col comment")
             .addCol("test_sort_col", "int", "test sort col comment")
             .build(conf);
-    objectStore.createTable(tbl1);
-
+    try (AutoCloseable c = deadline()) {
+      objectStore.createTable(tbl1);
+    }
     PrivilegeBag privilegeBag = new PrivilegeBag();
     // Create partitions for the partitioned table
     for(int i=0; i < 3; i++) {
@@ -610,8 +625,9 @@ public class TestObjectStore {
                            .addSkewedColName("test_skewed_col")
                            .addSortCol("test_sort_col", 1)
                            .build(conf);
-      objectStore.addPartition(part);
-
+      try (AutoCloseable c = deadline()) {
+        objectStore.addPartition(part);
+      }
       if (withPrivileges) {
         HiveObjectRef partitionReference = new HiveObjectRefBuilder().buildPartitionReference(part);
         HiveObjectRef partitionColumnReference = new HiveObjectRefBuilder()
@@ -658,11 +674,15 @@ public class TestObjectStore {
         ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", "int", data);
         statsObjList.add(partStats);
 
-        objectStore.updatePartitionColumnStatistics(stats, part.getValues(), null, -1);
+        try (AutoCloseable c = deadline()) {
+          objectStore.updatePartitionColumnStatistics(stats, part.getValues(), null, -1);
+        }
       }
     }
     if (withPrivileges) {
-      objectStore.grantPrivileges(privilegeBag);
+      try (AutoCloseable c = deadline()) {
+        objectStore.grantPrivileges(privilegeBag);
+      }
     }
   }
 
@@ -779,7 +799,6 @@ public class TestObjectStore {
   private static void dropAllStoreObjects(RawStore store)
       throws MetaException, InvalidObjectException, InvalidInputException {
     try {
-      Deadline.registerIfNot(100000);
       List<Function> functions = store.getAllFunctions(DEFAULT_CATALOG_NAME);
       for (Function func : functions) {
         store.dropFunction(DEFAULT_CATALOG_NAME, func.getDbName(), func.getFunctionName());
@@ -789,7 +808,6 @@ public class TestObjectStore {
         for (String db : dbs) {
           List<String> tbls = store.getAllTables(DEFAULT_CATALOG_NAME, db);
           for (String tbl : tbls) {
-            Deadline.startTimer("getPartition");
             List<Partition> parts = store.getPartitions(DEFAULT_CATALOG_NAME, db, tbl, 100);
             for (Partition part : parts) {
               store.dropPartition(DEFAULT_CATALOG_NAME, db, tbl, part.getValues());
@@ -1029,6 +1047,9 @@ public class TestObjectStore {
     for (int i = 0; i < numThreads; i++) {
       final Random random = new Random();
       Configuration conf = MetastoreConf.newMetastoreConf();
+      // DN class initialization can reach a deadlock situation
+      // in case the one holding the write lock doesn't get a connection from the CP manager
+      conf.set(dataSourceProp, Integer.toString( 2 * numThreads ));
       MetaStoreTestUtils.setConfForStandloneMode(conf);
       results.add(executor.submit(new Callable<Void>() {
         @Override
@@ -1141,6 +1162,18 @@ public class TestObjectStore {
         .setLocation("/tmp")
         .build();
     objectStore.createCatalog(cat);
+  }
+
+  AutoCloseable deadline() throws Exception {
+    Deadline.registerIfNot(100_000);
+    Deadline.startTimer("some method");
+    return new AutoCloseable() {
+
+      @Override
+      public void close() throws Exception {
+        Deadline.stopTimer();
+      }
+    };
   }
 }
 

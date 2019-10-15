@@ -79,7 +79,7 @@ final class CreateDatabaseHook extends HCatSemanticAnalyzerBase {
 
   @Override
   public void postAnalyze(HiveSemanticAnalyzerHookContext context,
-              List<Task<? extends Serializable>> rootTasks) throws SemanticException {
+              List<Task<?>> rootTasks) throws SemanticException {
     context.getConf().set(HCatConstants.HCAT_CREATE_DB_NAME, databaseName);
     super.postAnalyze(context, rootTasks);
   }

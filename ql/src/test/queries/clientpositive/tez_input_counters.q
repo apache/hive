@@ -1,6 +1,5 @@
 --! qt:dataset:src
 set hive.compute.query.using.stats=false;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions=400;
 set hive.exec.max.dynamic.partitions.pernode=400;
 set hive.mapred.mode=nonstrict;

@@ -88,19 +88,19 @@ PREHOOK: Input: default@n_n0
 POSTHOOK: query: desc formatted n_n0 key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@n_n0
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
-max                 	0                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	500                 	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	FM                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	int                 
+min                 	0                   
+max                 	0                   
+num_nulls           	500                 
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	FM                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: create table i_n1(key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -191,19 +191,19 @@ PREHOOK: Input: default@i_n1
 POSTHOOK: query: desc formatted i_n1 key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i_n1
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
-max                 	498                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	196                 	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	FM                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	int                 
+min                 	0                   
+max                 	498                 
+num_nulls           	0                   
+distinct_count      	196                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	FM                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: drop table i_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i_n1
@@ -245,19 +245,19 @@ PREHOOK: Input: default@i_n1
 POSTHOOK: query: desc formatted i_n1 key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i_n1
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	double              	 	 	 	 	 	 	 	 	 	 
-min                 	0.0                 	 	 	 	 	 	 	 	 	 	 
-max                 	498.0               	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	234                 	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	FM                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	double              
+min                 	0.0                 
+max                 	498.0               
+num_nulls           	0                   
+distinct_count      	234                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	FM                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: drop table i_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i_n1
@@ -299,19 +299,19 @@ PREHOOK: Input: default@i_n1
 POSTHOOK: query: desc formatted i_n1 key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i_n1
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	decimal(10,0)       	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
-max                 	498                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	180                 	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	FM                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	decimal(10,0)       
+min                 	0                   
+max                 	498                 
+num_nulls           	0                   
+distinct_count      	180                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	FM                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: drop table i_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i_n1
@@ -389,16 +389,16 @@ PREHOOK: Input: default@i_n1
 POSTHOOK: query: desc formatted i_n1 key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i_n1
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	date                	 	 	 	 	 	 	 	 	 	 
-min                 	2012-03-17          	 	 	 	 	 	 	 	 	 	 
-max                 	2013-08-17          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	3                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	FM                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	date                
+min                 	2012-03-17          
+max                 	2013-08-17          
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	FM                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}

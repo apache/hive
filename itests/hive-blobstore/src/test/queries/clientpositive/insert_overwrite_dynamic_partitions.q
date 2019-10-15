@@ -1,5 +1,4 @@
 SET hive.blobstore.optimizations.enabled=true;
-SET hive.exec.dynamic.partition.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
 -- Single partition with buckets

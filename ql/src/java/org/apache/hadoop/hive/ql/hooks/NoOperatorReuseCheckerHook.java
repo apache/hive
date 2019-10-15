@@ -69,8 +69,8 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
 
     List<Node> rootOps = Lists.newArrayList();
 
-    List<Task<? extends Serializable>> roots = hookContext.getQueryPlan().getRootTasks();
-    for (Task<? extends Serializable> task : roots) {
+    List<Task<?>> roots = hookContext.getQueryPlan().getRootTasks();
+    for (Task<?> task : roots) {
 
       Object work = task.getWork();
       if (work instanceof MapredWork) {

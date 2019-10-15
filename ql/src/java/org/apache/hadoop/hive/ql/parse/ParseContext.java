@@ -24,8 +24,8 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
-import org.apache.hadoop.hive.ql.ddl.view.MaterializedViewUpdateDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.materialized.update.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -110,7 +110,7 @@ public class ParseContext {
   private GlobalLimitCtx globalLimitCtx;
 
   private Set<ReadEntity> semanticInputs;
-  private List<Task<? extends Serializable>> rootTasks;
+  private List<Task<?>> rootTasks;
 
   private FetchTask fetchTask;
   private QueryProperties queryProperties;
@@ -192,7 +192,7 @@ public class ParseContext {
       Map<TableScanOperator, SampleDesc> opToSamplePruner,
       GlobalLimitCtx globalLimitCtx,
       Map<String, SplitSample> nameToSplitSample,
-      Set<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks,
+      Set<ReadEntity> semanticInputs, List<Task<?>> rootTasks,
       Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner,
       Map<String, ReadEntity> viewAliasToInput,
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
@@ -508,8 +508,8 @@ public class ParseContext {
     return semanticInputs;
   }
 
-  public void replaceRootTask(Task<? extends Serializable> rootTask,
-                              List<? extends Task<? extends Serializable>> tasks) {
+  public void replaceRootTask(Task<?> rootTask,
+                              List<? extends Task<?>> tasks) {
     this.rootTasks.remove(rootTask);
     this.rootTasks.addAll(tasks);
   }

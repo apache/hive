@@ -43,7 +43,7 @@ import java.util.List;
 public class CreateDatabaseHandler extends AbstractMessageHandler {
 
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     MetaData metaData;
     try {

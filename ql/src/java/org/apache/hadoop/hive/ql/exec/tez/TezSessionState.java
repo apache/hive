@@ -321,7 +321,7 @@ public class TezSessionState {
 
     Credentials llapCredentials = null;
     if (llapMode) {
-      if (UserGroupInformation.isSecurityEnabled()) {
+      if (isKerberosEnabled(tezConfig)) {
         llapCredentials = new Credentials();
         llapCredentials.addToken(LlapTokenIdentifier.KIND_NAME, getLlapToken(user, tezConfig));
       }
@@ -390,6 +390,10 @@ public class TezSessionState {
       this.console = console;
       this.sessionFuture = sessionFuture;
     }
+  }
+
+  private boolean isKerberosEnabled(Configuration conf) {
+    return UserGroupInformation.isSecurityEnabled() && HiveConf.getBoolVar(conf, ConfVars.LLAP_USE_KERBEROS);
   }
 
   private static Token<LlapTokenIdentifier> getLlapToken(

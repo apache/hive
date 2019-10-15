@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -103,11 +104,11 @@ public final class TempTable {
     return checkPrivilegesForPartition(partition, userName, groupNames) ? partition : null;
   }
 
-  List<Partition> listPartitions() throws MetaException {
+  List<Partition> listPartitions() {
     return pTree.listPartitions();
   }
 
-  List<Partition> listPartitionsWithAuthInfo(String userName, List<String> groupNames) throws MetaException {
+  List<Partition> listPartitionsWithAuthInfo(String userName, List<String> groupNames) {
     List<Partition> partitions = listPartitions();
     List<Partition> result = new ArrayList<>();
     partitions.forEach(p -> {
@@ -130,7 +131,7 @@ public final class TempTable {
     return result;
   }
 
-  boolean checkPrivilegesForPartition(Partition partition, String userName, List<String> groupNames) {
+  private boolean checkPrivilegesForPartition(Partition partition, String userName, List<String> groupNames) {
     if ((userName == null || userName.isEmpty()) && (groupNames == null || groupNames.isEmpty())) {
       return true;
     }
@@ -162,7 +163,7 @@ public final class TempTable {
 
   Partition dropPartition(String partitionName) throws MetaException, NoSuchObjectException {
     Map<String, String> specFromName = makeSpecFromName(partitionName);
-    if (specFromName == null || specFromName.isEmpty()) {
+    if (specFromName.isEmpty()) {
       throw new NoSuchObjectException("Invalid partition name " + partitionName);
     }
     List<String> pVals = new ArrayList<>();
@@ -175,6 +176,20 @@ public final class TempTable {
       pVals.add(val);
     }
     return pTree.dropPartition(pVals);
+  }
+
+  void alterPartition(Partition partition) throws MetaException, InvalidOperationException, NoSuchObjectException {
+    pTree.alterPartition(partition.getValues(), partition, false);
+  }
+
+  void alterPartitions(List<Partition> newParts)
+      throws MetaException, InvalidOperationException, NoSuchObjectException {
+    pTree.alterPartitions(newParts);
+  }
+
+  void renamePartition(List<String> partitionVals, Partition newPart)
+      throws MetaException, InvalidOperationException, NoSuchObjectException {
+    pTree.renamePartition(partitionVals, newPart);
   }
 
 }

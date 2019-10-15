@@ -420,9 +420,14 @@ TOK_BLOCKING;
 TOK_KILL_QUERY;
 TOK_CREATE_RP;
 TOK_SHOW_RP;
-TOK_ALTER_RP;
+TOK_ALTER_RP_ENABLE;
+TOK_ALTER_RP_DISABLE;
+TOK_ALTER_RP_RENAME;
+TOK_ALTER_RP_SET;
+TOK_ALTER_RP_UNSET;
+TOK_ALTER_RP_REPLACE;
+TOK_ALTER_RP_VALIDATE;
 TOK_DROP_RP;
-TOK_VALIDATE;
 TOK_ACTIVATE;
 TOK_QUERY_PARALLELISM;
 TOK_RENAME;
@@ -433,6 +438,8 @@ TOK_DROP_TRIGGER;
 TOK_TRIGGER_EXPRESSION;
 TOK_CREATE_POOL;
 TOK_ALTER_POOL;
+TOK_ALTER_POOL_ADD_TRIGGER;
+TOK_ALTER_POOL_DROP_TRIGGER;
 TOK_DROP_POOL;
 TOK_ALLOC_FRACTION;
 TOK_SCHEDULING_POLICY;
@@ -445,6 +452,7 @@ TOK_REPLACE;
 TOK_LIKERP;
 TOK_UNMANAGED;
 TOK_INPUTFORMAT;
+TOK_WITHIN_GROUP;
 TOK_CRON;
 TOK_EXECUTED_AS;
 }
@@ -1182,8 +1190,7 @@ alterStatement
 @after { popMsg(state); }
     : KW_ALTER KW_TABLE tableName alterTableStatementSuffix -> ^(TOK_ALTERTABLE tableName alterTableStatementSuffix)
     | KW_ALTER KW_VIEW tableName KW_AS? alterViewStatementSuffix -> ^(TOK_ALTERVIEW tableName alterViewStatementSuffix)
-    | KW_ALTER KW_MATERIALIZED KW_VIEW tableName alterMaterializedViewStatementSuffix
-    -> ^(TOK_ALTER_MATERIALIZED_VIEW tableName alterMaterializedViewStatementSuffix)
+    | KW_ALTER KW_MATERIALIZED KW_VIEW tableNameTree=tableName alterMaterializedViewStatementSuffix[$tableNameTree.tree] -> alterMaterializedViewStatementSuffix
     | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
     ;
 
@@ -1243,11 +1250,24 @@ alterViewStatementSuffix
     | selectStatementWithCTE
     ;
 
-alterMaterializedViewStatementSuffix
+alterMaterializedViewStatementSuffix[CommonTree tableNameTree]
 @init { pushMsg("alter materialized view statement", state); }
 @after { popMsg(state); }
-    : alterMaterializedViewSuffixRewrite
-    | alterMaterializedViewSuffixRebuild
+    : alterMaterializedViewSuffixRewrite[tableNameTree]
+    | alterMaterializedViewSuffixRebuild[tableNameTree]
+    ;
+
+alterMaterializedViewSuffixRewrite[CommonTree tableNameTree]
+@init { pushMsg("alter materialized view rewrite statement", state); }
+@after { popMsg(state); }
+    : (mvRewriteFlag=rewriteEnabled | mvRewriteFlag=rewriteDisabled)
+    -> ^(TOK_ALTER_MATERIALIZED_VIEW_REWRITE {$tableNameTree} $mvRewriteFlag)
+    ;
+
+alterMaterializedViewSuffixRebuild[CommonTree tableNameTree]
+@init { pushMsg("alter materialized view rebuild statement", state); }
+@after { popMsg(state); }
+    : KW_REBUILD -> ^(TOK_ALTER_MATERIALIZED_VIEW_REBUILD {$tableNameTree})
     ;
 
 alterDatabaseStatementSuffix
@@ -1410,19 +1430,6 @@ alterViewSuffixProperties
     -> ^(TOK_ALTERVIEW_PROPERTIES tableProperties)
     | KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
     -> ^(TOK_ALTERVIEW_DROPPROPERTIES tableProperties ifExists?)
-    ;
-
-alterMaterializedViewSuffixRewrite
-@init { pushMsg("alter materialized view rewrite statement", state); }
-@after { popMsg(state); }
-    : (mvRewriteFlag=rewriteEnabled | mvRewriteFlag=rewriteDisabled)
-    -> ^(TOK_ALTER_MATERIALIZED_VIEW_REWRITE $mvRewriteFlag)
-    ;
-
-alterMaterializedViewSuffixRebuild
-@init { pushMsg("alter materialized view rebuild statement", state); }
-@after { popMsg(state); }
-    : KW_REBUILD -> ^(TOK_ALTER_MATERIALIZED_VIEW_REBUILD)
     ;
 
 alterStatementSuffixSerdeProperties[boolean partition]
@@ -2536,9 +2543,7 @@ columnNameOrder
 @init { pushMsg("column name order", state); }
 @after { popMsg(state); }
     : identifier orderSpec=orderSpecification? nullSpec=nullOrdering?
-    -> {$orderSpec.tree == null && $nullSpec.tree == null && nullsLast()}?
-            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_LAST identifier))
-    -> {$orderSpec.tree == null && $nullSpec.tree == null && !nullsLast()}?
+    -> {$orderSpec.tree == null && $nullSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST identifier))
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec identifier))

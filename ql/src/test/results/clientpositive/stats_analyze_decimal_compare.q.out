@@ -30,16 +30,16 @@ PREHOOK: Input: default@stats_analyze_decimal_compare
 POSTHOOK: query: desc formatted stats_analyze_decimal_compare a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_analyze_decimal_compare
-col_name            	a                   	 	 	 	 	 	 	 	 	 	 
-data_type           	decimal(10,0)       	 	 	 	 	 	 	 	 	 	 
-min                 	5                   	 	 	 	 	 	 	 	 	 	 
-max                 	10                  	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	2                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	a                   
+data_type           	decimal(10,0)       
+min                 	5                   
+max                 	10                  
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}

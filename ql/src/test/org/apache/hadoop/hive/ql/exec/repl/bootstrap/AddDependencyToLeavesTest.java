@@ -53,21 +53,21 @@ public class AddDependencyToLeavesTest {
     Task<DependencyCollectionWork> collectionWorkTaskThree =
         TaskFactory.get(new DependencyCollectionWork());
 
-    @SuppressWarnings("unchecked") Task<? extends Serializable> rootTask = mock(Task.class);
+    @SuppressWarnings("unchecked") Task<?> rootTask = mock(Task.class);
     when(rootTask.getDependentTasks())
         .thenReturn(
             Arrays.asList(collectionWorkTaskOne, collectionWorkTaskTwo, collectionWorkTaskThree));
-    @SuppressWarnings("unchecked") List<Task<? extends Serializable>> tasksPostCurrentGraph =
+    @SuppressWarnings("unchecked") List<Task<?>> tasksPostCurrentGraph =
         Arrays.asList(mock(Task.class), mock(Task.class));
 
     DAGTraversal.traverse(Collections.singletonList(rootTask),
         new AddDependencyToLeaves(tasksPostCurrentGraph));
 
-    List<Task<? extends Serializable>> dependentTasksForOne =
+    List<Task<?>> dependentTasksForOne =
         collectionWorkTaskOne.getDependentTasks();
-    List<Task<? extends Serializable>> dependentTasksForTwo =
+    List<Task<?>> dependentTasksForTwo =
         collectionWorkTaskTwo.getDependentTasks();
-    List<Task<? extends Serializable>> dependentTasksForThree =
+    List<Task<?>> dependentTasksForThree =
         collectionWorkTaskThree.getDependentTasks();
 
     assertEquals(dependentTasksForOne.size(), 2);

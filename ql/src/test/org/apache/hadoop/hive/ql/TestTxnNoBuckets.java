@@ -28,10 +28,9 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -199,7 +198,6 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
 
   @Test
   public void testNoBucketsDP() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     int[][] sourceVals1 = {{0,0,0},{3,3,3}};
     int[][] sourceVals2 = {{1,1,1},{2,2,2}};
     int[][] sourceVals3 = {{3,3,3},{4,4,4}};
@@ -352,13 +350,13 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("create table T (a int, b int) stored as ORC  TBLPROPERTIES ('transactional'='true')");
 
-    CommandProcessorResponse cpr = runStatementOnDriverNegative(
+    CommandProcessorException e = runStatementOnDriverNegative(
         "insert overwrite table T select a, b from " + TxnCommandsBaseForTests.Table.ACIDTBL +
             " where a between 1 and 3 group by a, b union all select a, b from " +
             TxnCommandsBaseForTests.Table.ACIDTBL +
             " where a between 5 and 7 union all select a, b from " +
             TxnCommandsBaseForTests.Table.ACIDTBL + " where a >= 9");
-    Assert.assertTrue("", cpr.getErrorMessage().contains("not supported due to OVERWRITE and UNION ALL"));
+    Assert.assertTrue("", e.getErrorMessage().contains("not supported due to OVERWRITE and UNION ALL"));
   }
   /**
    * The idea here is to create a non acid table that was written by multiple writers, i.e.
@@ -629,12 +627,12 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
   @Test
   public void testCtasBucketed() throws Exception {
     runStatementOnDriver("insert into " + Table.NONACIDNONBUCKET + "(a,b) values(1,2),(1,3)");
-    CommandProcessorResponse cpr = runStatementOnDriverNegative("create table myctas " +
+    CommandProcessorException e = runStatementOnDriverNegative("create table myctas " +
       "clustered by (a) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true') as " +
       "select a, b from " + Table.NONACIDORCTBL);
-    int j = ErrorMsg.CTAS_PARCOL_COEXISTENCE.getErrorCode(); //this code doesn't propagate
+    ErrorMsg.CTAS_PARCOL_COEXISTENCE.getErrorCode(); //this code doesn't propagate
 //    Assert.assertEquals("Wrong msg", ErrorMsg.CTAS_PARCOL_COEXISTENCE.getErrorCode(), cpr.getErrorCode());
-    Assert.assertTrue(cpr.getErrorMessage().contains("CREATE-TABLE-AS-SELECT does not support"));
+    Assert.assertTrue(e.getErrorMessage().contains("CREATE-TABLE-AS-SELECT does not support"));
   }
   /**
    * Currently CTAS doesn't support partitioned tables.  Correspondingly Acid only supports CTAS for
@@ -644,11 +642,11 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
   @Test
   public void testCtasPartitioned() throws Exception {
     runStatementOnDriver("insert into " + Table.NONACIDNONBUCKET + "(a,b) values(1,2),(1,3)");
-    CommandProcessorResponse cpr = runStatementOnDriverNegative("create table myctas partitioned " +
+    CommandProcessorException e = runStatementOnDriverNegative("create table myctas partitioned " +
         "by (b int) stored as " +
         "ORC TBLPROPERTIES ('transactional'='true') as select a, b from " + Table.NONACIDORCTBL);
-    int j = ErrorMsg.CTAS_PARCOL_COEXISTENCE.getErrorCode();//this code doesn't propagate
-    Assert.assertTrue(cpr.getErrorMessage().contains("CREATE-TABLE-AS-SELECT does not support " +
+    ErrorMsg.CTAS_PARCOL_COEXISTENCE.getErrorCode(); //this code doesn't propagate
+    Assert.assertTrue(e.getErrorMessage().contains("CREATE-TABLE-AS-SELECT does not support " +
         "partitioning in the target table"));
   }
   /**
@@ -768,7 +766,6 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
    */
   @Test
   public void testCompactStatsGather() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     hiveConf.setIntVar(HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, -1);
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("create table T(a int, b int) partitioned by (p int, q int) " +

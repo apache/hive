@@ -222,6 +222,7 @@ STAGE PLANS:
                   key expressions: _col4 (type: tinyint), _col0 (type: smallint)
                   sort order: ++
                   Map-reduce partition columns: _col4 (type: tinyint)
+                  Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: int), _col2 (type: bigint), _col3 (type: float)
         Reducer 3 
             Execution mode: llap
@@ -360,6 +361,7 @@ STAGE PLANS:
                     key expressions: _col4 (type: tinyint)
                     sort order: +
                     Map-reduce partition columns: _col4 (type: tinyint)
+                    Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float)
         Reducer 3 
             Execution mode: llap
@@ -459,6 +461,7 @@ STAGE PLANS:
                         key expressions: _col4 (type: tinyint), _bucket_number (type: string), _col0 (type: smallint)
                         sort order: +++
                         Map-reduce partition columns: _col4 (type: tinyint)
+                        Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int), _col2 (type: bigint), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -539,6 +542,7 @@ STAGE PLANS:
                         key expressions: _col4 (type: tinyint), _bucket_number (type: string), _col3 (type: float)
                         sort order: +++
                         Map-reduce partition columns: _col4 (type: tinyint)
+                        Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -720,6 +724,7 @@ STAGE PLANS:
                   key expressions: _col4 (type: tinyint), _col0 (type: smallint)
                   sort order: ++
                   Map-reduce partition columns: _col4 (type: tinyint)
+                  Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: int), _col2 (type: bigint), _col3 (type: float)
         Reducer 3 
             Execution mode: llap
@@ -858,6 +863,7 @@ STAGE PLANS:
                     key expressions: _col4 (type: tinyint)
                     sort order: +
                     Map-reduce partition columns: _col4 (type: tinyint)
+                    Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float)
         Reducer 3 
             Execution mode: llap
@@ -957,6 +963,7 @@ STAGE PLANS:
                         key expressions: _col4 (type: tinyint), _bucket_number (type: string), _col0 (type: smallint)
                         sort order: +++
                         Map-reduce partition columns: _col4 (type: tinyint)
+                        Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int), _col2 (type: bigint), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1037,6 +1044,7 @@ STAGE PLANS:
                         key expressions: _col4 (type: tinyint), _bucket_number (type: string), _col3 (type: float)
                         sort order: +++
                         Map-reduce partition columns: _col4 (type: tinyint)
+                        Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1723,6 +1731,7 @@ STAGE PLANS:
                   key expressions: _col4 (type: tinyint), _col1 (type: int)
                   sort order: ++
                   Map-reduce partition columns: _col4 (type: tinyint)
+                  Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: smallint), _col2 (type: bigint), _col3 (type: float)
         Reducer 3 
             Execution mode: llap
@@ -1862,6 +1871,7 @@ STAGE PLANS:
                         key expressions: _col4 (type: tinyint)
                         sort order: +
                         Map-reduce partition columns: _col4 (type: tinyint)
+                        Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float)
         Reducer 3 
             Execution mode: llap
@@ -2640,6 +2650,7 @@ STAGE PLANS:
                         key expressions: _col4 (type: tinyint), _bucket_number (type: string), _col3 (type: float)
                         sort order: +++
                         Map-reduce partition columns: _col4 (type: tinyint)
+                        Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3217,6 +3228,7 @@ STAGE PLANS:
                     key expressions: _col2 (type: string), _bucket_number (type: string), _col1 (type: smallint)
                     sort order: +++
                     Map-reduce partition columns: _col2 (type: string)
+                    Statistics: Num rows: 10 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: int)
         Reducer 3 
             Execution mode: vectorized, llap

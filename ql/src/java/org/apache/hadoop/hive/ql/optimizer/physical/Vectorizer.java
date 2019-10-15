@@ -989,7 +989,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
-      Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
+      Task<?> currTask = (Task<?>) nd;
       if (currTask instanceof MapRedTask) {
         MapredWork mapredWork = ((MapRedTask) currTask).getWork();
 

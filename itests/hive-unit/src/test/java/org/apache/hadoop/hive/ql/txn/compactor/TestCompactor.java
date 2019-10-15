@@ -79,7 +79,6 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.Retry;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -141,7 +140,6 @@ public class TestCompactor {
     hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
 
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.cleanDb(hiveConf);
@@ -1751,10 +1749,7 @@ public class TestCompactor {
    */
   static void executeStatementOnDriver(String cmd, IDriver driver) throws Exception {
     LOG.debug("Executing: " + cmd);
-    CommandProcessorResponse cpr = driver.run(cmd);
-    if (cpr.getResponseCode() != 0) {
-      throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + cpr);
-    }
+    driver.run(cmd);
   }
 
   static void createTestDataFile(String filename, String[] lines) throws IOException {

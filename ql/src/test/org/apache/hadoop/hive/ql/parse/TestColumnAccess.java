@@ -39,12 +39,9 @@ public class TestColumnAccess {
   @BeforeClass
   public static void Setup() throws Exception {
     Driver driver = createDriver();
-    int ret = driver.run("create table t1(id1 int, name1 string)").getResponseCode();
-    Assert.assertEquals("Checking command success", 0, ret);
-    ret = driver.run("create table t2(id2 int, id1 int, name2 string)").getResponseCode();
-    Assert.assertEquals("Checking command success", 0, ret);
-    ret = driver.run("create view v1 as select * from t1").getResponseCode();
-    Assert.assertEquals("Checking command success", 0, ret);
+    driver.run("create table t1(id1 int, name1 string)");
+    driver.run("create table t2(id2 int, id1 int, name2 string)");
+    driver.run("create view v1 as select * from t1");
   }
 
   @AfterClass

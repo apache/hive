@@ -15,7 +15,6 @@ into 256 buckets stored as textfile;
 load data local inpath '../../data/files/sortdp/000000_0' overwrite into table t1_staging partition (e='epart');
 
 set hive.optimize.sort.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 
 
@@ -44,7 +43,6 @@ select 'bucket_8';
 dfs -cat ${hiveconf:hive.metastore.warehouse.dir}/t1_n147/e=epart/000008_0;
 
 set hive.optimize.sort.dynamic.partition=false;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 
 
@@ -75,7 +73,6 @@ dfs -cat ${hiveconf:hive.metastore.warehouse.dir}/t1_n147/e=epart/000008_0;
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.stats.autogather=false;
 
 CREATE TABLE dynpart_sort_opt_bucketing_test (ca_address_sk int, ca_address_id string, ca_street_number string, ca_street_name string,

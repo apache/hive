@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class AddNotNullConstraintHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     AddNotNullConstraintMessage msg = deserializer.getAddNotNullConstraintMessage(context.dmd.getPayload());
 
@@ -48,7 +48,7 @@ public class AddNotNullConstraintHandler extends AbstractMessageHandler {
       }
     }
 
-    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> tasks = new ArrayList<Task<?>>();
     if (nns.isEmpty()) {
       return tasks;
     }

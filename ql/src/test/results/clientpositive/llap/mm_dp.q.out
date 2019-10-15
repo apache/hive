@@ -149,6 +149,7 @@ STAGE PLANS:
                       key expressions: _col3 (type: string), _bucket_number (type: string), _col2 (type: int)
                       sort order: +++
                       Map-reduce partition columns: _col3 (type: string)
+                      Statistics: Num rows: 2605 Data size: 268315 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs

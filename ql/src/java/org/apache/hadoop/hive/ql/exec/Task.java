@@ -64,8 +64,8 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected transient DriverContext driverContext;
   protected transient boolean clonedConf = false;
   protected transient String jobID;
-  protected Task<? extends Serializable> backupTask;
-  protected List<Task<? extends Serializable>> backupChildrenTasks = new ArrayList<Task<? extends Serializable>>();
+  protected Task<?> backupTask;
+  protected List<Task<?>> backupChildrenTasks = new ArrayList<Task<?>>();
   protected static transient Logger LOG = LoggerFactory.getLogger(Task.class);
   protected int taskTag;
   private boolean isLocalMode =false;
@@ -84,7 +84,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public static final int CONVERTED_SORTMERGEJOIN = 8;
   public QueryDisplay queryDisplay = null;
   // Descendants tasks who subscribe feeds from this task
-  protected transient List<Task<? extends Serializable>> feedSubscribers;
+  protected transient List<Task<?>> feedSubscribers;
 
   protected String id;
   protected T work;
@@ -138,8 +138,8 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   protected boolean rootTask;
 
-  protected List<Task<? extends Serializable>> childTasks;
-  protected List<Task<? extends Serializable>> parentTasks;
+  protected List<Task<?>> childTasks;
+  protected List<Task<?>> parentTasks;
   /**
    * this can be set by the Task, to provide more info about the failure in TaskResult
    * where the Driver can find it.  This is checked if {@link Task#execute(org.apache.hadoop.hive.ql.DriverContext)}
@@ -235,7 +235,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     this.rootTask = rootTask;
   }
 
-  public void setChildTasks(List<Task<? extends Serializable>> childTasks) {
+  public void setChildTasks(List<Task<?>> childTasks) {
     this.childTasks = childTasks;
   }
 
@@ -244,7 +244,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return getChildTasks();
   }
 
-  public List<Task<? extends Serializable>> getChildTasks() {
+  public List<Task<?>> getChildTasks() {
     return childTasks;
   }
 
@@ -252,11 +252,11 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return childTasks == null ? 0 : childTasks.size();
   }
 
-  public void setParentTasks(List<Task<? extends Serializable>> parentTasks) {
+  public void setParentTasks(List<Task<?>> parentTasks) {
     this.parentTasks = parentTasks;
   }
 
-  public List<Task<? extends Serializable>> getParentTasks() {
+  public List<Task<?>> getParentTasks() {
     return parentTasks;
   }
 
@@ -264,27 +264,27 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return parentTasks == null ? 0 : parentTasks.size();
   }
 
-  public Task<? extends Serializable> getBackupTask() {
+  public Task<?> getBackupTask() {
     return backupTask;
   }
 
-  public void setBackupTask(Task<? extends Serializable> backupTask) {
+  public void setBackupTask(Task<?> backupTask) {
     this.backupTask = backupTask;
   }
 
-  public List<Task<? extends Serializable>> getBackupChildrenTasks() {
+  public List<Task<?>> getBackupChildrenTasks() {
     return backupChildrenTasks;
   }
 
-  public void setBackupChildrenTasks(List<Task<? extends Serializable>> backupChildrenTasks) {
+  public void setBackupChildrenTasks(List<Task<?>> backupChildrenTasks) {
     this.backupChildrenTasks = backupChildrenTasks;
   }
 
-  public Task<? extends Serializable> getAndInitBackupTask() {
+  public Task<?> getAndInitBackupTask() {
     if (backupTask != null) {
       // first set back the backup task with its children task.
       if( backupChildrenTasks!= null) {
-        for (Task<? extends Serializable> backupChild : backupChildrenTasks) {
+        for (Task<?> backupChild : backupChildrenTasks) {
           backupChild.getParentTasks().add(backupTask);
         }
       }
@@ -297,17 +297,17 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public void removeFromChildrenTasks() {
 
-    List<Task<? extends Serializable>> childrenTasks = this.getChildTasks();
+    List<Task<?>> childrenTasks = this.getChildTasks();
     if (childrenTasks == null) {
       return;
     }
 
-    for (Task<? extends Serializable> childTsk : childrenTasks) {
+    for (Task<?> childTsk : childrenTasks) {
       // remove this task from its children tasks
       childTsk.getParentTasks().remove(this);
 
       // recursively remove non-parent task from its children
-      List<Task<? extends Serializable>> siblingTasks = childTsk.getParentTasks();
+      List<Task<?>> siblingTasks = childTsk.getParentTasks();
       if (siblingTasks == null || siblingTasks.size() == 0) {
         childTsk.removeFromChildrenTasks();
       }
@@ -321,7 +321,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
    *
    * @return a list of tasks that are dependent on this task.
    */
-  public List<Task<? extends Serializable>> getDependentTasks() {
+  public List<Task<?>> getDependentTasks() {
     return getChildTasks();
   }
 
@@ -331,16 +331,16 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
    *
    * @return true if the task got added false if it already existed
    */
-  public boolean addDependentTask(Task<? extends Serializable> dependent) {
+  public boolean addDependentTask(Task<?> dependent) {
     boolean ret = false;
     if (getChildTasks() == null) {
-      setChildTasks(new ArrayList<Task<? extends Serializable>>());
+      setChildTasks(new ArrayList<Task<?>>());
     }
     if (!getChildTasks().contains(dependent)) {
       ret = true;
       getChildTasks().add(dependent);
       if (dependent.getParentTasks() == null) {
-        dependent.setParentTasks(new ArrayList<Task<? extends Serializable>>());
+        dependent.setParentTasks(new ArrayList<Task<?>>());
       }
       if (!dependent.getParentTasks().contains(this)) {
         dependent.getParentTasks().add(this);
@@ -350,7 +350,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  public static List<Task<? extends Serializable>>
+  public static List<Task<?>>
       findLeafs(List<Task<? extends Serializable>> rootTasks) {
     final List<Task<? extends Serializable>> leafTasks = new ArrayList<Task<?>>();
 
@@ -372,7 +372,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
    * @param dependent
    *          the task to remove
    */
-  public void removeDependentTask(Task<? extends Serializable> dependent) {
+  public void removeDependentTask(Task<?> dependent) {
     if ((getChildTasks() != null) && (getChildTasks().contains(dependent))) {
       getChildTasks().remove(dependent);
       if ((dependent.getParentTasks() != null) && (dependent.getParentTasks().contains(this))) {
@@ -421,7 +421,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public boolean isRunnable() {
     boolean isrunnable = true;
     if (parentTasks != null) {
-      for (Task<? extends Serializable> parent : parentTasks) {
+      for (Task<?> parent : parentTasks) {
         if (!parent.done()) {
           isrunnable = false;
           break;
@@ -509,23 +509,23 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
    * @param publisher
    *          this feed provider.
    */
-  public void subscribeFeed(Task<? extends Serializable> publisher) {
+  public void subscribeFeed(Task<?> publisher) {
     if (publisher != this && publisher.ancestorOrSelf(this)) {
       if (publisher.getFeedSubscribers() == null) {
-        publisher.setFeedSubscribers(new LinkedList<Task<? extends Serializable>>());
+        publisher.setFeedSubscribers(new LinkedList<Task<?>>());
       }
       publisher.getFeedSubscribers().add(this);
     }
   }
 
   // return true if this task is an ancestor of itself of parameter desc
-  private boolean ancestorOrSelf(Task<? extends Serializable> desc) {
+  private boolean ancestorOrSelf(Task<?> desc) {
     if (this == desc) {
       return true;
     }
-    List<Task<? extends Serializable>> deps = getDependentTasks();
+    List<Task<?>> deps = getDependentTasks();
     if (deps != null) {
-      for (Task<? extends Serializable> d : deps) {
+      for (Task<?> d : deps) {
         if (d.ancestorOrSelf(desc)) {
           return true;
         }
@@ -534,18 +534,18 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return false;
   }
 
-  public List<Task<? extends Serializable>> getFeedSubscribers() {
+  public List<Task<?>> getFeedSubscribers() {
     return feedSubscribers;
   }
 
-  public void setFeedSubscribers(List<Task<? extends Serializable>> s) {
+  public void setFeedSubscribers(List<Task<?>> s) {
     feedSubscribers = s;
   }
 
   // push the feed to its subscribers
   protected void pushFeed(FeedType feedType, Object feedValue) {
     if (feedSubscribers != null) {
-      for (Task<? extends Serializable> s : feedSubscribers) {
+      for (Task<?> s : feedSubscribers) {
         s.receiveFeed(feedType, feedValue);
       }
     }

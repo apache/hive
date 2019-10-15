@@ -20,17 +20,14 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.util.Map;
 
-
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 /**
@@ -39,27 +36,34 @@ import org.junit.Test;
 public class TestSemanticAnalyzerHookLoading {
 
   @Test
-  public void testHookLoading() throws Exception{
+  public void testHookLoading() throws Exception {
 
     HiveConf conf = new HiveConf(this.getClass());
     conf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname, DummySemanticAnalyzerHook.class.getName());
     conf.set(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(conf);
-    IDriver driver = DriverFactory.newDriver(conf);
 
-    driver.run("drop table testDL");
-    CommandProcessorResponse resp = driver.run("create table testDL (a int) as select * from tbl2");
-    assertEquals(40000, resp.getResponseCode());
+    run("drop table testDL", conf);
+    try {
+      run("create table testDL (a int) as select * from tbl2", conf);
+      assert false;
+    } catch (CommandProcessorException e) {
+      assertEquals(40000, e.getResponseCode());
+    }
 
-    resp = driver.run("create table testDL (a int)");
-    assertEquals(0, resp.getResponseCode());
-    assertNull(resp.getErrorMessage());
+    run("create table testDL (a int)", conf);
 
     Map<String,String> params = Hive.get(conf).getTable(Warehouse.DEFAULT_DATABASE_NAME, "testDL").getParameters();
 
     assertEquals(DummyCreateTableHook.class.getName(),params.get("createdBy"));
     assertEquals("Open Source rocks!!", params.get("Message"));
 
-    driver.run("drop table testDL");
+    run("drop table testDL", conf);
+  }
+
+  private void run(String command, HiveConf conf) throws CommandProcessorException {
+    try (IDriver driver = DriverFactory.newDriver(conf)) {
+      driver.run(command);
+    }
   }
 }

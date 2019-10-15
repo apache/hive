@@ -54,6 +54,9 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
 
   @Explain(skipHeader = true, displayName = "Statistics", explainLevels = { Level.USER })
   public String getUserLevelStatistics() {
+    if (statistics == null) {
+      return null;
+    }
     return statistics.toUserLevelExplainString();
   }
 
@@ -143,6 +146,9 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
 
   @Explain(displayName = "columnExprMap", jsonOnly = true)
   public Map<String, String> getColumnExprMapForExplain() {
+    if (this.colExprMap == null) {
+      return null;
+    }
     Map<String, String> colExprMapForExplain = new HashMap<>();
     for(String col:this.colExprMap.keySet()) {
       colExprMapForExplain.put(col, this.colExprMap.get(col).getExprString());

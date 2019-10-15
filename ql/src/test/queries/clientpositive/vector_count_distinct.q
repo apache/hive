@@ -90,7 +90,6 @@ partitioned by
 stored as orc
 tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384");
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 insert overwrite table web_sales
 partition (ws_web_site_sk)

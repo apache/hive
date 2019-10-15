@@ -85,7 +85,7 @@ public class LoadConstraint {
       String fksString = json.getString("fks");
       String uksString = json.getString("uks");
       String nnsString = json.getString("nns");
-      List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
+      List<Task<?>> tasks = new ArrayList<Task<?>>();
 
       if (pksString != null && !pksString.isEmpty() && !isPrimaryKeysAlreadyLoaded(pksString)) {
         AddPrimaryKeyHandler pkHandler = new AddPrimaryKeyHandler();

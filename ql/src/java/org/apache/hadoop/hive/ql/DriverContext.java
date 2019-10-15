@@ -54,7 +54,7 @@ public class DriverContext {
 
   private static final int SLEEP_TIME = 2000;
 
-  private Queue<Task<? extends Serializable>> runnable;
+  private Queue<Task<?>> runnable;
   private Queue<TaskRunner> running;
 
   // how many jobs have been started
@@ -69,7 +69,7 @@ public class DriverContext {
   }
 
   public DriverContext(Context ctx) {
-    this.runnable = new ConcurrentLinkedQueue<Task<? extends Serializable>>();
+    this.runnable = new ConcurrentLinkedQueue<Task<?>>();
     this.running = new LinkedBlockingQueue<TaskRunner>();
     this.ctx = ctx;
   }
@@ -82,7 +82,7 @@ public class DriverContext {
     return !shutdown && (!running.isEmpty() || !runnable.isEmpty());
   }
 
-  public synchronized void remove(Task<? extends Serializable> task) {
+  public synchronized void remove(Task<?> task) {
     runnable.remove(task);
   }
 
@@ -91,7 +91,7 @@ public class DriverContext {
     running.add(runner);
   }
 
-  public synchronized Task<? extends Serializable> getRunnable(int maxthreads) throws HiveException {
+  public synchronized Task<?> getRunnable(int maxthreads) throws HiveException {
     checkShutdown();
     if (runnable.peek() != null && running.size() < maxthreads) {
       return runnable.remove();
@@ -161,13 +161,13 @@ public class DriverContext {
    * @return true if the task is launchable, false otherwise
    */
 
-  public static boolean isLaunchable(Task<? extends Serializable> tsk) {
+  public static boolean isLaunchable(Task<?> tsk) {
     // A launchable task is one that hasn't been queued, hasn't been
     // initialized, and is runnable.
     return tsk.isNotInitialized() && tsk.isRunnable();
   }
 
-  public synchronized boolean addToRunnable(Task<? extends Serializable> tsk) throws HiveException {
+  public synchronized boolean addToRunnable(Task<?> tsk) throws HiveException {
     if (runnable.contains(tsk)) {
       return false;
     }

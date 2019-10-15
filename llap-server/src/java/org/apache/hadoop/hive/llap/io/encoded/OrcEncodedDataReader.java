@@ -23,6 +23,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.Allocator.BufferObjectFactory;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
@@ -41,7 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
-import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
@@ -70,6 +72,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.Reader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.FixedSizedObjectPool;
@@ -167,7 +170,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private EncodedReader stripeReader;
   private CompressionCodec codec;
   private Object fileKey;
-  private final String cacheTag;
+  private final CacheTag cacheTag;
+  private final Map<Path, PartitionDesc> parts;
 
   private Utilities.SupplierWithCheckedException<FileSystem, IOException> fsSupplier;
 
@@ -187,7 +191,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   public OrcEncodedDataReader(LowLevelCache lowLevelCache, BufferUsageManager bufferManager,
       MetadataCache metadataCache, Configuration daemonConf, Configuration jobConf,
       FileSplit split, Includes includes, SearchArgument sarg, OrcEncodedDataConsumer consumer,
-      QueryFragmentCounters counters, SchemaEvolutionFactory sef, Pool<IoTrace> tracePool)
+      QueryFragmentCounters counters, SchemaEvolutionFactory sef, Pool<IoTrace> tracePool,
+      Map<Path, PartitionDesc> parts)
           throws IOException {
     this.lowLevelCache = lowLevelCache;
     this.metadataCache = metadataCache;
@@ -199,6 +204,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     this.counters = counters;
     this.trace = tracePool.take();
     this.tracePool = tracePool;
+    this.parts = parts;
     try {
       this.ugi = UserGroupInformation.getCurrentUser();
     } catch (IOException e) {
@@ -210,7 +216,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // LlapInputFormat needs to know the file schema to decide if schema evolution is supported.
     orcReader = null;
     cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)
-        ? LlapUtil.getDbAndTableNameForMetrics(split.getPath(), true) : null;
+        ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, parts) : null;
     // 1. Get file metadata from cache, or create the reader and read it.
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
     fsSupplier = Utilities.getFsSupplier(split.getPath(), jobConf);
@@ -278,7 +284,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       return null;
     }
     counters.setDesc(QueryFragmentCounters.Desc.TABLE,
-        LlapUtil.getDbAndTableNameForMetrics(split.getPath(), false));
+        LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), false, parts));
     counters.setDesc(QueryFragmentCounters.Desc.FILE, split.getPath()
         + (fileKey == null ? "" : " (" + fileKey + ")"));
     try {
@@ -927,7 +933,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     @Override
     public long[] putFileData(Object fileKey, DiskRange[] ranges,
-        MemoryBuffer[] data, long baseOffset, String tag) {
+        MemoryBuffer[] data, long baseOffset, CacheTag tag) {
       if (data != null) {
         return lowLevelCache.putFileData(
             fileKey, ranges, data, baseOffset, Priority.NORMAL, counters, tag);

@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 
@@ -78,7 +77,6 @@ public class BaseReplicationScenariosAcidTables {
       put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
       put("hive.metastore.client.capability.check", "false");
       put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
       put("hive.strict.checks.bucketing", "false");
       put("hive.mapred.mode", "nonstrict");
       put("mapred.input.dir.recursive", "true");
@@ -226,10 +224,7 @@ public class BaseReplicationScenariosAcidTables {
   }
 
   private void runUsingDriver(IDriver driver, String command) throws Throwable {
-    CommandProcessorResponse ret = driver.run(command);
-    if (ret.getException() != null) {
-      throw ret.getException();
-    }
+    driver.run(command);
   }
 
   void prepareInc2AcidData(String dbName, HiveConf hiveConf) throws Throwable {

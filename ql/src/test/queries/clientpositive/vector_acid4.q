@@ -2,7 +2,6 @@
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 set hive.vectorized.execution.enabled=true;
 set hive.compute.query.using.stats=false;

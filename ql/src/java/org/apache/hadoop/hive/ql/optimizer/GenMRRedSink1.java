@@ -61,7 +61,7 @@ public class GenMRRedSink1 implements NodeProcessor {
     Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(stack.get(stack.size() - 2));
-    Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
+    Task<?> currTask = mapredCtx.getCurrTask();
     MapredWork currPlan = (MapredWork) currTask.getWork();
     String currAliasId = mapredCtx.getCurrAliasId();
 
@@ -70,7 +70,7 @@ public class GenMRRedSink1 implements NodeProcessor {
           "But found multiple children : " + op.getChildOperators());
     }
     Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
-    Task<? extends Serializable> oldTask = ctx.getOpTaskMap().get(reducer);
+    Task<?> oldTask = ctx.getOpTaskMap().get(reducer);
 
     ctx.setCurrAliasId(currAliasId);
     ctx.setCurrTask(currTask);

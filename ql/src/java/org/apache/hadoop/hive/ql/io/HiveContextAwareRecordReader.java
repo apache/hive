@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -340,7 +341,7 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
           part = null;
         }
         TableDesc table = (part == null) ? null : part.getTableDesc();
-        if (table != null) {
+        if (table != null && !TextInputFormat.class.isAssignableFrom(part.getInputFileFormatClass())) {
           headerCount = Utilities.getHeaderCount(table);
           footerCount = Utilities.getFooterCount(table, jobConf);
         }
