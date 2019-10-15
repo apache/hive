@@ -66,15 +66,16 @@ public final class KuduHiveUtils {
   }
 
   public static String getMasterAddresses(Configuration conf) throws IOException {
-    // Load the default configuration.
-    String masterAddresses = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_KUDU_MASTER_ADDRESSES_DEFAULT);
+    // Use the table property if it exists.
+    String masterAddresses = conf.get(KUDU_MASTER_ADDRS_KEY);
     if (StringUtils.isEmpty(masterAddresses)) {
-      throw new IOException("Kudu master addresses are not specified with " +
-          HiveConf.ConfVars.HIVE_KUDU_MASTER_ADDRESSES_DEFAULT.varname);
+      // Fall back to the default configuration.
+      masterAddresses = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_KUDU_MASTER_ADDRESSES_DEFAULT);
     }
-    // Override with the table configuration if it exists.
-    if (!StringUtils.isEmpty(conf.get(KUDU_MASTER_ADDRS_KEY))) {
-      masterAddresses = conf.get(KUDU_MASTER_ADDRS_KEY);
+    if (StringUtils.isEmpty(masterAddresses)) {
+      throw new IOException("Kudu master addresses are not specified in the table property (" +
+          KUDU_MASTER_ADDRS_KEY + "), or default configuration (" +
+          HiveConf.ConfVars.HIVE_KUDU_MASTER_ADDRESSES_DEFAULT.varname + ").");
     }
     return masterAddresses;
   }
