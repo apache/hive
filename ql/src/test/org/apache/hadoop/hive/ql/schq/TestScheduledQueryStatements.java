@@ -60,7 +60,7 @@ public class TestScheduledQueryStatements {
         // @formatter:on
     };
     for (String cmd : cmds) {
-      driver.run(cmd)
+      driver.run(cmd);
     }
 
     ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
@@ -76,7 +76,7 @@ public class TestScheduledQueryStatements {
   public static void dropTables(IDriver driver) throws Exception {
     String tables[] = { "tu" };
     for (String t : tables) {
-      driver.run("drop table if exists " + t)
+      driver.run("drop table if exists " + t);
     }
   }
 
