@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.ddl.misc;
+package org.apache.hadoop.hive.ql.ddl.misc.msck;
 
 import java.io.Serializable;
 import java.util.List;
