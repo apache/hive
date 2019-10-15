@@ -165,7 +165,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name	f
 data_type	float
-min	45454.3984375
+min	45454.30078125
 max	45454.3984375
 num_nulls	1
 distinct_count	2
@@ -184,7 +184,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name	d
 data_type	double
-min	454.6565
+min	454.6564
 max	454.6565
 num_nulls	1
 distinct_count	2
@@ -564,14 +564,14 @@ PREHOOK: Input: default@datatype_stats_n0
 POSTHOOK: query: DESC FORMATTED datatype_stats_n0 f
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
-{"columns":[{"name":"f","type":"float","comment":"from deserializer","min":45454.3984375,"max":45454.3984375,"numNulls":1,"distinctCount":2}]}
+{"columns":[{"name":"f","type":"float","comment":"from deserializer","min":45454.30078125,"max":45454.3984375,"numNulls":1,"distinctCount":2}]}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats_n0
 POSTHOOK: query: DESC FORMATTED datatype_stats_n0 d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
-{"columns":[{"name":"d","type":"double","comment":"from deserializer","min":454.6565,"max":454.6565,"numNulls":1,"distinctCount":2}]}
+{"columns":[{"name":"d","type":"double","comment":"from deserializer","min":454.6564,"max":454.6565,"numNulls":1,"distinctCount":2}]}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats_n0
