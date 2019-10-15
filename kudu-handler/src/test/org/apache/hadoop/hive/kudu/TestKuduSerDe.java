@@ -152,7 +152,7 @@ public class TestKuduSerDe {
       fail("Should fail on missing table");
     } catch (SerDeException ex) {
       assertThat(ex.getMessage(),
-          containsString("Kudu master addresses are not specified with hive.kudu.master.addresses.default"));
+          containsString("Kudu master addresses are not specified in the table property"));
     }
   }
 
