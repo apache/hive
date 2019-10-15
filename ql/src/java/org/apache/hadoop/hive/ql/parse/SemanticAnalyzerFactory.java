@@ -122,7 +122,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_LOCKTABLE:
       case HiveParser.TOK_UNLOCKTABLE:
       case HiveParser.TOK_TRUNCATETABLE:
-      case HiveParser.TOK_CACHE_METADATA:
         return new DDLSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_ANALYZE:

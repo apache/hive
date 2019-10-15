@@ -15,9 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.ddl.misc.show.conf;
 
-package org.apache.hadoop.hive.ql.ddl.misc;
-
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -25,20 +25,29 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import java.io.Serializable;
 
 /**
- * Remove the flag from db property if its already present.
+ * DDL task description for SHOW CONF commands.
  */
-@Explain(displayName = "Set First Incr Load Pend Flag", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ReplRemoveFirstIncLoadPendFlagDesc implements DDLDesc, Serializable {
+@Explain(displayName = "Show Configuration", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ShowConfDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final String databaseName;
+  public static final String SCHEMA = "default,type,desc#string,string,string";
 
-  public ReplRemoveFirstIncLoadPendFlagDesc(String databaseName) {
-    this.databaseName = databaseName;
+  private Path resFile;
+  private String confName;
+
+  public ShowConfDesc(Path resFile, String confName) {
+    this.resFile = resFile;
+    this.confName = confName;
   }
 
-  @Explain(displayName="db name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getDatabaseName() {
-    return databaseName;
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
+  public Path getResFile() {
+    return resFile;
+  }
+
+  @Explain(displayName = "conf name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getConfName() {
+    return confName;
   }
 }

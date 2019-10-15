@@ -15,39 +15,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.ddl.misc;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
+package org.apache.hadoop.hive.ql.ddl.misc.insert.commit.hook;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 /**
- * DDL task description for SHOW CONF commands.
+ * DDL task description for Inserting Commit Hooks.
  */
-@Explain(displayName = "Show Configuration", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ShowConfDesc implements DDLDesc, Serializable {
+@Explain(displayName = "Commit Insert Hook", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class InsertCommitHookDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  public static final String SCHEMA = "default,type,desc#string,string,string";
+  private final Table table;
+  private final boolean overwrite;
 
-  private Path resFile;
-  private String confName;
-
-  public ShowConfDesc(Path resFile, String confName) {
-    this.resFile = resFile;
-    this.confName = confName;
+  public InsertCommitHookDesc(Table table, boolean overwrite) {
+    this.table = table;
+    this.overwrite = overwrite;
   }
 
-  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
-  public Path getResFile() {
-    return resFile;
+  public Table getTable() {
+    return table;
   }
 
-  @Explain(displayName = "conf name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getConfName() {
-    return confName;
+  @Explain(displayName = "is overwrite", displayOnlyOnTrue = true,
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean isOverwrite() {
+    return overwrite;
   }
 }

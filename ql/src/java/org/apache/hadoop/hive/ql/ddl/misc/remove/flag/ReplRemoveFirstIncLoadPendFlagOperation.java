@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.misc;
+package org.apache.hadoop.hive.ql.ddl.misc.remove.flag;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;

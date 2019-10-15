@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -37,6 +36,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -2009,6 +2009,58 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
     return result;
+  }
+
+  /**
+   * Get the partition specs from the tree.
+   *
+   * @param ast
+   *          Tree to extract partitions from.
+   * @return A list of partition name to value mappings.
+   * @throws SemanticException
+   */
+  public List<Map<String, String>> getPartitionSpecs(Table tbl, CommonTree ast)
+      throws SemanticException {
+    List<Map<String, String>> partSpecs = new ArrayList<Map<String, String>>();
+    int childIndex = 0;
+    // get partition metadata if partition specified
+    for (childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
+      ASTNode partSpecNode = (ASTNode)ast.getChild(childIndex);
+      // sanity check
+      if (partSpecNode.getType() == HiveParser.TOK_PARTSPEC) {
+        Map<String, String> partSpec = getValidatedPartSpec(tbl, partSpecNode, conf, false);
+        partSpecs.add(partSpec);
+      }
+    }
+    return partSpecs;
+  }
+
+  public static Map<String, String> getValidatedPartSpec(Table table, ASTNode astNode,
+      HiveConf conf, boolean shouldBeFull) throws SemanticException {
+    Map<String, String> partSpec = getPartSpec(astNode);
+    if (partSpec != null && !partSpec.isEmpty()) {
+      validatePartSpec(table, partSpec, astNode, conf, shouldBeFull);
+    }
+    return partSpec;
+  }
+
+  public static Map<String, String> getPartSpec(ASTNode node)
+      throws SemanticException {
+    if (node == null) {
+      return null;
+    }
+
+    Map<String, String> partSpec = new LinkedHashMap<String, String>();
+    for (int i = 0; i < node.getChildCount(); ++i) {
+      ASTNode child = (ASTNode) node.getChild(i);
+      String key = child.getChild(0).getText();
+      String val = null;
+      if (child.getChildCount() > 1) {
+        val = stripQuotes(child.getChild(1).getText());
+      }
+      partSpec.put(key.toLowerCase(), val);
+    }
+    return partSpec;
   }
 
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,

@@ -16,37 +16,29 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.misc;
-
-import java.io.Serializable;
+package org.apache.hadoop.hive.ql.ddl.misc.remove.flag;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
+import java.io.Serializable;
+
 /**
- * DDL task description for Inserting Commit Hooks.
+ * Remove the flag from db property if its already present.
  */
-@Explain(displayName = "Commit Insert Hook", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class InsertCommitHookDesc implements DDLDesc, Serializable {
+@Explain(displayName = "Set First Incr Load Pend Flag", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ReplRemoveFirstIncLoadPendFlagDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final Table table;
-  private final boolean overwrite;
+  private final String databaseName;
 
-  public InsertCommitHookDesc(Table table, boolean overwrite) {
-    this.table = table;
-    this.overwrite = overwrite;
+  public ReplRemoveFirstIncLoadPendFlagDesc(String databaseName) {
+    this.databaseName = databaseName;
   }
 
-  public Table getTable() {
-    return table;
-  }
-
-  @Explain(displayName = "is overwrite", displayOnlyOnTrue = true,
-      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public boolean isOverwrite() {
-    return overwrite;
+  @Explain(displayName="db name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getDatabaseName() {
+    return databaseName;
   }
 }

@@ -16,27 +16,38 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.misc;
+package org.apache.hadoop.hive.ql.ddl.misc.insert.commit.hook;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 
-import java.io.IOException;
-
+import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * Operation process of caching the metadata.
+ * Operation process of inserting a commit hook.
  */
-public class CacheMetadataOperation extends DDLOperation<CacheMetadataDesc> {
-  public CacheMetadataOperation(DDLOperationContext context, CacheMetadataDesc desc) {
+public class InsertCommitHookOperation extends DDLOperation<InsertCommitHookDesc> {
+  public InsertCommitHookOperation(DDLOperationContext context, InsertCommitHookDesc desc) {
     super(context, desc);
   }
 
   @Override
-  public int execute() throws HiveException, IOException {
-    context.getDb().cacheFileMetadata(desc.getDbName(), desc.getTableName(), desc.getPartitionName(),
-        desc.isAllPartitions());
+  public int execute() throws MetaException {
+    HiveMetaHook hook = desc.getTable().getStorageHandler().getMetaHook();
+    if (hook == null || !(hook instanceof DefaultHiveMetaHook)) {
+      return 0;
+    }
+    DefaultHiveMetaHook hiveMetaHook = (DefaultHiveMetaHook) hook;
+
+    try {
+      hiveMetaHook.commitInsertTable(desc.getTable().getTTable(), desc.isOverwrite());
+    } catch (Throwable t) {
+      hiveMetaHook.rollbackInsertTable(desc.getTable().getTTable(), desc.isOverwrite());
+      throw t;
+    }
+
     return 0;
   }
 }
