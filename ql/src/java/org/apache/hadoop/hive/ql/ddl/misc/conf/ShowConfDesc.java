@@ -15,38 +15,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.ddl.misc.conf;
 
-package org.apache.hadoop.hive.ql.ddl.misc;
-
-import java.io.Serializable;
-
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
+import java.io.Serializable;
+
 /**
- * DDL task description for Inserting Commit Hooks.
+ * DDL task description for SHOW CONF commands.
  */
-@Explain(displayName = "Commit Insert Hook", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class InsertCommitHookDesc implements DDLDesc, Serializable {
+@Explain(displayName = "Show Configuration", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ShowConfDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final Table table;
-  private final boolean overwrite;
+  public static final String SCHEMA = "default,type,desc#string,string,string";
 
-  public InsertCommitHookDesc(Table table, boolean overwrite) {
-    this.table = table;
-    this.overwrite = overwrite;
+  private Path resFile;
+  private String confName;
+
+  public ShowConfDesc(Path resFile, String confName) {
+    this.resFile = resFile;
+    this.confName = confName;
   }
 
-  public Table getTable() {
-    return table;
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
+  public Path getResFile() {
+    return resFile;
   }
 
-  @Explain(displayName = "is overwrite", displayOnlyOnTrue = true,
-      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public boolean isOverwrite() {
-    return overwrite;
+  @Explain(displayName = "conf name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getConfName() {
+    return confName;
   }
 }

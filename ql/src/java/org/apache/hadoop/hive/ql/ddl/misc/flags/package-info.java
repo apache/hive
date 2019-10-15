@@ -16,27 +16,5 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.misc;
-
-import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-
-import java.io.IOException;
-
-import org.apache.hadoop.hive.ql.ddl.DDLOperation;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-
-/**
- * Operation process of caching the metadata.
- */
-public class CacheMetadataOperation extends DDLOperation<CacheMetadataDesc> {
-  public CacheMetadataOperation(DDLOperationContext context, CacheMetadataDesc desc) {
-    super(context, desc);
-  }
-
-  @Override
-  public int execute() throws HiveException, IOException {
-    context.getDb().cacheFileMetadata(desc.getDbName(), desc.getTableName(), desc.getPartitionName(),
-        desc.isAllPartitions());
-    return 0;
-  }
-}
+/** Remove the flag from db property if its already present operation. */
+package org.apache.hadoop.hive.ql.ddl.misc.flags;
