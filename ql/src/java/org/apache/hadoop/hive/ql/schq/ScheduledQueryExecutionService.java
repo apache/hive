@@ -12,7 +12,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,11 +92,7 @@ public class ScheduledQueryExecutionService implements Closeable {
         try (
           IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(context.conf), q.getUser(), null)) {
           info.setExecutorQueryId(driver.getQueryState().getQueryId());
-          CommandProcessorResponse resp;
-          resp = driver.run(q.getQuery());
-          if (resp.getResponseCode() != 0) {
-            throw resp;
-          }
+          driver.run(q.getQuery());
           info.setState(QueryState.FINISHED);
         }
       } catch (Throwable t) {
@@ -118,8 +114,8 @@ public class ScheduledQueryExecutionService implements Closeable {
     }
 
     private String getErrorStringForException(Throwable t) {
-      if (t instanceof CommandProcessorResponse) {
-        CommandProcessorResponse cpr = (CommandProcessorResponse) t;
+      if (t instanceof CommandProcessorException) {
+        CommandProcessorException cpr = (CommandProcessorException) t;
         return String.format("%s", cpr.getErrorMessage());
       } else {
         return String.format("%s: %s", t.getClass().getName(), t.getMessage());
