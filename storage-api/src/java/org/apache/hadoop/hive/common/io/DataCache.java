@@ -110,5 +110,5 @@ public interface DataCache {
    *         the replacement chunks from cache are updated directly in the array.
    */
   long[] putFileData(Object fileKey, DiskRange[] ranges,
-      MemoryBuffer[] data, long baseOffset, String tag);
+      MemoryBuffer[] data, long baseOffset, CacheTag tag);
 }
