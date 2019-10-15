@@ -39,20 +39,21 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <!-- inter-project -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <scope>provided</scope>
       <version>${hadoop.version}</version>
+      <scope>provided</scope>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <scope>provided</scope>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
       <version>${hadoop.version}</version>
+      <scope>provided</scope>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -150,6 +151,62 @@
         <!-- Kudu tests do not support Windows. -->
         <exclude.tests>**/*.java</exclude.tests>
       </properties>
+    </profile>
+    <profile>
+      <id>dev-fast-build</id>
+      <activation>
+        <property>
+          <name>skipShade</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>${maven.shade.plugin.version}</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>shade</goal>
+                </goals>
+                <configuration>
+                  <createDependencyReducedPom>false</createDependencyReducedPom>
+                  <artifactSet>
+                    <includes>
+                      <include>org.apache.kudu:kudu-client</include>
+                      <include>com.stumbleupon:async</include>
+                    </includes>
+                  </artifactSet>
+                  <relocations>
+                    <relocation>
+                      <pattern>org.apache.kudu</pattern>
+                      <shadedPattern>org.apache.hive.kudu.org.apache.kudu</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>com.stumbleupon.async</pattern>
+                      <shadedPattern>org.apache.hive.kudu.com.stumbleupon.async</shadedPattern>
+                    </relocation>
+                  </relocations>
+                  <filters>
+                    <filter>
+                      <artifact>*:*</artifact>
+                      <excludes>
+                        <exclude>META-INF/*.SF</exclude>
+                        <exclude>META-INF/*.DSA</exclude>
+                        <exclude>META-INF/*.RSA</exclude>
+                        <exclude>static/</exclude>
+                      </excludes>
+                    </filter>
+                  </filters>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

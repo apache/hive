@@ -42,10 +42,10 @@ public interface FileMetadataCache {
 
   @Deprecated
   MemoryBufferOrBuffers putFileMetadata(
-      Object fileKey, int length, InputStream is, String tag) throws IOException;
+      Object fileKey, int length, InputStream is, CacheTag tag) throws IOException;
 
   @Deprecated
-  MemoryBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer, String tag);
+  MemoryBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer, CacheTag tag);
 
   /**
    * Releases the buffer returned from getFileMetadata or putFileMetadata method.
@@ -61,8 +61,8 @@ public interface FileMetadataCache {
    *         The caller must decref this buffer when done.
    */
   MemoryBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer,
-      String tag, AtomicBoolean isStopped);
+      CacheTag tag, AtomicBoolean isStopped);
 
   MemoryBufferOrBuffers putFileMetadata(Object fileKey, int length,
-      InputStream is, String tag, AtomicBoolean isStopped) throws IOException;
+      InputStream is, CacheTag tag, AtomicBoolean isStopped) throws IOException;
 }

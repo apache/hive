@@ -153,7 +153,7 @@ STAGE PLANS:
   Stage: Stage-5
     Materialized View Update
       name: default.partition_mv_1
-      retrieveAndInclude: true
+      retrieve and include: true
 
 PREHOOK: query: CREATE MATERIALIZED VIEW partition_mv_1 PARTITIONED ON (key) AS
 SELECT value, key FROM src_txn where key > 200 and key < 250
@@ -733,7 +733,7 @@ STAGE PLANS:
   Stage: Stage-4
     Materialized View Update
       name: default.partition_mv_1
-      updateCreationMetadata: true
+      update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW partition_mv_1 REBUILD
 PREHOOK: type: QUERY
@@ -1107,7 +1107,7 @@ STAGE PLANS:
   Stage: Stage-4
     Materialized View Update
       name: default.partition_mv_3
-      updateCreationMetadata: true
+      update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW partition_mv_3 REBUILD
 PREHOOK: type: QUERY

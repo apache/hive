@@ -6,7 +6,6 @@ SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET hive.optimize.ppd=true;
 SET mapred.min.split.size=1000;
 SET mapred.max.split.size=5000;
-set hive.parquet.timestamp.skip.conversion=false;
 
 create table newtypestbl_n3(c char(10), v varchar(10), d decimal(5,3), da date) stored as parquet;
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.view;
+package org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rewrite;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.common.StatsSetupConst;

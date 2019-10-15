@@ -88,12 +88,12 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
       Consumer<ColumnVectorBatch> consumer, FileSplit split, Includes includes,
       SearchArgument sarg, QueryFragmentCounters counters, SchemaEvolutionFactory sef,
       InputFormat<?, ?> unused0, Deserializer unused1, Reporter reporter, JobConf job,
-      Map<Path, PartitionDesc> unused2) throws IOException {
+      Map<Path, PartitionDesc> parts) throws IOException {
     cacheMetrics.incrCacheReadRequests();
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(
         consumer, includes, _skipCorrupt, counters, ioMetrics);
     OrcEncodedDataReader reader = new OrcEncodedDataReader(lowLevelCache, bufferManager,
-        metadataCache, conf, job, split, includes, sarg, edc, counters, sef, tracePool);
+        metadataCache, conf, job, split, includes, sarg, edc, counters, sef, tracePool, parts);
     edc.init(reader, reader, reader.getTrace());
     return edc;
   }

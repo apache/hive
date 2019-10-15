@@ -112,10 +112,6 @@ import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetSerdePropsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetSkewedLocationDesc;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSkewedByDesc;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableUnarchiveDesc;
-import org.apache.hadoop.hive.ql.ddl.view.AlterMaterializedViewRewriteDesc;
-import org.apache.hadoop.hive.ql.ddl.view.DropMaterializedViewDesc;
-import org.apache.hadoop.hive.ql.ddl.view.DropViewDesc;
-import org.apache.hadoop.hive.ql.ddl.view.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsUpdateTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -404,12 +400,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeMetastoreCheck(ast);
       break;
-    case HiveParser.TOK_DROPVIEW:
-      analyzeDropView(ast);
-      break;
-    case HiveParser.TOK_DROP_MATERIALIZED_VIEW:
-      analyzeDropMaterializedView(ast);
-      break;
     case HiveParser.TOK_ALTERVIEW: {
       String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
       ast = (ASTNode) ast.getChild(1);
@@ -423,16 +413,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableDropParts(qualified, ast, true);
       } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_RENAME) {
         analyzeAlterTableRename(qualified, ast, true);
-      }
-      break;
-    }
-    case HiveParser.TOK_ALTER_MATERIALIZED_VIEW: {
-      ast = (ASTNode) input.getChild(1);
-      String[] qualified = getQualifiedTableName((ASTNode) input.getChild(0));
-      String tableName = getDotName(qualified);
-
-      if (ast.getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE) {
-        analyzeAlterMaterializedViewRewrite(tableName, ast);
       }
       break;
     }
@@ -610,36 +590,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ReplicationSpec replicationSpec = new ReplicationSpec(ast);
     DropTableDesc dropTableDesc = new DropTableDesc(tableName, ifExists, purge, replicationSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTableDesc)));
-  }
-
-  private void analyzeDropView(ASTNode ast) throws SemanticException {
-    String viewName = getUnescapedName((ASTNode) ast.getChild(0));
-    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
-    boolean throwException = !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
-
-    Table view = getTable(viewName, throwException);
-    if (view != null) {
-      inputs.add(new ReadEntity(view));
-      outputs.add(new WriteEntity(view, WriteEntity.WriteType.DDL_EXCLUSIVE));
-    }
-
-    DropViewDesc dropViewDesc = new DropViewDesc(viewName, ifExists);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropViewDesc)));
-  }
-
-  private void analyzeDropMaterializedView(ASTNode ast) throws SemanticException {
-    String viewName = getUnescapedName((ASTNode) ast.getChild(0));
-    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
-    boolean throwException = !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
-
-    Table materializedView = getTable(viewName, throwException);
-    if (materializedView != null) {
-      inputs.add(new ReadEntity(materializedView));
-      outputs.add(new WriteEntity(materializedView, WriteEntity.WriteType.DDL_EXCLUSIVE));
-    }
-
-    DropMaterializedViewDesc dropMaterializedViewDesc = new DropMaterializedViewDesc(viewName, ifExists);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropMaterializedViewDesc)));
   }
 
   private void analyzeTruncateTable(ASTNode ast) throws SemanticException {
@@ -1683,7 +1633,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     DescTableDesc descTblDesc = new DescTableDesc(ctx.getResFile(), tableName, partSpec, colPath, isExt, isFormatted);
     Task<?> ddlTask = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), descTblDesc));
     rootTasks.add(ddlTask);
-    String schema = DescTableDesc.getSchema(showColStats);
+    String schema = showColStats ? DescTableDesc.COLUMN_STATISTICS_SCHEMA : DescTableDesc.SCHEMA;
     setFetchTask(createFetchTask(schema));
     LOG.info("analyzeDescribeTable done");
   }
@@ -3237,60 +3187,4 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(e);
     }
   }
-
-  private void analyzeAlterMaterializedViewRewrite(String fqMvName, ASTNode ast) throws SemanticException {
-    // Value for the flag
-    boolean enableFlag;
-    switch (ast.getChild(0).getType()) {
-      case HiveParser.TOK_REWRITE_ENABLED:
-        enableFlag = true;
-        break;
-      case HiveParser.TOK_REWRITE_DISABLED:
-        enableFlag = false;
-        break;
-      default:
-        throw new SemanticException("Invalid alter materialized view expression");
-    }
-
-    AlterMaterializedViewRewriteDesc alterMVRewriteDesc = new AlterMaterializedViewRewriteDesc(fqMvName, enableFlag);
-
-    // It can be fully qualified name or use default database
-    Table materializedViewTable = getTable(fqMvName, true);
-
-    // One last test: if we are enabling the rewrite, we need to check that query
-    // only uses transactional (MM and ACID) tables
-    if (enableFlag) {
-      for (String tableName : materializedViewTable.getCreationMetadata().getTablesUsed()) {
-        Table table = getTable(tableName, true);
-        if (!AcidUtils.isTransactionalTable(table)) {
-          throw new SemanticException("Automatic rewriting for materialized view cannot "
-              + "be enabled if the materialized view uses non-transactional tables");
-        }
-      }
-    }
-
-    if (AcidUtils.isTransactionalTable(materializedViewTable)) {
-      setAcidDdlDesc(alterMVRewriteDesc);
-    }
-
-    inputs.add(new ReadEntity(materializedViewTable));
-    outputs.add(new WriteEntity(materializedViewTable, WriteEntity.WriteType.DDL_EXCLUSIVE));
-
-    // Create task for alterMVRewriteDesc
-    DDLWork work = new DDLWork(getInputs(), getOutputs(), alterMVRewriteDesc);
-    Task<?> targetTask = TaskFactory.get(work);
-
-    // Create task to update rewrite flag as dependant of previous one
-    String tableName = alterMVRewriteDesc.getMaterializedViewName();
-    boolean retrieveAndInclude = alterMVRewriteDesc.isRewriteEnable();
-    boolean disableRewrite = !alterMVRewriteDesc.isRewriteEnable();
-    MaterializedViewUpdateDesc materializedViewUpdateDesc =
-        new MaterializedViewUpdateDesc(tableName, retrieveAndInclude, disableRewrite, false);
-    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), materializedViewUpdateDesc);
-    targetTask.addDependentTask(TaskFactory.get(ddlWork, conf));
-
-    // Add root task
-    rootTasks.add(targetTask);
-  }
-
 }

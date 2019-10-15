@@ -18,11 +18,16 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * A wrapper around cache eviction policy that tracks cache contents via tags.
@@ -30,7 +35,7 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListener {
   private static final long CLEANUP_TIME_MS = 3600 * 1000L, MIN_TIME_MS = 300 * 1000L;
 
-  private final ConcurrentSkipListMap<String, TagState> tagInfo = new ConcurrentSkipListMap<>();
+  private final ConcurrentSkipListMap<CacheTag, TagState> tagInfo = new ConcurrentSkipListMap<>();
   private EvictionListener evictionListener;
   private LowLevelCachePolicy realPolicy;
   private final Thread cleanupThread;
@@ -75,56 +80,37 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
   }
 
   private static class TagState {
-    public TagState(String name) {
-      this.name = name;
+    TagState(CacheTag cacheTag) {
+      this.cacheTag = cacheTag;
     }
-    public final String name;
+    public final CacheTag cacheTag;
     public long emptyTimeNs;
     public long bufferCount, totalSize, maxCount, maxSize;
-    public boolean isRemoved = false;
   }
-
 
   private void reportCached(LlapCacheableBuffer buffer) {
     long size = buffer.getMemoryUsage();
-    TagState state;
-    do {
-       state = getTagState(buffer);
-    } while (!reportCached(state, size));
-    state = null;
-    do {
-      state = getParentTagState(buffer);
-      if (state == null) break;
-    } while (!reportCached(state, size));
+    TagState state = getTagState(buffer);
+    reportCached(state, size);
   }
 
-  private boolean reportCached(TagState state, long size) {
+  private void reportCached(TagState state, long size) {
     synchronized (state) {
-      if (state.isRemoved) return false;
       ++state.bufferCount;
       state.totalSize += size;
       state.maxSize = Math.max(state.maxSize, state.totalSize);
       state.maxCount = Math.max(state.maxCount, state.bufferCount);
     }
-    return true;
   }
 
   private void reportRemoved(LlapCacheableBuffer buffer) {
     long size = buffer.getMemoryUsage();
-    TagState state;
-    do {
-       state = getTagState(buffer);
-    } while (!reportRemoved(state, size));
-    state = null;
-    do {
-      state = getParentTagState(buffer);
-      if (state == null) break;
-    } while (!reportRemoved(state, size));
+    TagState state = getTagState(buffer);
+    reportRemoved(state, size);
   }
 
-  private boolean reportRemoved(TagState state, long size) {
+  private void reportRemoved(TagState state, long size) {
     synchronized (state) {
-      if (state.isRemoved) return false;
       --state.bufferCount;
       assert state.bufferCount >= 0;
       state.totalSize -= size;
@@ -132,21 +118,13 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
         state.emptyTimeNs = System.nanoTime();
       }
     }
-    return true;
   }
 
   private TagState getTagState(LlapCacheableBuffer buffer) {
     return getTagState(buffer.getTag());
   }
 
-  private TagState getParentTagState(LlapCacheableBuffer buffer) {
-    String tag = buffer.getTag();
-    int ix = tag.indexOf(LlapUtil.DERIVED_ENTITY_PARTITION_SEPARATOR);
-    if (ix <= 0) return null;
-    return getTagState(tag.substring(0, ix));
-  }
-
-  private TagState getTagState(String tag) {
+  private TagState getTagState(CacheTag tag) {
     TagState state = tagInfo.get(tag);
     if (state == null) {
       state = new TagState(tag);
@@ -191,14 +169,51 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
 
   @Override
   public void debugDumpShort(StringBuilder sb) {
-    sb.append("\nCache state: ");
+    ArrayList<String> endResult = new ArrayList<>();
+    Map<CacheTag, TagState> summaries = new TreeMap<>();
+
     for (TagState state : tagInfo.values()) {
       synchronized (state) {
-        sb.append("\n").append(state.name).append(": ").append(state.bufferCount).append("/")
-          .append(state.maxCount).append(", ").append(state.totalSize).append("/")
-          .append(state.maxSize);
+        endResult.add(unsafePrintTagState(state));
+
+        // Handle summary calculation
+        CacheTag parentTag = CacheTag.createParentCacheTag(state.cacheTag);
+        while (parentTag != null) {
+          if (!summaries.containsKey(parentTag)) {
+            summaries.put(parentTag, new TagState(parentTag));
+          }
+          TagState parentState = summaries.get(parentTag);
+          parentState.bufferCount += state.bufferCount;
+          parentState.maxCount += state.maxCount;
+          parentState.totalSize += state.totalSize;
+          parentState.maxSize += state.maxSize;
+          parentTag = CacheTag.createParentCacheTag(parentTag);
+        }
       }
     }
+    for (TagState state : summaries.values()) {
+      endResult.add(unsafePrintTagState(state));
+    }
+    sb.append("\nCache state: \n");
+    sb.append(endResult.stream().sorted().collect(joining("\n")));
+  }
+
+  /**
+   * Constructs a String by pretty printing a TagState instance - for Web UI consumption.
+   * Note: does not lock on TagState instance.
+   * @param state
+   * @return
+   */
+  private String unsafePrintTagState(TagState state) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(state.cacheTag.getTableName());
+    if (state.cacheTag instanceof CacheTag.PartitionCacheTag) {
+      sb.append("/").append(String.join("/",
+          ((CacheTag.PartitionCacheTag) state.cacheTag).partitionDescToString()));
+    }
+    sb.append(" : ").append(state.bufferCount).append("/").append(state.maxCount).append(", ")
+            .append(state.totalSize).append("/").append(state.maxSize);
+    return sb.toString();
   }
 
   @Override
@@ -206,4 +221,5 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
     evictionListener.notifyEvicted(buffer);
     reportRemoved(buffer);
   }
+
 }

@@ -105,25 +105,7 @@ public final class SemanticAnalyzerFactory {
         queryState.setCommandType(HiveOperation.ALTERVIEW_AS);
         return new SemanticAnalyzer(queryState);
       }
-      case HiveParser.TOK_ALTER_MATERIALIZED_VIEW: {
-        Tree child = tree.getChild(1);
-        switch (child.getType()) {
-        case HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE:
-          opType = HiveOperation.operationForToken(child.getType());
-          queryState.setCommandType(opType);
-          return new DDLSemanticAnalyzer(queryState);
-        case HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD:
-          opType = HiveOperation.operationForToken(child.getType());
-          queryState.setCommandType(opType);
-          return new MaterializedViewRebuildSemanticAnalyzer(queryState);
-        }
-        // Operation not recognized, set to null and let upper level handle this case
-        queryState.setCommandType(null);
-        return new DDLSemanticAnalyzer(queryState);
-      }
       case HiveParser.TOK_DROPTABLE:
-      case HiveParser.TOK_DROPVIEW:
-      case HiveParser.TOK_DROP_MATERIALIZED_VIEW:
       case HiveParser.TOK_DESCTABLE:
       case HiveParser.TOK_MSCK:
       case HiveParser.TOK_SHOWTABLES:

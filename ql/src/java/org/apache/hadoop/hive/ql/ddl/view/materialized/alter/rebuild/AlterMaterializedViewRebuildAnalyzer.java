@@ -16,70 +16,82 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild;
 
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * MaterializedViewRebuildSemanticAnalyzer.
- * Rewrites ALTER MATERIALIZED VIEW _mv_name_ REBUILD statement into
- * INSERT OVERWRITE TABLE _mv_name_ _mv_query_ .
+ * Analyzer for alter materialized view rebuild commands.
  */
-public class MaterializedViewRebuildSemanticAnalyzer extends CalcitePlanner {
+@DDLType(type=HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD)
+public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
+  private static final Logger LOG = LoggerFactory.getLogger(AlterMaterializedViewRebuildAnalyzer.class);
 
-  private static final Logger LOG =
-      LoggerFactory.getLogger(MaterializedViewRebuildSemanticAnalyzer.class);
-
-
-  public MaterializedViewRebuildSemanticAnalyzer(QueryState queryState) throws SemanticException {
+  public AlterMaterializedViewRebuildAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
 
-
   @Override
-  public void analyzeInternal(ASTNode ast) throws SemanticException {
+  public void analyzeInternal(ASTNode root) throws SemanticException {
     if (mvRebuildMode != MaterializationRebuildMode.NONE) {
-      super.analyzeInternal(ast);
+      super.analyzeInternal(root);
       return;
     }
 
-    String[] qualifiedTableName = getQualifiedTableName((ASTNode) ast.getChild(0));
+    String[] qualifiedTableName = getQualifiedTableName((ASTNode)root.getChild(0));
     String dbDotTable = getDotName(qualifiedTableName);
+    ASTNode rewrittenAST = getRewrittenAST(qualifiedTableName, dbDotTable);
+
+    mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
+    mvRebuildDbName = qualifiedTableName[0];
+    mvRebuildName = qualifiedTableName[1];
+
+    LOG.debug("Rebuilding materialized view " + dbDotTable);
+    super.analyzeInternal(rewrittenAST);
+  }
+
+  private static final String REWRITTEN_INSERT_STATEMENT = "INSERT OVERWRITE TABLE `%s`.`%s` %s";
+
+  private ASTNode getRewrittenAST(String[] qualifiedTableName, String dbDotTable) throws SemanticException {
     ASTNode rewrittenAST;
     // We need to go lookup the table and get the select statement and then parse it.
     try {
-      Table tab = getTableObjectByName(dbDotTable, true);
-      if (!tab.isMaterializedView()) {
-        // Cannot rebuild not materialized view
+      Table table = getTableObjectByName(dbDotTable, true);
+      if (!table.isMaterializedView()) {
         throw new SemanticException(ErrorMsg.REBUILD_NO_MATERIALIZED_VIEW);
       }
+
       // We need to use the expanded text for the materialized view, as it will contain
       // the qualified table aliases, etc.
-      String viewText = tab.getViewExpandedText();
+      String viewText = table.getViewExpandedText();
       if (viewText.trim().isEmpty()) {
         throw new SemanticException(ErrorMsg.MATERIALIZED_VIEW_DEF_EMPTY);
       }
+
       Context ctx = new Context(queryState.getConf());
-      rewrittenAST = ParseUtils.parse("insert overwrite table " +
-          "`" + qualifiedTableName[0] + "`.`" + qualifiedTableName[1] + "` " +
-          viewText, ctx);
+      String rewrittenInsertStatement = String.format(REWRITTEN_INSERT_STATEMENT, qualifiedTableName[0],
+          qualifiedTableName[1], viewText);
+      rewrittenAST = ParseUtils.parse(rewrittenInsertStatement, ctx);
       this.ctx.addRewrittenStatementContext(ctx);
 
-      if (!this.ctx.isExplainPlan() && AcidUtils.isTransactionalTable(tab)) {
-        // Acquire lock for the given materialized view. Only one rebuild per materialized
-        // view can be triggered at a given time, as otherwise we might produce incorrect
-        // results if incremental maintenance is triggered.
+      if (!this.ctx.isExplainPlan() && AcidUtils.isTransactionalTable(table)) {
+        // Acquire lock for the given materialized view. Only one rebuild per materialized view can be triggered at a
+        // given time, as otherwise we might produce incorrect results if incremental maintenance is triggered.
         HiveTxnManager txnManager = getTxnMgr();
         LockState state;
         try {
@@ -95,11 +107,6 @@ public class MaterializedViewRebuildSemanticAnalyzer extends CalcitePlanner {
     } catch (Exception e) {
       throw new SemanticException(e);
     }
-    mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
-    mvRebuildDbName = qualifiedTableName[0];
-    mvRebuildName = qualifiedTableName[1];
-
-    LOG.debug("Rebuilding materialized view " + dbDotTable);
-    super.analyzeInternal(rewrittenAST);
+    return rewrittenAST;
   }
 }

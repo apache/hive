@@ -137,7 +137,7 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
       jobConf.set(HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(), Boolean.FALSE.toString());
     }
     try {
-      addDependencyJars(jobConf, KuduRecordWriter.class);
+      addDependencyJars(jobConf, KuduStorageHandler.class);
     } catch (IOException e) {
       Throwables.propagate(e);
     }
