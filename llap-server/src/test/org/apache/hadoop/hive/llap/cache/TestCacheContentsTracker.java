@@ -83,6 +83,55 @@ public class TestCacheContentsTracker {
     assertEquals(EXPECTED_CACHE_STATE_AFTER_EVICTION, sb.toString());
   }
 
+
+  /**
+   * Tests CacheTag.compareTo().
+   */
+  @Test
+  public void testCacheTagComparison() {
+
+    // Comparing with null
+    compareViceVersa(1, cacheTagBuilder("dbname.tablename"), null);
+    compareViceVersa(1, cacheTagBuilder("dbname.tablename", "p1=v1"), null);
+    compareViceVersa(1, cacheTagBuilder("dbname.tablename", "p1=v1", "p2=v2"), null);
+
+    // Comparing similar constructs
+    compareViceVersa(0, cacheTagBuilder("dbname.tablename"),
+        cacheTagBuilder("dbname.tablename"));
+    compareViceVersa(0, cacheTagBuilder("dbname.tablename", "p1=v1"),
+        cacheTagBuilder("dbname.tablename", "p1=v1"));
+    compareViceVersa(0, cacheTagBuilder("dbname.tablename", "p1=v1", "p2=v2"),
+        cacheTagBuilder("dbname.tablename", "p1=v1", "p2=v2"));
+
+    // Comparing structs of different lengths
+    compareViceVersa(1, cacheTagBuilder("dbname.tablename", "p1=v1", "p2=v2", "p3=v3"),
+        cacheTagBuilder("dbname.tablename", "p1=v1", "p2=v2"));
+    compareViceVersa(1, cacheTagBuilder("dbname.tablename", "p1=v1", "p2=v2"),
+        cacheTagBuilder("dbname.tablename", "p1=v1"));
+    compareViceVersa(1, cacheTagBuilder("dbname.tablename", "p1=v1"),
+        cacheTagBuilder("dbname.tablename"));
+
+    // Comparing different constructs with same length
+    compareViceVersa(-1, cacheTagBuilder("dbname.tablename", "p1=v1"),
+        cacheTagBuilder("dbname.tablenamf", "p1=v0"));
+    compareViceVersa(-1, cacheTagBuilder("dbname.tablename", "p1=v1", "p2=v3"),
+        cacheTagBuilder("dbname.tablenamf", "p1=v1", "p2=v2"));
+    compareViceVersa(-25, cacheTagBuilder("dbname.tablename", "p1=v1", "p2=v2a"),
+        cacheTagBuilder("dbname.tablename", "p1=v1", "p2=v2z"));
+    compareViceVersa(-1, cacheTagBuilder("dbname.tablenameAA", "p1=v1", "p2=v2"),
+        cacheTagBuilder("dbname.tablenameBB", "p1=v1", "p2=v2"));
+
+  }
+
+  private static void compareViceVersa(int expected, CacheTag a, CacheTag b) {
+    if (a != null) {
+      assertEquals(expected, a.compareTo(b));
+    }
+    if (b != null) {
+      assertEquals(-1 * expected, b.compareTo(a));
+    }
+  }
+
   private static LlapCacheableBuffer createMockBuffer(long size, CacheTag cacheTag) {
     LlapCacheableBuffer llapCacheableBufferMock = mock(LlapCacheableBuffer.class);
 
