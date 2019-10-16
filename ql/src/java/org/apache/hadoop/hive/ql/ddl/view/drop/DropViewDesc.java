@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.view;
+package org.apache.hadoop.hive.ql.ddl.view.drop;
 
 import java.io.Serializable;
 
@@ -25,16 +25,16 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for DROP MATERIALIZED VIEW commands.
+ * DDL task description for DROP VIEW commands.
  */
-@Explain(displayName = "Drop Materialized View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class DropMaterializedViewDesc implements DDLDesc, Serializable {
+@Explain(displayName = "Drop View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class DropViewDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   private final String viewName;
   private final boolean ifExists;
 
-  public DropMaterializedViewDesc(String viewName, boolean ifExists) {
+  public DropViewDesc(String viewName, boolean ifExists) {
     this.viewName = viewName;
     this.ifExists = ifExists;
   }

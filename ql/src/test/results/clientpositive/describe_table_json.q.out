@@ -32,7 +32,7 @@ PREHOOK: Input: default@jsontable
 POSTHOOK: query: DESCRIBE jsontable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@jsontable
-{"columns":[{"name":"key","type":"int"},{"name":"value","type":"string"}]}	 	 
+{"columns":[{"name":"key","type":"int"},{"name":"value","type":"string"}]}
 PREHOOK: query: DESCRIBE extended jsontable
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@jsontable

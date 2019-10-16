@@ -16,22 +16,21 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.view;
+package org.apache.hadoop.hive.ql.ddl.view.drop;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
- * Operation process of dropping a materialized view.
+ * Operation process of dropping a view.
  */
-public class DropMaterializedViewOperation extends DDLOperation<DropMaterializedViewDesc> {
-  public DropMaterializedViewOperation(DDLOperationContext context, DropMaterializedViewDesc desc) {
+public class DropViewOperation extends DDLOperation<DropViewDesc> {
+  public DropViewOperation(DDLOperationContext context, DropViewDesc desc) {
     super(context, desc);
   }
 
@@ -39,22 +38,21 @@ public class DropMaterializedViewOperation extends DDLOperation<DropMaterialized
   public int execute() throws HiveException {
     Table table = getTable();
     if (table == null) {
-      return 0; // dropping not existing materialized view is handled by DDLSemanticAnalyzer
+      return 0; // dropping not existing view is handled by DDLSemanticAnalyzer
     }
 
-    if (!table.isMaterializedView()) {
+    if (!table.isView()) {
       if (desc.isIfExists()) {
         return 0;
-      } else if (table.isView()) {
-        throw new HiveException("Cannot drop a view with DROP MATERIALIZED VIEW");
+      } else if (table.isMaterializedView()) {
+        throw new HiveException("Cannot drop a materialized view with DROP VIEW");
       } else {
-        throw new HiveException("Cannot drop a base table with DROP MATERIALIZED VIEW");
+        throw new HiveException("Cannot drop a base table with DROP VIEW");
       }
     }
 
     // TODO: API w/catalog name
     context.getDb().dropTable(desc.getTableName(), false);
-    HiveMaterializedViewsRegistry.get().dropMaterializedView(table);
     DDLUtils.addIfAbsentByName(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK), context);
 
     return 0;

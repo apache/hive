@@ -137,8 +137,7 @@
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-compress.version>1.18</commons-compress.version>
     <commons-exec.version>1.1</commons-exec.version>
-    <commons-io.version>2.4</commons-io.version>
-    <commons-lang.version>2.6</commons-lang.version>
+    <commons-io.version>2.6</commons-io.version>
     <commons-lang3.version>3.9</commons-lang3.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
@@ -187,7 +186,7 @@
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3-1</libthrift.version>
-    <log4j2.version>2.10.0</log4j2.version>
+    <log4j2.version>2.12.1</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
     <orc.version>1.5.6</orc.version>
     <mockito-core.version>1.10.19</mockito-core.version>
@@ -347,11 +346,6 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons-io.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-lang</groupId>
-        <artifactId>commons-lang</artifactId>
-        <version>${commons-lang.version}</version>
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>
@@ -1184,6 +1178,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>de.skuzzle.enforcer</groupId>
+            <artifactId>restrict-imports-enforcer-rule</artifactId>
+            <version>0.9.0</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <id>enforce-no-snapshots</id>
@@ -1237,6 +1238,26 @@
                 </bannedDependencies>
               </rules>
               <fail>true</fail>
+            </configuration>
+          </execution>
+          <execution>
+            <id>check-banned-imports</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <restrictImports implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                  <reason>Do not use shaded imports</reason>
+                  <bannedImports>
+                    <bannedImport>**.shaded.**</bannedImport>
+                    <bannedImport>org.spark_project.guava.**</bannedImport>
+                    <bannedImport>jersey.repackaged.com.google.**</bannedImport>
+                  </bannedImports>
+                  <includeTestCode>true</includeTestCode>
+                </restrictImports>
+              </rules>
             </configuration>
           </execution>
         </executions>

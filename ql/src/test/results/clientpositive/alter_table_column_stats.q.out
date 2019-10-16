@@ -125,57 +125,57 @@ PREHOOK: Input: statsdb1@testtable0
 POSTHOOK: query: describe formatted statsdb1.testtable0 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable0
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable0 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable0
 POSTHOOK: query: describe formatted statsdb1.testtable0 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable0
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable0 col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable0
 POSTHOOK: query: describe formatted statsdb1.testtable0 col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable0
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: alter table statsdb1.testtable0 rename to statsdb1.testtable1
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable0
@@ -228,57 +228,57 @@ PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: alter table testtable1 replace columns (col1 int, col2 string, col4 string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: statsdb1@testtable1
@@ -330,47 +330,57 @@ PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
 PREHOOK: query: alter table testtable1 change col1 col1 string
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: statsdb1@testtable1
@@ -422,37 +432,57 @@ PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable1
@@ -505,37 +535,57 @@ PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb2.testtable2 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb2.testtable2 col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: analyze table testpart0 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb1@testpart0
@@ -639,54 +689,54 @@ PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part1') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part1') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part1') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part1') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part1') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart0
@@ -731,54 +781,54 @@ PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart0 rename to statsdb1.testpart1
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testpart0
@@ -874,54 +924,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
@@ -966,54 +1016,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart1 partition (part = 'part1') rename to partition (part = 'part11')
 PREHOOK: type: ALTERTABLE_RENAMEPART
 PREHOOK: Input: statsdb1@testpart1
@@ -1110,54 +1160,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
@@ -1202,54 +1252,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: statsdb1@testpart1
@@ -1348,44 +1398,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
@@ -1430,44 +1490,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string cascade
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: statsdb1@testpart1
@@ -1566,34 +1636,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
@@ -1638,34 +1728,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testpart1
@@ -1723,68 +1833,108 @@ PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: use statsdb2
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:statsdb2
@@ -1956,57 +2106,57 @@ PREHOOK: Input: statsdb1@testtable0
 POSTHOOK: query: describe formatted statsdb1.testtable0 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable0
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable0 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable0
 POSTHOOK: query: describe formatted statsdb1.testtable0 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable0
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable0 col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable0
 POSTHOOK: query: describe formatted statsdb1.testtable0 col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable0
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: alter table statsdb1.testtable0 rename to statsdb1.testtable1
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable0
@@ -2059,57 +2209,57 @@ PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: alter table testtable1 replace columns (col1 int, col2 string, col4 string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: statsdb1@testtable1
@@ -2161,47 +2311,57 @@ PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
 PREHOOK: query: alter table testtable1 change col1 col1 string
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: statsdb1@testtable1
@@ -2253,37 +2413,57 @@ PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable1
@@ -2336,37 +2516,57 @@ PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb2.testtable2 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: describe formatted statsdb2.testtable2 col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 PREHOOK: query: analyze table testpart0 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb1@testpart0
@@ -2470,54 +2670,54 @@ PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part1') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part1') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part1') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part1') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part1') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart0
@@ -2562,54 +2762,54 @@ PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart0
 POSTHOOK: query: describe formatted statsdb1.testpart0 partition (part = 'part2') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart0
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart0 rename to statsdb1.testpart1
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testpart0
@@ -2705,54 +2905,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
@@ -2797,54 +2997,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart1 partition (part = 'part1') rename to partition (part = 'part11')
 PREHOOK: type: ALTERTABLE_RENAMEPART
 PREHOOK: Input: statsdb1@testpart1
@@ -2941,54 +3141,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
@@ -3033,54 +3233,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col3                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col3                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: statsdb1@testpart1
@@ -3179,44 +3379,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
@@ -3261,44 +3471,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	int                 
+min                 	27                  
+max                 	484                 
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string cascade
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: statsdb1@testpart1
@@ -3397,34 +3617,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
@@ -3469,34 +3709,54 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testpart1
@@ -3554,68 +3814,108 @@ PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.7                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	6.7                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-col_name            	col2                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	col2                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.8                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
 POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part2') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col4                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
+col_name            	col4                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
 PREHOOK: query: use statsdb2
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:statsdb2

@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.thrift.TException;
@@ -825,19 +825,21 @@ public class TestStreamingDynamicPartitioning {
   private static boolean runDDL(IDriver driver, String sql) {
     LOG.debug(sql);
     System.out.println(sql);
-    CommandProcessorResponse cpr = driver.run(sql);
-    if (cpr.getResponseCode() == 0) {
+    try {
+      driver.run(sql);
       return true;
+    } catch (CommandProcessorException e) {
+      LOG.error("Statement: " + sql + " failed: " + e);
+      return false;
     }
-    LOG.error("Statement: " + sql + " failed: " + cpr);
-    return false;
   }
 
 
   private static ArrayList<String> queryTable(IDriver driver, String query) throws IOException {
-    CommandProcessorResponse cpr = driver.run(query);
-    if (cpr.getResponseCode() != 0) {
-      throw new RuntimeException(query + " failed: " + cpr);
+    try {
+      driver.run(query);
+    } catch (CommandProcessorException e) {
+      throw new RuntimeException(query + " failed: " + e);
     }
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);

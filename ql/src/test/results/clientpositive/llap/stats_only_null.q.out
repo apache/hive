@@ -431,18 +431,18 @@ PREHOOK: Input: default@stats_null_part
 POSTHOOK: query: describe formatted stats_null_part partition(dt = 1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_null_part
-col_name            	a                   	 	 	 	 	 	 	 	 	 	 
-data_type           	double              	 	 	 	 	 	 	 	 	 	 
-min                 	1.0                 	 	 	 	 	 	 	 	 	 	 
-max                 	1.0                 	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	a                   
+data_type           	double              
+min                 	1.0                 
+max                 	1.0                 
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: drop table stats_null
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_null

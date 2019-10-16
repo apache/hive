@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -489,9 +489,9 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     Assert.assertTrue("Unexpcted file name", rs.get(0)
         .endsWith("t/delta_0000001_0000001_0000/bucket_00000"));
     //T2 is an acid table so this should fail
-    CommandProcessorResponse cpr = runStatementOnDriverNegative(
-        "load data local inpath '" + rs.get(0) + "' into table T2");
+    CommandProcessorException e =
+        runStatementOnDriverNegative("load data local inpath '" + rs.get(0) + "' into table T2");
     Assert.assertEquals("Unexpected error code",
-        ErrorMsg.LOAD_DATA_ACID_FILE.getErrorCode(), cpr.getErrorCode());
+        ErrorMsg.LOAD_DATA_ACID_FILE.getErrorCode(), e.getErrorCode());
   }
 }

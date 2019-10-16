@@ -120,11 +120,6 @@
        <version>${commons-lang3.version}</version>
     </dependency>
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>${commons-lang.version}</version>
-    </dependency>
-    <dependency>
       <groupId>javolution</groupId>
       <artifactId>javolution</artifactId>
       <version>${javolution.version}</version>
@@ -132,6 +127,11 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-1.2-api</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
       <version>${log4j2.version}</version>
     </dependency>
     <dependency>

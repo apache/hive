@@ -104,6 +104,7 @@
         <include>upgrade-acid/**/*</include>
         <include>vector-code-gen/**/*</include>
         <include>kryo-registrator/**/*</include>
+        <include>kudu-handler/**/*</include>
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>

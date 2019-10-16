@@ -149,21 +149,13 @@ public class TestSymlinkTextInputFormat {
     boolean tblCreated = false;
     try {
       int ecode = 0;
-      ecode = drv.run(createSymlinkTableCmd).getResponseCode();
-      if (ecode != 0) {
-        throw new Exception("Create table command: " + createSymlinkTableCmd
-            + " failed with exit code= " + ecode);
-      }
+      drv.run(createSymlinkTableCmd);
 
       tblCreated = true;
       String loadFileCommand = "LOAD DATA LOCAL INPATH '" +
         new Path(symlinkDir, "symlink_file").toString() + "' INTO TABLE " + tblName;
 
-      ecode = drv.run(loadFileCommand).getResponseCode();
-      if (ecode != 0) {
-        throw new Exception("Load data command: " + loadFileCommand
-            + " failed with exit code= " + ecode);
-      }
+      drv.run(loadFileCommand);
 
       String cmd = "select key*1 from " + tblName;
       ecode = drv.compile(cmd, true);
@@ -196,7 +188,7 @@ public class TestSymlinkTextInputFormat {
       fail("Caught exception " + e);
     } finally {
       if (tblCreated) {
-        drv.run("drop table text_symlink_text").getResponseCode();
+        drv.run("drop table text_symlink_text");
       }
     }
   }

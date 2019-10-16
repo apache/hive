@@ -35,11 +35,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -188,7 +190,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       List<FieldSchema> cols, boolean isFormatted, boolean isExt, boolean isOutputPadded,
       List<ColumnStatisticsObj> colStats) throws HiveException {
     MapBuilder builder = MapBuilder.create();
-    builder.put("columns", makeColsUnformatted(cols));
+    builder.put("columns", createColumnsInfo(cols, colStats));
 
     if (isExt) {
       if (part != null) {
@@ -223,20 +225,123 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     asJson(out, builder.build());
   }
 
-  private List<Map<String, Object>> makeColsUnformatted(List<FieldSchema> cols) {
+  private List<Map<String, Object>> createColumnsInfo(List<FieldSchema> columns,
+      List<ColumnStatisticsObj> columnStatisticsList) {
     ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
-    for (FieldSchema col : cols) {
-      res.add(makeOneColUnformatted(col));
+    for (FieldSchema column : columns) {
+      ColumnStatisticsData statistics = getStatistics(column, columnStatisticsList);
+      res.add(createColumnInfo(column, statistics));
     }
     return res;
   }
 
-  private Map<String, Object> makeOneColUnformatted(FieldSchema col) {
-    return MapBuilder.create()
-        .put("name", col.getName())
-        .put("type", col.getType())
-        .put("comment", col.getComment())
+  private ColumnStatisticsData getStatistics(FieldSchema column, List<ColumnStatisticsObj> columnStatisticsList) {
+    for (ColumnStatisticsObj columnStatistics : columnStatisticsList) {
+      if (column.getName().equals(columnStatistics.getColName())) {
+        return columnStatistics.getStatsData();
+      }
+    }
+
+    return null;
+  }
+
+  private Map<String, Object> createColumnInfo(FieldSchema column, ColumnStatisticsData statistics) {
+    Map<String, Object> result = MapBuilder.create()
+        .put("name", column.getName())
+        .put("type", column.getType())
+        .put("comment", column.getComment())
         .build();
+
+    if (statistics != null) {
+      if (statistics.isSetBinaryStats()) {
+        if (statistics.getBinaryStats().isSetNumNulls()) {
+          result.put("numNulls", statistics.getBinaryStats().getNumNulls());
+        }
+        if (statistics.getBinaryStats().isSetAvgColLen()) {
+          result.put("avgColLen", statistics.getBinaryStats().getAvgColLen());
+        }
+        if (statistics.getBinaryStats().isSetMaxColLen()) {
+          result.put("maxColLen", statistics.getBinaryStats().getMaxColLen());
+        }
+      } else if (statistics.isSetStringStats()) {
+        if (statistics.getStringStats().isSetNumNulls()) {
+          result.put("numNulls", statistics.getStringStats().getNumNulls());
+        }
+        if (statistics.getStringStats().isSetNumDVs()) {
+          result.put("distinctCount", statistics.getStringStats().getNumDVs());
+        }
+        if (statistics.getStringStats().isSetAvgColLen()) {
+          result.put("avgColLen", statistics.getStringStats().getAvgColLen());
+        }
+        if (statistics.getStringStats().isSetMaxColLen()) {
+          result.put("maxColLen", statistics.getStringStats().getMaxColLen());
+        }
+      } else if (statistics.isSetBooleanStats()) {
+        if (statistics.getBooleanStats().isSetNumNulls()) {
+          result.put("numNulls", statistics.getBooleanStats().getNumNulls());
+        }
+        if (statistics.getBooleanStats().isSetNumTrues()) {
+          result.put("numTrues", statistics.getBooleanStats().getNumTrues());
+        }
+        if (statistics.getBooleanStats().isSetNumFalses()) {
+          result.put("numFalses", statistics.getBooleanStats().getNumFalses());
+        }
+      } else if (statistics.isSetDecimalStats()) {
+        if (statistics.getDecimalStats().isSetLowValue()) {
+          result.put("min", MetaDataFormatUtils.convertToString(statistics.getDecimalStats().getLowValue()));
+        }
+        if (statistics.getDecimalStats().isSetHighValue()) {
+          result.put("max", MetaDataFormatUtils.convertToString(statistics.getDecimalStats().getHighValue()));
+        }
+        if (statistics.getDecimalStats().isSetNumNulls()) {
+          result.put("numNulls", statistics.getDecimalStats().getNumNulls());
+        }
+        if (statistics.getDecimalStats().isSetNumDVs()) {
+          result.put("distinctCount", statistics.getDecimalStats().getNumDVs());
+        }
+      } else if (statistics.isSetDoubleStats()) {
+        if (statistics.getDoubleStats().isSetLowValue()) {
+          result.put("min", statistics.getDoubleStats().getLowValue());
+        }
+        if (statistics.getDoubleStats().isSetHighValue()) {
+          result.put("max", statistics.getDoubleStats().getHighValue());
+        }
+        if (statistics.getDoubleStats().isSetNumNulls()) {
+          result.put("numNulls", statistics.getDoubleStats().getNumNulls());
+        }
+        if (statistics.getDoubleStats().isSetNumDVs()) {
+          result.put("distinctCount", statistics.getDoubleStats().getNumDVs());
+        }
+      } else if (statistics.isSetLongStats()) {
+        if (statistics.getLongStats().isSetLowValue()) {
+          result.put("min", statistics.getLongStats().getLowValue());
+        }
+        if (statistics.getLongStats().isSetHighValue()) {
+          result.put("max", statistics.getLongStats().getHighValue());
+        }
+        if (statistics.getLongStats().isSetNumNulls()) {
+          result.put("numNulls", statistics.getLongStats().getNumNulls());
+        }
+        if (statistics.getLongStats().isSetNumDVs()) {
+          result.put("distinctCount", statistics.getLongStats().getNumDVs());
+        }
+      } else if (statistics.isSetDateStats()) {
+        if (statistics.getDateStats().isSetLowValue()) {
+          result.put("min", MetaDataFormatUtils.convertToString(statistics.getDateStats().getLowValue()));
+        }
+        if (statistics.getDateStats().isSetHighValue()) {
+          result.put("max", MetaDataFormatUtils.convertToString(statistics.getDateStats().getHighValue()));
+        }
+        if (statistics.getDateStats().isSetNumNulls()) {
+          result.put("numNulls", statistics.getDateStats().getNumNulls());
+        }
+        if (statistics.getDateStats().isSetNumDVs()) {
+          result.put("distinctCount", statistics.getDateStats().getNumDVs());
+        }
+      }
+    }
+
+    return result;
   }
 
   @Override
@@ -291,11 +396,11 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     builder.put("location", tblLoc);
     builder.put("inputFormat", inputFormattCls);
     builder.put("outputFormat", outputFormattCls);
-    builder.put("columns", makeColsUnformatted(tbl.getCols()));
+    builder.put("columns", createColumnsInfo(tbl.getCols(), new ArrayList<ColumnStatisticsObj>()));
 
     builder.put("partitioned", tbl.isPartitioned());
     if (tbl.isPartitioned()) {
-      builder.put("partitionColumns", makeColsUnformatted(tbl.getPartCols()));
+      builder.put("partitionColumns", createColumnsInfo(tbl.getPartCols(), new ArrayList<ColumnStatisticsObj>()));
     }
     if(tbl.getTableType() != TableType.VIRTUAL_VIEW) {
       //tbl.getPath() is null for views

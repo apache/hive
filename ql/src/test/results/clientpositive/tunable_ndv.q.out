@@ -79,93 +79,93 @@ PREHOOK: Input: default@loc_orc_1d_n2
 POSTHOOK: query: describe formatted loc_orc_1d_n2 partition(year=2000) locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d_n2
-col_name            	locid               	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	2                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	2                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	2                   
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d_n2 partition(year=2001) locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d_n2
 POSTHOOK: query: describe formatted loc_orc_1d_n2 partition(year=2001) locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d_n2
-col_name            	locid               	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	4                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d_n2 locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d_n2
 POSTHOOK: query: describe formatted loc_orc_1d_n2 locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d_n2
-col_name            	locid               	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	4                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
 PREHOOK: query: describe formatted loc_orc_1d_n2 locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d_n2
 POSTHOOK: query: describe formatted loc_orc_1d_n2 locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d_n2
-col_name            	locid               	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	4                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
 PREHOOK: query: describe formatted loc_orc_1d_n2 locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d_n2
 POSTHOOK: query: describe formatted loc_orc_1d_n2 locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d_n2
-col_name            	locid               	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	4                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
 PREHOOK: query: create table if not exists loc_orc_2d_n2 (
   state string,
   locid int
@@ -261,54 +261,54 @@ PREHOOK: Input: default@loc_orc_2d_n2
 POSTHOOK: query: describe formatted loc_orc_2d_n2 locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d_n2
-col_name            	locid               	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	4                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
 PREHOOK: query: describe formatted loc_orc_2d_n2 locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d_n2
 POSTHOOK: query: describe formatted loc_orc_2d_n2 locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d_n2
-col_name            	locid               	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	4                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
 PREHOOK: query: describe formatted loc_orc_2d_n2 locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d_n2
 POSTHOOK: query: describe formatted loc_orc_2d_n2 locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d_n2
-col_name            	locid               	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	1                   	 	 	 	 	 	 	 	 	 	 
-max                 	4                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}

@@ -16,5 +16,5 @@
  * limitations under the License.
  */
 
-/** Unit tests for the HiveMetaTool program. */
-package org.apache.hadoop.hive.metastore.tools.metatool;
+/** Drop view DDL operation. */
+package org.apache.hadoop.hive.ql.ddl.view.drop;

@@ -25,4 +25,6 @@ public interface QTestOptionHandler {
 
   void beforeTest(QTestUtil qt) throws Exception;
 
+  void afterTest(QTestUtil qt) throws Exception;
+
 }

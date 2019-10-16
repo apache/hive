@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.view;
+package org.apache.hadoop.hive.ql.ddl.view.materialized.update;
 
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
@@ -60,6 +60,8 @@ public class MaterializedViewUpdateOperation extends DDLOperation<MaterializedVi
             ImmutableSet.copyOf(mvTable.getCreationMetadata().getTablesUsed()));
         cm.setValidTxnList(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
         context.getDb().updateCreationMetadata(mvTable.getDbName(), mvTable.getTableName(), cm);
+        mvTable.setCreationMetadata(cm);
+        HiveMaterializedViewsRegistry.get().createMaterializedView(context.getDb().getConf(), mvTable);
       }
     } catch (HiveException e) {
       LOG.debug("Exception during materialized view cache update", e);

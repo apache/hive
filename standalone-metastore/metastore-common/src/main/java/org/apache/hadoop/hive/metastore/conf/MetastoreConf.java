@@ -657,13 +657,13 @@ public class MetastoreConf {
         "The implementation may optionally implement Hadoop's\n" +
         "org.apache.hadoop.conf.Configurable class to grab MetaStore's Configuration object."),
     METASTORE_PLAIN_LDAP_URL("metastore.authentication.ldap.url",
-            "metastore.authentication.ldap.url", "",
+            "hive.metastore.authentication.ldap.url", "",
 "LDAP connection URL(s),\n" +
         "this value could contain URLs to multiple LDAP servers instances for HA,\n" +
         "each LDAP URL is separated by a SPACE character. URLs are used in the \n" +
         " order specified until a connection is successful."),
     METASTORE_PLAIN_LDAP_BASEDN("metastore.authentication.ldap.baseDN",
-            "metastore.authentication.ldap.baseDN", "", "LDAP base DN"),
+            "hive.metastore.authentication.ldap.baseDN", "", "LDAP base DN"),
     METASTORE_PLAIN_LDAP_DOMAIN("metastore.authentication.ldap.Domain",
             "hive.metastore.authentication.ldap.Domain", "", ""),
     METASTORE_PLAIN_LDAP_GROUPDNPATTERN("metastore.authentication.ldap.groupDNPattern",
@@ -676,7 +676,7 @@ public class MetastoreConf {
 "COMMA-separated list of LDAP Group names (short name not full DNs).\n" +
         "For example: HiveAdmins,HadoopAdmins,Administrators"),
     METASTORE_PLAIN_LDAP_USERDNPATTERN("metastore.authentication.ldap.userDNPattern",
-            "metastore.authentication.ldap.userDNPattern", "",
+            "hive.metastore.authentication.ldap.userDNPattern", "",
 "COLON-separated list of patterns to use to find DNs for users in this directory.\n" +
         "Use %s where the actual group name is to be substituted for.\n" +
         "For example: CN=%s,CN=Users,DC=subdomain,DC=domain,DC=com."),
@@ -689,7 +689,7 @@ public class MetastoreConf {
             "LDAP attribute name whose values are unique in this LDAP server.\n" +
                     "For example: uid or CN."),
     METASTORE_PLAIN_LDAP_GROUPMEMBERSHIP_KEY("metastore.authentication.ldap.groupMembershipKey",
-            "metastore.authentication.ldap.groupMembershipKey",
+            "hive.metastore.authentication.ldap.groupMembershipKey",
             "member",
     "LDAP attribute name on the group object that contains the list of distinguished names\n" +
             "for the user, group, and contact objects that are members of the group.\n" +
