@@ -125,7 +125,7 @@
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.10.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
-    <avro.version>1.8.2</avro.version>
+    <avro.version>1.9.1</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.19.0</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
@@ -456,7 +456,6 @@
       <dependency>
         <groupId>org.apache.avro</groupId>
         <artifactId>avro-mapred</artifactId>
-        <classifier>hadoop2</classifier>
         <version>${avro.version}</version>
      </dependency>
       <dependency>
