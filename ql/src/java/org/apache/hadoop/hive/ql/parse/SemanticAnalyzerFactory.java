@@ -50,7 +50,7 @@ public final class SemanticAnalyzerFactory {
     }
     return sem;
   }
-  
+
   private static BaseSemanticAnalyzer getInternal(QueryState queryState, ASTNode tree)
       throws SemanticException {
     if (tree.getToken() == null) {
@@ -139,6 +139,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_CREATE_SCHEDULED_QUERY:
       case HiveParser.TOK_DROP_SCHEDULED_QUERY:
         return new ScheduledQueryAnalyzer(queryState);
+
       case HiveParser.TOK_START_TRANSACTION:
       case HiveParser.TOK_COMMIT:
       case HiveParser.TOK_ROLLBACK:
