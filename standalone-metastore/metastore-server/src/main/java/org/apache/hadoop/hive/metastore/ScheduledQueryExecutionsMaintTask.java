@@ -18,14 +18,12 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.metastore.RawStore;
-import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Metastore task to remove old scheduled query executions.
@@ -53,8 +51,6 @@ public class ScheduledQueryExecutionsMaintTask implements MetastoreTaskThread {
 
   @Override
   public void run() {
-
-    
     try {
       RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
 

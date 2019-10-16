@@ -19,13 +19,8 @@
 package org.apache.hadoop.hive.metastore.model;
 
 import org.apache.hadoop.hive.metastore.api.QueryState;
-import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
-import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 
 public class MScheduledExecution {
-
-  public MScheduledExecution() {
-  }
 
   private int scheduledExecutionId;
   private MScheduledQuery scheduledQuery;
@@ -36,75 +31,14 @@ public class MScheduledExecution {
   private String errorMessage;
   private Integer lastUpdateTime;
 
+  public MScheduledExecution() {
+  }
+
   @Override
   public String toString() {
     return String.format("state: %s, scheduledQuery: %s, execId: %d", state, scheduledQuery.getScheduleName(),
         executorQueryId);
   }
-
-  //  public MScheduledQuery2(ScheduledQuery s) {
-  //    scheduleName = s.getScheduleKey().getScheduleName();
-  //    enabled = s.isEnabled();
-  //    clusterNamespace = s.getScheduleKey().getClusterNamespace();
-  //    schedule = s.getSchedule();
-  //    user = s.getUser();
-  //    query = s.getQuery();
-  //    nextExecution = s.getNextExecution();
-  //  }
-  //
-  //  public static MScheduledQuery2 fromThrift(ScheduledQuery s) {
-  //    return new MScheduledQuery2(s);
-  //  }
-  //
-  //  public static ScheduledQuery toThrift(MScheduledQuery2 s) {
-  //    ScheduledQuery ret = new ScheduledQuery();
-  //    ret.setScheduleKey(new ScheduledQueryKey(s.scheduleName, s.clusterNamespace));
-  //    ret.setEnabled(s.enabled);
-  //    ret.setSchedule(s.schedule);
-  //    ret.setUser(s.user);
-  //    ret.setQuery(s.query);
-  //    ret.setNextExecution(s.nextExecution);
-  //    return ret;
-  //  }
-  //
-  //  public ScheduledQuery toThrift() {
-  //    return toThrift(this);
-  //  }
-  //
-  //  public void doUpdate(MScheduledQuery2 schq) {
-  //    // may not change scheduleName
-  //    enabled = schq.enabled;
-  //    clusterNamespace = schq.clusterNamespace;
-  //    schedule = schq.schedule;
-  //    user = schq.user;
-  //    query = schq.query;
-  //    // may not change nextExecution
-  //  }
-  //
-  //  public String getSchedule() {
-  //    return schedule;
-  //  }
-  //
-  //  public Integer getNextExecution() {
-  //    return nextExecution;
-  //  }
-  //
-  //  public void setNextExecution(Integer nextExec) {
-  //    nextExecution = nextExec;
-  //  }
-  //
-  //  public String getQuery() {
-  //    return query;
-  //  }
-  //
-  //  public String getScheduleName() {
-  //    return scheduleName;
-  //  }
-  //
-  //  public ScheduledQueryKey getScheduleKey() {
-  //    return new ScheduledQueryKey(scheduleName, clusterNamespace);
-  //  }
-  //
 
   public int getScheduledExecutionId() {
     return scheduledExecutionId;
@@ -164,7 +98,5 @@ public class MScheduledExecution {
 
   public void setErrorMessage(String errorMessage) {
     this.errorMessage = errorMessage;
-
   }
-
 }
