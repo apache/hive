@@ -155,6 +155,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       schq.setSchedule(unescapeSQLString(node.getChild(0).getText()));
       return;
     case HiveParser.TOK_EXECUTED_AS:
+      // FIXME: check owner prior to alter!@#@
+      //FIXME: if(!ADMIN)throw exception
       schq.setUser(unescapeSQLString(node.getChild(0).getText()));
       return;
     case HiveParser.TOK_QUERY:
