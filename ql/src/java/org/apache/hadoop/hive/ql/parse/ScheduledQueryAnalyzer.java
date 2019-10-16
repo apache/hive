@@ -142,14 +142,17 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       schq.setUser(unescapeSQLString(node.getChild(0).getText()));
       return;
     case HiveParser.TOK_QUERY:
-      schq.setQuery(unparseQuery(node.getChild(0)));
+      schq.setQuery(unparseTree(node.getChild(0)));
       return;
     default:
       throw new SemanticException("Unexpected token: " + node.getType());
     }
   }
 
-  private String unparseQuery(Tree child) throws SemanticException {
+  /**
+   * Unparses the input AST node into correctly quoted sql string.
+   */
+  private String unparseTree(Tree child) throws SemanticException {
     ASTNode input = (ASTNode) child;
     ((HiveConf) (ctx.getConf())).setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, false);
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
