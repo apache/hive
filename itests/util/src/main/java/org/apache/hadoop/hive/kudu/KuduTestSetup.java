@@ -29,8 +29,9 @@ import org.apache.kudu.Type;
 import org.apache.kudu.client.CreateTableOptions;
 import org.apache.kudu.client.KuduClient;
 import org.apache.kudu.client.KuduException;
-import org.apache.kudu.shaded.com.google.common.collect.ImmutableList;
 import org.apache.kudu.test.cluster.MiniKuduCluster;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Start and stop a Kudu MiniCluster for testing purposes.

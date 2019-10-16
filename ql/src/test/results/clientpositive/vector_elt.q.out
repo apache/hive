@@ -34,7 +34,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterLongColGreaterLongScalar(col 0:tinyint, val 0)
               predicate: (ctinyint > 0Y) (type: boolean)
-              Statistics: Num rows: 4096 Data size: 312018 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 6046 Data size: 460522 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ((UDFToInteger(ctinyint) % 2) + 1) (type: int), cstring1 (type: string), cint (type: int), elt(((UDFToInteger(ctinyint) % 2) + 1), cstring1, cint) (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
@@ -43,7 +43,7 @@ STAGE PLANS:
                     native: true
                     projectedOutputColumnNums: [14, 6, 2, 18]
                     selectExpressions: LongColAddLongScalar(col 13:int, val 1)(children: LongColModuloLongScalar(col 0:int, val 2)(children: col 0:tinyint) -> 13:int) -> 14:int, VectorElt(columns [16, 6, 17])(children: LongColAddLongScalar(col 15:int, val 1)(children: LongColModuloLongScalar(col 0:int, val 2)(children: col 0:tinyint) -> 15:int) -> 16:int, col 6:string, CastLongToString(col 2:int) -> 17:string) -> 18:string
-                Statistics: Num rows: 4096 Data size: 1069830 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 6046 Data size: 1579114 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 10
                   Limit Vectorization:
