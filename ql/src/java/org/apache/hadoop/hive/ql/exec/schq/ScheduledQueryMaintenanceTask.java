@@ -27,7 +27,12 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintWork;
 import org.apache.thrift.TException;
 
-public class ScheduledQueryMaintTask extends Task<ScheduledQueryMaintWork> {
+/**
+ * Scheduled query maintenance task.
+ *
+ * CREATES/ALTERS or DROPs a scheduled query.
+ */
+public class ScheduledQueryMaintenanceTask extends Task<ScheduledQueryMaintWork> {
 
   private static final long serialVersionUID = 1L;
 

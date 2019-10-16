@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplLoadTask;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogTask;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
-import org.apache.hadoop.hive.ql.exec.schq.ScheduledQueryMaintTask;
+import org.apache.hadoop.hive.ql.exec.schq.ScheduledQueryMaintenanceTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
@@ -114,7 +114,7 @@ public final class TaskFactory {
     taskvec.add(new TaskTuple<ExportWork>(ExportWork.class, ExportTask.class));
     taskvec.add(new TaskTuple<ReplTxnWork>(ReplTxnWork.class, ReplTxnTask.class));
     taskvec.add(new TaskTuple<DirCopyWork>(DirCopyWork.class, DirCopyTask.class));
-    taskvec.add(new TaskTuple<ScheduledQueryMaintWork>(ScheduledQueryMaintWork.class, ScheduledQueryMaintTask.class));
+    taskvec.add(new TaskTuple<ScheduledQueryMaintWork>(ScheduledQueryMaintWork.class, ScheduledQueryMaintenanceTask.class));
   }
 
   private static ThreadLocal<Integer> tid = new ThreadLocal<Integer>() {
