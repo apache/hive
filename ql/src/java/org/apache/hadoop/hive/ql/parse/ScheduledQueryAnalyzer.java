@@ -160,7 +160,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     ctx.setEnableUnparse(true);
     sem.analyze(input, ctx);
     sem.validate();
-    sem.unparse();
+    sem.executeUnparseTranlations();
 
     String expandedText = ctx.getTokenRewriteStream().toString(input.getTokenStartIndex(), input.getTokenStopIndex());
 

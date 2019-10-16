@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -1432,7 +1431,7 @@ public abstract class BaseSemanticAnalyzer {
     public Partition partHandle;
     public int numDynParts; // number of dynamic partition columns
     public List<Partition> partitions; // involved partitions in TableScanOperator/FileSinkOperator
-    public static enum SpecType {TABLE_ONLY, STATIC_PARTITION, DYNAMIC_PARTITION};
+    public static enum SpecType {TABLE_ONLY, STATIC_PARTITION, DYNAMIC_PARTITION}
     public SpecType specType;
 
     public TableSpec(Hive db, HiveConf conf, ASTNode ast)
@@ -2325,7 +2324,10 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  protected void unparse() {
+  /**
+   * Unparses the analyzed statement
+   */
+  protected void executeUnparseTranlations() {
     UnparseTranslator unparseTranslator = new UnparseTranslator(conf);
     unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
   }
