@@ -37,6 +37,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+/**
+ * ScheduledQuery integration test.
+ *
+ * Checks for more complex scenarios; like impersonation works when scheduled queries are executed.
+ */
 public class TestScheduledQueryIntegration {
 
   @ClassRule
@@ -99,10 +104,6 @@ public class TestScheduledQueryIntegration {
     setupAuthorization();
 
     ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
-
-    // ctas some table - this will open sessions/etc which will aid the scheduled query execution
-    //      ret = runAsUser("user1",
-    //          "create table junk0 as select 12 as i");
 
     runAsUser("user1",
         "create scheduled query s1 cron '* * * * * ? *' defined as create table tx1 as select 12 as i");
