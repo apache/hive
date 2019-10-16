@@ -15,26 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*FIXME MEMEME
 package org.apache.hadoop.hive.schq;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.util.Optional;
-
-import javax.jdo.PersistenceManager;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
-import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
-import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.schq.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -42,7 +33,6 @@ import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -67,8 +57,7 @@ public class TestScheduledQueryIntegration {
         // @formatter:on
     };
     for (String cmd : cmds) {
-      int ret = driver.run(cmd).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run(cmd);
     }
 
     ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
@@ -87,28 +76,23 @@ public class TestScheduledQueryIntegration {
   public static void dropTables(IDriver driver) throws Exception {
     String tables[] = { "tu" };
     for (String t : tables) {
-      int ret = driver.run("drop table if exists " + t).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run("drop table if exists " + t);
     }
   }
 
-  @Test
+  @Test(expected = CommandProcessorException.class)
   public void testBasicImpersonation() throws ParseException, Exception {
     CommandProcessorResponse ret;
 
     setupAuthorization();
 
     ret = runAsUser("user1", "create table t1 (a integer)");
-    assertEquals(0, ret.getResponseCode());
 
     ret = runAsUser("user2", "drop table t1");
-    assertEquals(40000, ret.getResponseCode());
   }
 
   @Test
   public void testScheduledQueryExecutionImpersonation() throws ParseException, Exception {
-    CommandProcessorResponse ret;
-
     env_setup.getTestCtx().hiveConf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME, "1s");
     env_setup.getTestCtx().hiveConf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL,
         "1s");
@@ -120,33 +104,32 @@ public class TestScheduledQueryIntegration {
     //      ret = runAsUser("user1",
     //          "create table junk0 as select 12 as i");
 
-    ret = runAsUser("user1",
+    runAsUser("user1",
         "create scheduled query s1 cron '* * * * * ? *' defined as create table tx1 as select 12 as i");
 
-    assertEquals(0, ret.getResponseCode());
 
     Thread.sleep(20000);
 
     // table exists - and owner is able to select from it
-    ret = runAsUser("user1", "select * from tx1");
-    assertEquals(0, ret.getResponseCode());
+    runAsUser("user1", "select * from tx1");
 
     // other user cant drop it
-    ret = runAsUser("user2", "drop table tx1");
-    assertEquals(40000, ret.getResponseCode());
+    try {
+      runAsUser("user2", "drop table tx1");
+      fail("should have failed");
+    } catch (CommandProcessorException cpe) {
+      assertEquals(40000, cpe.getResponseCode());
+    }
 
     // but the owner can drop it
-    ret = runAsUser("user1", "drop table tx1");
-    assertEquals(0, ret.getResponseCode());
+    runAsUser("user1", "drop table tx1");
   }
 
-  private CommandProcessorResponse runAsUser(String userName, String sql) {
+  private CommandProcessorResponse runAsUser(String userName, String sql) throws CommandProcessorException {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
     conf.set("user.name", userName);
     IDriver driver = createDriver();
-    CommandProcessorResponse ret;
-    ret = driver.run(sql);
-    return ret;
+    return driver.run(sql);
   }
 
   private void setupAuthorization() {
@@ -182,4 +165,3 @@ public class TestScheduledQueryIntegration {
     return driver;
   }
 }
-*/
