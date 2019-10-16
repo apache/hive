@@ -46,7 +46,7 @@ public class MetastoreBasedScheduledQueryService implements IScheduledQueryMaint
       ScheduledQueryPollResponse resp = getMSC().scheduledQueryPoll(request);
       return resp;
     } catch (Exception e) {
-      logException("Exception while polling scheduled queries", e);
+      LOG.error("Exception while polling scheduled queries", e);
       return null;
     }
   }
@@ -56,21 +56,12 @@ public class MetastoreBasedScheduledQueryService implements IScheduledQueryMaint
     try {
       getMSC().scheduledQueryProgress(info);
     } catch (Exception e) {
-      logException("Exception while updating scheduled execution status of: " + info.getScheduledExecutionId(), e);
+      LOG.error("Exception while updating scheduled execution status of: " + info.getScheduledExecutionId(), e);
     }
   }
 
   private IMetaStoreClient getMSC() throws MetaException, HiveException {
     return Hive.get(conf).getMSC();
-  }
-
-  static void logException(String msg, Exception e) {
-    LOG.error(msg, e);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(msg, e);
-    } else {
-      LOG.info(msg + ": " + e.getMessage());
-    }
   }
 
   @Override
