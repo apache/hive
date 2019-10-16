@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.hooks;
 
+import java.io.Serializable;
 import java.util.List;
+
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.junit.Assert;
 
 public class VerifyHiveSortedInputFormatUsedHook implements ExecuteWithHookContext {
 

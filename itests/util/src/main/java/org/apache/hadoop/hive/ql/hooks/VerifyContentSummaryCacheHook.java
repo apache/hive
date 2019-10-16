@@ -19,9 +19,10 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Map;
 
+import org.junit.Assert;
+
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
-import org.junit.Assert;
 
 public class VerifyContentSummaryCacheHook implements ExecuteWithHookContext {
 

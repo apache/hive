@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import java.util.Map;
-
+import org.junit.Assert;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.junit.Assert;
+
+import java.util.Map;
 
 public class ShowMapredStatsHook implements ExecuteWithHookContext {
 
