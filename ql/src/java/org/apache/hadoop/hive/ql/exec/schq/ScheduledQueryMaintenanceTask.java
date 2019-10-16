@@ -38,7 +38,7 @@ public class ScheduledQueryMaintenanceTask extends Task<ScheduledQueryMaintenanc
 
   @Override
   public String getName() {
-    return "SCHEDULED QUERY MAINT TASK";
+    return "SCHEDULED QUERY MAINTENANCE TASK";
   }
 
   @Override
