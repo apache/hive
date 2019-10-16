@@ -18,6 +18,35 @@
 
 package org.apache.hadoop.hive.conf;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.conf.Validator.PatternSet;
+import org.apache.hadoop.hive.conf.Validator.RangeValidator;
+import org.apache.hadoop.hive.conf.Validator.RatioValidator;
+import org.apache.hadoop.hive.conf.Validator.SizeValidator;
+import org.apache.hadoop.hive.conf.Validator.StringSet;
+import org.apache.hadoop.hive.conf.Validator.TimeValidator;
+import org.apache.hadoop.hive.conf.Validator.WritableDirectoryValidator;
+import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.common.HiveCompat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.security.auth.login.LoginException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -44,35 +73,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.security.auth.login.LoginException;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
-import org.apache.hadoop.hive.conf.Validator.PatternSet;
-import org.apache.hadoop.hive.conf.Validator.RangeValidator;
-import org.apache.hadoop.hive.conf.Validator.RatioValidator;
-import org.apache.hadoop.hive.conf.Validator.SizeValidator;
-import org.apache.hadoop.hive.conf.Validator.StringSet;
-import org.apache.hadoop.hive.conf.Validator.TimeValidator;
-import org.apache.hadoop.hive.conf.Validator.WritableDirectoryValidator;
-import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hive.common.HiveCompat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 /**
  * Hive Configuration.
