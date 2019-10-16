@@ -17,14 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.conf;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
-import org.apache.hadoop.hive.metastore.utils.StringUtils;
-import org.apache.hadoop.security.alias.CredentialProviderFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -40,6 +32,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * A set of definitions of config values used by the Metastore.  One of the key aims of this
@@ -764,6 +765,8 @@ public class MetastoreConf {
     RUNTIME_STATS_MAX_AGE("runtime.stats.max.age", "hive.metastore.runtime.stats.max.age", 86400 * 3, TimeUnit.SECONDS,
         "Stat entries which are older than this are removed."),
 
+    // FIXME remove this
+    @Deprecated
     SCHEDULED_QUERIES_CRON_SYNTAX("scheduled.queries.cron.syntax", "hive.metastore.scheduled.queries.cron.syntax",
         "QUARTZ", new StringSetValidator("UNIX", "QUARTZ", "CRON4J", "SPRING"),
         "Defines the format of the schedule expressions to be used in scheduled queries."),
@@ -774,7 +777,7 @@ public class MetastoreConf {
         "hive.metastore.scheduled.queries.execution.clean.frequency", 60, TimeUnit.SECONDS,
         "Interval of scheduled query maintenance task. Which removes executions above max age; and marks executions as timed out if the condition is met"),
     SCHEDULED_QUERIES_EXECUTION_MAX_AGE("scheduled.queries.execution.max.age",
-        "hive.metastore.scheduled.queries.execution.max.age", 3 * 86400, TimeUnit.SECONDS,
+        "hive.metastore.scheduled.queries.execution.max.age", 30 * 86400, TimeUnit.SECONDS,
         "Maximal age of a scheduled query execution entry before it is removed."),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
