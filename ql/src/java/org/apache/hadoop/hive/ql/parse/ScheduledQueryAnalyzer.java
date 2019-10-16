@@ -18,42 +18,17 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFEXISTS;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Stack;
-
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery._Fields;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.schq.ScheduledQueryMaintWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,14 +56,14 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(work));
   }
 
-  private void fillScheduledQuery(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schq)
+  private ScheduledQuery  fillScheduledQuery(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schq)
       throws SemanticException {
     if (type == ScheduledQueryMaintenanceRequestType.INSERT) {
-      populateUnfilled(schq, buildEmptySchq());
+      return composeOverlayObject(schq, buildEmptySchq());
     } else {
       try {
         ScheduledQuery oldSchq = db.getMSC().getScheduledQuery(schq.getScheduleKey());
-        populateUnfilled(schq, oldSchq);
+        return composeOverlayObject(schq, oldSchq);
       } catch (TException e) {
         throw new SemanticException("unable to get Scheduled query" + e);
       }
@@ -97,21 +72,28 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
 
   private ScheduledQuery buildEmptySchq() {
     ScheduledQuery ret = new ScheduledQuery();
-    // ret.setScheduleKey() -- not populated
-    // ret.setSchedule(schedule);
-    // ret.setQuery(query);
     ret.setEnabled(true);
     ret.setUser(SessionState.get().getUserName());
     return ret;
   }
 
-  private void populateUnfilled(ScheduledQuery schq, ScheduledQuery def) {
+  /**
+   * Composes an overlay object.
+   *
+   * Output is a flattened view of the input objects.
+   * having the value from the first one which has it defined from the overlays.
+   */
+  private ScheduledQuery composeOverlayObject(ScheduledQuery ...overlays) {
+    ScheduledQuery ret = new ScheduledQuery();
     _Fields[] q = ScheduledQuery._Fields.values();
     for (_Fields field : q) {
-      if (!schq.isSet(field) && def.isSet(field)) {
-        schq.setFieldValue(field, def.getFieldValue(field));
+      for (ScheduledQuery o : overlays) {
+        if (o.isSet(field)) {
+          ret.setFieldValue(field, o.getFieldValue(field));
+        }
       }
     }
+    return ret;
   }
 
   private ScheduledQueryMaintenanceRequestType translateAstType(int type) throws SemanticException {
