@@ -58,7 +58,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
 
   private ScheduledQuery  fillScheduledQuery(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schqChanges)
       throws SemanticException {
-    if (type == ScheduledQueryMaintenanceRequestType.INSERT) {
+    if (type == ScheduledQueryMaintenanceRequestType.CREATE) {
       return composeOverlayObject(schqChanges, buildEmptySchq());
     } else {
       try {
@@ -99,11 +99,11 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
   private ScheduledQueryMaintenanceRequestType translateAstType(int type) throws SemanticException {
     switch (type) {
     case HiveParser.TOK_CREATE_SCHEDULED_QUERY:
-      return ScheduledQueryMaintenanceRequestType.INSERT;
+      return ScheduledQueryMaintenanceRequestType.CREATE;
     case HiveParser.TOK_ALTER_SCHEDULED_QUERY:
-      return ScheduledQueryMaintenanceRequestType.UPDATE;
+      return ScheduledQueryMaintenanceRequestType.ALTER;
     case HiveParser.TOK_DROP_SCHEDULED_QUERY:
-      return ScheduledQueryMaintenanceRequestType.DELETE;
+      return ScheduledQueryMaintenanceRequestType.DROP;
     default:
       throw new SemanticException("Can't handle: " + type);
     }

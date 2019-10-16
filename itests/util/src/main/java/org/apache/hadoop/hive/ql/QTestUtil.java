@@ -294,7 +294,7 @@ public class QTestUtil {
     Set<String> scheduledQueries = ScheduledQueryCreationRegistryHook.getSchedules();
     for (String name : scheduledQueries) {
       ScheduledQueryMaintenanceRequest request = new ScheduledQueryMaintenanceRequest();
-      request.setType(ScheduledQueryMaintenanceRequestType.DELETE);
+      request.setType(ScheduledQueryMaintenanceRequestType.DROP);
       ScheduledQuery schq = new ScheduledQuery();
       schq.setScheduleKey(new ScheduledQueryKey(name, conf.getVar(ConfVars.HIVE_SCHEDULED_QUERIES_NAMESPACE)));
       request.setScheduledQuery(schq);

@@ -96,7 +96,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
     ScheduledQuery schq = createScheduledQuery(createKey("create", "c1"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
 
@@ -112,7 +112,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     ScheduledQuery schq = createScheduledQuery(createKey("createInvalidSch", "c1"));
     schq.setSchedule("asd asd");
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
   }
@@ -121,7 +121,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   public void testDuplicateCreate() throws Exception {
     ScheduledQuery schq = createScheduledQuery(createKey("duplicate", "c1"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
     client.scheduledQueryMaintenance(r);
@@ -132,11 +132,11 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   public void testUpdate() throws Exception {
     ScheduledQuery schq = createScheduledQuery(createKey("update", "ns1"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
 
-    r.setType(ScheduledQueryMaintenanceRequestType.UPDATE);
+    r.setType(ScheduledQueryMaintenanceRequestType.ALTER);
     ScheduledQuery schq2 = createScheduledQuery2(createKey("update", "ns1"));
     schq2.getScheduleKey().setClusterNamespace("ns1");
     r.setScheduledQuery(schq2);
@@ -153,10 +153,10 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   public void testNormalDelete() throws Exception {
     ScheduledQuery schq = createScheduledQuery(createKey("q1", "nsdel"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
-    r.setType(ScheduledQueryMaintenanceRequestType.DELETE);
+    r.setType(ScheduledQueryMaintenanceRequestType.DROP);
     client.scheduledQueryMaintenance(r);
   }
 
@@ -166,7 +166,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     // insert
     ScheduledQuery schq = createScheduledQuery(createKey("del2", testCaseNS));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
 
@@ -178,7 +178,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     client.scheduledQueryPoll(pollRequest);
 
     // delete scheduled query
-    r.setType(ScheduledQueryMaintenanceRequestType.DELETE);
+    r.setType(ScheduledQueryMaintenanceRequestType.DROP);
     client.scheduledQueryMaintenance(r);
 
   }
@@ -187,7 +187,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   public void testDeleteNonExistent() throws Exception {
     ScheduledQuery schq = createScheduledQuery(createKey("nonexistent", "nsdel"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(ScheduledQueryMaintenanceRequestType.DELETE);
+    r.setType(ScheduledQueryMaintenanceRequestType.DROP);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
   }
@@ -208,7 +208,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
       };
       ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", "exclusive"));
       ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-      r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+      r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
       r.setScheduledQuery(schq);
       client.scheduledQueryMaintenance(r);
       // wait 1 sec for next execution
@@ -264,7 +264,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   public void testPoll() throws Exception {
     ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", "polltest"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
 
@@ -353,7 +353,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
     ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", namespace));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
     r.setScheduledQuery(schq);
     objStore.scheduledQueryMaintenance(r);
 

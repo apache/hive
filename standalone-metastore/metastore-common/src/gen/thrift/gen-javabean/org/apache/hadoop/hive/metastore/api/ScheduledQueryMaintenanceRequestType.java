@@ -12,9 +12,9 @@ import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
 public enum ScheduledQueryMaintenanceRequestType implements org.apache.thrift.TEnum {
-  INSERT(1),
-  UPDATE(2),
-  DELETE(3);
+  CREATE(1),
+  ALTER(2),
+  DROP(3);
 
   private final int value;
 
@@ -36,11 +36,11 @@ public enum ScheduledQueryMaintenanceRequestType implements org.apache.thrift.TE
   public static ScheduledQueryMaintenanceRequestType findByValue(int value) { 
     switch (value) {
       case 1:
-        return INSERT;
+        return CREATE;
       case 2:
-        return UPDATE;
+        return ALTER;
       case 3:
-        return DELETE;
+        return DROP;
       default:
         return null;
     }

@@ -12731,13 +12731,13 @@ public class ObjectStore implements RawStore, Configurable {
   public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request)
       throws MetaException, NoSuchObjectException, AlreadyExistsException, InvalidInputException {
     switch (request.getType()) {
-    case INSERT:
+    case CREATE:
       scheduledQueryInsert(request.getScheduledQuery());
       break;
-    case UPDATE:
+    case ALTER:
       scheduledQueryUpdate(request.getScheduledQuery());
       break;
-    case DELETE:
+    case DROP:
       scheduledQueryDelete(request.getScheduledQuery());
       break;
     default:
