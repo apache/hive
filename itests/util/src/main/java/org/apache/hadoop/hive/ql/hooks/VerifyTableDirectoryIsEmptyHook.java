@@ -17,12 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.hooks;
 
-import java.util.Arrays;
 import java.io.IOException;
 
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 // This hook verifies that the location of every output table is empty

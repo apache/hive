@@ -68,8 +68,7 @@ public class TestScheduledQueryService {
         // @formatter:on
     };
     for (String cmd : cmds) {
-      int ret = driver.run(cmd).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run(cmd);
     }
   }
 
@@ -82,14 +81,12 @@ public class TestScheduledQueryService {
   public static void dropTables(IDriver driver) throws Exception {
     String tables[] = { "tu" };
     for (String t : tables) {
-      int ret = driver.run("drop table if exists " + t).getResponseCode();
-      assertEquals("Checking command success", 0, ret);
+      driver.run("drop table if exists " + t);
     }
   }
 
   private int getNumRowsReturned(IDriver driver, String query) throws Exception {
-    int ret = driver.run(query).getResponseCode();
-    assertEquals("Checking command success", 0, ret);
+    driver.run(query);
     FetchTask ft = driver.getFetchTask();
     List res = new ArrayList();
     if (ft == null) {

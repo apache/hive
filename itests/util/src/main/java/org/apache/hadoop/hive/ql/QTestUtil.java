@@ -28,7 +28,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -91,14 +90,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.io.Files;
 
 /**
  * QTestUtil.
@@ -295,6 +286,7 @@ public class QTestUtil {
     }
   }
 
+  // FIXME: consider moving this to a qtest option?
   public void clearScheduledQueries() {
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
@@ -309,7 +301,7 @@ public class QTestUtil {
       try {
         db.getMSC().scheduledQueryMaintenance(request);
       } catch (Exception e) {
-        LOG.error("Cant remove scheduled query: " + name + " " + e.getMessage());
+        LOG.error("Can't remove scheduled query: " + name + " " + e.getMessage());
       }
     }
     scheduledQueries.clear();

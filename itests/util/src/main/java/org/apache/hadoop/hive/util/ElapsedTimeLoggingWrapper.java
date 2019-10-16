@@ -20,8 +20,9 @@ package org.apache.hadoop.hive.util;
 
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Stopwatch;
 import org.slf4j.Logger;
+
+import com.google.common.base.Stopwatch;
 
 public abstract class ElapsedTimeLoggingWrapper<T> {
 

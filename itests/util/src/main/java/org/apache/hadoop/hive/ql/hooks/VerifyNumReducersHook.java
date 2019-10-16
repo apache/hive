@@ -19,14 +19,12 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Map;
 
-import org.junit.Assert;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezProgressMonitor;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
 import org.apache.tez.dag.api.client.Progress;
+import org.junit.Assert;
 
 /**
  *

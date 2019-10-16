@@ -19,11 +19,10 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.List;
 
-import org.junit.Assert;
-
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
+import org.junit.Assert;
 
 public class VerifyIsLocalModeHook implements ExecuteWithHookContext {
 

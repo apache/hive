@@ -17,10 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.hooks;
 
-import org.junit.Assert;
-
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.junit.Assert;
 
 // This hook verifies that the location of every partition in the inputs and outputs starts with
 // the location of the table.  It is a very simple check to make sure it is a subdirectory.

@@ -17,12 +17,12 @@
  */
 package org.apache.hive.beeline;
 
-import org.junit.runners.Parameterized;
-import org.junit.runners.model.RunnerScheduler;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.runners.Parameterized;
+import org.junit.runners.model.RunnerScheduler;
 
 /**
  * Class to run Parameterized test in parallel.

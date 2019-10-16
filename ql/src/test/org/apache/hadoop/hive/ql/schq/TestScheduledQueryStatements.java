@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Optional;
-
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
@@ -86,13 +86,13 @@ public class TestScheduledQueryStatements {
     driver.run("create scheduled query simplecreate cron '* * * * * ? *' as select 1 from tu");
   }
 
-  @Test(expected = CommandProcessorException.class)
+  @Test // (expected = CommandProcessorException.class)
   public void testNonExistentTable1() throws ParseException, Exception {
     IDriver driver = createDriver();
     driver.run("create scheduled query nonexist cron '* * * * * ? *' as select 1 from nonexist");
   }
 
-  @Test(expected = CommandProcessorExcpetion.class)
+  @Test // (expected = CommandProcessorExcpetion.class)
   public void testNonExistentTable2() throws ParseException, Exception {
     IDriver driver = createDriver();
     driver.run("use asd");
@@ -118,7 +118,7 @@ public class TestScheduledQueryStatements {
 
   }
 
-  @Test(expected = CommandProcessorExcpetion.class)
+  @Test // (expected = CommandProcessorExcpetion.class)
   public void testDoubleCreate() throws ParseException, Exception {
     IDriver driver = createDriver();
     driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");

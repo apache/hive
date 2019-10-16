@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.udf;
 
+import java.io.IOException;
+
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileSplit;
@@ -27,8 +29,6 @@ import org.apache.hadoop.mapred.LineRecordReader;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
-
-import java.io.IOException;
 
 /**
 A simple input format that does a rot13 on the inputs
