@@ -22,13 +22,13 @@ import java.io.Serializable;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 
-public class ScheduledQueryMaintWork implements Serializable {
+public class ScheduledQueryMaintenanceWork implements Serializable {
 
   private static final long serialVersionUID = 1L;
   private ScheduledQueryMaintenanceRequestType type;
   private ScheduledQuery schq;
 
-  public ScheduledQueryMaintWork(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schq) {
+  public ScheduledQueryMaintenanceWork(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schq) {
     this.type = type;
     this.schq = schq;
   }

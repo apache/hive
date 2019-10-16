@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintWork;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintenanceWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -42,7 +42,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    ScheduledQueryMaintWork work;
+    ScheduledQueryMaintenanceWork work;
     ScheduledQueryMaintenanceRequestType type = translateAstType(ast.getToken().getType());
     ScheduledQuery parsedSchq = interpretAstNode(ast);
     ScheduledQuery schq = fillScheduledQuery(type, parsedSchq);
@@ -52,7 +52,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     } catch (TException e) {
       throw new SemanticException("ScheduledQuery is invalid", e);
     }
-    work = new ScheduledQueryMaintWork(type, schq);
+    work = new ScheduledQueryMaintenanceWork(type, schq);
     rootTasks.add(TaskFactory.get(work));
   }
 

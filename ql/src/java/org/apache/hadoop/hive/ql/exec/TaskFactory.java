@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintWork;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintenanceWork;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -114,7 +114,7 @@ public final class TaskFactory {
     taskvec.add(new TaskTuple<ExportWork>(ExportWork.class, ExportTask.class));
     taskvec.add(new TaskTuple<ReplTxnWork>(ReplTxnWork.class, ReplTxnTask.class));
     taskvec.add(new TaskTuple<DirCopyWork>(DirCopyWork.class, DirCopyTask.class));
-    taskvec.add(new TaskTuple<ScheduledQueryMaintWork>(ScheduledQueryMaintWork.class, ScheduledQueryMaintenanceTask.class));
+    taskvec.add(new TaskTuple<ScheduledQueryMaintenanceWork>(ScheduledQueryMaintenanceWork.class, ScheduledQueryMaintenanceTask.class));
   }
 
   private static ThreadLocal<Integer> tid = new ThreadLocal<Integer>() {

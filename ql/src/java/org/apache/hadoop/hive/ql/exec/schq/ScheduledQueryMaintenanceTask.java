@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintWork;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintenanceWork;
 import org.apache.thrift.TException;
 
 /**
@@ -32,7 +32,7 @@ import org.apache.thrift.TException;
  *
  * CREATES/ALTERS or DROPs a scheduled query.
  */
-public class ScheduledQueryMaintenanceTask extends Task<ScheduledQueryMaintWork> {
+public class ScheduledQueryMaintenanceTask extends Task<ScheduledQueryMaintenanceWork> {
 
   private static final long serialVersionUID = 1L;
 
