@@ -44,8 +44,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     ScheduledQueryMaintWork work;
     ScheduledQueryMaintenanceRequestType type = translateAstType(ast.getToken().getType());
-    ScheduledQuery schq = interpretAstNode(ast);
-    fillScheduledQuery(type, schq);
+    ScheduledQuery parsedSchq = interpretAstNode(ast);
+    ScheduledQuery schq = fillScheduledQuery(type, parsedSchq);
     LOG.info("scheduled query operation: " + type + " " + schq);
     try {
       schq.validate();
@@ -56,14 +56,14 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(work));
   }
 
-  private ScheduledQuery  fillScheduledQuery(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schq)
+  private ScheduledQuery  fillScheduledQuery(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schqChanges)
       throws SemanticException {
     if (type == ScheduledQueryMaintenanceRequestType.INSERT) {
-      return composeOverlayObject(schq, buildEmptySchq());
+      return composeOverlayObject(schqChanges, buildEmptySchq());
     } else {
       try {
-        ScheduledQuery oldSchq = db.getMSC().getScheduledQuery(schq.getScheduleKey());
-        return composeOverlayObject(schq, oldSchq);
+        ScheduledQuery schqStored = db.getMSC().getScheduledQuery(schqChanges.getScheduleKey());
+        return composeOverlayObject(schqChanges, schqStored);
       } catch (TException e) {
         throw new SemanticException("unable to get Scheduled query" + e);
       }
