@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.schq.ScheduledQueryMaintWork;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;

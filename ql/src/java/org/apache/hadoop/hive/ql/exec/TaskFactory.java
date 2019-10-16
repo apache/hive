@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.schq.ScheduledQueryMaintWork;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintWork;
 
 import com.google.common.annotations.VisibleForTesting;
 

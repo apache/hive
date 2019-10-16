@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.ql.schq;
+package org.apache.hadoop.hive.ql.scheduled;
 
 import java.io.Closeable;
 import java.io.IOException;

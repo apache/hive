@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.schq.ScheduledQueryMaintWork;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintWork;
 import org.apache.thrift.TException;
 
 public class ScheduledQueryMaintTask extends Task<ScheduledQueryMaintWork> {

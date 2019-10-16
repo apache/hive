@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.ql.schq;
+package org.apache.hadoop.hive.ql.scheduled;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;

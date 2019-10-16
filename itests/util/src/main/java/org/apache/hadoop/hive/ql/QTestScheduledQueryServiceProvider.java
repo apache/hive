@@ -1,7 +1,7 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.ql.qoption.QTestOptionHandler;
-import org.apache.hadoop.hive.ql.schq.ScheduledQueryExecutionService;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 
 /**
  * Adding this qtestoption enables the scheduled query service.

@@ -78,7 +78,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
-import org.apache.hadoop.hive.ql.schq.ScheduledQueryExecutionService;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.PolicyProviderContainer;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeSynchronizer;
