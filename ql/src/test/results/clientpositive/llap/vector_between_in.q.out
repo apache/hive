@@ -492,7 +492,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColumnBetween(col 3:date, left -2, right 1)
                     predicate: cdate BETWEEN DATE'1969-12-30' AND DATE'1970-01-02' (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 37744 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3087 Data size: 85288 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cdate (type: date)
                       outputColumnNames: _col0
@@ -500,7 +500,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [3]
-                      Statistics: Num rows: 1365 Data size: 37744 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3087 Data size: 85288 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
                         sort order: +
@@ -508,7 +508,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1365 Data size: 37744 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3087 Data size: 85288 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -536,13 +536,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1365 Data size: 37744 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3087 Data size: 85288 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1365 Data size: 37744 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3087 Data size: 85288 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -592,7 +592,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColumnNotBetween(col 3:date, left -610, right 608)
                     predicate: cdate NOT BETWEEN DATE'1968-05-01' AND DATE'1971-09-01' (type: boolean)
-                    Statistics: Num rows: 10924 Data size: 301616 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 462 Data size: 12824 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cdate (type: date)
                       outputColumnNames: _col0
@@ -600,7 +600,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [3]
-                      Statistics: Num rows: 10924 Data size: 301616 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 462 Data size: 12824 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
                         sort order: +
@@ -608,7 +608,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 10924 Data size: 301616 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 462 Data size: 12824 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -636,13 +636,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 10924 Data size: 301616 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 462 Data size: 12824 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 10924 Data size: 301616 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 462 Data size: 12824 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -692,7 +692,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColumnBetween(col 1:decimal(20,10), left -20, right 45.9918918919)
                     predicate: cdecimal1 BETWEEN -20 AND 45.9918918919 (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 114240 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 21 Data size: 1904 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cdecimal1 (type: decimal(20,10))
                       outputColumnNames: _col0
@@ -700,7 +700,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [1]
-                      Statistics: Num rows: 1365 Data size: 114240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 21 Data size: 1904 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(20,10))
                         sort order: +
@@ -708,7 +708,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1365 Data size: 114240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 21 Data size: 1904 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -736,13 +736,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1365 Data size: 114240 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 21 Data size: 1904 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1365 Data size: 114240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 21 Data size: 1904 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -792,13 +792,13 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColumnNotBetween(col 1:decimal(20,10), left -2000, right 4390.1351351351)
                     predicate: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
-                    Statistics: Num rows: 10924 Data size: 913472 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 12259 Data size: 1025136 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: []
-                      Statistics: Num rows: 10924 Data size: 913472 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 12259 Data size: 1025136 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
