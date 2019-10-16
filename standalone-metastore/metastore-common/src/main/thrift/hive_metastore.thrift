@@ -1780,9 +1780,9 @@ struct ScheduledQuery {
 }
 
 enum ScheduledQueryMaintenanceRequestType {
-    INSERT = 1,
-    UPDATE = 2,
-    DELETE = 3,
+    CREATE = 1,
+    ALTER = 2,
+    DROP = 3,
 }
 
 struct ScheduledQueryMaintenanceRequest {
