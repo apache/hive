@@ -18,13 +18,6 @@
 
 package org.apache.hive.beeline;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.hadoop.hive.ql.QTestProcessExecResult;
-import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
-import org.apache.hadoop.util.Shell;
-import org.apache.hive.common.util.StreamPrinter;
-import org.apache.hive.beeline.ConvertedOutputFile.Converter;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +30,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.hive.ql.QTestProcessExecResult;
+import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
+import org.apache.hadoop.util.Shell;
+import org.apache.hive.beeline.ConvertedOutputFile.Converter;
+import org.apache.hive.common.util.StreamPrinter;
 
 /**
  * Class for representing a Query and the connected files. It provides accessors for the specific

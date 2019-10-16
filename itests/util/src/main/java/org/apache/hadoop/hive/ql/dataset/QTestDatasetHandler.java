@@ -35,6 +35,17 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Datasets are provided by this handler.
+ * 
+ * An invocation of:
+ * 
+ * <pre>
+ * --! qt:dataset:sample
+ * </pre>
+ * 
+ * will make sure that the dataset named sample is loaded prior to executing the test.
+ */
 public class QTestDatasetHandler implements QTestOptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger("QTestDatasetHandler");
 

@@ -51,6 +51,10 @@ import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
@@ -59,6 +63,7 @@ import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ScheduledQueryCreationRegistryHook;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -216,7 +221,14 @@ public class QTestUtil {
     this.cleanupScript = scriptsDir + File.separator + testArgs.getCleanupScript();
 
     postInit();
+    conf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME, "1s");
+    conf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL, "1s");
     savedConf = new HiveConf(conf);
+
+    dispatcher = new QTestOptionDispatcher();
+    dispatcher.register("dataset", datasetHandler);
+    dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider());
+
   }
 
   private String getScriptsDir() {
@@ -257,6 +269,7 @@ public class QTestUtil {
    * Clear out any side effects of running tests
    */
   public void clearPostTestEffects() throws Exception {
+    dispatcher.afterTest(this);
     miniClusters.postTest(conf);
   }
 
@@ -273,6 +286,26 @@ public class QTestUtil {
     }
   }
 
+  // FIXME: consider moving this to a qtest option?
+  public void clearScheduledQueries() {
+    if (System.getenv(QTEST_LEAVE_FILES) != null) {
+      return;
+    }
+    Set<String> scheduledQueries = ScheduledQueryCreationRegistryHook.getSchedules();
+    for (String name : scheduledQueries) {
+      ScheduledQueryMaintenanceRequest request = new ScheduledQueryMaintenanceRequest();
+      request.setType(ScheduledQueryMaintenanceRequestType.DROP);
+      ScheduledQuery schq = new ScheduledQuery();
+      schq.setScheduleKey(new ScheduledQueryKey(name, conf.getVar(ConfVars.HIVE_SCHEDULED_QUERIES_NAMESPACE)));
+      request.setScheduledQuery(schq);
+      try {
+        db.getMSC().scheduledQueryMaintenance(request);
+      } catch (Exception e) {
+        LOG.error("Can't remove scheduled query: " + name + " " + e.getMessage());
+      }
+    }
+    scheduledQueries.clear();
+  }
   public void clearUDFsCreatedDuringTests() throws Exception {
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
@@ -436,6 +469,7 @@ public class QTestUtil {
     conf.setBoolean("hive.test.shutdown.phase", true);
 
     clearTablesCreatedDuringTests();
+    clearScheduledQueries();
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
 
@@ -552,6 +586,7 @@ public class QTestUtil {
 
     dispatcher.process(file);
     dispatcher.beforeTest(this);
+
 
     if (qTestResultProcessor.shouldNotReuseSession(fileName)) {
       newSession(false);
