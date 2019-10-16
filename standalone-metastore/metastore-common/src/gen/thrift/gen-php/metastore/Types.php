@@ -282,13 +282,13 @@ final class WMPoolSchedulingPolicy {
 }
 
 final class ScheduledQueryMaintenanceRequestType {
-  const INSERT = 1;
-  const UPDATE = 2;
-  const DELETE = 3;
+  const CREATE = 1;
+  const ALTER = 2;
+  const DROP = 3;
   static public $__names = array(
-    1 => 'INSERT',
-    2 => 'UPDATE',
-    3 => 'DELETE',
+    1 => 'CREATE',
+    2 => 'ALTER',
+    3 => 'DROP',
   );
 }
 

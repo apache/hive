@@ -201,11 +201,11 @@ module WMPoolSchedulingPolicy
 end
 
 module ScheduledQueryMaintenanceRequestType
-  INSERT = 1
-  UPDATE = 2
-  DELETE = 3
-  VALUE_MAP = {1 => "INSERT", 2 => "UPDATE", 3 => "DELETE"}
-  VALID_VALUES = Set.new([INSERT, UPDATE, DELETE]).freeze
+  CREATE = 1
+  ALTER = 2
+  DROP = 3
+  VALUE_MAP = {1 => "CREATE", 2 => "ALTER", 3 => "DROP"}
+  VALID_VALUES = Set.new([CREATE, ALTER, DROP]).freeze
 end
 
 module QueryState

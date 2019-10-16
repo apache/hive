@@ -427,20 +427,20 @@ class WMPoolSchedulingPolicy:
   }
 
 class ScheduledQueryMaintenanceRequestType:
-  INSERT = 1
-  UPDATE = 2
-  DELETE = 3
+  CREATE = 1
+  ALTER = 2
+  DROP = 3
 
   _VALUES_TO_NAMES = {
-    1: "INSERT",
-    2: "UPDATE",
-    3: "DELETE",
+    1: "CREATE",
+    2: "ALTER",
+    3: "DROP",
   }
 
   _NAMES_TO_VALUES = {
-    "INSERT": 1,
-    "UPDATE": 2,
-    "DELETE": 3,
+    "CREATE": 1,
+    "ALTER": 2,
+    "DROP": 3,
   }
 
 class QueryState:
