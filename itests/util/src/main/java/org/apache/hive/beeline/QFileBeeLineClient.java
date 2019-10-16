@@ -18,6 +18,11 @@
 
 package org.apache.hive.beeline;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
+import org.apache.hive.beeline.ConvertedOutputFile.Converter;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -30,10 +35,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
-import org.apache.hive.beeline.ConvertedOutputFile.Converter;
 
 /**
  * QFile test client using BeeLine. It can be used to submit a list of command strings, or a QFile.

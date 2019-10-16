@@ -18,12 +18,12 @@
 
 package org.apache.hive.beeline;
 
-import java.io.PrintStream;
-
 import org.apache.hadoop.hive.common.io.DigestPrintStream;
 import org.apache.hadoop.hive.common.io.FetchConverter;
 import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortPrintStream;
+
+import java.io.PrintStream;
 
 /**
  * Class for representing an OutputFile, into which the writes are converted by the existing
