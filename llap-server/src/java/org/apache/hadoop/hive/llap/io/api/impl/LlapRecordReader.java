@@ -191,7 +191,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       isAcidFormat = false;
     }
 
-    this.includes = new IncludesImpl(tableIncludedCols, isAcidScan && isAcidFormat, rbCtx,
+    this.includes = new IncludesImpl(tableIncludedCols, isAcidFormat, rbCtx,
         schema, job, isAcidScan && acidReader.includeAcidColumns());
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.

@@ -279,6 +279,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
         boolean hasDeleteDelta = deltas != null && !deltas.isEmpty();
         return VectorizedOrcAcidRowBatchReader.canUseLlapIoForAcid(this, hasDeleteDelta, conf);
       } else {
+        LOG.info("Skipping Llap IO based on the following: [vectorized={}, hive.llap.io.acid={}] for {}",
+            Utilities.getIsVectorized(conf), HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ACID_ENABLED), this);
         return false;
       }
     } else {
