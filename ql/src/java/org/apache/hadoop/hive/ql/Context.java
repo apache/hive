@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.QB;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
@@ -170,6 +171,10 @@ public class Context {
 
   // Load data rewrite
   private Table tempTableForLoad;
+  /**
+   * Unparsing is not available in {@link SemanticAnalyzer} by default - because of performance reasons.
+   * After enabling unparsing before analysis - a valid query unparse can be done.
+   */
   private boolean enableUnparse;
 
   public void setOperation(Operation operation) {
@@ -188,7 +193,7 @@ public class Context {
    * These ops require special handling in various places
    * (note that Insert into Acid table is in OTHER category)
    */
-  public enum Operation {UPDATE, DELETE, MERGE, OTHER};
+  public enum Operation {UPDATE, DELETE, MERGE, OTHER}
   public enum DestClausePrefix {
     INSERT("insclause-"), UPDATE("updclause-"), DELETE("delclause-");
     private final String prefix;
