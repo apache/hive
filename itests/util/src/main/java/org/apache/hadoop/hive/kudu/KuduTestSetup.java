@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.kudu;
 
-import java.io.File;
-import java.util.Arrays;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestMiniClusters;
@@ -32,6 +29,9 @@ import org.apache.kudu.client.KuduException;
 import org.apache.kudu.test.cluster.MiniKuduCluster;
 
 import com.google.common.collect.ImmutableList;
+
+import java.io.File;
+import java.util.Arrays;
 
 /**
  * Start and stop a Kudu MiniCluster for testing purposes.
