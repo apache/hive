@@ -18,13 +18,8 @@
 package org.apache.hadoop.hive.ql.schq;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import java.util.Optional;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
-import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
@@ -32,6 +27,8 @@ import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
@@ -40,6 +37,8 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+
+import java.util.Optional;
 
 public class TestScheduledQueryStatements {
 
@@ -87,13 +86,13 @@ public class TestScheduledQueryStatements {
     driver.run("create scheduled query simplecreate cron '* * * * * ? *' as select 1 from tu");
   }
 
-  @Test // (expected = CommandProcessorException.class)
+  @Test(expected = CommandProcessorException.class)
   public void testNonExistentTable1() throws ParseException, Exception {
     IDriver driver = createDriver();
     driver.run("create scheduled query nonexist cron '* * * * * ? *' as select 1 from nonexist");
   }
 
-  @Test // (expected = CommandProcessorExcpetion.class)
+  @Test(expected = CommandProcessorException.class)
   public void testNonExistentTable2() throws ParseException, Exception {
     IDriver driver = createDriver();
     driver.run("use asd");
@@ -119,7 +118,7 @@ public class TestScheduledQueryStatements {
 
   }
 
-  @Test // (expected = CommandProcessorExcpetion.class)
+  @Test(expected = CommandProcessorException.class)
   public void testDoubleCreate() throws ParseException, Exception {
     IDriver driver = createDriver();
     driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");

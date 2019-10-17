@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.base.Objects;
+
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -28,10 +30,15 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintenanceWork;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
 
 public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
   private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryAnalyzer.class);
@@ -47,6 +54,10 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     ScheduledQuery parsedSchq = interpretAstNode(ast);
     ScheduledQuery schq = fillScheduledQuery(type, parsedSchq);
     LOG.info("scheduled query operation: " + type + " " + schq);
+    if (!isAdmin() && !Objects.equal(SessionState.get().getUserName(), schq.getUser())) {
+      throw new SemanticException(
+          "Permission denied: altering a scheduled query belonging to a different user is prohibitted");
+    }
     try {
       schq.validate();
     } catch (TException e) {
@@ -138,7 +149,10 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       return;
     case HiveParser.TOK_EXECUTED_AS:
       // FIXME: check owner prior to alter!@#@
-      //FIXME: if(!ADMIN)throw exception
+      if (!isAdmin()) {
+        // FIXME: this is the right exception type?
+        throw new SemanticException("Only ADMINs may changed the executing user!");
+      }
       schq.setUser(unescapeSQLString(node.getChild(0).getText()));
       return;
     case HiveParser.TOK_QUERY:
@@ -147,6 +161,19 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     default:
       throw new SemanticException("Unexpected token: " + node.getType());
     }
+  }
+
+  private boolean isAdmin() {
+    if (SessionState.get().getAuthorizerV2() != null) {
+      try {
+        SessionState.get().getAuthorizerV2().checkPrivileges(HiveOperationType.KILL_QUERY,
+            new ArrayList<HivePrivilegeObject>(), new ArrayList<HivePrivilegeObject>(),
+            new HiveAuthzContext.Builder().build());
+        return true;
+      } catch (Exception e) {
+      }
+    }
+    return false;
   }
 
   /**
