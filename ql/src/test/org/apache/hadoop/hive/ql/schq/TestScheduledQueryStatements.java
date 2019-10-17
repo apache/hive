@@ -108,6 +108,7 @@ public class TestScheduledQueryStatements {
   public void testCreateFromNonDefaultDatabase() throws ParseException, Exception {
     IDriver driver = createDriver();
 
+    driver.run("set role admin");
     driver.run("use asd");
 
     driver.run("create table tt (a integer)");
