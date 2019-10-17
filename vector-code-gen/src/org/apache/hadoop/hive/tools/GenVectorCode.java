@@ -316,6 +316,8 @@ public class GenVectorCode extends Task {
       {"Decimal64ColumnArithmeticDecimal64Column", "Add", "+"},
       {"Decimal64ColumnArithmeticDecimal64Column", "Subtract", "-"},
 
+      {"Decimal64ColumnDivideDecimal64Scalar", "Divide", "/"},
+
       {"ColumnCompareScalar", "Equal", "long", "long", "=="},
       {"ColumnCompareScalar", "Equal", "long", "double", "=="},
       {"ColumnCompareScalar", "Equal", "double", "double", "=="},
@@ -1414,6 +1416,8 @@ public class GenVectorCode extends Task {
         generateDecimal64ScalarArithmeticDecimal64Column(tdesc);
       } else if (tdesc[0].equals("Decimal64ColumnArithmeticDecimal64Column")) {
         generateDecimal64ColumnArithmeticDecimal64Column(tdesc);
+      } else if (tdesc[0].equals("Decimal64ColumnDivideDecimal64Scalar")) {
+        generateDecimal64ColumnArithmeticDecimal64Scalar(tdesc);
       } else if (tdesc[0].equals("ColumnUnaryMinus")) {
         generateColumnUnaryMinus(tdesc);
       } else if (tdesc[0].equals("ColumnUnaryFunc")) {
