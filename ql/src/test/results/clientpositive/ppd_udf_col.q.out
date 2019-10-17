@@ -392,6 +392,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+<<<<<<< HEAD
 PREHOOK: query: EXPLAIN
 SELECT key, randum123
 FROM (SELECT *, cast(rand() as double) AS randum123 FROM src WHERE key = 100) a
@@ -833,3 +834,5 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+=======
+>>>>>>> parent of 34adf31af4... HIVE-19940: Push predicates with deterministic UDFs with RBO (Janaki Lahorani, reviewed by Vineet Garg, Naveen Gangam)
