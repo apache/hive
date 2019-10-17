@@ -1613,7 +1613,6 @@ WHERE
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer());
 
 
-drop view SCHEDULED_QUERIES ;
 create or replace view SCHEDULED_QUERIES  as
 select
   `SCHEDULED_QUERY_ID` ,
