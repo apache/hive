@@ -108,6 +108,7 @@ class LlapRecordReader
   private final ReadPipeline rp;
   private final ExecutorService executor;
   private final boolean isAcidScan;
+  private final boolean isAcidFormat;
 
   /**
    * Creates the record reader and checks the input-specific compatibility.
@@ -180,10 +181,14 @@ class LlapRecordReader
 
     this.isVectorized = HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
     if (isAcidScan) {
+      OrcSplit orcSplit = (OrcSplit) split;
       this.acidReader = new VectorizedOrcAcidRowBatchReader(
-          (OrcSplit) split, jobConf, Reporter.NULL, null, rbCtx, true);
+          orcSplit, jobConf, Reporter.NULL, null, rbCtx, true);
+      isAcidFormat = !orcSplit.isOriginal();
+    } else {
+      isAcidFormat = false;
     }
-    this.includes = new IncludesImpl(tableIncludedCols, isAcidScan, rbCtx, schema, job,
+    this.includes = new IncludesImpl(tableIncludedCols, isAcidFormat, rbCtx, schema, job,
         isAcidScan && acidReader.includeAcidColumns());
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
@@ -341,7 +346,7 @@ class LlapRecordReader
       counters.incrWallClockCounter(LlapIOCounters.CONSUMER_TIME_NS, firstReturnTime);
       return false;
     }
-    if (isAcidScan) {
+    if (isAcidFormat) {
       vrb.selectedInUse = true;//why?
       if (isVectorized) {
         // TODO: relying everywhere on the magical constants and columns being together means ACID
