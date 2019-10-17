@@ -55,13 +55,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     ScheduledQueryMaintenanceRequestType type = translateAstType(ast.getToken().getType());
     ScheduledQuery parsedSchq = interpretAstNode(ast);
     ScheduledQuery schq = fillScheduledQuery(type, parsedSchq);
-    // make sure that we have
     checkAuthorization(type, schq);
     LOG.info("scheduled query operation: " + type + " " + schq);
-    if (!isAdmin() && !Objects.equal(SessionState.get().getUserName(), schq.getUser())) {
-      throw new SemanticException(
-          "Permission denied: altering a scheduled query belonging to a different user is prohibitted");
-    }
     try {
       schq.validate();
     } catch (TException e) {
@@ -79,6 +74,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       try {
         ScheduledQuery schqStored = db.getMSC().getScheduledQuery(schqChanges.getScheduleKey());
         if (schqChanges.isSetUser()) {
+          // in case the user will change; we have to run an authorization check beforehand
           checkAuthorization(type, schqStored);
         }
         return composeOverlayObject(schqChanges, schqStored);
@@ -155,11 +151,6 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       schq.setSchedule(unescapeSQLString(node.getChild(0).getText()));
       return;
     case HiveParser.TOK_EXECUTED_AS:
-      // FIXME: check owner prior to alter!@#@
-      if (!isAdmin()) {
-        // FIXME: this is the right exception type?
-        throw new SemanticException("Only ADMINs may changed the executing user!");
-      }
       schq.setUser(unescapeSQLString(node.getChild(0).getText()));
       return;
     case HiveParser.TOK_QUERY:
@@ -208,32 +199,6 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     default:
       throw new SemanticException("Unexpected type: " + type);
     }
-  }
-
-  private boolean isAdmin() {
-
-    HiveOperationType opType = null;
-    List<HivePrivilegeObject> inputs1 = new ArrayList<HivePrivilegeObject>();
-    List<HivePrivilegeObject> outputs1 = null;
-    HiveAuthzContext ctx1 = new HiveAuthzContext.Builder().build();
-
-    ScheduledQueryKey k = new ScheduledQueryKey();
-    HivePrivilegeObject privObject =
-        HivePrivilegeObject.forScheduledQuery("owner", k.getClusterNamespace(), k.getScheduleName());
-    inputs1.add(privObject);
-
-    if (SessionState.get().getAuthorizerV2() != null) {
-      try {
-        SessionState.get().getAuthorizerV2().checkPrivileges(opType, inputs1, outputs1, ctx1);
-
-        SessionState.get().getAuthorizerV2().checkPrivileges(HiveOperationType.KILL_QUERY,
-            new ArrayList<HivePrivilegeObject>(), new ArrayList<HivePrivilegeObject>(),
-            new HiveAuthzContext.Builder().build());
-        return true;
-      } catch (Exception e) {
-      }
-    }
-    return false;
   }
 
   /**
