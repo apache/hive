@@ -211,6 +211,8 @@ public class QTestUtil {
     conf.set("test.data.dir", datasetHandler.getDataDir(conf));
     dispatcher.register("dataset", datasetHandler);
     dispatcher.register("replace", replaceHandler);
+    dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider());
+    dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
 
     String scriptsDir = getScriptsDir();
 
@@ -222,10 +224,6 @@ public class QTestUtil {
     conf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL, "1s");
     savedConf = new HiveConf(conf);
 
-    dispatcher = new QTestOptionDispatcher();
-    dispatcher.register("dataset", datasetHandler);
-    dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider());
-    dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
   }
 
   private String getScriptsDir() {
