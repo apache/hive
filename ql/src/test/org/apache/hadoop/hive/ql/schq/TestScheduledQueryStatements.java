@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
@@ -50,6 +51,9 @@ public class TestScheduledQueryStatements {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    env_setup.getTestCtx().hiveConf.set("hive.security.authorization.scheduled.queries.supported", "true");
+    env_setup.getTestCtx().hiveConf.setVar(ConfVars.USERS_IN_ADMIN_ROLE, System.getProperty("user.name"));
+
     IDriver driver = createDriver();
     dropTables(driver);
     String cmds[] = {
@@ -83,6 +87,7 @@ public class TestScheduledQueryStatements {
   @Test
   public void testSimpleCreate() throws ParseException, Exception {
     IDriver driver = createDriver();
+    driver.run("set role admin");
     driver.run("create scheduled query simplecreate cron '* * * * * ? *' as select 1 from tu");
   }
 
@@ -129,6 +134,7 @@ public class TestScheduledQueryStatements {
   public void testAlter() throws ParseException, Exception {
     IDriver driver = createDriver();
 
+    driver.run("set role admin");
     driver.run("create scheduled query alter1 cron '* * * * * ? *' as select 1 from tu");
     driver.run("alter scheduled query alter1 executed as 'user3'");
     driver.run("alter scheduled query alter1 defined as select 22 from tu");
