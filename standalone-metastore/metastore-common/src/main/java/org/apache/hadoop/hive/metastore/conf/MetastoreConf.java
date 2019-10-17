@@ -765,11 +765,6 @@ public class MetastoreConf {
     RUNTIME_STATS_MAX_AGE("runtime.stats.max.age", "hive.metastore.runtime.stats.max.age", 86400 * 3, TimeUnit.SECONDS,
         "Stat entries which are older than this are removed."),
 
-    // FIXME remove this
-    @Deprecated
-    SCHEDULED_QUERIES_CRON_SYNTAX("scheduled.queries.cron.syntax", "hive.metastore.scheduled.queries.cron.syntax",
-        "QUARTZ", new StringSetValidator("UNIX", "QUARTZ", "CRON4J", "SPRING"),
-        "Defines the format of the schedule expressions to be used in scheduled queries."),
     SCHEDULED_QUERIES_EXECUTION_PROGRESS_TIMEOUT("scheduled.queries.execution.timeout",
         "hive.metastore.scheduled.queries.progress.timeout", 120, TimeUnit.SECONDS,
         "If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),

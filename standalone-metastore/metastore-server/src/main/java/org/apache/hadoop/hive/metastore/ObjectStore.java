@@ -1412,8 +1412,9 @@ public class ObjectStore implements RawStore, Configurable {
       query = pm.newQuery(MTable.class, filterBuilder.toString());
       query.setResult("tableName");
       query.setOrdering("tableName ascending");
-      if (limit >= 0)
+      if (limit >= 0) {
         query.setRange(0, limit);
+      }
       Collection<String> names = (Collection<String>) query.executeWithArray(parameterVals.toArray(new String[0]));
       tbls = new ArrayList<>(names);
       commited = commitTransaction();
@@ -4222,8 +4223,7 @@ public class ObjectStore implements RawStore, Configurable {
    */
   public static String verifyStatsChangeCtx(String fullTableName, Map<String, String> oldP, Map<String, String> newP,
                                             long writeId, String validWriteIds, boolean isColStatsChange) {
-    if (validWriteIds != null && writeId > 0)
-     {
+    if (validWriteIds != null && writeId > 0) {
       return null; // We have txn context.
     }
     String oldVal = oldP == null ? null : oldP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
@@ -4233,8 +4233,7 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     if (StringUtils.equalsIgnoreCase(oldVal, newVal)) {
-      if (!isColStatsChange)
-       {
+      if (!isColStatsChange) {
         return null; // No change in col stats or parameters => assume no change.
       }
       // Col stats change while json stays "valid" implies stats change. If the new value is invalid,
@@ -12705,7 +12704,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private Integer computeNextExecutionTime(String schedule) throws InvalidInputException {
-    CronType cronType = CronType.valueOf(MetastoreConf.getVar(this.conf, ConfVars.SCHEDULED_QUERIES_CRON_SYNTAX));
+    CronType cronType = CronType.QUARTZ;
 
     CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(cronType);
     CronParser parser = new CronParser(cronDefinition);
@@ -12886,10 +12885,10 @@ public class ObjectStore implements RawStore, Configurable {
       Query q = pm.newQuery(MScheduledExecution.class);
       q.setFilter("lastUpdateTime <= maxLastUpdateTime and (state == 'INITED' or state == 'EXECUTING')");
       q.declareParameters("int maxLastUpdateTime");
-      
+
       List<MScheduledExecution> results = (List<MScheduledExecution>) q.execute(maxLastUpdateTime);
       for (MScheduledExecution e : results) {
-        
+
         ScheduledQueryProgressInfo info = new ScheduledQueryProgressInfo();
         info.setScheduledExecutionId(e.getScheduledExecutionId());
         info.setState(QueryState.TIMED_OUT);
