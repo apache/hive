@@ -49,6 +49,8 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
@@ -294,6 +296,16 @@ public class SQLAuthorizationUtils {
         LOG.warn("Owner of database " + db.getName() + " is of unsupported type "
             + db.getOwnerType());
         return false;
+      }
+    }
+    case SCHEDULED_QUERY: {
+      Database db = null;
+      try {
+        ScheduledQuery schq = metastoreClient
+            .getScheduledQuery(new ScheduledQueryKey(hivePrivObject.getDbname(), hivePrivObject.getObjectName()));
+        return userName.equals(schq.getUser());
+      } catch (Exception e) {
+        throwGetObjErr(e, hivePrivObject);
       }
     }
     case DFS_URI:

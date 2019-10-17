@@ -304,9 +304,6 @@ public class Operation2Privilege {
     adminPrivOps.add(HiveOperationType.DROP_MAPPING);
     adminPrivOps.add(HiveOperationType.CREATEFUNCTION);
     adminPrivOps.add(HiveOperationType.DROPFUNCTION);
-    adminPrivOps.add(HiveOperationType.CREATE_SCHEDULED_QUERY);
-    adminPrivOps.add(HiveOperationType.ALTER_SCHEDULED_QUERY);
-    adminPrivOps.add(HiveOperationType.DROP_SCHEDULED_QUERY);
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
@@ -366,9 +363,9 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.LOCKTABLE, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.UNLOCKTABLE, PrivRequirement.newIOPrivRequirement(null, null));
 
-    op2Priv.put(HiveOperationType.CREATE_SCHEDULED_QUERY, PrivRequirement.newIOPrivRequirement(null, null));
-    op2Priv.put(HiveOperationType.ALTER_SCHEDULED_QUERY, PrivRequirement.newIOPrivRequirement(null, null));
-    op2Priv.put(HiveOperationType.DROP_SCHEDULED_QUERY, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.CREATE_SCHEDULED_QUERY, PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTER_SCHEDULED_QUERY, PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROP_SCHEDULED_QUERY, PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
 
     // require db ownership, if there is a file require SELECT , INSERT, and DELETE
     op2Priv.put(HiveOperationType.CREATETABLE, PrivRequirement.newPrivRequirementList(
