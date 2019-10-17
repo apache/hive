@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintenanceWork;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
@@ -54,6 +55,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     ScheduledQueryMaintenanceRequestType type = translateAstType(ast.getToken().getType());
     ScheduledQuery parsedSchq = interpretAstNode(ast);
     ScheduledQuery schq = fillScheduledQuery(type, parsedSchq);
+    // make sure that we have
+    checkAuthorization(type, schq);
     LOG.info("scheduled query operation: " + type + " " + schq);
     if (!isAdmin() && !Objects.equal(SessionState.get().getUserName(), schq.getUser())) {
       throw new SemanticException(
@@ -75,6 +78,9 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     } else {
       try {
         ScheduledQuery schqStored = db.getMSC().getScheduledQuery(schqChanges.getScheduleKey());
+        if (schqChanges.isSetUser()) {
+          checkAuthorization(type, schqStored);
+        }
         return composeOverlayObject(schqChanges, schqStored);
       } catch (TException e) {
         throw new SemanticException("unable to get Scheduled query" + e);
@@ -164,7 +170,48 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private void checkAuthorization(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schq)
+      throws SemanticException {
+    boolean schqAuthorization = (SessionState.get().getAuthorizerV2() != null)
+        && conf.getBoolVar(ConfVars.HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED);
+
+    try {
+      if (!schqAuthorization) {
+        String currentUser = SessionState.get().getUserName();
+        if (!Objects.equal(currentUser, schq.getUser())) {
+          throw new HiveAccessControlException("Only owners may change scheduled queries");
+        }
+      } else {
+        HiveOperationType opType = toHiveOpType(type);
+        List<HivePrivilegeObject> privObjects = new ArrayList<HivePrivilegeObject>();
+        ScheduledQueryKey key = schq.getScheduleKey();
+        privObjects.add(
+            HivePrivilegeObject.forScheduledQuery(schq.getUser(), key.getClusterNamespace(), key.getScheduleName()));
+
+        SessionState.get().getAuthorizerV2().checkPrivileges(opType, privObjects, privObjects,
+            new HiveAuthzContext.Builder().build());
+      }
+
+    } catch (Exception e) {
+      throw new SemanticException(e.getMessage(), e);
+    }
+  }
+
+  private HiveOperationType toHiveOpType(ScheduledQueryMaintenanceRequestType type) throws SemanticException {
+    switch (type) {
+    case CREATE:
+      return HiveOperationType.CREATE_SCHEDULED_QUERY;
+    case ALTER:
+      return HiveOperationType.ALTER_SCHEDULED_QUERY;
+    case DROP:
+      return HiveOperationType.DROP_SCHEDULED_QUERY;
+    default:
+      throw new SemanticException("Unexpected type: " + type);
+    }
+  }
+
   private boolean isAdmin() {
+
     HiveOperationType opType = null;
     List<HivePrivilegeObject> inputs1 = new ArrayList<HivePrivilegeObject>();
     List<HivePrivilegeObject> outputs1 = null;
