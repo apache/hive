@@ -63,7 +63,7 @@ public class TestRestrictedList {
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
 
     miniHS2 = new MiniHS2.Builder().withMiniMR().withRemoteMetastore().withConf(hiveConf).build();
-    HashMap<String, String> confOverlay = new HashMap<>();
+    Map<String, String> confOverlay = new HashMap<>();
     confOverlay.put(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED.varname, "false");
     miniHS2.start(confOverlay);
 
