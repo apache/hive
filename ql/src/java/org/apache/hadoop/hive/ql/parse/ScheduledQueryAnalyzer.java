@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
   private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryAnalyzer.class);
@@ -164,8 +165,20 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private boolean isAdmin() {
+    HiveOperationType opType = null;
+    List<HivePrivilegeObject> inputs1 = new ArrayList<HivePrivilegeObject>();
+    List<HivePrivilegeObject> outputs1 = null;
+    HiveAuthzContext ctx1 = new HiveAuthzContext.Builder().build();
+
+    ScheduledQueryKey k = new ScheduledQueryKey();
+    HivePrivilegeObject privObject =
+        HivePrivilegeObject.forScheduledQuery("owner", k.getClusterNamespace(), k.getScheduleName());
+    inputs1.add(privObject);
+
     if (SessionState.get().getAuthorizerV2() != null) {
       try {
+        SessionState.get().getAuthorizerV2().checkPrivileges(opType, inputs1, outputs1, ctx1);
+
         SessionState.get().getAuthorizerV2().checkPrivileges(HiveOperationType.KILL_QUERY,
             new ArrayList<HivePrivilegeObject>(), new ArrayList<HivePrivilegeObject>(),
             new HiveAuthzContext.Builder().build());
