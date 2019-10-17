@@ -48,7 +48,6 @@ public class CommandProcessorException extends Exception {
 
   public CommandProcessorException(int responseCode, int hiveErrorCode, String errorMessage, String sqlState,
       Throwable exception) {
-    super(exception);
     this.responseCode = responseCode;
     this.hiveErrorCode = hiveErrorCode;
     this.errorMessage = errorMessage;
