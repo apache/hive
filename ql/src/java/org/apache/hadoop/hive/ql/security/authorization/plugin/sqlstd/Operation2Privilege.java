@@ -17,19 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.base.Preconditions;
 
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 
-import com.google.common.base.Preconditions;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Mapping of operation to its required input and output privileges
@@ -304,6 +304,9 @@ public class Operation2Privilege {
     adminPrivOps.add(HiveOperationType.DROP_MAPPING);
     adminPrivOps.add(HiveOperationType.CREATEFUNCTION);
     adminPrivOps.add(HiveOperationType.DROPFUNCTION);
+    adminPrivOps.add(HiveOperationType.CREATE_SCHEDULED_QUERY);
+    adminPrivOps.add(HiveOperationType.ALTER_SCHEDULED_QUERY);
+    adminPrivOps.add(HiveOperationType.DROP_SCHEDULED_QUERY);
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
