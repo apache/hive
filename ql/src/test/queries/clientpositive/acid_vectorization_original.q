@@ -110,6 +110,10 @@ explain select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID havi
 
 -- this test that there are no duplicate ROW__IDs so should produce no output
 -- on LLAP this produces "NULL, 6"; on tez it produces nothing: HIVE-17921
+-- this makes sure that the same code is running on the Ptest and on localhost. The target is:
+-- Original split count is 11 grouped split count is 1, for bucket: 1
+set tez.grouping.split-count=1;
+
 select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1;
 -- this produces nothing (as it should)
 select ROW__ID, * from over10k_orc_bucketed where ROW__ID is null;
