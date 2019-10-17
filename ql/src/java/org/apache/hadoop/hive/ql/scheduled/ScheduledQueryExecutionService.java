@@ -59,6 +59,10 @@ public class ScheduledQueryExecutionService implements Closeable {
     ctx.executor.submit(new ProgressReporter());
   }
 
+  static boolean isTerminalState(QueryState state) {
+    return state == QueryState.FINISHED || state == QueryState.ERRORED;
+  }
+
   class ScheduledQueryExecutor implements Runnable {
 
     private ScheduledQueryProgressInfo info;
@@ -85,16 +89,14 @@ public class ScheduledQueryExecutionService implements Closeable {
       }
     }
 
-    QueryState lastState;
     public synchronized void reportQueryProgress() {
       if (info != null) {
-        if(lastState == QueryState.FINISHED || lastState == QueryState.ERRORED) {
-          return;
-        }
         LOG.info("Reporting query progress of {} as {} err:{}", info.getScheduledExecutionId(), info.getState(),
             info.getErrorMessage());
         context.schedulerService.scheduledQueryProgress(info);
-        lastState=info.getState();
+        if (isTerminalState(info.getState())) {
+          info = null;
+        }
       }
     }
 
@@ -123,11 +125,7 @@ public class ScheduledQueryExecutionService implements Closeable {
           }
         }
 
-        //FIXME transition?( )
-        synchronized (this) {
-          reportQueryProgress();
-          info = null;
-        }
+        reportQueryProgress();
       }
     }
 
