@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.schq.ScheduledQueryExecutionService;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
