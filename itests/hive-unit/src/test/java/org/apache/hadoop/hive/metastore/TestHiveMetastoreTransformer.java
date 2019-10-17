@@ -83,11 +83,11 @@ public class TestHiveMetastoreTransformer {
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
     wh = new File(System.getProperty("java.io.tmpdir") + File.separator +
-        "hive" + File.separator + "warehouse" + File.separator + "managed" + File.separator);
+        "hive" + File.separator + "warehouse" + File.separator + "hive" + File.separator);
     wh.mkdirs();
 
     ext_wh = new File(System.getProperty("java.io.tmpdir") + File.separator +
-        "hive" + File.separator + "warehouse" + File.separator + "external" + File.separator);
+        "hive" + File.separator + "warehouse" + File.separator + "hive-external" + File.separator);
     ext_wh.mkdirs();
 
     MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS,

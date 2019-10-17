@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -615,7 +616,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
       if (tableLocation != null) {
         Path tablePath = Path.getPathWithoutSchemeAndAuthority(new Path(tableLocation));
-        if (tablePath.toString().startsWith(whRootPath.toString())) {
+        if (FileUtils.isSubdirectory(whRootPath.toString(),tablePath.toString())) {
           throw new MetaException(
             "An external table's location should not be located within managed warehouse root directory," + "table:"
                 + table.getTableName() + ",location:" + tablePath + ",Hive managed warehouse:" + whRootPath);
@@ -641,20 +642,19 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       LOG.debug("Table is a MANAGED_TABLE");
       Path tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
       Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
-      if (tableLocation != null && !tableLocation.toString().startsWith(whRootPath.toString())) {
+      if (tableLocation != null && !FileUtils.isSubdirectory(whRootPath.toString(),tableLocation.toString())) {
         throw new MetaException(
             "A managed table's location needs to be under the hive warehouse root directory," + "table:"
                 + table.getTableName() + ",location:" + tableLocation + ",Hive warehouse:" + whRootPath);
       }
     } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
-      LOG.debug("Table is a EXTERNAL TABLE");
       Path tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
-      Path externalWHRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
-
-      if (tableLocation != null && tableLocation.toString().startsWith(externalWHRootPath.toString())) {
+      Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
+      LOG.debug("Table is a EXTERNAL TABLE:tableLocation=" + tableLocation.toString() + ",whroot=" + whRootPath.toString());
+      if (tableLocation != null && FileUtils.isSubdirectory(whRootPath.toString(), tableLocation.toString())) {
         throw new MetaException(
             "An external table's location should not be located within managed warehouse root directory," + "table:"
-                + table.getTableName() + ",location:" + tableLocation + ",Hive managed warehouse:" + externalWHRootPath);
+                + table.getTableName() + ",location:" + tableLocation + ",Hive managed warehouse:" + whRootPath);
       }
     }
     LOG.debug("Transformer returning table:" + table.toString());
