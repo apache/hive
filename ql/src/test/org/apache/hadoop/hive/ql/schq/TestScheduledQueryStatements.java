@@ -56,7 +56,7 @@ public class TestScheduledQueryStatements {
 
     IDriver driver = createDriver();
     dropTables(driver);
-    String cmds[] = {
+    String[] cmds = {
         // @formatter:off
         "create table tu(c int)",
         "create database asd",
@@ -78,7 +78,7 @@ public class TestScheduledQueryStatements {
   }
 
   public static void dropTables(IDriver driver) throws Exception {
-    String tables[] = { "tu" };
+    String[] tables = { "tu" };
     for (String t : tables) {
       driver.run("drop table if exists " + t);
     }

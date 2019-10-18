@@ -4794,7 +4794,8 @@ public class HiveConf extends Configuration {
     HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL("hive.scheduled.queries.executor.progress.report.interval",
         "60s",
         new TimeValidator(TimeUnit.SECONDS),
-        "While scheduled queries are in flight; a background update happens periodically to report the actual state of the query"),
+        "While scheduled queries are in flight; "
+            + "a background update happens periodically to report the actual state of the query"),
     HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED("hive.security.authorization.scheduled.queries.supported",
         false,
         "Enable this if the configured authorizer is able to handle scheduled query related calls."),
