@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.metastore.model;
 
 import org.apache.hadoop.hive.metastore.api.QueryState;
 
+/**
+ * Represents a scheduled execution.
+ */
 public class MScheduledExecution {
 
   private int scheduledExecutionId;

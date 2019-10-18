@@ -54,14 +54,16 @@ public class ScheduledQueryExecutionsMaintTask implements MetastoreTaskThread {
     try {
       RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
 
-      int timeoutSecs=(int) MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXECUTION_PROGRESS_TIMEOUT, TimeUnit.SECONDS);
+      int timeoutSecs = (int) MetastoreConf.getTimeVar(conf,
+          MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXECUTION_PROGRESS_TIMEOUT, TimeUnit.SECONDS);
       int timedOutCnt = ms.markScheduledExecutionsTimedOut(timeoutSecs);
 
       if (timedOutCnt > 0L) {
         LOG.info("Number of timed out scheduled query executions:" + timedOutCnt);
       }
 
-      int maxRetainSecs=(int) MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXECUTION_MAX_AGE, TimeUnit.SECONDS);
+      int maxRetainSecs = (int) MetastoreConf.getTimeVar(conf,
+          MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXECUTION_MAX_AGE, TimeUnit.SECONDS);
       int deleteCnt = ms.deleteScheduledExecutions(maxRetainSecs);
 
       if (deleteCnt > 0L){

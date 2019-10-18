@@ -12679,12 +12679,14 @@ public class ObjectStore implements RawStore, Configurable {
       case TIMED_OUT:
         execution.setEndTime((int) (System.currentTimeMillis() / 1000));
         execution.setLastUpdateTime(null);
+        break;
+      default:
+        throw new InvalidOperationException("invalid state: " + info.getState());
       }
       pm.makePersistent(execution);
       commited = commitTransaction();
     } finally {
-      if (commited) {
-      } else {
+      if (!commited) {
         rollbackTransaction();
       }
     }

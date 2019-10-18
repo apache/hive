@@ -23,11 +23,14 @@ import java.util.Set;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 
+/**
+ * Describes a scheduled query.
+ */
 public class MScheduledQuery {
 
+  private String clusterNamespace;
   private String scheduleName;
   private boolean enabled;
-  private String clusterNamespace;
   private String schedule;
   private String user;
   private String query;
@@ -35,9 +38,9 @@ public class MScheduledQuery {
   private Set<MScheduledExecution> executions;
 
   public MScheduledQuery(ScheduledQuery s) {
+    clusterNamespace = s.getScheduleKey().getClusterNamespace();
     scheduleName = s.getScheduleKey().getScheduleName();
     enabled = s.isEnabled();
-    clusterNamespace = s.getScheduleKey().getClusterNamespace();
     schedule = s.getSchedule();
     user = s.getUser();
     query = s.getQuery();

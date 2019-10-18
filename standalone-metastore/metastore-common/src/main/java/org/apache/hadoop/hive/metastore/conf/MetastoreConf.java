@@ -770,7 +770,8 @@ public class MetastoreConf {
         "If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
     SCHEDULED_QUERIES_EXECUTION_MAINT_TASK_FREQUENCY("scheduled.queries.execution.maint.task.frequency",
         "hive.metastore.scheduled.queries.execution.clean.frequency", 60, TimeUnit.SECONDS,
-        "Interval of scheduled query maintenance task. Which removes executions above max age; and marks executions as timed out if the condition is met"),
+        "Interval of scheduled query maintenance task. Which removes executions above max age;"
+            + "and marks executions as timed out if the condition is met"),
     SCHEDULED_QUERIES_EXECUTION_MAX_AGE("scheduled.queries.execution.max.age",
         "hive.metastore.scheduled.queries.execution.max.age", 30 * 86400, TimeUnit.SECONDS,
         "Maximal age of a scheduled query execution entry before it is removed."),

@@ -58,6 +58,11 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+/**
+ * Tests handling of scheduled queries related calls to the metastore.
+ *
+ * Checks wether expected state changes are being done to the HMS database.
+ */
 @RunWith(Parameterized.class)
 @Category(MetastoreUnitTest.class)
 public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
@@ -65,7 +70,6 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   private IMetaStoreClient client;
 
   public TestMetastoreScheduledQueries(String name, AbstractMetaStoreService metaStore) throws Exception {
-    metaStore.getConf().set("scheduled.queries.cron.syntax", "QUARTZ");
     metaStore.getConf().set("scheduled.queries.progress.timeout", "3");
     this.metaStore = metaStore;
   }
@@ -170,7 +174,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
 
-    // wait 2 sec to have the query exection 
+    // wait 2 sec to have the query exection
     Thread.sleep(2000);
 
     // invoke poll to create a dependent execution
@@ -220,7 +224,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
       ScheduledQueryPollResponse resp1 = f1.get();
       ScheduledQueryPollResponse resp2 = f2.get();
-      
+
       assertTrue(resp1.isSetQuery() ^ resp2.isSetQuery());
 
       pool.shutdown();
@@ -234,7 +238,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
     private String ns;
 
-    public AsyncPollCall(String string) {
+    AsyncPollCall(String string) {
       ns = string;
     }
 
@@ -307,12 +311,12 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     }
     // wait 1 sec
     Thread.sleep(1000);
-    
+
     ScheduledQueryProgressInfo info;
     info = new ScheduledQueryProgressInfo(
         pollResult.getExecutionId(), QueryState.EXECUTING, "executor-query-id");
     client.scheduledQueryProgress(info);
-    
+
     try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
       MScheduledExecution q = pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
       assertEquals(QueryState.EXECUTING, q.getState());
