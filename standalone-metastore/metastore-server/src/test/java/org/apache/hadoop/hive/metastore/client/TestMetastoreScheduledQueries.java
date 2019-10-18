@@ -384,6 +384,33 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     }
   }
 
+  @Test
+  public void testOutdatedCleanup() throws Exception {
+    String namespace = "cleanup";
+    ObjectStore objStore = new ObjectStore();
+    objStore.setConf(metaStore.getConf());
+    objStore.deleteScheduledExecutions(0);
+
+    ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", namespace));
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
+    r.setScheduledQuery(schq);
+    objStore.scheduledQueryMaintenance(r);
+
+    Thread.sleep(1000);
+    ScheduledQueryPollRequest request = new ScheduledQueryPollRequest(namespace);
+    ScheduledQueryPollResponse pollResult = objStore.scheduledQueryPoll(request);
+    // will add q1 as a query being executed
+
+    Thread.sleep(1000);
+    objStore.markScheduledExecutionsTimedOut(0);
+
+    try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
+      MScheduledExecution execution = pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
+      assertEquals(QueryState.TIMED_OUT, execution.getState());
+    }
+  }
+
   private int getEpochSeconds() {
     return (int) (System.currentTimeMillis() / 1000);
   }
