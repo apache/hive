@@ -52,7 +52,7 @@ implements SettableHiveDecimalObjectInspector {
 
   @Override
   public HiveDecimal getPrimitiveJavaObject(Object o) {
-    return enforcePrecisionScale((HiveDecimal)o);
+    return enforcePrecisionScale(HiveDecimal.create(o.toString()));
   }
 
   @Override

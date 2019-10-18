@@ -35,7 +35,7 @@ public class JavaTimestampObjectInspector
 
   @Override
   public Timestamp getPrimitiveJavaObject(Object o) {
-    return o == null ? null : (Timestamp) o;
+    return o == null ? null : Timestamp.valueOf(o.toString());
   }
 
   @Override

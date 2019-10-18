@@ -38,7 +38,7 @@ public class JavaDateObjectInspector
 
   @Override
   public Date getPrimitiveJavaObject(Object o) {
-    return o == null ? null : (Date) o;
+    return o == null ? null : Date.valueOf(o.toString());
   }
 
   public Date get(Object o) {
