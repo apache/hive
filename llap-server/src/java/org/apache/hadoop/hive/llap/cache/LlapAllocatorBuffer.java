@@ -80,9 +80,32 @@ public abstract class LlapAllocatorBuffer extends LlapCacheableBuffer implements
     return incRefInternal(false);
   }
 
+  /**
+   *
+   */
+  @Override
+  public void setClockBit() {
+    long val = state.get();
+    while (!State.isClockBitSet(val) && !state.compareAndSet(val, State.setClockBit(val))) {
+      val = state.get();
+    }
+  }
+  @Override
+  public void unSetClockBit() {
+    long val = state.get();
+    while (State.isClockBitSet(val) && !state.compareAndSet(val, State.unSetClockBit(val))) {
+      val = state.get();
+    }
+  }
+
+  @Override
+  public boolean isClockBitSet() {
+    return State.isClockBitSet(state.get());
+  }
+
   static final int INCREF_EVICTED = -1, INCREF_FAILED = -2;
   private int incRefInternal(boolean doWait) {
-    long newValue = -1;
+    long newValue;
     while (true) {
       long oldValue = state.get();
       if (State.hasFlags(oldValue, State.FLAG_EVICTED)) return INCREF_EVICTED;
@@ -337,25 +360,34 @@ public abstract class LlapAllocatorBuffer extends LlapCacheableBuffer implements
     return result;
   }
 
-  private static final class State {
-    public static final int
-        FLAG_MOVING =       0b00001, // Locked by someone to move or force-evict.
-        FLAG_EVICTED =      0b00010, // Evicted. This is cache-specific.
-        FLAG_REMOVED =      0b00100, // Removed from allocator structures. The final state.
-        FLAG_MEM_RELEASED = 0b01000, // The memory was released to memory manager.
-        FLAG_NEW_ALLOC =    0b10000; // New allocation before the first use; cannot force-evict.
-    private static final int FLAGS_WIDTH = 5,
-        REFCOUNT_WIDTH = 19, ARENA_WIDTH = 16, HEADER_WIDTH = 24;
+  /**
+   * Utility class to manipulate the buffer state.
+   */
+   static final class State {
+    static final int FLAG_MOVING = 0b00001; // Locked by someone to move or force-evict.
+    static final int FLAG_EVICTED =      0b00010; // Evicted. This is cache-specific.
+    static final int FLAG_REMOVED =      0b00100; // Removed from allocator structures. The final state.
+    static final int FLAG_MEM_RELEASED = 0b01000; // The memory was released to memory manager.
+    static final int FLAG_NEW_ALLOC =    0b10000; // New allocation before the first use; cannot force-evict.
 
-    public static final long MAX_REFCOUNT = (1 << REFCOUNT_WIDTH) - 1;
+    static final int FLAGS_WIDTH = 5;
+    static final int REFCOUNT_WIDTH = 19;
+    static final int ARENA_WIDTH = 15;
+    static final int HEADER_WIDTH = 24;
+    static final int CLOCK_BIT_WIDTH = 1;
 
-    private static final int REFCOUNT_SHIFT = FLAGS_WIDTH,
-        ARENA_SHIFT = REFCOUNT_SHIFT + REFCOUNT_WIDTH, HEADER_SHIFT = ARENA_SHIFT + ARENA_WIDTH;
+    static final long MAX_REFCOUNT = (1 << REFCOUNT_WIDTH) - 1;
 
-    private static final long FLAGS_MASK = (1L << FLAGS_WIDTH) - 1,
-      REFCOUNT_MASK = ((1L << REFCOUNT_WIDTH) - 1) << REFCOUNT_SHIFT,
-      ARENA_MASK = ((1L << ARENA_WIDTH) - 1) << ARENA_SHIFT,
-      HEADER_MASK = ((1L << HEADER_WIDTH) - 1) << HEADER_SHIFT;
+    private static final int REF_COUNT_SHIFT = FLAGS_WIDTH;
+    private static final int ARENA_SHIFT = REF_COUNT_SHIFT + REFCOUNT_WIDTH;
+    private static final int HEADER_SHIFT = ARENA_SHIFT + ARENA_WIDTH;
+    private static final int CLOCK_BIT_SHIFT = HEADER_SHIFT + HEADER_WIDTH;
+
+    static final long FLAGS_MASK = (1L << FLAGS_WIDTH) - 1;
+    static final long REFCOUNT_MASK = ((1L << REFCOUNT_WIDTH) - 1) << REF_COUNT_SHIFT;
+    static final long ARENA_MASK = ((1L << ARENA_WIDTH) - 1) << ARENA_SHIFT;
+    static final long HEADER_MASK = ((1L << HEADER_WIDTH) - 1) << HEADER_SHIFT;
+    static final long CLOCK_BIT_MASK = ((1L << CLOCK_BIT_WIDTH) - 1) << CLOCK_BIT_SHIFT;
 
     public static boolean hasFlags(long value, int flags) {
       return (value & flags) != 0;
@@ -364,46 +396,57 @@ public abstract class LlapAllocatorBuffer extends LlapCacheableBuffer implements
     public static int getAllFlags(long state) {
       return (int) (state & FLAGS_MASK);
     }
-    public static final int getRefCount(long state) {
-      return (int)((state & REFCOUNT_MASK) >>> REFCOUNT_SHIFT);
+    public static int getRefCount(long state) {
+      return (int)((state & REFCOUNT_MASK) >>> REF_COUNT_SHIFT);
     }
-    public static final int getArena(long state) {
-      return (int)((state & ARENA_MASK) >>> ARENA_SHIFT);
+    public static int getArena(long state) {
+      return (int) ((state & ARENA_MASK) >>> ARENA_SHIFT);
     }
-    public static final int getHeader(long state) {
+    public static int getHeader(long state) {
       return (int)((state & HEADER_MASK) >>> HEADER_SHIFT);
     }
 
-    public static final long incRefCount(long state) {
+    public static long incRefCount(long state) {
       // Note: doesn't check for overflow. Could AND with max refcount mask but the caller checks.
-      return state + (1 << REFCOUNT_SHIFT);
+      return state + (1 << REF_COUNT_SHIFT);
     }
 
-    public static final long decRefCount(long state) {
+    public static long decRefCount(long state) {
       // Note: doesn't check for overflow. Could AND with max refcount mask but the caller checks.
-      return state - (1 << REFCOUNT_SHIFT);
+      return state - (1 << REF_COUNT_SHIFT);
+    }
+    public static long setClockBit(long state) {
+      return state | CLOCK_BIT_MASK;
     }
 
-    public static final long setLocation(long state, int arenaIx, int headerIx) {
-      long arenaVal = ((long)arenaIx) << ARENA_SHIFT, arenaWMask = arenaVal & ARENA_MASK;
-      long headerVal = ((long)headerIx) << HEADER_SHIFT, headerWMask = headerVal & HEADER_MASK;
+    public static long unSetClockBit(long state) {
+      return state & ~CLOCK_BIT_MASK;
+    }
+
+    public static boolean isClockBitSet(long state) {
+      return (state & CLOCK_BIT_MASK) == Long.MIN_VALUE;
+    }
+
+    public static long setLocation(long state, int arenaIx, int headerIx) {
+      long arenaVal = ((long) arenaIx) << ARENA_SHIFT, arenaWMask = arenaVal & ARENA_MASK;
+      long headerVal = ((long) headerIx) << HEADER_SHIFT, headerWMask = headerVal & HEADER_MASK;
       assert arenaVal == arenaWMask : "Arena " + arenaIx + " is wider than " + ARENA_WIDTH;
       assert headerVal == headerWMask : "Header " + headerIx + " is wider than " + HEADER_WIDTH;
       return (state & ~(ARENA_MASK | HEADER_MASK)) | arenaWMask | headerWMask;
     }
 
-    public static final long setFlag(long state, int flags) {
+    public static long setFlag(long state, int flags) {
       assert flags <= FLAGS_MASK;
       return state | flags;
     }
 
-    public static final long switchFlag(long state, int flags) {
+    public static long switchFlag(long state, int flags) {
       assert flags <= FLAGS_MASK;
       return state ^ flags;
     }
 
     public static String toFlagString(int state) {
-      return StringUtils.leftPad(Integer.toBinaryString(state), REFCOUNT_SHIFT, '0');
+      return StringUtils.leftPad(Integer.toBinaryString(state), REF_COUNT_SHIFT, '0');
     }
   }
 

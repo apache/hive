@@ -118,6 +118,18 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
     evictionDispatcher.notifyEvicted(this);
   }
 
+  @Override public void setClockBit() {
+    //no op
+  }
+
+  @Override public void unSetClockBit() {
+    //no op
+  }
+
+  @Override public boolean isClockBitSet() {
+    return false;
+  }
+
   @Override
   protected boolean isLocked() {
     return false;

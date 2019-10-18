@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.io.CacheTag;
  */
 public abstract class LlapCacheableBuffer {
   protected static final int IN_LIST = -2, NOT_IN_CACHE = -1;
+  public static final int INVALIDATE_OK = 0, INVALIDATE_FAILED = 1, INVALIDATE_ALREADY_INVALID = 2;
 
   /** Priority for cache policy (should be pretty universal). */
   public double priority;
@@ -43,10 +44,13 @@ public abstract class LlapCacheableBuffer {
   /** Index in heap for LRFU/LFU cache policies. */
   public int indexInHeap = NOT_IN_CACHE;
 
-  public static final int INVALIDATE_OK = 0, INVALIDATE_FAILED = 1, INVALIDATE_ALREADY_INVALID = 2;
   protected abstract int invalidate();
   public abstract long getMemoryUsage();
   public abstract void notifyEvicted(EvictionDispatcher evictionDispatcher);
+
+  public abstract void setClockBit();
+  public abstract void unSetClockBit();
+  public abstract boolean isClockBitSet();
 
   @Override
   public String toString() {
