@@ -454,9 +454,11 @@ public class TestObjectStore {
     for (int i = 0; i < numThreads; i++) {
       executorService.execute(
         () -> {
+          ObjectStore threadObjectStore = new ObjectStore();
+          threadObjectStore.setConf(conf);
           for (List<String> p : partNames) {
             try {
-              objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, p);
+              threadObjectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, p);
               System.out.println("Dropping partition: " + p.get(0));
             } catch (Exception e) {
               throw new RuntimeException(e);
