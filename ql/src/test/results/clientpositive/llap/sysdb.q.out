@@ -3785,10 +3785,6 @@ POSTHOOK: Lineage: COMPACTIONS.c_state EXPRESSION [(completed_compactions)comple
 POSTHOOK: Lineage: COMPACTIONS.c_table EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_table, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_table, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COMPACTIONS.c_type EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_type, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_type, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COMPACTIONS.c_worker_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
-PREHOOK: query: drop view SCHEDULED_QUERIES
-PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view SCHEDULED_QUERIES
-POSTHOOK: type: DROPVIEW
 PREHOOK: query: create or replace view SCHEDULED_QUERIES  as
 select
   `SCHEDULED_QUERY_ID` ,
@@ -4785,7 +4781,7 @@ POSTHOOK: query: select count(*) from skewed_string_list
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_string_list
 #### A masked pattern was here ####
-3
+6
 PREHOOK: query: select count(*) from skewed_string_list_values
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_string_list_values
@@ -4794,7 +4790,7 @@ POSTHOOK: query: select count(*) from skewed_string_list_values
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_string_list_values
 #### A masked pattern was here ####
-3
+6
 PREHOOK: query: select count(*) from skewed_values
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_values

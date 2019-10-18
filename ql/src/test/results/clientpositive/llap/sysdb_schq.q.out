@@ -3627,10 +3627,6 @@ POSTHOOK: Lineage: COMPACTIONS.c_state EXPRESSION [(completed_compactions)comple
 POSTHOOK: Lineage: COMPACTIONS.c_table EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_table, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_table, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COMPACTIONS.c_type EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_type, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_type, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COMPACTIONS.c_worker_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
-PREHOOK: query: drop view SCHEDULED_QUERIES
-PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view SCHEDULED_QUERIES
-POSTHOOK: type: DROPVIEW
 PREHOOK: query: create or replace view SCHEDULED_QUERIES  as
 select
   `SCHEDULED_QUERY_ID` ,
