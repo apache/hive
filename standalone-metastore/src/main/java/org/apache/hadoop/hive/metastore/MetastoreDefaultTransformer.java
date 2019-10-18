@@ -636,22 +636,25 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
         + " on table " + table.getTableName());
     String tableType = table.getTableType();
-    Path tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
-    Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
 
     if (TableType.MANAGED_TABLE.name().equals(tableType)) {
       LOG.debug("Table is a MANAGED_TABLE");
+      Path tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
+      Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
       if (tableLocation != null && !tableLocation.toString().startsWith(whRootPath.toString())) {
         throw new MetaException(
             "A managed table's location needs to be under the hive warehouse root directory," + "table:"
                 + table.getTableName() + ",location:" + tableLocation + ",Hive warehouse:" + whRootPath);
       }
     } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
-      LOG.debug("Table is a EXTERNAL TABLE:tableLocation=" + tableLocation.toString() + ",whroot=" + whRootPath.toString());
-      if (tableLocation != null && tableLocation.toString().startsWith(whRootPath.toString())) {
+      LOG.debug("Table is a EXTERNAL TABLE");
+      Path tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
+      Path externalWHRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
+
+      if (tableLocation != null && tableLocation.toString().startsWith(externalWHRootPath.toString())) {
         throw new MetaException(
             "An external table's location should not be located within managed warehouse root directory," + "table:"
-                + table.getTableName() + ",location:" + tableLocation + ",Hive managed warehouse:" + whRootPath);
+                + table.getTableName() + ",location:" + tableLocation + ",Hive managed warehouse:" + externalWHRootPath);
       }
     }
     LOG.debug("Transformer returning table:" + table.toString());
