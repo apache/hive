@@ -54,8 +54,8 @@ public class DriverUtils {
         try {
           driver.run(query);
         } catch (CommandProcessorException e) {
-          LOG.error("Failed to run " + query, e.getException());
-          throw new HiveException("Failed to run " + query, e.getException());
+          LOG.error("Failed to run " + query, e);
+          throw new HiveException("Failed to run " + query, e);
         }
       } finally {
         driver.close();

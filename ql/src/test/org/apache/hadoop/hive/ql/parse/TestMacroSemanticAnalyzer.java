@@ -22,7 +22,7 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -58,7 +58,7 @@ public class TestMacroSemanticAnalyzer {
     List<Task<?>> rootTasks = analyzer.getRootTasks();
     Assert.assertEquals(1, rootTasks.size());
     for (Task<?> task : rootTasks) {
-      task.setDriverContext(new DriverContext(context));
+      task.initialize(null,  null, new TaskQueue(context), context);
       task.setConf(conf);
       Assert.assertEquals(0, task.executeTask(null));
     }

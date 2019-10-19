@@ -32,7 +32,7 @@ import java.util.concurrent.ExecutionException;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
@@ -195,12 +195,12 @@ public class TestSparkTask {
     SparkTask sparkTask = new SparkTask();
     sparkTask.setWork(mock(SparkWork.class));
 
-    DriverContext mockDriverContext = mock(DriverContext.class);
+    TaskQueue mockTestQueue = mock(TaskQueue.class);
 
     QueryState mockQueryState = mock(QueryState.class);
     when(mockQueryState.getConf()).thenReturn(hiveConf);
 
-    sparkTask.initialize(mockQueryState, null, mockDriverContext, null);
+    sparkTask.initialize(mockQueryState, null, mockTestQueue, null);
 
     SparkJobStatus mockSparkJobStatus = mock(SparkJobStatus.class);
     when(mockSparkJobStatus.getMonitorError()).thenReturn(new InterruptedException());
@@ -210,19 +210,19 @@ public class TestSparkTask {
 
     when(mockSparkJobRef.monitorJob()).thenReturn(2);
     when(mockSparkJobRef.getSparkJobStatus()).thenReturn(mockSparkJobStatus);
-    when(mockSparkSession.submit(any(), any())).thenReturn(mockSparkJobRef);
+    when(mockSparkSession.submit(any(), any(), any())).thenReturn(mockSparkJobRef);
 
     SessionState.start(hiveConf);
     SessionState.get().setSparkSession(mockSparkSession);
 
-    sparkTask.execute(mockDriverContext);
+    sparkTask.execute();
 
     verify(mockSparkJobRef, atLeastOnce()).cancelJob();
 
     when(mockSparkJobStatus.getMonitorError()).thenReturn(
             new HiveException(new InterruptedException()));
 
-    sparkTask.execute(mockDriverContext);
+    sparkTask.execute();
 
     verify(mockSparkJobRef, atLeastOnce()).cancelJob();
   }

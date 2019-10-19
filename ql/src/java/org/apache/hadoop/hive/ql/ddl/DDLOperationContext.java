@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 public class DDLOperationContext {
   private final Hive db;
   private final HiveConf conf;
-  private final DriverContext driverContext;
+  private final Context context;
   private final MetaDataFormatter formatter;
   private final DDLTask task;
   private final DDLWork work;
@@ -42,11 +42,11 @@ public class DDLOperationContext {
   private final QueryPlan queryPlan;
   private final LogHelper console;
 
-  public DDLOperationContext(HiveConf conf, DriverContext driverContext, DDLTask task, DDLWork work,
-      QueryState queryState, QueryPlan queryPlan, LogHelper console) throws HiveException {
+  public DDLOperationContext(HiveConf conf, Context context, DDLTask task, DDLWork work, QueryState queryState,
+      QueryPlan queryPlan, LogHelper console) throws HiveException {
     this.db = Hive.get(conf);
     this.conf = conf;
-    this.driverContext = driverContext;
+    this.context = context;
     this.formatter = MetaDataFormatUtils.getFormatter(conf);
     this.task = task;
     this.work = work;
@@ -63,8 +63,8 @@ public class DDLOperationContext {
     return conf;
   }
 
-  public DriverContext getDriverContext() {
-    return driverContext;
+  public Context getContext() {
+    return context;
   }
 
   public MetaDataFormatter getFormatter() {

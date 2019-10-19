@@ -24,7 +24,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateTask;
@@ -48,13 +48,13 @@ public class TruncateTableOperation extends DDLOperation<TruncateTableDesc> {
       truncateWork.setListBucketingCtx(desc.getLbCtx());
       truncateWork.setMapperCannotSpanPartns(true);
 
-      DriverContext driverCxt = new DriverContext();
+      TaskQueue taskQueue = new TaskQueue();
       ColumnTruncateTask taskExec = new ColumnTruncateTask();
-      taskExec.initialize(context.getQueryState(), null, driverCxt, null);
+      taskExec.initialize(context.getQueryState(), null, taskQueue, null);
       taskExec.setWork(truncateWork);
       taskExec.setQueryPlan(context.getQueryPlan());
 
-      int ret = taskExec.execute(driverCxt);
+      int ret = taskExec.execute();
       if (taskExec.getException() != null) {
         context.getTask().setException(taskExec.getException());
       }

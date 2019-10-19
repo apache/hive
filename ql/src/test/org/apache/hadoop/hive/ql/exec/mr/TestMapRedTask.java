@@ -33,9 +33,8 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.shims.Utils;
@@ -67,7 +66,7 @@ public class TestMapRedTask {
     Context ctx = Mockito.mock(Context.class);
     when(ctx.getLocalTmpPath()).thenReturn(new Path(System.getProperty("java.io.tmpdir")));
 
-    DriverContext dctx = new DriverContext(ctx);
+    TaskQueue taskQueue = new TaskQueue(ctx);
 
     QueryState queryState = new QueryState.Builder().build();
     HiveConf conf= queryState.getConf();
@@ -79,12 +78,12 @@ public class TestMapRedTask {
     MapRedTask mrTask = Mockito.spy(new MapRedTask());
     mrTask.setWork(mrWork);
 
-    mrTask.initialize(queryState, null, dctx, null);
+    mrTask.initialize(queryState, null, taskQueue, ctx);
 
     mrTask.jobExecHelper = Mockito.mock(HadoopJobExecHelper.class);
     when(mrTask.jobExecHelper.progressLocal(Mockito.any(Process.class), Mockito.anyString())).thenReturn(0);
 
-    mrTask.execute(dctx);
+    mrTask.execute();
 
     ArgumentCaptor<String[]> captor = ArgumentCaptor.forClass(String[].class);
     verify(mrTask).spawn(Mockito.anyString(), Mockito.anyString(), captor.capture());

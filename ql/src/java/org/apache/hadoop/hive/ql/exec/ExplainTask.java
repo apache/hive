@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -398,7 +397,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
 
     PrintStream out = null;
     try {

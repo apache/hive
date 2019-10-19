@@ -40,7 +40,7 @@ public class MaterializedViewUpdateOperation extends DDLOperation<MaterializedVi
 
   @Override
   public int execute() throws HiveException {
-    if (context.getDriverContext().getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
+    if (context.getContext().getExplainAnalyze() == AnalyzeState.RUNNING) {
       return 0;
     }
 

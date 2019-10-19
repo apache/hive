@@ -34,7 +34,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
@@ -481,10 +481,10 @@ public class TestExecDriver {
   private void executePlan() throws Exception {
     String testName = new Exception().getStackTrace()[1].getMethodName();
     MapRedTask mrtask = new MapRedTask();
-    DriverContext dctx = new DriverContext();
+    TaskQueue taskQueue = new TaskQueue();
     mrtask.setWork(mr);
-    mrtask.initialize(queryState, null, dctx, null);
-    int exitVal =  mrtask.execute(dctx);
+    mrtask.initialize(queryState, null, taskQueue, null);
+    int exitVal = mrtask.execute();
 
     if (exitVal != 0) {
       LOG.error(testName + " execution failed with exit status: "

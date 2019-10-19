@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ReplLastIdInfo;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.flags.ReplRemoveFirstIncLoadPendFlagDesc;
@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.slf4j.Logger;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +88,7 @@ public class IncrementalLoadTasksBuilder {
     numIteration = 0;
   }
 
-  public Task<?> build(DriverContext driverContext, Hive hive, Logger log,
+  public Task<?> build(Context context, Hive hive, Logger log,
                                             TaskTracker tracker) throws Exception {
     Task<?> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
     Task<?> taskChainTail = evTaskRoot;
@@ -131,9 +130,9 @@ public class IncrementalLoadTasksBuilder {
       // Once this entire chain is generated, we add evTaskRoot to rootTasks, so as to execute the
       // entire chain
 
-      MessageHandler.Context context = new MessageHandler.Context(dbName, location,
-              taskChainTail, eventDmd, conf, hive, driverContext.getCtx(), this.log);
-      List<Task<?>> evTasks = analyzeEventLoad(context);
+      MessageHandler.Context mhContext = new MessageHandler.Context(dbName, location,
+              taskChainTail, eventDmd, conf, hive, context, this.log);
+      List<Task<?>> evTasks = analyzeEventLoad(mhContext);
 
       if ((evTasks != null) && (!evTasks.isEmpty())) {
         ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger,

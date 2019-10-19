@@ -48,9 +48,8 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.BucketMatcher;
@@ -132,9 +131,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   }
 
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
-      CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, driverContext, opContext);
+  public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
+    super.initialize(queryState, queryPlan, taskQueue, context);
     job = new JobConf(conf, ExecDriver.class);
     execContext = new ExecMapperContext(job);
     //we don't use the HadoopJobExecHooks for local tasks
@@ -153,27 +151,26 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     if (conf.getBoolVar(HiveConf.ConfVars.SUBMITLOCALTASKVIACHILD)) {
       // send task off to another jvm
-      return executeInChildVM(driverContext);
+      return executeInChildVM();
     } else {
       // execute in process
-      return executeInProcess(driverContext);
+      return executeInProcess();
     }
   }
 
-  public int executeInChildVM(DriverContext driverContext) {
+  private int executeInChildVM() {
     // execute in child jvm
     try {
       // generate the cmd line to run in the child jvm
-      Context ctx = driverContext.getCtx();
       String hiveJar = conf.getJar();
 
       String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
       conf.setVar(ConfVars.HIVEADDEDJARS, Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR));
       // write out the plan to a local file
-      Path planPath = new Path(ctx.getLocalTmpPath(), "plan.xml");
+      Path planPath = new Path(context.getLocalTmpPath(), "plan.xml");
       MapredLocalWork plan = getWork();
       LOG.info("Generating plan file " + planPath.toString());
 
@@ -193,7 +190,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       String libJarsOption = StringUtils.isEmpty(libJars) ? " " : " -libjars " + libJars + " ";
 
       String jarCmd = hiveJar + " " + ExecDriver.class.getName() + libJarsOption;
-      String hiveConfArgs = ExecDriver.generateCmdLine(conf, ctx);
+      String hiveConfArgs = ExecDriver.generateCmdLine(conf, context);
       String cmdLine = hadoopExec + " jar " + jarCmd + " -localtask -plan " + planPath.toString()
           + " " + isSilent + " " + hiveConfArgs;
 
@@ -203,7 +200,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       if (!files.isEmpty()) {
         cmdLine = cmdLine + " -files " + files;
 
-        workDir = ctx.getLocalTmpPath().toUri().getPath();
+        workDir = context.getLocalTmpPath().toUri().getPath();
 
         if (!(new File(workDir)).mkdir()) {
           throw new IOException("Cannot create tmp working dir: " + workDir);
@@ -370,7 +367,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     }
   }
 
-  public int executeInProcess(DriverContext driverContext) {
+  public int executeInProcess() {
     // check the local work
     if (work == null) {
       return -1;

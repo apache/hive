@@ -97,7 +97,7 @@ public class AlterTableUnarchiveOperation extends DDLOperation<AlterTableUnarchi
       throw new HiveException("Haven't found any archive where it should be");
     }
 
-    Path tmpPath = context.getDriverContext().getCtx().getExternalTmpPath(originalDir);
+    Path tmpPath = context.getContext().getExternalTmpPath(originalDir);
 
     FileSystem fs = null;
     try {

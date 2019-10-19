@@ -23,7 +23,6 @@ import com.google.common.base.Strings;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.io.NullScanFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -45,7 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
@@ -181,8 +179,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   }
 
   @Override
-  public SparkJobRef execute(final DriverContext driverContext, final SparkWork sparkWork)
-      throws Exception {
+  public SparkJobRef execute(TaskQueue taskQueue, Context context, SparkWork sparkWork) throws Exception {
     if (SparkClientUtilities.isYarnMaster(hiveConf.get("spark.master")) &&
         !remoteClient.isActive()) {
       // Re-create the remote client if not active any more
@@ -191,15 +188,14 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     }
 
     try {
-      return submit(driverContext, sparkWork);
+      return submit(taskQueue, context, sparkWork);
     } catch (Throwable cause) {
       throw new Exception("Failed to submit Spark work, please retry later", cause);
     }
   }
 
-  private SparkJobRef submit(final DriverContext driverContext, final SparkWork sparkWork) throws Exception {
-    final Context ctx = driverContext.getCtx();
-    final HiveConf hiveConf = (HiveConf) ctx.getConf();
+  private SparkJobRef submit(TaskQueue taskQueue, Context context, SparkWork sparkWork) throws Exception {
+    final HiveConf hiveConf = (HiveConf) context.getConf();
     refreshLocalResources(sparkWork, hiveConf);
     final JobConf jobConf = new JobConf(hiveConf);
 
@@ -207,7 +203,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     HiveConfUtil.updateJobCredentialProviders(jobConf);
 
     // Create temporary scratch dir
-    final Path emptyScratchDir = ctx.getMRTmpPath();
+    final Path emptyScratchDir = context.getMRTmpPath();
     FileSystem fs = emptyScratchDir.getFileSystem(jobConf);
     fs.mkdirs(emptyScratchDir);
 
@@ -220,7 +216,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     byte[] sparkWorkBytes = KryoSerializer.serialize(sparkWork);
 
     JobStatusJob job = new JobStatusJob(jobConfBytes, scratchDirBytes, sparkWorkBytes);
-    if (driverContext.isShutdown()) {
+    if (taskQueue.isShutdown()) {
       throw new HiveException("Operation is cancelled.");
     }
 
