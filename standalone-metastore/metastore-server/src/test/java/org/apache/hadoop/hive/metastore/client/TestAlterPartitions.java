@@ -211,7 +211,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       expectedKVPairs.add(partCols.get(i) + "=" + testValues.get(i));
     }
     String partPath = expectedKVPairs.stream().collect(joining("/"));
-    assertTrue(partition.getSd().getLocation().equals(metaStore.getWarehouseRoot()
+    assertTrue(partition.getSd().getLocation().equals(metaStore.getExternalWarehouseRoot()
         + "/testpartdb.db/testparttable/" + partPath));
     assertNotEquals(NEW_CREATE_TIME, partition.getCreateTime());
     assertNotEquals(NEW_CREATE_TIME, partition.getLastAccessTime());
@@ -227,7 +227,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       expectedKVPairs.add(partCols.get(i) + "=" + testValues.get(i));
     }
     String partPath = expectedKVPairs.stream().collect(joining("/"));
-    assertTrue(partition.getSd().getLocation().equals(metaStore.getWarehouseRoot()
+    assertTrue(partition.getSd().getLocation().equals(metaStore.getExternalWarehouseRoot()
         + "/testpartdb.db/testparttable/" + partPath + "/hh=01"));
     assertEquals(NEW_CREATE_TIME, partition.getCreateTime());
     assertEquals(NEW_CREATE_TIME, partition.getLastAccessTime());

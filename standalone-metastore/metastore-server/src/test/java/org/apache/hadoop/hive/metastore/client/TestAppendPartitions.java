@@ -559,7 +559,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     tableParams.put("EXTERNAL", "TRUE");
     Table table = createTable("test_append_part_external_table", getYearAndMonthPartCols(),
         tableParams, TableType.EXTERNAL_TABLE.name(),
-        metaStore.getWarehouseRoot() + "/test_append_part_external_table");
+        metaStore.getExternalWarehouseRoot() + "/test_append_part_external_table");
     return table;
   }
 
@@ -615,7 +615,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     Assert.assertEquals(expectedPartValues, partition.getValues());
     Assert.assertNotEquals(0, partition.getCreateTime());
     Assert.assertEquals(0, partition.getLastAccessTime());
-    Assert.assertEquals(1, partition.getParameters().size());
+    Assert.assertTrue("Expect atleast transient_lastDdlTime to be set in params", (partition.getParameters().size() > 0));
     Assert.assertTrue(partition.getParameters().containsKey("transient_lastDdlTime"));
     StorageDescriptor partitionSD = partition.getSd();
     Assert.assertEquals(table.getSd().getLocation() + "/" + partitionName,
