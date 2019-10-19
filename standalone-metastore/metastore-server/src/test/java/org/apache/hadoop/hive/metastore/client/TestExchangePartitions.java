@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -230,9 +231,9 @@ public class TestExchangePartitions extends MetaStoreClientTest {
   public void testExchangePartitionsCustomTableLocations() throws Exception {
 
     Table source = createTable(DB_NAME, "test_source_table_cust_loc", getYearMonthAndDayPartCols(),
-        metaStore.getWarehouseRoot() + "/sourceTable");
+        metaStore.getExternalWarehouseRoot() + "/sourceTable");
     Table dest = createTable(DB_NAME, "test_dest_table_cust_loc", getYearMonthAndDayPartCols(),
-        metaStore.getWarehouseRoot() + "/destTable");
+        metaStore.getExternalWarehouseRoot() + "/destTable");
     Partition[] parts = new Partition[2];
     parts[0] = createPartition(source, Lists.newArrayList("2019", "may", "15"), null);
     parts[1] = createPartition(source, Lists.newArrayList("2019", "june", "14"), null);
@@ -250,9 +251,9 @@ public class TestExchangePartitions extends MetaStoreClientTest {
   public void testExchangePartitionsCustomTableAndPartLocation() throws Exception {
 
     Table source = createTable(DB_NAME, "test_source_table_cust_loc",
-        getYearMonthAndDayPartCols(), metaStore.getWarehouseRoot() + "/sourceTable");
+        getYearMonthAndDayPartCols(), metaStore.getExternalWarehouseRoot() + "/sourceTable");
     Table dest = createTable(DB_NAME, "test_dest_table_cust_loc", getYearMonthAndDayPartCols(),
-        metaStore.getWarehouseRoot() + "/destTable");
+        metaStore.getExternalWarehouseRoot() + "/destTable");
     Partition[] parts = new Partition[2];
     parts[0] = createPartition(source, Lists.newArrayList("2019", "may", "11"),
         source.getSd().getLocation() + "/2019m11");
@@ -753,9 +754,9 @@ public class TestExchangePartitions extends MetaStoreClientTest {
   public void testExchangePartitionCustomTableLocations() throws Exception {
 
     Table source = createTable(DB_NAME, "test_source_table_cust_loc",
-        getYearMonthAndDayPartCols(), metaStore.getWarehouseRoot() + "/sourceTable");
+        getYearMonthAndDayPartCols(), metaStore.getExternalWarehouseRoot() + "/sourceTable");
     Table dest = createTable(DB_NAME, "test_dest_table_cust_loc", getYearMonthAndDayPartCols(),
-        metaStore.getWarehouseRoot() + "/destTable");
+        metaStore.getExternalWarehouseRoot() + "/destTable");
     Partition[] parts = new Partition[2];
     parts[0] = createPartition(source, Lists.newArrayList("2019", "may", "15"), null);
     parts[1] = createPartition(source, Lists.newArrayList("2019", "june", "14"), null);
@@ -773,9 +774,9 @@ public class TestExchangePartitions extends MetaStoreClientTest {
   public void testExchangePartitionCustomTableAndPartLocation() throws Exception {
 
     Table source = createTable(DB_NAME, "test_source_table_cust_loc",
-        getYearMonthAndDayPartCols(), metaStore.getWarehouseRoot() + "/sourceTable");
+        getYearMonthAndDayPartCols(), metaStore.getExternalWarehouseRoot() + "/sourceTable");
     Table dest = createTable(DB_NAME, "test_dest_table_cust_loc", getYearMonthAndDayPartCols(),
-        metaStore.getWarehouseRoot() + "/destTable");
+        metaStore.getExternalWarehouseRoot() + "/destTable");
     Partition[] parts = new Partition[2];
     parts[0] = createPartition(source, Lists.newArrayList("2019", "may", "11"),
         source.getSd().getLocation() + "/2019m11");
@@ -1219,6 +1220,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     new TableBuilder()
         .setDbName(dbName)
         .setTableName(tableName)
+        .setType(TableType.EXTERNAL_TABLE.name())
         .setCols(cols)
         .setPartCols(partCols)
         .setLocation(location)
