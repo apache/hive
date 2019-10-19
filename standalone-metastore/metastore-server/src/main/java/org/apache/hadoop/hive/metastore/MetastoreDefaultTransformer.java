@@ -574,7 +574,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         params.remove(TABLE_IS_TRANSACTIONAL);
         params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
         params.put("EXTERNAL", "TRUE");
-        params.put(EXTERNAL_TABLE_PURGE, "true");
+        params.put(EXTERNAL_TABLE_PURGE, "TRUE");
         params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
         newTable.setParameters(params);
         LOG.info("Modified table params are:" + params.toString());
