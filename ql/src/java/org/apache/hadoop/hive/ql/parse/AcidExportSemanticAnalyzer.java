@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -155,7 +155,9 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
       inputs.add(dbForTmpTable); //so the plan knows we are 'reading' this db - locks, security...
       DDLTask createTableTask = (DDLTask) TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), ctlt), conf);
       createTableTask.setConf(conf); //above get() doesn't set it
-      createTableTask.execute(new DriverContext(new Context(conf)));
+      Context context = new Context(conf);
+      createTableTask.initialize(null, null, new TaskQueue(context), context);
+      createTableTask.execute();
       newTable = db.getTable(newTableName);
     } catch(IOException|HiveException ex) {
       throw new SemanticException(ex);

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -61,7 +61,8 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected transient QueryState queryState;
   protected transient LogHelper console;
   protected transient QueryPlan queryPlan;
-  protected transient DriverContext driverContext;
+  protected transient TaskQueue taskQueue;
+  protected transient Context context;
   protected transient boolean clonedConf = false;
   protected transient String jobID;
   protected Task<?> backupTask;
@@ -142,7 +143,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected List<Task<?>> parentTasks;
   /**
    * this can be set by the Task, to provide more info about the failure in TaskResult
-   * where the Driver can find it.  This is checked if {@link Task#execute(org.apache.hadoop.hive.ql.DriverContext)}
+   * where the Driver can find it.  This is checked if {@link Task#execute(org.apache.hadoop.hive.ql.TaskQueue)}
    * returns non-0 code.
    */
   private Throwable exception;
@@ -156,16 +157,16 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return taskHandle;
   }
 
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
-      CompilationOpContext opContext) {
+  public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
     this.queryPlan = queryPlan;
     setInitialized();
     this.queryState = queryState;
-    if (null == this.conf) {
+    if (null == this.conf && queryState != null) {
       this.conf = queryState.getConf();
     }
-    this.driverContext = driverContext;
-    console = new LogHelper(LOG);
+    this.taskQueue = taskQueue;
+    this.context = context;
+    this.console = new LogHelper(LOG);
   }
   public void setQueryDisplay(QueryDisplay queryDisplay) {
     this.queryDisplay = queryDisplay;
@@ -209,7 +210,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
       if (conf != null) {
         LOG.debug("Task getting executed using mapred tag : " + conf.get(MRJobConfig.JOB_TAGS));
       }
-      int retval = execute(driverContext);
+      int retval = execute();
       this.setDone();
       if (hiveHistory != null) {
         hiveHistory.logPlanProgress(queryPlan);
@@ -225,7 +226,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
    *
    * @return status of executing the task
    */
-  public abstract int execute(DriverContext driverContext);
+  public abstract int execute();
 
   public boolean isRootTask() {
     return rootTask;
@@ -594,12 +595,16 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return queryPlan;
   }
 
-  public DriverContext getDriverContext() {
-    return driverContext;
+  public TaskQueue getTaskQueue() {
+    return taskQueue;
   }
 
-  public void setDriverContext(DriverContext driverContext) {
-    this.driverContext = driverContext;
+  public void setTaskQueue(TaskQueue taskQueue) {
+    this.taskQueue = taskQueue;
+  }
+
+  public Context getContext() {
+    return context;
   }
 
   public void setQueryPlan(QueryPlan queryPlan) {
@@ -657,6 +662,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   }
 
   public HiveTxnManager getTxnMgr() {
-    return driverContext.getCtx().getHiveTxnManager();
+    return context.getHiveTxnManager();
   }
 }

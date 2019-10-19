@@ -20,21 +20,22 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.io.Closeable;
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.spark.SparkConf;
 
 public interface HiveSparkClient extends Serializable, Closeable {
   /**
-   * HiveSparkClient should generate Spark RDD graph by given sparkWork and driverContext,
+   * HiveSparkClient should generate Spark RDD graph by given sparkWork and taskQueue,
    * and submit RDD graph to Spark cluster.
-   * @param driverContext
+   * @param taskQueue
    * @param sparkWork
    * @return SparkJobRef could be used to track spark job progress and metrics.
    * @throws Exception
    */
-  SparkJobRef execute(DriverContext driverContext, SparkWork sparkWork) throws Exception;
+  SparkJobRef execute(TaskQueue taskQueue, Context context, SparkWork sparkWork) throws Exception;
 
   /**
    * @return spark configuration

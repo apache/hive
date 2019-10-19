@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.repl;
 
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
@@ -34,7 +33,7 @@ public class ReplStateLogTask extends Task<ReplStateLogWork> implements Serializ
   private static final long serialVersionUID = 1L;
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     work.replStateLog();
     return 0;
   }

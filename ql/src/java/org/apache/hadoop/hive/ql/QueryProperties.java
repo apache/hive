@@ -267,7 +267,6 @@ public class QueryProperties {
   /**
    * True indicates this statement create or replaces a materialized view, not that it is a query
    * against a materialized view.
-   * @return
    */
   public boolean isMaterializedView() {
     return isMaterializedView;

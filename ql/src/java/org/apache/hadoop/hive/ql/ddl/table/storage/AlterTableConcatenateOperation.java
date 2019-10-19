@@ -25,7 +25,8 @@ import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -55,11 +56,11 @@ public class AlterTableConcatenateOperation extends DDLOperation<AlterTableConca
 
   @Override
   public int execute() throws HiveException {
-    CompilationOpContext opContext = context.getDriverContext().getCtx().getOpContext();
+    Context generalContext = context.getContext();
 
-    MergeFileWork mergeWork = getMergeFileWork(opContext);
+    MergeFileWork mergeWork = getMergeFileWork(generalContext.getOpContext());
     Task<?> task = getTask(mergeWork);
-    return executeTask(opContext, task);
+    return executeTask(generalContext, task);
   }
 
   private MergeFileWork getMergeFileWork(CompilationOpContext opContext) {
@@ -122,10 +123,10 @@ public class AlterTableConcatenateOperation extends DDLOperation<AlterTableConca
     }
   }
 
-  private int executeTask(CompilationOpContext opContext, Task<?> task) {
-    DriverContext driverCxt = new DriverContext();
-    task.initialize(context.getQueryState(), context.getQueryPlan(), driverCxt, opContext);
-    int ret = task.execute(driverCxt);
+  private int executeTask(Context generalContext, Task<?> task) {
+    TaskQueue taskQueue = new TaskQueue();
+    task.initialize(context.getQueryState(), context.getQueryPlan(), taskQueue, generalContext);
+    int ret = task.execute();
     if (task.getException() != null) {
       context.getTask().setException(task.getException());
     }

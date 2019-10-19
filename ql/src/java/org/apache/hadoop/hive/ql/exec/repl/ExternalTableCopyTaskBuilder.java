@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -163,7 +162,7 @@ public class ExternalTableCopyTaskBuilder {
     }
 
     @Override
-    public int execute(DriverContext driverContext) {
+    public int execute() {
       String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
 
       Path sourcePath = work.fullyQualifiedSourcePath;

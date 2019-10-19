@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
@@ -97,7 +96,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     Task<?> rootTask = work.getRootTask();
     if (rootTask != null) {
       rootTask.setChildTasks(null);
@@ -105,17 +104,17 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     work.setRootTask(this);
     this.parentTasks = null;
     if (work.isIncrementalLoad()) {
-      return executeIncrementalLoad(driverContext);
+      return executeIncrementalLoad();
     } else {
-      return executeBootStrapLoad(driverContext);
+      return executeBootStrapLoad();
     }
   }
 
-  private int executeBootStrapLoad(DriverContext driverContext) {
+  private int executeBootStrapLoad() {
     try {
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
-      Context context = new Context(work.dumpDirectory, conf, getHive(),
-              work.sessionStateLineageState, driverContext.getCtx());
+      Context loadContext = new Context(work.dumpDirectory, conf, getHive(),
+              work.sessionStateLineageState, context);
       TaskTracker loadTaskTracker = new TaskTracker(maxTasks);
       /*
           for now for simplicity we are doing just one directory ( one database ), come back to use
@@ -155,10 +154,10 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         switch (next.eventType()) {
         case Database:
           DatabaseEvent dbEvent = (DatabaseEvent) next;
-          dbTracker = new LoadDatabase(context, dbEvent, work.dbNameToLoadIn, loadTaskTracker).tasks();
+          dbTracker = new LoadDatabase(loadContext, dbEvent, work.dbNameToLoadIn, loadTaskTracker).tasks();
           loadTaskTracker.update(dbTracker);
           if (work.hasDbState()) {
-            loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, context, scope));
+            loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, loadContext, scope));
           }  else {
             // Scope might have set to database in some previous iteration of loop, so reset it to false if database
             // tracker has no tasks.
@@ -180,7 +179,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
            */
           TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn);
           TableEvent tableEvent = (TableEvent) next;
-          LoadTable loadTable = new LoadTable(tableEvent, context, iterator.replLogger(),
+          LoadTable loadTable = new LoadTable(tableEvent, loadContext, iterator.replLogger(),
                                               tableContext, loadTaskTracker);
           tableTracker = loadTable.tasks(work.isIncrementalLoad());
           setUpDependencies(dbTracker, tableTracker);
@@ -203,7 +202,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
           // for a table we explicitly try to load partitions as there is no separate partitions events.
           LoadPartitions loadPartitions =
-              new LoadPartitions(context, iterator.replLogger(), loadTaskTracker, tableEvent,
+              new LoadPartitions(loadContext, iterator.replLogger(), loadTaskTracker, tableEvent,
                       work.dbNameToLoadIn, tableContext);
           TaskTracker partitionsTracker = loadPartitions.tasks();
           partitionsPostProcessing(iterator, scope, loadTaskTracker, tableTracker,
@@ -220,7 +219,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           PartitionEvent event = (PartitionEvent) next;
           TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn);
           LoadPartitions loadPartitions =
-              new LoadPartitions(context, iterator.replLogger(), tableContext, loadTaskTracker,
+              new LoadPartitions(loadContext, iterator.replLogger(), tableContext, loadTaskTracker,
                       event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated());
           /*
                the tableTracker here should be a new instance and not an existing one as this can
@@ -233,7 +232,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           break;
         }
         case Function: {
-          LoadFunction loadFunction = new LoadFunction(context, iterator.replLogger(),
+          LoadFunction loadFunction = new LoadFunction(loadContext, iterator.replLogger(),
                                               (FunctionEvent) next, work.dbNameToLoadIn, dbTracker);
           TaskTracker functionsTracker = loadFunction.tasks();
           if (!scope.database) {
@@ -247,7 +246,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         }
         case Constraint: {
           LoadConstraint loadConstraint =
-              new LoadConstraint(context, (ConstraintEvent) next, work.dbNameToLoadIn, dbTracker);
+              new LoadConstraint(loadContext, (ConstraintEvent) next, work.dbNameToLoadIn, dbTracker);
           TaskTracker constraintTracker = loadConstraint.tasks();
           scope.rootTasks.addAll(constraintTracker.tasks());
           loadTaskTracker.update(constraintTracker);
@@ -256,7 +255,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         }
 
         if (!loadingConstraint && !iterator.currentDbHasNext()) {
-          createEndReplLogTask(context, scope, iterator.replLogger());
+          createEndReplLogTask(loadContext, scope, iterator.replLogger());
         }
       }
 
@@ -274,7 +273,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       // last repl ID of the database.
       if (!iterator.hasNext() && !constraintIterator.hasNext() && !work.getPathsToCopyIterator().hasNext()
               && !work.isIncrementalLoad()) {
-        loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, context, scope));
+        loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, loadContext, scope));
         work.updateDbEventState(null);
       }
       this.childTasks = scope.rootTasks;
@@ -286,7 +285,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       LOG.info("Root Tasks / Total Tasks : {} / {} ", childTasks.size(), loadTaskTracker.numberOfTasks());
 
       // Populate the driver context with the scratch dir info from the repl context, so that the temp dirs will be cleaned up later
-      driverContext.getCtx().getFsScratchDirs().putAll(context.pathInfo.getFsScratchDirs());
+      context.getFsScratchDirs().putAll(loadContext.pathInfo.getFsScratchDirs());
     }  catch (RuntimeException e) {
       LOG.error("replication failed with run time exception", e);
       throw e;
@@ -484,7 +483,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     DAGTraversal.traverse(rootTasks, new AddDependencyToLeaves(loadTask));
   }
 
-  private int executeIncrementalLoad(DriverContext driverContext) {
+  private int executeIncrementalLoad() {
     try {
       // If user has requested to cleanup any bootstrap dump, then just do it before incremental load.
       if (work.needCleanTablesFromBootstrap) {
@@ -503,7 +502,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         if (work.hasBootstrapLoadTasks()) {
           LOG.debug("Current incremental dump have tables to be bootstrapped. Switching to bootstrap "
                   + "mode after applying all events.");
-          return executeBootStrapLoad(driverContext);
+          return executeBootStrapLoad();
         }
       }
 
@@ -517,7 +516,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (work.getPathsToCopyIterator().hasNext()) {
         childTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(tracker));
       } else {
-        childTasks.add(builder.build(driverContext, getHive(), LOG, tracker));
+        childTasks.add(builder.build(context, getHive(), LOG, tracker));
       }
 
       // If there are no more events to be applied, add a task to update the last.repl.id of the

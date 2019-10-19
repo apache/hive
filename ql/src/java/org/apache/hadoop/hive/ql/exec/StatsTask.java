@@ -27,10 +27,10 @@ import java.util.concurrent.Executors;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -63,9 +63,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   List<IStatsProcessor> processors = new ArrayList<>();
 
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
-      CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, ctx, opContext);
+  public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
+    super.initialize(queryState, queryPlan, taskQueue, context);
 
     if (work.getBasicStatsWork() != null) {
       BasicStatsTask task = new BasicStatsTask(conf, work.getBasicStatsWork());
@@ -80,14 +79,14 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     }
 
     for (IStatsProcessor p : processors) {
-      p.initialize(opContext);
+      p.initialize(context.getOpContext());
     }
   }
 
 
   @Override
-  public int execute(DriverContext driverContext) {
-    if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
+  public int execute() {
+    if (context.getExplainAnalyze() == AnalyzeState.RUNNING) {
       return 0;
     }
     if (work.isAggregating() && work.isFooterScan()) {

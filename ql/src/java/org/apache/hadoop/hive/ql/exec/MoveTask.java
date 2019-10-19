@@ -29,8 +29,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
@@ -229,15 +227,14 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       return;
     }
 
-    Context ctx = driverContext.getCtx();
-    if (ctx.getHiveTxnManager().supportsAcid()) {
+    if (context.getHiveTxnManager().supportsAcid()) {
       //Acid LM doesn't maintain getOutputLockObjects(); this 'if' just makes logic more explicit
       return;
     }
 
-    HiveLockManager lockMgr = ctx.getHiveTxnManager().getLockManager();
-    WriteEntity output = ctx.getLoadTableOutputMap().get(ltd);
-    List<HiveLockObj> lockObjects = ctx.getOutputLockObjects().get(output);
+    HiveLockManager lockMgr = context.getHiveTxnManager().getLockManager();
+    WriteEntity output = context.getLoadTableOutputMap().get(ltd);
+    List<HiveLockObj> lockObjects = context.getOutputLockObjects().get(output);
     if (CollectionUtils.isEmpty(lockObjects)) {
       LOG.debug("No locks found to release");
       return;
@@ -248,7 +245,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       List<HiveLock> locks = lockMgr.getLocks(lockObj.getObj(), false, true);
       for (HiveLock lock : locks) {
         if (lock.getHiveLockMode() == lockObj.getMode()) {
-          if (ctx.getHiveLocks().remove(lock)) {
+          if (context.getHiveLocks().remove(lock)) {
             try {
               lockMgr.unlock(lock);
             } catch (LockException le) {
@@ -302,7 +299,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("Executing MoveWork " + System.identityHashCode(work)
         + " with " + work.getLoadFileWork() + "; " + work.getLoadTableWork() + "; "
@@ -310,7 +307,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     try {
-      if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
+      if (context.getExplainAnalyze() == AnalyzeState.RUNNING) {
         return 0;
       }
       Hive db = getHive();
@@ -404,7 +401,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             throw new HiveException("MoveTask : Write id is not set in the config by open txn task for migration");
           }
           tbd.setWriteId(writeId);
-          tbd.setStmtId(driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement());
+          tbd.setStmtId(context.getHiveTxnManager().getStmtIdAndIncrement());
         }
 
         boolean isFullAcidOp = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID

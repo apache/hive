@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistic;
@@ -68,12 +68,11 @@ public class TestSparkStatistics {
 
       SparkTask sparkTask = sparkTasks.get(0);
 
-      DriverContext driverCxt = new DriverContext(driver.getContext());
-      driverCxt.prepare(driver.getPlan());
+      TaskQueue taskQueue = new TaskQueue(driver.getContext());
+      taskQueue.prepare(driver.getPlan());
 
-      sparkTask.initialize(driver.getQueryState(), driver.getPlan(), driverCxt, driver.getContext()
-              .getOpContext());
-      Assert.assertEquals(0, sparkTask.execute(driverCxt));
+      sparkTask.initialize(driver.getQueryState(), driver.getPlan(), taskQueue, driver.getContext());
+      Assert.assertEquals(0, sparkTask.execute());
 
       Assert.assertNotNull(sparkTask.getSparkStatistics());
 

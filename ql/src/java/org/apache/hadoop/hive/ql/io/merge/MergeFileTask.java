@@ -24,9 +24,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -63,9 +62,8 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
   private boolean success = true;
 
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan,
-      DriverContext driverContext, CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, driverContext, opContext);
+  public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
+    super.initialize(queryState, queryPlan, taskQueue, context);
     job = new JobConf(conf, MergeFileTask.class);
     jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }
@@ -79,9 +77,9 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
    * start a new map-reduce job to do the merge, almost the same as ExecDriver.
    */
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
 
-    Context ctx = driverContext.getCtx();
+    Context ctx = context;
     boolean ctxCreated = false;
     RunningJob rj = null;
     int returnVal = 0;

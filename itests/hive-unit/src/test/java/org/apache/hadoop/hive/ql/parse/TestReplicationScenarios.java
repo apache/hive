@@ -53,7 +53,7 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -399,7 +399,7 @@ public class TestReplicationScenarios {
             null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
         Collections.emptyList());
     Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
-    replLoadTask.initialize(null, null, new DriverContext(driver.getContext()), null);
+    replLoadTask.initialize(null, null, new TaskQueue(driver.getContext()), driver.getContext());
     replLoadTask.executeTask(null);
     Hive.closeCurrent();
     return replLoadWork.getRootTask();

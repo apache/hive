@@ -45,7 +45,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
@@ -133,7 +132,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     LOG.debug("ReplCopyTask.execute()");
     FileSystem dstFs = null;
     Path toPath = null;
@@ -215,7 +214,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           // duplicate copy from the source. Check HIVE-21197 for more detail.
           int stmtId = (writeId.equals(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID)) ?
                   ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID :
-                  driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement();
+                    context.getHiveTxnManager().getStmtIdAndIncrement();
           toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
         }
       } else {

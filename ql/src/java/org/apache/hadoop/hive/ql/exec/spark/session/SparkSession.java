@@ -20,7 +20,8 @@ package org.apache.hadoop.hive.ql.exec.spark.session;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
@@ -37,11 +38,11 @@ public interface SparkSession {
 
   /**
    * Submit given <i>sparkWork</i> to SparkClient.
-   * @param driverContext
+   * @param taskQueue
    * @param sparkWork
    * @return SparkJobRef
    */
-  SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception;
+  SparkJobRef submit(TaskQueue taskQueue, Context context, SparkWork sparkWork) throws Exception;
 
   /**
    * Get Spark shuffle memory per task, and total number of cores. This
