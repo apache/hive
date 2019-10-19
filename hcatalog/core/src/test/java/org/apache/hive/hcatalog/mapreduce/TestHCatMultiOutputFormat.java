@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -386,7 +385,9 @@ public class TestHCatMultiOutputFormat {
     }
     FetchTask task = new FetchTask();
     task.setWork(work);
-    task.initialize(queryState, null, null, new CompilationOpContext());
+    conf.set("_hive.hdfs.session.path", "path");
+    conf.set("_hive.local.session.path", "path");
+    task.initialize(queryState, null, null, new org.apache.hadoop.hive.ql.Context(conf));
     task.fetch(temp);
     for (String str : temp) {
       results.add(str.replace("\t", ","));

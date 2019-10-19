@@ -34,7 +34,7 @@ public class LockDatabaseOperation extends DDLOperation<LockDatabaseDesc> {
 
   @Override
   public int execute() throws HiveException {
-    Context ctx = context.getDriverContext().getCtx();
+    Context ctx = context.getContext();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
     return txnManager.lockDatabase(context.getDb(), desc);
   }

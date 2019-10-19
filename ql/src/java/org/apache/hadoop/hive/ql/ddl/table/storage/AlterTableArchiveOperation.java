@@ -175,7 +175,7 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
   private Path createArchiveInTmpDir(Table table, PartSpecInfo partitionSpecInfo, Path originalDir)
       throws HiveException {
     // First create the archive in a tmp dir so that if the job fails, the bad files don't pollute the filesystem
-    Path tmpPath = new Path(context.getDriverContext().getCtx().getExternalTmpPath(originalDir), "partlevel");
+    Path tmpPath = new Path(context.getContext().getExternalTmpPath(originalDir), "partlevel");
 
     // Create the Hadoop archive
     context.getConsole().printInfo("Creating " + ARCHIVE_NAME + " for " + originalDir.toString() + " in " + tmpPath);

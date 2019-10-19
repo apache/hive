@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
@@ -92,10 +91,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
 
-    Context ctx = driverContext.getCtx();
     boolean ctxCreated = false;
+    Context ctx = context;
 
     try {
       if (ctx == null) {
@@ -111,7 +110,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
           conf.getBoolVar(HiveConf.ConfVars.LOCALMODEAUTO)) {
 
         if (inputSummary == null) {
-          inputSummary = Utilities.getInputSummary(driverContext.getCtx(), work.getMapWork(), null);
+          inputSummary = Utilities.getInputSummary(ctx, work.getMapWork(), null);
         }
 
         // set the values of totalInputFileSize and totalInputNumFiles, estimating them
@@ -156,7 +155,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         }
         // we are not running this mapred task via child jvm
         // so directly invoke ExecDriver
-        int ret = super.execute(driverContext);
+        int ret = super.execute();
 
         // restore the previous properties for framework name, RM address etc.
         if (this.isLocalMode()) {
@@ -324,7 +323,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       try {
         // creating the context can create a bunch of files. So make
         // sure to clear it out
-        if(ctxCreated) {
+        if (ctxCreated) {
           ctx.clear();
         }
 
@@ -442,7 +441,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
             + reducers);
       } else {
         if (inputSummary == null) {
-          inputSummary =  Utilities.getInputSummary(driverContext.getCtx(), work.getMapWork(), null);
+          inputSummary = Utilities.getInputSummary(context, work.getMapWork(), null);
         }
         int reducers = Utilities.estimateNumberOfReducers(conf, inputSummary, work.getMapWork(),
                                                           work.isFinalMapRed());

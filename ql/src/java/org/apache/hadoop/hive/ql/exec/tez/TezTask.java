@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -131,7 +130,7 @@ public class TezTask extends Task<TezWork> {
 
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     int rc = 1;
     boolean cleanContext = false;
     Context ctx = null;
@@ -139,7 +138,7 @@ public class TezTask extends Task<TezWork> {
 
     try {
       // Get or create Context object. If we create it we have to clean it later as well.
-      ctx = driverContext.getCtx();
+      ctx = context;
       if (ctx == null) {
         ctx = new Context(conf);
         cleanContext = true;

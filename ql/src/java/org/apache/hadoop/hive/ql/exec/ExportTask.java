@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -44,7 +43,7 @@ public class ExportTask extends Task<ExportWork> implements Serializable {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     try {
       // Also creates the root directory
       TableExport.Paths exportPaths = new TableExport.Paths(

@@ -31,13 +31,14 @@ import com.google.common.collect.Maps;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClient;
 import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClientFactory;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
@@ -99,9 +100,9 @@ public class SparkSessionImpl implements SparkSession {
   }
 
   @Override
-  public SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception {
+  public SparkJobRef submit(TaskQueue taskQueue, Context context, SparkWork sparkWork) throws Exception {
     Preconditions.checkState(isOpen, "Session is not open. Can't submit jobs.");
-    return hiveSparkClient.execute(driverContext, sparkWork);
+    return hiveSparkClient.execute(taskQueue, context, sparkWork);
   }
 
   @Override

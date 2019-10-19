@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -117,7 +116,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     try {
       Hive hiveDb = getHive();
       Path dumpRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR), getNextDumpDir());

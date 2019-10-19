@@ -44,10 +44,6 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsData
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -72,12 +68,6 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory
       .getLogger(ColumnStatsUpdateTask.class);
-
-  @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
-      CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, ctx, opContext);
-  }
 
   private ColumnStatistics constructColumnStatsFromInput()
       throws SemanticException, MetaException {
@@ -343,7 +333,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     try {
       Hive db = getHive();
       return persistColumnStats(db);

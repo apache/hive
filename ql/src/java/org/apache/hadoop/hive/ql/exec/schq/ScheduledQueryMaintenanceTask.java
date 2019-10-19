@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.schq;
 
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -44,7 +43,7 @@ public class ScheduledQueryMaintenanceTask extends Task<ScheduledQueryMaintenanc
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     ScheduledQueryMaintenanceRequest request = buildScheduledQueryRequest();
     try {
       Hive.get().getMSC().scheduledQueryMaintenance(request);

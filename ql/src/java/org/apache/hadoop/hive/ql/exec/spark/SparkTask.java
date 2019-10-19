@@ -36,11 +36,7 @@ import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
@@ -97,13 +93,7 @@ public class SparkTask extends Task<SparkWork> {
   private transient boolean jobKilled = false;
 
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
-      CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, driverContext, opContext);
-  }
-
-  @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
 
     int rc = 0;
     perfLogger = SessionState.getPerfLogger();
@@ -120,11 +110,11 @@ public class SparkTask extends Task<SparkWork> {
       // Submit the Spark job
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
       submitTime = perfLogger.getStartTime(PerfLogger.SPARK_SUBMIT_JOB);
-      jobRef = sparkSession.submit(driverContext, sparkWork);
+      jobRef = sparkSession.submit(taskQueue, context, sparkWork);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
 
       // If the driver context has been shutdown (due to query cancellation) kill the Spark job
-      if (driverContext.isShutdown()) {
+      if (taskQueue.isShutdown()) {
         LOG.warn("Killing Spark job");
         killJob();
         throw new HiveException("Operation is cancelled.");
