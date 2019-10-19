@@ -34,7 +34,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.JobMetricsListener;
@@ -124,15 +124,14 @@ public class LocalHiveSparkClient implements HiveSparkClient {
   }
 
   @Override
-  public SparkJobRef execute(DriverContext driverContext, SparkWork sparkWork) throws Exception {
-    Context ctx = driverContext.getCtx();
-    HiveConf hiveConf = (HiveConf) ctx.getConf();
+  public SparkJobRef execute(TaskQueue taskQueue, Context context, SparkWork sparkWork) throws Exception {
+    HiveConf hiveConf = (HiveConf) context.getConf();
     refreshLocalResources(sparkWork, hiveConf);
     JobConf jobConf = new JobConf(hiveConf);
 
     // Create temporary scratch dir
     Path emptyScratchDir;
-    emptyScratchDir = ctx.getMRTmpPath();
+    emptyScratchDir = context.getMRTmpPath();
     FileSystem fs = emptyScratchDir.getFileSystem(jobConf);
     fs.mkdirs(emptyScratchDir);
 
@@ -153,11 +152,10 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     SparkReporter sparkReporter = new SparkReporter(sparkCounters);
 
     // Generate Spark plan
-    SparkPlanGenerator gen =
-      new SparkPlanGenerator(sc, ctx, jobConf, emptyScratchDir, sparkReporter);
+    SparkPlanGenerator gen = new SparkPlanGenerator(sc, context, jobConf, emptyScratchDir, sparkReporter);
     SparkPlan plan = gen.generate(sparkWork);
 
-    if (driverContext.isShutdown()) {
+    if (taskQueue.isShutdown()) {
       throw new HiveException("Operation is cancelled.");
     }
 

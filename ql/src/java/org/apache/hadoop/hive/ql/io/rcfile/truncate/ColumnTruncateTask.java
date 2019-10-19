@@ -27,9 +27,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -61,9 +60,8 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
   protected HadoopJobExecHelper jobExecHelper;
 
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan,
-      DriverContext driverContext, CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, driverContext, opContext);
+  public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
+    super.initialize(queryState, queryPlan, taskQueue, context);
     job = new JobConf(conf, ColumnTruncateTask.class);
     jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }
@@ -75,11 +73,11 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
   boolean success = true;
 
-  @Override
   /**
    * start a new map-reduce job to do the truncation, almost the same as ExecDriver.
    */
-  public int execute(DriverContext driverContext) {
+  @Override
+  public int execute() {
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT,
         BucketizedHiveInputFormat.class.getName());
     success = true;
@@ -87,7 +85,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
     job.setOutputFormat(HiveOutputFormatImpl.class);
     job.setMapperClass(work.getMapperClass());
 
-    Context ctx = driverContext.getCtx();
+    Context ctx = context;
     boolean ctxCreated = false;
     try {
       if (ctx == null) {

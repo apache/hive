@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolver;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
@@ -75,12 +74,12 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
   }
 
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
     resTasks = resolver.getTasks(conf, resolverCtx);
     resolved = true;
 
     try {
-      resolveTask(driverContext);
+      resolveTask();
     } catch (Exception e) {
       setException(e);
       return 1;
@@ -88,13 +87,13 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
     return 0;
   }
 
-  private void resolveTask(DriverContext driverContext) throws HiveException {
+  private void resolveTask() throws HiveException {
     for (Task<?> tsk : getListTasks()) {
       if (!resTasks.contains(tsk)) {
-        driverContext.remove(tsk);
+        taskQueue.remove(tsk);
         console.printInfo(tsk.getId() + " is filtered out by condition resolver.");
         if (tsk.isMapRedTask()) {
-          driverContext.incCurJobNo(1);
+          taskQueue.incCurJobNo(1);
         }
         //recursively remove this task from its children's parent task
         tsk.removeFromChildrenTasks();
@@ -106,7 +105,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
           }
         }
         // resolved task
-        if (driverContext.addToRunnable(tsk)) {
+        if (taskQueue.addToRunnable(tsk)) {
           console.printInfo(tsk.getId() + " is selected by condition resolver.");
         }
       }

@@ -26,10 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -66,14 +62,8 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
-      CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, ctx, opContext);
-  }
-
-  @Override
-  public int execute(DriverContext driverContext) {
-    if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
+  public int execute() {
+    if (context.getExplainAnalyze() == AnalyzeState.RUNNING) {
       return 0;
     }
 
@@ -81,12 +71,12 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
       DDLDesc ddlDesc = work.getDDLDesc();
 
       if (DESC_TO_OPARATION.containsKey(ddlDesc.getClass())) {
-        DDLOperationContext context = new DDLOperationContext(conf, driverContext, this, (DDLWork)work, queryState,
-            queryPlan, console);
+        DDLOperationContext ddlOperationContext = new DDLOperationContext(conf, context, this, (DDLWork)work,
+            queryState, queryPlan, console);
         Class<? extends DDLOperation> ddlOpertaionClass = DESC_TO_OPARATION.get(ddlDesc.getClass());
         Constructor<? extends DDLOperation> constructor =
             ddlOpertaionClass.getConstructor(DDLOperationContext.class, ddlDesc.getClass());
-        DDLOperation ddlOperation = constructor.newInstance(context, ddlDesc);
+        DDLOperation ddlOperation = constructor.newInstance(ddlOperationContext, ddlDesc);
         return ddlOperation.execute();
       } else {
         throw new IllegalArgumentException("Unknown DDL request: " + ddlDesc.getClass());

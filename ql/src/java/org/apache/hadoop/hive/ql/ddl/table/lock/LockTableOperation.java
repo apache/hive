@@ -34,7 +34,7 @@ public class LockTableOperation extends DDLOperation<LockTableDesc> {
 
   @Override
   public int execute() throws HiveException {
-    Context ctx = context.getDriverContext().getCtx();
+    Context ctx = context.getContext();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
     return txnManager.lockTable(context.getDb(), desc);
   }

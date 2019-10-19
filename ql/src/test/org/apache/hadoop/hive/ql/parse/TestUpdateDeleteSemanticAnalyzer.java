@@ -303,7 +303,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     ExplainTask task = new ExplainTask();
     task.setWork(work);
     task.initialize(queryState, plan, null, null);
-    task.execute(null);
+    task.execute();
     FSDataInputStream in = fs.open(tmp);
     StringBuilder builder = new StringBuilder();
     final int bufSz = 4096;

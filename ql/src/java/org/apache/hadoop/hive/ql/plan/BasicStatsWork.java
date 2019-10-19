@@ -57,7 +57,7 @@ public class BasicStatsWork implements Serializable {
 
   // sourceTask for TS is not changed (currently) but that of FS might be changed
   // by various optimizers (auto.convert.join, for example)
-  // so this is set by DriverContext in runtime
+  // so this is set by DriverQueue in runtime
   private transient Task sourceTask;
 
   private boolean isFollowedByColStats = false;

@@ -34,7 +34,7 @@ public class UnlockTableOperation extends DDLOperation<UnlockTableDesc> {
 
   @Override
   public int execute() throws HiveException {
-    Context ctx = context.getDriverContext().getCtx();
+    Context ctx = context.getContext();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
     return txnManager.unlockTable(context.getDb(), desc);
   }
