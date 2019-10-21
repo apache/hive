@@ -2151,7 +2151,8 @@ public class StatsRulesProcFactory {
         CommonJoinOperator<? extends JoinDesc> jop) {
       double pkfkSelectivity = Double.MAX_VALUE;
       int fkInd = -1;
-      // 1. We iterate through all the operators that have candidate FKs and
+      double fkSelectivity=-1.0;
+	// 1. We iterate through all the operators that have candidate FKs and
       // choose the FK that has the minimum selectivity. We assume that PK and this FK
       // have the PK-FK relationship. This is heuristic and can be
       // improved later.
@@ -2165,6 +2166,7 @@ public class StatsRulesProcFactory {
         if (selectivity < pkfkSelectivity) {
           pkfkSelectivity = selectivity;
           fkInd = pos;
+          fkSelectivity = getSelectivitySimpleTree(ops.get(pos));
         }
       }
       long newrows = 1;
@@ -2190,10 +2192,19 @@ public class StatsRulesProcFactory {
           if(oldNumRows!=newrows) {
 						LOG.info("diff {} <> {}", oldNumRows, newrows);
           }
-						int i = c.getInt("debug.i",-1);
+			int i = c.getInt("debug.i",-1);
         	if(c.getBoolean("debug.pkfk", false) || idx == i) {
           		newrows=oldNumRows;
           	}
+        	
+        	if(c.getBoolean("debug.nnn", false)) {
+        		if(fkSelectivity < 1.0) {
+        			newrows=parentStats.getNumRows();
+        		}else {
+        			newrows=oldNumRows;
+        		}
+        	}
+        	
         	idx++;
             rowCounts.add(newrows);
 
