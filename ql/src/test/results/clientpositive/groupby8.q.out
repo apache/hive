@@ -58,7 +58,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: key (type: string), substr(value, 5) (type: string)
                 sort order: ++
-                Map-reduce partition columns: key (type: string)
+                Map-reduce partition columns: key (type: string), substr(value, 5) (type: string)
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -205,7 +205,7 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: key (type: string), substr(value, 5) (type: string)
               sort order: ++
-              Map-reduce partition columns: key (type: string)
+              Map-reduce partition columns: key (type: string), substr(value, 5) (type: string)
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1015,7 +1015,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: key (type: string), substr(value, 5) (type: string)
                 sort order: ++
-                Map-reduce partition columns: key (type: string)
+                Map-reduce partition columns: key (type: string), substr(value, 5) (type: string)
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -1162,7 +1162,7 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: key (type: string), substr(value, 5) (type: string)
               sort order: ++
-              Map-reduce partition columns: key (type: string)
+              Map-reduce partition columns: key (type: string), substr(value, 5) (type: string)
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
