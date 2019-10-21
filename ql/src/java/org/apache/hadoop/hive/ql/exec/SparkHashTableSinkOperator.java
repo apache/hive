@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.io.FileExistsException;
 import org.apache.hadoop.conf.Configuration;
@@ -140,7 +141,7 @@ public class SparkHashTableSinkOperator
     fs.mkdirs(path);  // Create the folder and its parents if not there
     while (true) {
       path = new Path(path, getOperatorId()
-        + "-" + Math.abs(Utilities.randGen.nextInt()));
+        + "-" + Math.abs(ThreadLocalRandom.current().nextInt()));
       try {
         // This will guarantee file name uniqueness.
         if (fs.createNewFile(path)) {
