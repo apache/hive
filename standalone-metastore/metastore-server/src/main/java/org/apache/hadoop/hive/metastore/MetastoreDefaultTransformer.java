@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -611,14 +612,16 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
       LOG.info("Table to be created is of type " + tableType + " but not " + TableType.MANAGED_TABLE.toString());
       String tableLocation = table.getSd().getLocation();
-      String externalWHRoot = hmsHandler.getWh().getWhRootExternal().toString();
+      Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
 
-      if (tableLocation != null && !tableLocation.startsWith(externalWHRoot)) {
-        throw new MetaException(
-            "An external table's location needs to be under the external warehouse root directory," + "table:"
-                + table.getTableName() + ",location:" + tableLocation + ",Hive warehouse:" + externalWHRoot);
+      if (tableLocation != null) {
+        Path tablePath = Path.getPathWithoutSchemeAndAuthority(new Path(tableLocation));
+        if (FileUtils.isSubdirectory(whRootPath.toString(), tablePath.toString())) {
+          throw new MetaException(
+            "An external table's location should not be located within managed warehouse root directory," + "table:"
+                + table.getTableName() + ",location:" + tablePath + ",Hive managed warehouse:" + whRootPath);
+        }
       }
-
     }
     LOG.info("Transformer returning table:" + newTable.toString());
     return newTable;
@@ -634,25 +637,26 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
         + " on table " + table.getTableName());
     String tableType = table.getTableType();
+    Path tableLocation = null;
+    Path whRootPath = null;
 
     if (TableType.MANAGED_TABLE.name().equals(tableType)) {
       LOG.debug("Table is a MANAGED_TABLE");
-      Path tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
-      Path whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
-      if (!tableLocation.toString().startsWith(whRootPath.toString())) {
+      tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
+      whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
+      if (tableLocation != null && !FileUtils.isSubdirectory(whRootPath.toString(), tableLocation.toString())) {
         throw new MetaException(
             "A managed table's location needs to be under the hive warehouse root directory," + "table:"
                 + table.getTableName() + ",location:" + tableLocation + ",Hive warehouse:" + whRootPath);
       }
     } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
-      LOG.debug("Table is a EXTERNAL TABLE");
-      Path tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
-      Path externalWHRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRootExternal());
-
-      if (tableLocation != null && !tableLocation.toString().startsWith(externalWHRootPath.toString())) {
+      tableLocation = Path.getPathWithoutSchemeAndAuthority(new Path(table.getSd().getLocation()));
+      whRootPath = Path.getPathWithoutSchemeAndAuthority(hmsHandler.getWh().getWhRoot());
+      LOG.debug("Table is a EXTERNAL TABLE:tableLocation=" + tableLocation.toString() + ",whroot=" + whRootPath.toString());
+      if (tableLocation != null && FileUtils.isSubdirectory(whRootPath.toString(), tableLocation.toString())) {
         throw new MetaException(
-            "An external table's location needs to be under the external warehouse root directory," + "table:"
-                + table.getTableName() + ",location:" + tableLocation + ",Hive external warehouse:" + externalWHRootPath);
+            "An external table's location should not be located within managed warehouse root directory," + "table:"
+                + table.getTableName() + ",location:" + tableLocation + ",Hive managed warehouse:" + whRootPath);
       }
     }
     LOG.debug("Transformer returning table:" + table.toString());
