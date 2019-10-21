@@ -90,6 +90,8 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
   private final ByteStream.Output serializeStream = new ByteStream.Output();
   // The Writable to return in serialize
   private final Text serializeCache = new Text();
+  // pattern for delimiter
+  private Pattern delimiterPattern;
 
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
@@ -101,7 +103,7 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
     if (fieldDelimited == null || fieldDelimited.isEmpty()) {
       throw new SerDeException("This table does not have serde property \"field.delim\"!");
     }
-
+    delimiterPattern = Pattern.compile(fieldDelimited, Pattern.LITERAL);
     // get the collection separator and map key separator
     // TODO: use serdeConstants.COLLECTION_DELIM when the typo is fixed
     collSep = LazyUtils.getByte(tbl.getProperty(COLLECTION_DELIM),
@@ -157,7 +159,7 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
     byteArrayRef.setData(rowStr.replaceAll(Pattern.quote(fieldDelimited), "\1").getBytes());
     cachedLazyStruct.init(byteArrayRef, 0, byteArrayRef.getData().length);
     // use the multi-char delimiter to parse the lazy struct
-    cachedLazyStruct.parseMultiDelimit(rowStr.getBytes(), fieldDelimited.getBytes());
+    cachedLazyStruct.parseMultiDelimit(rowStr, delimiterPattern);
     return cachedLazyStruct;
   }
 

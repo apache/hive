@@ -20,8 +20,9 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.google.common.primitives.Bytes;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -279,7 +280,7 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
   }
 
   // parse the struct using multi-char delimiter
-  public void parseMultiDelimit(byte[] rawRow, byte[] fieldDelimit) {
+  public void parseMultiDelimit(final String rawRow, final Pattern fieldDelimit) {
     if (rawRow == null || fieldDelimit == null) {
       return;
     }
@@ -292,45 +293,55 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
       fieldInited = new boolean[fields.length];
       startPosition = new int[fields.length + 1];
     }
+    final int delimiterLength = fieldDelimit.toString().length();
     // the indexes of the delimiters
-    int[] delimitIndexes = findIndexes(rawRow, fieldDelimit);
-    int diff = fieldDelimit.length - 1;
+    List<Integer> delimitIndices = findIndexes(rawRow, fieldDelimit);
+    int diff = delimiterLength - 1;
+
     // first field always starts from 0, even when missing
     startPosition[0] = 0;
     for (int i = 1; i < fields.length; i++) {
-      if (delimitIndexes[i - 1] != -1) {
-        int start = delimitIndexes[i - 1] + fieldDelimit.length;
+      if (delimitIndices.get(i - 1) != -1) {
+        int start = delimitIndices.get(i - 1) + delimiterLength;
         startPosition[i] = start - i * diff;
       } else {
         startPosition[i] = length + 1;
       }
     }
-    startPosition[fields.length] = length + 1;
+
+    // calculation of length of complete record with fields.length number of fields
+    final int totalRecordLength;
+    final int fieldLength = fields.length;
+    // this means we have more delimiters(and hence columns) than required (ideally n fields should have n-1 delimiters)
+    if (delimitIndices.size() >= fieldLength) {
+      // MultiDelimitSerDe replaces actual multi-char delimiter by "\1" which reduces the length
+      // however here we are getting rawRow with original multi-char delimiter
+      // due to this we have to subtract those extra chars to match length of LazyNonPrimitive#bytes which are used
+      // while reading data, see uncheckedGetField()
+      totalRecordLength = (delimitIndices.get(fieldLength - 1) + delimiterLength) - fieldLength * diff;
+      LOG.warn("More delimiters[{}] found than expected[{}]. Ignoring bytes after extra delimiters", delimiterLength,
+          fieldLength - 1);
+    } else {
+      totalRecordLength = length + 1;
+    }
+
+    startPosition[fields.length] = totalRecordLength;
     Arrays.fill(fieldInited, false);
     parsed = true;
   }
 
   // find all the indexes of the sub byte[]
-  private int[] findIndexes(byte[] array, byte[] target) {
-    if (fields.length <= 1) {
-      return new int[0];
+  private List<Integer> findIndexes(final String text, final Pattern pattern) {
+    List<Integer> delimiterIndices = new ArrayList<>();
+    Matcher matcher = pattern.matcher(text);
+    while (matcher.find()) {
+      delimiterIndices.add(matcher.start());
     }
-    int[] indexes = new int[fields.length - 1];
-    Arrays.fill(indexes, -1);
-    indexes[0] = Bytes.indexOf(array, target);
-    if (indexes[0] == -1) {
-      return indexes;
+    // ideally n fields should have (n - 1) delimiters
+    for (int i = delimiterIndices.size(); i < fields.length - 1; i++) {
+      delimiterIndices.add(-1);
     }
-    int indexInNewArray = indexes[0];
-    for (int i = 1; i < indexes.length; i++) {
-      array = Arrays.copyOfRange(array, indexInNewArray + target.length, array.length);
-      indexInNewArray = Bytes.indexOf(array, target);
-      if (indexInNewArray == -1) {
-        break;
-      }
-      indexes[i] = indexInNewArray + indexes[i - 1] + target.length;
-    }
-    return indexes;
+    return delimiterIndices;
   }
 
   /**
