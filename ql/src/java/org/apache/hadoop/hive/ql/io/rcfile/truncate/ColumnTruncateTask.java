@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.rcfile.truncate;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -157,8 +158,8 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
     if (noName) {
       // This is for a special case to ensure unit tests pass
-      job.set(MRJobConfig.JOB_NAME,
-          jobName != null ? jobName : "JOB" + Utilities.randGen.nextInt());
+      job.set(MRJobConfig.JOB_NAME, jobName != null ? jobName
+          : "JOB" + ThreadLocalRandom.current().nextInt());
     }
 
     try {

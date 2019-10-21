@@ -67,6 +67,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -256,8 +257,6 @@ public final class Utilities {
 
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
-
-  public static Random randGen = new Random();
 
   private static final Object INPUT_SUMMARY_LOCK = new Object();
   private static final Object ROOT_HDFS_DIR_LOCK  = new Object();
@@ -751,7 +750,8 @@ public final class Utilities {
   public static String getTaskId(Configuration hconf) {
     String taskid = (hconf == null) ? null : hconf.get("mapred.task.id");
     if (StringUtils.isEmpty(taskid)) {
-      return (Integer.toString(randGen.nextInt(Integer.MAX_VALUE)));
+      return (Integer
+          .toString(ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE)));
     } else {
       /*
        * extract the task and attempt id from the hadoop taskid. in version 17 the leading component
@@ -2894,7 +2894,8 @@ public final class Utilities {
         if (failures >= maxRetries) {
           throw e;
         }
-        long waitTime = getRandomWaitTime(baseWindow, failures, randGen);
+        long waitTime = getRandomWaitTime(baseWindow, failures,
+            ThreadLocalRandom.current());
         try {
           Thread.sleep(waitTime);
         } catch (InterruptedException iex) {
@@ -2933,7 +2934,8 @@ public final class Utilities {
           LOG.error("Error during JDBC connection.", e);
           throw e;
         }
-        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, randGen);
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures,
+            ThreadLocalRandom.current());
         try {
           Thread.sleep(waitTime);
         } catch (InterruptedException e1) {
@@ -2972,7 +2974,8 @@ public final class Utilities {
           LOG.error("Error preparing JDBC Statement {}", stmt, e);
           throw e;
         }
-        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, randGen);
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures,
+            ThreadLocalRandom.current());
         try {
           Thread.sleep(waitTime);
         } catch (InterruptedException e1) {
