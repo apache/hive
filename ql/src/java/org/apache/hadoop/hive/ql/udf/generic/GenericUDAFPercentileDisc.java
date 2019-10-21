@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
@@ -53,11 +54,13 @@ public class GenericUDAFPercentileDisc extends GenericUDAFPercentileCont {
     case INT:
     case LONG:
     case VOID:
-      return new PercentileDiscLongEvaluator();
+      return parameters[1].getCategory() == ObjectInspector.Category.LIST ?
+              new PercentileDiscLongArrayEvaluator() : new PercentileDiscLongEvaluator();
     case FLOAT:
     case DOUBLE:
     case DECIMAL:
-      return new PercentileDiscDoubleEvaluator();
+      return parameters[1].getCategory() == ObjectInspector.Category.LIST ?
+              new PercentileDiscDoubleArrayEvaluator() : new PercentileDiscDoubleEvaluator();
     case STRING:
     case TIMESTAMP:
     case VARCHAR:
@@ -74,6 +77,22 @@ public class GenericUDAFPercentileDisc extends GenericUDAFPercentileCont {
    * The evaluator for discrete percentile computation based on long.
    */
   public static class PercentileDiscLongEvaluator extends PercentileContLongEvaluator {
+    public PercentileDiscLongEvaluator() {
+    }
+
+    @Override
+    protected PercentileCalculator<LongWritable> getCalculator() {
+      return new PercentileDiscLongCalculator();
+    }
+  }
+
+  /**
+   * The evaluator for discrete percentile computation based on array of longs.
+   */
+  public static class PercentileDiscLongArrayEvaluator extends PercentileContLongArrayEvaluator {
+    public PercentileDiscLongArrayEvaluator() {
+    }
+
     @Override
     protected PercentileCalculator<LongWritable> getCalculator() {
       return new PercentileDiscLongCalculator();
@@ -84,6 +103,24 @@ public class GenericUDAFPercentileDisc extends GenericUDAFPercentileCont {
    * The evaluator for discrete percentile computation based on double.
    */
   public static class PercentileDiscDoubleEvaluator extends PercentileContDoubleEvaluator {
+    public PercentileDiscDoubleEvaluator() {
+      super();
+    }
+
+    @Override
+    protected PercentileCalculator<DoubleWritable> getCalculator() {
+      return new PercentileDiscDoubleCalculator();
+    }
+  }
+
+  /**
+   * The evaluator for discrete percentile computation based on array of doubles.
+   */
+  public static class PercentileDiscDoubleArrayEvaluator extends PercentileContDoubleArrayEvaluator {
+    public PercentileDiscDoubleArrayEvaluator() {
+      super();
+    }
+
     @Override
     protected PercentileCalculator<DoubleWritable> getCalculator() {
       return new PercentileDiscDoubleCalculator();

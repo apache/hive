@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import static java.util.Collections.singletonList;
 import static org.apache.hadoop.hive.ql.util.DirectionUtils.DESCENDING_CODE;
 
 import java.io.Serializable;
@@ -88,11 +89,13 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
     case INT:
     case LONG:
     case VOID:
-      return new PercentileContLongEvaluator();
+      return parameters[1].getCategory() == ObjectInspector.Category.LIST ?
+              new PercentileContLongArrayEvaluator() : new PercentileContLongEvaluator();
     case FLOAT:
     case DOUBLE:
     case DECIMAL:
-      return new PercentileContDoubleEvaluator();
+      return parameters[1].getCategory() == ObjectInspector.Category.LIST ?
+              new PercentileContDoubleArrayEvaluator() : new PercentileContDoubleEvaluator();
     case STRING:
     case TIMESTAMP:
     case VARCHAR:
@@ -155,8 +158,9 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
   public abstract static class PercentileContEvaluator<T, U> extends GenericUDAFEvaluator {
     PercentileCalculator<U> calc = getCalculator();
 
-    protected PercentileContEvaluator(Comparator<Entry<U, LongWritable>> comparator) {
+    protected PercentileContEvaluator(Comparator<Entry<U, LongWritable>> comparator, Converter converter) {
       this.comparator = comparator;
+      this.converter = converter;
     }
 
     /**
@@ -177,7 +181,7 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
     protected transient Object[] partialResult;
 
     // FINAL and COMPLETE output
-    protected DoubleWritable result;
+    protected List<DoubleWritable> results;
 
     // PARTIAL2 and FINAL inputs
     protected transient StructObjectInspector soi;
@@ -186,6 +190,7 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
     protected transient StructField isAscendingField;
 
     private final transient Comparator<Entry<U, LongWritable>> comparator;
+    private final transient Converter converter;
     protected transient boolean isAscending;
 
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -205,8 +210,8 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
 
         return ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
       } else { // ...for final result
-        result = new DoubleWritable(0);
-        return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
+        results = null;
+        return converter.getResultObjectInspector();
       }
     }
 
@@ -263,12 +268,9 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       PercentileAgg percAgg = (PercentileAgg) agg;
-      Double percentile = ((HiveDecimalWritable) parameters[1]).getHiveDecimal().doubleValue();
 
       if (percAgg.percentiles == null) {
-        validatePercentile(percentile);
-        percAgg.percentiles = new ArrayList<DoubleWritable>(1);
-        percAgg.percentiles.add(new DoubleWritable(percentile));
+        percAgg.percentiles = converter.convertPercentileParameter(parameters[1]);
       }
 
       if (parameters[0] == null) {
@@ -341,15 +343,14 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
 
       // Accumulate the counts.
       long total = getTotal(entriesList);
-
-      // Initialize the result.
-      if (result == null) {
-        result = new DoubleWritable();
+      if (results == null) {
+        results = new ArrayList<>(percAgg.percentiles.size());
+        for (int i = 0; i < percAgg.percentiles.size(); ++i) {
+          results.add(new DoubleWritable(0));
+        }
       }
-
-      calculatePercentile(percAgg, entriesList, total);
-
-      return result;
+      calculatePercentile(percAgg.percentiles, entriesList, total, results);
+      return converter.convertResults(results);
     }
 
     @Override
@@ -372,21 +373,76 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
       return total;
     }
 
-    protected void validatePercentile(Double percentile) {
+    public static void validatePercentile(Double percentile) {
       if (percentile < 0.0 || percentile > 1.0) {
         throw new RuntimeException("Percentile value must be within the range of 0 to 1.");
       }
     }
 
-    protected void calculatePercentile(PercentileAgg percAgg,
-        List<Map.Entry<U, LongWritable>> entriesList, long total) {
+    protected List<DoubleWritable> calculatePercentile(List<DoubleWritable> percentiles,
+        List<Map.Entry<U, LongWritable>> entriesList, long total, List<DoubleWritable> results) {
       // maxPosition is the 1.0 percentile
       long maxPosition = total - 1;
-      double position = maxPosition * percAgg.percentiles.get(0).get();
-      result.set(calc.getPercentile(entriesList, position));
+      for (int i = 0; i < percentiles.size(); ++i) {
+        DoubleWritable percentile = percentiles.get(i);
+        double position = maxPosition * percentile.get();
+        results.get(i).set(calc.getPercentile(entriesList, position));
+      }
+
+      return results;
     }
 
   }
+
+  private interface Converter {
+    List<DoubleWritable> convertPercentileParameter(Object parameter);
+    Object convertResults(List<DoubleWritable> results);
+    ObjectInspector getResultObjectInspector();
+  }
+
+  private static class PrimitiveConverter implements Converter {
+
+    @Override
+    public List<DoubleWritable> convertPercentileParameter(Object parameter) {
+      Double percentile = ((HiveDecimalWritable) parameter).getHiveDecimal().doubleValue();
+      PercentileContEvaluator.validatePercentile(percentile);
+      return singletonList(new DoubleWritable(percentile));
+    }
+
+    @Override
+    public Object convertResults(List<DoubleWritable> results) {
+      return results.get(0);
+    }
+
+    public ObjectInspector getResultObjectInspector() {
+      return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
+    }
+  }
+
+  private static class ArrayConverter implements Converter {
+    public List<DoubleWritable> convertPercentileParameter(Object parameter) {
+      ArrayList<HiveDecimalWritable> percentilesParameter = (ArrayList<HiveDecimalWritable>) parameter;
+      List<DoubleWritable> percentileList = new ArrayList<>(percentilesParameter.size());
+      for (HiveDecimalWritable hiveDecimalWritable : percentilesParameter) {
+        Double percentile = hiveDecimalWritable.getHiveDecimal().doubleValue();
+        PercentileContEvaluator.validatePercentile(percentile);
+        percentileList.add(new DoubleWritable(percentile));
+      }
+      return percentileList;
+    }
+
+    @Override
+    public Object convertResults(List<DoubleWritable> results) {
+      return results;
+    }
+
+    @Override
+    public ObjectInspector getResultObjectInspector() {
+      return ObjectInspectorFactory.getStandardListObjectInspector(
+              PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+    }
+  }
+
 
   /**
    * The evaluator for percentile computation based on long.
@@ -395,7 +451,11 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
       extends PercentileContEvaluator<Long, LongWritable> {
 
     public PercentileContLongEvaluator() {
-      super(new LongComparator());
+      this(new PrimitiveConverter());
+    }
+
+    public PercentileContLongEvaluator(Converter converter) {
+      super(new LongComparator(), converter);
     }
 
     protected ArrayList<ObjectInspector> getPartialInspectors() {
@@ -429,12 +489,25 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
   }
 
   /**
+   * The evaluator for percentile computation based on array of longs.
+   */
+  public static class PercentileContLongArrayEvaluator extends PercentileContLongEvaluator {
+    public PercentileContLongArrayEvaluator() {
+      super(new ArrayConverter());
+    }
+  }
+
+  /**
    * The evaluator for percentile computation based on double.
    */
   public static class PercentileContDoubleEvaluator
       extends PercentileContEvaluator<Double, DoubleWritable> {
     public PercentileContDoubleEvaluator() {
-      super(new DoubleComparator());
+      this(new PrimitiveConverter());
+    }
+
+    public PercentileContDoubleEvaluator(Converter converter) {
+      super(new DoubleComparator(), converter);
     }
 
     @Override
@@ -467,6 +540,15 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
     @Override
     protected PercentileCalculator<DoubleWritable> getCalculator() {
       return new PercentileContDoubleCalculator();
+    }
+  }
+
+  /**
+   * The evaluator for percentile computation based on array of doubles.
+   */
+  public static class PercentileContDoubleArrayEvaluator extends PercentileContDoubleEvaluator {
+    public PercentileContDoubleArrayEvaluator() {
+      super(new ArrayConverter());
     }
   }
 
