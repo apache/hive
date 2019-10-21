@@ -12,7 +12,8 @@ SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
        percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
-       percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
+       percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0),
+       percentile_cont(array(0.0, 0.5, 1.0)) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE))
 FROM src
 GROUP BY CAST(key AS INT) DIV 10;
 
@@ -24,7 +25,8 @@ SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
        percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
-       percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
+       percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0),
+       percentile_cont(array(0.0, 0.1, 0.5, 0.8, 1.0)) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE))
 FROM src
 GROUP BY CAST(key AS INT) DIV 10;
 
@@ -37,7 +39,8 @@ SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
        percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
-       percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
+       percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0),
+       percentile_cont(array(0.5, 1.0)) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE))
 FROM src
 GROUP BY CAST(key AS INT) DIV 10;
 
@@ -49,7 +52,8 @@ SELECT CAST(key AS INT) DIV 10,
        percentile_cont(CAST(substr(value, 5) AS INT), 0.0),
        percentile_cont(CAST(substr(value, 5) AS DOUBLE), 0.5),
        percentile_cont(0.5) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE)),
-       percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0)
+       percentile_cont(CAST(substr(value, 5) AS DECIMAL), 1.0),
+       percentile_cont(array(0.0, 0.5, 0.7, 1.0)) WITHIN GROUP (ORDER BY CAST(substr(value, 5) AS DOUBLE))
 FROM src
 GROUP BY CAST(key AS INT) DIV 10;
 
