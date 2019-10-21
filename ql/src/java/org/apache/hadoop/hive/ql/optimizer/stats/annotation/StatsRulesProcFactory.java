@@ -1759,10 +1759,7 @@ public class StatsRulesProcFactory {
    */
   public static class JoinStatsRule extends FilterStatsRule implements NodeProcessor {
 
-    private HiveConf c;
-	private int idx=0;
-
-	@Override
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       long newNumRows = 0;
@@ -1771,7 +1768,6 @@ public class StatsRulesProcFactory {
       int numAttr = 1;
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       HiveConf conf = aspCtx.getConf();
-      c=conf;
       boolean allSatisfyPreCondition = true;
 
       for (Operator<? extends OperatorDesc> op : parents) {
@@ -2151,8 +2147,8 @@ public class StatsRulesProcFactory {
         CommonJoinOperator<? extends JoinDesc> jop) {
       double pkfkSelectivity = Double.MAX_VALUE;
       int fkInd = -1;
-      double fkSelectivity=-1.0;
-	// 1. We iterate through all the operators that have candidate FKs and
+      double fkSelectivity = -1.0;
+      // 1. We iterate through all the operators that have candidate FKs and
       // choose the FK that has the minimum selectivity. We assume that PK and this FK
       // have the PK-FK relationship. This is heuristic and can be
       // improved later.
@@ -2185,30 +2181,14 @@ public class StatsRulesProcFactory {
         Statistics parentStats = parent.getStatistics();
         if (fkInd == pos) {
           // 2.1 This is the new number of rows after PK is joining with FK
-        	long oldNumRows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
-
-          newrows = parentStats.getNumRows();
-
-          if(oldNumRows!=newrows) {
-						LOG.info("diff {} <> {}", oldNumRows, newrows);
+          long oldNumRows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
+          if (fkSelectivity < 1.0) {
+            newrows = parentStats.getNumRows();
+          } else {
+            newrows = oldNumRows;
           }
-			int i = c.getInt("debug.i",-1);
-        	if(c.getBoolean("debug.pkfk", false) || idx == i) {
-          		newrows=oldNumRows;
-          	}
-        	
-        	if(c.getBoolean("debug.nnn", false)) {
-        		if(fkSelectivity < 1.0) {
-        			newrows=parentStats.getNumRows();
-        		}else {
-        			newrows=oldNumRows;
-        		}
-        	}
-        	
-        	idx++;
-            rowCounts.add(newrows);
+          rowCounts.add(newrows);
 
-          
           // 2.1 The ndv is the minimum of the PK and the FK.
           distinctVals.add(Math.min(csFK.getCountDistint(), csPK.getCountDistint()));
         } else {
