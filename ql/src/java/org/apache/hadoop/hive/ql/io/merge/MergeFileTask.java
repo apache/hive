@@ -50,6 +50,7 @@ import org.apache.hadoop.mapreduce.MRJobConfig;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Task for fast merging of ORC and RC files.
@@ -124,7 +125,8 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       if (noName) {
         // This is for a special case to ensure unit tests pass
         job.set(MRJobConfig.JOB_NAME,
-            jobName != null ? jobName : "JOB" + Utilities.randGen.nextInt());
+            jobName != null ? jobName
+                : "JOB" + ThreadLocalRandom.current().nextInt());
       }
 
       // add input path
