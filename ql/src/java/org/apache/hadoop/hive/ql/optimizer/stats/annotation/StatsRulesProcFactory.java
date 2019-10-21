@@ -2257,11 +2257,10 @@ public class StatsRulesProcFactory {
         Statistics parentStats = parent.getStatistics();
         if (fkInd == pos) {
           // 2.1 This is the new number of rows after PK is joining with FK
-          long oldNumRows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
           if (fkSelectivity < 1.0) {
             newrows = parentStats.getNumRows();
           } else {
-            newrows = oldNumRows;
+            newrows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
           }
           rowCounts.add(newrows);
 
