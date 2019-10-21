@@ -1759,7 +1759,10 @@ public class StatsRulesProcFactory {
    */
   public static class JoinStatsRule extends FilterStatsRule implements NodeProcessor {
 
-    @Override
+    private HiveConf c;
+	private int idx=0;
+
+	@Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       long newNumRows = 0;
@@ -1768,6 +1771,7 @@ public class StatsRulesProcFactory {
       int numAttr = 1;
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       HiveConf conf = aspCtx.getConf();
+      c=conf;
       boolean allSatisfyPreCondition = true;
 
       for (Operator<? extends OperatorDesc> op : parents) {
@@ -2182,10 +2186,18 @@ public class StatsRulesProcFactory {
         	long oldNumRows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
 
           newrows = parentStats.getNumRows();
-          rowCounts.add(newrows);
+
           if(oldNumRows!=newrows) {
 						LOG.info("diff {} <> {}", oldNumRows, newrows);
-			          }
+          }
+						int i = c.getInt("debug.i",-1);
+        	if(c.getBoolean("debug.pkfk", false) || idx == i) {
+          		newrows=oldNumRows;
+          	}
+        	idx++;
+            rowCounts.add(newrows);
+
+          
           // 2.1 The ndv is the minimum of the PK and the FK.
           distinctVals.add(Math.min(csFK.getCountDistint(), csPK.getCountDistint()));
         } else {
