@@ -605,6 +605,7 @@
             <exclude>**/gen/**</exclude>
             <exclude>**/patchprocess/**</exclude>
             <exclude>**/metastore_db/**</exclude>
+            <exclude>**/test/resources/**/*.ldif</exclude>
           </excludes>
         </configuration>
       </plugin>
