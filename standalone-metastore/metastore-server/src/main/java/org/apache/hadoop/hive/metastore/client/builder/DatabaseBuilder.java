@@ -113,6 +113,19 @@ public class DatabaseBuilder {
     }
   }
 
+  public Database buildNoModification(Configuration conf) throws MetaException {
+    if (name == null) {
+      throw new MetaException("You must name the database");
+    }
+    if (catalogName == null) {
+      catalogName = MetaStoreUtils.getDefaultCatalog(conf);
+    }
+    Database db = new Database(name, description, location, params);
+    db.setCatalogName(catalogName);
+    db.setCreateTime(createTime);
+    return db;
+  }
+
   /**
    * Build the database, create it in the metastore, and then return the db object.
    * @param client metastore client
@@ -123,6 +136,12 @@ public class DatabaseBuilder {
    */
   public Database create(IMetaStoreClient client, Configuration conf) throws TException {
     Database db = build(conf);
+    client.createDatabase(db);
+    return db;
+  }
+
+  public Database createNoModification(IMetaStoreClient client, Configuration conf) throws TException {
+    Database db = buildNoModification(conf);
     client.createDatabase(db);
     return db;
   }

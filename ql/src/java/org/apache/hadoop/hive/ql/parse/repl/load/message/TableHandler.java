@@ -45,9 +45,9 @@ public class TableHandler extends AbstractMessageHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TableHandler.class);
 
   @Override
-  public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
+  public List<Task<?>> handle(Context context) throws SemanticException {
     try {
-      List<Task<? extends Serializable>> importTasks = new ArrayList<>();
+      List<Task<?>> importTasks = new ArrayList<>();
       boolean isExternal = false, isLocationSet = false;
       String parsedLocation = null;
 
@@ -77,14 +77,13 @@ public class TableHandler extends AbstractMessageHandler {
       x.setEventType(eventType);
 
       // REPL LOAD is not partition level. It is always DB or table level. So, passing null for partition specs.
-      // Also, REPL LOAD doesn't support external table and hence no location set as well.
       ImportSemanticAnalyzer.prepareImport(false, isLocationSet, isExternal, false,
           (context.precursor != null), parsedLocation, null, context.dbName,
           null, context.location, x, updatedMetadata, context.getTxnMgr(), tuple.writeId);
 
-      Task<? extends Serializable> openTxnTask = x.getOpenTxnTask();
+      Task<?> openTxnTask = x.getOpenTxnTask();
       if (openTxnTask != null && !importTasks.isEmpty()) {
-        for (Task<? extends Serializable> t : importTasks) {
+        for (Task<?> t : importTasks) {
           openTxnTask.addDependentTask(t);
         }
         importTasks.add(openTxnTask);

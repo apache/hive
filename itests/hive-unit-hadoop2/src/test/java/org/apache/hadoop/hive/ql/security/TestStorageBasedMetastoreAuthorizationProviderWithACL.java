@@ -177,9 +177,21 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
         .setPermission(permission).build();
   }
 
+  @Override
+  protected boolean mayTestLocation() {
+    return false;
+  }
+
+  @Override
   protected void allowCreateDatabase(String userName)
       throws Exception {
     allowWriteAccessViaAcl(userName, warehouseDir.toString());
+  }
+
+  @Override
+  protected void disallowCreateDatabase(String userName)
+      throws Exception {
+    disallowWriteAccessViaAcl(userName, warehouseDir.toString());
   }
 
   @Override

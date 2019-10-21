@@ -1,0 +1,742 @@
+PREHOOK: query: CREATE TABLE datatype_stats_n0(
+        t TINYINT,
+        s SMALLINT,
+        i INT,
+        b BIGINT,
+        f FLOAT,
+        d DOUBLE,
+        dem DECIMAL, --default decimal (10,0)
+        ts TIMESTAMP,
+        dt DATE,
+        str STRING,
+        v VARCHAR(12),
+        c CHAR(5),
+        bl BOOLEAN,
+        bin BINARY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: CREATE TABLE datatype_stats_n0(
+        t TINYINT,
+        s SMALLINT,
+        i INT,
+        b BIGINT,
+        f FLOAT,
+        d DOUBLE,
+        dem DECIMAL, --default decimal (10,0)
+        ts TIMESTAMP,
+        dt DATE,
+        str STRING,
+        v VARCHAR(12),
+        c CHAR(5),
+        bl BOOLEAN,
+        bin BINARY)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@datatype_stats_n0
+PREHOOK: query: INSERT INTO datatype_stats_n0 values(1, 2, 44, 455, 45454.3, 454.6564, 2354, '2012-01-01 01:02:02', '2011-12-31', 'update_statisticr', 'statr', 'hivd', 'false', 'bin')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: INSERT INTO datatype_stats_n0 values(1, 2, 44, 455, 45454.3, 454.6564, 2354, '2012-01-01 01:02:02', '2011-12-31', 'update_statisticr', 'statr', 'hivd', 'false', 'bin')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@datatype_stats_n0
+POSTHOOK: Lineage: datatype_stats_n0.b SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.bin SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.bl SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.c SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.d SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.dem SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.dt SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.f SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.i SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.s SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.str SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.t SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.ts SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.v SCRIPT []
+PREHOOK: query: INSERT INTO datatype_stats_n0 values(2, 3, 45, 456, 45454.4, 454.6565, 2355, '2012-01-01 01:02:03', '2012-01-01', 'update_statistics', 'stats', 'hive', 'true', 'bin')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: INSERT INTO datatype_stats_n0 values(2, 3, 45, 456, 45454.4, 454.6565, 2355, '2012-01-01 01:02:03', '2012-01-01', 'update_statistics', 'stats', 'hive', 'true', 'bin')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@datatype_stats_n0
+POSTHOOK: Lineage: datatype_stats_n0.b SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.bin SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.bl SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.c SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.d SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.dem SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.dt SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.f SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.i SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.s SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.str SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.t SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.ts SCRIPT []
+POSTHOOK: Lineage: datatype_stats_n0.v SCRIPT []
+PREHOOK: query: INSERT INTO datatype_stats_n0 values(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@datatype_stats_n0
+POSTHOOK: query: INSERT INTO datatype_stats_n0 values(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@datatype_stats_n0
+POSTHOOK: Lineage: datatype_stats_n0.b EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.bin EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.bl EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.c EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.d EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.dem EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.dt EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.f EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.i EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.s EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.str EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.t EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.ts EXPRESSION []
+POSTHOOK: Lineage: datatype_stats_n0.v EXPRESSION []
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	s                   
+data_type           	smallint            
+min                 	2                   
+max                 	3                   
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	i                   
+data_type           	int                 
+min                 	44                  
+max                 	45                  
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	b                   
+data_type           	bigint              
+min                 	455                 
+max                 	456                 
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 f
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 f
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	f                   
+data_type           	float               
+min                 	45454.30078125      
+max                 	45454.3984375       
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	d                   
+data_type           	double              
+min                 	454.6564            
+max                 	454.6565            
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	dem                 
+data_type           	decimal(10,0)       
+min                 	2354                
+max                 	2355                
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	ts                  
+data_type           	timestamp           
+min                 	1325379722          
+max                 	1325379723          
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	dt                  
+data_type           	date                
+min                 	2011-12-31          
+max                 	2012-01-01          
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	str                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	17.0                
+max_col_len         	17                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	v                   
+data_type           	varchar(12)         
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	c                   
+data_type           	char(5)             
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	4.0                 
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	bl                  
+data_type           	boolean             
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	1                   
+num_falses          	1                   
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	bin                 
+data_type           	binary              
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	                    
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	t                   
+data_type           	tinyint             
+min                 	1                   
+max                 	2                   
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+# col_name            	data_type           	comment             
+t                   	tinyint             	                    
+s                   	smallint            	                    
+i                   	int                 	                    
+b                   	bigint              	                    
+f                   	float               	                    
+d                   	double              	                    
+dem                 	decimal(10,0)       	                    
+ts                  	timestamp           	                    
+dt                  	date                	                    
+str                 	string              	                    
+v                   	varchar(12)         	                    
+c                   	char(5)             	                    
+bl                  	boolean             	                    
+bin                 	binary              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	3                   
+	numRows             	3                   
+	rawDataSize         	248                 
+	totalSize           	251                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESC datatype_stats_n0 s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+s                   	smallint            	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+i                   	int                 	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+b                   	bigint              	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 f
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 f
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+f                   	float               	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+d                   	double              	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 dem
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 dem
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+dem                 	decimal(10,0)       	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+ts                  	timestamp           	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 dt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 dt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+dt                  	date                	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+str                 	string              	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+v                   	varchar(12)         	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+c                   	char(5)             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 bl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 bl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+bl                  	boolean             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0 bin
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 bin
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+bin                 	binary              	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}	 
+PREHOOK: query: DESC datatype_stats_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+t                   	tinyint             	                    
+s                   	smallint            	                    
+i                   	int                 	                    
+b                   	bigint              	                    
+f                   	float               	                    
+d                   	double              	                    
+dem                 	decimal(10,0)       	                    
+ts                  	timestamp           	                    
+dt                  	date                	                    
+str                 	string              	                    
+v                   	varchar(12)         	                    
+c                   	char(5)             	                    
+bl                  	boolean             	                    
+bin                 	binary              	                    
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"s","type":"smallint","comment":"from deserializer","min":2,"max":3,"numNulls":1,"distinctCount":2}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"i","type":"int","comment":"from deserializer","min":44,"max":45,"numNulls":1,"distinctCount":2}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"b","type":"bigint","comment":"from deserializer","min":455,"max":456,"numNulls":1,"distinctCount":2}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 f
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 f
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"f","type":"float","comment":"from deserializer","min":45454.30078125,"max":45454.3984375,"numNulls":1,"distinctCount":2}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"d","type":"double","comment":"from deserializer","min":454.6564,"max":454.6565,"numNulls":1,"distinctCount":2}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"dem","type":"decimal(10,0)","comment":"from deserializer","min":"2354","max":"2355","numNulls":1,"distinctCount":2}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"ts","type":"timestamp","comment":"from deserializer","min":1325379722,"max":1325379723,"numNulls":1,"distinctCount":2}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"dt","type":"date","comment":"from deserializer","min":"2011-12-31","max":"2012-01-01","numNulls":1,"distinctCount":2}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"str","type":"string","comment":"from deserializer","numNulls":1,"distinctCount":2,"avgColLen":17.0,"maxColLen":17}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"v","type":"varchar(12)","comment":"from deserializer","numNulls":1,"distinctCount":2,"avgColLen":5.0,"maxColLen":5}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"c","type":"char(5)","comment":"from deserializer","numNulls":1,"distinctCount":2,"avgColLen":4.0,"maxColLen":4}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"bl","type":"boolean","comment":"from deserializer","numNulls":1,"numTrues":1,"numFalses":1}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"bin","type":"binary","comment":"from deserializer","numNulls":1,"avgColLen":3.0,"maxColLen":3}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"t","type":"tinyint","comment":"from deserializer","min":1,"max":2,"numNulls":1,"distinctCount":2}]}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"t","type":"tinyint"},{"name":"s","type":"smallint"},{"name":"i","type":"int"},{"name":"b","type":"bigint"},{"name":"f","type":"float"},{"name":"d","type":"double"},{"name":"dem","type":"decimal(10,0)"},{"name":"ts","type":"timestamp"},{"name":"dt","type":"date"},{"name":"str","type":"string"},{"name":"v","type":"varchar(12)"},{"name":"c","type":"char(5)"},{"name":"bl","type":"boolean"},{"name":"bin","type":"binary"}]}
+PREHOOK: query: DESC datatype_stats_n0 s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"s","type":"smallint","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"i","type":"int","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"b","type":"bigint","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 f
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 f
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"f","type":"float","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"d","type":"double","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 dem
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 dem
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"dem","type":"decimal(10,0)","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"ts","type":"timestamp","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 dt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 dt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"dt","type":"date","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"str","type":"string","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"v","type":"varchar(12)","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"c","type":"char(5)","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 bl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 bl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"bl","type":"boolean","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0 bin
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0 bin
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"bin","type":"binary","comment":"from deserializer"}]}
+PREHOOK: query: DESC datatype_stats_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC datatype_stats_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+{"columns":[{"name":"t","type":"tinyint"},{"name":"s","type":"smallint"},{"name":"i","type":"int"},{"name":"b","type":"bigint"},{"name":"f","type":"float"},{"name":"d","type":"double"},{"name":"dem","type":"decimal(10,0)"},{"name":"ts","type":"timestamp"},{"name":"dt","type":"date"},{"name":"str","type":"string"},{"name":"v","type":"varchar(12)"},{"name":"c","type":"char(5)"},{"name":"bl","type":"boolean"},{"name":"bin","type":"binary"}]}

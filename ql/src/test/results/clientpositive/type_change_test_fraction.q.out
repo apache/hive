@@ -7180,8 +7180,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolpde_n2
 #### A masked pattern was here ####
 1	1.2345679E19	1.2345679	1.2345679E7	1.23
-2	1.0E-18	NULL	1.0E-8	0.01
-3	-1.0E-18	NULL	-1.0E-8	-0.01
+2	1.0E-18	0.0	1.0E-8	0.01
+3	-1.0E-18	0.0	-1.0E-8	-0.01
 4	1.0E20	NULL	1.0E8	9.99
 5	-1.0E20	NULL	-1.0E8	-9.99
 6	1.0	1.0	1.0	1.0
@@ -7209,8 +7209,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolpde_n2
 #### A masked pattern was here ####
 1	1.2345679E19	1.2345679	1.2345679E7	1.23
-2	1.0E-18	NULL	1.0E-8	0.01
-3	-1.0E-18	NULL	-1.0E-8	-0.01
+2	1.0E-18	0.0	1.0E-8	0.01
+3	-1.0E-18	0.0	-1.0E-8	-0.01
 4	1.0E20	NULL	1.0E8	9.99
 5	-1.0E20	NULL	-1.0E8	-9.99
 6	1.0	1.0	1.0	1.0
@@ -8910,8 +8910,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolpdd_n2
 #### A masked pattern was here ####
 1	1.2345679E19	1.2345679	1.2345679E7	1.23
-2	1.0E-18	NULL	1.0E-8	0.01
-3	-1.0E-18	NULL	-1.0E-8	-0.01
+2	1.0E-18	0.0	1.0E-8	0.01
+3	-1.0E-18	0.0	-1.0E-8	-0.01
 4	1.0E20	NULL	1.0E8	9.99
 5	-1.0E20	NULL	-1.0E8	-9.99
 6	1.0	1.0	1.0	1.0
@@ -8939,8 +8939,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolpdd_n2
 #### A masked pattern was here ####
 1	1.2345679E19	1.2345679	1.2345679E7	1.23
-2	1.0E-18	NULL	1.0E-8	0.01
-3	-1.0E-18	NULL	-1.0E-8	-0.01
+2	1.0E-18	0.0	1.0E-8	0.01
+3	-1.0E-18	0.0	-1.0E-8	-0.01
 4	1.0E20	NULL	1.0E8	9.99
 5	-1.0E20	NULL	-1.0E8	-9.99
 6	1.0	1.0	1.0	1.0

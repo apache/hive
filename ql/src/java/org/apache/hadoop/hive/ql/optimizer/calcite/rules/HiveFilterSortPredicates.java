@@ -18,6 +18,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -35,6 +36,8 @@ import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -44,13 +47,15 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
  */
 public class HiveFilterSortPredicates extends RelOptRule {
 
-  public static final HiveFilterSortPredicates INSTANCE = new HiveFilterSortPredicates();
+  private static final Logger LOG = LoggerFactory.getLogger(HiveFilterSortPredicates.class);
 
+  private final AtomicInteger noColsMissingStats;
 
-  private HiveFilterSortPredicates() {
+  public HiveFilterSortPredicates(AtomicInteger noColsMissingStats) {
     super(
         operand(Filter.class,
             operand(RelNode.class, any())));
+    this.noColsMissingStats = noColsMissingStats;
   }
 
   @Override
@@ -70,31 +75,41 @@ public class HiveFilterSortPredicates extends RelOptRule {
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    final Filter filter = call.rel(0);
-    final RelNode input = call.rel(1);
+    try {
+      final Filter filter = call.rel(0);
+      final RelNode input = call.rel(1);
 
-    // Register that we have visited this operator in this rule
-    HiveRulesRegistry registry = call.getPlanner().getContext().unwrap(HiveRulesRegistry.class);
-    if (registry != null) {
-      registry.registerVisited(this, filter);
+      // Register that we have visited this operator in this rule
+      HiveRulesRegistry registry = call.getPlanner().getContext().unwrap(HiveRulesRegistry.class);
+      if (registry != null) {
+        registry.registerVisited(this, filter);
+      }
+
+      final RexNode originalCond = filter.getCondition();
+      final RexSortPredicatesShuttle sortPredicatesShuttle = new RexSortPredicatesShuttle(
+          input, filter.getCluster().getMetadataQuery());
+      final RexNode newCond = originalCond.accept(sortPredicatesShuttle);
+      if (!sortPredicatesShuttle.modified) {
+        // We are done, bail out
+        return;
+      }
+
+      // We register the new filter so we do not fire the rule on it again
+      final Filter newFilter = filter.copy(filter.getTraitSet(), input, newCond);
+      if (registry != null) {
+        registry.registerVisited(this, newFilter);
+      }
+
+      call.transformTo(newFilter);
     }
-
-    final RexNode originalCond = filter.getCondition();
-    RexSortPredicatesShuttle sortPredicatesShuttle = new RexSortPredicatesShuttle(
-        input, filter.getCluster().getMetadataQuery());
-    final RexNode newCond = originalCond.accept(sortPredicatesShuttle);
-    if (!sortPredicatesShuttle.modified) {
-      // We are done, bail out
-      return;
+    catch (Exception e) {
+      if (noColsMissingStats.get() > 0) {
+        LOG.warn("Missing column stats (see previous messages), skipping sort predicates in filter expressions in CBO");
+        noColsMissingStats.set(0);
+      } else {
+        throw e;
+      }
     }
-
-    // We register the new filter so we do not fire the rule on it again
-    final Filter newFilter = filter.copy(filter.getTraitSet(), input, newCond);
-    if (registry != null) {
-      registry.registerVisited(this, newFilter);
-    }
-
-    call.transformTo(newFilter);
   }
 
   /**

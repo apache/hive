@@ -3588,6 +3588,19 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
+Activate a resource plan to enable workload management!
+PREHOOK: query: EXPLAIN ENABLE WORKLOAD MANAGEMENT
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: EXPLAIN ENABLE WORKLOAD MANAGEMENT
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+
+STAGE PLANS:
+Activate a resource plan to enable workload management!
+PREHOOK: query: ENABLE WORKLOAD MANAGEMENT
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: ENABLE WORKLOAD MANAGEMENT
+POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: CREATE RESOURCE PLAN plan_1
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3630,7 +3643,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Show Resource plans
-      resourcePlanName: plan_1
+      Resource plan name: plan_1
 
   Stage: Stage-1
     Fetch Operator
@@ -3665,9 +3678,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    Create ResourcePlan
-      planName: plan_2
-      queryParallelism: 5
+    Create Resource plan
+      Query parallelism: 5
+      Resource plan name: plan_2
 
 PREHOOK: query: CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
 PREHOOK: type: CREATE RESOURCEPLAN
@@ -3684,10 +3697,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    Alter Resource plans
-      Resource plan to modify: plan_2
-      Resource plan changed fields:
-      shouldValidate: false
+    Alter Resource plan Set
+      Query parallelism: 10
+      Resource plan name: plan_2
 
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 SET QUERY_PARALLELISM=10
 PREHOOK: type: ALTER RESOURCEPLAN
@@ -3798,10 +3810,10 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    Alter Resource plans
-      Resource plan to modify: plan_3
-      Resource plan changed fields:
-      shouldValidate: false
+    Alter Resource plan Set
+      Default pool: default1
+      Query parallelism: 30
+      Resource plan name: plan_3
 
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
 PREHOOK: type: ALTER RESOURCEPLAN
@@ -3827,10 +3839,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    Alter Resource plans
-      Resource plan to modify: plan_3
-      Resource plan changed fields:
-      shouldValidate: false
+    Enable Resource plan
+      Resource plan name: plan_3
+      Enable: true
 
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
@@ -3847,10 +3858,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    Alter Resource plans
-      Resource plan to modify: plan_3
-      Resource plan changed fields:
-      shouldValidate: false
+    Rename Resource plan
+      New resource plan name: plan_4
+      Resource plan name: plan_3
 
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 RENAME TO plan_4
 PREHOOK: type: ALTER RESOURCEPLAN
@@ -3977,6 +3987,18 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	ACTIVE	NULL	default
+PREHOOK: query: EXPLAIN DISABLE WORKLOAD MANAGEMENT
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN DISABLE WORKLOAD MANAGEMENT
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Disable Resource plan
+
 PREHOOK: query: DISABLE WORKLOAD MANAGEMENT
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4082,8 +4104,8 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-    Drop Resource plans
-      resourcePlanName: plan_2
+    Drop Resource plan
+      Resource plan name: plan_2
 
 PREHOOK: query: DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
@@ -4180,7 +4202,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Create WM Trigger
-      trigger:
+      Action expression: KILL
+      Resource plan name: plan_1
+      Trigger expression: BYTES_READ > '10kb'
+      Trigger name: trigger_1
 
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '10kb' DO KILL
 PREHOOK: type: CREATE TRIGGER
@@ -4244,7 +4269,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Alter WM Trigger
-      trigger:
+      Action expression: KILL
+      Resource plan name: plan_1
+      Trigger expression: BYTES_READ > '1GB'
+      Trigger name: trigger_1
 
 PREHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
 PREHOOK: type: ALTER TRIGGER
@@ -4272,8 +4300,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Drop WM Trigger
-      resourcePlanName: plan_1
-      triggerName: trigger_1
+      Resource plan name: plan_1
+      Trigger name: trigger_1
 
 PREHOOK: query: DROP TRIGGER plan_1.trigger_1
 PREHOOK: type: DROP TRIGGER
@@ -4435,7 +4463,11 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Create Pool
-      pool:
+      Alloc fraction: 1.0
+      Pool path: default
+      Query parallelism: 5
+      Resource plan name: plan_1
+      Scheduling policy: default
 
 PREHOOK: query: CREATE POOL plan_1.default WITH
    ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
@@ -4459,7 +4491,11 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	default	1.0	4	NULL
 plan_2	default	default	1.0	5	NULL
 table	default	default	1.0	4	NULL
-FAILED: SemanticException Invalid scheduling policy invalid
+PREHOOK: query: CREATE POOL plan_2.default.c1 WITH
+    ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='invalid'
+PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Invalid scheduling policy invalid
 PREHOOK: query: CREATE POOL plan_2.default.c1 WITH
     ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='fair'
 PREHOOK: type: CREATE POOL
@@ -4474,6 +4510,26 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL plan_2.default.c2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.75
 POSTHOOK: type: CREATE POOL
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_2 VALIDATE
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_2 VALIDATE
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Validate Resource Plan
+      Resource plan name: plan_2
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4495,8 +4551,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Alter Pool
-      pool:
-      poolPath: default.c2
+      Alloc fraction: 0.7
+      Pool path: default.c2
+      Query parallelism: 1
+      Resource plan name: plan_2
 
 PREHOOK: query: ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.7, QUERY_PARALLELISM = 1
 PREHOOK: type: ALTER POOL
@@ -4589,7 +4647,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Drop WM Pool
-      poolName: plan_2
+      Pool path: default
+      Resource plan name: plan_2
 
 PREHOOK: query: DROP POOL plan_2.default
 PREHOOK: type: DROP POOL
@@ -4738,10 +4797,72 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_1	default	ACTIVE	NULL	default
 plan_2	default	DISABLED	10	def
 table	default	DISABLED	1	default
-PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Alter Resource plan Set
+      Default pool: table.pool
+      Query parallelism: 2
+      Resource plan name: table
+
+PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_1	default	ACTIVE	NULL	default
+plan_2	default	DISABLED	10	def
+table	default	DISABLED	2	table.pool
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Alter Resource plans
+      Resource plan name: table
+      Unset Default Pool: true
+      Unset Query parallelism: true
+
+PREHOOK: query: ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_1	default	ACTIVE	NULL	default
+plan_2	default	DISABLED	10	def
+table	default	DISABLED	NULL	NULL
+PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=1
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=1
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: DROP POOL `table`.default
 PREHOOK: type: DROP POOL
@@ -4791,8 +4912,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Create Trigger to pool mappings
-      resourcePlanName: plan_2
       Pool path: def.c1
+      Resource plan name: plan_2
       Trigger name: trigger_1
 
 PREHOOK: query: ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
@@ -4927,8 +5048,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Drop Trigger to pool mappings
-      resourcePlanName: plan_2
       Pool path: def.c1
+      Resource plan name: plan_2
       Trigger name: trigger_1
 
 PREHOOK: query: ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
@@ -4971,7 +5092,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Create Mapping
-      mapping:
+      Entity name: user1
+      Entity type: USER
+      Pool path: def
+      Resource plan name: plan_2
 
 PREHOOK: query: CREATE USER MAPPING "user1" IN plan_2 TO def
 PREHOOK: type: CREATE MAPPING
@@ -5009,7 +5133,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Create Mapping
-      mapping:
+      Entity name: group3
+      Entity type: GROUP
+      Ordering: 1
+      Resource plan name: plan_2
 
 PREHOOK: query: CREATE GROUP MAPPING 'group3' IN plan_2 UNMANAGED WITH ORDER 1
 PREHOOK: type: CREATE MAPPING
@@ -5027,7 +5154,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Alter Mapping
-      mapping:
+      Entity name: user1
+      Entity type: USER
+      Resource plan name: plan_2
 
 PREHOOK: query: ALTER USER MAPPING "user1" IN plan_2 UNMANAGED
 PREHOOK: type: ALTER MAPPING
@@ -5081,7 +5210,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Drop mapping
-      mapping:
+      Entity name: user2
+      Entity type: USER
+      Resource plan name: plan_2
 
 PREHOOK: query: DROP USER MAPPING "user2" in plan_2
 PREHOOK: type: DROP MAPPING
@@ -5099,7 +5230,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Drop mapping
-      mapping:
+      Entity name: group2
+      Entity type: GROUP
+      Resource plan name: plan_2
 
 PREHOOK: query: DROP GROUP MAPPING "group2" in plan_2
 PREHOOK: type: DROP MAPPING
@@ -5325,6 +5458,20 @@ POSTHOOK: Input: sys@wm_mappings
 #### A masked pattern was here ####
 plan_4a	default	USER	user1	pool1	0
 plan_4b	default	USER	user1	pool1	0
+PREHOOK: query: EXPLAIN REPLACE RESOURCE PLAN plan_4a WITH plan_4b
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN REPLACE RESOURCE PLAN plan_4a WITH plan_4b
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Replace Resource plan
+      Destination Resource plan name: plan_4a
+      Resource plan name: plan_4b
+
 PREHOOK: query: REPLACE RESOURCE PLAN plan_4a WITH plan_4b
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -5404,6 +5551,22 @@ PREHOOK: type: CREATE POOL
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL plan_4a.pool3 WITH SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.0
 POSTHOOK: type: CREATE POOL
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Enable Resource plan
+      Resource plan name: plan_4a
+      Activate: true
+      Enable: true
+      Replace: true
+
 PREHOOK: query: ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest

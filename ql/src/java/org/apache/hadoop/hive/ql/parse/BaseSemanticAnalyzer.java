@@ -120,7 +120,7 @@ public abstract class BaseSemanticAnalyzer {
   protected final Hive db;
   protected final HiveConf conf;
   protected final QueryState queryState;
-  protected List<Task<? extends Serializable>> rootTasks;
+  protected List<Task<?>> rootTasks;
   protected FetchTask fetchTask;
   protected final Logger LOG;
   protected final LogHelper console;
@@ -1347,8 +1347,13 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode child = (ASTNode) ast.getChild(i);
       int directionCode = DirectionUtils.tokenToCode(child.getToken().getType());
       child = (ASTNode) child.getChild(0);
+      if (child.getToken().getType() != HiveParser.TOK_NULLS_FIRST && directionCode == DirectionUtils.ASCENDING_CODE) {
+        throw new SemanticException(
+                "create/alter bucketed table: not supported NULLS LAST for SORTED BY in ASC order");
+      }
       if (child.getToken().getType() != HiveParser.TOK_NULLS_LAST && directionCode == DirectionUtils.DESCENDING_CODE) {
-        throw new SemanticException("create/alter table: not supported NULLS FIRST for ORDER BY in DESC order");
+        throw new SemanticException(
+                "create/alter bucketed table: not supported NULLS FIRST for SORTED BY in DESC order");
       }
       colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(), directionCode));
     }
@@ -2253,10 +2258,11 @@ public abstract class BaseSemanticAnalyzer {
 
   /**
    * Create a FetchTask for a given schema.
-   *
-   * @param schema string
    */
-  protected FetchTask createFetchTask(String schema) {
+  protected FetchTask createFetchTask(String tableSchema) {
+    String schema =
+        "json".equals(conf.get(HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text")) ? "json#string" : tableSchema;
+
     Properties prop = new Properties();
     // Sets delimiter to tab (ascii 9)
     prop.setProperty(serdeConstants.SERIALIZATION_FORMAT, Integer.toString(Utilities.tabCode));

@@ -68,7 +68,7 @@ public class TestHiveSparkClient {
 
     try {
       driver = DriverFactory.newDriver(conf);
-      Assert.assertEquals(0, driver.run("create table test (col int)").getResponseCode());
+      driver.run("create table test (col int)");
 
       String query = "select * from test order by col";
       ((ReExecDriver)driver).compile(query, true);
@@ -102,7 +102,7 @@ public class TestHiveSparkClient {
               .contains(sparkTask.getWork().getQueryId()));
     } finally {
       if (driver != null) {
-        Assert.assertEquals(0, driver.run("drop table if exists test").getResponseCode());
+        driver.run("drop table if exists test");
         driver.destroy();
       }
       if (sc != null) {

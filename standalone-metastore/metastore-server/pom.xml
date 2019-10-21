@@ -119,6 +119,10 @@
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.curator</groupId>
+          <artifactId>curator-framework</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -234,6 +238,19 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.directory.server</groupId>
+      <artifactId>apacheds-server-integ</artifactId>
+      <version>${apache-directory-server.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.directory.server</groupId>
+      <artifactId>apacheds-test-framework</artifactId>
+      <version>${apache-directory-server.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
@@ -333,6 +350,7 @@
               <metastore.schema.verification>false</metastore.schema.verification>
               <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
               <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
+              <hive.metastore.warehouse.external.dir>${test.warehouse.scheme}${test.warehouse.external.dir}</hive.metastore.warehouse.external.dir>
             </systemPropertyVariables>
             <additionalClasspathElements>
               <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
@@ -400,9 +418,11 @@
             <configuration>
               <target>
                 <delete dir="${test.tmp.dir}"/>
+                <delete dir="${test.warehouse.external.dir}" />
                 <delete dir="${test.warehouse.dir}"/>
                 <mkdir dir="${test.tmp.dir}"/>
                 <mkdir dir="${test.warehouse.dir}"/>
+                <mkdir dir="${test.warehouse.external.dir}" />
               </target>
             </configuration>
           </execution>
@@ -554,8 +574,8 @@
             </javax.jdo.option.ConnectionURL>
             <metastore.schema.verification>false</metastore.schema.verification>
             <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
-            <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}
-            </metastore.warehouse.dir>
+            <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
+            <hive.metastore.warehouse.external.dir>${test.warehouse.scheme}${test.warehouse.external.dir}</hive.metastore.warehouse.external.dir>
           </systemPropertyVariables>
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
@@ -585,6 +605,7 @@
             <exclude>**/gen/**</exclude>
             <exclude>**/patchprocess/**</exclude>
             <exclude>**/metastore_db/**</exclude>
+            <exclude>**/test/resources/**/*.ldif</exclude>
           </excludes>
         </configuration>
       </plugin>

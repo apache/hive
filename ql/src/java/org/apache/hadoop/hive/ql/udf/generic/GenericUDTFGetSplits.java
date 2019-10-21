@@ -80,7 +80,7 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -94,7 +94,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SplitLocationInfo;
-import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -135,14 +134,30 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   protected transient JobConf jc;
   private boolean orderByQuery;
   private boolean forceSingleSplit;
-  private ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
-  private DataOutput dos = new DataOutputStream(bos);
+  protected ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
+  protected DataOutput dos = new DataOutputStream(bos);
+  protected String inputArgQuery;
+  protected int inputArgNumSplits;
+  protected boolean schemaSplitOnly;
 
   @Override
   public StructObjectInspector initialize(ObjectInspector[] arguments)
       throws UDFArgumentException {
-
     LOG.debug("initializing GenericUDFGetSplits");
+    validateInput(arguments);
+
+    List<String> names = Arrays.asList("split");
+    List<ObjectInspector> fieldOIs = Arrays
+        .<ObjectInspector> asList(PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector);
+    StructObjectInspector outputOI = ObjectInspectorFactory
+        .getStandardStructObjectInspector(names, fieldOIs);
+
+    LOG.debug("done initializing GenericUDFGetSplits");
+    return outputOI;
+  }
+
+  protected void validateInput(ObjectInspector[] arguments)
+      throws UDFArgumentLengthException, UDFArgumentTypeException {
 
     if (SessionState.get() == null || SessionState.get().getConf() == null) {
       throw new IllegalStateException("Cannot run get splits outside HS2");
@@ -167,15 +182,6 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
     stringOI = (StringObjectInspector) arguments[0];
     intOI = (IntObjectInspector) arguments[1];
-
-    List<String> names = Arrays.asList("split");
-    List<ObjectInspector> fieldOIs = Arrays
-        .<ObjectInspector> asList(PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector);
-    StructObjectInspector outputOI = ObjectInspectorFactory
-        .getStandardStructObjectInspector(names, fieldOIs);
-
-    LOG.debug("done initializing GenericUDFGetSplits");
-    return outputOI;
   }
 
   public static class PlanFragment {
@@ -192,31 +198,10 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
   @Override
   public void process(Object[] arguments) throws HiveException {
-
-    String query = stringOI.getPrimitiveJavaObject(arguments[0]);
-    int num = intOI.get(arguments[1]);
-
-    // Generate applicationId for the LLAP splits
-    LlapCoordinator coordinator = LlapCoordinator.getInstance();
-    if (coordinator == null) {
-      throw new HiveException("LLAP coordinator is not initialized; must be running in HS2 with "
-          + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
-    }
-    ApplicationId applicationId = coordinator.createExtClientAppId();
-    LOG.info("Generated appID {} for LLAP splits", applicationId.toString());
-
-    PlanFragment fragment = createPlanFragment(query, num, applicationId);
-    TezWork tezWork = fragment.work;
-    Schema schema = fragment.schema;
-
-    boolean generateSingleSplit = forceSingleSplit && orderByQuery;
+    initArgs(arguments);
     try {
-      InputSplit[] splits = getSplits(jc, num, tezWork, schema, applicationId, generateSingleSplit);
-      LOG.info("Generated {} splits for query {}. orderByQuery: {} forceSingleSplit: {}", splits.length, query,
-        orderByQuery, forceSingleSplit);
-      if (generateSingleSplit && splits.length > 1) {
-        throw new HiveException("Got more than one split (Got: " + splits.length + ") for order by query: " + query);
-      }
+      SplitResult splitResult = getSplitResult(false);
+      InputSplit[] splits = schemaSplitOnly ? new InputSplit[]{splitResult.schemaSplit} : splitResult.actualSplits;
       for (InputSplit s : splits) {
         Object[] os = new Object[1];
         bos.reset();
@@ -230,7 +215,54 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     }
   }
 
-  public PlanFragment createPlanFragment(String query, int num, ApplicationId splitsAppId)
+  protected void initArgs(Object[] arguments) {
+    inputArgQuery = stringOI.getPrimitiveJavaObject(arguments[0]);
+    inputArgNumSplits = intOI.get(arguments[1]);
+    schemaSplitOnly = inputArgNumSplits == 0;
+  }
+
+  protected SplitResult getSplitResult(boolean generateLightWeightSplits)
+      throws HiveException, IOException {
+
+    // Generate applicationId for the LLAP splits
+    LlapCoordinator coordinator = LlapCoordinator.getInstance();
+    if (coordinator == null) {
+      throw new HiveException("LLAP coordinator is not initialized; must be running in HS2 with "
+          + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
+    }
+    ApplicationId applicationId = coordinator.createExtClientAppId();
+    LOG.info("Generated appID {} for LLAP splits", applicationId.toString());
+
+    PlanFragment fragment = createPlanFragment(inputArgQuery, applicationId);
+    TezWork tezWork = fragment.work;
+    Schema schema = fragment.schema;
+
+    boolean generateSingleSplit = forceSingleSplit && orderByQuery;
+
+    SplitResult splitResult = getSplits(jc, tezWork, schema, applicationId, generateSingleSplit,
+        generateLightWeightSplits);
+    validateSplitResult(splitResult, generateLightWeightSplits, generateSingleSplit);
+    return splitResult;
+  }
+
+  private void validateSplitResult(SplitResult splitResult, boolean generateLightWeightSplits,
+                                   boolean generateSingleSplit) throws HiveException {
+    Preconditions.checkNotNull(splitResult.schemaSplit, "schema split cannot be null");
+    if (!schemaSplitOnly) {
+      InputSplit[] splits = splitResult.actualSplits;
+      if (splits.length > 0 && generateLightWeightSplits) {
+        Preconditions.checkNotNull(splitResult.planSplit, "plan split cannot be null");
+      }
+      LOG.info("Generated {} splits for query {}. orderByQuery: {} forceSingleSplit: {}", splits.length, inputArgQuery,
+          orderByQuery, forceSingleSplit);
+      if (generateSingleSplit && splits.length > 1) {
+        throw new HiveException("Got more than one split (Got: " + splits.length
+            + ") for order by query: " + inputArgQuery);
+      }
+    }
+  }
+
+  private PlanFragment createPlanFragment(String query, ApplicationId splitsAppId)
       throws HiveException {
 
     HiveConf conf = new HiveConf(SessionState.get().getConf());
@@ -250,7 +282,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     // hive compiler is going to remove inner order by. disable that optimization until then.
     HiveConf.setBoolVar(conf, ConfVars.HIVE_REMOVE_ORDERBY_IN_SUBQUERY, false);
 
-    if(num == 0) {
+    if (schemaSplitOnly) {
       //Schema only
       try {
         List<FieldSchema> fieldSchemas = ParseUtils.parseQueryAndGetSchema(conf, query);
@@ -278,9 +310,10 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     DriverCleanup driverCleanup = new DriverCleanup(driver, txnManager, splitsAppId.toString());
     boolean needsCleanup = true;
     try {
-      CommandProcessorResponse cpr = driver.compileAndRespond(query, false);
-      if (cpr.getResponseCode() != 0) {
-        throw new HiveException("Failed to compile query: " + cpr.getException());
+      try {
+        driver.compileAndRespond(query, false);
+      } catch (CommandProcessorException e) {
+        throw new HiveException("Failed to compile query: " + e.getException());
       }
 
       QueryPlan plan = driver.getPlan();
@@ -312,17 +345,18 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         driver.releaseLocksAndCommitOrRollback(false);
         driver.releaseResources();
         HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
-        cpr = driver.run(ctas, false);
-
-        if(cpr.getResponseCode() != 0) {
-          throw new HiveException("Failed to create temp table: " + cpr.getException());
+        try {
+          driver.run(ctas, false);
+        } catch (CommandProcessorException e) {
+          throw new HiveException("Failed to create temp table: " + e.getException());
         }
 
         HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, "llap");
         query = "select * from " + tableName;
-        cpr = driver.compileAndRespond(query, true);
-        if(cpr.getResponseCode() != 0) {
-          throw new HiveException("Failed to create temp table: "+cpr.getException());
+        try {
+          driver.compileAndRespond(query, true);
+        } catch (CommandProcessorException e) {
+          throw new HiveException("Failed to create temp table: " + e.getException());
         }
 
         plan = driver.getPlan();
@@ -340,7 +374,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         // The read will have READ_COMMITTED level semantics.
         try {
           driver.lockAndRespond();
-        } catch (CommandProcessorResponse cpr1) {
+        } catch (CommandProcessorException cpr1) {
           throw new HiveException("Failed to acquire locks", cpr1);
         }
 
@@ -378,16 +412,21 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     }
   }
 
-  public InputSplit[] getSplits(JobConf job, int numSplits, TezWork work, Schema schema, ApplicationId applicationId,
-    final boolean generateSingleSplit)
-    throws IOException {
 
-    if(numSplits == 0) {
-      //Schema only
-      LlapInputSplit schemaSplit = new LlapInputSplit(
-          0, new byte[0], new byte[0], new byte[0],
-          new SplitLocationInfo[0], schema, "", new byte[0]);
-      return new InputSplit[] { schemaSplit };
+  // generateLightWeightSplits - if true then
+  // 1) schema and planBytes[] in each LlapInputSplit are not populated
+  // 2) schemaSplit(contains only schema) and planSplit(contains only planBytes[]) are populated in SplitResult
+  private SplitResult getSplits(JobConf job, TezWork work, Schema schema, ApplicationId applicationId,
+                               final boolean generateSingleSplit, boolean generateLightWeightSplits)
+      throws IOException {
+
+    SplitResult splitResult = new SplitResult();
+    splitResult.schemaSplit = new LlapInputSplit(
+        0, new byte[0], new byte[0], new byte[0],
+        new SplitLocationInfo[0], schema, "", new byte[0]);
+    if (schemaSplitOnly) {
+      // schema only
+      return splitResult;
     }
 
     DAG dag = DAG.create(work.getName());
@@ -429,14 +468,15 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
       HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork, generateSingleSplit);
       List<Event> eventList = splitGenerator.initialize();
-      InputSplit[] result = new InputSplit[eventList.size() - 1];
+      int numGroupedSplitsGenerated = eventList.size() - 1;
+      InputSplit[] result = new InputSplit[numGroupedSplitsGenerated];
 
       InputConfigureVertexTasksEvent configureEvent
         = (InputConfigureVertexTasksEvent) eventList.get(0);
 
       List<TaskLocationHint> hints = configureEvent.getLocationHint().getTaskLocationHints();
 
-      Preconditions.checkState(hints.size() == eventList.size() - 1);
+      Preconditions.checkState(hints.size() == numGroupedSplitsGenerated);
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("NumEvents=" + eventList.size() + ", NumSplits=" + result.length);
@@ -472,11 +512,14 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       // Generate umbilical token (applies to all splits)
       Token<JobTokenIdentifier> umbilicalToken = JobTokenCreator.createJobToken(applicationId);
 
-      LOG.info("Number of splits: " + (eventList.size() - 1));
+      LOG.info("Number of splits: " + numGroupedSplitsGenerated);
       SignedMessage signedSvs = null;
-      for (int i = 0; i < eventList.size() - 1; i++) {
+      byte[] submitWorkBytes = null;
+      final byte[] emptySubmitWorkBytes = new byte[0];
+      final Schema emptySchema = new Schema();
+      for (int i = 0; i < numGroupedSplitsGenerated; i++) {
         TaskSpec taskSpec = new TaskSpecBuilder().constructTaskSpec(dag, vertexName,
-              eventList.size() - 1, applicationId, i);
+            numGroupedSplitsGenerated, applicationId, i);
 
         // 2. Generate the vertex/submit information for all events.
         if (i == 0) {
@@ -488,12 +531,16 @@ public class GenericUDTFGetSplits extends GenericUDTF {
           // Despite the differences in TaskSpec, the vertex spec should be the same.
           signedSvs = createSignedVertexSpec(signer, taskSpec, applicationId, queryUser,
               applicationId.toString());
+          SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(applicationId,
+              System.currentTimeMillis(), numGroupedSplitsGenerated, signedSvs.message,
+              signedSvs.signature, umbilicalToken);
+          submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
+          if (generateLightWeightSplits) {
+            splitResult.planSplit = new LlapInputSplit(
+                0, submitWorkBytes, new byte[0], new byte[0],
+                new SplitLocationInfo[0], new Schema(), "", new byte[0]);
+          }
         }
-
-        SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(applicationId,
-            System.currentTimeMillis(), taskSpec.getVertexParallelism(), signedSvs.message,
-            signedSvs.signature, umbilicalToken);
-        byte[] submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
 
         // 3. Generate input event.
         SignedMessage eventBytes = makeEventBytes(wx, vertexName, eventList.get(i + 1), signer);
@@ -501,13 +548,25 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         // 4. Make location hints.
         SplitLocationInfo[] locations = makeLocationHints(hints.get(i));
 
-        result[i] = new LlapInputSplit(i, submitWorkBytes, eventBytes.message,
-            eventBytes.signature, locations, schema, llapUser, tokenBytes);
-       }
-      return result;
+        if (generateLightWeightSplits) {
+          result[i] = new LlapInputSplit(i, emptySubmitWorkBytes, eventBytes.message,
+              eventBytes.signature, locations, emptySchema, llapUser, tokenBytes);
+        } else {
+          result[i] = new LlapInputSplit(i, submitWorkBytes, eventBytes.message,
+              eventBytes.signature, locations, schema, llapUser, tokenBytes);
+        }
+      }
+      splitResult.actualSplits = result;
+      return splitResult;
     } catch (Exception e) {
       throw new IOException(e);
     }
+  }
+
+  static class SplitResult {
+    InputSplit schemaSplit;
+    InputSplit planSplit;
+    InputSplit[] actualSplits;
   }
 
   private static class DriverCleanup implements Closeable {

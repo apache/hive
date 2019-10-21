@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -911,6 +912,7 @@ public class StatsRulesProcFactory {
       ExprNodeColumnDesc columnDesc;
       ExprNodeConstantDesc constantDesc;
       boolean upperBound;
+      boolean closedBound;
       String boundValue = null;
       if (genFunc.getChildren().get(0) instanceof ExprNodeColumnDesc &&
           genFunc.getChildren().get(1) instanceof ExprNodeConstantDesc) {
@@ -921,14 +923,10 @@ public class StatsRulesProcFactory {
         if (constantDesc.getValue() == null) {
           return 0;
         }
-        if (udf instanceof GenericUDFOPEqualOrGreaterThan ||
-            udf instanceof GenericUDFOPGreaterThan) {
-          boundValue = constantDesc.getValue().toString();
-          upperBound = false;
-        } else {
-          boundValue = constantDesc.getValue().toString();
-          upperBound = true;
-        }
+        boundValue = constantDesc.getValue().toString();
+        upperBound = udf instanceof GenericUDFOPEqualOrLessThan ||
+            udf instanceof GenericUDFOPLessThan;
+        closedBound =  isClosedBound(udf);
       } else if (genFunc.getChildren().get(1) instanceof ExprNodeColumnDesc &&
           genFunc.getChildren().get(0) instanceof ExprNodeConstantDesc) {
         columnDesc = (ExprNodeColumnDesc) genFunc.getChildren().get(1);
@@ -938,14 +936,10 @@ public class StatsRulesProcFactory {
         if (constantDesc.getValue() == null) {
           return 0;
         }
-        if (udf instanceof GenericUDFOPEqualOrGreaterThan ||
-            udf instanceof GenericUDFOPGreaterThan) {
-          boundValue = constantDesc.getValue().toString();
-          upperBound = true;
-        } else {
-          boundValue = constantDesc.getValue().toString();
-          upperBound = false;
-        }
+        boundValue = constantDesc.getValue().toString();
+        upperBound = udf instanceof GenericUDFOPEqualOrGreaterThan ||
+            udf instanceof GenericUDFOPGreaterThan;
+        closedBound = isClosedBound(udf);
       } else {
         // default
         return numRows / 3;
@@ -961,18 +955,28 @@ public class StatsRulesProcFactory {
             byte maxValue = cs.getRange().maxValue.byteValue();
             byte minValue = cs.getRange().minValue.byteValue();
             if (upperBound) {
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && closedBound) {
                 return numRows;
               }
-              if (minValue > value) {
+              if (minValue > value || minValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
               }
             } else {
-              if (minValue >= value) {
+              if (minValue > value || minValue == value && closedBound) {
                 return numRows;
               }
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
@@ -980,24 +984,34 @@ public class StatsRulesProcFactory {
             short maxValue = cs.getRange().maxValue.shortValue();
             short minValue = cs.getRange().minValue.shortValue();
             if (upperBound) {
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && closedBound) {
                 return numRows;
               }
-              if (minValue > value) {
+              if (minValue > value || minValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
               }
             } else {
-              if (minValue >= value) {
+              if (minValue > value || minValue == value && closedBound) {
                 return numRows;
               }
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME) ||
               colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
             int value;
-            if (colTypeLowerCase == serdeConstants.DATE_TYPE_NAME) {
+            if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
               DateWritable writableVal = new DateWritable(java.sql.Date.valueOf(boundValue));
               value = writableVal.getDays();
             } else {
@@ -1007,18 +1021,28 @@ public class StatsRulesProcFactory {
             int maxValue = cs.getRange().maxValue.intValue();
             int minValue = cs.getRange().minValue.intValue();
             if (upperBound) {
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && closedBound) {
                 return numRows;
               }
-              if (minValue > value) {
+              if (minValue > value || minValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
               }
             } else {
-              if (minValue >= value) {
+              if (minValue > value || minValue == value && closedBound) {
                 return numRows;
               }
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
@@ -1026,18 +1050,28 @@ public class StatsRulesProcFactory {
             long maxValue = cs.getRange().maxValue.longValue();
             long minValue = cs.getRange().minValue.longValue();
             if (upperBound) {
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && closedBound) {
                 return numRows;
               }
-              if (minValue > value) {
+              if (minValue > value || minValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
               }
             } else {
-              if (minValue >= value) {
+              if (minValue > value || minValue == value && closedBound) {
                 return numRows;
               }
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
@@ -1045,18 +1079,28 @@ public class StatsRulesProcFactory {
             float maxValue = cs.getRange().maxValue.floatValue();
             float minValue = cs.getRange().minValue.floatValue();
             if (upperBound) {
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && closedBound) {
                 return numRows;
               }
-              if (minValue > value) {
+              if (minValue > value || minValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
               }
             } else {
-              if (minValue >= value) {
+              if (minValue > value || minValue == value && closedBound) {
                 return numRows;
               }
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
@@ -1064,18 +1108,28 @@ public class StatsRulesProcFactory {
             double maxValue = cs.getRange().maxValue.doubleValue();
             double minValue = cs.getRange().minValue.doubleValue();
             if (upperBound) {
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && closedBound) {
                 return numRows;
               }
-              if (minValue > value) {
+              if (minValue > value || minValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
               }
             } else {
-              if (minValue >= value) {
+              if (minValue > value || minValue == value && closedBound) {
                 return numRows;
               }
-              if (maxValue < value) {
+              if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
               }
             }
           } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
@@ -1085,18 +1139,34 @@ public class StatsRulesProcFactory {
             int minComparison = value.compareTo(minValue);
             int maxComparison = value.compareTo(maxValue);
             if (upperBound) {
-              if (maxComparison > 0) {
+              if (maxComparison > 0 || maxComparison == 0 && closedBound) {
                 return numRows;
               }
-              if (minComparison < 0) {
+              if (minComparison < 0 || minComparison == 0 && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(
+                    ((value.subtract(minValue)).divide(maxValue.subtract(minValue), RoundingMode.UP))
+                        .multiply(BigDecimal.valueOf(numRows))
+                        .doubleValue());
               }
             } else {
-              if (minComparison <= 0) {
+              if (minComparison < 0 || minComparison == 0 && closedBound) {
                 return numRows;
               }
-              if (maxComparison > 0) {
+              if (maxComparison > 0 || maxComparison == 0 && !closedBound) {
                 return 0;
+              }
+              if (aspCtx.isUniformWithinRange()) {
+                // Assuming uniform distribution, we can use the range to calculate
+                // new estimate for the number of rows
+                return Math.round(
+                    ((maxValue.subtract(value)).divide(maxValue.subtract(minValue), RoundingMode.UP))
+                        .multiply(BigDecimal.valueOf(numRows))
+                        .doubleValue());
               }
             }
           }
@@ -1108,9 +1178,15 @@ public class StatsRulesProcFactory {
       return numRows / 3;
     }
 
+    private boolean isClosedBound(GenericUDF udf) {
+      return udf instanceof GenericUDFOPEqualOrGreaterThan ||
+          udf instanceof GenericUDFOPEqualOrLessThan;
+    }
+
     private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
-        Operator<?> op, long currNumRows) throws SemanticException {
+        Operator<?> op, long currNumRows)
+        throws SemanticException {
 
       long numRows = currNumRows;
 

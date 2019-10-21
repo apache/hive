@@ -19,7 +19,6 @@
 package org.apache.hive.hcatalog.pig;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.UUID;
@@ -53,7 +52,7 @@ public class TestHCatStorerWrapper extends HCatBaseTest {
 
     driver.run("drop table junit_external");
     String createTable = "create external table junit_external(a int, b string) partitioned by (c string) stored as RCFILE";
-    Assert.assertEquals(0, driver.run(createTable).getResponseCode());
+    driver.run(createTable);
 
     int LOOP_SIZE = 3;
     String[] inputData = new String[LOOP_SIZE*LOOP_SIZE];

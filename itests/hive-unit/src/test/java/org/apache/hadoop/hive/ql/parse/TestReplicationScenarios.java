@@ -68,7 +68,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.shims.Utils;
@@ -89,7 +89,6 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -356,11 +355,11 @@ public class TestReplicationScenarios {
       if (validate(rootTask)) {
         return true;
       }
-      List<Task<? extends Serializable>> childTasks = rootTask.getChildTasks();
+      List<Task<?>> childTasks = rootTask.getChildTasks();
       if (childTasks == null) {
         return false;
       }
-      for (Task<? extends Serializable> childTask : childTasks) {
+      for (Task<?> childTask : childTasks) {
         if (hasTask(childTask)) {
           return true;
         }
@@ -700,8 +699,6 @@ public class TestReplicationScenarios {
     run("LOAD DATA LOCAL INPATH '" + ptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
 
     BehaviourInjection<Table,Table> ptnedTableRenamer = new BehaviourInjection<Table,Table>(){
-      boolean success = false;
-
       @Nullable
       @Override
       public Table apply(@Nullable Table table) {
@@ -716,14 +713,13 @@ public class TestReplicationScenarios {
               LOG.info("Entered new thread");
               IDriver driver2 = DriverFactory.newDriver(hconf);
               SessionState.start(new CliSessionState(hconf));
-              CommandProcessorResponse ret =
-                  driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
-              success = (ret.getException() == null);
-              assertFalse(success);
-              ret = driver2.run("ALTER TABLE " + dbName + ".ptned RENAME TO " + dbName + ".ptned_renamed");
-              success = (ret.getException() == null);
-              assertFalse(success);
-              LOG.info("Exit new thread success - {}", success);
+              try {
+                driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
+                driver2.run("ALTER TABLE " + dbName + ".ptned RENAME TO " + dbName + ".ptned_renamed");
+              } catch (CommandProcessorException e) {
+                throw new RuntimeException(e);
+              }
+              LOG.info("Exit new thread success");
             }
           });
           t.start();
@@ -772,8 +768,6 @@ public class TestReplicationScenarios {
     run("LOAD DATA LOCAL INPATH '" + ptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
 
     BehaviourInjection<Table,Table> ptnedTableRenamer = new BehaviourInjection<Table,Table>(){
-      boolean success = false;
-
       @Nullable
       @Override
       public Table apply(@Nullable Table table) {
@@ -788,10 +782,12 @@ public class TestReplicationScenarios {
               LOG.info("Entered new thread");
               IDriver driver2 = DriverFactory.newDriver(hconf);
               SessionState.start(new CliSessionState(hconf));
-              CommandProcessorResponse ret = driver2.run("DROP TABLE " + dbName + ".ptned");
-              success = (ret.getException() == null);
-              assertTrue(success);
-              LOG.info("Exit new thread success - {}", success, ret.getException());
+              try {
+                driver2.run("DROP TABLE " + dbName + ".ptned");
+              } catch (CommandProcessorException e) {
+                throw new RuntimeException(e);
+              }
+              LOG.info("Exit new thread success");
             }
           });
           t.start();
@@ -988,8 +984,12 @@ public class TestReplicationScenarios {
     InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(eventIdSkipper);
     try {
       advanceDumpDir();
-      CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName + " FROM " + replDumpId);
-      assertTrue(ret.getResponseCode() == ErrorMsg.REPL_EVENTS_MISSING_IN_METASTORE.getErrorCode());
+      try {
+        driver.run("REPL DUMP " + dbName + " FROM " + replDumpId);
+        assert false;
+      } catch (CommandProcessorException e) {
+        assertTrue(e.getResponseCode() == ErrorMsg.REPL_EVENTS_MISSING_IN_METASTORE.getErrorCode());
+      }
       eventIdSkipper.assertInjectionsPerformed(true,false);
     } finally {
       InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
@@ -3252,8 +3252,12 @@ public class TestReplicationScenarios {
     assertTrue(fileCount != 0);
     fs.delete(path);
 
-    CommandProcessorResponse ret = driverMirror.run("REPL LOAD " + dbName + " FROM '" + dumpLocation + "'");
-    assertTrue(ret.getResponseCode() == ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getErrorCode());
+    try {
+      driverMirror.run("REPL LOAD " + dbName + " FROM '" + dumpLocation + "'");
+      assert false;
+    } catch (CommandProcessorException e) {
+      assertTrue(e.getResponseCode() == ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getErrorCode());
+    }
     run("drop database " + dbName, true, driver);
     fs.create(path, false);
   }
@@ -3271,8 +3275,12 @@ public class TestReplicationScenarios {
     fs.delete(path);
 
     advanceDumpDir();
-    CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName);
-    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+    try {
+      driver.run("REPL DUMP " + dbName);
+      assert false;
+    } catch (CommandProcessorException e) {
+      Assert.assertEquals(e.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+    }
 
     run("DROP TABLE " + dbName + ".normal", driver);
     run("drop database " + dbName, true, driver);
@@ -3292,8 +3300,12 @@ public class TestReplicationScenarios {
     fs.delete(path);
 
     advanceDumpDir();
-    CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName);
-    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+    try {
+      driver.run("REPL DUMP " + dbName);
+      assert false;
+    } catch (CommandProcessorException e) {
+      Assert.assertEquals(e.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+    }
 
     run("DROP TABLE " + dbName + ".normal", driver);
     run("drop database " + dbName, true, driver);
@@ -3575,7 +3587,6 @@ public class TestReplicationScenarios {
 
   private void verifyIfPartitionExist(String dbName, String tableName, List<String> partValues,
       HiveMetaStoreClient myClient){
-    Exception e = null;
     try {
       Partition ptn = myClient.getPartition(dbName, tableName, partValues);
       assertNotNull(ptn);
@@ -3640,10 +3651,11 @@ public class TestReplicationScenarios {
 
   private static boolean run(String cmd, boolean errorOnFail, IDriver myDriver) throws RuntimeException {
     boolean success = false;
-    CommandProcessorResponse ret = myDriver.run(cmd);
-    success = ((ret.getException() == null) && (ret.getErrorMessage() == null));
-    if (!success) {
-      LOG.warn("Error {} : {} running [{}].", ret.getErrorCode(), ret.getErrorMessage(), cmd);
+    try {
+      myDriver.run(cmd);
+      success = true;
+    } catch (CommandProcessorException e) {
+      LOG.warn("Error {} : {} running [{}].", e.getErrorCode(), e.getErrorMessage(), cmd);
     }
     return success;
   }

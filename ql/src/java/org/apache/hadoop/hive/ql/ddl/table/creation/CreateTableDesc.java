@@ -894,7 +894,13 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       colStatsDesc.setCatName(tbl.getCatName());
       colStatsDesc.setDbName(tbl.getDbName());
       colStatsDesc.setTableName(tbl.getTableName());
-      tbl.getTTable().setColStats(new ColumnStatistics(colStatsDesc, colStats.getStatsObj(), colStats.getEngine()));
+      String engine = colStats.getEngine();
+      if (engine == null) {
+        engine = org.apache.hadoop.hive.conf.Constants.HIVE_ENGINE;
+      }
+      ColumnStatistics columnStatistics = new ColumnStatistics(colStatsDesc, colStats.getStatsObj());
+      columnStatistics.setEngine(engine);
+      tbl.getTTable().setColStats(columnStatistics);
       // Statistics will have an associated write Id for a transactional table. We need it to
       // update column statistics.
       if (replWriteId > 0) {

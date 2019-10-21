@@ -43,14 +43,14 @@ public class ListResourceProcessor implements CommandProcessor {
   }
 
   @Override
-  public CommandProcessorResponse run(String command) {
+  public CommandProcessorResponse run(String command) throws CommandProcessorException {
     SessionState ss = SessionState.get();
     String[] tokens = command.split("\\s+");
     SessionState.ResourceType t;
     if (tokens.length < 1 || (t = SessionState.find_resource_type(tokens[0])) == null) {
       String message = "Usage: list ["
           + StringUtils.join(SessionState.ResourceType.values(), "|") + "] [<value> [<value>]*]";
-      return new CommandProcessorResponse(1, message, null);
+      throw new CommandProcessorException(message);
     }
     List<String> filter = null;
     if (tokens.length > 1) {
@@ -60,7 +60,7 @@ public class ListResourceProcessor implements CommandProcessor {
     if (s != null && !s.isEmpty()) {
       ss.out.println(StringUtils.join(s, "\n"));
     }
-    return new CommandProcessorResponse(0, null, null, SCHEMA);
+    return new CommandProcessorResponse(SCHEMA, null);
   }
 
   @Override

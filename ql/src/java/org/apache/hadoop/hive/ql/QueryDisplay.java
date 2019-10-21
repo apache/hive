@@ -55,14 +55,14 @@ public class QueryDisplay {
 
   private final LinkedHashMap<String, TaskDisplay> tasks = new LinkedHashMap<String, TaskDisplay>();
 
-  public synchronized <T extends Serializable> void updateTaskStatus(Task<T> tTask) {
+  public void updateTaskStatus(Task<?> tTask) {
     if (!tasks.containsKey(tTask.getId())) {
       tasks.put(tTask.getId(), new TaskDisplay(tTask));
     }
     tasks.get(tTask.getId()).updateStatus(tTask);
   }
 
-  public synchronized <T extends Serializable> void updateTaskStatistics(MapRedStats mapRedStats,
+  public synchronized void updateTaskStatistics(MapRedStats mapRedStats,
       RunningJob rj, String taskId) throws IOException, JSONException {
     if (tasks.containsKey(taskId)) {
       tasks.get(taskId).updateMapRedStatsJson(mapRedStats, rj);
@@ -232,7 +232,7 @@ public class QueryDisplay {
       return externalHandle;
     }
 
-    public synchronized <T extends Serializable> void updateStatus(Task<T> tTask) {
+    public void updateStatus(Task<?> tTask) {
       this.taskState = tTask.getTaskState();
       if (externalHandle == null && tTask.getExternalHandle() != null) {
         this.externalHandle = tTask.getExternalHandle();

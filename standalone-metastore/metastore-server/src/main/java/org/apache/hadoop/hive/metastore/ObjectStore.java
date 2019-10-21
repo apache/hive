@@ -8750,7 +8750,9 @@ public class ObjectStore implements RawStore, Configurable {
             statObjs.add(StatObjectConverter.getTableColumnStatisticsObj(mStat, enableBitVector));
             Deadline.checkTimeout();
           }
-          return new ColumnStatistics(desc, statObjs, engine);
+          ColumnStatistics colStat = new ColumnStatistics(desc, statObjs);
+          colStat.setEngine(engine);
+          return colStat;
         }
       }
     }.run(true);
@@ -8861,7 +8863,9 @@ public class ObjectStore implements RawStore, Configurable {
             String partName = isLast ? null : mStatsObj.getPartitionName();
             if (isLast || !partName.equals(lastPartName)) {
               if (i != 0) {
-                result.add(new ColumnStatistics(csd, curList, engine));
+                ColumnStatistics colStat = new ColumnStatistics(csd, curList);
+                colStat.setEngine(engine);
+                result.add(colStat);
               }
               if (isLast) {
                 continue;
@@ -10065,6 +10069,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     Query query = null;
     try {
+      pm.flush();
       openTransaction();
       lockNotificationSequenceForUpdate();
       query = pm.newQuery(MNotificationNextId.class);

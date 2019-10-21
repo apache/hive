@@ -68,7 +68,6 @@ set hive.fetch.task.conversion=none;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 create transactional table acid_ptn_bucket1 (a int, b int) partitioned by(ds string)
 clustered by (a) into 2 buckets stored as ORC

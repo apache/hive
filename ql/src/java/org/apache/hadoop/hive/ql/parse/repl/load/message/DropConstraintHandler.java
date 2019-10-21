@@ -30,7 +30,7 @@ import java.util.List;
 
 public class DropConstraintHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     DropConstraintMessage msg = deserializer.getDropConstraintMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;

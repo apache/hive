@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.logging.log4j.core.util.ReflectionUtil;
 import org.junit.After;
@@ -72,7 +73,7 @@ public class TestSmallTableCacheEviction {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws CommandProcessorException {
     Driver driver = createDriver();
     driver.run("drop table if exists " + smallTableName1);
     driver.run("drop table if exists " + smallTableName2);
@@ -89,7 +90,7 @@ public class TestSmallTableCacheEviction {
         driver = createDriver();
         String simpleJoinQuery = "select large.col, s1.col, s2.col from " + largeTableName + " large join " +
                 smallTableName1 + " s1 on s1.col = large.col join " + smallTableName2 + " s2 on s2.col = large.col";
-        Assert.assertEquals(0, driver.run(simpleJoinQuery).getResponseCode());
+        driver.run(simpleJoinQuery);
         Assert.assertEquals(2, innerCache.size());
       } finally {
         if (driver != null) {
@@ -123,16 +124,15 @@ public class TestSmallTableCacheEviction {
       return this;
     }
 
-    public void create(Driver driver) {
-      Assert.assertEquals(0, driver.run("create table " + tableName + " (col int)")
-              .getResponseCode());
+    public void create(Driver driver) throws CommandProcessorException {
+      driver.run("create table " + tableName + " (col int)");
 
       if (numberOfRows > 0) {
         StringJoiner query = new StringJoiner(",", "insert into " + tableName + " values ", "");
         for (int i = 0; i < numberOfRows; i++) {
           query.add("(" + Integer.toString(i + 1) + ")");
         }
-        Assert.assertEquals(0, driver.run(query.toString()).getResponseCode());
+        driver.run(query.toString());
       }
     }
 

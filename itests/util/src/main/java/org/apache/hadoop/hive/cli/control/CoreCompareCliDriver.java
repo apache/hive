@@ -28,13 +28,14 @@ import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
 import com.google.common.base.Strings;
+
 public class CoreCompareCliDriver extends CliAdapter{
 
   private static QTestUtil qt;
@@ -142,11 +143,12 @@ public class CoreCompareCliDriver extends CliAdapter{
       for (String versionFile : versionFiles) {
         // 1 for "_" after tname; 3 for ".qv" at the end. Version is in between.
         String versionStr = versionFile.substring(tname.length() + 1, versionFile.length() - 3);
-        outputs.add(qt.cliInit(new File(queryDirectory, tname + "." + versionStr)));
+        outputs.add(qt.cliInit(new File(queryDirectory, versionFile)));
         // TODO: will this work?
-        CommandProcessorResponse response = qt.executeClient(versionFile, fname);
-        if (response.getResponseCode() != 0) {
-          qt.failedQuery(response.getException(), response.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
+        try {
+          qt.executeClient(versionFile, fname);
+        } catch (CommandProcessorException e) {
+          qt.failedQuery(e.getException(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
         }
       }
 

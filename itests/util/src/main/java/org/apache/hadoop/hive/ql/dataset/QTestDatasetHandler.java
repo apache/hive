@@ -28,25 +28,26 @@ import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestSystemProperties;
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.qoption.QTestOptionHandler;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QTestDatasetHandler {
+public class QTestDatasetHandler implements QTestOptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger("QTestDatasetHandler");
 
   private File datasetDir;
-  private QTestUtil qt;
   private static Set<String> srcTables;
+  private Set<String> missingTables = new HashSet<>();
 
-  public QTestDatasetHandler(QTestUtil qTestUtil, HiveConf conf) {
+  public QTestDatasetHandler(HiveConf conf) {
     // Use path relative to dataDir directory if it is not specified
     String dataDir = getDataDir(conf);
 
     datasetDir = conf.get("test.data.set.files") == null ? new File(dataDir + "/datasets")
       : new File(conf.get("test.data.set.files"));
-    this.qt = qTestUtil;
   }
 
   public String getDataDir(HiveConf conf) {
@@ -59,28 +60,6 @@ public class QTestDatasetHandler {
     return dataDir;
   }
 
-  public void initDataSetForTest(File file, CliDriver cliDriver) throws Exception {
-    synchronized (QTestUtil.class) {
-      DatasetParser parser = new DatasetParser();
-      parser.parse(file);
-
-      DatasetCollection datasets = parser.getDatasets();
-
-      Set<String> missingDatasets = datasets.getTables();
-      missingDatasets.removeAll(getSrcTables());
-      if (missingDatasets.isEmpty()) {
-        return;
-      }
-      qt.newSession(true);
-      for (String table : missingDatasets) {
-        if (initDataset(table, cliDriver)) {
-          addSrcTable(table);
-        }
-      }
-      qt.newSession(true);
-    }
-  }
-
   public boolean initDataset(String table, CliDriver cliDriver) throws Exception {
     File tableFile = new File(new File(datasetDir, table), Dataset.INIT_FILE_NAME);
     String commands = null;
@@ -90,10 +69,11 @@ public class QTestDatasetHandler {
       throw new RuntimeException(String.format("dataset file not found %s", tableFile), e);
     }
 
-    CommandProcessorResponse result = cliDriver.processLine(commands);
-    LOG.info("Result from cliDrriver.processLine in initFromDatasets=" + result);
-    if (result.getResponseCode() != 0) {
-      Assert.fail("Failed during initFromDatasets processLine with code=" + result);
+    try {
+      CommandProcessorResponse result = cliDriver.processLine(commands);
+      LOG.info("Result from cliDrriver.processLine in initFromDatasets=" + result);
+    } catch (CommandProcessorException e) {
+      Assert.fail("Failed during initFromDatasets processLine with code=" + e);
     }
 
     return true;
@@ -139,4 +119,43 @@ public class QTestDatasetHandler {
       }
     }
   }
+
+  @Override
+  public void processArguments(String arguments) {
+    String[] tables = arguments.split(",");
+    for (String string : tables) {
+      string = string.trim();
+      if(string.length()==0) {
+        continue;
+      }
+      if (srcTables == null || !srcTables.contains(string)) {
+        missingTables.add(string);
+      }
+    }
+  }
+
+  @Override
+  public void beforeTest(QTestUtil qt) throws Exception {
+    if (!missingTables.isEmpty()) {
+      synchronized (QTestUtil.class) {
+        qt.newSession(true);
+        for (String table : missingTables) {
+          if (initDataset(table, qt.getCliDriver())) {
+            addSrcTable(table);
+          }
+        }
+        missingTables.clear();
+        qt.newSession(true);
+      }
+    }
+  }
+
+  @Override
+  public void afterTest(QTestUtil qt) throws Exception {
+  }
+
+  public DatasetCollection getDatasets() {
+    return new DatasetCollection(missingTables);
+  }
+
 }

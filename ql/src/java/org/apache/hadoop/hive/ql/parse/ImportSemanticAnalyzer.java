@@ -548,7 +548,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     return TaskFactory.get(new DDLWork(x.getInputs(), x.getOutputs(), dropTblDesc), x.getConf());
   }
 
-  private static Task<? extends Serializable> alterTableTask(ImportTableDesc tableDesc,
+  private static Task<?> alterTableTask(ImportTableDesc tableDesc,
                                                              EximUtil.SemanticAnalyzerWrapperContext x,
                                                              ReplicationSpec replicationSpec) {
     tableDesc.setReplaceMode(true);
@@ -558,7 +558,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     return tableDesc.getCreateTableTask(x.getInputs(), x.getOutputs(), x.getConf());
   }
 
-  private static Task<? extends Serializable> alterSinglePartition(
+  private static Task<?> alterSinglePartition(
           ImportTableDesc tblDesc, Table table, Warehouse wh, AlterTableAddPartitionDesc addPartitionDesc,
           ReplicationSpec replicationSpec, org.apache.hadoop.hive.ql.metadata.Partition ptn,
           EximUtil.SemanticAnalyzerWrapperContext x) throws MetaException, IOException, HiveException {

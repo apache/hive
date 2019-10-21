@@ -151,10 +151,7 @@ public class TestHiveHistory {
 
       String cmd = "select a.key+1 from src a";
       IDriver d = DriverFactory.newDriver(conf);
-      int ret = d.run(cmd).getResponseCode();
-      if (ret != 0) {
-        fail("Failed");
-      }
+      d.run(cmd);
       HiveHistoryViewer hv = new HiveHistoryViewer(SessionState.get()
           .getHiveHistory().getHistFileName());
       Map<String, QueryInfo> jobInfoMap = hv.getJobInfoMap();

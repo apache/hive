@@ -6,7 +6,6 @@ from srcpart
 insert overwrite table tstsrcpart_n4 partition (ds='2008-04-08',hr='11')
 select key, value where ds='2008-04-08' and hr='11';
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 
 

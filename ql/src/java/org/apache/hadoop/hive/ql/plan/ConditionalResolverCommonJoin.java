@@ -50,10 +50,10 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
   public static class ConditionalResolverCommonJoinCtx implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private HashMap<Task<? extends Serializable>, Set<String>> taskToAliases;
+    private HashMap<Task<?>, Set<String>> taskToAliases;
     Map<Path, List<String>> pathToAliases;
     Map<String, Long> aliasToKnownSize;
-    private Task<? extends Serializable> commonJoinTask;
+    private Task<?> commonJoinTask;
 
     private Path localTmpDir;
     private Path hdfsTmpDir;
@@ -61,19 +61,19 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     public ConditionalResolverCommonJoinCtx() {
     }
 
-    public HashMap<Task<? extends Serializable>, Set<String>> getTaskToAliases() {
+    public HashMap<Task<?>, Set<String>> getTaskToAliases() {
       return taskToAliases;
     }
 
-    public void setTaskToAliases(HashMap<Task<? extends Serializable>, Set<String>> taskToAliases) {
+    public void setTaskToAliases(HashMap<Task<?>, Set<String>> taskToAliases) {
       this.taskToAliases = taskToAliases;
     }
 
-    public Task<? extends Serializable> getCommonJoinTask() {
+    public Task<?> getCommonJoinTask() {
       return commonJoinTask;
     }
 
-    public void setCommonJoinTask(Task<? extends Serializable> commonJoinTask) {
+    public void setCommonJoinTask(Task<?> commonJoinTask) {
       this.commonJoinTask = commonJoinTask;
     }
 
@@ -129,12 +129,12 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
   }
 
   @Override
-  public List<Task<? extends Serializable>> getTasks(HiveConf conf, Object objCtx) {
+  public List<Task<?>> getTasks(HiveConf conf, Object objCtx) {
     ConditionalResolverCommonJoinCtx ctx = ((ConditionalResolverCommonJoinCtx) objCtx).clone();
-    List<Task<? extends Serializable>> resTsks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> resTsks = new ArrayList<Task<?>>();
 
     // get aliasToPath and pass it to the heuristic
-    Task<? extends Serializable> task = resolveDriverAlias(ctx, conf);
+    Task<?> task = resolveDriverAlias(ctx, conf);
 
     if (task == null) {
       // run common join task
@@ -151,7 +151,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     return resTsks;
   }
 
-  private Task<? extends Serializable> resolveDriverAlias(ConditionalResolverCommonJoinCtx ctx, HiveConf conf) {
+  private Task<?> resolveDriverAlias(ConditionalResolverCommonJoinCtx ctx, HiveConf conf) {
     try {
       resolveUnknownSizes(ctx, conf);
       return resolveMapJoinTask(ctx, conf);
@@ -161,20 +161,20 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     return null;
   }
 
-  protected Task<? extends Serializable> resolveMapJoinTask(
+  protected Task<?> resolveMapJoinTask(
       ConditionalResolverCommonJoinCtx ctx, HiveConf conf) throws Exception {
 
     Set<String> participants = getParticipants(ctx);
 
     Map<String, Long> aliasToKnownSize = ctx.getAliasToKnownSize();
-    Map<Task<? extends Serializable>, Set<String>> taskToAliases = ctx.getTaskToAliases();
+    Map<Task<?>, Set<String>> taskToAliases = ctx.getTaskToAliases();
 
     long threshold = HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
 
     Long bigTableSize = null;
     Long smallTablesSize = null;
-    Map.Entry<Task<? extends Serializable>, Set<String>> nextTask = null;
-    for (Map.Entry<Task<? extends Serializable>, Set<String>> entry : taskToAliases.entrySet()) {
+    Map.Entry<Task<?>, Set<String>> nextTask = null;
+    for (Map.Entry<Task<?>, Set<String>> entry : taskToAliases.entrySet()) {
       Set<String> aliases = entry.getValue();
       long sumOfOthers = Utilities.sumOfExcept(aliasToKnownSize, participants, aliases);
       if (sumOfOthers < 0 || sumOfOthers > threshold) {

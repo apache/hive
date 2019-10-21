@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -327,7 +327,7 @@ public class ImportTableDesc {
     return dbName;
   }
 
-  public Task<? extends Serializable> getCreateTableTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public Task<?> getCreateTableTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       HiveConf conf) {
     switch (getDescType()) {
     case TABLE:

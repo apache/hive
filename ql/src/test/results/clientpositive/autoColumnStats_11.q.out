@@ -153,19 +153,19 @@ PREHOOK: Input: default@acs_t11
 POSTHOOK: query: describe formatted acs_t11 d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acs_t11
-col_name            	d                   	 	 	 	 	 	 	 	 	 	 
-data_type           	date                	 	 	 	 	 	 	 	 	 	 
-min                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-max                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	d                   
+data_type           	date                
+min                 	2011-11-11          
+max                 	2011-11-11          
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}
 PREHOOK: query: insert into acs_t11 values(1,1,NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -183,19 +183,19 @@ PREHOOK: Input: default@acs_t11
 POSTHOOK: query: describe formatted acs_t11 d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acs_t11
-col_name            	d                   	 	 	 	 	 	 	 	 	 	 
-data_type           	date                	 	 	 	 	 	 	 	 	 	 
-min                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-max                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	d                   
+data_type           	date                
+min                 	2011-11-11          
+max                 	2011-11-11          
+num_nulls           	1                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}
 PREHOOK: query: insert into acs_t11 values(1,1,'2006-11-11')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -213,19 +213,19 @@ PREHOOK: Input: default@acs_t11
 POSTHOOK: query: describe formatted acs_t11 d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acs_t11
-col_name            	d                   	 	 	 	 	 	 	 	 	 	 
-data_type           	date                	 	 	 	 	 	 	 	 	 	 
-min                 	2006-11-11          	 	 	 	 	 	 	 	 	 	 
-max                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	2                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	d                   
+data_type           	date                
+min                 	2006-11-11          
+max                 	2011-11-11          
+num_nulls           	1                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}
 PREHOOK: query: insert into acs_t11 values(1,1,'2001-11-11')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -243,19 +243,19 @@ PREHOOK: Input: default@acs_t11
 POSTHOOK: query: describe formatted acs_t11 d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acs_t11
-col_name            	d                   	 	 	 	 	 	 	 	 	 	 
-data_type           	date                	 	 	 	 	 	 	 	 	 	 
-min                 	2001-11-11          	 	 	 	 	 	 	 	 	 	 
-max                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	3                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	d                   
+data_type           	date                
+min                 	2001-11-11          
+max                 	2011-11-11          
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}
 PREHOOK: query: insert into acs_t11 values(1,1,'2004-11-11')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -273,19 +273,19 @@ PREHOOK: Input: default@acs_t11
 POSTHOOK: query: describe formatted acs_t11 d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acs_t11
-col_name            	d                   	 	 	 	 	 	 	 	 	 	 
-data_type           	date                	 	 	 	 	 	 	 	 	 	 
-min                 	2001-11-11          	 	 	 	 	 	 	 	 	 	 
-max                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	d                   
+data_type           	date                
+min                 	2001-11-11          
+max                 	2011-11-11          
+num_nulls           	1                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}
 PREHOOK: query: explain analyze table acs_t11 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@acs_t11
@@ -359,16 +359,16 @@ PREHOOK: Input: default@acs_t11
 POSTHOOK: query: describe formatted acs_t11 d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acs_t11
-col_name            	d                   	 	 	 	 	 	 	 	 	 	 
-data_type           	date                	 	 	 	 	 	 	 	 	 	 
-min                 	2001-11-11          	 	 	 	 	 	 	 	 	 	 
-max                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	d                   
+data_type           	date                
+min                 	2001-11-11          
+max                 	2011-11-11          
+num_nulls           	1                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}

@@ -36,7 +36,6 @@ STORED AS RCFILE
 LOCATION '${hiveconf:test.blobstore.path.unique}/rcfile_format_part/rcfile_events';
 
 SET hive.exec.dynamic.partition=true;
-SET hive.exec.dynamic.partition.mode=nonstrict;
 
 INSERT OVERWRITE TABLE rcfile_events PARTITION (run_date, game_id, event_name)
 SELECT * FROM src_events;

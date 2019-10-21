@@ -33,13 +33,17 @@ import java.util.List;
  */
 public class UpdatePartColStatHandler extends AbstractMessageHandler {
   @Override
-  public List<Task<? extends Serializable>> handle(Context context)
+  public List<Task<?>> handle(Context context)
       throws SemanticException {
     UpdatePartitionColumnStatMessage upcsm =
             deserializer.getUpdatePartitionColumnStatMessage(context.dmd.getPayload());
 
     // Update tablename and database name in the statistics object
     ColumnStatistics colStats = upcsm.getColumnStatistics();
+    // In older version of hive, engine might not have set.
+    if (colStats.getEngine() == null) {
+      colStats.setEngine(org.apache.hadoop.hive.conf.Constants.HIVE_ENGINE);
+    }
     ColumnStatisticsDesc colStatsDesc = colStats.getStatsDesc();
     if (!context.isDbNameEmpty()) {
       colStatsDesc.setDbName(context.dbName);

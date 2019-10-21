@@ -1,0 +1,85 @@
+PREHOOK: query: REPL LOAD test_db from '../../data/files/repl_dump' with ('hive.exec.parallel'='false')
+PREHOOK: type: REPLLOAD
+POSTHOOK: query: REPL LOAD test_db from '../../data/files/repl_dump' with ('hive.exec.parallel'='false')
+POSTHOOK: type: REPLLOAD
+PREHOOK: query: use test_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: use test_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
+PREHOOK: query: show tables
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
+POSTHOOK: query: show tables
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
+tbl
+tbl1
+tbl2
+tbl3
+tbl4
+tbl5
+tbl6
+PREHOOK: query: select * from tbl1 order by fld
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@tbl1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl1 order by fld
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@tbl1
+#### A masked pattern was here ####
+1
+1
+1
+PREHOOK: query: select * from tbl2 order by fld
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl2 order by fld
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@tbl2
+#### A masked pattern was here ####
+1
+1
+PREHOOK: query: select * from tbl3 order by fld
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@tbl3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl3 order by fld
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@tbl3
+#### A masked pattern was here ####
+1
+PREHOOK: query: select * from tbl4 order by fld
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@tbl4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl4 order by fld
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@tbl4
+#### A masked pattern was here ####
+1
+PREHOOK: query: select * from tbl5 order by fld
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@tbl5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl5 order by fld
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@tbl5
+#### A masked pattern was here ####
+1
+PREHOOK: query: select * from tbl6 order by fld1
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@tbl6
+PREHOOK: Input: test_db@tbl6@fld1=1
+PREHOOK: Input: test_db@tbl6@fld1=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl6 order by fld1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@tbl6
+POSTHOOK: Input: test_db@tbl6@fld1=1
+POSTHOOK: Input: test_db@tbl6@fld1=2
+#### A masked pattern was here ####
+1	1
+1	2

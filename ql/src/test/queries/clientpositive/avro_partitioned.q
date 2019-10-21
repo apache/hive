@@ -62,7 +62,6 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }');
 
-SET hive.exec.dynamic.partition.mode=nonstrict;
 INSERT OVERWRITE TABLE episodes_partitioned_n1 PARTITION (doctor_pt) SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes_n2;
 
 SELECT * FROM episodes_partitioned_n1 WHERE doctor_pt > 6;

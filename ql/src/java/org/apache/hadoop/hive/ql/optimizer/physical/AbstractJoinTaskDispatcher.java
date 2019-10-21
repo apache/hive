@@ -46,18 +46,18 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
     physicalContext = context;
   }
 
-  public abstract Task<? extends Serializable> processCurrentTask(MapRedTask currTask,
+  public abstract Task<?> processCurrentTask(MapRedTask currTask,
       ConditionalTask conditionalTask, Context context)
       throws SemanticException;
 
   protected void replaceTaskWithConditionalTask(
-      Task<? extends Serializable> currTask, ConditionalTask cndTsk) {
+      Task<?> currTask, ConditionalTask cndTsk) {
     // add this task into task tree
     // set all parent tasks
-    List<Task<? extends Serializable>> parentTasks = currTask.getParentTasks();
+    List<Task<?>> parentTasks = currTask.getParentTasks();
     currTask.setParentTasks(null);
     if (parentTasks != null) {
-      for (Task<? extends Serializable> tsk : parentTasks) {
+      for (Task<?> tsk : parentTasks) {
         // make new generated task depends on all the parent tasks of current task.
         tsk.addDependentTask(cndTsk);
         // remove the current task from its original parent task's dependent task
@@ -69,13 +69,13 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
       physicalContext.addToRootTask(cndTsk);
     }
     // set all child tasks
-    List<Task<? extends Serializable>> oldChildTasks = currTask.getChildTasks();
+    List<Task<?>> oldChildTasks = currTask.getChildTasks();
     if (oldChildTasks != null) {
-      for (Task<? extends Serializable> tsk : cndTsk.getListTasks()) {
+      for (Task<?> tsk : cndTsk.getListTasks()) {
         if (tsk.equals(currTask)) {
           continue;
         }
-        for (Task<? extends Serializable> oldChild : oldChildTasks) {
+        for (Task<?> oldChild : oldChildTasks) {
           tsk.addDependentTask(oldChild);
         }
       }
@@ -85,13 +85,13 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
   // Replace the task with the new task. Copy the children and parents of the old
   // task to the new task.
   protected void replaceTask(
-      Task<? extends Serializable> currTask, Task<? extends Serializable> newTask) {
+      Task<?> currTask, Task<?> newTask) {
     // add this task into task tree
     // set all parent tasks
-    List<Task<? extends Serializable>> parentTasks = currTask.getParentTasks();
+    List<Task<?>> parentTasks = currTask.getParentTasks();
     currTask.setParentTasks(null);
     if (parentTasks != null) {
-      for (Task<? extends Serializable> tsk : parentTasks) {
+      for (Task<?> tsk : parentTasks) {
         // remove the current task from its original parent task's dependent task
         tsk.removeDependentTask(currTask);
         // make new generated task depends on all the parent tasks of current task.
@@ -104,10 +104,10 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
     }
 
     // set all child tasks
-    List<Task<? extends Serializable>> oldChildTasks = currTask.getChildTasks();
+    List<Task<?>> oldChildTasks = currTask.getChildTasks();
     currTask.setChildTasks(null);
     if (oldChildTasks != null) {
-      for (Task<? extends Serializable> tsk : oldChildTasks) {
+      for (Task<?> tsk : oldChildTasks) {
         // remove the current task from its original parent task's dependent task
         tsk.getParentTasks().remove(currTask);
         // make new generated task depends on all the parent tasks of current task.
@@ -160,21 +160,21 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
 
     TaskGraphWalkerContext walkerCtx = (TaskGraphWalkerContext) nodeOutputs[0];
 
-    Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
+    Task<?> currTask = (Task<?>) nd;
     // not map reduce task or not conditional task, just skip
     if (currTask.isMapRedTask()) {
       if (currTask instanceof ConditionalTask) {
         // get the list of task
-        List<Task<? extends Serializable>> taskList = ((ConditionalTask) currTask).getListTasks();
-        for (Task<? extends Serializable> tsk : taskList) {
+        List<Task<?>> taskList = ((ConditionalTask) currTask).getListTasks();
+        for (Task<?> tsk : taskList) {
           if (tsk.isMapRedTask()) {
-            Task<? extends Serializable> newTask = this.processCurrentTask((MapRedTask) tsk,
+            Task<?> newTask = this.processCurrentTask((MapRedTask) tsk,
                 ((ConditionalTask) currTask), physicalContext.getContext());
             walkerCtx.addToDispatchList(newTask);
           }
         }
       } else {
-        Task<? extends Serializable> newTask =
+        Task<?> newTask =
             this.processCurrentTask((MapRedTask) currTask, null, physicalContext.getContext());
         walkerCtx.addToDispatchList(newTask);
       }

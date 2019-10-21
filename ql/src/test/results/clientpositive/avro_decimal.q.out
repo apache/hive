@@ -34,19 +34,19 @@ PREHOOK: Input: default@dec_n0
 POSTHOOK: query: DESC FORMATTED `dec_n0` value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dec_n0
-col_name            	value               	 	 	 	 	 	 	 	 	 	 
-data_type           	decimal(8,4)        	 	 	 	 	 	 	 	 	 	 
-min                 	-12.25              	 	 	 	 	 	 	 	 	 	 
-max                 	234.79              	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	value               
+data_type           	decimal(8,4)        
+min                 	-12.25              
+max                 	234.79              
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"value\":\"true\"}}
 PREHOOK: query: DROP TABLE IF EXISTS avro_dec_n0
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS avro_dec_n0

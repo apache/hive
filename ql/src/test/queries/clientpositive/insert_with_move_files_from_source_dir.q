@@ -1,7 +1,6 @@
 
 set hive.enforce.bucketing=true;
 set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 create table emp1 (id int, name string, dept int, country string) row format delimited fields terminated by '|' stored as textfile;
 load data local inpath '../../data/files/employee_part.txt' overwrite into table emp1;

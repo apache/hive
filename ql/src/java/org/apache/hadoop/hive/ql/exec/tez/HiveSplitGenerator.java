@@ -191,7 +191,7 @@ public class HiveSplitGenerator extends InputInitializer {
 
         if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1) <= 1) {
           // broken configuration from mapred-default.xml
-          final long blockSize = conf.getLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY,
+          final long blockSize = conf.getLongBytes(DFSConfigKeys.DFS_BLOCK_SIZE_KEY,
             DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
           final long minGrouping = conf.getLong(
             TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE,

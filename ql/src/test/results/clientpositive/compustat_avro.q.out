@@ -30,9 +30,19 @@ PREHOOK: Input: default@testavro
 POSTHOOK: query: describe formatted testAvro col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@testavro
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-col1                	string              	from deserializer   	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\",\"col4\":\"true\",\"col5\":\"true\",\"col6\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\",\"col4\":\"true\",\"col5\":\"true\",\"col6\":\"true\"}}
 PREHOOK: query: analyze table testAvro compute statistics for columns col1,col3
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@testavro
@@ -49,16 +59,16 @@ PREHOOK: Input: default@testavro
 POSTHOOK: query: describe formatted testAvro col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@testavro
-col_name            	col1                	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	0                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	0.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	0                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\",\"col4\":\"true\",\"col5\":\"true\",\"col6\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	col1                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	0                   
+avg_col_len         	0.0                 
+max_col_len         	0                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\",\"col4\":\"true\",\"col5\":\"true\",\"col6\":\"true\"}}
