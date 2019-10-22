@@ -69,6 +69,9 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
   // Due to HIVE-6404, define our own constant
   private static final String COLLECTION_DELIM = "collection.delim";
 
+  // actual delimiter(fieldDelimited) is replaced by REPLACEMENT_DELIM in row.
+  private static final String REPLACEMENT_DELIM = "\1";
+
   private int numColumns;
   private String fieldDelimited;
   // we don't support using multiple chars as delimiters within complex types
@@ -156,10 +159,10 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
     } else {
       throw new SerDeException(getClass() + ": expects either BytesWritable or Text object!");
     }
-    byteArrayRef.setData(rowStr.replaceAll(Pattern.quote(fieldDelimited), "\1").getBytes());
+    byteArrayRef.setData(rowStr.replaceAll(Pattern.quote(fieldDelimited), REPLACEMENT_DELIM).getBytes());
     cachedLazyStruct.init(byteArrayRef, 0, byteArrayRef.getData().length);
     // use the multi-char delimiter to parse the lazy struct
-    cachedLazyStruct.parseMultiDelimit(rowStr, delimiterPattern);
+    cachedLazyStruct.parseMultiDelimit(rowStr, delimiterPattern, REPLACEMENT_DELIM);
     return cachedLazyStruct;
   }
 

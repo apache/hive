@@ -279,8 +279,14 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     return serializedSize;
   }
 
-  // parse the struct using multi-char delimiter
-  public void parseMultiDelimit(final String rawRow, final Pattern fieldDelimit) {
+  /**
+   *  Parses rawRow using multi-char delimiter.
+   *
+   * @param rawRow row to be parsed, delimited by fieldDelimit
+   * @param fieldDelimit pattern of multi-char delimiter
+   * @param replacementDelim delimiter with which fieldDelimit has been replaced in rawRow
+   */
+  public void parseMultiDelimit(final String rawRow, final Pattern fieldDelimit, final String replacementDelim) {
     if (rawRow == null || fieldDelimit == null) {
       return;
     }
@@ -294,16 +300,15 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
       startPosition = new int[fields.length + 1];
     }
     final int delimiterLength = fieldDelimit.toString().length();
-    // the indexes of the delimiters
-    List<Integer> delimitIndices = findIndexes(rawRow, fieldDelimit);
-    int diff = delimiterLength - 1;
+    // the indices of the delimiters
+    final List<Integer> delimitIndices = findDelimiterIndicesInRow(rawRow, fieldDelimit);
 
     // first field always starts from 0, even when missing
     startPosition[0] = 0;
     for (int i = 1; i < fields.length; i++) {
       if (delimitIndices.get(i - 1) != -1) {
-        int start = delimitIndices.get(i - 1) + delimiterLength;
-        startPosition[i] = start - i * diff;
+        startPosition[i] =
+            getStartPositionWRTReplacementDelim(i, delimitIndices, delimiterLength, replacementDelim.length());
       } else {
         startPosition[i] = length + 1;
       }
@@ -314,26 +319,34 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     final int fieldLength = fields.length;
     // this means we have more delimiters(and hence columns) than required (ideally n fields should have n-1 delimiters)
     if (delimitIndices.size() >= fieldLength) {
-      // MultiDelimitSerDe replaces actual multi-char delimiter by "\1" which reduces the length
-      // however here we are getting rawRow with original multi-char delimiter
-      // due to this we have to subtract those extra chars to match length of LazyNonPrimitive#bytes which are used
-      // while reading data, see uncheckedGetField()
-      totalRecordLength = (delimitIndices.get(fieldLength - 1) + delimiterLength) - fieldLength * diff;
+      totalRecordLength =
+          getStartPositionWRTReplacementDelim(fieldLength, delimitIndices, delimiterLength, replacementDelim.length());
       LOG.warn("More delimiters[{}] found than expected[{}]. Ignoring bytes after extra delimiters", delimiterLength,
           fieldLength - 1);
     } else {
       totalRecordLength = length + 1;
     }
 
-    startPosition[fields.length] = totalRecordLength;
+    startPosition[fieldLength] = totalRecordLength;
     Arrays.fill(fieldInited, false);
     parsed = true;
   }
 
-  // find all the indexes of the sub byte[]
-  private List<Integer> findIndexes(final String text, final Pattern pattern) {
+  // MultiDelimitSerDe replaces actual multi-char delimiter by replacementDelim("\1") which reduces the length
+  // however here we are getting rawRow with original multi-char delimiter
+  // due to this we have to subtract those extra chars to match length of LazyNonPrimitive#bytes which are used
+  // while reading data, see uncheckedGetField()
+  private int getStartPositionWRTReplacementDelim(final int startPosIndex, final List<Integer> delimitIndices,
+      final int delimiterLength, final int replacementDelimLength) {
+    final int extraBytesInDelim = delimiterLength - replacementDelimLength;
+    return (delimitIndices.get(startPosIndex - 1) + delimiterLength) - startPosIndex * extraBytesInDelim;
+  }
+
+  // find all the indices of the delimiter in row
+  // and if row contains less delimiters than expected, fill the rest with -1
+  private List<Integer> findDelimiterIndicesInRow(final String row, final Pattern delimiter) {
     List<Integer> delimiterIndices = new ArrayList<>();
-    Matcher matcher = pattern.matcher(text);
+    Matcher matcher = delimiter.matcher(row);
     while (matcher.find()) {
       delimiterIndices.add(matcher.start());
     }
