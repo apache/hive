@@ -43,21 +43,30 @@ public class TestZookeeperUtils {
 
   @Test
   public void testHadoopAuthKerberosAndZookeeperUseKerberos() {
+    Mockito.when(ugi.hasKerberosCredentials()).thenReturn(true);
     Mockito.when(ugi.isFromKeytab()).thenReturn(true);
     Assert.assertTrue(HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS));
     Assert.assertTrue(ZookeeperUtils.isKerberosEnabled(conf));
   }
 
   @Test
+  public void testHadoopAuthKerberosFromTicketAndZookeeperUseKerberos() {
+    Mockito.when(ugi.hasKerberosCredentials()).thenReturn(true);
+    Mockito.when(ugi.isFromKeytab()).thenReturn(false);
+    Assert.assertTrue(HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS));
+    Assert.assertTrue(ZookeeperUtils.isKerberosEnabled(conf));
+  }
+
+  @Test
   public void testHadoopAuthKerberosAndZookeeperNoKerberos(){
-    Mockito.when(ugi.isFromKeytab()).thenReturn(true);
+    Mockito.when(ugi.hasKerberosCredentials()).thenReturn(true);
     conf.setBoolean(HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS.varname, false);
     Assert.assertFalse(ZookeeperUtils.isKerberosEnabled(conf));
   }
 
   @Test
   public void testHadoopAuthSimpleAndZookeeperKerberos(){
-    Mockito.when(ugi.isFromKeytab()).thenReturn(false);
+    Mockito.when(ugi.hasKerberosCredentials()).thenReturn(false);
     conf.setBoolean(HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS.varname, false);
     Assert.assertFalse(ZookeeperUtils.isKerberosEnabled(conf));
   }
