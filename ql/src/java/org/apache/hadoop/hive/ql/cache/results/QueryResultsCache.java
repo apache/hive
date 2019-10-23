@@ -401,7 +401,7 @@ public final class QueryResultsCache {
         if (metrics != null) {
           registerMetrics(metrics, instance);
         }
-      } catch (IOException err) {
+      } catch (Exception err) {
         inited.set(false);
         throw err;
       }
