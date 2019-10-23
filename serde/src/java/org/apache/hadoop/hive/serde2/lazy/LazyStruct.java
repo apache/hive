@@ -300,61 +300,25 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
       startPosition = new int[fields.length + 1];
     }
     final int delimiterLength = fieldDelimit.toString().length();
-    // the indices of the delimiters
-    final List<Integer> delimitIndices = findDelimiterIndicesInRow(rawRow, fieldDelimit);
+    final int extraBytesInDelim = delimiterLength - replacementDelim.length();
 
     // first field always starts from 0, even when missing
     startPosition[0] = 0;
-    for (int i = 1; i < fields.length; i++) {
-      if (delimitIndices.get(i - 1) != -1) {
-        startPosition[i] =
-            getStartPositionWRTReplacementDelim(i, delimitIndices, delimiterLength, replacementDelim.length());
+    Matcher delimiterMatcher = fieldDelimit.matcher(rawRow);
+    for (int i = 1; i <= fields.length; i++) {
+      if (delimiterMatcher.find()) {
+        // MultiDelimitSerDe replaces actual multi-char delimiter by replacementDelim("\1") which reduces the length
+        // however here we are getting rawRow with original multi-char delimiter
+        // due to this we have to subtract those extra chars to match length of LazyNonPrimitive#bytes which are used
+        // while reading data, see uncheckedGetField()
+        startPosition[i] = delimiterMatcher.start() + delimiterLength - i * extraBytesInDelim;
       } else {
         startPosition[i] = length + 1;
       }
     }
 
-    // calculation of length of complete record with fields.length number of fields
-    final int totalRecordLength;
-    final int fieldLength = fields.length;
-    // this means we have more delimiters(and hence columns) than required (ideally n fields should have n-1 delimiters)
-    if (delimitIndices.size() >= fieldLength) {
-      totalRecordLength =
-          getStartPositionWRTReplacementDelim(fieldLength, delimitIndices, delimiterLength, replacementDelim.length());
-      LOG.warn("More delimiters[{}] found than expected[{}]. Ignoring bytes after extra delimiters", delimiterLength,
-          fieldLength - 1);
-    } else {
-      totalRecordLength = length + 1;
-    }
-
-    startPosition[fieldLength] = totalRecordLength;
     Arrays.fill(fieldInited, false);
     parsed = true;
-  }
-
-  // MultiDelimitSerDe replaces actual multi-char delimiter by replacementDelim("\1") which reduces the length
-  // however here we are getting rawRow with original multi-char delimiter
-  // due to this we have to subtract those extra chars to match length of LazyNonPrimitive#bytes which are used
-  // while reading data, see uncheckedGetField()
-  private int getStartPositionWRTReplacementDelim(final int startPosIndex, final List<Integer> delimitIndices,
-      final int delimiterLength, final int replacementDelimLength) {
-    final int extraBytesInDelim = delimiterLength - replacementDelimLength;
-    return (delimitIndices.get(startPosIndex - 1) + delimiterLength) - startPosIndex * extraBytesInDelim;
-  }
-
-  // find all the indices of the delimiter in row
-  // and if row contains less delimiters than expected, fill the rest with -1
-  private List<Integer> findDelimiterIndicesInRow(final String row, final Pattern delimiter) {
-    List<Integer> delimiterIndices = new ArrayList<>();
-    Matcher matcher = delimiter.matcher(row);
-    while (matcher.find()) {
-      delimiterIndices.add(matcher.start());
-    }
-    // ideally n fields should have (n - 1) delimiters
-    for (int i = delimiterIndices.size(); i < fields.length - 1; i++) {
-      delimiterIndices.add(-1);
-    }
-    return delimiterIndices;
   }
 
   /**
