@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.llap.io.api;
 
 import java.lang.reflect.Constructor;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 
-@SuppressWarnings("rawtypes")
 public class LlapProxy {
   private final static String IO_IMPL_CLASS = "org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl";
 

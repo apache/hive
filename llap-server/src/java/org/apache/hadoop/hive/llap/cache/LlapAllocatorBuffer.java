@@ -84,14 +84,14 @@ public abstract class LlapAllocatorBuffer extends LlapCacheableBuffer implements
    *
    */
   @Override
-  public void setClockBit() {
+  public final void setClockBit() {
     long val = state.get();
     while (!State.isClockBitSet(val) && !state.compareAndSet(val, State.setClockBit(val))) {
       val = state.get();
     }
   }
   @Override
-  public void unSetClockBit() {
+  public final void unSetClockBit() {
     long val = state.get();
     while (State.isClockBitSet(val) && !state.compareAndSet(val, State.unSetClockBit(val))) {
       val = state.get();
@@ -99,7 +99,7 @@ public abstract class LlapAllocatorBuffer extends LlapCacheableBuffer implements
   }
 
   @Override
-  public boolean isClockBitSet() {
+  public final boolean isClockBitSet() {
     return State.isClockBitSet(state.get());
   }
 
@@ -415,6 +415,7 @@ public abstract class LlapAllocatorBuffer extends LlapCacheableBuffer implements
       // Note: doesn't check for overflow. Could AND with max refcount mask but the caller checks.
       return state - (1 << REF_COUNT_SHIFT);
     }
+
     public static long setClockBit(long state) {
       return state | CLOCK_BIT_MASK;
     }

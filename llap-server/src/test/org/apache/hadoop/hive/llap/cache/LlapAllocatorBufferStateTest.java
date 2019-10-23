@@ -55,5 +55,4 @@ public class LlapAllocatorBufferStateTest {
     Assert.assertFalse(LlapAllocatorBuffer.State.isClockBitSet(state));
     Assert.assertEquals(~(Long.MIN_VALUE) & state, LlapAllocatorBuffer.State.unSetClockBit(state));
   }
-
 }

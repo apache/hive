@@ -22,16 +22,39 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 
-public interface LlapIo<T> {
-  InputFormat<NullWritable, T> getInputFormat(
-      InputFormat<?, ?> sourceInputFormat, Deserializer serde);
-  void close();
-  String getMemoryInfo();
+import javax.annotation.Nullable;
 
+public interface LlapIo<T> {
+  /**
+   * @param sourceInputFormat source input format to be wrapped if possible
+   * @param serde source serializer and deserializer
+   * @return InputFormat wrapped by LLAP-IO caching and elevator primitive if possible, {@code null} otherwise.
+   */
+  @Nullable
+  InputFormat<NullWritable, T> getInputFormat(InputFormat<?, ?> sourceInputFormat, Deserializer serde);
+
+  /**
+   * closing llap io cache at JVM shutdown.
+   */
+  void close();
+
+  /**
+   * @return String with cache status.
+   */
+  String getMemoryInfo();
   /**
    * purge is best effort and will just release the buffers that are unlocked (refCount == 0). This is typically
    * called when the system is idle.
+   *
+   * @return Total amount of purged bytes.
    */
   long purge();
+
+  /**
+   * Used in cases where IO-Elevator mechanics is not usable.
+   * Used with InputFormat of type {@link org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface}.
+   *
+   * @param inputFormat source inputFormat.
+   */
   void initCacheOnlyInputFormat(InputFormat<?, ?> inputFormat);
 }

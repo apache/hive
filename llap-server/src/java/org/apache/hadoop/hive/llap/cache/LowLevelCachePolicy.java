@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 
 /**
@@ -25,6 +27,32 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
  * Cache policy relies notifications from the actual {@link LowLevelCache} to keep track of buffer access.
  */
 public interface LowLevelCachePolicy extends LlapIoDebugDump {
+
+  static LowLevelCachePolicy provideFromConf(Configuration conf) {
+    final long totalMemorySize = HiveConf.getSizeVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
+    final int minAllocSize = (int) HiveConf.getSizeVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
+    String policyName = HiveConf.getVar(conf,HiveConf.ConfVars.LLAP_IO_CACHE_STRATEGY);
+    //default to fifo.
+    final LowLevelCachePolicy realCachePolicy;
+    switch (policyName) {
+    case "lrfu":
+      realCachePolicy = new LowLevelLrfuCachePolicy(minAllocSize, totalMemorySize, conf);
+      break;
+    case "clock":
+      realCachePolicy = new ClockCachePolicy(HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_MAX_CLOCK_ROTATION));
+      break;
+    case "fifo":
+      realCachePolicy =  new LowLevelFifoCachePolicy();
+      break;
+    default:
+      throw new IllegalArgumentException("Unknown cache replacement strategy [" + policyName +"]");
+    }
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE)) {
+      return  new CacheContentsTracker(realCachePolicy);
+    } else {
+      return realCachePolicy;
+    }
+  }
 
   /**
    * Signals to the policy the addition of a new page to the cache directory.

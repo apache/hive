@@ -32,6 +32,11 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.IncompleteCb;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
 
+/**
+ * Metadata Cache entry that does hold information about Files.
+ * No actual allocated bytebuffers is used by this class,
+ * thus handled in a different way form {@link org.apache.hadoop.hive.llap.cache.LlapAllocatorBuffer}
+ */
 public class OrcFileEstimateErrors extends LlapCacheableBuffer {
   private final Object fileKey;
   private int estimatedMemUsage;

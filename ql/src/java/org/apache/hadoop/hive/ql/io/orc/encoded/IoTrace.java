@@ -459,18 +459,15 @@ public final class IoTrace {
     this.offset += 5;
   }
 
-  public static FixedSizedObjectPool<IoTrace> createTracePool(Configuration conf) {
-    final int ioTraceSize = (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_TRACE_SIZE);
+  public static FixedSizedObjectPool<IoTrace> createTracePool(Configuration conf, int ioThreads) {
+    final int ioTraceSize = (int) HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_TRACE_SIZE);
     final boolean isAlwaysDump = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_TRACE_ALWAYS_DUMP);
-    int ioThreads = HiveConf.getIntVar(conf, ConfVars.LLAP_IO_THREADPOOL_SIZE);
     return new FixedSizedObjectPool<>(ioThreads, new Pool.PoolObjectHelper<IoTrace>() {
-      @Override
-      public IoTrace create() {
+      @Override public IoTrace create() {
         return new IoTrace(ioTraceSize, isAlwaysDump);
       }
 
-      @Override
-      public void resetBeforeOffer(IoTrace t) {
+      @Override public void resetBeforeOffer(IoTrace t) {
         t.reset();
       }
     });

@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
+import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
 import static java.util.stream.Collectors.joining;
 
@@ -65,7 +66,6 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
               long deltaNs = timeNs - v.emptyTimeNs;
               if (deltaNs < cleanupTimeNs) {
                 nextCleanupInNs = Math.min(nextCleanupInNs, deltaNs);
-                continue;
               } else {
                 iter.remove();
               }
@@ -74,7 +74,8 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
           sleepTimeMs = Math.max(MIN_TIME_MS, nextCleanupInNs / 1000000L);
         }
       } catch (InterruptedException ex) {
-        return; // Interrupted.
+        LlapIoImpl.LOG.warn("Cache content tracker cleanup thread is Interrupted", ex);
+        Thread.currentThread().interrupt();
       }
     }
   }
@@ -196,6 +197,7 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
     }
     sb.append("\nCache state: \n");
     sb.append(endResult.stream().sorted().collect(joining("\n")));
+    realPolicy.debugDumpShort(sb);
   }
 
   /**

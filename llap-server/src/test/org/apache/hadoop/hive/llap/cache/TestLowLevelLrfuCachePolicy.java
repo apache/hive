@@ -72,7 +72,7 @@ public class TestLowLevelLrfuCachePolicy {
     // buffer2 is now in the heap, buffer1 is in the list. "Use" buffer1 again;
     // before we notify though, lock the list, so lock cannot remove it from the list.
     buffer1.incRef();
-    assertEquals(LlapCacheableBuffer.IN_LIST, buffer1.indexInHeap);
+    assertEquals(LowLevelLrfuCachePolicy.IN_LIST, ((LrfuCacheAttribute) buffer1.cacheAttribute).indexInHeap);
     listLock.lock();
     try {
       Thread otherThread = new Thread(new Runnable() {

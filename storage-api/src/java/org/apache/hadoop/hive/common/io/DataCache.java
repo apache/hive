@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 
 /** An abstract data cache that IO formats can use to retrieve and cache data. */
 public interface DataCache {
-  public static final class BooleanRef {
+  final class BooleanRef {
     public boolean value;
   }
 
@@ -57,8 +57,11 @@ public interface DataCache {
    * @param gotAllData An out param - whether all the requested data was found in cache.
    * @return The new or modified list of DiskRange-s, where some ranges may contain cached data.
    */
-  DiskRangeList getFileData(Object fileKey, DiskRangeList range, long baseOffset,
-      DiskRangeListFactory factory, BooleanRef gotAllData);
+  DiskRangeList getFileData(Object fileKey,
+      DiskRangeList range,
+      long baseOffset,
+      DiskRangeListFactory factory,
+      BooleanRef gotAllData);
 
   @Deprecated
   long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] data, long baseOffset);
@@ -109,6 +112,5 @@ public interface DataCache {
    * @return null if all data was put; bitmask indicating which chunks were not put otherwise;
    *         the replacement chunks from cache are updated directly in the array.
    */
-  long[] putFileData(Object fileKey, DiskRange[] ranges,
-      MemoryBuffer[] data, long baseOffset, CacheTag tag);
+  long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] data, long baseOffset, CacheTag tag);
 }

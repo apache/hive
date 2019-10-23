@@ -239,7 +239,7 @@ public abstract class CacheTag implements Comparable<CacheTag> {
   /**
    * CacheTag for tables with more than one partition level.
    */
-  public static final class MultiPartitionCacheTag extends PartitionCacheTag {
+  public static final class   MultiPartitionCacheTag extends PartitionCacheTag {
 
     private final String[] partitionDesc;
 

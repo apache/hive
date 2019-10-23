@@ -1408,8 +1408,7 @@ public final class BuddyAllocator
       return destIx;
     }
 
-    private void initializeNewlyAllocated(
-        LlapAllocatorBuffer buffer, int allocSize, int headerIx, int offset) {
+    private void initializeNewlyAllocated(LlapAllocatorBuffer buffer, int allocSize, int headerIx, int offset) {
       buffer.initialize(data, offset, allocSize);
       buffer.setNewAllocLocation(arenaIx, headerIx);
     }
