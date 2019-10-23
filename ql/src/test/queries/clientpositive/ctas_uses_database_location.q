@@ -1,4 +1,5 @@
-set hive.metastore.warehouse.dir=invalid_scheme://${system:test.tmp.dir};
+--TODO: reinstate this after we revert cdpd-3783 changes
+--set hive.metastore.warehouse.dir=invalid_scheme://${system:test.tmp.dir};
 
 -- Tests that CTAS queries in non-default databases use the location of the database
 -- not the hive.metastore.warehouse.dir for intermediate files (FileSinkOperator output).

@@ -1331,9 +1331,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         LOG.error("No such catalog " + db.getCatalogName());
         throw new InvalidObjectException("No such catalog " + db.getCatalogName());
       }
+      boolean skipAuthorization = false;
+      String passedInURI = db.getLocationUri();
+      if (passedInURI == null){
+        skipAuthorization = true;
+      }
+      Path defaultDbPath = wh.getDefaultDatabasePath(db.getName());
+
       final Path dbPath = wh.determineDatabasePath(cat, db);
+      if (defaultDbPath.equals(dbPath)){
+        skipAuthorization = true;
+      }
       final Path dbExternalPath = wh.determineDatabaseExternalPath(db);
-      db.setLocationUri(dbPath.toString());
+
+      if ( skipAuthorization ) {
+        //null out to skip authorizer URI check
+        db.setLocationUri(null);
+      }else{
+        db.setLocationUri(dbPath.toString());
+      }
       if (db.getOwnerName() == null){
         try {
           db.setOwnerName(SecurityUtils.getUGI().getShortUserName());
@@ -1350,7 +1366,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Map<String, String> transactionalListenersResponses = Collections.emptyMap();
       try {
         firePreEvent(new PreCreateDatabaseEvent(db, this));
-
+        //reinstate location uri for metastore db.
+        if (skipAuthorization == true){
+          db.setLocationUri(dbPath.toString());
+        }
         if (db.getCatalogName() != null && !db.getCatalogName().
             equals(Warehouse.DEFAULT_CATALOG_NAME)) {
           if (!wh.isDir(dbPath)) {
