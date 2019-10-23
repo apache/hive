@@ -21,11 +21,13 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.conf.Configuration;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
@@ -35,9 +37,11 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.tez.client.TezAppMasterStatus;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
+import org.apache.tez.dag.api.client.DAGClient;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -109,6 +113,15 @@ public class TezExternalSessionState extends TezSessionState {
     LOG.info("Started an external session; client name {}, app ID {}",
         session.getClientName(), externalAppId);
     setTezClient(session);
+
+    // If we are picking up this external session for the first time, check whether the AM is
+    // currently running anything. This could be the case if the last HiveServer2 instance died
+    // unexpectedly without being able to kill its running queries, leaving the external AMs
+    // still in running state.
+    // In this situation, we cannot currently do anything with the already running DAG that the
+    // external AM may be running - there is nothing tracking this DAG.
+    // So just kill the DAG execution if possible.
+    tryKillRunningDAGs(session);
   }
 
   @Override
@@ -158,5 +171,31 @@ public class TezExternalSessionState extends TezSessionState {
   @Override
   public String toString() {
     return super.toString() + ", externalAppId=" + externalAppId;
+  }
+
+  private void tryKillRunningDAGs(TezClient session) throws IOException, TezException {
+    TezAppMasterStatus amStatus = session.getAppMasterStatus();
+    if (amStatus == TezAppMasterStatus.RUNNING) {
+      LOG.info("External session has an AM which appears to be already running a DAG: client name {}, app ID {}",
+              session.getClientName(), externalAppId);
+      List<DAGClient> dagClients;
+      try {
+        dagClients = session.getCurrentDAGClients();
+      } catch (Exception err) {
+        throw new IOException("Error getting DAGClients for app ID " + externalAppId, err);
+      }
+
+      for (DAGClient dagClient : dagClients) {
+        LOG.info("External session: attempting to kill dagId {} on app ID {}",
+                dagClient.getDagIdentifierString(), externalAppId);
+        try {
+          dagClient.tryKillDAG();
+        } catch (Exception err) {
+          throw new TezException("Error while trying to kill existing DAG " + dagClient.getDagIdentifierString() + " running on app ID " + externalAppId, err);
+        } finally {
+          dagClient.close();
+        }
+      }
+    }
   }
 }
