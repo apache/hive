@@ -331,6 +331,9 @@ public final class BuddyAllocator
       return;
     }
 
+    // Another thread might have allocated a new arena
+    arenaCount = getArenaCount();
+
     // We called reserveMemory so we know that there's memory waiting for us somewhere.
     // But that can mean that the reserved memory is fragmented thus unusable
     // or we have a common class of rare race conditions related to the order of locking/checking of
@@ -453,6 +456,8 @@ public final class BuddyAllocator
           logOomErrorMessage(msg);
           throw new AllocatorOutOfMemoryException(msg);
         }
+        // Another thread might have allocated a new arena for us to check
+        arenaCount = getArenaCount();
         ++discardsAttempt;
       }
     } finally {

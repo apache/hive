@@ -257,6 +257,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFInline;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.NoOpFetchFormatter;
@@ -4010,9 +4011,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               .getChild(inputSerDeNum))).getChild(0), inpColumns.toString(),
           inpColumnTypes.toString());
     } else {
-      inInfo = PlanUtils.getTableDesc(serde, Integer
+      // It is not a very clean way, and should be modified later - due to
+      // compatibility reasons, user sees the results as JSON for custom
+      // scripts and has no way for specifying that. Right now, it is
+      // hard-coded to DelimitedJSONSerDe
+      inInfo = PlanUtils.getTableDesc(DelimitedJSONSerDe.class, Integer
           .toString(fieldSeparator), inpColumns.toString(), inpColumnTypes
-          .toString(), false, true);
+          .toString(), false);
     }
 
     if (trfm.getChild(outputSerDeNum).getChildCount() > 0) {

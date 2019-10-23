@@ -1354,8 +1354,8 @@
 	    <exclude>checkstyle/**</exclude>
 	    <exclude>bin/**</exclude>
 	    <exclude>itests/**</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>**/*.iml</exclude>
+      <exclude>**/README.md</exclude>
+      <exclude>**/*.iml</exclude>
 	    <exclude>**/*.txt</exclude>
 	    <exclude>**/*.log</exclude>
 	    <exclude>**/*.arcconfig</exclude>
@@ -1383,8 +1383,9 @@
 	    <exclude>**/*.html</exclude>
 	    <exclude>**/sit</exclude>
       <exclude>**/test/queries/**/*.sql</exclude>
-        <exclude>**/patchprocess/**</exclude>
-        <exclude>**/metastore_db/**</exclude>
+      <exclude>**/patchprocess/**</exclude>
+      <exclude>**/metastore_db/**</exclude>
+      <exclude>**/test/resources/**/*.ldif</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
