@@ -30,6 +30,7 @@ public class ColStatistics {
   private Range range;
   private boolean isPrimaryKey;
   private boolean isEstimated;
+  private boolean isFilteredColumn;
 
   public ColStatistics(String colName, String colType) {
     this.setColumnName(colName);
@@ -196,4 +197,13 @@ public class ColStatistics {
       return sb.toString();
     }
   }
+
+  public void setFilterColumn() {
+    isFilteredColumn = true;
+  }
+  
+  public boolean isFilteredColumn() {
+    return isFilteredColumn;
+  }
+  
 }

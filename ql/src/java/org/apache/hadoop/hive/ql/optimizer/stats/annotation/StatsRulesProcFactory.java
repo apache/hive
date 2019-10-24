@@ -2238,6 +2238,8 @@ public class StatsRulesProcFactory {
         if (selectivity < pkfkSelectivity) {
           pkfkSelectivity = selectivity;
           fkInd = pos;
+          
+          xxx1(ops.get(pos), entry.getValue());
           fkSelectivity = getSelectivitySimpleTree(ops.get(pos));
         }
       }
@@ -2283,6 +2285,23 @@ public class StatsRulesProcFactory {
         newNumRows = this.computeFinalRowCount(rowCounts, newNumRows, jop);
       }
       return newNumRows;
+    }
+
+    private void xxx1(Operator<? extends OperatorDesc> operator, ColStatistics value) {
+      ColStatistics currCS = value;
+      Operator<? extends OperatorDesc> o = operator;
+
+//      return value.isFilteredColumn();
+//      SelectOperator sop = (SelectOperator) o;
+//      
+//      sop.getColumnExprMap();
+//
+//      
+//      List<ColStatistics> colStats =
+//      StatsUtils.getColStatisticsFromExprMap(conf, parentStats, sop.getColumnExprMap(), sop.getSchema());
+//
+//      
+      
     }
 
     private float getSelectivitySimpleTree(Operator<? extends OperatorDesc> op) {
