@@ -258,15 +258,9 @@ public class Hadoop20Shims extends HadoopShimsSecure {
    */
   @Override
   public void refreshDefaultQueue(Configuration conf, String userName) throws IOException {
-    if (StringUtils.isNotBlank(userName) && isFairScheduler(conf)) {
-      ShimLoader.getSchedulerShims().refreshDefaultQueue(conf, userName);
-    }
+    //no-op
   }
 
-  private boolean isFairScheduler(Configuration conf) {
-    return "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler".
-                                                                                           equalsIgnoreCase(conf.get(YarnConfiguration.RM_SCHEDULER));
-  }
 
   /**
    * Returns a shim to wrap MiniMrCluster

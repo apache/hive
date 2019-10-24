@@ -263,14 +263,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    */
   @Override
   public void refreshDefaultQueue(Configuration conf, String userName) throws IOException {
-    if (StringUtils.isNotBlank(userName) && isFairScheduler(conf)) {
-      ShimLoader.getSchedulerShims().refreshDefaultQueue(conf, userName);
-    }
-  }
-
-  private boolean isFairScheduler (Configuration conf) {
-    return "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler".
-        equalsIgnoreCase(conf.get(YarnConfiguration.RM_SCHEDULER));
+    //no-op
   }
 
   /**
