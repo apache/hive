@@ -1,4 +1,4 @@
-source ../../data/files/starships.sql;
+source ${system:hive.root}/data/files/starships.sql;
 
 -- conditions on one side both side of the join ; but not on FK ; PK/FK scale should be used
 

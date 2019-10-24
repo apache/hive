@@ -1,3 +1,116 @@
+PREHOOK: query: drop table if exists admirals
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists admirals
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists ship_types
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists ship_types
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists ships
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists ships
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists torpedos
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists torpedos
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table ships (id integer,ship_type_id integer,crew_size integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ships
+POSTHOOK: query: create table ships (id integer,ship_type_id integer,crew_size integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ships
+PREHOOK: query: create table ship_types (id integer,type_name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ship_types
+POSTHOOK: query: create table ship_types (id integer,type_name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ship_types
+PREHOOK: query: insert into ship_types values
+    (1,'galaxy class'),
+    (2,'nebula class'),
+    (3,'orion class'),
+    (4,'first class'),
+    (5,'last pass'),
+    (6,'last pass'),
+    (7,'akira class'),
+    (8,'aeon type'),
+    (9,'antares type'),
+    (10,'apollo class')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ship_types
+POSTHOOK: query: insert into ship_types values
+    (1,'galaxy class'),
+    (2,'nebula class'),
+    (3,'orion class'),
+    (4,'first class'),
+    (5,'last pass'),
+    (6,'last pass'),
+    (7,'akira class'),
+    (8,'aeon type'),
+    (9,'antares type'),
+    (10,'apollo class')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ship_types
+POSTHOOK: Lineage: ship_types.id SCRIPT []
+POSTHOOK: Lineage: ship_types.type_name SCRIPT []
+PREHOOK: query: create table admirals as
+    select id from ship_types
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ship_types
+PREHOOK: Output: database:default
+PREHOOK: Output: default@admirals
+POSTHOOK: query: create table admirals as
+    select id from ship_types
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ship_types
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@admirals
+POSTHOOK: Lineage: admirals.id SIMPLE [(ship_types)ship_types.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: create table torpedos (id integer,ship_id integer,admiral_id integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@torpedos
+POSTHOOK: query: create table torpedos (id integer,ship_id integer,admiral_id integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@torpedos
+Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: insert into ships
+select row_number() over (),t.id,row_number() over (partition by t.id) from ship_types t join ship_types t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ship_types
+PREHOOK: Output: default@ships
+POSTHOOK: query: insert into ships
+select row_number() over (),t.id,row_number() over (partition by t.id) from ship_types t join ship_types t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ship_types
+POSTHOOK: Output: default@ships
+POSTHOOK: Lineage: ships.crew_size SCRIPT [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: ships.id SCRIPT [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: ships.ship_type_id SIMPLE [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
+Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: insert into torpedos
+select row_number() over (),s.id,row_number() over (partition by s.id) from ships s join ship_types t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ship_types
+PREHOOK: Input: default@ships
+PREHOOK: Output: default@torpedos
+POSTHOOK: query: insert into torpedos
+select row_number() over (),s.id,row_number() over (partition by s.id) from ships s join ship_types t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ship_types
+POSTHOOK: Input: default@ships
+POSTHOOK: Output: default@torpedos
+POSTHOOK: Lineage: torpedos.admiral_id SCRIPT [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: torpedos.id SCRIPT [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: torpedos.ship_id SIMPLE [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: select
     s.id
 from
