@@ -71,12 +71,12 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [20]
-                  selectExpressions: DecimalColDivideDecimalScalar(col 21:decimal(10,2), val 2)(children: ConvertDecimal64ToDecimal(col 19:decimal(10,2)/DECIMAL_64)(children: Decimal64ColAddDecimal64Column(col 18:decimal(9,2)/DECIMAL_64, col 5:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 17:decimal(8,2)/DECIMAL_64, col 4:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 7:decimal(7,2)/DECIMAL_64, col 6:decimal(7,2)/DECIMAL_64) -> 17:decimal(8,2)/DECIMAL_64) -> 18:decimal(9,2)/DECIMAL_64) -> 19:decimal(10,2)/DECIMAL_64) -> 21:decimal(10,2)) -> 20:decimal(14,6)
+                  selectExpressions: Decimal64ColDivideDecimal64Scalar(col 19:decimal(10,2)/DECIMAL_64, decimal64Val 200, decimalVal 2)(children: Decimal64ColAddDecimal64Column(col 18:decimal(9,2)/DECIMAL_64, col 5:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 17:decimal(8,2)/DECIMAL_64, col 4:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 7:decimal(7,2)/DECIMAL_64, col 6:decimal(7,2)/DECIMAL_64) -> 17:decimal(8,2)/DECIMAL_64) -> 18:decimal(9,2)/DECIMAL_64) -> 19:decimal(10,2)/DECIMAL_64) -> 20:decimal(14,6)/DECIMAL_64
               Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: max(_col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFMaxDecimal(col 20:decimal(14,6)) -> decimal(14,6)
+                    aggregators: VectorUDAFMaxDecimal64(col 20:decimal(14,6)/DECIMAL_64) -> decimal(14,6)/DECIMAL_64
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     native: false
@@ -110,7 +110,7 @@ STAGE PLANS:
               includeColumns: [4, 5, 6, 7]
               dataColumns: cs_quantity:int, cs_wholesale_cost:decimal(7,2)/DECIMAL_64, cs_list_price:decimal(7,2)/DECIMAL_64, cs_sales_price:decimal(7,2)/DECIMAL_64, cs_ext_discount_amt:decimal(7,2)/DECIMAL_64, cs_ext_sales_price:decimal(7,2)/DECIMAL_64, cs_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, cs_ext_list_price:decimal(7,2)/DECIMAL_64, cs_ext_tax:decimal(7,2)/DECIMAL_64, cs_coupon_amt:decimal(7,2)/DECIMAL_64, cs_ext_ship_cost:decimal(7,2)/DECIMAL_64, cs_net_paid:decimal(7,2)/DECIMAL_64, cs_net_paid_inc_tax:decimal(7,2)/DECIMAL_64, cs_net_paid_inc_ship:decimal(7,2)/DECIMAL_64, cs_net_paid_inc_ship_tax:decimal(7,2)/DECIMAL_64, cs_net_profit:decimal(7,2)/DECIMAL_64
               partitionColumnCount: 0
-              scratchColumnTypeNames: [decimal(8,2)/DECIMAL_64, decimal(9,2)/DECIMAL_64, decimal(10,2)/DECIMAL_64, decimal(14,6), decimal(10,2)]
+              scratchColumnTypeNames: [decimal(8,2)/DECIMAL_64, decimal(9,2)/DECIMAL_64, decimal(10,2)/DECIMAL_64, decimal(14,6)/DECIMAL_64]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
