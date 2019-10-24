@@ -1839,4 +1839,141 @@ import static org.apache.hadoop.hive.metastore.Warehouse.LOG;
     objectStore.dropFunction(DEFAULT_CATALOG_NAME, db1.getName(), func1.getFunctionName());
     cachedStore.shutdown();
   }
+
+  @Test
+  public void testGetAllFunctions() throws Exception {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "5kb");
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    CachedStore cachedStore = new CachedStore();
+    CachedStore.clearSharedCache();
+    cachedStore.setConfForTestExceptSharedCache(conf);
+    ObjectStore objectStore = (ObjectStore) cachedStore.getRawStore();
+
+    // func1
+    Function func1 = new Function();
+    func1.setCatName(DEFAULT_CATALOG_NAME);
+    func1.setDbName(db1.getName());
+    func1.setFunctionName("test1");
+    func1.setClassName("com.test.test1");
+    func1.setOwnerType(PrincipalType.USER);
+    func1.setFunctionType(FunctionType.JAVA);
+    Date createDate = new Date();
+    func1.setCreateTime((int) createDate.getDaysSinceEpoch());
+    List<ResourceUri> lists = new ArrayList<ResourceUri>();
+    ResourceUri url = new ResourceUri();
+    url.setResourceType(ResourceType.ARCHIVE);
+    url.setUri("test_url");
+    func1.setResourceUris(lists);
+    lists.add(url);
+    objectStore.createFunction(func1);
+
+    // func2
+    Function func2 = new Function();
+    func2.setCatName(DEFAULT_CATALOG_NAME);
+    func2.setDbName(db1.getName());
+    func2.setFunctionName("test2");
+    func2.setClassName("com.test.test1");
+    func2.setOwnerType(PrincipalType.USER);
+    func2.setFunctionType(FunctionType.JAVA);
+    Date createDate1 = new Date();
+    func2.setCreateTime((int) createDate1.getDaysSinceEpoch());
+    List<ResourceUri> lists1 = new ArrayList<ResourceUri>();
+    ResourceUri url1 = new ResourceUri();
+    url1.setResourceType(ResourceType.ARCHIVE);
+    url1.setUri("test_url2");
+    func2.setResourceUris(lists);
+    lists1.add(url);
+    objectStore.createFunction(func2);
+
+    // cached store
+    cachedStore.setRawStore(objectStore);
+    List<Function> funcs = cachedStore.getAllFunctions(DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(funcs.size(), 2);
+
+    // drop functions
+    objectStore.dropFunction(DEFAULT_CATALOG_NAME, db1.getName(), func1.getFunctionName());
+    objectStore.dropFunction(DEFAULT_CATALOG_NAME, db1.getName(), func2.getFunctionName());
+    cachedStore.shutdown();
+  }
+
+  @Test
+  public void testGreateFunction() throws Exception {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "5kb");
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    CachedStore cachedStore = new CachedStore();
+    CachedStore.clearSharedCache();
+    cachedStore.setConfForTestExceptSharedCache(conf);
+    ObjectStore objectStore = (ObjectStore) cachedStore.getRawStore();
+
+    // func1
+    Function func1 = new Function();
+    func1.setCatName(DEFAULT_CATALOG_NAME);
+    func1.setDbName(db1.getName());
+    func1.setFunctionName("test1");
+    func1.setClassName("com.test.test1");
+    func1.setOwnerType(PrincipalType.USER);
+    func1.setFunctionType(FunctionType.JAVA);
+    Date createDate = new Date();
+    func1.setCreateTime((int) createDate.getDaysSinceEpoch());
+    List<ResourceUri> lists = new ArrayList<ResourceUri>();
+    ResourceUri url = new ResourceUri();
+    url.setResourceType(ResourceType.ARCHIVE);
+    url.setUri("test_url");
+    func1.setResourceUris(lists);
+    lists.add(url);
+
+    // cached store
+    cachedStore.setRawStore(objectStore);
+    cachedStore.createFunction(func1);
+
+    // get function
+    Function funcCached = cachedStore.getFunction(DEFAULT_CATALOG_NAME,db1.getName(),func1.getFunctionName());
+    Assert.assertEquals(funcCached.getFunctionName(), "test1");
+
+    // drop function
+    objectStore.dropFunction(DEFAULT_CATALOG_NAME, db1.getName(), func1.getFunctionName());
+    cachedStore.shutdown();
+  }
+
+  @Test
+  public void testDropFunction() throws Exception {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "5kb");
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    CachedStore cachedStore = new CachedStore();
+    CachedStore.clearSharedCache();
+    cachedStore.setConfForTestExceptSharedCache(conf);
+    ObjectStore objectStore = (ObjectStore) cachedStore.getRawStore();
+
+    // func1
+    Function func1 = new Function();
+    func1.setCatName(DEFAULT_CATALOG_NAME);
+    func1.setDbName(db1.getName());
+    func1.setFunctionName("test1");
+    func1.setClassName("com.test.test1");
+    func1.setOwnerType(PrincipalType.USER);
+    func1.setFunctionType(FunctionType.JAVA);
+    Date createDate = new Date();
+    func1.setCreateTime((int) createDate.getDaysSinceEpoch());
+    List<ResourceUri> lists = new ArrayList<ResourceUri>();
+    ResourceUri url = new ResourceUri();
+    url.setResourceType(ResourceType.ARCHIVE);
+    url.setUri("test_url");
+    func1.setResourceUris(lists);
+    lists.add(url);
+
+    // cached store
+    cachedStore.setRawStore(objectStore);
+    cachedStore.createFunction(func1);
+    cachedStore.dropFunction(DEFAULT_CATALOG_NAME, db1.getName(), func1.getFunctionName());
+    List<Function> functions = cachedStore.getAllFunctions(DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(functions.size(), 0);
+
+    cachedStore.shutdown();
+  }
 }

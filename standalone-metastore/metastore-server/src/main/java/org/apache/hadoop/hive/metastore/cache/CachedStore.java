@@ -73,8 +73,10 @@ import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessa
 import org.apache.hadoop.hive.metastore.messaging.DeletePartitionColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
-import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -404,6 +406,14 @@ public class CachedStore implements RawStore, Configurable {
         sharedCache.removePartitionColStatsFromCache(catalogName, dbName, tableName, msgPart.getPartValues(),
             msgPart.getColName());
         break;
+      case MessageBuilder.CREATE_FUNCTION_EVENT:
+        CreateFunctionMessage msgCreateFunc = deserializer.getCreateFunctionMessage(message);
+        sharedCache.addFunctionToCache(catalogName, dbName, msgCreateFunc.getFunctionObj().getFunctionName(),
+            msgCreateFunc.getFunctionObj());
+        break;
+      case MessageBuilder.DROP_FUNCTION_EVENT:
+        DropFunctionMessage msgDropFunc = deserializer.getDropFunctionMessage(message);
+        sharedCache.removeFunctionFromCache(catalogName, dbName, msgDropFunc.getFunctionName());
       default:
         LOG.error("Event is not supported for cache invalidation : " + event.getEventType());
       }
@@ -797,6 +807,7 @@ public class CachedStore implements RawStore, Configurable {
               // Update aggregate partition column stats for a table in cache
               updateTableAggregatePartitionColStats(rawStore, catName, dbName, tblName);
             }
+            updateFunctions(rawStore, catName);
           }
         }
         sharedCache.incrementUpdateCount();
@@ -981,6 +992,31 @@ public class CachedStore implements RawStore, Configurable {
         }
       } catch (MetaException | NoSuchObjectException e) {
         LOG.info("Updating CachedStore: unable to read aggregate column stats of table: " + tblName, e);
+      }
+    }
+
+    // update all functions for catName
+    private void updateFunctions(RawStore rawStore, String catName) {
+      LOG.debug("CachedStore: updating cached function for catalog: {}", catName);
+      boolean committed = false;
+      rawStore.openTransaction();
+      try {
+        List<Function> funcs = rawStore.getAllFunctions(catName);
+        if (funcs != null && funcs.size() > 0) {
+          for (Function func : funcs) {
+            // Update Function Infomation.
+            sharedCache.alterFunctionInCache(catName, func.getDbName(), func.getFunctionName(), func);
+          }
+        }
+        committed = rawStore.commitTransaction();
+        LOG.debug("CachedStore: updated cached function for catalog: {}", catName);
+      } catch (MetaException e) {
+        LOG.info("Unable to refresh functions for catalog: " + catName, e);
+      } finally {
+        if (!committed) {
+          sharedCache.removeAllFunctionsFromCache();
+          rawStore.rollbackTransaction();
+        }
       }
     }
   }
@@ -2949,4 +2985,5 @@ public class CachedStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
     return rawStore.getPartitionColsWithStats(catName, dbName, tableName);
   }
+
 }

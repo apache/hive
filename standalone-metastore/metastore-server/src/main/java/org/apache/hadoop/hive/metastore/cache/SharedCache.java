@@ -2167,11 +2167,10 @@ public class SharedCache {
   }
 
   public void alterFunctionInCache(String catName, String dbName, String funcName, Function func) {
-    Function funcCopy = func.deepCopy();
     try {
       cacheLock.writeLock().lock();
-      String key = CacheUtils.buildFunctionKey(catName, dbName, funcName);
-      functionCache.putIfAbsent(key, funcCopy);
+      removeFunctionFromCache(catName, dbName, funcName);
+      addFunctionToCache(catName, dbName, funcName, func);
     } finally {
       cacheLock.writeLock().unlock();
     }
@@ -2263,5 +2262,14 @@ public class SharedCache {
 
   private boolean isStarPattern(String pattern) {
     return "*".equals(pattern);
+  }
+
+  public void removeAllFunctionsFromCache() {
+    try {
+      cacheLock.writeLock().lock();
+      functionCache.clear();
+    } finally {
+      cacheLock.writeLock().unlock();
+    }
   }
 }
