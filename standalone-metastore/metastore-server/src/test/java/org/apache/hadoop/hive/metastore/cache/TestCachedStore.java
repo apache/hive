@@ -54,6 +54,10 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
@@ -70,6 +74,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.LOG;
 
 /**
  * Unit tests for CachedStore
@@ -193,6 +198,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     List<Partition> db2Ptbl1PartitionsOS =
         objectStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), -1);
     Assert.assertTrue(db2Ptbl1Partitions.containsAll(db2Ptbl1PartitionsOS));
+    System.out.print("xxxxxx");
     cachedStore.shutdown();
   }
 
@@ -1798,5 +1804,39 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
       throw new Exception("Unable to update SharedCache in 100 attempts; possibly some bug");
     }
     CachedStore.stopCacheUpdateService(100);
+  }
+
+  @Test
+  public void testGetFunction() throws Exception {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "5kb");
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    CachedStore cachedStore = new CachedStore();
+    CachedStore.clearSharedCache();
+    cachedStore.setConfForTestExceptSharedCache(conf);
+    ObjectStore objectStore = (ObjectStore) cachedStore.getRawStore();
+    Function func1 = new Function();
+    func1.setCatName(DEFAULT_CATALOG_NAME);
+    func1.setDbName(db1.getName());
+    func1.setFunctionName("test1");
+    func1.setClassName("com.test.test1");
+    func1.setOwnerType(PrincipalType.USER);
+    func1.setFunctionType(FunctionType.JAVA);
+    Date createDate = new Date();
+    func1.setCreateTime((int) createDate.getDaysSinceEpoch());
+    List<ResourceUri> lists = new ArrayList<ResourceUri>();
+    ResourceUri url = new ResourceUri();
+    url.setResourceType(ResourceType.ARCHIVE);
+    url.setUri("test_url");
+    lists.add(url);
+    func1.setResourceUris(lists);
+    cachedStore.setRawStore(objectStore);
+    objectStore.createFunction(func1);
+    Function funcs = cachedStore.getFunction(DEFAULT_CATALOG_NAME, db1.getName(), func1.getFunctionName());
+    LOG.info("funcs.size={}", funcs);
+    Assert.assertEquals(funcs.getFunctionName(), "test1");
+    objectStore.dropFunction(DEFAULT_CATALOG_NAME, db1.getName(), func1.getFunctionName());
+    cachedStore.shutdown();
   }
 }

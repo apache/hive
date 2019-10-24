@@ -145,4 +145,9 @@ public class CacheUtils {
     }
     return false;
   }
+
+  public static String buildFunctionKey(String catName, String dbName, String functionName) {
+    return buildKey(catName.toLowerCase(),
+            dbName.toLowerCase(), functionName.toLowerCase());
+  }
 }

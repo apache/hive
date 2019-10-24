@@ -35,6 +35,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -567,6 +569,23 @@ public class CachedStore implements RawStore, Configurable {
             continue;
           }
         }
+        // add function in Cache
+        try {
+          List<String> functions = rawStore.getFunctions(db.getCatalogName(), db.getName(), "*");
+          List<Function> funcList = new ArrayList<>();
+          if (functions != null && functions.size() > 0) {
+            for (String function : functions) {
+              Function funNew = rawStore.getFunction(db.getCatalogName(), db.getName(), function);
+              funcList.add(funNew);
+            }
+          }
+          sharedCache.populateFunctionsInCache(funcList);
+        } catch (MetaException e) {
+          LOG.warn("Failed to cache functions for database " +
+                  DatabaseName.getQualified(catName, dbName) + ", moving on");
+        }
+
+
         LOG.debug("Processed database: {}. Cached {} / {} databases so far.", dbName, ++numberOfDatabasesCachedSoFar,
             databases.size());
       }
@@ -2400,35 +2419,104 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public void createFunction(Function func) throws InvalidObjectException, MetaException {
-    // TODO fucntionCache
     rawStore.createFunction(func);
+    // in case of event based cache update, cache will be updated during commit.
+    if (canUseEvents) {
+      return;
+    }
+    String catName = normalizeIdentifier(func.getCatName());
+    String dbName = normalizeIdentifier(func.getDbName());
+    String funcName = normalizeIdentifier(func.getFunctionName());
+    sharedCache.addFunctionToCache(catName, dbName, funcName, func);
   }
 
   @Override public void alterFunction(String catName, String dbName, String funcName, Function newFunction)
-      throws InvalidObjectException, MetaException {
-    // TODO fucntionCache
+          throws InvalidObjectException, MetaException {
     rawStore.alterFunction(catName, dbName, funcName, newFunction);
+    // in case of event based cache update, cache will be updated during commit.
+    if (canUseEvents) {
+      return;
+    }
+
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    funcName = normalizeIdentifier(funcName);
+    String newFuncName = normalizeIdentifier(newFunction.getFunctionName());
+
+    Function oldFunction = sharedCache.getFunctionFromCache(catName, dbName, funcName);
+    if (oldFunction == null) {
+      return;
+    }
+    sharedCache.removeFunctionFromCache(catName, dbName, funcName);
+    sharedCache.alterFunctionInCache(catName, dbName, newFuncName, newFunction);
   }
 
   @Override public void dropFunction(String catName, String dbName, String funcName)
-      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
-    // TODO fucntionCache
+          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     rawStore.dropFunction(catName, dbName, funcName);
+    // in case of event based cache update, cache will be updated during commit.
+    if (!canUseEvents) {
+      catName = normalizeIdentifier(catName);
+      dbName = normalizeIdentifier(dbName);
+      funcName = normalizeIdentifier(funcName);
+      sharedCache.removeFunctionFromCache(catName, dbName, funcName);
+    }
   }
 
   @Override public Function getFunction(String catName, String dbName, String funcName) throws MetaException {
-    // TODO fucntionCache
-    return rawStore.getFunction(catName, dbName, funcName);
+
+    catName = normalizeIdentifier(catName);
+    dbName = StringUtils.normalizeIdentifier(dbName);
+    funcName = StringUtils.normalizeIdentifier(funcName);
+    Function func = sharedCache.getFunctionFromCache(catName, dbName, funcName);
+
+    if (func == null) {
+      Function funcRawStore = rawStore.getFunction(catName, dbName, funcName);
+      if (funcRawStore != null) {
+        sharedCache.addFunctionToCache(catName, dbName, funcName, funcRawStore);
+        func = funcRawStore;
+      }
+    }
+
+    return func;
   }
 
-  @Override public List<Function> getAllFunctions(String catName) throws MetaException {
-    // TODO fucntionCache
-    return rawStore.getAllFunctions(catName);
+  @Override
+  public List<Function> getAllFunctions(String catName) throws MetaException {
+    List<Function> funcList = null;
+    if (!isCachePrewarmed.get()) {
+      funcList = rawStore.getAllFunctions(catName);
+    } else {
+      List<Function> tmpFunctionList = sharedCache.getAllFunctionsFromCache(catName);
+      if (tmpFunctionList != null && tmpFunctionList.size() > 0) {
+        funcList = tmpFunctionList;
+      } else {
+        funcList = rawStore.getAllFunctions(catName);
+      }
+    }
+    if (CollectionUtils.isEmpty(funcList)) {
+      funcList = Lists.newArrayList();
+    }
+    return funcList;
   }
 
-  @Override public List<String> getFunctions(String catName, String dbName, String pattern) throws MetaException {
-    // TODO fucntionCache
-    return rawStore.getFunctions(catName, dbName, pattern);
+  @Override
+  public List<String> getFunctions(String catName, String dbName, String pattern) throws MetaException {
+    List<String> funcs = null;
+    if (!isCachePrewarmed.get()) {
+      funcs = rawStore.getFunctions(catName, dbName, pattern);
+    } else {
+      List<String> tmpFuncs = sharedCache.getFunctionsFromCacheByPattern(catName, dbName, pattern);
+      if (tmpFuncs != null && tmpFuncs.size() > 0) {
+        funcs = tmpFuncs;
+      } else {
+        funcs = rawStore.getFunctions(catName, dbName, pattern);
+      }
+    }
+    if (CollectionUtils.isEmpty(funcs)) {
+      funcs = Lists.newArrayList();
+    }
+    return funcs;
   }
 
   @Override public NotificationEventResponse getNextNotification(NotificationEventRequest rqst) {

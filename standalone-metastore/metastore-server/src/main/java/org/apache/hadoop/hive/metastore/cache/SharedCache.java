@@ -38,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -46,6 +48,8 @@ import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -65,6 +69,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -74,6 +79,7 @@ import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstim
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -110,6 +116,9 @@ public class SharedCache {
   private Set<String> tableToUpdateSize = new ConcurrentHashSet<>();
   private ScheduledExecutorService executor = null;
   private Map<String, Integer> tableSizeMap = null;
+
+  private Map<String, Function> functionCache = new TreeMap<>();
+  private boolean isFunctionCachePrewarmed = false;
 
   enum StatsType {
     ALL(0), ALLBUTDEFAULT(1), PARTIAL(2);
@@ -2114,5 +2123,145 @@ public class SharedCache {
 
   public void incrementUpdateCount() {
     cacheUpdateCount.incrementAndGet();
+  }
+
+  public void populateFunctionsInCache(Collection<Function> functions) {
+    for (Function func : functions) {
+      Function funcCopy = func.deepCopy();
+      funcCopy.setFunctionName(funcCopy.getFunctionName().toLowerCase());
+      try {
+        cacheLock.writeLock().lock();
+        String key = CacheUtils.buildFunctionKey(funcCopy.getCatName().toLowerCase(),
+            funcCopy.getDbName().toLowerCase(), funcCopy.getFunctionName().toLowerCase());
+        functionCache.putIfAbsent(key, funcCopy);
+        isFunctionCachePrewarmed = true;
+      } finally {
+        cacheLock.writeLock().unlock();
+      }
+    }
+  }
+
+  public Function getFunctionFromCache(String catName, String dbName, String funcName) {
+    Function func = null;
+    try {
+      cacheLock.readLock().lock();
+      Function funcQuery = functionCache.get(CacheUtils.buildTableKey(catName, dbName, funcName));
+      if (funcQuery != null) {
+        func = funcQuery;
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+    return func;
+  }
+
+  public void addFunctionToCache(String catName, String dbName, String funcName, Function func) {
+    Function funcCopy = func.deepCopy();
+    try {
+      cacheLock.writeLock().lock();
+      String key = CacheUtils.buildFunctionKey(catName.toLowerCase(), dbName.toLowerCase(), funcName.toLowerCase());
+      functionCache.putIfAbsent(key, funcCopy);
+    } finally {
+      cacheLock.writeLock().unlock();
+    }
+  }
+
+  public void alterFunctionInCache(String catName, String dbName, String funcName, Function func) {
+    Function funcCopy = func.deepCopy();
+    try {
+      cacheLock.writeLock().lock();
+      String key = CacheUtils.buildFunctionKey(catName, dbName, funcName);
+      functionCache.putIfAbsent(key, funcCopy);
+    } finally {
+      cacheLock.writeLock().unlock();
+    }
+  }
+
+  public void removeFunctionFromCache(String catName, String dbName, String funcName) {
+    try {
+      cacheLock.writeLock().lock();
+      String key = CacheUtils.buildFunctionKey(catName, dbName, funcName);
+      Function func = functionCache.get(key);
+      if (func == null) {
+        return;
+      }
+      functionCache.remove(key);
+    } finally {
+      cacheLock.writeLock().unlock();
+    }
+  }
+
+  public List<Function> getAllFunctionsFromCache(String catName) {
+    catName = catName.toLowerCase();
+    List<Function> funcs = new ArrayList<Function>();
+    try {
+      cacheLock.readLock().lock();
+      if (functionCache != null && functionCache.size() > 0) {
+        for (Function func : functionCache.values()) {
+          if (org.apache.commons.lang.StringUtils.isNotBlank(func.getCatName()) &&
+                  org.apache.commons.lang.StringUtils.equals(func.getCatName(), catName)) {
+            funcs.add(func);
+          }
+        }
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+    return funcs;
+  }
+
+  public List<String> getFunctionsFromCacheByPattern(String catName, String dbName, String pattern) {
+    List<String> funcs = Lists.newArrayList();
+    try {
+      cacheLock.readLock().lock();
+      if (functionCache != null && functionCache.size() > 0) {
+        for (Function func : functionCache.values()) {
+          if (org.apache.commons.lang.StringUtils.isNotBlank(func.getCatName())
+              && org.apache.commons.lang.StringUtils.equals(func.getCatName(), catName)
+              && org.apache.commons.lang.StringUtils.equals(func.getDbName(), dbName)) {
+            funcs.add(func.getFunctionName());
+          }
+        }
+        if (CollectionUtils.isNotEmpty(funcs)) {
+          funcs = filterByPattern(pattern, funcs);
+        }
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+    return funcs;
+  }
+
+  private List<String> filterByPattern(String pattern, List<String> names) {
+    if (pattern != null && !isStarPattern(pattern)) {
+      // There may be multiple patterns separated by |.
+      String[] parts = pattern.trim().split("\\|");
+      Pattern[] regexes = new Pattern[parts.length];
+      int i = 0;
+      for (String part : parts) {
+        part = "(?i)" + part.replaceAll("\\*", ".*");
+        regexes[i++] = Pattern.compile(part);
+      }
+      LOG.info("Patterns: " + regexes);
+      Iterator<String> iter = names.iterator();
+      while (iter.hasNext()) {
+        boolean remove = true;
+        for (Pattern regex : regexes) {
+          Matcher m = regex.matcher(iter.next());
+          if (m.matches()) {
+            remove = false;
+            break;
+          }
+        }
+        if (remove) {
+          iter.remove();
+        }
+      }
+    }
+    return names;
+  }
+
+  private boolean isStarPattern(String pattern) {
+    return "*".equals(pattern);
   }
 }
