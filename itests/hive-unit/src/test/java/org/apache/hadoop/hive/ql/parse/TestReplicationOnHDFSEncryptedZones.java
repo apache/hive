@@ -122,8 +122,6 @@ public class TestReplicationOnHDFSEncryptedZones {
         .verifyFailure(new String[] { "value1", "value2" });
   }
 
-  @Ignore("this is ignored as minidfs cluster as of writing this test looked like did not copy the "
-              + "files correctly")
   @Test
   public void targetAndSourceHaveSameEncryptionZoneKeys() throws Throwable {
     WarehouseInstance replica = new WarehouseInstance(LOG, miniDFSCluster,
