@@ -2223,6 +2223,7 @@ public class StatsRulesProcFactory {
         CommonJoinOperator<? extends JoinDesc> jop) {
       double pkfkSelectivity = Double.MAX_VALUE;
       int fkInd = -1;
+      double fkSelectivity = -1.0;
       // 1. We iterate through all the operators that have candidate FKs and
       // choose the FK that has the minimum selectivity. We assume that PK and this FK
       // have the PK-FK relationship. This is heuristic and can be
@@ -2237,6 +2238,9 @@ public class StatsRulesProcFactory {
         if (selectivity < pkfkSelectivity) {
           pkfkSelectivity = selectivity;
           fkInd = pos;
+          
+          xxx1(ops.get(pos), entry.getValue());
+          fkSelectivity = getSelectivitySimpleTree(ops.get(pos));
         }
       }
       long newrows = 1;
@@ -2255,8 +2259,13 @@ public class StatsRulesProcFactory {
         Statistics parentStats = parent.getStatistics();
         if (fkInd == pos) {
           // 2.1 This is the new number of rows after PK is joining with FK
-          newrows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
+          if (fkSelectivity < 1.0) {
+            newrows = parentStats.getNumRows();
+          } else {
+            newrows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
+          }
           rowCounts.add(newrows);
+
           // 2.1 The ndv is the minimum of the PK and the FK.
           distinctVals.add(Math.min(csFK.getCountDistint(), csPK.getCountDistint()));
         } else {
@@ -2276,6 +2285,23 @@ public class StatsRulesProcFactory {
         newNumRows = this.computeFinalRowCount(rowCounts, newNumRows, jop);
       }
       return newNumRows;
+    }
+
+    private void xxx1(Operator<? extends OperatorDesc> operator, ColStatistics value) {
+      ColStatistics currCS = value;
+      Operator<? extends OperatorDesc> o = operator;
+
+//      return value.isFilteredColumn();
+//      SelectOperator sop = (SelectOperator) o;
+//      
+//      sop.getColumnExprMap();
+//
+//      
+//      List<ColStatistics> colStats =
+//      StatsUtils.getColStatisticsFromExprMap(conf, parentStats, sop.getColumnExprMap(), sop.getSchema());
+//
+//      
+      
     }
 
     private float getSelectivitySimpleTree(Operator<? extends OperatorDesc> op) {
