@@ -1,4 +1,4 @@
---! qt:dataset:starships
+source ../../data/files/starships.sql;
 
 -- conditions on the join key from one side ; is pushed to the other side to reduce computation
 -- however: we should not use the ratio twice (and loose accuracy)
