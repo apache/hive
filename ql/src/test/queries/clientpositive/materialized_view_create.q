@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.vectorized.execution.enabled=false;
 create table cmv_basetable_n4 (a int, b varchar(256), c decimal(10,2));
 
@@ -40,3 +41,16 @@ drop materialized view cmv_mat_view2_n1;
 drop materialized view cmv_mat_view3;
 drop materialized view cmv_mat_view4;
 drop materialized view cmv_mat_view5;
+
+-- ACID CMV
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.stats.autogather=false;
+
+create materialized view acid_cmv_part disable rewrite partitioned on (k)
+  stored as orc TBLPROPERTIES ('transactional'='true')
+  as select key k, value from src order by k limit 5;
+select k, value from acid_cmv_part;
+
+explain formatted
+select k, value from acid_cmv_part;

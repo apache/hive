@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +79,10 @@ public class CreateViewDesc implements DDLDesc, Serializable {
   private List<String> distributeColNames;  // only used for materialized views
   private List<FieldSchema> distributeCols;  // only used for materialized views
   private ReplicationSpec replicationSpec = null;
+  private Long initialMmWriteId; // Initial MM write ID for CMV and import.
+  // The FSOP configuration for the FSOP that is going to write initial data during cmv.
+  // This is not needed beyond compilation, so it is transient.
+  private transient FileSinkDesc writer;
   private String ownerName = null;
 
   /**
@@ -456,6 +461,24 @@ public class CreateViewDesc implements DDLDesc, Serializable {
             StatsSetupConst.FALSE);
 
     return tbl;
+  }
+
+  public void setInitialMmWriteId(Long mmWriteId) {
+    this.initialMmWriteId = mmWriteId;
+  }
+
+  public Long getInitialMmWriteId() {
+    return initialMmWriteId;
+  }
+
+  public FileSinkDesc getAndUnsetWriter() {
+    FileSinkDesc fsd = writer;
+    writer = null;
+    return fsd;
+  }
+
+  public void setWriter(FileSinkDesc writer) {
+    this.writer = writer;
   }
 
   public void setOwnerName(String ownerName) {

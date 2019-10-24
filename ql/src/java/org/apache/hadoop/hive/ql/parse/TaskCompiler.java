@@ -442,22 +442,25 @@ public abstract class TaskCompiler {
   private void setLoadFileLocation(
       final ParseContext pCtx, LoadFileDesc lfd) throws SemanticException {
     // CTAS; make the movetask's destination directory the table's destination.
-    Long txnIdForCtas = null;
-    int stmtId = 0; // CTAS cannot be part of multi-txn stmt
-    FileSinkDesc dataSinkForCtas = null;
+    Long txnId = null;
+    int stmtId = 0; // CTAS or CMV cannot be part of multi-txn stmt
+    FileSinkDesc dataSink = null;
     String loc = null;
     if (pCtx.getQueryProperties().isCTAS()) {
       CreateTableDesc ctd = pCtx.getCreateTable();
-      dataSinkForCtas = ctd.getAndUnsetWriter();
-      txnIdForCtas = ctd.getInitialMmWriteId();
+      dataSink = ctd.getAndUnsetWriter();
+      txnId = ctd.getInitialMmWriteId();
       loc = ctd.getLocation();
     } else {
-      loc = pCtx.getCreateViewDesc().getLocation();
+      CreateViewDesc cmv = pCtx.getCreateViewDesc();
+      dataSink = cmv.getAndUnsetWriter();
+      txnId = cmv.getInitialMmWriteId();
+      loc = cmv.getLocation();
     }
     Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
-    if (txnIdForCtas != null) {
-      dataSinkForCtas.setDirName(location);
-      location = new Path(location, AcidUtils.deltaSubdir(txnIdForCtas, txnIdForCtas, stmtId));
+    if (txnId != null) {
+      dataSink.setDirName(location);
+      location = new Path(location, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
       lfd.setSourcePath(location);
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("Setting MM CTAS to " + location);
