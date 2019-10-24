@@ -1,6 +1,6 @@
 --! qt:dataset:starships
 
--- conditions on one side of the join ; PK/FK scale should be used
+-- conditions on one side both side of the join ; but not on FK ; PK/FK scale should be used
 
 set hive.explain.user=true;
 -- set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.hooks.AccurateEstimatesCheckerHook;
@@ -15,6 +15,7 @@ from
     torpedos t
 where
     st.type_name='galaxy class' 
+    and s.crew_size=2
     and ship_type_id=st.id
     and ship_id=s.id
 ;

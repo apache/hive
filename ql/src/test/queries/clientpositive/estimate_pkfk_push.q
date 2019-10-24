@@ -4,8 +4,9 @@
 -- however: we should not use the ratio twice (and loose accuracy)
 -- this was the primary issue of HIVE-22238
 
+set hive.explain.user=true;
 -- set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.AccurateEstimatesCheckerHook;
-set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.hooks.AccurateEstimatesCheckerHook;
+-- set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.hooks.AccurateEstimatesCheckerHook;
 
 explain analyze
 select
