@@ -203,7 +203,7 @@ Stage-0
         <-Reducer 2 [SIMPLE_EDGE] llap
           SHUFFLE [RS_12]
             PartitionCols:_col0
-            Merge Join Operator [MERGEJOIN_45] (rows=2/1 width=4)
+            Merge Join Operator [MERGEJOIN_45] (rows=10/1 width=4)
               Conds:RS_49._col1=RS_52._col0(Inner),Output:["_col0"]
             <-Map 1 [SIMPLE_EDGE] vectorized, llap
               SHUFFLE [RS_49]

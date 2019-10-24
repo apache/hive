@@ -111,25 +111,6 @@ POSTHOOK: Output: default@torpedos
 POSTHOOK: Lineage: torpedos.admiral_id SCRIPT [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: torpedos.id SCRIPT [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: torpedos.ship_id SIMPLE [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
-PREHOOK: query: explain 
-select 1
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: explain 
-select 1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-Plan optimized by CBO.
-
-Stage-0
-  Fetch Operator
-    limit:-1
-    Select Operator [SEL_1]
-      Output:["_col0"]
-      TableScan [TS_0]
-
 PREHOOK: query: select
     s.id
 from
@@ -205,13 +186,13 @@ Stage-0
       Reducer 3 llap
       File Output Operator [FS_16]
         Merge Join Operator [MERGEJOIN_46] (rows=101/100 width=4)
-          Conds:RS_12._col0=RS_13._col0(Inner),Output:["_col0"]
-        <-Map 5 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_13]
+          Conds:RS_12._col0=RS_55._col0(Inner),Output:["_col0"]
+        <-Map 5 [SIMPLE_EDGE] vectorized, llap
+          SHUFFLE [RS_55]
             PartitionCols:_col0
-            Select Operator [SEL_8] (rows=1000/1000 width=4)
+            Select Operator [SEL_54] (rows=1000/1000 width=4)
               Output:["_col0"]
-              Filter Operator [FIL_24] (rows=1000/1000 width=4)
+              Filter Operator [FIL_53] (rows=1000/1000 width=4)
                 predicate:ship_id is not null
                 TableScan [TS_6] (rows=1000/1000 width=4)
                   default@torpedos,t,Tbl:COMPLETE,Col:COMPLETE,Output:["ship_id"]
@@ -219,22 +200,22 @@ Stage-0
           SHUFFLE [RS_12]
             PartitionCols:_col0
             Merge Join Operator [MERGEJOIN_45] (rows=11/10 width=4)
-              Conds:RS_9._col1=RS_10._col0(Inner),Output:["_col0"]
-            <-Map 1 [SIMPLE_EDGE] llap
-              SHUFFLE [RS_9]
+              Conds:RS_49._col1=RS_52._col0(Inner),Output:["_col0"]
+            <-Map 1 [SIMPLE_EDGE] vectorized, llap
+              SHUFFLE [RS_49]
                 PartitionCols:_col1
-                Select Operator [SEL_2] (rows=100/100 width=8)
+                Select Operator [SEL_48] (rows=100/100 width=8)
                   Output:["_col0","_col1"]
-                  Filter Operator [FIL_22] (rows=100/100 width=8)
+                  Filter Operator [FIL_47] (rows=100/100 width=8)
                     predicate:(ship_type_id is not null and id is not null)
                     TableScan [TS_0] (rows=100/100 width=8)
                       default@ships,s,Tbl:COMPLETE,Col:COMPLETE,Output:["id","ship_type_id"]
-            <-Map 4 [SIMPLE_EDGE] llap
-              SHUFFLE [RS_10]
+            <-Map 4 [SIMPLE_EDGE] vectorized, llap
+              SHUFFLE [RS_52]
                 PartitionCols:_col0
-                Select Operator [SEL_5] (rows=1/1 width=4)
+                Select Operator [SEL_51] (rows=1/1 width=4)
                   Output:["_col0"]
-                  Filter Operator [FIL_23] (rows=1/1 width=99)
+                  Filter Operator [FIL_50] (rows=1/1 width=99)
                     predicate:((type_name = 'galaxy class') and id is not null)
                     TableScan [TS_3] (rows=10/10 width=99)
                       default@ship_types,st,Tbl:COMPLETE,Col:COMPLETE,Output:["id","type_name"]
