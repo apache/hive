@@ -772,7 +772,11 @@ public class HiveSessionImpl implements HiveSession {
         opHandleSet.clear();
       }
       for (OperationHandle opHandle : ops) {
-        operationManager.closeOperation(opHandle);
+        try {
+          operationManager.closeOperation(opHandle);
+        } catch (RuntimeException e) {
+          LOG.warn("Unable to close operation during session close:" + e.getMessage());
+        }
       }
       // Cleanup session log directory.
       cleanupSessionLogDir();
