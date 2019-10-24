@@ -307,11 +307,11 @@ public class BytesColumnVector extends ColumnVector {
       if ((nextFree + nextElemLength) > buffer.length) {
         int newLength = smallBuffer.length * 2;
         while (newLength < nextElemLength) {
-          if (newLength < 0) {
-            throw new RuntimeException("Overflow of newLength. smallBuffer.length="
-                + smallBuffer.length + ", nextElemLength=" + nextElemLength);
+          if (newLength > 0) {
+            newLength *= 2;
+          } else { // integer overflow happened; maximize size of next smallBuffer
+            newLength = Integer.MAX_VALUE;
           }
-          newLength *= 2;
         }
         smallBuffer = new byte[newLength];
         ++bufferAllocationCount;
