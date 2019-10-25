@@ -2240,7 +2240,8 @@ public class StatsRulesProcFactory {
           fkInd = pos;
           
           xxx1(ops.get(pos), entry.getValue());
-          fkSelectivity = getSelectivitySimpleTree(ops.get(pos));
+//          fkSelectivity = getSelectivitySimpleTree(ops.get(pos));
+          fkSelectivity = entry.getValue().isFilteredColumn() ? 0.0:1.0;
         }
       }
       long newrows = 1;
