@@ -43,22 +43,22 @@ public class <ClassName> extends VectorExpression {
     1L,                   // 0
     10L,
     100L,
-    1000L,
-    10000L,
-    100000L,
-    1000000L,
-    10000000L,
-    100000000L,           // 8
-    1000000000L,
-    10000000000L,
-    100000000000L,
-    1000000000000L,
-    10000000000000L,
-    100000000000000L,
-    1000000000000000L,
-    10000000000000000L,   // 16
-    100000000000000000L,
-    1000000000000000000L, // 18
+    1_000L,
+    10_000L,
+    100_000L,
+    1_000_000L,
+    10_000_000L,
+    100_000_000L,           // 8
+    1_000_000_000L,
+    10_000_000_000L,
+    100_000_000_000L,
+    1_000_000_000_000L,
+    10_000_000_000_000L,
+    100_000_000_000_000L,
+    1_000_000_000_000_000L,
+    10_000_000_000_000_000L,   // 16
+    100_000_000_000_000_000L,
+    1_000_000_000_000_000_000L, // 18
   };
 
   private final int colNum;
@@ -81,12 +81,11 @@ public class <ClassName> extends VectorExpression {
   /*
    * Division that rounds up if the subsequent digits are greater than half.
    * Sign of the result will depend on the both x and y.
-   * If x and y have different sign, then the result is multiplied by -1
-   * If x and y have same sign, then the result is unchanged
+   * If x and y have different sign, then the result is multiplied by -1.
+   * If x and y have same sign, the result is always positive.
    */
-  private long roundingDivision(long divident, long divisor) {
+  private long roundingDivision(long divident, long divisor, long absDivisor) {
     final long absDivident = Math.abs(divident);
-    final long absDivisor = Math.abs(divisor);
     final boolean differentSigns = (divident > 0) ^ (divisor > 0);
     final long remainder = absDivident % absDivisor;
     long result = absDivident  / absDivisor;
@@ -128,6 +127,8 @@ public class <ClassName> extends VectorExpression {
     final long outputDecimal64AbsMax =
         HiveDecimalWritable.getDecimal64AbsMax(outputColVector.precision);
     int outputScale = ((DecimalTypeInfo) outputTypeInfo).scale();
+    long scaleFactor = powerOfTenTable[outputScale];
+    long absValue = Math.abs(value);
 
     if (value == 0) {
       // Denominator is zero, convert the batch to nulls
@@ -140,7 +141,7 @@ public class <ClassName> extends VectorExpression {
       if (inputColVector.noNulls || !inputIsNull[0]) {
         outputIsNull[0] = false;
         // The following may override a "false" null setting if an error or overflow occurs.
-        final long result = roundingDivision(vector[0] * powerOfTenTable[outputScale], value);
+        final long result = roundingDivision(vector[0] * scaleFactor, value, absValue);
         if (Math.abs(result) > outputDecimal64AbsMax) {
           outputIsNull[0] = true;
           outputColVector.noNulls = false;
@@ -164,7 +165,7 @@ public class <ClassName> extends VectorExpression {
            for(int j = 0; j != n; j++) {
             final int i = sel[j];
             outputIsNull[i] = false;
-            final long result = roundingDivision(vector[i] * powerOfTenTable[outputScale], value);
+            final long result = roundingDivision(vector[i] * scaleFactor, value, absValue);
             outputVector[i] = result;
             if (Math.abs(result) > outputDecimal64AbsMax) {
               outputColVector.noNulls = false;
@@ -174,7 +175,7 @@ public class <ClassName> extends VectorExpression {
          } else {
            for(int j = 0; j != n; j++) {
              final int i = sel[j];
-             final long result = roundingDivision(vector[i] * powerOfTenTable[outputScale], value);
+             final long result = roundingDivision(vector[i] * scaleFactor, value, absValue);
              outputVector[i] = result;
              if (Math.abs(result) > outputDecimal64AbsMax) {
                outputColVector.noNulls = false;
@@ -191,7 +192,7 @@ public class <ClassName> extends VectorExpression {
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          final long result = roundingDivision(vector[i] * powerOfTenTable[outputScale], value);
+          final long result = roundingDivision(vector[i] * scaleFactor, value, absValue);
           outputVector[i] = result;
           if (Math.abs(result) > outputDecimal64AbsMax) {
             outputColVector.noNulls = false;
@@ -211,7 +212,7 @@ public class <ClassName> extends VectorExpression {
           if (!inputIsNull[i]) {
             outputIsNull[i] = false;
             // The following may override a "false" null setting if an error or overflow occurs.
-            final long result = roundingDivision(vector[i] * powerOfTenTable[outputScale], value);
+            final long result = roundingDivision(vector[i] * scaleFactor, value, absValue);
             outputVector[i] = result;
             if (Math.abs(result) > outputDecimal64AbsMax) {
               outputIsNull[i] = true;
@@ -228,7 +229,7 @@ public class <ClassName> extends VectorExpression {
           if (!inputIsNull[i]) {
             outputIsNull[i] = false;
             // The following may override a "false" null setting if an error or overflow occurs.
-            final long result = roundingDivision(vector[i] * powerOfTenTable[outputScale], value);
+            final long result = roundingDivision(vector[i] * scaleFactor, value, absValue);
             outputVector[i] = result;
             if (Math.abs(result) > outputDecimal64AbsMax) {
               outputIsNull[i] = true;
