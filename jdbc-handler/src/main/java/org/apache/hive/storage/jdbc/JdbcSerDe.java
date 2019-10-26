@@ -27,6 +27,9 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -61,9 +64,11 @@ public class JdbcSerDe extends AbstractSerDe {
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSerDe.class);
 
   private String[] hiveColumnNames;
+  private int numColumns;
   private PrimitiveTypeInfo[] hiveColumnTypes;
   private ObjectInspector inspector;
   private List<Object> row;
+  private DBRecordWritable dbRecordWritable;
 
 
   /*
@@ -113,6 +118,9 @@ public class JdbcSerDe extends AbstractSerDe {
           throw new SerDeException("Received an empty Hive column type definition");
         }
 
+        numColumns = hiveColumnNames.length;
+        dbRecordWritable = new DBRecordWritable(numColumns);
+
         // Populate column types and inspector
         hiveColumnTypes = new PrimitiveTypeInfo[hiveColumnTypesList.size()];
         List<ObjectInspector> fieldInspectors = new ArrayList<>(hiveColumnNames.length);
@@ -141,6 +149,41 @@ public class JdbcSerDe extends AbstractSerDe {
           .toString(hiveColumnTypes));
     }
   }
+
+  /*
+   * This method takes an object representing a row of data from Hive, and
+   * uses the ObjectInspector to get the data for each column and serialize.
+   */
+  @Override
+  public DBRecordWritable serialize(Object row, ObjectInspector inspector)
+          throws SerDeException {
+    LOGGER.trace("Serializing from SerDe");
+    final StructObjectInspector structObjectInspector = (StructObjectInspector) inspector;
+    final List<? extends StructField> fields = structObjectInspector
+            .getAllStructFieldRefs();
+    if (fields.size() != numColumns) {
+      throw new SerDeException(String.format(
+              "Required %d columns, received %d.", numColumns,
+              fields.size()));
+    }
+
+    dbRecordWritable.clear();
+    for (int i = 0; i < numColumns; i++) {
+      StructField structField = fields.get(i);
+      if (structField != null) {
+        Object field = structObjectInspector.getStructFieldData(row, structField);
+        ObjectInspector fieldObjectInspector = structField.getFieldObjectInspector();
+        if (fieldObjectInspector.getCategory() == Category.PRIMITIVE) {
+          PrimitiveObjectInspector primitiveObjectInspector = (PrimitiveObjectInspector) fieldObjectInspector;
+          dbRecordWritable.set(i, primitiveObjectInspector.getPrimitiveJavaObject(field));
+        } else {
+          throw new SerDeException("Unsupported type " + fieldObjectInspector);
+        }
+      }
+    }
+    return dbRecordWritable;
+  }
+
 
   @Override
   public Object deserialize(Writable blob) throws SerDeException {
@@ -267,12 +310,6 @@ public class JdbcSerDe extends AbstractSerDe {
   @Override
   public Class<? extends Writable> getSerializedClass() {
     return MapWritable.class;
-  }
-
-
-  @Override
-  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
-    throw new UnsupportedOperationException("Writes are not allowed");
   }
 
 

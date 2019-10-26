@@ -118,6 +118,25 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ext_simple_derby_table
 #### A masked pattern was here ####
 200
+PREHOOK: query: insert into ext_simple_derby_table values(100)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ext_simple_derby_table
+POSTHOOK: query: insert into ext_simple_derby_table values(100)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ext_simple_derby_table
+PREHOOK: query: select * from ext_simple_derby_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_simple_derby_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ext_simple_derby_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_simple_derby_table
+#### A masked pattern was here ####
+20
+200
+100
 PREHOOK: query: CREATE EXTERNAL TABLE tables
 (
 id bigint,

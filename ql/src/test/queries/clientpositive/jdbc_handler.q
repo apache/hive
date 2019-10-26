@@ -40,6 +40,9 @@ explain select * from ext_simple_derby_table where 100 < ext_simple_derby_table.
 
 select * from ext_simple_derby_table where 100 < ext_simple_derby_table.kkey;
 
+insert into ext_simple_derby_table values(100);
+select * from ext_simple_derby_table;
+
 CREATE EXTERNAL TABLE tables
 (
 id bigint,

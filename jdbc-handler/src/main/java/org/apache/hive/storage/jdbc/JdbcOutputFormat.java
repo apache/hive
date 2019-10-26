@@ -18,18 +18,24 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hive.storage.jdbc.dao.GenericJdbcDatabaseAccessor;
 
 import java.io.IOException;
 import java.util.Properties;
 
 public class JdbcOutputFormat implements OutputFormat<NullWritable, MapWritable>,
                                          HiveOutputFormat<NullWritable, MapWritable> {
+
+  private org.apache.hadoop.mapreduce.RecordWriter recordWriter;
+  private TaskAttemptContext taskContext;
 
   /**
    * {@inheritDoc}
@@ -41,7 +47,10 @@ public class JdbcOutputFormat implements OutputFormat<NullWritable, MapWritable>
       boolean isCompressed,
       Properties tableProperties,
       Progressable progress) throws IOException {
-    throw new UnsupportedOperationException("Write operations are not allowed.");
+    taskContext = ShimLoader.getHadoopShims().newTaskAttemptContext(jc, null);
+    recordWriter = new GenericJdbcDatabaseAccessor().getRecordWriter(taskContext);
+    // Wrapping DBRecordWriter in JdbcRecordWriter
+    return new JdbcRecordWriter((org.apache.hadoop.mapreduce.lib.db.DBOutputFormat.DBRecordWriter) recordWriter);
   }
 
 
