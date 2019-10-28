@@ -283,8 +283,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       recordReaderTime(startTime);
       return null;
     }
-    counters.setDesc(QueryFragmentCounters.Desc.TABLE,
-        LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), false, parts));
+    counters.setDesc(QueryFragmentCounters.Desc.TABLE, cacheTag.getTableName());
     counters.setDesc(QueryFragmentCounters.Desc.FILE, split.getPath()
         + (fileKey == null ? "" : " (" + fileKey + ")"));
     try {
