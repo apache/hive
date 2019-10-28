@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.common.io;
 
-import java.util.LinkedList;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -31,6 +34,9 @@ import org.apache.commons.lang.StringUtils;
  *     DB/table/1st_partition/.../nth_partition .
  */
 public abstract class CacheTag implements Comparable<CacheTag> {
+
+  private static final String ENCODING = "UTF-8";
+
   /**
    * Prepended by DB name and '.' .
    */
@@ -79,33 +85,18 @@ public abstract class CacheTag implements Comparable<CacheTag> {
       throw new IllegalArgumentException();
     }
 
-    LinkedList<String> partDescList = new LinkedList<>();
+    String[] partDescs = new String[partDescMap.size()];
+    int i = 0;
 
     for (Map.Entry<String, String> entry : partDescMap.entrySet()) {
-      StringBuilder sb = new StringBuilder();
-      sb.append(entry.getKey()).append("=").append(entry.getValue());
-      partDescList.add(sb.toString());
+      partDescs[i++] = encodePartDesc(entry.getKey(), entry.getValue());
     }
 
-    if (partDescList.size() == 1) {
-      return new SinglePartitionCacheTag(tableName, partDescList.get(0));
+    if (partDescs.length == 1) {
+      return new SinglePartitionCacheTag(tableName, partDescs[0]);
     } else {
       // In this case it must be >1
-      return new MultiPartitionCacheTag(tableName, partDescList);
-    }
-  }
-
-  // Assumes elements of partDescList are already in p1=v1 format
-  public static final CacheTag build(String tableName, LinkedList<String> partDescList) {
-    if (StringUtils.isEmpty(tableName) || partDescList == null || partDescList.isEmpty()) {
-      throw new IllegalArgumentException();
-    }
-
-    if (partDescList.size() == 1) {
-      return new SinglePartitionCacheTag(tableName, partDescList.get(0));
-    } else {
-      // In this case it must be >1
-      return new MultiPartitionCacheTag(tableName, partDescList);
+      return new MultiPartitionCacheTag(tableName, partDescs);
     }
   }
 
@@ -121,13 +112,15 @@ public abstract class CacheTag implements Comparable<CacheTag> {
 
     if (tag instanceof MultiPartitionCacheTag) {
       MultiPartitionCacheTag multiPartitionCacheTag = (MultiPartitionCacheTag) tag;
-      if (multiPartitionCacheTag.partitionDesc.size() > 2) {
-        LinkedList<String> subList = new LinkedList<>(multiPartitionCacheTag.partitionDesc);
-        subList.removeLast();
+      if (multiPartitionCacheTag.partitionDesc.length > 2) {
+        String[] subList = new String[multiPartitionCacheTag.partitionDesc.length - 1];
+        for (int i = 0; i < subList.length; ++i) {
+          subList[i] = multiPartitionCacheTag.partitionDesc[i];
+        }
         return new MultiPartitionCacheTag(multiPartitionCacheTag.tableName, subList);
       } else {
         return new SinglePartitionCacheTag(multiPartitionCacheTag.tableName,
-            multiPartitionCacheTag.partitionDesc.get(0));
+            multiPartitionCacheTag.partitionDesc[0]);
       }
     }
 
@@ -182,6 +175,12 @@ public abstract class CacheTag implements Comparable<CacheTag> {
      */
     public abstract String partitionDescToString();
 
+    /**
+     * Returns a map of partition keys and values built from the information of this CacheTag.
+     * @return the map
+     */
+    public abstract Map<String, String> getPartitionDescMap();
+
   }
 
   /**
@@ -201,7 +200,15 @@ public abstract class CacheTag implements Comparable<CacheTag> {
 
     @Override
     public String partitionDescToString() {
-      return this.partitionDesc;
+      return String.join("=", CacheTag.decodePartDesc(partitionDesc));
+    }
+
+    @Override
+    public Map<String, String> getPartitionDescMap() {
+      Map<String, String> result = new HashMap<>();
+      String[] partition = CacheTag.decodePartDesc(partitionDesc);
+      result.put(partition[0], partition[1]);
+      return result;
     }
 
     @Override
@@ -234,13 +241,15 @@ public abstract class CacheTag implements Comparable<CacheTag> {
    */
   public static final class MultiPartitionCacheTag extends PartitionCacheTag {
 
-    private final LinkedList<String> partitionDesc;
+    private final String[] partitionDesc;
 
-    private MultiPartitionCacheTag(String tableName, LinkedList<String> partitionDesc) {
+    private MultiPartitionCacheTag(String tableName, String[] partitionDesc) {
       super(tableName);
-      this.partitionDesc = partitionDesc;
-      if (this.partitionDesc != null && this.partitionDesc.size() > 1) {
-        this.partitionDesc.stream().forEach(p -> p.intern());
+      if (partitionDesc != null && partitionDesc.length > 1) {
+        for (int i = 0; i < partitionDesc.length; ++i) {
+          partitionDesc[i] = partitionDesc[i].intern();
+        }
+        this.partitionDesc = partitionDesc;
       } else {
         throw new IllegalArgumentException();
       }
@@ -259,12 +268,12 @@ public abstract class CacheTag implements Comparable<CacheTag> {
       if (tableNameDiff != 0) {
         return tableNameDiff;
       } else {
-        int sizeDiff = partitionDesc.size() - other.partitionDesc.size();
+        int sizeDiff = partitionDesc.length - other.partitionDesc.length;
         if (sizeDiff != 0) {
           return sizeDiff;
         } else {
-          for (int i = 0; i < partitionDesc.size(); ++i) {
-            int partDiff = partitionDesc.get(i).compareTo(other.partitionDesc.get(i));
+          for (int i = 0; i < partitionDesc.length; ++i) {
+            int partDiff = partitionDesc[i].compareTo(other.partitionDesc[i]);
             if (partDiff != 0) {
               return partDiff;
             }
@@ -285,9 +294,61 @@ public abstract class CacheTag implements Comparable<CacheTag> {
 
     @Override
     public String partitionDescToString() {
-      return String.join("/", this.partitionDesc);
+      StringBuilder sb = new StringBuilder();
+      for (String partDesc : partitionDesc) {
+        String[] partition = CacheTag.decodePartDesc(partDesc);
+        sb.append(partition[0]).append('=').append(partition[1]);
+        sb.append('/');
+      }
+      sb.deleteCharAt(sb.length() - 1);
+      return sb.toString();
     }
 
+    @Override
+    public Map<String, String> getPartitionDescMap() {
+      Map<String, String> result = new HashMap<>();
+      for (String partDesc : partitionDesc) {
+        String[] partition = CacheTag.decodePartDesc(partDesc);
+        result.put(partition[0], partition[1]);
+      }
+      return result;
+    }
+  }
+
+  /**
+   * Combines partition key and value Strings into one by encoding each and concating with '=' .
+   * @param partKey
+   * @param partVal
+   * @return
+   */
+  private static String encodePartDesc(String partKey, String partVal) {
+    try {
+      StringBuilder sb = new StringBuilder();
+      sb.append(
+          URLEncoder.encode(partKey, ENCODING))
+          .append('=')
+          .append(URLEncoder.encode(partVal, ENCODING));
+      return sb.toString();
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Splits and decodes an a partition desc String encoded by encodePartDesc().
+   * @param partDesc
+   * @return
+   */
+  private static String[] decodePartDesc(String partDesc) {
+    try {
+      String[] encodedPartDesc = partDesc.split("=");
+      assert encodedPartDesc.length == 2;
+      return new String[] {
+          URLDecoder.decode(encodedPartDesc[0], ENCODING),
+          URLDecoder.decode(encodedPartDesc[1], ENCODING)};
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }
