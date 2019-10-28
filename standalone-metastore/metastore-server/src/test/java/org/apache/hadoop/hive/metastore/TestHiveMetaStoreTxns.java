@@ -308,6 +308,15 @@ public class TestHiveMetaStoreTxns {
     Assert.assertTrue(validTxns.isTxnValid(txnId));
   }
 
+  @Test
+  public void testTxnTypePersisted() throws Exception {
+    long txnId = client.openTxn("me", TxnType.READ_ONLY);
+    Statement stm = conn.createStatement();
+    ResultSet rs = stm.executeQuery("SELECT txn_type FROM TXNS WHERE txn_id = " + txnId);
+    Assert.assertTrue(rs.next());
+    Assert.assertEquals(TxnType.findByValue(rs.getInt(1)), TxnType.READ_ONLY);
+  }
+
   @Before
   public void setUp() throws Exception {
     conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);

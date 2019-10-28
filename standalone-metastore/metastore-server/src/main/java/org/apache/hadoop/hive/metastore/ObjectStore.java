@@ -10001,10 +10001,13 @@ public class ObjectStore implements RawStore, Configurable {
       new RetryingExecutor(conf, () -> {
         prepareQuotes();
         Query query = pm.newQuery("javax.jdo.query.SQL", lockingQuery);
-        query.setUnique(true);
-        // only need to execute it to get db Lock
-        query.execute();
-        query.closeAll();
+        try {
+          query.setUnique(true);
+          // only need to execute it to get db Lock
+          query.execute();
+        } finally {
+          query.closeAll();
+        }
       }).run();
     }
   }

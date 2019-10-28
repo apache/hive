@@ -257,6 +257,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFInline;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.NoOpFetchFormatter;
@@ -4010,9 +4011,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               .getChild(inputSerDeNum))).getChild(0), inpColumns.toString(),
           inpColumnTypes.toString());
     } else {
-      inInfo = PlanUtils.getTableDesc(serde, Integer
+      // It is not a very clean way, and should be modified later - due to
+      // compatibility reasons, user sees the results as JSON for custom
+      // scripts and has no way for specifying that. Right now, it is
+      // hard-coded to DelimitedJSONSerDe
+      inInfo = PlanUtils.getTableDesc(DelimitedJSONSerDe.class, Integer
           .toString(fieldSeparator), inpColumns.toString(), inpColumnTypes
-          .toString(), false, true);
+          .toString(), false);
     }
 
     if (trfm.getChild(outputSerDeNum).getChildCount() > 0) {
@@ -7291,7 +7296,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LoadTableDesc ltd = null;
     ListBucketingCtx lbCtx = null;
     Map<String, String> partSpec = null;
-    boolean isMmTable = false, isMmCtas = false;
+    boolean isMmTable = false, isMmCreate = false;
     Long writeId = null;
     HiveTxnManager txnMgr = getTxnMgr();
 
@@ -7563,6 +7568,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<ColumnInfo> fileSinkColInfos = null;
       List<ColumnInfo> sortColInfos = null;
       List<ColumnInfo> distributeColInfos = null;
+      String dbName = null;
+      String tableName = null;
+      Map<String, String> tblProps = null;
       CreateTableDesc tblDesc = qb.getTableDesc();
       CreateViewDesc viewDesc = qb.getViewDesc();
       if (tblDesc != null) {
@@ -7572,31 +7580,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         fileSinkColInfos = new ArrayList<>();
         destTableIsTemporary = tblDesc.isTemporary();
         destTableIsMaterialization = tblDesc.isMaterialization();
-        if (AcidUtils.isTablePropertyTransactional(tblDesc.getTblProps())) {
-          try {
-            if (ctx.getExplainConfig() != null) {
-              writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
-            } else {
-              String dbName = tblDesc.getDatabaseName();
-              String tableName = tblDesc.getTableName();
-
-              // CreateTableDesc stores table name as db.table. So, need to decode it before allocating
-              // write id.
-              if (tableName.contains(".")) {
-                String[] names = Utilities.getDbTableName(tableName);
-                dbName = names[0];
-                tableName = names[1];
-              }
-              writeId = txnMgr.getTableWriteId(dbName, tableName);
-            }
-          } catch (LockException ex) {
-            throw new SemanticException("Failed to allocate write Id", ex);
-          }
-          if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
-            isMmTable = isMmCtas = true;
-            tblDesc.setInitialMmWriteId(writeId);
-          }
+        dbName = tblDesc.getDatabaseName();
+        tableName = tblDesc.getTableName();
+        // CreateTableDesc stores table name as db.table. So, need to decode it before allocating
+        // write id.
+        if (tableName.contains(".")) {
+          String[] names = Utilities.getDbTableName(tableName);
+          dbName = names[0];
+          tableName = names[1];
         }
+        tblProps = tblDesc.getTblProps();
       } else if (viewDesc != null) {
         fieldSchemas = new ArrayList<>();
         partitionColumns = new ArrayList<>();
@@ -7610,6 +7603,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         distributeColInfos = new ArrayList<>();
         destTableIsTemporary = false;
         destTableIsMaterialization = false;
+        String[] names = Utilities.getDbTableName(viewDesc.getViewName());
+        dbName = names[0];
+        tableName = names[1];
+        tblProps = viewDesc.getTblProps();
+      }
+
+      if (tblProps != null && AcidUtils.isTablePropertyTransactional(tblProps)) {
+        try {
+          if (ctx.getExplainConfig() != null) {
+            writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
+          } else {
+            writeId = txnMgr.getTableWriteId(dbName, tableName);
+          }
+        } catch (LockException ex) {
+          throw new SemanticException("Failed to allocate write Id", ex);
+        }
+        if (AcidUtils.isInsertOnlyTable(tblProps, true)) {
+          isMmTable = isMmCreate = true;
+          if (tblDesc != null) {
+            tblDesc.setInitialMmWriteId(writeId);
+          } else {
+            viewDesc.setInitialMmWriteId(writeId);
+          }
+        }
       }
 
       if (isLocal) {
@@ -7792,7 +7809,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             colTypes,
             destTableIsFullAcid ?//there is a change here - prev version had 'transactional', one before 'acid'
                 Operation.INSERT : Operation.NOT_ACID,
-            isMmCtas));
+            isMmCreate));
         if (!outputs.add(new WriteEntity(destinationPath, !isDfsDir, isDestTempFile))) {
           throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
               .getMsg(destinationPath.toUri().toString()));
@@ -7850,10 +7867,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, tableDescriptor, destinationPartition,
         destinationPath, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
-        canBeMerged, destinationTable, writeId, isMmCtas, destType, qb);
-    if (isMmCtas) {
+        canBeMerged, destinationTable, writeId, isMmCreate, destType, qb);
+    if (isMmCreate) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
-      tableDesc.setWriter(fileSinkDesc);
+      if (tableDesc != null) {
+        tableDesc.setWriter(fileSinkDesc);
+      } else {
+        createVwDesc.setWriter(fileSinkDesc);
+      }
     }
 
     if (fileSinkDesc.getInsertOverwrite()) {
