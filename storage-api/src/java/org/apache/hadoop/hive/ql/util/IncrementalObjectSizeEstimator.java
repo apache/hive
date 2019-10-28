@@ -515,6 +515,10 @@ public class IncrementalObjectSizeEstimator {
                 "Don't know how to measure element " + lastClass.getName() + " from " + e.field);
           }
         }
+        if (lastEstimator == null) {
+          createEstimators(lastClass, parent);
+          lastEstimator = parent.get(lastClass);
+        }
         result += lastEstimator.estimate(element, parent, uniqueObjects);
       }
       return result;
