@@ -88,16 +88,16 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_36]
             Group By Operator [GBY_35] (rows=1 width=112)
               Output:["_col0"],aggregations:["sum(_col2)"]
-              Select Operator [SEL_34] (rows=20854 width=159)
+              Select Operator [SEL_34] (rows=290 width=112)
                 Output:["_col2"]
-                Filter Operator [FIL_33] (rows=20854 width=159)
+                Filter Operator [FIL_33] (rows=290 width=112)
                   predicate:(_col2 > _col6)
-                  Merge Join Operator [MERGEJOIN_103] (rows=62562 width=159)
+                  Merge Join Operator [MERGEJOIN_103] (rows=872 width=112)
                     Conds:RS_30._col4=RS_125._col0(Inner),Output:["_col2","_col6"]
                   <-Reducer 3 [SIMPLE_EDGE]
                     SHUFFLE [RS_30]
                       PartitionCols:_col4
-                      Merge Join Operator [MERGEJOIN_101] (rows=143930905 width=115)
+                      Merge Join Operator [MERGEJOIN_101] (rows=2006075 width=113)
                         Conds:RS_27._col1=RS_106._col0(Inner),Output:["_col2","_col4"]
                       <-Map 9 [SIMPLE_EDGE] vectorized
                         SHUFFLE [RS_106]

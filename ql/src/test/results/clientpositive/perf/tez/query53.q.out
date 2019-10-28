@@ -100,9 +100,9 @@ Stage-0
                         <-Reducer 4 [SIMPLE_EDGE]
                           SHUFFLE [RS_23]
                             PartitionCols:_col0
-                            Group By Operator [GBY_22] (rows=61360 width=120)
+                            Group By Operator [GBY_22] (rows=260 width=120)
                               Output:["_col0","_col1","_col2"],aggregations:["sum(_col3)"],keys:_col5, _col7
-                              Merge Join Operator [MERGEJOIN_84] (rows=525329897 width=114)
+                              Merge Join Operator [MERGEJOIN_84] (rows=569118 width=8)
                                 Conds:RS_18._col2=RS_101._col0(Inner),Output:["_col3","_col5","_col7"]
                               <-Map 10 [SIMPLE_EDGE] vectorized
                                 SHUFFLE [RS_101]
@@ -116,7 +116,7 @@ Stage-0
                               <-Reducer 3 [SIMPLE_EDGE]
                                 SHUFFLE [RS_18]
                                   PartitionCols:_col2
-                                  Merge Join Operator [MERGEJOIN_83] (rows=525329897 width=118)
+                                  Merge Join Operator [MERGEJOIN_83] (rows=569118 width=8)
                                     Conds:RS_15._col0=RS_98._col0(Inner),Output:["_col2","_col3","_col5","_col7"]
                                   <-Map 9 [SIMPLE_EDGE] vectorized
                                     SHUFFLE [RS_98]
@@ -130,7 +130,7 @@ Stage-0
                                   <-Reducer 2 [SIMPLE_EDGE]
                                     SHUFFLE [RS_15]
                                       PartitionCols:_col0
-                                      Merge Join Operator [MERGEJOIN_82] (rows=525329897 width=118)
+                                      Merge Join Operator [MERGEJOIN_82] (rows=569118 width=4)
                                         Conds:RS_95._col1=RS_87._col0(Inner),Output:["_col0","_col2","_col3","_col5"]
                                       <-Map 7 [SIMPLE_EDGE] vectorized
                                         PARTITION_ONLY_SHUFFLE [RS_87]

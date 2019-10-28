@@ -157,9 +157,9 @@ Stage-0
             Reduce Output Operator [RS_373]
               Group By Operator [GBY_372] (rows=1 width=112)
                 Output:["_col0"],aggregations:["sum(_col0)"]
-                Select Operator [SEL_370] (rows=22920586 width=112)
+                Select Operator [SEL_370] (rows=897 width=112)
                   Output:["_col0"]
-                  Merge Join Operator [MERGEJOIN_369] (rows=22920586 width=115)
+                  Merge Join Operator [MERGEJOIN_369] (rows=897 width=0)
                     Conds:RS_152._col1=RS_449._col0(Left Semi),Output:["_col3","_col4"]
                   <-Reducer 10 [SIMPLE_EDGE]
                     SHUFFLE [RS_152]
@@ -350,9 +350,9 @@ Stage-0
             Reduce Output Operator [RS_368]
               Group By Operator [GBY_367] (rows=1 width=112)
                 Output:["_col0"],aggregations:["sum(_col0)"]
-                Select Operator [SEL_365] (rows=45838710 width=112)
+                Select Operator [SEL_365] (rows=1793 width=112)
                   Output:["_col0"]
-                  Merge Join Operator [MERGEJOIN_364] (rows=45838710 width=112)
+                  Merge Join Operator [MERGEJOIN_364] (rows=1793 width=0)
                     Conds:RS_74._col2=RS_436._col0(Left Semi),Output:["_col3","_col4"]
                   <-Reducer 26 [SIMPLE_EDGE] vectorized
                     SHUFFLE [RS_436]

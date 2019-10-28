@@ -107,7 +107,7 @@ Stage-0
                       Output:["_col4","_col5","_col6"]
                       Filter Operator [FIL_41] (rows=283695062 width=228)
                         predicate:_col13 is null
-                        Merge Join Operator [MERGEJOIN_126] (rows=399646271 width=228)
+                        Merge Join Operator [MERGEJOIN_126] (rows=397917099 width=228)
                           Conds:RS_38._col4=RS_153._col1(Left Outer),Output:["_col4","_col5","_col6","_col13"]
                         <-Reducer 15 [SIMPLE_EDGE] vectorized
                           SHUFFLE [RS_153]
