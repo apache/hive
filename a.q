@@ -1,6 +1,7 @@
---set hive.optimize.ppd=false;
 set hive.explain.user=true;
---set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.hooks.AccurateEstimatesCheckerHook;
+
+-- can't be enabled because min is used during join selectivity estimation
+-- set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.hooks.AccurateEstimatesCheckerHook;
 
 
 explain analyze
