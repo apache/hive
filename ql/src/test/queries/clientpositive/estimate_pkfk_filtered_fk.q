@@ -4,7 +4,7 @@ source ${system:hive.root}/data/files/starships.sql;
 
 set hive.optimize.ppd=false;
 set hive.explain.user=true;
-set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.hooks.AccurateEstimatesCheckerHook;
+--set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.hooks.AccurateEstimatesCheckerHook;
 
 
 explain analyze
