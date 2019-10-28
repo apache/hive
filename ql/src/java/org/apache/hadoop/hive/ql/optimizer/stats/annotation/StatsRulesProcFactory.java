@@ -871,7 +871,7 @@ public class StatsRulesProcFactory {
 
       if (pred instanceof ExprNodeColumnDesc) {
         ExprNodeColumnDesc encd = (ExprNodeColumnDesc) pred;
-//        aspCtx.addAffectedColumn(encd);
+        aspCtx.addAffectedColumn(encd);
         ColStatistics cs = stats.getColumnStatisticsFromColName(encd.getColumn());
         if (cs != null) {
           tmpNoNulls = cs.getNumNulls();
