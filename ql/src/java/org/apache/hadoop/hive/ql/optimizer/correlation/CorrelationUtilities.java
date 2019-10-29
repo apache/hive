@@ -234,16 +234,22 @@ public final class CorrelationUtilities {
       if (cursor instanceof JoinOperator) {
         return findParents((JoinOperator) cursor, target);
       }
-      if (cursor instanceof ScriptOperator && !trustScript) {
-        return null;
+      if (cursor instanceof ScriptOperator && trustScript) {
+        continue;
       }
-      if (!(cursor instanceof SelectOperator
+      if (cursor instanceof SelectOperator
           || cursor instanceof FilterOperator
           || cursor instanceof ForwardOperator
           || cursor instanceof ScriptOperator
-          || cursor instanceof GroupByOperator
-          || cursor instanceof ReduceSinkOperator)) {
-        return null;
+          || cursor instanceof ReduceSinkOperator) {
+        continue;
+      }
+      if (cursor instanceof GroupByOperator) {
+        GroupByOperator groupByOperator = (GroupByOperator) cursor;
+        Mode mode = groupByOperator.getConf().getMode();
+        if (mode == Mode.COMPLETE || mode == Mode.FINAL) {
+          continue;
+        }
       }
     }
     return null;
