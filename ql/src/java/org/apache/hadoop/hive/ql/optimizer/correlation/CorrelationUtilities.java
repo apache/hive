@@ -240,7 +240,6 @@ public final class CorrelationUtilities {
       if (cursor instanceof SelectOperator
           || cursor instanceof FilterOperator
           || cursor instanceof ForwardOperator
-          || cursor instanceof ScriptOperator
           || cursor instanceof ReduceSinkOperator) {
         continue;
       }
@@ -251,6 +250,8 @@ public final class CorrelationUtilities {
           continue;
         }
       }
+      // default to break
+      return null;
     }
     return null;
   }
