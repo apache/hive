@@ -58,7 +58,7 @@ public class ZookeeperUtils {
    */
   public static boolean isKerberosEnabled(Configuration conf) {
     try {
-      return UserGroupInformation.getLoginUser().isFromKeytab() &&
+      return UserGroupInformation.getLoginUser().hasKerberosCredentials() &&
           HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS);
     } catch (IOException e) {
       return false;
@@ -68,8 +68,8 @@ public class ZookeeperUtils {
   /**
    * Dynamically sets up the JAAS configuration that uses kerberos.
    *
-   * @param principal
-   * @param keyTabFile
+   * @param zkPrincipal
+   * @param zkKeytab
    * @throws IOException
    */
   private static String setZookeeperClientKerberosJaasConfig(

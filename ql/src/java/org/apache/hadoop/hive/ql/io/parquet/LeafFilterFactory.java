@@ -19,10 +19,11 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf.Operator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.parquet.filter2.predicate.FilterApi;
 import org.apache.parquet.filter2.predicate.FilterPredicate;
 import org.apache.parquet.io.api.Binary;
-import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Type;
 
 import static org.apache.parquet.filter2.predicate.FilterApi.eq;
@@ -42,11 +43,12 @@ public class LeafFilterFactory {
      * @param op         consists of EQUALS, NULL_SAFE_EQUALS, LESS_THAN, LESS_THAN_EQUALS, IS_NULL
      * @param literal
      * @param columnName
+     * @param columnType
      * @return
      */
     @Override
     public FilterPredicate buildPredict(Operator op, Object literal,
-                                        String columnName) {
+                                        String columnName, TypeInfo columnType) {
       switch (op) {
         case LESS_THAN:
           return lt(intColumn(columnName), ((Number) literal).intValue());
@@ -66,7 +68,7 @@ public class LeafFilterFactory {
   class LongFilterPredicateLeafBuilder extends FilterPredicateLeafBuilder {
     @Override
     public FilterPredicate buildPredict(Operator op, Object constant,
-                                        String columnName) {
+                                        String columnName, TypeInfo columnType) {
       switch (op) {
         case LESS_THAN:
           return lt(FilterApi.longColumn(columnName), ((Number) constant).longValue());
@@ -86,7 +88,7 @@ public class LeafFilterFactory {
 
   class FloatFilterPredicateLeafBuilder extends FilterPredicateLeafBuilder {
     @Override
-    public FilterPredicate buildPredict(Operator op, Object constant, String columnName) {
+    public FilterPredicate buildPredict(Operator op, Object constant, String columnName, TypeInfo columnType) {
       switch (op) {
       case LESS_THAN:
         return lt(floatColumn(columnName), ((Number) constant).floatValue());
@@ -107,7 +109,7 @@ public class LeafFilterFactory {
 
     @Override
     public FilterPredicate buildPredict(Operator op, Object constant,
-                                        String columnName) {
+                                        String columnName, TypeInfo columnType) {
       switch (op) {
         case LESS_THAN:
           return lt(doubleColumn(columnName), ((Number) constant).doubleValue());
@@ -128,7 +130,7 @@ public class LeafFilterFactory {
   class BooleanFilterPredicateLeafBuilder extends FilterPredicateLeafBuilder {
     @Override
     public FilterPredicate buildPredict(Operator op, Object constant,
-                                        String columnName) throws Exception{
+                                        String columnName, TypeInfo columnType) throws Exception{
       switch (op) {
         case IS_NULL:
         case EQUALS:
@@ -144,21 +146,41 @@ public class LeafFilterFactory {
   class BinaryFilterPredicateLeafBuilder extends FilterPredicateLeafBuilder {
     @Override
     public FilterPredicate buildPredict(Operator op, Object constant,
-                                        String columnName) throws Exception{
+                                        String columnName, TypeInfo columnType) throws Exception{
+      // For CHAR types, the trailing spaces should be removed before adding the
+      // value to the predicate. This change is needed because for CHAR types,
+      // Hive passes a padded value to the predicate, but since the value
+      // is stored in Parquet without padding, no result would be returned.
+      // For more details about this issue, please refer to HIVE-21407.
+      String value = null;
+      if (constant != null) {
+        value = (String) constant;
+        if (columnType != null && columnType.toString().startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+          value = removeTrailingSpaces(value);
+        }
+      }
       switch (op) {
         case LESS_THAN:
-          return lt(binaryColumn(columnName), Binary.fromString((String) constant));
+          return lt(binaryColumn(columnName), Binary.fromString(value));
         case IS_NULL:
         case EQUALS:
         case NULL_SAFE_EQUALS:
           return eq(binaryColumn(columnName),
-            (constant == null) ? null : Binary.fromString((String) constant));
+            (constant == null) ? null : Binary.fromString(value));
         case LESS_THAN_EQUALS:
-          return ltEq(binaryColumn(columnName), Binary.fromString((String) constant));
+          return ltEq(binaryColumn(columnName), Binary.fromString(value));
         default:
           // should never be executed
           throw new RuntimeException("Unknown PredicateLeaf Operator type: " + op);
       }
+    }
+
+    private String removeTrailingSpaces(String value) {
+      if (value == null) {
+        return null;
+      }
+      String regex = "\\s+$";
+      return value.replaceAll(regex, "");
     }
   }
 

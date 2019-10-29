@@ -52,6 +52,7 @@
     <log4j.conf.dir>${project.basedir}/src/test/resources</log4j.conf.dir>
     <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
+    <test.warehouse.external.dir>${project.build.directory}/external</test.warehouse.external.dir>
     <test.warehouse.scheme>file://</test.warehouse.scheme>
     <test.forkcount>1</test.forkcount>
     <skipITests>true</skipITests>

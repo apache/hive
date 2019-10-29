@@ -1,0 +1,268 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
+
+import java.util.Arrays;
+
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.Decimal64Util;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+
+/**
+ * Generated from template Decimal64ColumnDivideDecimal64Scalar.txt, which covers decimal64 arithmetic
+ * expressions between a column and a scalar.
+ */
+public class <ClassName> extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
+  private static final long[] powerOfTenTable = {
+    1L,                   // 0
+    10L,
+    100L,
+    1000L,
+    10000L,
+    100000L,
+    1000000L,
+    10000000L,
+    100000000L,           // 8
+    1000000000L,
+    10000000000L,
+    100000000000L,
+    1000000000000L,
+    10000000000000L,
+    100000000000000L,
+    1000000000000000L,
+    10000000000000000L,   // 16
+    100000000000000000L,
+    1000000000000000000L, // 18
+  };
+
+  private final int colNum;
+  private final long value;
+
+  public <ClassName>(int colNum, long value, int outputColumnNum) {
+    super(outputColumnNum);
+    this.colNum = colNum;
+    this.value = value;
+  }
+
+  public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = 0;
+  }
+
+  /*
+   * Division that rounds up if the subsequent digits are greater than half.
+   * Sign of the result will depend on the both x and y.
+   * If x and y have different sign, then the result is multiplied by -1
+   * If x and y have same sign, then the result is unchanged
+   */
+  private long roundingDivision(long divident, long divisor) {
+    final long absDivident = Math.abs(divident);
+    final long absDivisor = Math.abs(divisor);
+    final boolean differentSigns = (divident > 0) ^ (divisor > 0);
+    final long remainder = absDivident % absDivisor;
+    long result = absDivident  / absDivisor;
+    if (remainder*2 >= absDivisor) {
+      result += 1; // round half away from 0
+    }
+    if (differentSigns) {
+      return -1*result;
+    } else {
+      return result;
+    }
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
+    Decimal64ColumnVector inputColVector = (Decimal64ColumnVector) batch.cols[colNum];
+    Decimal64ColumnVector outputColVector = (Decimal64ColumnVector) batch.cols[outputColumnNum];
+    int[] sel = batch.selected;
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
+    long[] vector = inputColVector.vector;
+    long[] outputVector = outputColVector.vector;
+
+    final long outputDecimal64AbsMax =
+        HiveDecimalWritable.getDecimal64AbsMax(outputColVector.precision);
+    int outputScale = ((DecimalTypeInfo) outputTypeInfo).scale();
+
+    if (value == 0) {
+      // Denominator is zero, convert the batch to nulls
+      outputColVector.noNulls = false;
+      outputColVector.isRepeating = true;
+      outputIsNull[0] = true;
+      NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
+      return;
+    } else if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        outputIsNull[0] = false;
+        // The following may override a "false" null setting if an error or overflow occurs.
+        final long result = roundingDivision(vector[0] * powerOfTenTable[outputScale], value);
+        if (Math.abs(result) > outputDecimal64AbsMax) {
+          outputIsNull[0] = true;
+          outputColVector.noNulls = false;
+        } else {
+          outputVector[0] = result;
+        }
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
+
+         // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+         if (!outputColVector.noNulls) {
+           for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            outputIsNull[i] = false;
+            final long result = roundingDivision(vector[i] * powerOfTenTable[outputScale], value);
+            outputVector[i] = result;
+            if (Math.abs(result) > outputDecimal64AbsMax) {
+              outputColVector.noNulls = false;
+              outputIsNull[i] = true;
+            }
+          }
+         } else {
+           for(int j = 0; j != n; j++) {
+             final int i = sel[j];
+             final long result = roundingDivision(vector[i] * powerOfTenTable[outputScale], value);
+             outputVector[i] = result;
+             if (Math.abs(result) > outputDecimal64AbsMax) {
+               outputColVector.noNulls = false;
+               outputIsNull[i] = true;
+             }
+           }
+         }
+      } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for(int i = 0; i != n; i++) {
+          final long result = roundingDivision(vector[i] * powerOfTenTable[outputScale], value);
+          outputVector[i] = result;
+          if (Math.abs(result) > outputDecimal64AbsMax) {
+            outputColVector.noNulls = false;
+            outputIsNull[i] = true;
+          }
+        }
+      }
+    } else /* there are NULLs in the inputColVector */ {
+
+      /*
+       * Do careful maintenance of the outputColVector.noNulls flag.
+       */
+
+      if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          if (!inputIsNull[i]) {
+            outputIsNull[i] = false;
+            // The following may override a "false" null setting if an error or overflow occurs.
+            final long result = roundingDivision(vector[i] * powerOfTenTable[outputScale], value);
+            outputVector[i] = result;
+            if (Math.abs(result) > outputDecimal64AbsMax) {
+              outputIsNull[i] = true;
+              outputColVector.noNulls = false;
+            }
+          } else {
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
+          }
+        }
+      } else {
+        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
+        for(int i = 0; i != n; i++) {
+          if (!inputIsNull[i]) {
+            outputIsNull[i] = false;
+            // The following may override a "false" null setting if an error or overflow occurs.
+            final long result = roundingDivision(vector[i] * powerOfTenTable[outputScale], value);
+            outputVector[i] = result;
+            if (Math.abs(result) > outputDecimal64AbsMax) {
+              outputIsNull[i] = true;
+              outputColVector.noNulls = false;
+            }
+          } else {
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
+          }
+        }
+      }
+    }
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) inputTypeInfos[0];
+    HiveDecimalWritable writable = new HiveDecimalWritable();
+    writable.deserialize64(value, decimalTypeInfo.scale());
+    return getColumnParamString(0, colNum) + ", decimal64Val " + value +
+        ", decimalVal " + writable.toString();
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.DECIMAL_64,
+            VectorExpressionDescriptor.ArgumentType.DECIMAL_64)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
+  }
+}

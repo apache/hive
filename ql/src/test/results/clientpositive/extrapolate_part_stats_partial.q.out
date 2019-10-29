@@ -97,36 +97,36 @@ PREHOOK: Input: default@loc_orc_1d_n1
 POSTHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2001') state
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d_n1
-col_name            	state               	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	3                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	0.75                	 	 	 	 	 	 	 	 	 	 
-max_col_len         	2                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	state               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	0.75                
+max_col_len         	2                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2002') state
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d_n1
 POSTHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2002') state
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d_n1
-col_name            	state               	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	6                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	3.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	state               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: explain extended select state from loc_orc_1d_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_1d_n1

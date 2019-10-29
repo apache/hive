@@ -1182,8 +1182,7 @@ alterStatement
 @after { popMsg(state); }
     : KW_ALTER KW_TABLE tableName alterTableStatementSuffix -> ^(TOK_ALTERTABLE tableName alterTableStatementSuffix)
     | KW_ALTER KW_VIEW tableName KW_AS? alterViewStatementSuffix -> ^(TOK_ALTERVIEW tableName alterViewStatementSuffix)
-    | KW_ALTER KW_MATERIALIZED KW_VIEW tableName alterMaterializedViewStatementSuffix
-    -> ^(TOK_ALTER_MATERIALIZED_VIEW tableName alterMaterializedViewStatementSuffix)
+    | KW_ALTER KW_MATERIALIZED KW_VIEW tableNameTree=tableName alterMaterializedViewStatementSuffix[$tableNameTree.tree] -> alterMaterializedViewStatementSuffix
     | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
     ;
 
@@ -1243,11 +1242,24 @@ alterViewStatementSuffix
     | selectStatementWithCTE
     ;
 
-alterMaterializedViewStatementSuffix
+alterMaterializedViewStatementSuffix[CommonTree tableNameTree]
 @init { pushMsg("alter materialized view statement", state); }
 @after { popMsg(state); }
-    : alterMaterializedViewSuffixRewrite
-    | alterMaterializedViewSuffixRebuild
+    : alterMaterializedViewSuffixRewrite[tableNameTree]
+    | alterMaterializedViewSuffixRebuild[tableNameTree]
+    ;
+
+alterMaterializedViewSuffixRewrite[CommonTree tableNameTree]
+@init { pushMsg("alter materialized view rewrite statement", state); }
+@after { popMsg(state); }
+    : (mvRewriteFlag=rewriteEnabled | mvRewriteFlag=rewriteDisabled)
+    -> ^(TOK_ALTER_MATERIALIZED_VIEW_REWRITE {$tableNameTree} $mvRewriteFlag)
+    ;
+
+alterMaterializedViewSuffixRebuild[CommonTree tableNameTree]
+@init { pushMsg("alter materialized view rebuild statement", state); }
+@after { popMsg(state); }
+    : KW_REBUILD -> ^(TOK_ALTER_MATERIALIZED_VIEW_REBUILD {$tableNameTree})
     ;
 
 alterDatabaseStatementSuffix
@@ -1410,19 +1422,6 @@ alterViewSuffixProperties
     -> ^(TOK_ALTERVIEW_PROPERTIES tableProperties)
     | KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
     -> ^(TOK_ALTERVIEW_DROPPROPERTIES tableProperties ifExists?)
-    ;
-
-alterMaterializedViewSuffixRewrite
-@init { pushMsg("alter materialized view rewrite statement", state); }
-@after { popMsg(state); }
-    : (mvRewriteFlag=rewriteEnabled | mvRewriteFlag=rewriteDisabled)
-    -> ^(TOK_ALTER_MATERIALIZED_VIEW_REWRITE $mvRewriteFlag)
-    ;
-
-alterMaterializedViewSuffixRebuild
-@init { pushMsg("alter materialized view rebuild statement", state); }
-@after { popMsg(state); }
-    : KW_REBUILD -> ^(TOK_ALTER_MATERIALIZED_VIEW_REBUILD)
     ;
 
 alterStatementSuffixSerdeProperties[boolean partition]
@@ -2497,23 +2496,34 @@ columnNameComment
     -> ^(TOK_TABCOL $colName TOK_NULL $comment?)
     ;
 
+orderSpecificationRewrite
+@init { pushMsg("order specification", state); }
+@after { popMsg(state); }
+    : KW_ASC -> ^(TOK_TABSORTCOLNAMEASC)
+    | KW_DESC -> ^(TOK_TABSORTCOLNAMEDESC)
+    ;
+
 columnRefOrder
 @init { pushMsg("column order", state); }
 @after { popMsg(state); }
-    : expression orderSpec=orderSpecification? nullSpec=nullOrdering?
+    : expression orderSpec=orderSpecificationRewrite? nullSpec=nullOrdering?
+    // ORDER not present, NULLS ORDER not present and default is NULLS LAST ex.: ORDER BY col0
     -> {$orderSpec.tree == null && $nullSpec.tree == null && nullsLast()}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_LAST expression))
-    -> {$orderSpec.tree == null && $nullSpec.tree == null && !nullsLast()}?
+    // ORDER not present, NULLS ORDER not present and default is NULLS FIRST ex.: ORDER BY col0
+    -> {$orderSpec.tree == null && $nullSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST expression))
+    // ORDER not present but NULLS ORDER present ex.: ORDER BY col0 NULLS FIRST
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec expression))
-    -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_ASC}?
-            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST expression))
-    -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_DESC}?
-            ^(TOK_TABSORTCOLNAMEDESC ^(TOK_NULLS_LAST expression))
-    -> {$orderSpec.tree.getType()==HiveParser.KW_ASC}?
-            ^(TOK_TABSORTCOLNAMEASC ^($nullSpec expression))
-    -> ^(TOK_TABSORTCOLNAMEDESC ^($nullSpec expression))
+    // ORDER present but NULLS ORDER not present and default is NULLS LAST ex.: ORDER BY col0 ASC
+    -> {$nullSpec.tree == null && nullsLast()}?
+            ^($orderSpec ^(TOK_NULLS_LAST expression))
+    // ORDER present, NULLS ORDER not present and default is NULLS FIRST ex.: ORDER BY col0 ASC
+    -> {$nullSpec.tree == null}?
+            ^($orderSpec ^(TOK_NULLS_FIRST expression))
+    // both ORDER and NULLS ORDER present ex.: ORDER BY col0 ASC NULLS LAST
+    -> ^($orderSpec ^($nullSpec expression))
     ;
 
 columnNameType

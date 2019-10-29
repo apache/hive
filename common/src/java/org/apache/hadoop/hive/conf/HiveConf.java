@@ -2537,6 +2537,11 @@ public class HiveConf extends Configuration {
         "When estimating output rows for a join involving multiple columns, the default behavior assumes" +
         "the columns are independent. Setting this flag to true will cause the estimator to assume" +
         "the columns are correlated."),
+    HIVE_STATS_RANGE_SELECTIVITY_UNIFORM_DISTRIBUTION("hive.stats.filter.range.uniform", true,
+        "When estimating output rows from a condition, if a range predicate is applied over a column and the\n" +
+        "minimum and maximum values for that column are available, assume uniform distribution of values\n" +
+        "across that range and scales number of rows proportionally. If this is set to false, default\n" +
+        "selectivity value is used."),
     // in the absence of uncompressed/raw data size, total file size will be used for statistics
     // annotation. But the file may be compressed, encoded and serialized which may be lesser in size
     // than the actual uncompressed/raw data size. This factor will be multiplied to file size to estimate
@@ -3255,6 +3260,10 @@ public class HiveConf extends Configuration {
         "The implementation that we should use for the materialized views registry. \n" +
         "  DEFAULT: Default cache for materialized views\n" +
         "  DUMMY: Do not cache materialized views and hence forward requests to metastore"),
+    HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH("hive.server2.materializedviews.registry.refresh.period", "1500s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Period, specified in seconds, between successive refreshes of the registry to pull new materializations " +
+        "from the metastore that may have been created by other HS2 instances."),
 
     // HiveServer2 WebUI
     HIVE_SERVER2_WEBUI_BIND_HOST("hive.server2.webui.host", "0.0.0.0", "The host address the HiveServer2 WebUI will listen on"),
@@ -3629,12 +3638,6 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location."),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "",
         "SSL certificate keystore password."),
-    HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE("hive.server2.map.fair.scheduler.queue", true,
-        "If the YARN fair scheduler is configured and HiveServer2 is running in non-impersonation mode,\n" +
-        "this setting determines the user for fair scheduler queue mapping.\n" +
-        "If set to true (default), the logged-in user determines the fair scheduler queue\n" +
-        "for submitted jobs, so that map reduce resource usage can be tracked by user.\n" +
-        "If set to false, all Hive jobs go to the 'hive' user's queue."),
     HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
         "Comma separated list of builtin udf names allowed in queries.\n" +
         "An empty whitelist allows all builtin udfs to be executed. " +

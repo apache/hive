@@ -95,7 +95,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
 
   private boolean isKerberosEnabled(Configuration conf) {
     try {
-      return UserGroupInformation.getLoginUser().isFromKeytab() &&
+      return UserGroupInformation.getLoginUser().hasKerberosCredentials() &&
           MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS);
     } catch (IOException e) {
       return false;

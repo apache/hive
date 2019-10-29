@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.merge.DoubleColumnStatsMerger;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,9 +108,10 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
         } else {
-          aggregateData.setLowValue(Math.min(aggregateData.getLowValue(), newData.getLowValue()));
-          aggregateData
-              .setHighValue(Math.max(aggregateData.getHighValue(), newData.getHighValue()));
+          DoubleColumnStatsMerger merger = new DoubleColumnStatsMerger();
+          merger.setLowValue(aggregateData, newData);
+          merger.setHighValue(aggregateData, newData);
+
           aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
           aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
         }
@@ -156,7 +158,7 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
           ColumnStatisticsObj cso = csp.getColStatsObj();
           String partName = csp.getPartName();
           DoubleColumnStatsData newData = cso.getStatsData().getDoubleStats();
-          if (useDensityFunctionForNDVEstimation) {
+          if (useDensityFunctionForNDVEstimation && newData.isSetLowValue() && newData.isSetHighValue()) {
             densityAvgSum += (newData.getHighValue() - newData.getLowValue()) / newData.getNumDVs();
           }
           adjustedIndexMap.put(partName, (double) indexMap.get(partName));

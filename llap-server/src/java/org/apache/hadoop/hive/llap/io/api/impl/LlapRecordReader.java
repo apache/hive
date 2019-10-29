@@ -27,11 +27,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -41,8 +41,6 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.SchemaEvolutionFactory;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -55,7 +53,6 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.Reader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -74,8 +71,6 @@ import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-
-import com.google.common.collect.Lists;
 
 class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
 
@@ -107,6 +102,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final ReadPipeline rp;
   private final ExecutorService executor;
   private final boolean isAcidScan;
+  private final boolean isAcidFormat;
 
   /**
    * Creates the record reader and checks the input-specific compatibility.
@@ -116,7 +112,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       List<Integer> tableIncludedCols, String hostName, ColumnVectorProducer cvp,
       ExecutorService executor, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       Reporter reporter, Configuration daemonConf) throws IOException, HiveException {
-    MapWork mapWork = findMapWork(job);
+    MapWork mapWork = LlapHiveUtils.findMapWork(job);
     if (mapWork == null) return null; // No compatible MapWork.
     LlapRecordReader rr = new LlapRecordReader(mapWork, job, split, tableIncludedCols, hostName,
         cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
@@ -187,10 +183,15 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     this.isVectorized = HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
     if (isAcidScan) {
+      OrcSplit orcSplit = (OrcSplit) split;
       this.acidReader = new VectorizedOrcAcidRowBatchReader(
-          (OrcSplit) split, jobConf, Reporter.NULL, null, rbCtx, true);
+          orcSplit, jobConf, Reporter.NULL, null, rbCtx, true);
+      isAcidFormat = !orcSplit.isOriginal();
+    } else {
+      isAcidFormat = false;
     }
-    this.includes = new IncludesImpl(tableIncludedCols, isAcidScan, rbCtx,
+
+    this.includes = new IncludesImpl(tableIncludedCols, isAcidFormat, rbCtx,
         schema, job, isAcidScan && acidReader.includeAcidColumns());
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
@@ -302,37 +303,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     return Math.max(bestEffortSize, queueLimitMin);
   }
 
-
-  private static MapWork findMapWork(JobConf job) throws HiveException {
-    String inputName = job.get(Utilities.INPUT_NAME, null);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Initializing for input " + inputName);
-    }
-    String prefixes = job.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
-    if (prefixes != null && !StringUtils.isBlank(prefixes)) {
-      // Currently SMB is broken, so we cannot check if it's  compatible with IO elevator.
-      // So, we don't use the below code that would get the correct MapWork. See HIVE-16985.
-      return null;
-    }
-
-    BaseWork work = null;
-    // HIVE-16985: try to find the fake merge work for SMB join, that is really another MapWork.
-    if (inputName != null) {
-      if (prefixes == null ||
-          !Lists.newArrayList(prefixes.split(",")).contains(inputName)) {
-        inputName = null;
-      }
-    }
-    if (inputName != null) {
-      work = Utilities.getMergeWork(job, inputName);
-    }
-
-    if (!(work instanceof MapWork)) {
-      work = Utilities.getMapWork(job);
-    }
-    return (MapWork) work;
-  }
-
   /**
    * Starts the data read pipeline
    */
@@ -397,7 +367,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       counters.incrWallClockCounter(LlapIOCounters.CONSUMER_TIME_NS, firstReturnTime);
       return false;
     }
-    if (isAcidScan) {
+    if (isAcidFormat) {
       vrb.selectedInUse = true;//why?
       if (isVectorized) {
         // TODO: relying everywhere on the magical constants and columns being together means ACID

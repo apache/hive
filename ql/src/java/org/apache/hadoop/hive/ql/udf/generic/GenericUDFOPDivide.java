@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
   LongScalarDivideLongColumn.class, LongScalarDivideDoubleColumn.class,
   DoubleScalarDivideLongColumn.class, DoubleScalarDivideDoubleColumn.class,
   DecimalColDivideDecimalColumn.class, DecimalColDivideDecimalScalar.class,
-  DecimalScalarDivideDecimalColumn.class})
+  DecimalScalarDivideDecimalColumn.class, Decimal64ColDivideDecimal64Scalar.class})
 public class GenericUDFOPDivide extends GenericUDFBaseNumeric {
 
   public GenericUDFOPDivide() {

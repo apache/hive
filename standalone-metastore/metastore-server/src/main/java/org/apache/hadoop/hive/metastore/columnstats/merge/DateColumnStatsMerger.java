@@ -57,7 +57,7 @@ public class DateColumnStatsMerger extends ColumnStatsMerger {
     aggregateColStats.getStatsData().setDateStats(aggregateData);
   }
 
-  private void setLowValue(DateColumnStatsDataInspector aggregateData, DateColumnStatsDataInspector newData) {
+  public void setLowValue(DateColumnStatsDataInspector aggregateData, DateColumnStatsDataInspector newData) {
     if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
       return;
     }
@@ -75,7 +75,7 @@ public class DateColumnStatsMerger extends ColumnStatsMerger {
     aggregateData.setLowValue(mergedLowValue);
   }
 
-  private void setHighValue(DateColumnStatsDataInspector aggregateData, DateColumnStatsDataInspector newData) {
+  public void setHighValue(DateColumnStatsDataInspector aggregateData, DateColumnStatsDataInspector newData) {
     if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
       return;
     }

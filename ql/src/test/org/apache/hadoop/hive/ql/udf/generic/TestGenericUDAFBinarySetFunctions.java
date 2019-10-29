@@ -32,13 +32,12 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuf
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.LongWritable;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import jersey.repackaged.com.google.common.collect.Lists;
+import com.google.common.collect.Lists;
 
 @RunWith(Parameterized.class)
 public class TestGenericUDAFBinarySetFunctions {

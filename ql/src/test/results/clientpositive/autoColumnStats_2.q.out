@@ -131,38 +131,38 @@ PREHOOK: Input: default@a_n3
 POSTHOOK: query: describe formatted a_n3 key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@a_n3
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
-max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: describe formatted b_n3 key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b_n3
 POSTHOOK: query: describe formatted b_n3 key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b_n3
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
-max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: from src
 insert overwrite table a_n3 select *
 insert into table b_n3 select *
@@ -257,38 +257,38 @@ PREHOOK: Input: default@b_n3
 POSTHOOK: query: describe formatted b_n3 key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b_n3
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
-max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: describe formatted b_n3 value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b_n3
 POSTHOOK: query: describe formatted b_n3 value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b_n3
-col_name            	value               	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	307                 	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.812               	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	307                 
+avg_col_len         	6.812               
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: insert into table b_n3 select NULL, NULL from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -305,38 +305,38 @@ PREHOOK: Input: default@b_n3
 POSTHOOK: query: describe formatted b_n3 key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b_n3
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	10                  	 	 	 	 	 	 	 	 	 	 
-distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
-max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	10                  
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: describe formatted b_n3 value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b_n3
 POSTHOOK: query: describe formatted b_n3 value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b_n3
-col_name            	value               	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	10                  	 	 	 	 	 	 	 	 	 	 
-distinct_count      	307                 	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.812               	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	10                  
+distinct_count      	307                 
+avg_col_len         	6.812               
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: insert into table b_n3(value) select key+100000 from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -353,38 +353,38 @@ PREHOOK: Input: default@b_n3
 POSTHOOK: query: describe formatted b_n3 key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b_n3
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	20                  	 	 	 	 	 	 	 	 	 	 
-distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
-max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	20                  
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: describe formatted b_n3 value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b_n3
 POSTHOOK: query: describe formatted b_n3 value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b_n3
-col_name            	value               	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	10                  	 	 	 	 	 	 	 	 	 	 
-distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	8.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	8                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	10                  
+distinct_count      	316                 
+avg_col_len         	8.0                 
+max_col_len         	8                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: drop table src_multi2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table src_multi2

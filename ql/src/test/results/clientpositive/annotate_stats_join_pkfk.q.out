@@ -601,32 +601,32 @@ STAGE PLANS:
             Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: ((s_company_id > 0) and s_store_sk is not null) (type: boolean)
-              Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: s_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
           TableScan
             alias: ss
             filterExpr: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 7676 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
-              Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 876 Data size: 6724 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 321 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 876 Data size: 3380 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 321 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 876 Data size: 3380 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -635,10 +635,10 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 90 Data size: 360 Basic stats: COMPLETE Column stats: PARTIAL
           File Output Operator
             compressed: false
-            Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 90 Data size: 360 Basic stats: COMPLETE Column stats: PARTIAL
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -763,16 +763,16 @@ STAGE PLANS:
             Statistics: Num rows: 1000 Data size: 7676 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
-              Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 876 Data size: 6724 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 321 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 876 Data size: 3380 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 321 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 876 Data size: 3380 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -781,10 +781,10 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 876 Data size: 3504 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 876 Data size: 3504 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1181,16 +1181,16 @@ STAGE PLANS:
             Statistics: Num rows: 1000 Data size: 7676 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
-              Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 876 Data size: 6724 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 321 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 876 Data size: 3380 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 321 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 876 Data size: 3380 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s
             filterExpr: s_store_sk is not null (type: boolean)
@@ -1215,7 +1215,7 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 321 Data size: 2524 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 876 Data size: 6884 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -1231,7 +1231,7 @@ STAGE PLANS:
               key expressions: _col0 (type: int)
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 321 Data size: 2524 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 876 Data size: 6884 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: int)
           TableScan
             alias: s1
@@ -1257,14 +1257,14 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col1
-          Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 876 Data size: 3504 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 876 Data size: 3504 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 876 Data size: 3504 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

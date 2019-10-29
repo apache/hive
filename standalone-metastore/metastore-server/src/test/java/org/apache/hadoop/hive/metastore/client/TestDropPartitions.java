@@ -217,7 +217,7 @@ public class TestDropPartitions extends MetaStoreClientTest {
     tableParams.put("auto.purge", "true");
     createTable(tableName, getYearPartCol(), tableParams);
 
-    String location = metaStore.getWarehouseRoot() + "/externalTable/year=2017";
+    String location = metaStore.getExternalWarehouseRoot() + "/externalTable/year=2017";
     Partition partition =
         createPartition(tableName, location, Lists.newArrayList("2017"), getYearPartCol(), null);
 
@@ -364,7 +364,7 @@ public class TestDropPartitions extends MetaStoreClientTest {
     tableParams.put("EXTERNAL", "true");
     createTable(tableName, getYearPartCol(), tableParams);
 
-    String location = metaStore.getWarehouseRoot() + "/externalTable/year=2017";
+    String location = metaStore.getExternalWarehouseRoot() + "/externalTable/year=2017";
     Partition partition =
         createPartition(tableName, location, Lists.newArrayList("2017"), getYearPartCol(), null);
 
@@ -587,9 +587,15 @@ public class TestDropPartitions extends MetaStoreClientTest {
   protected Table createTable(String tableName, List<FieldSchema> partCols,
       Map<String, String> tableParams) throws Exception {
     String type = "MANAGED_TABLE";
-    if (tableParams != null)
+    String location = metaStore.getWarehouseRoot() + "/" + tableName;
+
+    if (tableParams != null) {
       type = (tableParams.getOrDefault("EXTERNAL", "FALSE").equalsIgnoreCase("TRUE")) ?
         "EXTERNAL_TABLE" : "MANAGED_TABLE";
+      location = (type.equalsIgnoreCase("EXTERNAL_TABLE")) ?
+        (metaStore.getExternalWarehouseRoot() + "/" + tableName) : (metaStore.getWarehouseRoot() + "/" + tableName);
+    }
+
     Table table = new TableBuilder()
         .setDbName(DB_NAME)
         .setTableName(tableName)
@@ -597,7 +603,7 @@ public class TestDropPartitions extends MetaStoreClientTest {
         .addCol("test_id", "int", "test col id")
         .addCol("test_value", "string", "test col value")
         .setPartCols(partCols)
-        .setLocation(metaStore.getWarehouseRoot() + "/" + tableName)
+        .setLocation(location)
         .setTableParams(tableParams)
         .create(client, metaStore.getConf());
     return table;

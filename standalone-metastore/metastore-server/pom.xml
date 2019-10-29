@@ -350,6 +350,7 @@
               <metastore.schema.verification>false</metastore.schema.verification>
               <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
               <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
+              <hive.metastore.warehouse.external.dir>${test.warehouse.scheme}${test.warehouse.external.dir}</hive.metastore.warehouse.external.dir>
             </systemPropertyVariables>
             <additionalClasspathElements>
               <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
@@ -417,9 +418,11 @@
             <configuration>
               <target>
                 <delete dir="${test.tmp.dir}"/>
+                <delete dir="${test.warehouse.external.dir}" />
                 <delete dir="${test.warehouse.dir}"/>
                 <mkdir dir="${test.tmp.dir}"/>
                 <mkdir dir="${test.warehouse.dir}"/>
+                <mkdir dir="${test.warehouse.external.dir}" />
               </target>
             </configuration>
           </execution>
@@ -571,8 +574,8 @@
             </javax.jdo.option.ConnectionURL>
             <metastore.schema.verification>false</metastore.schema.verification>
             <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
-            <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}
-            </metastore.warehouse.dir>
+            <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
+            <hive.metastore.warehouse.external.dir>${test.warehouse.scheme}${test.warehouse.external.dir}</hive.metastore.warehouse.external.dir>
           </systemPropertyVariables>
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
@@ -602,6 +605,7 @@
             <exclude>**/gen/**</exclude>
             <exclude>**/patchprocess/**</exclude>
             <exclude>**/metastore_db/**</exclude>
+            <exclude>**/test/resources/**/*.ldif</exclude>
           </excludes>
         </configuration>
       </plugin>

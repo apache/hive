@@ -393,7 +393,12 @@ public class TezSessionState {
   }
 
   private boolean isKerberosEnabled(Configuration conf) {
-    return UserGroupInformation.isSecurityEnabled() && HiveConf.getBoolVar(conf, ConfVars.LLAP_USE_KERBEROS);
+    try {
+      return UserGroupInformation.getLoginUser().hasKerberosCredentials() &&
+          HiveConf.getBoolVar(conf, ConfVars.LLAP_USE_KERBEROS);
+    } catch (IOException e) {
+      return false;
+    }
   }
 
   private static Token<LlapTokenIdentifier> getLlapToken(

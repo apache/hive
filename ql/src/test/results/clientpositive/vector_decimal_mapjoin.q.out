@@ -156,9 +156,8 @@ STAGE PLANS:
                       bigTableValueExpressions: col 0:decimal(26,2)
                       className: VectorMapJoinOperator
                       native: false
-                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
-                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
-                      nativeNotSupportedKeyTypes: DECIMAL
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1096 Data size: 116858 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -405,9 +404,8 @@ STAGE PLANS:
                       bigTableValueExpressions: col 0:decimal(26,2), col 1:decimal(22,2)
                       className: VectorMapJoinOperator
                       native: false
-                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
-                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
-                      nativeNotSupportedKeyTypes: DECIMAL
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1096 Data size: 233717 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -730,9 +728,8 @@ STAGE PLANS:
                       bigTableValueExpressions: col 0:decimal(16,2)/DECIMAL_64
                       className: VectorMapJoinOperator
                       native: false
-                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
-                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
-                      nativeNotSupportedKeyTypes: DECIMAL
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1096 Data size: 116858 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -979,9 +976,8 @@ STAGE PLANS:
                       bigTableValueExpressions: col 0:decimal(16,2)/DECIMAL_64, col 1:decimal(14,2)/DECIMAL_64
                       className: VectorMapJoinOperator
                       native: false
-                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
-                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
-                      nativeNotSupportedKeyTypes: DECIMAL
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1096 Data size: 233717 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1228,9 +1224,8 @@ STAGE PLANS:
                       bigTableValueExpressions: col 0:decimal(16,2)
                       className: VectorMapJoinOperator
                       native: false
-                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
-                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
-                      nativeNotSupportedKeyTypes: DECIMAL
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1096 Data size: 116858 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1478,9 +1473,8 @@ STAGE PLANS:
                       bigTableValueExpressions: col 0:decimal(16,2), col 1:decimal(14,2)
                       className: VectorMapJoinOperator
                       native: false
-                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
-                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
-                      nativeNotSupportedKeyTypes: DECIMAL
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1096 Data size: 233717 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

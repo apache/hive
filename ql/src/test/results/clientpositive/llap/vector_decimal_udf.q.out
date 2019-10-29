@@ -5776,8 +5776,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DecimalColDivideDecimalScalar(col 3:decimal(15,3), val 0)(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:decimal(18,6)
+                        projectedOutputColumnNums: [3]
+                        selectExpressions: Decimal64ColDivideDecimal64Scalar(col 0:decimal(15,3)/DECIMAL_64, decimal64Val 0, decimalVal 0) -> 3:decimal(18,6)/DECIMAL_64
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -5805,7 +5805,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: key:decimal(15,3)/DECIMAL_64, value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,3), decimal(18,6)]
+                    scratchColumnTypeNames: [decimal(18,6)/DECIMAL_64]
 
   Stage: Stage-0
     Fetch Operator
@@ -7344,8 +7344,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: DecimalColModuloDecimalColumn(col 7:decimal(16,3), col 5:decimal(18,6))(children: ConvertDecimal64ToDecimal(col 3:decimal(16,3)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 0:decimal(15,3)/DECIMAL_64, decimal64Val 1000, decimalVal 1) -> 3:decimal(16,3)/DECIMAL_64) -> 7:decimal(16,3), DecimalColDivideDecimalScalar(col 4:decimal(15,3), val 2)(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:decimal(18,6)) -> 6:decimal(18,6)
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: DecimalColModuloDecimalColumn(col 6:decimal(16,3), col 7:decimal(18,6))(children: ConvertDecimal64ToDecimal(col 3:decimal(16,3)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 0:decimal(15,3)/DECIMAL_64, decimal64Val 1000, decimalVal 1) -> 3:decimal(16,3)/DECIMAL_64) -> 6:decimal(16,3), ConvertDecimal64ToDecimal(col 4:decimal(18,6)/DECIMAL_64)(children: Decimal64ColDivideDecimal64Scalar(col 0:decimal(15,3)/DECIMAL_64, decimal64Val 2000, decimalVal 2) -> 4:decimal(18,6)/DECIMAL_64) -> 7:decimal(18,6)) -> 5:decimal(18,6)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -7373,7 +7373,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: key:decimal(15,3)/DECIMAL_64, value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(16,3)/DECIMAL_64, decimal(15,3), decimal(18,6), decimal(18,6), decimal(16,3)]
+                    scratchColumnTypeNames: [decimal(16,3)/DECIMAL_64, decimal(18,6)/DECIMAL_64, decimal(18,6), decimal(16,3), decimal(18,6)]
 
   Stage: Stage-0
     Fetch Operator

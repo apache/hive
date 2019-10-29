@@ -164,36 +164,36 @@ PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
-max                 	9                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	6                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	int                 
+min                 	0                   
+max                 	9                   
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-col_name            	value               	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	6                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	5.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	5                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: ALTER TABLE ex_table PARTITION (part='part1') RENAME TO PARTITION (part='part2')
 PREHOOK: type: ALTERTABLE_RENAMEPART
 PREHOOK: Input: default@ex_table
@@ -328,33 +328,33 @@ PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-col_name            	key                 	 	 	 	 	 	 	 	 	 	 
-data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	0                   	 	 	 	 	 	 	 	 	 	 
-max                 	9                   	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	6                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	key                 
+data_type           	int                 
+min                 	0                   
+max                 	9                   
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
 PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-col_name            	value               	 	 	 	 	 	 	 	 	 	 
-data_type           	string              	 	 	 	 	 	 	 	 	 	 
-min                 	                    	 	 	 	 	 	 	 	 	 	 
-max                 	                    	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	6                   	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	5.0                 	 	 	 	 	 	 	 	 	 	 
-max_col_len         	5                   	 	 	 	 	 	 	 	 	 	 
-num_trues           	                    	 	 	 	 	 	 	 	 	 	 
-num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
-comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   

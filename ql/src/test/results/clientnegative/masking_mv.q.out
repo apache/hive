@@ -119,7 +119,7 @@ STAGE PLANS:
   Stage: Stage-9
     Materialized View Update
       name: default.masking_test_view_n_mv
-      retrieveAndInclude: true
+      retrieve and include: true
 
   Stage: Stage-3
     Merge File Operator

@@ -77,21 +77,23 @@ public class TestHiveMetastoreTransformer {
 
   protected static boolean isThriftClient = true;
   private static final String CAPABILITIES_KEY = "OBJCAPABILITIES";
+  private static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
 
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
     wh = new File(System.getProperty("java.io.tmpdir") + File.separator +
-        "hive" + File.separator + "warehouse" + File.separator + "managed" + File.separator);
+        "hive" + File.separator + "warehouse" + File.separator + "hive" + File.separator);
     wh.mkdirs();
 
     ext_wh = new File(System.getProperty("java.io.tmpdir") + File.separator +
-        "hive" + File.separator + "warehouse" + File.separator + "external" + File.separator);
+        "hive" + File.separator + "warehouse" + File.separator + "hive-external" + File.separator);
     ext_wh.mkdirs();
 
     MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS,
         "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer");
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_IN_TEST, false);
+    MetastoreConf.setVar(conf, ConfVars.WAREHOUSE, wh.getCanonicalPath());
     MetastoreConf.setVar(conf, ConfVars.WAREHOUSE_EXTERNAL, ext_wh.getCanonicalPath());
     client = new HiveMetaStoreClient(conf);
   }
@@ -1178,12 +1180,15 @@ public class TestHiveMetastoreTransformer {
       String tableLocation = tbl2.getSd().getLocation();
       int idx = (tableLocation.indexOf(":") > 0) ? tableLocation.indexOf(":") : 0;
       tableLocation = tableLocation.substring(idx+1);
+      String expectedPath = ext_wh.getAbsolutePath().concat(File.separator).concat(dbName).concat(DATABASE_WAREHOUSE_SUFFIX)
+          .concat(File.separator).concat(tblName);
+      assertEquals("Table location", expectedPath, tableLocation);
 
       String newLocation = wh.getAbsolutePath().concat(File.separator).concat(dbName).concat(File.separator)
           .concat(tblName);
-      table.getSd().setLocation(newLocation);
+      tbl2.getSd().setLocation(newLocation);
       try {
-        client.alter_table(dbName, tblName, table);
+        client.alter_table(dbName, tblName, tbl2);
         fail("alter_table expected to fail due to location:" + newLocation);
       } catch (Exception e) {
         e.printStackTrace();

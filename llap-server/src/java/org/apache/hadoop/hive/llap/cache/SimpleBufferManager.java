@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.cache;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.io.Allocator;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.DiskRange;
@@ -85,7 +86,7 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
 
   @Override
   public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] chunks,
-      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, String tag) {
+      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, CacheTag tag) {
     for (int i = 0; i < chunks.length; ++i) {
       LlapAllocatorBuffer buffer = (LlapAllocatorBuffer)chunks[i];
       if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
