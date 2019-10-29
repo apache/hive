@@ -97,7 +97,7 @@ public class AccurateEstimatesCheckerHook extends AbstractSemanticAnalyzerHook {
 
     HiveSemanticAnalyzerHookContext hookContext = context;
     HiveConf conf = (HiveConf) hookContext.getConf();
-    absErr = conf.getDouble("accurate.estimate.checker.absolute.error", 10.0);
+    absErr = conf.getDouble("accurate.estimate.checker.absolute.error", 3.0);
     relErr = conf.getDouble("accurate.estimate.checker.relative.error", .1);
     List<Node> rootOps = Lists.newArrayList();
 
