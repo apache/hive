@@ -95,8 +95,7 @@ public final class EstimateUniqueKeys {
 
     RelMetadataQuery mq = rel.getCluster().getMetadataQuery();
     double numRows = mq.getRowCount(tScan);
-    List<ColStatistics> colStats = tScan.getColStat(BitSets
-                                                        .toList(projectedCols));
+    List<ColStatistics> colStats = tScan.getColStat(BitSets.toList(projectedCols));
     Set<ImmutableBitSet> keys = new HashSet<ImmutableBitSet>();
 
     colStatsPos = 0;

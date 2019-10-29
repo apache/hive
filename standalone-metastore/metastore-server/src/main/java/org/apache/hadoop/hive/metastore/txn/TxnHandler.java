@@ -572,7 +572,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     int numTxns = rqst.getNum_txns();
     ResultSet rs = null;
     List<PreparedStatement> insertPreparedStmts = null;
-    TxnType txnType = TxnType.DEFAULT;
+    TxnType txnType = rqst.isSetTxn_type() ? rqst.getTxn_type() : TxnType.DEFAULT;
     try {
       if (rqst.isSetReplPolicy()) {
         List<Long> targetTxnIdList = getTargetTxnIdList(rqst.getReplPolicy(), rqst.getReplSrcTxnIds(), dbConn);
