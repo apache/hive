@@ -4050,16 +4050,13 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 4272 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4173,16 +4170,13 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 4272 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4296,16 +4290,13 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 4272 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4419,16 +4410,13 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 4272 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4701,16 +4689,13 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 4272 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5071,16 +5056,13 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 4272 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5441,16 +5423,13 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 4272 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5855,16 +5834,13 @@ STAGE PLANS:
               mode: complete
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 73 Data size: 12994 Basic stats: COMPLETE Column stats: COMPLETE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 4272 Basic stats: COMPLETE Column stats: COMPLETE

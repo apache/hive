@@ -62,7 +62,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: value (type: string), key (type: string)
                 sort order: ++
-                Map-reduce partition columns: value (type: string), key (type: string)
+                Map-reduce partition columns: value (type: string)
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -220,7 +220,7 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: substr(value, 5) (type: string), key (type: string)
               sort order: ++
-              Map-reduce partition columns: substr(value, 5) (type: string), key (type: string)
+              Map-reduce partition columns: substr(value, 5) (type: string)
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
