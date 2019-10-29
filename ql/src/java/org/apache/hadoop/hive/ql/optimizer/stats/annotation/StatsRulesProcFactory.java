@@ -236,7 +236,7 @@ public class StatsRulesProcFactory {
    * <li>T(S) - Number of tuples in relations S</li>
    * <li>V(S,A) - Number of distinct values of attribute A in relation S</li>
    * </ul>
-   * <i>Rules:</i> 
+   * <i>Rules:</i>
    * <ul>
    * <li><b>Column equals a constant</b> T(S) = T(R) / V(R,A)</li>
    * <li><b>Inequality conditions</b> T(S) = T(R) / 3</li>
@@ -1119,7 +1119,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((value - minValue) / (maxValue - minValue)) * numRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
@@ -1131,7 +1131,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((maxValue - value) / (maxValue - minValue)) * numRows);
               }
             }
           } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
@@ -2225,7 +2225,7 @@ public class StatsRulesProcFactory {
         CommonJoinOperator<? extends JoinDesc> jop) {
       double pkfkSelectivity = Double.MAX_VALUE;
       int fkInd = -1;
-      double fkSelectivity = -1.0;
+      boolean isFkFiltered = false;
       // 1. We iterate through all the operators that have candidate FKs and
       // choose the FK that has the minimum selectivity. We assume that PK and this FK
       // have the PK-FK relationship. This is heuristic and can be
@@ -2240,10 +2240,7 @@ public class StatsRulesProcFactory {
         if (selectivity < pkfkSelectivity) {
           pkfkSelectivity = selectivity;
           fkInd = pos;
-          
-          xxx1(ops.get(pos), entry.getValue());
-//          fkSelectivity = getSelectivitySimpleTree(ops.get(pos));
-          fkSelectivity = entry.getValue().isFilteredColumn() ? 0.0:1.0;
+          isFkFiltered = entry.getValue().isFilteredColumn();
         }
       }
       long newrows = 1;
@@ -2262,7 +2259,8 @@ public class StatsRulesProcFactory {
         Statistics parentStats = parent.getStatistics();
         if (fkInd == pos) {
           // 2.1 This is the new number of rows after PK is joining with FK
-          if (fkSelectivity < 1.0) {
+          if (isFkFiltered) {
+            // if the foregin key is filtered by some condition we may not rescale it
             newrows = parentStats.getNumRows();
           } else {
             newrows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
@@ -2288,23 +2286,6 @@ public class StatsRulesProcFactory {
         newNumRows = this.computeFinalRowCount(rowCounts, newNumRows, jop);
       }
       return newNumRows;
-    }
-
-    private void xxx1(Operator<? extends OperatorDesc> operator, ColStatistics value) {
-      ColStatistics currCS = value;
-      Operator<? extends OperatorDesc> o = operator;
-
-//      return value.isFilteredColumn();
-//      SelectOperator sop = (SelectOperator) o;
-//      
-//      sop.getColumnExprMap();
-//
-//      
-//      List<ColStatistics> colStats =
-//      StatsUtils.getColStatisticsFromExprMap(conf, parentStats, sop.getColumnExprMap(), sop.getSchema());
-//
-//      
-      
     }
 
     private float getSelectivitySimpleTree(Operator<? extends OperatorDesc> op) {
