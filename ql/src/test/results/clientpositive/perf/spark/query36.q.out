@@ -1,3 +1,4 @@
+
 PREHOOK: query: explain
 select  
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
@@ -256,8 +257,8 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: (_col2 / _col3) ASC NULLS FIRST
-                        partition by: (grouping(_col4, 1) + grouping(_col4, 0)), CASE WHEN ((grouping(_col4, 0) = 0)) THEN (_col0) ELSE (CAST( null AS STRING)) END
+                        order by: (_col2 / _col3) ASC NULLS LAST
+                        partition by: (grouping(_col4, 1L) + grouping(_col4, 0L)), CASE WHEN ((grouping(_col4, 0L) = UDFToLong(0))) THEN (_col0) ELSE (CAST( null AS STRING)) END
                         raw input shape:
                         window functions:
                             window function definition

@@ -146,7 +146,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -191,12 +191,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_null_n3
 #### A masked pattern was here ####
 x.a	x.b
-NULL	NULL
 1	A
-2	NULL
 2	A
 2	B
+2	NULL
 3	NULL
+NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a desc, b asc
 PREHOOK: type: QUERY
@@ -271,7 +271,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: za
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: -+
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -317,9 +317,9 @@ POSTHOOK: Input: default@src_null_n3
 #### A masked pattern was here ####
 x.a	x.b
 3	NULL
-2	NULL
 2	A
 2	B
+2	NULL
 1	A
 NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -396,7 +396,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: az
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -441,12 +441,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_null_n3
 #### A masked pattern was here ####
 x.a	x.b
-2	NULL
-3	NULL
-NULL	NULL
 1	A
 2	A
 2	B
+2	NULL
+3	NULL
+NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b desc, a asc
 PREHOOK: type: QUERY
@@ -521,7 +521,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: za
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: -+
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -569,9 +569,9 @@ x.a	x.b
 2	B
 1	A
 2	A
-NULL	NULL
 2	NULL
 3	NULL
+NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a asc nulls first, b asc
 PREHOOK: type: QUERY
@@ -646,7 +646,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -693,9 +693,9 @@ POSTHOOK: Input: default@src_null_n3
 x.a	x.b
 NULL	NULL
 1	A
-2	NULL
 2	A
 2	B
+2	NULL
 3	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a desc nulls first, b asc
@@ -771,7 +771,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: -+
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -818,9 +818,9 @@ POSTHOOK: Input: default@src_null_n3
 x.a	x.b
 NULL	NULL
 3	NULL
-2	NULL
 2	A
 2	B
+2	NULL
 1	A
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b asc nulls last, a

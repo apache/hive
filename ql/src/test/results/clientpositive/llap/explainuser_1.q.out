@@ -2569,7 +2569,7 @@ Stage-0
                 Filter Operator [FIL_25] (rows=26 width=491)
                   predicate:first_value_window_0 is not null
                   PTF Operator [PTF_10] (rows=26 width=491)
-                    Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col5 ASC NULLS FIRST","partition by:":"_col2"}]
+                    Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col5 ASC NULLS LAST","partition by:":"_col2"}]
                     Select Operator [SEL_9] (rows=26 width=491)
                       Output:["_col1","_col2","_col5"]
                     <-Map 4 [SIMPLE_EDGE] llap
@@ -3025,7 +3025,7 @@ Stage-0
         Select Operator [SEL_4] (rows=20 width=64)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"]
           PTF Operator [PTF_3] (rows=20 width=621)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col0"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col0"}]
             Select Operator [SEL_2] (rows=20 width=621)
               Output:["_col0","_col1","_col2","_col3"]
             <-Map 1 [SIMPLE_EDGE] llap
@@ -3056,7 +3056,7 @@ Stage-0
         Select Operator [SEL_4] (rows=25 width=179)
           Output:["_col0","_col1","_col2"]
           PTF Operator [PTF_3] (rows=25 width=443)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col0"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col0"}]
             Select Operator [SEL_2] (rows=25 width=443)
               Output:["_col0","_col1"]
             <-Map 1 [SIMPLE_EDGE] llap
@@ -4759,14 +4759,14 @@ Stage-0
         Select Operator [SEL_7] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           PTF Operator [PTF_6] (rows=26 width=499)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_5] (rows=26 width=499)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_4]
                 PartitionCols:_col2
                 PTF Operator [PTF_3] (rows=26 width=499)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
                   Select Operator [SEL_2] (rows=26 width=499)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Map 1 [SIMPLE_EDGE] llap
@@ -4809,14 +4809,14 @@ Stage-0
         Select Operator [SEL_14] (rows=27 width=227)
           Output:["_col0","_col1","_col2","_col3"]
           PTF Operator [PTF_13] (rows=27 width=223)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_12] (rows=27 width=223)
               Output:["_col1","_col2","_col5"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_11]
                 PartitionCols:_col2
                 PTF Operator [PTF_10] (rows=27 width=223)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
                   Select Operator [SEL_9] (rows=27 width=223)
                     Output:["_col1","_col2","_col5"]
                   <-Map 1 [SIMPLE_EDGE] llap
@@ -4875,14 +4875,14 @@ Stage-0
         Select Operator [SEL_7] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           PTF Operator [PTF_6] (rows=26 width=499)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_5] (rows=26 width=499)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_4]
                 PartitionCols:_col2
                 PTF Operator [PTF_3] (rows=26 width=499)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
                   Select Operator [SEL_2] (rows=26 width=499)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Map 1 [SIMPLE_EDGE] llap
@@ -4930,14 +4930,14 @@ Stage-0
         Select Operator [SEL_7] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
           PTF Operator [PTF_6] (rows=26 width=491)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_5] (rows=26 width=491)
               Output:["_col1","_col2","_col5"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_4]
                 PartitionCols:_col2
                 PTF Operator [PTF_3] (rows=26 width=491)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
                   Select Operator [SEL_2] (rows=26 width=491)
                     Output:["_col1","_col2","_col5"]
                   <-Map 1 [SIMPLE_EDGE] llap
@@ -4988,7 +4988,7 @@ Stage-0
         Select Operator [SEL_12] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
           PTF Operator [PTF_11] (rows=26 width=223)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col0"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col0"}]
             Group By Operator [GBY_8] (rows=26 width=223)
               Output:["_col0","_col1","_col2"],keys:KEY._col0, KEY._col1, KEY._col2
             <-Reducer 3 [SIMPLE_EDGE] llap
@@ -5002,7 +5002,7 @@ Stage-0
                     Select Operator [SEL_4] (rows=26 width=491)
                       Output:["_col1","_col2","_col5"]
                       PTF Operator [PTF_3] (rows=26 width=491)
-                        Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                        Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
                         Select Operator [SEL_2] (rows=26 width=491)
                           Output:["_col1","_col2","_col5"]
                         <-Map 1 [SIMPLE_EDGE] llap
@@ -5052,7 +5052,7 @@ Stage-0
         <-Filter Operator [FIL_14] (rows=26 width=887)
             predicate:_col0 is not null
             PTF Operator [PTF_4] (rows=26 width=887)
-              Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+              Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
               Select Operator [SEL_3] (rows=26 width=887)
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
               <-Map 1 [SIMPLE_EDGE] llap
@@ -5094,21 +5094,21 @@ Stage-0
         Select Operator [SEL_8] (rows=26 width=227)
           Output:["_col0","_col1","_col2","_col3"]
           PTF Operator [PTF_7] (rows=26 width=491)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST, _col5 DESC NULLS LAST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST, _col5 DESC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_6] (rows=26 width=491)
               Output:["_col1","_col2","_col5"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_5]
                 PartitionCols:_col2
                 PTF Operator [PTF_4] (rows=26 width=491)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col1 ASC NULLS FIRST, _col5 DESC NULLS LAST","partition by:":"_col2"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col1 ASC NULLS LAST, _col5 DESC NULLS LAST","partition by:":"_col2"}}]
                   Select Operator [SEL_3] (rows=26 width=491)
                     Output:["_col1","_col2","_col5"]
                   <-Map 1 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_2]
                       PartitionCols:p_mfgr
                       PTF Operator [PTF_1] (rows=26 width=223)
-                        Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"p_name ASC NULLS FIRST, p_size DESC NULLS LAST","partition by:":"p_mfgr"}}]
+                        Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"p_name ASC NULLS LAST, p_size DESC NULLS LAST","partition by:":"p_mfgr"}}]
                         TableScan [TS_0] (rows=26 width=223)
                           default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_name","p_mfgr","p_size"]
 
@@ -5149,21 +5149,21 @@ Stage-0
         Select Operator [SEL_8] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           PTF Operator [PTF_7] (rows=26 width=499)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_6] (rows=26 width=499)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_5]
                 PartitionCols:_col2
                 PTF Operator [PTF_4] (rows=26 width=499)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
                   Select Operator [SEL_3] (rows=26 width=499)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Map 1 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_2]
                       PartitionCols:p_mfgr
                       PTF Operator [PTF_1] (rows=26 width=231)
-                        Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"p_name ASC NULLS FIRST","partition by:":"p_mfgr"}}]
+                        Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"p_name ASC NULLS LAST","partition by:":"p_mfgr"}}]
                         TableScan [TS_0] (rows=26 width=231)
                           default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_name","p_mfgr","p_size","p_retailprice"]
 
@@ -5204,14 +5204,14 @@ Stage-0
         Select Operator [SEL_7] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           PTF Operator [PTF_6] (rows=26 width=499)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_5] (rows=26 width=499)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_4]
                 PartitionCols:_col2
                 PTF Operator [PTF_3] (rows=26 width=499)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
                   Select Operator [SEL_2] (rows=26 width=499)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Map 1 [SIMPLE_EDGE] llap
@@ -5260,23 +5260,23 @@ Stage-0
         Select Operator [SEL_11] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           PTF Operator [PTF_10] (rows=26 width=499)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_9] (rows=26 width=499)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 3 [SIMPLE_EDGE] llap
               SHUFFLE [RS_8]
                 PartitionCols:_col2
                 PTF Operator [PTF_7] (rows=26 width=499)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 DESC NULLS LAST, _col1 ASC NULLS FIRST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 DESC NULLS LAST, _col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 DESC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 DESC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2"}}]
                   Select Operator [SEL_6] (rows=26 width=499)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Reducer 2 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_5]
                       PartitionCols:_col2
                       PTF Operator [PTF_4] (rows=26 width=499)
-                        Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 DESC NULLS LAST, _col1 ASC NULLS FIRST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 DESC NULLS LAST, _col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                        Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 DESC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 DESC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2"}}]
                         PTF Operator [PTF_3] (rows=26 width=499)
-                          Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 DESC NULLS LAST, _col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                          Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 DESC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2"}}]
                           Select Operator [SEL_2] (rows=26 width=499)
                             Output:["_col1","_col2","_col5","_col7"]
                           <-Map 1 [SIMPLE_EDGE] llap
@@ -5330,14 +5330,14 @@ Stage-0
         Select Operator [SEL_7] (rows=26 width=235)
           Output:["_col0","_col1","_col2","_col3"]
           PTF Operator [PTF_6] (rows=26 width=499)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_5] (rows=26 width=499)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
               SHUFFLE [RS_4]
                 PartitionCols:_col2
                 PTF Operator [PTF_3] (rows=26 width=499)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
                   Select Operator [SEL_2] (rows=26 width=499)
                     Output:["_col1","_col2","_col5","_col7"]
                   <-Map 1 [SIMPLE_EDGE] llap
@@ -5389,7 +5389,7 @@ Stage-0
         Select Operator [SEL_13] (rows=27 width=259)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
           PTF Operator [PTF_12] (rows=27 width=767)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_11] (rows=27 width=767)
               Output:["_col1","_col2","_col5","_col7"]
             <-Reducer 2 [SIMPLE_EDGE] llap
@@ -5407,7 +5407,7 @@ Stage-0
                 <-Filter Operator [FIL_18] (rows=26 width=503)
                     predicate:_col0 is not null
                     PTF Operator [PTF_4] (rows=26 width=503)
-                      Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                      Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
                       Select Operator [SEL_3] (rows=26 width=503)
                         Output:["_col0","_col1","_col2","_col5","_col7"]
                       <-Map 1 [SIMPLE_EDGE] llap
@@ -5555,14 +5555,14 @@ Stage-4
                         Select Operator [SEL_7] (rows=26 width=239)
                           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
                           PTF Operator [PTF_6] (rows=26 width=499)
-                            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+                            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
                             Select Operator [SEL_5] (rows=26 width=499)
                               Output:["_col1","_col2","_col5","_col7"]
                             <-Reducer 2 [SIMPLE_EDGE] llap
                               SHUFFLE [RS_4]
                                 PartitionCols:_col2
                                 PTF Operator [PTF_3] (rows=26 width=499)
-                                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
+                                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}}]
                                   Select Operator [SEL_2] (rows=26 width=499)
                                     Output:["_col1","_col2","_col5","_col7"]
                                   <-Map 1 [SIMPLE_EDGE] llap
@@ -5589,7 +5589,7 @@ Stage-4
                         Select Operator [SEL_25] (rows=26 width=247)
                           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
                           PTF Operator [PTF_24] (rows=26 width=499)
-                            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col3 ASC NULLS FIRST, _col2 ASC NULLS FIRST","partition by:":"_col3"}]
+                            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col3 ASC NULLS LAST, _col2 ASC NULLS LAST","partition by:":"_col3"}]
                             Select Operator [SEL_23] (rows=26 width=499)
                               Output:["_col0","_col2","_col3","_col6"]
                             <-Reducer 6 [SIMPLE_EDGE] llap
@@ -5598,7 +5598,7 @@ Stage-4
                                 Select Operator [SEL_21] (rows=26 width=491)
                                   Output:["sum_window_0","_col1","_col2","_col5"]
                                   PTF Operator [PTF_20] (rows=26 width=491)
-                                    Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col5 ASC NULLS FIRST","partition by:":"_col2"}]
+                                    Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col5 ASC NULLS LAST","partition by:":"_col2"}]
                                     Select Operator [SEL_19] (rows=26 width=491)
                                       Output:["_col1","_col2","_col5"]
                                     <-Reducer 2 [SIMPLE_EDGE] llap
@@ -5678,16 +5678,16 @@ Stage-0
               SHUFFLE [RS_8]
                 PartitionCols:_col2, _col1
                 PTF Operator [PTF_7] (rows=26 width=491)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col2, _col1"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}}]
                   Select Operator [SEL_6] (rows=26 width=491)
                     Output:["_col1","_col2","_col5"]
                   <-Reducer 2 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_5]
                       PartitionCols:_col2, _col1
                       PTF Operator [PTF_4] (rows=26 width=491)
-                        Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col2, _col1"}}]
+                        Function definitions:[{},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}}]
                         PTF Operator [PTF_3] (rows=26 width=491)
-                          Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST","partition by:":"_col2"}}]
+                          Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}}]
                           Select Operator [SEL_2] (rows=26 width=491)
                             Output:["_col1","_col2","_col5"]
                           <-Map 1 [SIMPLE_EDGE] llap
@@ -5751,28 +5751,28 @@ Stage-0
         Select Operator [SEL_13] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           PTF Operator [PTF_12] (rows=26 width=491)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_11] (rows=26 width=491)
               Output:["_col1","_col2","_col5"]
             <-Reducer 4 [SIMPLE_EDGE] llap
               SHUFFLE [RS_10]
                 PartitionCols:_col2
                 PTF Operator [PTF_9] (rows=26 width=491)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST","partition by:":"_col2"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}}]
                   Select Operator [SEL_8] (rows=26 width=491)
                     Output:["_col1","_col2","_col5"]
                   <-Reducer 3 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_7]
                       PartitionCols:_col2
                       PTF Operator [PTF_6] (rows=26 width=491)
-                        Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col2, _col1"}}]
+                        Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}}]
                         Select Operator [SEL_5] (rows=26 width=491)
                           Output:["_col1","_col2","_col5"]
                         <-Reducer 2 [SIMPLE_EDGE] llap
                           SHUFFLE [RS_4]
                             PartitionCols:_col2, _col1
                             PTF Operator [PTF_3] (rows=26 width=491)
-                              Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST","partition by:":"_col2"}}]
+                              Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}}]
                               Select Operator [SEL_2] (rows=26 width=491)
                                 Output:["_col1","_col2","_col5"]
                               <-Map 1 [SIMPLE_EDGE] llap
@@ -5831,21 +5831,21 @@ Stage-0
         Select Operator [SEL_10] (rows=26 width=239)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           PTF Operator [PTF_9] (rows=26 width=491)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST","partition by:":"_col2"}]
             Select Operator [SEL_8] (rows=26 width=491)
               Output:["_col1","_col2","_col5"]
             <-Reducer 3 [SIMPLE_EDGE] llap
               SHUFFLE [RS_7]
                 PartitionCols:_col2
                 PTF Operator [PTF_6] (rows=26 width=491)
-                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST","partition by:":"_col2"}}]
+                  Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST","partition by:":"_col2"}}]
                   Select Operator [SEL_5] (rows=26 width=491)
                     Output:["_col1","_col2","_col5"]
                   <-Reducer 2 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_4]
                       PartitionCols:_col2
                       PTF Operator [PTF_3] (rows=26 width=491)
-                        Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col2, _col1"}}]
+                        Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col2, _col1"}}]
                         Select Operator [SEL_2] (rows=26 width=491)
                           Output:["_col1","_col2","_col5"]
                         <-Map 1 [SIMPLE_EDGE] llap
