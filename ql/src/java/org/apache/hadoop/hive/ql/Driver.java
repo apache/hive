@@ -1546,6 +1546,9 @@ public class Driver implements IDriver {
     if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_LOCK_MAPRED_ONLY)) {
       return true;
     }
+    if (!HiveConf.getVar(conf, ConfVars.HIVE_QUERY_EXCLUSIVE_LOCK).isEmpty()) {
+      return true;
+    }
     Queue<Task<?>> taskQueue = new LinkedList<Task<?>>();
     taskQueue.addAll(plan.getRootTasks());
     while (taskQueue.peek() != null) {
