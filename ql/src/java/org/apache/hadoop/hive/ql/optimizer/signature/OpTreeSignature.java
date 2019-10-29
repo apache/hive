@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public final class OpTreeSignature {
-  
+
   @JsonProperty
   private int hashCode;
   @JsonProperty
