@@ -24,7 +24,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.QueryState;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -103,14 +105,15 @@ public class ScheduledQueryExecutionService implements Closeable {
     private void processQuery(ScheduledQueryPollResponse q) {
       SessionState state = null;
       try {
-        state = SessionState.start(context.conf);
+        HiveConf conf = new HiveConf(context.conf);
+        conf.setVar(ConfVars.HIVE_QUERY_EXCLUSIVE_LOCK, lockNameFor(q.getScheduleKey()));
+        state = SessionState.start(conf);
         info = new ScheduledQueryProgressInfo();
         info.setScheduledExecutionId(q.getExecutionId());
         info.setState(QueryState.EXECUTING);
         reportQueryProgress();
         try (
-          IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(context.conf), q.getUser(), null)) {
-//FIXME          driver.getHookRunner();
+          IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(conf), q.getUser(), null)) {
           info.setExecutorQueryId(driver.getQueryState().getQueryId());
           driver.run(q.getQuery());
           info.setState(QueryState.FINISHED);
@@ -128,6 +131,10 @@ public class ScheduledQueryExecutionService implements Closeable {
 
         reportQueryProgress();
       }
+    }
+
+    private String lockNameFor(ScheduledQueryKey scheduleKey) {
+      return String.format("scheduled_query_%s_%s", scheduleKey.getClusterNamespace(), scheduleKey.getScheduleName());
     }
 
     private String getErrorStringForException(Throwable t) {
