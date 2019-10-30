@@ -8706,7 +8706,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Operator genLimitMapRedPlan(String dest, QB qb, Operator input,
-                                      int offset, int limit, boolean extraMRStep) throws SemanticException {
+      int offset, int limit, boolean extraMRStep) throws SemanticException {
     // A map-only job can be optimized - instead of converting it to a
     // map-reduce job, we can have another map
     // job to do the same to avoid the cost of sorting in the map-reduce phase.
@@ -11080,23 +11080,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (limit != null) {
         // In case of order by, only 1 reducer is used, so no need of
         // another shuffle
-        curr = genLimitMapRedPlan(dest, qb, curr, offset.intValue(),
-            limit.intValue(), !hasOrderBy);
+        curr = genLimitMapRedPlan(dest, qb, curr, offset,
+            limit, limit != 0 && !hasOrderBy);
       }
     } else {
       // exact limit can be taken care of by the fetch operator
       if (limit != null) {
         boolean extraMRStep = true;
 
-        if (hasOrderBy ||
+        if (limit == 0 || hasOrderBy ||
             qb.getIsQuery() && qbp.getClusterByForClause(dest) == null &&
                 qbp.getSortByForClause(dest) == null) {
           extraMRStep = false;
         }
 
-        curr = genLimitMapRedPlan(dest, qb, curr, offset.intValue(),
-            limit.intValue(), extraMRStep);
-        qb.getParseInfo().setOuterQueryLimit(limit.intValue());
+        curr = genLimitMapRedPlan(dest, qb, curr, offset,
+            limit, extraMRStep);
+        qb.getParseInfo().setOuterQueryLimit(limit);
       }
       if (!queryState.getHiveOperation().equals(HiveOperation.CREATEVIEW)) {
         curr = genFileSinkPlan(dest, qb, curr);
