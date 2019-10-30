@@ -162,8 +162,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 4 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Map 3 (GROUP, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -255,11 +254,12 @@ STAGE PLANS:
                       Number of rows: 0
                       Statistics: Num rows: 0 Data size: 0 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        null sort order: 
-                        sort order: 
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                        tag: -1
-                        value expressions: _col0 (type: string)
+                        tag: 1
                         auto parallelism: false
             Execution mode: vectorized
             Path -> Alias:
@@ -498,25 +498,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-        Reducer 4 
-            Execution mode: vectorized
-            Needs Tagging: false
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                Limit
-                  Number of rows: 0
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    null sort order: a
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    tag: 1
-                    auto parallelism: false
 
   Stage: Stage-0
     Fetch Operator
@@ -967,7 +948,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 0
 2000
-Warning: Shuffle Join JOIN[11][tables = [a, b]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[8][tables = [a, b]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain extended
 select * from (select key from src where false) a left outer join (select value from srcpart limit 0) b
 PREHOOK: type: QUERY
@@ -996,8 +977,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 4 (PARTITION-LEVEL SORT, 1)
-        Reducer 4 <- Map 3 (GROUP, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1091,7 +1071,7 @@ STAGE PLANS:
                         null sort order: 
                         sort order: 
                         Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                        tag: -1
+                        tag: 1
                         value expressions: _col0 (type: string)
                         auto parallelism: false
             Execution mode: vectorized
@@ -1331,24 +1311,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-        Reducer 4 
-            Execution mode: vectorized
-            Needs Tagging: false
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                Limit
-                  Number of rows: 0
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    tag: 1
-                    value expressions: _col0 (type: string)
-                    auto parallelism: false
 
   Stage: Stage-0
     Fetch Operator
@@ -1356,7 +1318,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[11][tables = [a, b]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[8][tables = [a, b]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: select * from (select key from src where false) a left outer join (select value from srcpart limit 0) b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
