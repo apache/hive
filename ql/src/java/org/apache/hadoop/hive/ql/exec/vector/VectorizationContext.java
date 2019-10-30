@@ -1782,11 +1782,10 @@ import com.google.common.annotations.VisibleForTesting;
         decimal64ColumnScale = returnDecimalTypeInfo.getScale();
         isDecimal64ScaleEstablished = true;
       } else if (genericUdf instanceof GenericUDFOPDivide) {
-        // Check possible addition of long numbers overflow during decimal64 division
+        // Check possible overflow during decimal64 division for intermediate result
         // if yes then skip the optimization
         DecimalTypeInfo leftType = (DecimalTypeInfo)childExprs.get(0).getTypeInfo();
-        DecimalTypeInfo rightType = (DecimalTypeInfo)childExprs.get(1).getTypeInfo();
-        if (leftType.precision() > 17 || rightType.precision() > 17) {
+        if((leftType.precision() + returnDecimalTypeInfo.getScale()) > 18) {
           return null;
         }
       } else if (returnDecimalTypeInfo.getScale() != decimal64ColumnScale) {
