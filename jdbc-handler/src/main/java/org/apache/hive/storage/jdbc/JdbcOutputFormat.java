@@ -34,9 +34,6 @@ import java.util.Properties;
 public class JdbcOutputFormat implements OutputFormat<NullWritable, MapWritable>,
                                          HiveOutputFormat<NullWritable, MapWritable> {
 
-  private org.apache.hadoop.mapreduce.RecordWriter recordWriter;
-  private TaskAttemptContext taskContext;
-
   /**
    * {@inheritDoc}
    */
@@ -47,8 +44,8 @@ public class JdbcOutputFormat implements OutputFormat<NullWritable, MapWritable>
       boolean isCompressed,
       Properties tableProperties,
       Progressable progress) throws IOException {
-    taskContext = ShimLoader.getHadoopShims().newTaskAttemptContext(jc, null);
-    recordWriter = new GenericJdbcDatabaseAccessor().getRecordWriter(taskContext);
+    TaskAttemptContext taskAttemptContext = ShimLoader.getHadoopShims().newTaskAttemptContext(jc, null);
+    org.apache.hadoop.mapreduce.RecordWriter recordWriter = new GenericJdbcDatabaseAccessor().getRecordWriter(taskAttemptContext);
     // Wrapping DBRecordWriter in JdbcRecordWriter
     return new JdbcRecordWriter((org.apache.hadoop.mapreduce.lib.db.DBOutputFormat.DBRecordWriter) recordWriter);
   }

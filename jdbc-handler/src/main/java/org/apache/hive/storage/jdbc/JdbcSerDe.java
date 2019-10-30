@@ -159,12 +159,9 @@ public class JdbcSerDe extends AbstractSerDe {
           throws SerDeException {
     LOGGER.trace("Serializing from SerDe");
     final StructObjectInspector structObjectInspector = (StructObjectInspector) inspector;
-    final List<? extends StructField> fields = structObjectInspector
-            .getAllStructFieldRefs();
+    final List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
     if (fields.size() != numColumns) {
-      throw new SerDeException(String.format(
-              "Required %d columns, received %d.", numColumns,
-              fields.size()));
+      throw new SerDeException(String.format("Required %d columns, received %d.", numColumns, fields.size()));
     }
 
     dbRecordWritable.clear();
@@ -173,11 +170,31 @@ public class JdbcSerDe extends AbstractSerDe {
       if (structField != null) {
         Object field = structObjectInspector.getStructFieldData(row, structField);
         ObjectInspector fieldObjectInspector = structField.getFieldObjectInspector();
-        if (fieldObjectInspector.getCategory() == Category.PRIMITIVE) {
+
+        if (fieldObjectInspector.getCategory() == ObjectInspector.Category.PRIMITIVE) {
           PrimitiveObjectInspector primitiveObjectInspector = (PrimitiveObjectInspector) fieldObjectInspector;
-          dbRecordWritable.set(i, primitiveObjectInspector.getPrimitiveJavaObject(field));
+          Object primitiveJavaObject;
+
+          switch (primitiveObjectInspector.getPrimitiveCategory()) {
+            case CHAR:
+            case VARCHAR:
+              primitiveJavaObject = java.lang.String.valueOf(field.toString());
+              break;
+            case DECIMAL:
+              primitiveJavaObject = java.math.BigDecimal.valueOf(Double.valueOf(field.toString()));
+              break;
+            case DATE:
+              primitiveJavaObject = java.sql.Date.valueOf(field.toString());
+              break;
+            case TIMESTAMP:
+              primitiveJavaObject = java.sql.Timestamp.valueOf(field.toString());
+              break;
+            default:
+              primitiveJavaObject = primitiveObjectInspector.getPrimitiveJavaObject(field);
+          }
+          dbRecordWritable.set(i, primitiveJavaObject);
         } else {
-          throw new SerDeException("Unsupported type " + fieldObjectInspector);
+          throw new SerDeException("Non primitive types not supported yet");
         }
       }
     }
