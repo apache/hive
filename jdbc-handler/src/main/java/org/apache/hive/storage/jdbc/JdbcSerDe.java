@@ -203,7 +203,7 @@ public class JdbcSerDe extends AbstractSerDe {
           if (rowVal instanceof Number) {
             rowVal = ((Number) value).intValue() != 0;
           } else {
-            rowVal = Boolean.valueOf(value.toString());
+            rowVal = Boolean.valueOf(rowVal.toString());
           }
           break;
         case CHAR:
@@ -224,12 +224,7 @@ public class JdbcSerDe extends AbstractSerDe {
           }
           break;
         case TIMESTAMP:
-          if (rowVal instanceof java.sql.Timestamp) {
-            java.sql.Timestamp timestampRowVal = (java.sql.Timestamp) rowVal;
-            rowVal = Timestamp.ofEpochMilli(timestampRowVal.getTime(), timestampRowVal.getNanos());
-          } else {
-            rowVal = Timestamp.valueOf (rowVal.toString());
-          }
+          rowVal = Timestamp.valueOf (rowVal.toString());
           break;
         default:
           //do nothing
