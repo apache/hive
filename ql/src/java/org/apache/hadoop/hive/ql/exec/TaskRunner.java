@@ -79,6 +79,7 @@ public class TaskRunner extends Thread {
     runner = Thread.currentThread();
     try {
       SessionState.start(ss);
+      LogUtils.registerLoggingContext(tsk.conf);
       runSequential();
     } finally {
       try {
@@ -88,6 +89,7 @@ public class TaskRunner extends Thread {
       } catch (Exception e) {
         LOG.warn("Exception closing Metastore connection:" + e.getMessage());
       }
+      LogUtils.unregisterLoggingContext();
       runner = null;
       result.setRunning(false);
     }
