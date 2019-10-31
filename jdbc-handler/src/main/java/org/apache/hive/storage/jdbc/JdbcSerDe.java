@@ -180,7 +180,7 @@ public class JdbcSerDe extends AbstractSerDe {
           break;
         case BYTE:
           if (rowVal instanceof Number) {
-            rowVal = ((Number)rowVal).byteValue(); 
+            rowVal = ((Number)rowVal).byteValue();
           } else {
             rowVal = Byte.valueOf(rowVal.toString());
           }
