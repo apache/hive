@@ -213,15 +213,68 @@ GROUP BY
 
 ## Table Properties
 
-| Property                            | Description                                                                                                                        | Mandatory | Default                                 |
-|-------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|-----------|-----------------------------------------|
-| kafka.topic                         | Kafka topic name to map the table to.                                                                                              | Yes       | null                                    |
-| kafka.bootstrap.servers             | Table property indicating Kafka broker(s) connection string.                                                                       | Yes       | null                                    |
-| kafka.serde.class                   | Serializer and Deserializer class implementation.                                                                                  | No        | org.apache.hadoop.hive.serde2.JsonSerDe |
-| hive.kafka.poll.timeout.ms          | Parameter indicating Kafka Consumer poll timeout period in millis.  FYI this is independent from internal Kafka consumer timeouts. | No        | 5000 (5 Seconds)                        |
-| hive.kafka.max.retries              | Number of retries for Kafka metadata fetch operations.                                                                             | No        | 6                                       |
-| hive.kafka.metadata.poll.timeout.ms | Number of milliseconds before consumer timeout on fetching Kafka metadata.                                                         | No        | 30000 (30 Seconds)                      |
-| kafka.write.semantic                | Writer semantics, allowed values (AT_LEAST_ONCE, EXACTLY_ONCE)                                                         | No        | AT_LEAST_ONCE                           |
+| Property                               | Description                                                                                                                        | Mandatory | Default                                 |
+|--------------------------------------- |------------------------------------------------------------------------------------------------------------------------------------|-----------|-----------------------------------------|
+| kafka.topic                            | Kafka topic name to map the table to.                                                                                              | Yes       | null                                    |
+| kafka.bootstrap.servers                | Table property indicating Kafka broker(s) connection string.                                                                       | Yes       | null                                    |
+| kafka.serde.class                      | Serializer and Deserializer class implementation.                                                                                  | No        | org.apache.hadoop.hive.serde2.JsonSerDe |
+| hive.kafka.poll.timeout.ms             | Parameter indicating Kafka Consumer poll timeout period in millis.  FYI this is independent from internal Kafka consumer timeouts. | No        | 5000 (5 Seconds)                        |
+| hive.kafka.max.retries                 | Number of retries for Kafka metadata fetch operations.                                                                             | No        | 6                                       |
+| hive.kafka.metadata.poll.timeout.ms    | Number of milliseconds before consumer timeout on fetching Kafka metadata.                                                         | No        | 30000 (30 Seconds)                      |
+| kafka.write.semantic                   | Writer semantics, allowed values (AT_LEAST_ONCE, EXACTLY_ONCE)                                                                     | No        | AT_LEAST_ONCE                           |
+| hive.kafka.ssl.credential.keystore     | Location of credential store that holds SSL credentials. Used to avoid plaintext passwords in table properties                     | No        |                                         |
+| hive.kafka.ssl.truststore.password     | The key in the credential store used to retrieve the truststore password. This is NOT the password itself.                         | No        |                                         |
+| hive.kafka.ssl.keystore.password       | The key in the credential store used to retrieve the keystore password. This is NOT the password itself. Used for 2-way auth.      | No        |                                         |
+| hive.kafka.ssl.key.password            | The key in the credential store used to retrieve the key password. This is NOT the password itself.                                | No        |                                         |
+| hive.kafka.ssl.truststore.location     | The location of the SSL truststore. Requires HDFS for queries that require jobs. Kafka requires this to be local, so pull it down. | No        |                                         |
+| hive.kafka.ssl.keystore.location       | The location of the SSL keystore. Requires HDFS for queries that require jobs. Kafka requires this to be local, so pull it down.   | No        |                                         |
+
+### SSL
+The user can create SSL connections to Kafka, via the properties described in the table properties.
+These properties are used to retrieve passwords from a credential store to avoid being in plaintext table properties.
+To ensure security, the credential store should have appropriate permissions applied. Clients that query the table without
+being able to read the credentials store will have the query fail.
+
+Normally, the `<consumer/producer>.ssl.truststore.location` and `<consumer/producer>.ssl.keystore.location` would have to be local. Any job that requires a
+job can retrieve these from an HDFS location, and they will be sourced from HDFS and pulled locally for this purpose.
+
+The producer and consumer stores are both sourced from the same property, e.g. `hive.kafka.ssl.truststore.location`, rather than `kafka.consumer.ssl.truststore.location`.
+
+#### SSL Example
+Table creation is very simple, simply create a table as normal, and supply the appropriate Kafka
+configs (e.g. `kafka.consumer.security.protocol`), along with the credential store configs (e.g. `hive.kafka.ssl.credential.store`).
+
+```
+CREATE EXTERNAL TABLE 
+  kafka_ssl (
+    `data` STRING
+)
+STORED BY 
+  'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
+TBLPROPERTIES ( 
+  "kafka.topic" = "test-topic",
+  "kafka.bootstrap.servers" = 'localhost:9093',
+   'hive.kafka.ssl.credential.keystore'='jceks://hdfs/tmp/test.jceks',
+   'hive.kafka.ssl.keystore.password'='keystore.password',
+   'hive.kafka.ssl.truststore.password'='truststore.password',
+   'kafka.consumer.security.protocol'='SSL',
+   'hive.kafka.ssl.keystore.location'='hdfs://cluster/tmp/keystore.jks',
+   'hive.kafka.ssl.truststore.location'='hdfs://cluster/tmp/keystore.jks'
+);
+```
+
+Now we can query the table as normal.
+```
+SELECT * FROM kafka_ssl LIMIT 10;
+```
+
+Our truststore and keystore are located in HDFS, which means we can also run more complex queries that result in jobs.
+These will still connect from Kafka as expected.
+```
+SELECT `data` FROM kafka_ssl where `__offset` > 0 AND `__offset` < 10000 group by `data`;
+
+```
+
 
 
 ### Setting Extra Consumer/Producer properties.
