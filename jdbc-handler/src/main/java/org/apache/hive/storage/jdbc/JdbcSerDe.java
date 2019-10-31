@@ -165,12 +165,24 @@ public class JdbcSerDe extends AbstractSerDe {
 
         switch (hiveColumnTypes[i].getPrimitiveCategory()) {
         case INT:
-        case SHORT:
-        case BYTE:
           if (rowVal instanceof Number) {
-            rowVal = ((Number)rowVal).intValue(); 
+            rowVal = ((Number)rowVal).intValue();
           } else {
             rowVal = Integer.valueOf(rowVal.toString());
+          }
+          break;
+        case SHORT:
+          if (rowVal instanceof Number) {
+            rowVal = ((Number)rowVal).shortValue();
+          } else {
+            rowVal = Short.valueOf(rowVal.toString());
+          }
+          break;
+        case BYTE:
+          if (rowVal instanceof Number) {
+            rowVal = ((Number)rowVal).byteValue();
+          } else {
+            rowVal = Byte.valueOf(rowVal.toString());
           }
           break;
         case LONG:
