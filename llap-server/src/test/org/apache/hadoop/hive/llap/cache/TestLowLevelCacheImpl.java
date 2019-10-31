@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
+import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
@@ -117,6 +118,11 @@ public class TestLowLevelCacheImpl {
 
     @Override
     public long purge() {
+      return 0;
+    }
+
+    @Override
+    public long evictEntity(ProactiveEviction.Request request) {
       return 0;
     }
 

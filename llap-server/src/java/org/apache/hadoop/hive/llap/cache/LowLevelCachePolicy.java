@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+
+import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 
 /**
@@ -75,4 +77,6 @@ public interface LowLevelCachePolicy extends LlapIoDebugDump {
    * @return amount (bytes) of memory evicted.
    */
   long purge();
+
+  long evictEntity(ProactiveEviction.Request request);
 }

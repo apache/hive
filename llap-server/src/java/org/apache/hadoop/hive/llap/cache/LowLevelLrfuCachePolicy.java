@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
@@ -238,6 +239,11 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   @Override
   public void setEvictionListener(EvictionListener listener) {
     this.evictionListener = listener;
+  }
+
+  @Override
+  public long evictEntity(ProactiveEviction.Request request) {
+    return 0;
   }
 
   @Override

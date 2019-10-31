@@ -231,6 +231,21 @@ message SetCapacityRequestProto {
 message SetCapacityResponseProto {
 }
 
+message EvictEntityRequestProto {
+  required string db_name = 1;
+  repeated TableProto table = 2;
+}
+
+message TableProto {
+  required string table_name = 1;
+  repeated string part_key = 2;
+  repeated string part_val = 3;
+}
+
+message EvictEntityResponseProto {
+  required bool ack = 1;
+}
+
 service LlapDaemonProtocol {
   rpc registerDag(RegisterDagRequestProto) returns (RegisterDagResponseProto);
   rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
@@ -241,8 +256,9 @@ service LlapDaemonProtocol {
 }
 
 service LlapManagementProtocol {
-  rpc getDelegationToken(GetTokenRequestProto) returns (GetTokenResponseProto);
-  rpc purgeCache(PurgeCacheRequestProto) returns (PurgeCacheResponseProto);
-  rpc getDaemonMetrics(GetDaemonMetricsRequestProto) returns (GetDaemonMetricsResponseProto);
-  rpc setCapacity(SetCapacityRequestProto) returns (SetCapacityResponseProto);
+  rpc getDelegationToken (GetTokenRequestProto) returns (GetTokenResponseProto);
+  rpc purgeCache (PurgeCacheRequestProto) returns (PurgeCacheResponseProto);
+  rpc getDaemonMetrics (GetDaemonMetricsRequestProto) returns (GetDaemonMetricsResponseProto);
+  rpc setCapacity (SetCapacityRequestProto) returns (SetCapacityResponseProto);
+  rpc evictEntity (EvictEntityRequestProto) returns (EvictEntityResponseProto);
 }

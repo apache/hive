@@ -333,6 +333,23 @@ public class LlapProtocolServerImpl extends AbstractService
     }
   }
 
+  @Override
+  public LlapDaemonProtocolProtos.EvictEntityResponseProto evictEntity(
+      RpcController controller, LlapDaemonProtocolProtos.EvictEntityRequestProto request)
+      throws ServiceException {
+    LlapDaemonProtocolProtos.EvictEntityResponseProto.Builder responseProtoBuilder =
+        LlapDaemonProtocolProtos.EvictEntityResponseProto.newBuilder();
+
+    LlapIo<?> llapIo = LlapProxy.getIo();
+    if (llapIo != null) {
+      llapIo.evictEntity(request);
+      responseProtoBuilder.setAck(true);
+    } else {
+      responseProtoBuilder.setAck(false);
+    }
+    return responseProtoBuilder.build();
+  }
+
   private boolean determineIfSigningIsRequired(UserGroupInformation callingUser) {
     switch (isSigningRequiredConfig) {
     case FALSE: return false;
