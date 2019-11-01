@@ -224,7 +224,12 @@ public class JdbcSerDe extends AbstractSerDe {
           }
           break;
         case TIMESTAMP:
-          rowVal = Timestamp.valueOf (rowVal.toString());
+          if (rowVal instanceof java.sql.Timestamp) {
+            java.sql.Timestamp timestampRowVal = (java.sql.Timestamp) rowVal;
+            rowVal = new Timestamp(timestampRowVal);
+          } else {
+            rowVal = Timestamp.valueOf (rowVal.toString());
+          }
           break;
         default:
           //do nothing
