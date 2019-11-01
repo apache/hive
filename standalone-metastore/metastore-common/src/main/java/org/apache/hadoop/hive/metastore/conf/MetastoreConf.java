@@ -1565,16 +1565,18 @@ public class MetastoreConf {
                 LOG.warn("Cannot get jar URI", e);
               }
               result = seeIfConfAtThisLocation(new File(jarUri).getParent(), name, true);
-              // At this point if we haven't found it, screw it, we don't know where it is
-              if (result == null) {
-                LOG.info("Unable to find config file " + name);
-              }
             }
           }
         }
       }
     }
-    LOG.info("Found configuration file " + result);
+
+    if (result == null) {
+      LOG.info("Unable to find config file: " + name);
+    } else {
+      LOG.info("Found configuration file: " + result);
+    }
+
     return result;
   }
 
