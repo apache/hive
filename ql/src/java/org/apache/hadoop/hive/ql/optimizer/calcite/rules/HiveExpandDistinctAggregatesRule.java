@@ -16,21 +16,22 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.stream.Collectors;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.Aggregate.Group;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.metadata.RelColumnOrigin;
@@ -44,7 +45,6 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
-import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
@@ -112,7 +111,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     final Aggregate aggregate = call.rel(0);
     int numCountDistinct = getNumCountDistinctCall(aggregate);
-    if (numCountDistinct == 0) {
+    if (numCountDistinct == 0 || aggregate.getGroupType() != Group.SIMPLE) {
       return;
     }
 
@@ -121,7 +120,8 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     int nonDistinctCount = 0;
     List<List<Integer>> argListList = new ArrayList<List<Integer>>();
     Set<List<Integer>> argListSets = new LinkedHashSet<List<Integer>>();
-    Set<Integer> positions = new HashSet<>();
+    ImmutableBitSet.Builder newGroupSet = ImmutableBitSet.builder();
+    newGroupSet.addAll(aggregate.getGroupSet());
     for (AggregateCall aggCall : aggregate.getAggCallList()) {
       if (!aggCall.isDistinct()) {
         ++nonDistinctCount;
@@ -130,33 +130,27 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
       ArrayList<Integer> argList = new ArrayList<Integer>();
       for (Integer arg : aggCall.getArgList()) {
         argList.add(arg);
-        positions.add(arg);
+        newGroupSet.set(arg);
       }
       // Aggr checks for sorted argList.
       argListList.add(argList);
       argListSets.add(argList);
     }
-    Util.permAssert(argListSets.size() > 0, "containsDistinctCall lied");
+    Preconditions.checkArgument(argListSets.size() > 0, "containsDistinctCall lied");
 
-    if (numCountDistinct > 1 && numCountDistinct == aggregate.getAggCallList().size()
-        && aggregate.getGroupSet().isEmpty()) {
+    if (numCountDistinct > 1 && numCountDistinct == aggregate.getAggCallList().size()) {
       LOG.debug("Trigger countDistinct rewrite. numCountDistinct is " + numCountDistinct);
       // now positions contains all the distinct positions, i.e., $5, $4, $6
       // we need to first sort them as group by set
       // and then get their position later, i.e., $4->1, $5->2, $6->3
       cluster = aggregate.getCluster();
       rexBuilder = cluster.getRexBuilder();
-      RelNode converted = null;
-      List<Integer> sourceOfForCountDistinct = new ArrayList<>();
-      sourceOfForCountDistinct.addAll(positions);
-      Collections.sort(sourceOfForCountDistinct);
       try {
-        converted = convert(aggregate, argListList, sourceOfForCountDistinct);
+        call.transformTo(convert(aggregate, argListList, newGroupSet.build()));
       } catch (CalciteSemanticException e) {
         LOG.debug(e.toString());
         throw new RuntimeException(e);
       }
-      call.transformTo(converted);
       return;
     }
 
@@ -200,19 +194,23 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
    * (department_id, gender, education_level))subq;
    * @throws CalciteSemanticException 
    */
-  private RelNode convert(Aggregate aggregate, List<List<Integer>> argList, List<Integer> sourceOfForCountDistinct) throws CalciteSemanticException {
+  private RelNode convert(Aggregate aggregate, List<List<Integer>> argList, ImmutableBitSet newGroupSet)
+      throws CalciteSemanticException {
     // we use this map to map the position of argList to the position of grouping set
     Map<Integer, Integer> map = new HashMap<>();
     List<List<Integer>> cleanArgList = new ArrayList<>();
-    final Aggregate groupingSets = createGroupingSets(aggregate, argList, cleanArgList, map, sourceOfForCountDistinct);
-    return createCount(groupingSets, argList, cleanArgList, map, sourceOfForCountDistinct);
+    final Aggregate groupingSets = createGroupingSets(aggregate, argList, cleanArgList, map, newGroupSet);
+    return createCount(groupingSets, argList, cleanArgList, map, aggregate.getGroupSet(), newGroupSet);
   }
 
-  private int getGroupingIdValue(List<Integer> list, List<Integer> sourceOfForCountDistinct,
+  private int getGroupingIdValue(List<Integer> list, ImmutableBitSet originalGroupSet, ImmutableBitSet newGroupSet,
           int groupCount) {
     int ind = IntMath.pow(2, groupCount) - 1;
+    for (int pos : originalGroupSet) {
+      ind &= ~(1 << groupCount - newGroupSet.indexOf(pos) - 1);
+    }
     for (int i : list) {
-      ind &= ~(1 << groupCount - sourceOfForCountDistinct.indexOf(i) - 1);
+      ind &= ~(1 << groupCount - newGroupSet.indexOf(i) - 1);
     }
     return ind;
   }
@@ -222,28 +220,28 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
    * @param argList: the original argList in aggregate
    * @param cleanArgList: the new argList without duplicates
    * @param map: the mapping from the original argList to the new argList
-   * @param sourceOfForCountDistinct: the sorted positions of groupset
+   * @param newGroupSet: the sorted positions of groupset
    * @return
    * @throws CalciteSemanticException
    */
   private RelNode createCount(Aggregate aggr, List<List<Integer>> argList,
       List<List<Integer>> cleanArgList, Map<Integer, Integer> map,
-      List<Integer> sourceOfForCountDistinct) throws CalciteSemanticException {
-    List<RexNode> originalInputRefs = Lists.transform(aggr.getRowType().getFieldList(),
-        new Function<RelDataTypeField, RexNode>() {
-          @Override
-          public RexNode apply(RelDataTypeField input) {
-            return new RexInputRef(input.getIndex(), input.getType());
-          }
-        });
+      ImmutableBitSet originalGroupSet, ImmutableBitSet newGroupSet) throws CalciteSemanticException {
+    final List<RexNode> originalInputRefs = aggr.getRowType().getFieldList()
+        .stream()
+        .map(input -> new RexInputRef(input.getIndex(), input.getType()))
+        .collect(Collectors.toList());
     final List<RexNode> gbChildProjLst = Lists.newArrayList();
     // for singular arg, count should not include null
     // e.g., count(case when i=1 and department_id is not null then 1 else null end) as c0, 
     // for non-singular args, count can include null, i.e. (,) is counted as 1
     for (List<Integer> list : cleanArgList) {
-      RexNode condition = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, originalInputRefs
-          .get(originalInputRefs.size() - 1), rexBuilder.makeExactLiteral(new BigDecimal(
-          getGroupingIdValue(list, sourceOfForCountDistinct, aggr.getGroupCount()))));
+      RexNode condition = rexBuilder.makeCall(
+          SqlStdOperatorTable.EQUALS,
+          originalInputRefs.get(originalInputRefs.size() - 1),
+          rexBuilder.makeExactLiteral(
+              new BigDecimal(
+                  getGroupingIdValue(list, originalGroupSet, newGroupSet, aggr.getGroupCount()))));
       if (list.size() == 1) {
         int pos = list.get(0);
         RexNode notNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL,
@@ -255,6 +253,10 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
       RexNode when = rexBuilder.makeCall(SqlStdOperatorTable.CASE, condition,
           caseExpr1, caseExpr2);
       gbChildProjLst.add(when);
+    }
+
+    for (int pos : originalGroupSet) {
+      gbChildProjLst.add(originalInputRefs.get(newGroupSet.indexOf(pos)));
     }
 
     // create the project before GB
@@ -269,23 +271,25 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
           TypeInfoFactory.longTypeInfo, i, aggFnRetType);
       aggregateCalls.add(aggregateCall);
     }
+    ImmutableBitSet groupSet =
+        ImmutableBitSet.range(cleanArgList.size(), cleanArgList.size() + originalGroupSet.cardinality());
     Aggregate aggregate = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), gbInputRel,
-        ImmutableBitSet.of(), null, aggregateCalls);
+        groupSet, null, aggregateCalls);
 
     // create the project after GB. For those repeated values, e.g., select
     // count(distinct x, y), count(distinct y, x), we find the correct mapping.
     if (map.isEmpty()) {
       return aggregate;
     } else {
-      List<RexNode> originalAggrRefs = Lists.transform(aggregate.getRowType().getFieldList(),
-          new Function<RelDataTypeField, RexNode>() {
-            @Override
-            public RexNode apply(RelDataTypeField input) {
-              return new RexInputRef(input.getIndex(), input.getType());
-            }
-          });
+      final List<RexNode> originalAggrRefs = aggregate.getRowType().getFieldList()
+          .stream()
+          .map(input -> new RexInputRef(input.getIndex(), input.getType()))
+          .collect(Collectors.toList());
       final List<RexNode> projLst = Lists.newArrayList();
       int index = 0;
+      for (int i = 0; i < groupSet.cardinality(); i++) {
+        projLst.add(originalAggrRefs.get(index++));
+      }
       for (int i = 0; i < argList.size(); i++) {
         if (map.containsKey(i)) {
           projLst.add(originalAggrRefs.get(map.get(i)));
@@ -302,18 +306,18 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
    * @param argList: the original argList in aggregate
    * @param cleanArgList: the new argList without duplicates
    * @param map: the mapping from the original argList to the new argList
-   * @param sourceOfForCountDistinct: the sorted positions of groupset
+   * @param groupSet: new group set
    * @return
    */
   private Aggregate createGroupingSets(Aggregate aggregate, List<List<Integer>> argList,
       List<List<Integer>> cleanArgList, Map<Integer, Integer> map,
-      List<Integer> sourceOfForCountDistinct) {
-    final ImmutableBitSet groupSet = ImmutableBitSet.of(sourceOfForCountDistinct);
+      ImmutableBitSet groupSet) {
     final List<ImmutableBitSet> origGroupSets = new ArrayList<>();
 
     for (int i = 0; i < argList.size(); i++) {
       List<Integer> list = argList.get(i);
-      ImmutableBitSet bitSet = ImmutableBitSet.of(list);
+      ImmutableBitSet bitSet = aggregate.getGroupSet().union(
+          ImmutableBitSet.of(list));
       int prev = origGroupSets.indexOf(bitSet);
       if (prev == -1) {
         origGroupSets.add(bitSet);
@@ -323,7 +327,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
       }
     }
     // Calcite expects the grouping sets sorted and without duplicates
-    Collections.sort(origGroupSets, ImmutableBitSet.COMPARATOR);
+    origGroupSets.sort(ImmutableBitSet.COMPARATOR);
 
     List<AggregateCall> aggregateCalls = new ArrayList<AggregateCall>();
     // Create GroupingID column
