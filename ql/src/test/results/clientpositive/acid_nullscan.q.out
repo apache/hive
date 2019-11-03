@@ -38,7 +38,7 @@ POSTHOOK: Input: default@acid_vectorized_n1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT SUM(`a`) AS `$f0`
 FROM `default`.`acid_vectorized_n1`
-WHERE FALSE
+LIMIT 0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -51,26 +51,29 @@ STAGE PLANS:
             alias: acid_vectorized_n1
             Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: false (type: boolean)
-              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-              Group By Operator
-                aggregations: sum(a)
-                minReductionHashAggr: 0.99
-                mode: hash
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  null sort order: 
-                  sort order: 
+            Select Operator
+              expressions: a (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+              Limit
+                Number of rows: 0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col0)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  tag: -1
-                  value expressions: _col0 (type: bigint)
-                  auto parallelism: false
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    tag: -1
+                    value expressions: _col0 (type: bigint)
+                    auto parallelism: false
       Execution mode: vectorized
       Path -> Alias:
-        nullscan://null/default.acid_vectorized_n1/part_ [acid_vectorized_n1]
+        nullscan://null/default.acid_vectorized_n1/part_ [$hdt$_0:$hdt$_0:acid_vectorized_n1]
       Path -> Partition:
         nullscan://null/default.acid_vectorized_n1/part_ 
           Partition
@@ -126,7 +129,7 @@ STAGE PLANS:
               name: default.acid_vectorized_n1
             name: default.acid_vectorized_n1
       Truncated Path -> Alias:
-        nullscan://null/default.acid_vectorized_n1/part_ [acid_vectorized_n1]
+        nullscan://null/default.acid_vectorized_n1/part_ [$hdt$_0:$hdt$_0:acid_vectorized_n1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
