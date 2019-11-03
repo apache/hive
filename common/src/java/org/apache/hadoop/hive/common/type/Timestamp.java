@@ -88,10 +88,6 @@ public class Timestamp implements Comparable<Timestamp> {
     this(t.localDateTime);
   }
 
-  public Timestamp(java.sql.Timestamp ts) {
-    this(ts.toLocalDateTime());
-  }
-
   public void set(Timestamp t) {
     this.localDateTime = t != null ? t.localDateTime : EPOCH;
   }
