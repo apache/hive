@@ -98,16 +98,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 0
       Processor Tree:
-        TableScan
-          alias: t1
-          Filter Operator
-            predicate: false (type: boolean)
-            Select Operator
-              expressions: a (type: decimal(3,1))
-              outputColumnNames: _col0
-              ListSink
+        ListSink
 
 PREHOOK: query: explain select * from t1 where a = 'ab'
 PREHOOK: type: QUERY
@@ -123,14 +116,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 0
       Processor Tree:
-        TableScan
-          alias: t1
-          Filter Operator
-            predicate: false (type: boolean)
-            Select Operator
-              expressions: a (type: decimal(3,1))
-              outputColumnNames: _col0
-              ListSink
+        ListSink
 

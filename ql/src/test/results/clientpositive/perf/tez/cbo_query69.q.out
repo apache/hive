@@ -115,7 +115,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$4], sort4=[$6], dir0=[
           HiveProject(c_customer_sk=[$0], c_current_cdemo_sk=[$1], c_current_addr_sk=[$2], ca_address_sk=[$3], ca_state=[$4], cd_demo_sk=[$5], cd_gender=[$6], cd_marital_status=[$7], cd_education_status=[$8], cd_purchase_estimate=[$9], cd_credit_rating=[$10], literalTrue=[$11], ws_bill_customer_sk0=[$12])
             HiveFilter(condition=[IS NULL($11)])
               HiveJoin(condition=[=($0, $12)], joinType=[left], algorithm=[none], cost=[not available])
-                HiveSemiJoin(condition=[=($0, $11)], joinType=[inner])
+                HiveSemiJoin(condition=[=($0, $11)], joinType=[semi])
                   HiveJoin(condition=[=($5, $1)], joinType=[inner], algorithm=[none], cost=[not available])
                     HiveJoin(condition=[=($2, $3)], joinType=[inner], algorithm=[none], cost=[not available])
                       HiveProject(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_addr_sk=[$4])

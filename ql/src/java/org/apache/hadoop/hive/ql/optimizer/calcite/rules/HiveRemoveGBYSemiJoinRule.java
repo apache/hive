@@ -51,9 +51,8 @@ public class HiveRemoveGBYSemiJoinRule extends RelOptRule {
   @Override public void onMatch(RelOptRuleCall call) {
     final HiveSemiJoin semijoin= call.rel(0);
 
-    if(semijoin.getJoinType() != JoinRelType.INNER) {
-      return;
-    }
+    assert semijoin.getJoinType() == JoinRelType.SEMI;
+
     final RelNode left = call.rel(1);
     final Aggregate rightAggregate= call.rel(2);
 

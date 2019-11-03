@@ -893,19 +893,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 0
       Processor Tree:
-        TableScan
-          alias: cbo_t2
-          Statistics: Num rows: 1 Data size: 564 Basic stats: COMPLETE Column stats: PARTIAL
-          Filter Operator
-            predicate: false (type: boolean)
-            Statistics: Num rows: 1 Data size: 564 Basic stats: COMPLETE Column stats: PARTIAL
-            Select Operator
-              expressions: key (type: string), value (type: string), c_int (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
-              outputColumnNames: key, value, c_int, c_float, c_boolean, dt
-              Statistics: Num rows: 1 Data size: 564 Basic stats: COMPLETE Column stats: PARTIAL
-              ListSink
+        ListSink
 
 PREHOOK: query: -- rewrite to NULL
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 2*cbo_t2.c_int)

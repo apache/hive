@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -32,6 +31,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
@@ -97,8 +97,8 @@ public class HiveOpConverter {
       return new JoinVisitor(this).visit((HiveMultiJoin) rn);
     } else if (rn instanceof HiveJoin) {
       return new JoinVisitor(this).visit((HiveJoin) rn);
-    } else if (rn instanceof SemiJoin) {
-      return new JoinVisitor(this).visit((SemiJoin) rn);
+    } else if (rn instanceof HiveSemiJoin) {
+      return new JoinVisitor(this).visit((HiveSemiJoin) rn);
     } else if (rn instanceof HiveFilter) {
       return new HiveFilterVisitor(this).visit((HiveFilter) rn);
     } else if (rn instanceof HiveSortLimit) {

@@ -698,7 +698,6 @@ public abstract class BaseJdbcWithMiniLlap {
     }
 
     InputSplit[] splits = inputFormat.getSplits(job, numSplits);
-    assertTrue(splits.length > 0);
 
     // Fetch rows from splits
     int rowCount = 0;

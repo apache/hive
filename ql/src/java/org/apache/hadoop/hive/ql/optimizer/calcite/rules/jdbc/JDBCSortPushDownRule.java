@@ -19,13 +19,18 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc;
 
 import java.util.Arrays;
 
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilter;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilterRule;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSortRule;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSort;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexLiteral;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.slf4j.Logger;
@@ -68,15 +73,21 @@ public class JDBCSortPushDownRule extends RelOptRule {
     final HiveSortLimit sort = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
 
-    JdbcSort jdbcSort = new JdbcSort(
-        sort.getCluster(),
-        sort.getTraitSet().replace(converter.getJdbcConvention()),
-        converter.getInput(),
-        sort.getCollation(),
-        sort.offset,
-        sort.fetch);
+    RelNode node = (sort.fetch != null && RexLiteral.intValue(sort.fetch) == 0)
+      ? new JdbcFilter(
+            sort.getCluster(),
+            sort.getTraitSet().replace(converter.getJdbcConvention()),
+            converter.getInput(),
+            call.builder().literal(false))
+      : new JdbcSort(
+            sort.getCluster(),
+            sort.getTraitSet().replace(converter.getJdbcConvention()),
+            converter.getInput(),
+            sort.getCollation(),
+            sort.offset,
+            sort.fetch);
 
-    call.transformTo(converter.copy(converter.getTraitSet(), jdbcSort));
+    call.transformTo(converter.copy(converter.getTraitSet(), node));
   }
 
 }

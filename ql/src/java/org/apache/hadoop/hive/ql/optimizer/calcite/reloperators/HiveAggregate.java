@@ -53,14 +53,9 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
 
   @Override
   public Aggregate copy(RelTraitSet traitSet, RelNode input,
-          boolean indicator, ImmutableBitSet groupSet,
+          ImmutableBitSet groupSet,
           List<ImmutableBitSet> groupSets, List<AggregateCall> aggCalls) {
-      if (indicator) {
-        throw new IllegalStateException("Hive does not support indicator columns but tried "
-                + "to create an Aggregate operator containing them");
-      }
-      return new HiveAggregate(getCluster(), traitSet, input,
-              groupSet, groupSets, aggCalls);
+    return new HiveAggregate(getCluster(), traitSet, input, groupSet, groupSets, aggCalls);
   }
 
   @Override

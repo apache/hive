@@ -83,8 +83,7 @@ public class HiveSemiJoinProjectTransposeRule extends RelOptRule {
 
     Join newSemiJoin =
         HiveSemiJoin.getSemiJoin(project.getCluster(), project.getTraitSet(),
-            project.getInput(), semiJoin.getRight(), newCondition,
-            joinInfo.leftKeys, joinInfo.rightKeys);
+            project.getInput(), semiJoin.getRight(), newCondition);
 
     // Create the new projection.  Note that the projection expressions
     // are the same as the original because they only reference the LHS

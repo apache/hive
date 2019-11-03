@@ -29,7 +29,6 @@ import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableScan;
@@ -74,6 +73,8 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -674,7 +675,7 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     relBuilder.push(newInputs.get(0));
     relBuilder.push(newInputs.get(1));
 
-    if (join instanceof SemiJoin) {
+    if (join instanceof HiveSemiJoin) {
       relBuilder.semiJoin(newConditionExpr);
       // For SemiJoins only map fields from the left-side
       Mapping inputMapping = inputMappings.get(0);

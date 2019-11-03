@@ -139,7 +139,7 @@ HiveProject(ca_state=[$0], cd_gender=[$1], cd_marital_status=[$2], cnt1=[$3], _o
               HiveFilter(condition=[OR(IS NOT NULL($3), IS NOT NULL($5))])
                 HiveJoin(condition=[=($0, $6)], joinType=[left], algorithm=[none], cost=[not available])
                   HiveJoin(condition=[=($0, $4)], joinType=[left], algorithm=[none], cost=[not available])
-                    HiveSemiJoin(condition=[=($0, $3)], joinType=[inner])
+                    HiveSemiJoin(condition=[=($0, $3)], joinType=[semi])
                       HiveProject(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_addr_sk=[$4])
                         HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($4))])
                           HiveTableScan(table=[[default, customer]], table:alias=[c])

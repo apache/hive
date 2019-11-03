@@ -115,7 +115,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col5 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col5 (type: int)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -138,7 +138,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -164,7 +164,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -181,7 +181,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 35816 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col3 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col3 (type: string)
                   Statistics: Num rows: 1 Data size: 35816 Basic stats: COMPLETE Column stats: NONE
@@ -213,7 +213,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -259,11 +259,7 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-<<<<<<< HEAD
-Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
-=======
-Warning: Shuffle Join JOIN[24][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 8' is a cross product
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+Warning: Shuffle Join JOIN[25][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 8' is a cross product
 PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -280,21 +276,12 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-<<<<<<< HEAD
-        Reducer 10 <- Map 5 (GROUP, 2)
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 6 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 1), Reducer 8 (PARTITION-LEVEL SORT, 1)
-        Reducer 4 <- Reducer 10 (PARTITION-LEVEL SORT, 2), Reducer 3 (PARTITION-LEVEL SORT, 2)
-        Reducer 6 <- Map 5 (GROUP, 2)
-        Reducer 8 <- Map 7 (GROUP, 1)
-=======
-        Reducer 10 <- Map 9 (GROUP, 2)
+        Reducer 10 <- Map 4 (GROUP, 2)
         Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 5 (PARTITION-LEVEL SORT, 2)
         Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2), Reducer 8 (PARTITION-LEVEL SORT, 2)
         Reducer 5 <- Map 4 (GROUP, 2)
         Reducer 7 <- Map 6 (GROUP, 1)
         Reducer 8 <- Reducer 10 (PARTITION-LEVEL SORT, 1), Reducer 7 (PARTITION-LEVEL SORT, 1)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -311,12 +298,8 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-<<<<<<< HEAD
-                        key expressions: _col1 (type: string)
-                        null sort order: a
-=======
                         key expressions: _col3 (type: string)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col3 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -326,10 +309,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: p_name (type: string)
-                    outputColumnNames: p_name
+                  Filter Operator
+                    predicate: p_name is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: p_name (type: string)
@@ -339,7 +322,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -365,29 +348,6 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint)
             Execution mode: vectorized
-<<<<<<< HEAD
-=======
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  alias: part_null
-                  filterExpr: p_name is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: p_name is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: p_name (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
         Reducer 10 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -397,19 +357,10 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    null sort order: a
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: boolean)
-=======
                   value expressions: _col0 (type: string)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -421,14 +372,10 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10
                 Statistics: Num rows: 1 Data size: 35816 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-<<<<<<< HEAD
-                  null sort order: 
-                  sort order: 
-=======
                   key expressions: _col1 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   Statistics: Num rows: 1 Data size: 35816 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col10 (type: boolean)
         Reducer 3 
@@ -437,52 +384,6 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-                  0 
-                  1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11
-                Statistics: Num rows: 1 Data size: 35833 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col3 (type: string)
-                  null sort order: a
-                  sort order: +
-                  Map-reduce partition columns: _col3 (type: string)
-                  Statistics: Num rows: 1 Data size: 35833 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col10 (type: bigint), _col11 (type: bigint)
-        Reducer 4 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Left Outer Join 0 to 1
-                keys:
-                  0 _col3 (type: string)
-                  1 _col0 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
-                Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: ((_col13 is null or (_col10 = 0L)) and (_col3 is not null or (_col10 = 0L) or _col13 is not null) and ((_col11 >= _col10) or (_col10 = 0L) or _col13 is not null or _col3 is null)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
-<<<<<<< HEAD
-=======
-=======
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   0 _col1 (type: string)
                   1 _col2 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col12
@@ -492,11 +393,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
                   Statistics: Num rows: 1 Data size: 39397 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-<<<<<<< HEAD
-                    predicate: ((_col13 is null or (_col10 = 0L)) and (_col3 is not null or (_col10 = 0L) or _col13 is not null) and ((_col11 >= _col10) or (_col10 = 0L) or _col13 is not null or _col3 is null)) (type: boolean)
-=======
-                    predicate: ((_col10 = 0L) or (_col13 is null and _col3 is not null and (_col11 >= _col10))) (type: boolean)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                    predicate: ((_col10 = 0L) or (_col13 is null and (_col11 >= _col10) and _col3 is not null)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 39397 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -510,11 +407,6 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-<<<<<<< HEAD
->>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -522,20 +414,13 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  null sort order: a
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-=======
                 Select Operator
                   expressions: _col0 (type: string), true (type: boolean)
                   outputColumnNames: _col0, _col1
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -565,6 +450,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 32577 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col2 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col2 (type: string)
                   Statistics: Num rows: 1 Data size: 32577 Basic stats: COMPLETE Column stats: NONE
@@ -576,11 +462,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-<<<<<<< HEAD
-Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
-=======
-Warning: Shuffle Join JOIN[24][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 8' is a cross product
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+Warning: Shuffle Join JOIN[25][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 8' is a cross product
 PREHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -589,11 +471,7 @@ POSTHOOK: query: select * from part_null where p_name IN (select p_name from par
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
-<<<<<<< HEAD
-Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
-=======
-Warning: Shuffle Join JOIN[24][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 8' is a cross product
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+Warning: Shuffle Join JOIN[25][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 8' is a cross product
 PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -632,12 +510,8 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-<<<<<<< HEAD
-                        key expressions: _col1 (type: string)
-                        null sort order: a
-=======
                         key expressions: _col3 (type: string)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col3 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -647,24 +521,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_type is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: p_type (type: string)
-                    outputColumnNames: p_type
+                  Filter Operator
+                    predicate: p_type is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-<<<<<<< HEAD
-                      keys: p_name (type: string)
-                      minReductionHashAggr: 0.99
-=======
                       keys: p_type (type: string)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -694,31 +564,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
-<<<<<<< HEAD
-                  filterExpr: p_type is not null (type: boolean)
-=======
                   filterExpr: p_name is not null (type: boolean)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-<<<<<<< HEAD
-                    predicate: p_type is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: p_type (type: string)
-                      minReductionHashAggr: 0.99
-=======
                     predicate: p_name is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: p_name (type: string)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -732,19 +591,10 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    null sort order: a
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: boolean)
-=======
                   value expressions: _col0 (type: string)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -756,14 +606,10 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10
                 Statistics: Num rows: 1 Data size: 35816 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-<<<<<<< HEAD
-                  null sort order: 
-                  sort order: 
-=======
                   key expressions: _col1 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   Statistics: Num rows: 1 Data size: 35816 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col10 (type: boolean)
         Reducer 3 
@@ -772,52 +618,6 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-                  0 
-                  1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11
-                Statistics: Num rows: 1 Data size: 35833 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col3 (type: string)
-                  null sort order: a
-                  sort order: +
-                  Map-reduce partition columns: _col3 (type: string)
-                  Statistics: Num rows: 1 Data size: 35833 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col10 (type: bigint), _col11 (type: bigint)
-        Reducer 4 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Left Outer Join 0 to 1
-                keys:
-                  0 _col3 (type: string)
-                  1 _col0 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
-                Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: ((_col13 is null or (_col10 = 0L)) and (_col3 is not null or (_col10 = 0L) or _col13 is not null) and ((_col11 >= _col10) or (_col10 = 0L) or _col13 is not null or _col3 is null)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
-<<<<<<< HEAD
-=======
-=======
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   0 _col1 (type: string)
                   1 _col2 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col12
@@ -827,11 +627,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
                   Statistics: Num rows: 1 Data size: 39397 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-<<<<<<< HEAD
-                    predicate: ((_col13 is null or (_col10 = 0L)) and (_col3 is not null or (_col10 = 0L) or _col13 is not null) and ((_col11 >= _col10) or (_col10 = 0L) or _col13 is not null or _col3 is null)) (type: boolean)
-=======
-                    predicate: ((_col10 = 0L) or (_col13 is null and _col3 is not null and (_col11 >= _col10))) (type: boolean)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                    predicate: ((_col10 = 0L) or (_col13 is null and (_col11 >= _col10) and _col3 is not null)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 39397 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -845,11 +641,6 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-<<<<<<< HEAD
->>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -857,20 +648,13 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  null sort order: a
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-=======
                 Select Operator
                   expressions: _col0 (type: string), true (type: boolean)
                   outputColumnNames: _col0, _col1
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -900,6 +684,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 32577 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col2 (type: string)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col2 (type: string)
                   Statistics: Num rows: 1 Data size: 32577 Basic stats: COMPLETE Column stats: NONE
@@ -911,11 +696,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-<<<<<<< HEAD
-Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
-=======
-Warning: Shuffle Join JOIN[24][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 8' is a cross product
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+Warning: Shuffle Join JOIN[25][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 8' is a cross product
 PREHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -989,7 +770,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col3 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -1005,18 +786,14 @@ STAGE PLANS:
                     predicate: p_name is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-<<<<<<< HEAD
-                      keys: p_brand (type: string)
-                      minReductionHashAggr: 0.99
-=======
                       keys: p_name (type: string)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -1052,31 +829,18 @@ STAGE PLANS:
                     predicate: p_brand is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-<<<<<<< HEAD
-                      keys: p_name (type: string)
-                      minReductionHashAggr: 0.99
-=======
                       keys: p_brand (type: string)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
-<<<<<<< HEAD
-        Reducer 10 
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-        Reducer 10 
-=======
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -1094,17 +858,6 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
                   Statistics: Num rows: 2 Data size: 71632 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-<<<<<<< HEAD
-                    predicate: ((_col13 is null or (_col10 = 0L)) and ((_col11 >= _col10) or (_col10 = 0L) or _col13 is not null or _col3 is null)) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 71632 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 2 Data size: 71632 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 2 Data size: 71632 Basic stats: COMPLETE Column stats: NONE
-=======
                     predicate: ((_col10 = 0L) or (_col13 is null and (_col11 >= _col10))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 35816 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1114,17 +867,11 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         Statistics: Num rows: 1 Data size: 35816 Basic stats: COMPLETE Column stats: NONE
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-<<<<<<< HEAD
->>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -1138,7 +885,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -1167,48 +914,13 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 32577 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-<<<<<<< HEAD
-                  key expressions: _col3 (type: string)
-                  null sort order: a
-=======
                   key expressions: _col2 (type: string)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                  null sort order: z
                   sort order: +
-<<<<<<< HEAD
-                  Map-reduce partition columns: _col3 (type: string)
-                  Statistics: Num rows: 1 Data size: 35833 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col10 (type: bigint), _col11 (type: bigint)
-        Reducer 4 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Left Outer Join 0 to 1
-                keys:
-                  0 _col3 (type: string)
-                  1 _col0 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
-                Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: ((_col13 is null or (_col10 = 0L)) and ((_col11 >= _col10) or (_col10 = 0L) or _col13 is not null or _col3 is null)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 1 Data size: 39416 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
-=======
                   Map-reduce partition columns: _col2 (type: string)
                   Statistics: Num rows: 1 Data size: 32577 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint)
         Reducer 9 
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -1217,24 +929,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-<<<<<<< HEAD
-                  key expressions: _col0 (type: string)
-                  null sort order: a
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-        Reducer 8 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0), count(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
                   null sort order: 
-=======
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   sort order: 
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string)
@@ -1254,11 +949,7 @@ POSTHOOK: query: select * from part_null where p_brand IN (select p_brand from p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
-<<<<<<< HEAD
-Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-=======
-Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_name NOT IN (select c from tempty) AND p_brand IN (select p_brand from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -1298,50 +989,14 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-<<<<<<< HEAD
-                        null sort order: 
-                        sort order: 
-=======
                         key expressions: _col1 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized
         Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: tempty
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  Select Operator
-                    expressions: c (type: char(2))
-                    outputColumnNames: c
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                    Group By Operator
-<<<<<<< HEAD
-                      aggregations: count(), count(c)
-                      minReductionHashAggr: 0.99
-=======
-                      keys: c (type: char(2))
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                      Reduce Output Operator
-<<<<<<< HEAD
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
-                        value expressions: _col0 (type: bigint), _col1 (type: bigint)
-=======
-                        key expressions: _col0 (type: char(2))
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: char(2))
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-            Execution mode: vectorized
-        Map 7 
             Map Operator Tree:
                 TableScan
                   alias: tempty
@@ -1351,27 +1006,38 @@ STAGE PLANS:
                     predicate: CAST( c AS STRING) is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
-<<<<<<< HEAD
                       keys: c (type: char(2))
                       minReductionHashAggr: 0.99
-=======
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: char(2))
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: char(2))
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Execution mode: vectorized
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: tempty
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: c (type: char(2))
+                    outputColumnNames: c
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
                       aggregations: count(), count(c)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
-<<<<<<< HEAD
-                        key expressions: _col0 (type: char(2))
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: char(2))
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-=======
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Execution mode: vectorized
         Map 9 
             Map Operator Tree:
@@ -1394,7 +1060,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -1410,52 +1076,16 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10
                 Statistics: Num rows: 1 Data size: 35816 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
-<<<<<<< HEAD
-                  key expressions: _col1 (type: string)
-                  null sort order: a
-                  sort order: +
-                  Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 32577 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: bigint)
-=======
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 35816 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col10 (type: boolean)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-                  0 _col1 (type: string)
-                  1 CAST( _col0 AS STRING) (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
-                Statistics: Num rows: 1 Data size: 35834 Basic stats: PARTIAL Column stats: NONE
-                Filter Operator
-                  predicate: ((_col12 is null or (_col9 = 0L)) and (_col1 is not null or (_col9 = 0L) or _col12 is not null) and ((_col10 >= _col9) or (_col9 = 0L) or _col12 is not null or _col1 is null)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 35834 Basic stats: PARTIAL Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 1 Data size: 35834 Basic stats: PARTIAL Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col3 (type: string)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: _col3 (type: string)
-                      Statistics: Num rows: 1 Data size: 35834 Basic stats: PARTIAL Column stats: NONE
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-<<<<<<< HEAD
-=======
-=======
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col12
@@ -1465,11 +1095,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
                   Statistics: Num rows: 1 Data size: 35833 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-<<<<<<< HEAD
-                    predicate: ((_col12 is null or (_col9 = 0L)) and (_col1 is not null or (_col9 = 0L) or _col12 is not null) and ((_col10 >= _col9) or (_col9 = 0L) or _col12 is not null or _col1 is null)) (type: boolean)
-=======
-                    predicate: ((_col12 is null and _col1 is not null and (_col10 >= _col9)) or (_col9 = 0L)) (type: boolean)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                    predicate: ((_col9 = 0L) or (_col12 is null and (_col10 >= _col9) and _col1 is not null)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 35833 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -1477,15 +1103,11 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 35833 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col3 (type: string)
                         Statistics: Num rows: 1 Data size: 35833 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-<<<<<<< HEAD
->>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
         Reducer 4 
             Reduce Operator Tree:
               Join Operator
@@ -1507,22 +1129,6 @@ STAGE PLANS:
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
-<<<<<<< HEAD
-                aggregations: count(VALUE._col0), count(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
-                Reduce Output Operator
-                  null sort order: 
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col0 (type: bigint), _col1 (type: bigint)
-        Reducer 8 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-=======
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                 keys: KEY._col0 (type: char(2))
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -1533,7 +1139,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     key expressions: CAST( _col0 AS STRING) (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: CAST( _col0 AS STRING) (type: string)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -1547,6 +1153,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint)
@@ -1557,11 +1164,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-<<<<<<< HEAD
-Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-=======
-Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: select * from part_null where p_name NOT IN (select c from tempty) AND p_brand IN (select p_brand from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -1639,7 +1242,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -1662,7 +1265,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -1682,7 +1285,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1729,7 +1332,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -1831,7 +1434,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col5 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col5 (type: int)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -1854,7 +1457,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -1874,7 +1477,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
@@ -1921,7 +1524,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -1997,7 +1600,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -2020,7 +1623,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -2040,7 +1643,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
@@ -2094,7 +1697,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -2155,6 +1758,46 @@ POSTHOOK: Input: default@tempty
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
+PREHOOK: query: explain cbo select * from part_null where 
+        p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
+                                 AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part_null
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from part_null where 
+        p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
+                                 AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_null
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p_partkey=[$0], p_name=[$1], p_mfgr=[$2], p_brand=[$3], p_type=[$4], p_size=[$5], p_container=[$6], p_retailprice=[$7], p_comment=[$8])
+  HiveFilter(condition=[OR(IS NULL($10), =($10, 0), IS NOT TRUE(OR(IS NOT NULL($13), IS NULL($3), <($11, $10))))])
+    HiveJoin(condition=[AND(=($3, $12), =($14, $4))], joinType=[left], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[=($9, $4)], joinType=[left], algorithm=[none], cost=[not available])
+        HiveProject(p_partkey=[$0], p_name=[$1], p_mfgr=[$2], p_brand=[$3], p_type=[$4], p_size=[$5], p_container=[$6], p_retailprice=[$7], p_comment=[$8])
+          HiveTableScan(table=[[default, part_null]], table:alias=[part_null])
+        HiveProject(p_type=[$0], c=[$1], ck=[$2])
+          HiveAggregate(group=[{1}], c=[COUNT()], ck=[COUNT($2)])
+            HiveSemiJoin(condition=[AND(=($1, $4), =($0, $3))], joinType=[semi])
+              HiveProject(p_brand=[$3], p_type=[$4], p_container=[$6])
+                HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($3))])
+                  HiveTableScan(table=[[default, part]], table:alias=[part])
+              HiveProject(p_brand=[$3], p_type=[$4])
+                HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($3))])
+                  HiveTableScan(table=[[default, part]], table:alias=[pp])
+      HiveProject(p_container=[$1], literalTrue=[true], p_type=[$0])
+        HiveAggregate(group=[{1, 2}])
+          HiveSemiJoin(condition=[AND(=($1, $4), =($0, $3))], joinType=[semi])
+            HiveProject(p_brand=[$3], p_type=[$4], p_container=[$6])
+              HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($3), IS NOT NULL($6))])
+                HiveTableScan(table=[[default, part]], table:alias=[part])
+            HiveProject(p_brand=[$3], p_type=[$4])
+              HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($3))])
+                HiveTableScan(table=[[default, part]], table:alias=[pp])
+
 PREHOOK: query: explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type)
         AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
                                 AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
@@ -2201,7 +1844,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col4 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col4 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -2222,7 +1865,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string), _col0 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col1 (type: string), _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2249,7 +1892,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: aa
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2275,7 +1918,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: aa
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2295,7 +1938,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string), _col0 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col1 (type: string), _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2322,7 +1965,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: aa
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2345,7 +1988,7 @@ STAGE PLANS:
                   Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
-                    null sort order: aa
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                     Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
@@ -2363,7 +2006,7 @@ STAGE PLANS:
                   Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col2 (type: string)
-                    null sort order: aa
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
                     Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
@@ -2380,7 +2023,7 @@ STAGE PLANS:
                 Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col4 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col4 (type: string)
                   Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
@@ -2397,7 +2040,7 @@ STAGE PLANS:
                 Statistics: Num rows: 30 Data size: 3807 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col3 (type: string), _col4 (type: string)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: _col3 (type: string), _col4 (type: string)
                   Statistics: Num rows: 30 Data size: 3807 Basic stats: COMPLETE Column stats: NONE
@@ -2413,7 +2056,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
                 Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col13 is null or (_col10 = 0L) or _col10 is null) and (_col3 is not null or (_col10 = 0L) or _col10 is null or _col13 is not null) and ((_col11 < _col10) is not true or (_col10 = 0L) or _col10 is null or _col13 is not null or _col3 is null)) (type: boolean)
+                  predicate: (_col10 is null or (_col10 = 0L) or (_col13 is not null or _col3 is null or (_col11 < _col10)) is not true) (type: boolean)
                   Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -2445,7 +2088,7 @@ STAGE PLANS:
                   Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
@@ -2461,7 +2104,7 @@ STAGE PLANS:
                 Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
@@ -2551,7 +2194,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -2574,7 +2217,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2600,7 +2243,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: aa
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2617,7 +2260,7 @@ STAGE PLANS:
                 Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col3 (type: string), _col4 (type: string)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: _col3 (type: string), _col4 (type: string)
                   Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
@@ -2649,7 +2292,7 @@ STAGE PLANS:
                 Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
@@ -2738,7 +2381,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col4 (type: string), _col1 (type: string), _col6 (type: string)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col4 (type: string), _col1 (type: string), _col6 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -2759,7 +2402,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string), _col0 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col1 (type: string), _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2786,7 +2429,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: aa
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2812,7 +2455,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-                          null sort order: aaa
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2832,7 +2475,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string), _col0 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col1 (type: string), _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2859,7 +2502,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: aa
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -2882,7 +2525,7 @@ STAGE PLANS:
                   Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
-                    null sort order: aa
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                     Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
@@ -2900,7 +2543,7 @@ STAGE PLANS:
                   Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col2 (type: string)
-                    null sort order: aa
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
                     Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
@@ -2917,7 +2560,7 @@ STAGE PLANS:
                 Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col4 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col4 (type: string)
                   Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
@@ -2934,7 +2577,7 @@ STAGE PLANS:
                 Statistics: Num rows: 30 Data size: 3807 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col3 (type: string), _col4 (type: string)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: _col3 (type: string), _col4 (type: string)
                   Statistics: Num rows: 30 Data size: 3807 Basic stats: COMPLETE Column stats: NONE
@@ -2950,7 +2593,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
                 Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col13 is null or (_col10 = 0L) or _col10 is null) and (_col3 is not null or (_col10 = 0L) or _col10 is null or _col13 is not null) and ((_col11 < _col10) is not true or (_col10 = 0L) or _col10 is null or _col13 is not null or _col3 is null)) (type: boolean)
+                  predicate: (_col10 is null or (_col10 = 0L) or (_col13 is not null or _col3 is null or (_col11 < _col10)) is not true) (type: boolean)
                   Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -2982,7 +2625,7 @@ STAGE PLANS:
                   Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
@@ -2998,7 +2641,7 @@ STAGE PLANS:
                 Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
@@ -3086,7 +2729,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string), _col4 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col1 (type: string), _col4 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -3113,7 +2756,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: aa
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -3136,7 +2779,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -3159,7 +2802,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: int)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -3176,7 +2819,7 @@ STAGE PLANS:
                 Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col5 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col5 (type: int)
                   Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
@@ -3193,7 +2836,7 @@ STAGE PLANS:
                 Statistics: Num rows: 30 Data size: 3807 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col3 (type: string), _col5 (type: int)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: _col3 (type: string), _col5 (type: int)
                   Statistics: Num rows: 30 Data size: 3807 Basic stats: COMPLETE Column stats: NONE
@@ -3209,7 +2852,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
                 Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col13 is null or (_col10 = 0L) or _col10 is null) and (_col3 is not null or (_col10 = 0L) or _col10 is null or _col13 is not null) and ((_col11 < _col10) is not true or (_col10 = 0L) or _col10 is null or _col13 is not null or _col3 is null)) (type: boolean)
+                  predicate: (_col10 is null or (_col10 = 0L) or (_col13 is not null or _col3 is null or (_col11 < _col10)) is not true) (type: boolean)
                   Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -3233,7 +2876,7 @@ STAGE PLANS:
                 Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
@@ -3252,7 +2895,7 @@ STAGE PLANS:
                   Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col2 (type: int)
-                    null sort order: aa
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col2 (type: int)
                     Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
@@ -3337,7 +2980,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string), _col4 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col1 (type: string), _col4 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -3358,7 +3001,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col2 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -3385,7 +3028,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: aa
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -3429,7 +3072,7 @@ STAGE PLANS:
                     Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
@@ -3476,11 +3119,7 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-<<<<<<< HEAD
-Warning: Shuffle Join JOIN[34][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 7' is a cross product
-=======
-Warning: Shuffle Join JOIN[37][tables = [$hdt$_1, $hdt$_2, $hdt$_3]] in Work 'Reducer 7' is a cross product
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+Warning: Shuffle Join JOIN[39][tables = [$hdt$_1, $hdt$_2, $hdt$_3]] in Work 'Reducer 7' is a cross product
 PREHOOK: query: explain select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey
 where li.l_linenumber = 1 and
@@ -3518,41 +3157,15 @@ STAGE PLANS:
                   filterExpr: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-                    predicate: l_partkey is not null (type: boolean)
-                    Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: l_partkey (type: int)
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        null sort order: a
-=======
-=======
                     predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
-=======
-                    predicate: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                     Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
->>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
@@ -3586,21 +3199,6 @@ STAGE PLANS:
                   filterExpr: l_partkey is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-<<<<<<< HEAD
-                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
-                    Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: int)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int)
-=======
                     predicate: l_partkey is not null (type: boolean)
                     Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -3609,15 +3207,16 @@ STAGE PLANS:
                       Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: int)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Execution mode: vectorized
         Map 5 
             Map Operator Tree:
@@ -3633,14 +3232,10 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col2
                       Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-<<<<<<< HEAD
-                        null sort order: 
-                        sort order: 
-=======
                         key expressions: _col2 (type: double)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col2 (type: double)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                         Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int)
             Execution mode: vectorized
@@ -3666,68 +3261,12 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint), _col1 (type: bigint)
-<<<<<<< HEAD
-        Reducer 12 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: sum(VALUE._col0), count(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col0 is not null and _col1 is not null) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: (_col0 / _col1) (type: double), true (type: boolean)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: double)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: double)
-                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: boolean)
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
         Reducer 2 
-<<<<<<< HEAD
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  null sort order: a
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
-=======
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
                 keys:
-<<<<<<< HEAD
-                  0 _col0 (type: int)
-                  1 _col1 (type: int)
-                outputColumnNames: _col0, _col1, _col3, _col4
-                Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: int), _col4 (type: int)
-                  null sort order: aa
-                  sort order: ++
-                  Map-reduce partition columns: _col1 (type: int), _col4 (type: int)
-                  Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: int), _col3 (type: int)
-        Reducer 4 
-=======
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3
@@ -3738,12 +3277,12 @@ STAGE PLANS:
                   Statistics: Num rows: 110 Data size: 13198 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col1 (type: int), _col4 (type: int)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col1 (type: int), _col4 (type: int)
                     Statistics: Num rows: 110 Data size: 13198 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: int), _col3 (type: int)
         Reducer 3 
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -3770,91 +3309,21 @@ STAGE PLANS:
                 condition map:
                      Left Outer Join 0 to 1
                 keys:
-<<<<<<< HEAD
-                  0 
-                  1 
-                outputColumnNames: _col0, _col2, _col4, _col5
-                Statistics: Num rows: 25 Data size: 3424 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col2 (type: double)
-                  null sort order: a
-                  sort order: +
-                  Map-reduce partition columns: _col2 (type: double)
-                  Statistics: Num rows: 25 Data size: 3424 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: int), _col4 (type: bigint), _col5 (type: bigint)
-        Reducer 8 
-<<<<<<< HEAD
-=======
-=======
-                outputColumnNames: _col0, _col2, _col5, _col6, _col7
-                Statistics: Num rows: 27 Data size: 3757 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), _col2 (type: double), _col6 (type: bigint), _col7 (type: bigint), _col5 (type: boolean)
-                  outputColumnNames: _col0, _col2, _col4, _col5, _col7
-                  Statistics: Num rows: 27 Data size: 3757 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((_col7 is null or (_col4 = 0L)) and (_col2 is not null or (_col4 = 0L) or _col7 is not null) and ((_col5 >= _col4) or (_col4 = 0L) or _col7 is not null or _col2 is null)) (type: boolean)
-                    Statistics: Num rows: 26 Data size: 3617 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 26 Data size: 3617 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int), _col1 (type: int)
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 26 Data size: 3617 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int), _col1 (type: int)
-                          sort order: ++
-                          Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                          Statistics: Num rows: 26 Data size: 3617 Basic stats: COMPLETE Column stats: NONE
-        Reducer 9 
-            Execution mode: vectorized
->>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
-=======
                   0 _col2 (type: double)
                   1 _col0 (type: double)
                 outputColumnNames: _col0, _col2, _col5
                 Statistics: Num rows: 27 Data size: 3298 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 27 Data size: 3298 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col2 (type: double), _col5 (type: boolean)
         Reducer 7 
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
-<<<<<<< HEAD
-                  0 _col2 (type: double)
-                  1 _col0 (type: double)
-                outputColumnNames: _col0, _col2, _col4, _col5, _col7
-                Statistics: Num rows: 27 Data size: 3766 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: ((_col7 is null or (_col4 = 0L)) and (_col2 is not null or (_col4 = 0L) or _col7 is not null) and ((_col5 >= _col4) or (_col4 = 0L) or _col7 is not null or _col2 is null)) (type: boolean)
-                  Statistics: Num rows: 26 Data size: 3626 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), 1 (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 26 Data size: 3626 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: _col0 (type: int), _col1 (type: int)
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 26 Data size: 3626 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int), _col1 (type: int)
-                        null sort order: aa
-                        sort order: ++
-                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 26 Data size: 3626 Basic stats: COMPLETE Column stats: NONE
-=======
                   0 
                   1 
                 outputColumnNames: _col0, _col2, _col5, _col6, _col7
@@ -3864,7 +3333,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col2, _col4, _col5, _col7
                   Statistics: Num rows: 27 Data size: 3757 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col4 = 0L) or (_col7 is null and _col2 is not null and (_col5 >= _col4))) (type: boolean)
+                    predicate: ((_col4 = 0L) or (_col7 is null and (_col5 >= _col4) and _col2 is not null)) (type: boolean)
                     Statistics: Num rows: 17 Data size: 2365 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), 1 (type: int)
@@ -3872,11 +3341,13 @@ STAGE PLANS:
                       Statistics: Num rows: 17 Data size: 2365 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: int), _col1 (type: int)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 17 Data size: 2365 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: int)
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                           Statistics: Num rows: 17 Data size: 2365 Basic stats: COMPLETE Column stats: NONE
@@ -3888,17 +3359,20 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: (_col0 / _col1) (type: double), true (type: boolean)
-                  outputColumnNames: _col0, _col1
+                Filter Operator
+                  predicate: (_col0 is not null and _col1 is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: double)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: double)
+                  Select Operator
+                    expressions: (_col0 / _col1) (type: double), true (type: boolean)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: boolean)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: double)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: double)
+                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: boolean)
 
   Stage: Stage-0
     Fetch Operator
@@ -3906,11 +3380,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-<<<<<<< HEAD
-Warning: Shuffle Join JOIN[34][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 7' is a cross product
-=======
-Warning: Shuffle Join JOIN[37][tables = [$hdt$_1, $hdt$_2, $hdt$_3]] in Work 'Reducer 7' is a cross product
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+Warning: Shuffle Join JOIN[39][tables = [$hdt$_1, $hdt$_2, $hdt$_3]] in Work 'Reducer 7' is a cross product
 PREHOOK: query: select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey
 where li.l_linenumber = 1 and
@@ -3975,7 +3445,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -4001,7 +3471,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
-                          null sort order: aa
+                          null sort order: zz
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -4021,7 +3491,7 @@ STAGE PLANS:
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -4048,7 +3518,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -4072,7 +3542,7 @@ STAGE PLANS:
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
-                    null sort order: aa
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                     Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
@@ -4091,7 +3561,7 @@ STAGE PLANS:
                   Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: bigint)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col2 (type: bigint)
                     Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
@@ -4132,7 +3602,7 @@ STAGE PLANS:
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
@@ -4165,7 +3635,7 @@ STAGE PLANS:
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: bigint)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: bigint)
                           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
@@ -4528,7 +3998,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: string), _col4 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col1 (type: string), _col4 (type: string)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -4570,7 +4040,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -4610,7 +4080,7 @@ STAGE PLANS:
                   Statistics: Num rows: 338 Data size: 82147 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
-                    null sort order: aa
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                     Statistics: Num rows: 338 Data size: 82147 Basic stats: COMPLETE Column stats: NONE
@@ -4679,11 +4149,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tnull
 POSTHOOK: Lineage: tnull.c SCRIPT []
 POSTHOOK: Lineage: tnull.i SCRIPT []
-<<<<<<< HEAD
-Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-=======
-Warning: Shuffle Join JOIN[19][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part where p_partkey = 3 OR p_size NOT IN (select i from tnull)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -4718,50 +4184,14 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-<<<<<<< HEAD
-                      null sort order: 
-                      sort order: 
-=======
                       key expressions: _col5 (type: int)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col5 (type: int)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized
         Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: tnull
-                  Statistics: Num rows: 3 Data size: 14 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: i (type: int)
-                    outputColumnNames: i
-                    Statistics: Num rows: 3 Data size: 14 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-<<<<<<< HEAD
-                      aggregations: count(), count(i)
-                      minReductionHashAggr: 0.99
-=======
-                      keys: i (type: int)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 14 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-<<<<<<< HEAD
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint), _col1 (type: bigint)
-=======
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 3 Data size: 14 Basic stats: COMPLETE Column stats: NONE
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-            Execution mode: vectorized
-        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: tnull
@@ -4771,27 +4201,38 @@ STAGE PLANS:
                     predicate: i is not null (type: boolean)
                     Statistics: Num rows: 3 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-<<<<<<< HEAD
                       keys: i (type: int)
                       minReductionHashAggr: 0.99
-=======
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 3 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: tnull
+                  Statistics: Num rows: 3 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: i (type: int)
+                    outputColumnNames: i
+                    Statistics: Num rows: 3 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
                       aggregations: count(), count(i)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-<<<<<<< HEAD
-                        key expressions: _col0 (type: int)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 3 Data size: 14 Basic stats: COMPLETE Column stats: NONE
-=======
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
@@ -4804,52 +4245,16 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10
                 Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-<<<<<<< HEAD
-                  key expressions: _col5 (type: int)
-                  null sort order: a
-                  sort order: +
-                  Map-reduce partition columns: _col5 (type: int)
-                  Statistics: Num rows: 26 Data size: 3589 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: bigint)
-=======
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col10 (type: boolean)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-                  0 _col5 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
-                Statistics: Num rows: 28 Data size: 3947 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: ((_col9 = 0L) or (_col0 = 3) or ((_col9 <> 0L) and _col12 is null and (_col10 >= _col9) and _col5 is not null)) (type: boolean)
-                  Statistics: Num rows: 28 Data size: 3947 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 28 Data size: 3947 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 28 Data size: 3947 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-<<<<<<< HEAD
-=======
-=======
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col12
@@ -4859,11 +4264,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
                   Statistics: Num rows: 28 Data size: 3937 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-<<<<<<< HEAD
-                    predicate: ((_col9 = 0L) or (_col0 = 3) or ((_col9 <> 0L) and _col12 is null and (_col10 >= _col9) and _col5 is not null)) (type: boolean)
-=======
-                    predicate: ((_col0 = 3) or CASE WHEN ((_col9 = 0L)) THEN (true) WHEN (_col12 is not null) THEN (false) WHEN (_col5 is null) THEN (null) WHEN ((_col10 < _col9)) THEN (null) ELSE (true) END) (type: boolean)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                    predicate: ((_col9 = 0L) or (_col0 = 3) or (_col12 is null and (_col10 >= _col9) and _col5 is not null)) (type: boolean)
                     Statistics: Num rows: 28 Data size: 3937 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -4876,31 +4277,10 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-<<<<<<< HEAD
->>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
         Reducer 5 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
-<<<<<<< HEAD
-                aggregations: count(VALUE._col0), count(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  null sort order: 
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: bigint), _col1 (type: bigint)
-        Reducer 7 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-=======
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -4911,7 +4291,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -4925,6 +4305,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint)
@@ -4935,11 +4316,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-<<<<<<< HEAD
-Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-=======
-Warning: Shuffle Join JOIN[19][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: select * from part where p_partkey = 3 OR p_size NOT IN (select i from tnull)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -5013,7 +4390,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5058,7 +4435,7 @@ STAGE PLANS:
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -5088,7 +4465,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 9812 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 9812 Basic stats: COMPLETE Column stats: NONE
@@ -5176,7 +4553,7 @@ STAGE PLANS:
                   Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
@@ -5249,7 +4626,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col4 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col4 (type: string)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -5276,7 +4653,7 @@ STAGE PLANS:
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -5299,7 +4676,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
@@ -5321,7 +4698,7 @@ STAGE PLANS:
                   Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col4 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col4 (type: string)
                     Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
@@ -5364,7 +4741,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col1 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col1 (type: string)
                     Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE

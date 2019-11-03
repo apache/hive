@@ -30,7 +30,6 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -88,7 +87,7 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
     // 3. Virtual columns
     Set<Integer> newVcolsInCalcite = new HashSet<Integer>();
     newVcolsInCalcite.addAll(inputs[0].vcolsInCalcite);
-    if (joinRel instanceof HiveMultiJoin || !(joinRel instanceof SemiJoin)) {
+    if (joinRel instanceof HiveMultiJoin || !(joinRel instanceof HiveSemiJoin)) {
       int shift = inputs[0].inputs.get(0).getSchema().getSignature().size();
       for (int i = 1; i < inputs.length; i++) {
         newVcolsInCalcite.addAll(HiveCalciteUtil.shiftVColsSet(inputs[i].vcolsInCalcite, shift));
@@ -160,7 +159,7 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
       noOuterJoin = !hmj.isOuterJoin();
     } else {
       joinCondns = new JoinCondDesc[1];
-      semiJoin = join instanceof SemiJoin;
+      semiJoin = join instanceof HiveSemiJoin;
       JoinType joinType;
       if (semiJoin) {
         joinType = JoinType.LEFTSEMI;

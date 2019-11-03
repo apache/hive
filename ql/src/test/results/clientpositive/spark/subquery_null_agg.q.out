@@ -6,8 +6,8 @@ POSTHOOK: query: CREATE TABLE table_7 (int_col INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_7
-Warning: Shuffle Join JOIN[16][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-Warning: Shuffle Join JOIN[19][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
+Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain
 SELECT
 (t1.int_col) * (t1.int_col) AS int_col
@@ -58,15 +58,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 5 (PARTITION-LEVEL SORT, 1)
-<<<<<<< HEAD
-        Reducer 3 <- Map 6 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1)
-        Reducer 5 <- Map 4 (GROUP, 1)
-=======
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 1), Reducer 7 (PARTITION-LEVEL SORT, 1)
-        Reducer 5 <- Map 4 (GROUP, 2)
-        Reducer 7 <- Map 6 (GROUP, 1)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 1), Reducer 6 (PARTITION-LEVEL SORT, 1)
+        Reducer 6 <- Map 5 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -88,68 +82,40 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                    Filter Operator
-                      predicate: false (type: boolean)
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                      Group By Operator
-<<<<<<< HEAD
-                        aggregations: count()
-                        minReductionHashAggr: 0.99
-=======
-                        keys: true (type: boolean)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-                        mode: hash
+                    Limit
+                      Number of rows: 0
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                      Select Operator
+                        expressions: true (type: boolean)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
                         Reduce Output Operator
-<<<<<<< HEAD
                           null sort order: 
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                          value expressions: _col0 (type: bigint)
-=======
-                          key expressions: _col0 (type: boolean)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: boolean)
-                          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                          value expressions: _col0 (type: boolean)
             Execution mode: vectorized
-        Map 6 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: table_7
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                    Filter Operator
-                      predicate: false (type: boolean)
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-<<<<<<< HEAD
-                      Select Operator
-                        expressions: true (type: boolean)
-=======
+                    Limit
+                      Number of rows: 0
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Group By Operator
-<<<<<<< HEAD
-                        keys: true (type: boolean)
-                        minReductionHashAggr: 0.99
-=======
                         aggregations: count()
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                        minReductionHashAggr: 0.99
                         mode: hash
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         Reduce Output Operator
-<<<<<<< HEAD
                           null sort order: 
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                          value expressions: _col0 (type: boolean)
-=======
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
@@ -159,22 +125,13 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-<<<<<<< HEAD
-                outputColumnNames: _col1, _col2
-                Statistics: Num rows: 1 Data size: 9 Basic stats: PARTIAL Column stats: NONE
+                outputColumnNames: _col1
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 9 Basic stats: PARTIAL Column stats: NONE
-                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
-=======
-                outputColumnNames: _col1
-                Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   value expressions: _col1 (type: boolean)
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
@@ -184,35 +141,29 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 10 Basic stats: PARTIAL Column stats: NONE
-<<<<<<< HEAD
-                Filter Operator
-                  predicate: ((_col1 = 0L) or (_col3 is null and (_col2 >= _col1))) (type: boolean)
-=======
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
-                  expressions: _col2 (type: bigint), _col1 (type: boolean)
-                  outputColumnNames: _col1, _col2
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: PARTIAL Column stats: NONE
+                  expressions: _col2 (type: bigint), _col3 (type: bigint), _col1 (type: boolean)
+                  outputColumnNames: _col1, _col2, _col3
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col1 = 0L) or _col2 is null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 10 Basic stats: PARTIAL Column stats: NONE
+                    predicate: ((_col1 = 0L) or (_col3 is null and (_col2 >= _col1))) (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Select Operator
                       expressions: null (type: void)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 10 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 10 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 6 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
-<<<<<<< HEAD
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -226,39 +177,6 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                     value expressions: _col0 (type: bigint), _col1 (type: bigint)
-<<<<<<< HEAD
-=======
-        Reducer 7 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-=======
->>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
-                keys: KEY._col0 (type: boolean)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                Select Operator
-                  expressions: true (type: boolean)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                    value expressions: _col0 (type: boolean)
-        Reducer 7 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                  value expressions: _col0 (type: bigint)
->>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
 
   Stage: Stage-0
     Fetch Operator
