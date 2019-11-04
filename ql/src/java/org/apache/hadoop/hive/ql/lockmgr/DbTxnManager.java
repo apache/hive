@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -220,11 +221,16 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public long openTxn(Context ctx, String user) throws LockException {
-    return openTxn(ctx, user, 0);
+    return openTxn(ctx, user, TxnType.DEFAULT, 0);
+  }
+
+  @Override
+  public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
+    return openTxn(ctx, user, txnType, 0);
   }
 
   @VisibleForTesting
-  long openTxn(Context ctx, String user, long delay) throws LockException {
+  long openTxn(Context ctx, String user, TxnType txnType, long delay) throws LockException {
     /*Q: why don't we lock the snapshot here???  Instead of having client make an explicit call
     whenever it chooses
     A: If we want to rely on locks for transaction scheduling we must get the snapshot after lock
@@ -236,7 +242,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException("Transaction already opened. " + JavaUtils.txnIdToString(txnId));
     }
     try {
-      txnId = getMS().openTxn(user);
+      txnId = getMS().openTxn(user, txnType);
       stmtId = 0;
       numStatements = 0;
       tableWriteIds.clear();

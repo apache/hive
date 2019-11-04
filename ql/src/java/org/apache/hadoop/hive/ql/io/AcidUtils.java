@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.io;
 
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
-import static org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
+import static org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
@@ -72,6 +73,8 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -90,6 +93,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import javax.annotation.concurrent.Immutable;
 import java.nio.charset.Charset;
+import java.util.stream.Stream;
 
 /**
  * Utilities that are shared by all of the ACID input and output formats. They
@@ -2982,5 +2986,21 @@ public class AcidUtils {
     } catch (IOException | URISyntaxException ex) {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ex.getMessage()), ex);
     }
+  }
+
+  /**
+   * Determines transaction type based on query AST.
+   * @param tree AST
+   */
+  public static TxnType getTxnType(ASTNode tree) {
+    final ASTSearcher astSearcher = new ASTSearcher();
+
+    return (tree.getToken().getType() == HiveParser.TOK_QUERY &&
+      Stream.of(
+        new int[]{HiveParser.TOK_INSERT_INTO},
+        new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
+        .noneMatch(pattern ->
+            astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) ?
+      TxnType.READ_ONLY : TxnType.DEFAULT;
   }
 }
