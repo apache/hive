@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.ddl.database.lock.LockDatabaseDesc;
@@ -49,6 +50,16 @@ public interface HiveTxnManager {
    * @throws LockException if a transaction is already open.
    */
   long openTxn(Context ctx, String user) throws LockException;
+
+ /**
+  * Open a new transaction.
+  * @param ctx Context for this query
+  * @param user Hive user who is opening this transaction.
+  * @param txnType transaction type.
+  * @return The new transaction id
+  * @throws LockException if a transaction is already open.
+  */
+  long openTxn(Context ctx, String user, TxnType txnType) throws LockException;
 
   /**
    * Open a new transaction in target cluster.
