@@ -1868,9 +1868,6 @@ public class TezCompiler extends TaskCompiler {
 
 
     for (FileSinkOperator fsOp : fsOpsAll) {
-      if (!fsOp.getConf().getTableInfo().isSetBucketingVersion()) {
-        continue;
-      }
       // Look for direct parent ReduceSinkOp
       // If there are more than 1 parent, bail out.
       Operator<?> parent = fsOp;
