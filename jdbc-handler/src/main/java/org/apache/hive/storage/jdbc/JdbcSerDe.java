@@ -230,7 +230,7 @@ public class JdbcSerDe extends AbstractSerDe {
         case TIMESTAMP:
           if (rowVal instanceof java.sql.Timestamp) {
             LocalDateTime localDateTime = ((java.sql.Timestamp) rowVal).toLocalDateTime();
-            rowVal = Timestamp.ofEpochSecond(localDateTime.toEpochSecond(UTC));
+            rowVal = Timestamp.ofEpochSecond(localDateTime.toEpochSecond(UTC), localDateTime.getNano());
           } else {
             rowVal = Timestamp.valueOf (rowVal.toString());
           }
