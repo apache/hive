@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.TxnType;
@@ -33,7 +32,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -59,6 +60,9 @@ public class TestHiveMetaStoreTxns {
   private final Configuration conf = MetastoreConf.newMetastoreConf();
   private IMetaStoreClient client;
   private Connection conn;
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testTxns() throws Exception {
@@ -214,9 +218,18 @@ public class TestHiveMetaStoreTxns {
   public void testTxnTypePersisted() throws Exception {
     long txnId = client.openTxn("me", TxnType.READ_ONLY);
     Statement stm = conn.createStatement();
-    ResultSet rs = stm.executeQuery("SELECT txn_type FROM TXNS WHERE txn_id = " + txnId);
+    ResultSet rs = stm.executeQuery("SELECT txn_type FROM txns WHERE txn_id = " + txnId);
     Assert.assertTrue(rs.next());
     Assert.assertEquals(TxnType.findByValue(rs.getInt(1)), TxnType.READ_ONLY);
+  }
+
+  @Test
+  public void testAllocateTableWriteIdForReadOnlyTxn() throws Exception {
+    thrown.expect(IllegalStateException.class);
+    thrown.expectMessage("Write ID allocation failed on db.tbl as not all input txns in open state or read-only");
+
+    long txnId = client.openTxn("me", TxnType.READ_ONLY);
+    client.allocateTableWriteId(txnId, "db", "tbl");
   }
 
   @Before

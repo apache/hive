@@ -57,6 +57,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -1618,10 +1619,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           Collections.sort(txnIds); //easier to read logs and for assumption done in replication flow
         }
 
-        // Check if all the input txns are in open state. Write ID should be allocated only for open transactions.
-        if (!isTxnsInOpenState(txnIds, stmt)) {
-          ensureAllTxnsValid(dbName, tblName, txnIds, stmt);
-          throw new RuntimeException("This should never happen for txnIds: " + txnIds);
+        // Check if all the input txns are in valid state.
+        // Write IDs should be allocated only for open and not read-only transactions.
+        if (!isTxnsOpenAndNotReadOnly(txnIds, stmt)) {
+          String errorMsg = "Write ID allocation on " + TableName.getDbTable(dbName, tblName)
+              + " failed for input txns: "
+              + getAbortedAndReadOnlyTxns(txnIds, stmt)
+              + getCommittedTxns(txnIds, stmt);
+          LOG.error(errorMsg);
+
+          throw new IllegalStateException("Write ID allocation failed on " + TableName.getDbTable(dbName, tblName)
+              + " as not all input txns in open state or read-only");
         }
 
         List<String> queries = new ArrayList<>();
@@ -1634,7 +1642,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // first write on a table will allocate write id and rest of the writes should re-use it.
         prefix.append("select t2w_txnid, t2w_writeid from TXN_TO_WRITE_ID where"
                         + " t2w_database = ? and t2w_table = ?" + " and ");
-        suffix.append("");
         TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
                 txnIds, "t2w_txnid", false, false);
 
@@ -4611,112 +4618,94 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * Checks if all the txns in the list are in open state.
-   * @param txnIds list of txns to be evaluated for open state
+   * Checks if all the txns in the list are in open state and not read-only.
+   * @param txnIds list of txns to be evaluated for open state/read-only status
    * @param stmt db statement
-   * @return If all txns in open state, then return true else false
+   * @return If all the txns in open state and not read-only, then return true else false
    */
-  private boolean isTxnsInOpenState(List<Long> txnIds, Statement stmt) throws SQLException {
+  private boolean isTxnsOpenAndNotReadOnly(List<Long> txnIds, Statement stmt) throws SQLException {
     List<String> queries = new ArrayList<>();
     StringBuilder prefix = new StringBuilder();
-    StringBuilder suffix = new StringBuilder();
 
-    // Get the count of txns from the given list are in open state. If the returned count is same as
-    // the input number of txns, then it means, all are in open state.
-    prefix.append("select count(*) from TXNS where txn_state = '" + TXN_OPEN + "' and ");
-    suffix.append("");
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
-            txnIds, "txn_id", false, false);
+    // Get the count of txns from the given list that are in open state and not read-only.
+    // If the returned count is same as the input number of txns, then all txns are in open state and not read-only.
+    prefix.append("select count(*) from TXNS where txn_state = '" + TXN_OPEN
+        + "' and txn_type != " + TxnType.READ_ONLY.getValue() + " and ");
+
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, new StringBuilder(),
+        txnIds, "txn_id", false, false);
 
     long count = 0;
     for (String query : queries) {
       LOG.debug("Going to execute query <" + query + ">");
-      ResultSet rs = stmt.executeQuery(query);
-      if (rs.next()) {
-        count += rs.getLong(1);
+      try (ResultSet rs = stmt.executeQuery(query)) {
+        if (rs.next()) {
+          count += rs.getLong(1);
+        }
       }
     }
     return count == txnIds.size();
   }
 
   /**
-   * Checks if all the txns in the list are in open state.
-   * @param dbName Database name
-   * @param tblName Table on which we try to allocate write id
-   * @param txnIds list of txns to be evaluated for open state
+   * Get txns from the list that are either aborted or read-only.
+   * @param txnIds list of txns to be evaluated for aborted state/read-only status
    * @param stmt db statement
    */
-  private void ensureAllTxnsValid(String dbName, String tblName, List<Long> txnIds, Statement stmt)
-          throws SQLException {
+  private String getAbortedAndReadOnlyTxns(List<Long> txnIds, Statement stmt) throws SQLException {
     List<String> queries = new ArrayList<>();
     StringBuilder prefix = new StringBuilder();
-    StringBuilder suffix = new StringBuilder();
 
-    // Check if any of the txns in the list is aborted.
-    prefix.append("select txn_id, txn_state from TXNS where ");
-    suffix.append("");
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
-            txnIds, "txn_id", false, false);
-    Long txnId;
-    char txnState;
-    boolean isAborted = false;
-    StringBuilder errorMsg = new StringBuilder();
-    errorMsg.append("Write ID allocation on ")
-            .append(Warehouse.getQualifiedName(dbName, tblName))
-            .append(" failed for input txns: ");
+    // Check if any of the txns in the list are either aborted or read-only.
+    prefix.append("select txn_id, txn_state, txn_type from TXNS where ");
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, new StringBuilder(),
+        txnIds, "txn_id", false, false);
+    StringBuilder txnInfo = new StringBuilder();
+
     for (String query : queries) {
       LOG.debug("Going to execute query <" + query + ">");
-      ResultSet rs = stmt.executeQuery(query);
-      while (rs.next()) {
-        txnId = rs.getLong(1);
-        txnState = rs.getString(2).charAt(0);
-        if (txnState != TXN_OPEN) {
-          isAborted = true;
-          errorMsg.append("{").append(txnId).append(",").append(txnState).append("}");
+      try (ResultSet rs = stmt.executeQuery(query)) {
+        while (rs.next()) {
+          long txnId = rs.getLong(1);
+          char txnState = rs.getString(2).charAt(0);
+          TxnType txnType = TxnType.findByValue(rs.getInt(3));
+
+          if (txnState != TXN_OPEN) {
+            txnInfo.append("{").append(txnId).append(",").append(txnState).append("}");
+          } else if (txnType == TxnType.READ_ONLY) {
+            txnInfo.append("{").append(txnId).append(",read-only}");
+          }
         }
       }
     }
-    // Check if any of the txns in the list is committed.
-    boolean isCommitted = checkIfTxnsCommitted(txnIds, stmt, errorMsg);
-    if (isAborted || isCommitted) {
-      LOG.error(errorMsg.toString());
-      throw new IllegalStateException("Write ID allocation failed on "
-              + Warehouse.getQualifiedName(dbName, tblName)
-              + " as not all input txns in open state");
-    }
+    return txnInfo.toString();
   }
 
   /**
-   * Checks if all the txns in the list are in committed. If yes, throw eception.
-   * @param txnIds list of txns to be evaluated for committed
+   * Get txns from the list that are committed.
+   * @param txnIds list of txns to be evaluated for committed state
    * @param stmt db statement
-   * @return true if any input txn is committed, else false
    */
-  private boolean checkIfTxnsCommitted(List<Long> txnIds, Statement stmt, StringBuilder errorMsg)
-          throws SQLException {
+  private String getCommittedTxns(List<Long> txnIds, Statement stmt) throws SQLException {
     List<String> queries = new ArrayList<>();
     StringBuilder prefix = new StringBuilder();
-    StringBuilder suffix = new StringBuilder();
 
-    // Check if any of the txns in the list is committed. If yes, throw exception.
+    // Check if any of the txns in the list are committed.
     prefix.append("select ctc_txnid from COMPLETED_TXN_COMPONENTS where ");
-    suffix.append("");
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
-            txnIds, "ctc_txnid", false, false);
-    Long txnId;
-    boolean isCommitted = false;
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, new StringBuilder(),
+        txnIds, "ctc_txnid", false, false);
+    StringBuilder txnInfo = new StringBuilder();
+
     for (String query : queries) {
       LOG.debug("Going to execute query <" + query + ">");
-      ResultSet rs = stmt.executeQuery(query);
-      while (rs.next()) {
-        isCommitted = true;
-        txnId = rs.getLong(1);
-        if (errorMsg != null) {
-          errorMsg.append("{").append(txnId).append(",c}");
+      try (ResultSet rs = stmt.executeQuery(query)) {
+        while (rs.next()) {
+          long txnId = rs.getLong(1);
+          txnInfo.append("{").append(txnId).append(",c}");
         }
       }
     }
-    return isCommitted;
+    return txnInfo.toString();
   }
 
   /**

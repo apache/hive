@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -52,6 +53,12 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   private HiveLockManager lockMgr;
 
   private HiveLockManagerCtx lockManagerCtx;
+
+  @Override
+  public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
+    // No-op
+    return 0L;
+  }
 
   @Override
   public long openTxn(Context ctx, String user) throws LockException {
