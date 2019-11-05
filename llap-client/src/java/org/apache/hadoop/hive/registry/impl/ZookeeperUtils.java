@@ -55,14 +55,19 @@ public class ZookeeperUtils {
 
   /**
    * Check if Kerberos authentication is enabled.
+   * This is used by:
+   * - LLAP daemons
+   * - Tez AM
+   * - HS2
+   * - LLAP status service
+   * Among the these Tez AM process has the lowest security setting wrt Kerberos in UGI.
+   * Even in secure scenarios Tez AM will return false for
+   * UGI.getLoginUser().hasKerberosCredentials() as it does not log in using Kerberos.
+   * Hence UGI.isSecurityEnabled() is the tightest setting we can check against.
    */
   public static boolean isKerberosEnabled(Configuration conf) {
-    try {
-      return UserGroupInformation.getLoginUser().hasKerberosCredentials() &&
+      return UserGroupInformation.isSecurityEnabled() &&
           HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS);
-    } catch (IOException e) {
-      return false;
-    }
   }
 
   /**

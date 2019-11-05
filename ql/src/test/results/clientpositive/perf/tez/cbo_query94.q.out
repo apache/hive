@@ -70,7 +70,7 @@ CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count(DISTINCT $4)], agg#1=[sum($5)], agg#2=[sum($6)])
   HiveFilter(condition=[IS NULL($13)])
     HiveJoin(condition=[=($4, $14)], joinType=[left], algorithm=[none], cost=[not available])
-      HiveSemiJoin(condition=[AND(<>($3, $13), =($4, $14))], joinType=[inner])
+      HiveSemiJoin(condition=[AND(<>($3, $13), =($4, $14))], joinType=[semi])
         HiveProject(ws_ship_date_sk=[$2], ws_ship_addr_sk=[$3], ws_web_site_sk=[$4], ws_warehouse_sk=[$5], ws_order_number=[$6], ws_ext_ship_cost=[$7], ws_net_profit=[$8], d_date_sk=[$9], d_date=[$10], ca_address_sk=[$0], ca_state=[$1], web_site_sk=[$11], web_company_name=[$12])
           HiveJoin(condition=[=($4, $11)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])

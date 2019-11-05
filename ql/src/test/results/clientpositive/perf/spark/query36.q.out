@@ -256,7 +256,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: (_col2 / _col3) ASC NULLS FIRST
+                        order by: (_col2 / _col3) ASC NULLS LAST
                         partition by: (grouping(_col4, 1L) + grouping(_col4, 0L)), CASE WHEN ((grouping(_col4, 0L) = UDFToLong(0))) THEN (_col0) ELSE (CAST( null AS STRING)) END
                         raw input shape:
                         window functions:

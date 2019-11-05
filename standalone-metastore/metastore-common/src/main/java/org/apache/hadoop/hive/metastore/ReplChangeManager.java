@@ -481,7 +481,7 @@ public class ReplChangeManager {
         LOG.debug("repl policy for database {} is {}", db.getName(), replPolicyId);
         return replPolicyId;
       }
-      LOG.debug("Repl policy is not set for database ", db.getName());
+      LOG.debug("Repl policy is not set for database: {}", db.getName());
     }
     return null;
   }

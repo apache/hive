@@ -79,7 +79,11 @@ public class TestNewGetSplitsFormat extends BaseJdbcWithMiniLlap {
     }
 
     InputSplit[] splits = inputFormat.getSplits(job, numSplits);
-    assertTrue(splits.length > 2);
+
+    if (splits.length <= 1) {
+      return 0;
+    }
+
 
     // populate actual splits with schema and planBytes[]
     LlapInputSplit schemaSplit = (LlapInputSplit) splits[0];

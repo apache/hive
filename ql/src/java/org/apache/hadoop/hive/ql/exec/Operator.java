@@ -574,7 +574,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public abstract void process(Object row, int tag) throws HiveException;
 
   protected final void defaultStartGroup() throws HiveException {
-    LOG.debug("Starting group");
+    LOG.trace("Starting group");
 
     if (CollectionUtils.isEmpty(childOperators))  {
       LOG.trace("No children operators; start group done");
@@ -589,7 +589,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   protected final void defaultEndGroup() throws HiveException {
-    LOG.debug("Ending group");
+    LOG.trace("Ending group");
 
     if (CollectionUtils.isEmpty(childOperators)) {
       LOG.trace("No children operators; end group done");
