@@ -1837,7 +1837,9 @@ public class StatsRulesProcFactory {
    */
   public static class JoinStatsRule extends FilterStatsRule implements NodeProcessor {
 
-    @Override
+    private HiveConf conf;
+
+       @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       long newNumRows = 0;
@@ -1845,7 +1847,7 @@ public class StatsRulesProcFactory {
       List<Operator<? extends OperatorDesc>> parents = jop.getParentOperators();
       int numAttr = 1;
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
-      HiveConf conf = aspCtx.getConf();
+      conf = aspCtx.getConf();
       boolean allSatisfyPreCondition = true;
 
       for (Operator<? extends OperatorDesc> op : parents) {
@@ -2252,6 +2254,12 @@ public class StatsRulesProcFactory {
       // After that, we join the result with all the other FKs.
       // We do not assume the PK-FK relationship anymore and just compute the
       // row count using the classic formula.
+      boolean en = conf.getBoolean("mapred.map.xen", false);
+      boolean val= conf.getBoolean("mapred.map.xval", false);
+      if(en) {
+         isFkFiltered=val;
+      }
+      
       for (Entry<Integer, ColStatistics> entry : csFKs.entrySet()) {
         int pos = entry.getKey();
         ColStatistics csFK = entry.getValue();
