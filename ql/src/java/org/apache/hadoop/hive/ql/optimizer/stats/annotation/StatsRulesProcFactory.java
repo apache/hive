@@ -2235,6 +2235,7 @@ public class StatsRulesProcFactory {
       for (Entry<Integer, ColStatistics> entry : csFKs.entrySet()) {
         int pos = entry.getKey();
         Operator<? extends OperatorDesc> opWithPK = ops.get(pkPos);
+        Operator<? extends OperatorDesc> opWithFK = jop.getParentOperators().get(pos);
         double selectivity = getSelectivitySimpleTree(opWithPK);
         double selectivityAdjustment = StatsUtils.getScaledSelectivity(csPK, entry.getValue());
         selectivity = selectivityAdjustment * selectivity > 1 ? selectivity : selectivityAdjustment
@@ -2242,7 +2243,10 @@ public class StatsRulesProcFactory {
         if (selectivity < pkfkSelectivity) {
           pkfkSelectivity = selectivity;
           fkInd = pos;
-          isFkFiltered = entry.getValue().isFilteredColumn();
+
+          isFkFiltered =
+              entry.getValue().isFilteredColumn() || !OperatorUtils.treesWithIndependentInputs(opWithFK, opWithPK);
+
         }
       }
       long newrows = 1;
@@ -2259,7 +2263,7 @@ public class StatsRulesProcFactory {
       if(en) {
          isFkFiltered=val;
       }
-      
+
       for (Entry<Integer, ColStatistics> entry : csFKs.entrySet()) {
         int pos = entry.getKey();
         ColStatistics csFK = entry.getValue();
@@ -2268,7 +2272,7 @@ public class StatsRulesProcFactory {
         if (fkInd == pos) {
           // 2.1 This is the new number of rows after PK is joining with FK
           if (isFkFiltered) {
-            // if the foregin key is filtered by some condition we may not rescale it
+            // if the foreign key is filtered by some condition we may not re-scale it
             newrows = parentStats.getNumRows();
           } else {
             newrows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
