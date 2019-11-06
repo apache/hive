@@ -83,5 +83,5 @@ public @interface WindowFunctionDescription {
    *
    * @return true if the function can be used as an ordered-set aggregate
    */
-  boolean supportsWithinGroup() default false;
+  boolean orderedAggregate() default false;
 }

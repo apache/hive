@@ -429,10 +429,6 @@ public class TestFunctionRegistry {
 
   @Test
   public void testImpliesOrder() throws Exception {
-    Assert.assertTrue(FunctionRegistry.impliesOrder("rank"));
-    Assert.assertTrue(FunctionRegistry.impliesOrder("dense_rank"));
-    Assert.assertTrue(FunctionRegistry.impliesOrder("percent_rank"));
-    Assert.assertTrue(FunctionRegistry.impliesOrder("cume_dist"));
     Assert.assertTrue(FunctionRegistry.impliesOrder("first_value"));
     Assert.assertTrue(FunctionRegistry.impliesOrder("last_value"));
     Assert.assertTrue(FunctionRegistry.impliesOrder("lead"));
