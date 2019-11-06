@@ -618,17 +618,17 @@ public class OperatorUtils {
    *  Determines if the two trees are using independent inputs.
    */
   public static boolean treesWithIndependentInputs(Operator<?> tree1, Operator<?> tree2) {
-    Set<OpTreeSignature> sigs1 = signaturesOf(OperatorUtils.findOperatorsUpstream(tree1, TableScanOperator.class));
-    Set<OpTreeSignature> sigs2 = signaturesOf(OperatorUtils.findOperatorsUpstream(tree2, TableScanOperator.class));
+    Set<String> tables1 = signaturesOf(OperatorUtils.findOperatorsUpstream(tree1, TableScanOperator.class));
+    Set<String> tables2 = signaturesOf(OperatorUtils.findOperatorsUpstream(tree2, TableScanOperator.class));
 
-    sigs1.retainAll(sigs2);
-    return sigs1.isEmpty();
+    tables1.retainAll(tables2);
+    return tables1.isEmpty();
   }
 
-  private static Set<OpTreeSignature> signaturesOf(Set<? extends Operator<?>> ops) {
-    Set<OpTreeSignature> ret = new HashSet<>();
-    for (Operator o : ops) {
-      ret.add(OpTreeSignature.of(o));
+  private static Set<String> signaturesOf(Set<TableScanOperator> ops) {
+    Set<String> ret = new HashSet<>();
+    for (TableScanOperator o : ops) {
+      ret.add(o.getConf().getQualifiedTable());
     }
     return ret;
   }
