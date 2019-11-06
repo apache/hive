@@ -49,31 +49,22 @@ public class TestParseWithinGroupClause {
 
     ASTNode withinGroupNode = (ASTNode) functionNode.getChild(2);
     assertEquals(HiveParser.TOK_WITHIN_GROUP, withinGroupNode.getType());
-    ASTNode tabSortColNameNode = (ASTNode) withinGroupNode.getChild(0);
+
+    ASTNode orderByNode = (ASTNode) withinGroupNode.getChild(0);
+    assertEquals(HiveParser.TOK_ORDERBY, orderByNode.getType());
+
+    ASTNode tabSortColNameNode = (ASTNode) orderByNode.getChild(0);
     assertEquals(HiveParser.TOK_TABSORTCOLNAMEASC, tabSortColNameNode.getType());
   }
 
   @Test
-  public void testParsePercentileContAsc() throws Exception {
+  public void testParseMultipleColumnRefs() throws Exception {
     ASTNode tree = parseDriver.parseSelect(
-            "SELECT percentile_cont(0.4) WITHIN GROUP (ORDER BY val ASC) FROM src", null);
+            "SELECT rank(3, 4) WITHIN GROUP (ORDER BY val, val2) FROM src", null);
     ASTNode selExprNode = (ASTNode) tree.getChild(0);
     ASTNode functionNode = (ASTNode) selExprNode.getChild(0);
-    ASTNode withinGroupNode = (ASTNode) functionNode.getChild(2);
-    ASTNode tabSortColNameNode = (ASTNode) withinGroupNode.getChild(0);
-    assertEquals(HiveParser.TOK_TABSORTCOLNAMEASC, tabSortColNameNode.getType());
-  }
-
-  @Test
-  public void testParsePercentileContDesc() throws Exception {
-    ASTNode tree = parseDriver.parseSelect(
-            "SELECT percentile_cont(0.4) WITHIN GROUP (ORDER BY val DESC) FROM src", null);
-    ASTNode selExpr = (ASTNode) tree.getChild(0);
-    ASTNode function = (ASTNode) selExpr.getChild(0);
-    ASTNode selExprNode = (ASTNode) tree.getChild(0);
-    ASTNode functionNode = (ASTNode) selExprNode.getChild(0);
-    ASTNode withinGroupNode = (ASTNode) functionNode.getChild(2);
-    ASTNode tabSortColNameNode = (ASTNode) withinGroupNode.getChild(0);
-    assertEquals(HiveParser.TOK_TABSORTCOLNAMEDESC, tabSortColNameNode.getType());
+    ASTNode withinGroupNode = (ASTNode) functionNode.getChild(3);
+    ASTNode orderByNode = (ASTNode) withinGroupNode.getChild(0);
+    assertEquals(2, orderByNode.getChildCount());
   }
 }

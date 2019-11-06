@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField BINARY_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("binaryStats", org.apache.thrift.protocol.TType.STRUCT, (short)5);
   private static final org.apache.thrift.protocol.TField DECIMAL_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("decimalStats", org.apache.thrift.protocol.TType.STRUCT, (short)6);
   private static final org.apache.thrift.protocol.TField DATE_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("dateStats", org.apache.thrift.protocol.TType.STRUCT, (short)7);
+  private static final org.apache.thrift.protocol.TField TIMESTAMP_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("timestampStats", org.apache.thrift.protocol.TType.STRUCT, (short)8);
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -52,7 +53,8 @@ import org.slf4j.LoggerFactory;
     STRING_STATS((short)4, "stringStats"),
     BINARY_STATS((short)5, "binaryStats"),
     DECIMAL_STATS((short)6, "decimalStats"),
-    DATE_STATS((short)7, "dateStats");
+    DATE_STATS((short)7, "dateStats"),
+    TIMESTAMP_STATS((short)8, "timestampStats");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -81,6 +83,8 @@ import org.slf4j.LoggerFactory;
           return DECIMAL_STATS;
         case 7: // DATE_STATS
           return DATE_STATS;
+        case 8: // TIMESTAMP_STATS
+          return TIMESTAMP_STATS;
         default:
           return null;
       }
@@ -137,6 +141,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, DecimalColumnStatsData.class)));
     tmpMap.put(_Fields.DATE_STATS, new org.apache.thrift.meta_data.FieldMetaData("dateStats", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, DateColumnStatsData.class)));
+    tmpMap.put(_Fields.TIMESTAMP_STATS, new org.apache.thrift.meta_data.FieldMetaData("timestampStats", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TimestampColumnStatsData.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ColumnStatisticsData.class, metaDataMap);
   }
@@ -198,6 +204,12 @@ import org.slf4j.LoggerFactory;
     return x;
   }
 
+  public static ColumnStatisticsData timestampStats(TimestampColumnStatsData value) {
+    ColumnStatisticsData x = new ColumnStatisticsData();
+    x.setTimestampStats(value);
+    return x;
+  }
+
 
   @Override
   protected void checkType(_Fields setField, Object value) throws ClassCastException {
@@ -237,6 +249,11 @@ import org.slf4j.LoggerFactory;
           break;
         }
         throw new ClassCastException("Was expecting value of type DateColumnStatsData for field 'dateStats', but got " + value.getClass().getSimpleName());
+      case TIMESTAMP_STATS:
+        if (value instanceof TimestampColumnStatsData) {
+          break;
+        }
+        throw new ClassCastException("Was expecting value of type TimestampColumnStatsData for field 'timestampStats', but got " + value.getClass().getSimpleName());
       default:
         throw new IllegalArgumentException("Unknown field id " + setField);
     }
@@ -317,6 +334,16 @@ import org.slf4j.LoggerFactory;
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             return null;
           }
+        case TIMESTAMP_STATS:
+          if (field.type == TIMESTAMP_STATS_FIELD_DESC.type) {
+            TimestampColumnStatsData timestampStats;
+            timestampStats = new TimestampColumnStatsData();
+            timestampStats.read(iprot);
+            return timestampStats;
+          } else {
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            return null;
+          }
         default:
           throw new IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -356,6 +383,10 @@ import org.slf4j.LoggerFactory;
       case DATE_STATS:
         DateColumnStatsData dateStats = (DateColumnStatsData)value_;
         dateStats.write(oprot);
+        return;
+      case TIMESTAMP_STATS:
+        TimestampColumnStatsData timestampStats = (TimestampColumnStatsData)value_;
+        timestampStats.write(oprot);
         return;
       default:
         throw new IllegalStateException("Cannot write union with unknown field " + setField_);
@@ -402,6 +433,11 @@ import org.slf4j.LoggerFactory;
           dateStats = new DateColumnStatsData();
           dateStats.read(iprot);
           return dateStats;
+        case TIMESTAMP_STATS:
+          TimestampColumnStatsData timestampStats;
+          timestampStats = new TimestampColumnStatsData();
+          timestampStats.read(iprot);
+          return timestampStats;
         default:
           throw new IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -441,6 +477,10 @@ import org.slf4j.LoggerFactory;
         DateColumnStatsData dateStats = (DateColumnStatsData)value_;
         dateStats.write(oprot);
         return;
+      case TIMESTAMP_STATS:
+        TimestampColumnStatsData timestampStats = (TimestampColumnStatsData)value_;
+        timestampStats.write(oprot);
+        return;
       default:
         throw new IllegalStateException("Cannot write union with unknown field " + setField_);
     }
@@ -463,6 +503,8 @@ import org.slf4j.LoggerFactory;
         return DECIMAL_STATS_FIELD_DESC;
       case DATE_STATS:
         return DATE_STATS_FIELD_DESC;
+      case TIMESTAMP_STATS:
+        return TIMESTAMP_STATS_FIELD_DESC;
       default:
         throw new IllegalArgumentException("Unknown field id " + setField);
     }
@@ -581,6 +623,20 @@ import org.slf4j.LoggerFactory;
     value_ = value;
   }
 
+  public TimestampColumnStatsData getTimestampStats() {
+    if (getSetField() == _Fields.TIMESTAMP_STATS) {
+      return (TimestampColumnStatsData)getFieldValue();
+    } else {
+      throw new RuntimeException("Cannot get field 'timestampStats' because union is currently set to " + getFieldDesc(getSetField()).name);
+    }
+  }
+
+  public void setTimestampStats(TimestampColumnStatsData value) {
+    if (value == null) throw new NullPointerException();
+    setField_ = _Fields.TIMESTAMP_STATS;
+    value_ = value;
+  }
+
   public boolean isSetBooleanStats() {
     return setField_ == _Fields.BOOLEAN_STATS;
   }
@@ -613,6 +669,11 @@ import org.slf4j.LoggerFactory;
 
   public boolean isSetDateStats() {
     return setField_ == _Fields.DATE_STATS;
+  }
+
+
+  public boolean isSetTimestampStats() {
+    return setField_ == _Fields.TIMESTAMP_STATS;
   }
 
 

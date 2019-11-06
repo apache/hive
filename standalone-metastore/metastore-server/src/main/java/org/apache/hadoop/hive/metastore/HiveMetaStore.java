@@ -3023,7 +3023,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         String validWriteIds, long writeId) throws Exception {
       if (partNames == null) {
         if (0 != table.getPartitionKeysSize()) {
-          for (Partition partition : ms.getPartitions(catName, dbName, tableName, Integer.MAX_VALUE)) {
+          for (Partition partition : ms.getPartitions(catName, dbName, tableName, -1)) {
             alterPartitionForTruncate(ms, catName, dbName, tableName, table, partition,
                 validWriteIds, writeId);
           }
@@ -3071,7 +3071,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<Path> locations = new ArrayList<>();
       if (partNames == null) {
         if (0 != table.getPartitionKeysSize()) {
-          for (Partition partition : ms.getPartitions(catName, dbName, tableName, Integer.MAX_VALUE)) {
+          for (Partition partition : ms.getPartitions(catName, dbName, tableName, -1)) {
             locations.add(new Path(partition.getSd().getLocation()));
           }
         } else {

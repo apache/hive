@@ -460,11 +460,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
         final boolean materializedView = getQB().isMaterializedView();
 
         try {
+          // 0. Gen Optimized Plan
+          RelNode newPlan = logicalPlan();
+
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
               throw new SemanticException("Create view is not supported in cbo return path.");
             }
-            sinkOp = getOptimizedHiveOPDag();
+            sinkOp = getOptimizedHiveOPDag(newPlan);
             if (oldHints.size() > 0) {
               LOG.debug("Propagating hints to QB: " + oldHints);
               getQB().getParseInfo().setHintList(oldHints);
@@ -473,8 +476,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
           } else {
-            // 0. Gen Optimized Plan
-            final RelNode newPlan = logicalPlan();
             // 1. Convert Plan to AST
             ASTNode newAST = getOptimizedAST(newPlan);
 
@@ -1559,25 +1560,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @return Optimized Hive operator tree
    * @throws SemanticException
    */
-  Operator getOptimizedHiveOPDag() throws SemanticException {
-    RelNode optimizedOptiqPlan = null;
-    CalcitePlannerAction calcitePlannerAction = null;
-    if (this.columnAccessInfo == null) {
-      this.columnAccessInfo = new ColumnAccessInfo();
-    }
-    calcitePlannerAction = new CalcitePlannerAction(
-        prunedPartitions,
-        ctx.getStatsSource(),
-        this.columnAccessInfo);
-
-    try {
-      optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
-          .newConfigBuilder().typeSystem(new HiveTypeSystemImpl()).build());
-    } catch (Exception e) {
-      rethrowCalciteException(e);
-      throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
-    }
-
+  Operator getOptimizedHiveOPDag(RelNode optimizedOptiqPlan) throws SemanticException {
     RelNode modifiedOptimizedOptiqPlan = PlanModifierForReturnPath.convertOpTree(
         optimizedOptiqPlan, resultSchema, this.getQB().getTableDesc() != null);
 
@@ -2722,7 +2705,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         calciteJoinType = JoinRelType.FULL;
         break;
       case LEFTSEMI:
-        calciteJoinType = JoinRelType.INNER;
+        calciteJoinType = JoinRelType.SEMI;
         leftSemiJoin = true;
         break;
       case INNER:
@@ -2756,8 +2739,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 ImmutableList.of(remainingEquiCond, nonEquiConds), false) :
             nonEquiConds;
         topRel = HiveSemiJoin.getSemiJoin(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-            inputRels[0], inputRels[1], calciteJoinCond, ImmutableIntList.copyOf(leftKeys),
-            ImmutableIntList.copyOf(rightKeys));
+            inputRels[0], inputRels[1], calciteJoinCond);
 
         // Create join RR: we need to check whether we need to update left RR in case
         // previous call to projectNonColumnEquiConditions updated it

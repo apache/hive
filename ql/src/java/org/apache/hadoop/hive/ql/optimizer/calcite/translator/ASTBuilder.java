@@ -155,17 +155,15 @@ public class ASTBuilder {
     return b.node();
   }
 
-  public static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond,
-      boolean semiJoin) {
+  public static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond) {
     ASTBuilder b = null;
 
     switch (joinType) {
+    case SEMI:
+      b = ASTBuilder.construct(HiveParser.TOK_LEFTSEMIJOIN, "TOK_LEFTSEMIJOIN");
+      break;
     case INNER:
-      if (semiJoin) {
-        b = ASTBuilder.construct(HiveParser.TOK_LEFTSEMIJOIN, "TOK_LEFTSEMIJOIN");
-      } else {
-        b = ASTBuilder.construct(HiveParser.TOK_JOIN, "TOK_JOIN");
-      }
+      b = ASTBuilder.construct(HiveParser.TOK_JOIN, "TOK_JOIN");
       break;
     case LEFT:
       b = ASTBuilder.construct(HiveParser.TOK_LEFTOUTERJOIN, "TOK_LEFTOUTERJOIN");

@@ -392,8 +392,21 @@ public class TezSessionState {
     }
   }
 
+  /**
+   * Check if Kerberos authentication is enabled.
+   * This is used by:
+   * - HS2 (upon Tez session creation)
+   * In secure scenarios HS2 might either be logged on (by Kerberos) by itself or by a launcher
+   * script it was forked from. In the latter case UGI.getLoginUser().isFromKeytab() returns false,
+   * hence UGI.getLoginUser().hasKerberosCredentials() is a tightest setting we can check against.
+   */
   private boolean isKerberosEnabled(Configuration conf) {
-    return UserGroupInformation.isSecurityEnabled() && HiveConf.getBoolVar(conf, ConfVars.LLAP_USE_KERBEROS);
+    try {
+      return UserGroupInformation.getLoginUser().hasKerberosCredentials() &&
+          HiveConf.getBoolVar(conf, ConfVars.LLAP_USE_KERBEROS);
+    } catch (IOException e) {
+      return false;
+    }
   }
 
   private static Token<LlapTokenIdentifier> getLlapToken(

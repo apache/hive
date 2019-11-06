@@ -214,6 +214,14 @@ public class MTableColumnStatistics {
     this.longHighValue = highValue;
   }
 
+  public void setTimestampStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
+    this.numNulls = numNulls;
+    this.numDVs = numNDVs;
+    this.bitVector = bitVector;
+    this.longLowValue = lowValue;
+    this.longHighValue = highValue;
+  }
+
   public Long getLongLowValue() {
     return longLowValue;
   }

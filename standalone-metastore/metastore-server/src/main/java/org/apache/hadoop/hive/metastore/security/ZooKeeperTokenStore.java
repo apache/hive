@@ -93,6 +93,14 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
     return nodeAcls;
   }
 
+  /**
+   * Check if Kerberos authentication is enabled.
+   * This is used by:
+   * - HMS
+   * In secure scenarios the HMS is logged in (by itself) using Kerberos keytab, hence
+   * UGI.getLoginUser().isFromKeytab() returns true.
+   * This makes checking against this method the tightest setting we can check against.
+   */
   private boolean isKerberosEnabled(Configuration conf) {
     try {
       return UserGroupInformation.getLoginUser().isFromKeytab() &&

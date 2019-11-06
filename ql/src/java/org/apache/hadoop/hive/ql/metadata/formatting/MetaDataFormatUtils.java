@@ -22,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
@@ -56,6 +58,7 @@ import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hive.common.util.HiveStringUtils;
 
 import com.google.common.collect.Lists;
@@ -109,6 +112,16 @@ public final class MetaDataFormatUtils {
     }
 
     DateWritableV2 writableValue = new DateWritableV2((int) val.getDaysSinceEpoch());
+    return writableValue.toString();
+  }
+
+  public static String convertToString(org.apache.hadoop.hive.metastore.api.Timestamp val) {
+    if (val == null) {
+      return "";
+    }
+
+    TimestampWritableV2 writableValue = new TimestampWritableV2(
+        Timestamp.ofEpochSecond(val.getSecondsSinceEpoch()));
     return writableValue.toString();
   }
 
@@ -697,6 +710,13 @@ public final class MetaDataFormatUtils {
                                           "", "",
                                           "", "",
                                           convertToString(dcsd.getBitVectors())));
+        } else if (csd.isSetTimestampStats()) {
+          TimestampColumnStatsData tcsd = csd.getTimestampStats();
+          ret.addAll(Lists.newArrayList(  convertToString(tcsd.getLowValue()), convertToString(tcsd.getHighValue()),
+              "" + tcsd.getNumNulls(), "" + tcsd.getNumDVs(),
+              "", "",
+              "", "",
+              convertToString(tcsd.getBitVectors())));
         }
         // @formatter:on
       } else {

@@ -378,6 +378,15 @@ import java.util.regex.Pattern;
  *     immediately preceded by an "FM."
  *   - AM/PM input length has to match the pattern's length. e.g. pattern=AM input=A.M. is not
  *     accepted, but input=pm is.
+ *
+ * Appendix:
+ * List of Date-Based Patterns
+ * These are patterns that help define a date as opposed to a time.
+ * YYYY, YYY, YY, Y, RRRR, RR,
+ * MM, MON, MONTH,
+ * DD, DDD, D, DY, DAY,
+ * Q, WW, W,
+ * IYYY, IYY, IY, I, IW, ID
  */
 
 public class HiveSqlDateTimeFormatter implements Serializable {

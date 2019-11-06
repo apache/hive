@@ -137,7 +137,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$4], sort4=[$6], sort5=
       HiveFilter(condition=[OR(IS NOT NULL($14), IS NOT NULL($16))])
         HiveJoin(condition=[=($0, $17)], joinType=[left], algorithm=[none], cost=[not available])
           HiveJoin(condition=[=($0, $15)], joinType=[left], algorithm=[none], cost=[not available])
-            HiveSemiJoin(condition=[=($0, $14)], joinType=[inner])
+            HiveSemiJoin(condition=[=($0, $14)], joinType=[semi])
               HiveJoin(condition=[=($5, $1)], joinType=[inner], algorithm=[none], cost=[not available])
                 HiveJoin(condition=[=($2, $3)], joinType=[inner], algorithm=[none], cost=[not available])
                   HiveProject(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_addr_sk=[$4])

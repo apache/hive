@@ -1781,6 +1781,13 @@ import com.google.common.annotations.VisibleForTesting;
       if (!isDecimal64ScaleEstablished) {
         decimal64ColumnScale = returnDecimalTypeInfo.getScale();
         isDecimal64ScaleEstablished = true;
+      } else if (genericUdf instanceof GenericUDFOPDivide) {
+        // Check possible overflow during decimal64 division for intermediate result
+        // if yes then skip the optimization
+        DecimalTypeInfo leftType = (DecimalTypeInfo)childExprs.get(0).getTypeInfo();
+        if((leftType.precision() + returnDecimalTypeInfo.getScale()) > 18) {
+          return null;
+        }
       } else if (returnDecimalTypeInfo.getScale() != decimal64ColumnScale) {
         return null;
       }

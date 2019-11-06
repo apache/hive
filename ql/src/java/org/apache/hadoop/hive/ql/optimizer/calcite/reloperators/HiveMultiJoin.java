@@ -225,7 +225,7 @@ public final class HiveMultiJoin extends AbstractRelNode {
 
   private boolean containsOuter() {
     for (JoinRelType joinType : joinTypes) {
-      if (joinType != JoinRelType.INNER) {
+      if (joinType.isOuterJoin()) {
         return true;
       }
     }

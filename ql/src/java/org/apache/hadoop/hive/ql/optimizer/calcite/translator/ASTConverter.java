@@ -36,7 +36,6 @@ import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
@@ -378,7 +377,7 @@ public class ASTConverter {
       QueryBlockInfo right = convertSource(join.getRight());
       s = new Schema(left.schema, right.schema);
       ASTNode cond = join.getCondition().accept(new RexVisitor(s, false, r.getCluster().getRexBuilder()));
-      boolean semiJoin = join instanceof SemiJoin;
+      boolean semiJoin = join.isSemiJoin();
       if (join.getRight() instanceof Join && !semiJoin) {
           // should not be done for semijoin since it will change the semantics
         // Invert join inputs; this is done because otherwise the SemanticAnalyzer
@@ -391,9 +390,9 @@ public class ASTConverter {
         } else {
           type = join.getJoinType();
         }
-        ast = ASTBuilder.join(right.ast, left.ast, type, cond, semiJoin);
+        ast = ASTBuilder.join(right.ast, left.ast, type, cond);
       } else {
-        ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond, semiJoin);
+        ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond);
       }
       if (semiJoin) {
         s = left.schema;

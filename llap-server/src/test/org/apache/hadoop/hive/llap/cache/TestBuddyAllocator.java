@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
@@ -110,7 +111,7 @@ public class TestBuddyAllocator {
     final int min = 3, max = 8, maxAlloc = 1 << max, allocsPerSize = 3;
     final BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc,
         maxAlloc * 8, maxAlloc * 24, 0, tmpDir, new DummyMemoryManager(),
-        LlapDaemonCacheMetrics.create("test", "1"), null, true);
+        LlapDaemonCacheMetrics.create("test", "1"), "both", true);
     ExecutorService executor = Executors.newFixedThreadPool(3);
     final CountDownLatch cdlIn = new CountDownLatch(3), cdlOut = new CountDownLatch(1);
     FutureTask<Void> upTask = new FutureTask<Void>(new Callable<Void>() {
@@ -141,12 +142,29 @@ public class TestBuddyAllocator {
     executor.execute(downTask);
     try {
       cdlIn.await(); // Wait for all threads to be ready.
-      cdlOut.countDown(); // Release them at the same time.
-      upTask.get();
-      downTask.get();
-      sameTask.get();
+      cdlOut.countDown(); // Release them at the same time.\
     } catch (Throwable t) {
+      LOG.error("failed on starting the thread race", t);
       throw new RuntimeException(t);
+    }
+
+    try {
+      upTask.get();
+    } catch (ExecutionException | InterruptedException e) {
+      LOG.error("failed on up task", e);
+      throw new RuntimeException(e);
+    }
+    try {
+      downTask.get();
+    } catch (ExecutionException | InterruptedException e) {
+      LOG.error("failed on downTask", e);
+      throw new RuntimeException(e);
+    }
+    try {
+      sameTask.get();
+    } catch (ExecutionException | InterruptedException e) {
+      LOG.error("failed on sameTask", e);
+      throw new RuntimeException(e);
     }
   }
 

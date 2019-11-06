@@ -39,12 +39,14 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.Timestamp;
 import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -58,6 +60,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +113,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
 
     if (columnType.equalsIgnoreCase("long") || columnType.equalsIgnoreCase("tinyint")
         || columnType.equalsIgnoreCase("smallint") || columnType.equalsIgnoreCase("int")
-        || columnType.equalsIgnoreCase("bigint") || columnType.equalsIgnoreCase("timestamp")) {
+        || columnType.equalsIgnoreCase("bigint")) {
       LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
       longStats.setNumNullsIsSet(false);
       longStats.setNumDVsIsSet(false);
@@ -275,6 +278,26 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setDateStats(dateStats);
       statsObj.setStatsData(statsData);
+    } else if (columnType.equalsIgnoreCase("timestamp")) {
+      TimestampColumnStatsDataInspector timestampStats = new TimestampColumnStatsDataInspector();
+      Map<String, String> mapProp = work.getMapProp();
+      for (Entry<String, String> entry : mapProp.entrySet()) {
+        String fName = entry.getKey();
+        String value = entry.getValue();
+        if (fName.equals("numNulls")) {
+          timestampStats.setNumNulls(Long.parseLong(value));
+        } else if (fName.equals("numDVs")) {
+          timestampStats.setNumDVs(Long.parseLong(value));
+        } else if (fName.equals("lowValue")) {
+          timestampStats.setLowValue(readTimestampValue(value));
+        } else if (fName.equals("highValue")) {
+          timestampStats.setHighValue(readTimestampValue(value));
+        } else {
+          throw new SemanticException("Unknown stat");
+        }
+      }
+      statsData.setTimestampStats(timestampStats);
+      statsObj.setStatsData(statsData);
     } else {
       throw new SemanticException("Unsupported type");
     }
@@ -373,6 +396,17 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       // Fallback to integer parsing
       LOG.debug("Reading date value as days since epoch: {}", dateStr);
       return new Date(Long.parseLong(dateStr));
+    }
+  }
+
+  private Timestamp readTimestampValue(String timestampStr) {
+    try {
+      TimestampWritableV2 writableVal = new TimestampWritableV2(
+          org.apache.hadoop.hive.common.type.Timestamp.valueOf(timestampStr));
+      return new Timestamp(writableVal.getSeconds());
+    } catch (IllegalArgumentException err) {
+      LOG.debug("Reading timestamp value as seconds since epoch: {}", timestampStr);
+      return new Timestamp(Long.parseLong(timestampStr));
     }
   }
 }
