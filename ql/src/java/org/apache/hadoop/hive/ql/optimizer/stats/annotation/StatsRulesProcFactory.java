@@ -2225,7 +2225,7 @@ public class StatsRulesProcFactory {
         CommonJoinOperator<? extends JoinDesc> jop) {
       double pkfkSelectivity = Double.MAX_VALUE;
       int fkInd = -1;
-      boolean isFkFiltered = false;
+      boolean isFKIndependentFromPK = false;
       // 1. We iterate through all the operators that have candidate FKs and
       // choose the FK that has the minimum selectivity. We assume that PK and this FK
       // have the PK-FK relationship. This is heuristic and can be
@@ -2238,13 +2238,14 @@ public class StatsRulesProcFactory {
         double selectivityAdjustment = StatsUtils.getScaledSelectivity(csPK, entry.getValue());
         selectivity = selectivityAdjustment * selectivity > 1 ? selectivity : selectivityAdjustment
             * selectivity;
-        if (selectivity < pkfkSelectivity) {
+
+        boolean independent =
+            !entry.getValue().isFilteredColumn() && OperatorUtils.treesWithIndependentInputs(opWithFK, opWithPK);
+
+        if (independent && selectivity < pkfkSelectivity) {
           pkfkSelectivity = selectivity;
           fkInd = pos;
-
-          isFkFiltered =
-              entry.getValue().isFilteredColumn() || !OperatorUtils.treesWithIndependentInputs(opWithFK, opWithPK);
-
+          isFKIndependentFromPK = independent;
         }
       }
       long newrows = 1;
@@ -2263,7 +2264,7 @@ public class StatsRulesProcFactory {
         Statistics parentStats = parent.getStatistics();
         if (fkInd == pos) {
           // 2.1 This is the new number of rows after PK is joining with FK
-          if (isFkFiltered) {
+          if (!isFKIndependentFromPK) {
             // if the foreign key is filtered by some condition we may not re-scale it
             newrows = parentStats.getNumRows();
           } else {
