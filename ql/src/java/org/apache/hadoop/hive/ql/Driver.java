@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
@@ -1533,7 +1534,7 @@ public class Driver implements IDriver {
     if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_LOCK_MAPRED_ONLY)) {
       return true;
     }
-    if (!HiveConf.getVar(conf, ConfVars.HIVE_QUERY_EXCLUSIVE_LOCK).isEmpty()) {
+    if (conf.get(Constants.HIVE_QUERY_EXCLUSIVE_LOCK) != null) {
       return true;
     }
     Queue<Task<?>> taskQueue = new LinkedList<Task<?>>();

@@ -24,8 +24,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
@@ -436,7 +436,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   private Collection<LockComponent> getGlobalLocks(Configuration conf) {
-    String lockNames = conf.get(ConfVars.HIVE_QUERY_EXCLUSIVE_LOCK.varname);
+    String lockNames = conf.get(Constants.HIVE_QUERY_EXCLUSIVE_LOCK);
     if (StringUtils.isEmpty(lockNames)) {
       return Collections.emptyList();
     }

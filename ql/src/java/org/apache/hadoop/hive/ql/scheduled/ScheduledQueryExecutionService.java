@@ -19,12 +19,13 @@ package org.apache.hadoop.hive.ql.scheduled;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.QueryState;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
@@ -105,15 +106,20 @@ public class ScheduledQueryExecutionService implements Closeable {
     private void processQuery(ScheduledQueryPollResponse q) {
       SessionState state = null;
       try {
-        HiveConf conf = new HiveConf(context.conf);
-        conf.setVar(ConfVars.HIVE_QUERY_EXCLUSIVE_LOCK, lockNameFor(q.getScheduleKey()));
-        state = SessionState.start(conf);
+        state = SessionState.start(context.conf);
         info = new ScheduledQueryProgressInfo();
         info.setScheduledExecutionId(q.getExecutionId());
         info.setState(QueryState.EXECUTING);
         reportQueryProgress();
+        org.apache.hadoop.hive.ql.QueryState newQueryState =
+            new org.apache.hadoop.hive.ql.QueryState.Builder()
+                .withGenerateNewQueryId(true).withHiveConf(context.conf)
+                .withConfOverlay(
+                    Collections.singletonMap(Constants.HIVE_QUERY_EXCLUSIVE_LOCK, lockNameFor(q.getScheduleKey())))
+                .build();
+
         try (
-          IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(conf), q.getUser(), null)) {
+          IDriver driver = DriverFactory.newDriver(newQueryState, q.getUser(), null)) {
           info.setExecutorQueryId(driver.getQueryState().getQueryId());
           driver.run(q.getQuery());
           info.setState(QueryState.FINISHED);
