@@ -468,6 +468,8 @@ public enum ErrorMsg {
   OBJECTNAME_CONTAINS_DOT(10420, "Table or database name may not contain dot(.) character", true),
   WITHIN_GROUP_NOT_ALLOWED(10421,
           "Not an ordered-set aggregate function: {0}. WITHIN GROUP clause is not allowed.", true),
+  WITHIN_GROUP_PARAMETER_MISMATCH(10422,
+          "The number of hypothetical direct arguments ({0}) must match the number of ordering columns ({1})", true),
   AMBIGUOUS_STRUCT_ATTRIBUTE(10423, "Attribute \"{0}\" specified more than once in structured type.", true),
   OFFSET_NOT_SUPPORTED_IN_SUBQUERY(10424, "OFFSET is not supported in subquery of exists", true),
   WITH_COL_LIST_NUM_OVERFLOW(10425, "WITH-clause query {0} returns {1} columns, but {2} labels were specified. The number of column labels must be smaller or equal to the number of expressions returned by the query.", true),

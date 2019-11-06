@@ -63,7 +63,7 @@ import org.apache.hadoop.io.LongWritable;
 @WindowFunctionDescription(
         supportsWindow = false,
         pivotResult = true,
-        supportsWithinGroup = true)
+        orderedAggregate = true)
 public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
 
   private static final Comparator<LongWritable> LONG_COMPARATOR;
@@ -81,21 +81,35 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
-    validateParameterTypes(parameters);
+    if (parameters.length == 2) { // column ref, expression (0 <= percentile <= 1)
+      return getGenericUDAFEvaluator(parameters[0], parameters[1]);
+    } else if (parameters.length == 4) {
+      // expression (0 <= percentile <= 1), order by column ref, order direction, null ordering
+      return getGenericUDAFEvaluator(parameters[1], parameters[0]);
+    } else {
+      throw new UDFArgumentTypeException(parameters.length - 1, "Only 1 argument and a single order column " +
+              "reference expected.");
+    }
+  }
 
-    switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
+  private GenericUDAFEvaluator getGenericUDAFEvaluator(TypeInfo orderByColumn, TypeInfo percentile)
+          throws UDFArgumentTypeException {
+    if (orderByColumn.getCategory() != ObjectInspector.Category.PRIMITIVE) {
+      throw new UDFArgumentTypeException(0, "Only primitive type arguments are accepted but "
+              + orderByColumn.getTypeName() + " is passed.");
+    }
+
+    switch (((PrimitiveTypeInfo) orderByColumn).getPrimitiveCategory()) {
     case BYTE:
     case SHORT:
     case INT:
     case LONG:
     case VOID:
-      return parameters[1].getCategory() == ObjectInspector.Category.LIST ?
-              new PercentileContLongArrayEvaluator() : new PercentileContLongEvaluator();
+      return createLongEvaluator(percentile);
     case FLOAT:
     case DOUBLE:
     case DECIMAL:
-      return parameters[1].getCategory() == ObjectInspector.Category.LIST ?
-              new PercentileContDoubleArrayEvaluator() : new PercentileContDoubleEvaluator();
+      return createDoubleEvaluator(percentile);
     case STRING:
     case TIMESTAMP:
     case VARCHAR:
@@ -104,22 +118,18 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
     case DATE:
     default:
       throw new UDFArgumentTypeException(0,
-          "Only numeric arguments are accepted but " + parameters[0].getTypeName() + " is passed.");
+          "Only numeric arguments are accepted but " + orderByColumn.getTypeName() + " is passed.");
     }
   }
 
-  protected void validateParameterTypes(TypeInfo[] parameters) throws UDFArgumentTypeException {
-    if (parameters.length < 2) {
-      throw new UDFArgumentTypeException(parameters.length - 1, "Not enough arguments.");
-    }
-    if (parameters.length > 3) {
-      throw new UDFArgumentTypeException(parameters.length - 1, "Too many arguments.");
-    }
+  protected GenericUDAFEvaluator createLongEvaluator(TypeInfo percentile) {
+    return percentile.getCategory() == ObjectInspector.Category.LIST ?
+            new PercentileContLongArrayEvaluator() : new PercentileContLongEvaluator();
+  }
 
-    if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(0, "Only primitive type arguments are accepted but "
-          + parameters[0].getTypeName() + " is passed.");
-    }
+  protected GenericUDAFEvaluator createDoubleEvaluator(TypeInfo percentile) {
+    return percentile.getCategory() == ObjectInspector.Category.LIST ?
+            new PercentileContDoubleArrayEvaluator() : new PercentileContDoubleEvaluator();
   }
 
   /**
@@ -196,7 +206,15 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       super.init(m, parameters);
 
-      initInspectors(parameters);
+      if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {// ...for real input data
+        if (parameters.length == 2) { // Order direction was not given, default to asc
+          initInspectors((PrimitiveObjectInspector) parameters[0]);
+        } else {
+          initInspectors((PrimitiveObjectInspector) parameters[1], (WritableConstantIntObjectInspector) parameters[2]);
+        }
+      } else { // ...for partial result as input
+        initPartialInspectors((StructObjectInspector) parameters[0]);
+      }
 
       if (mode == Mode.PARTIAL1 || mode == Mode.PARTIAL2) {// ...for partial result
         partialResult = new Object[3];
@@ -229,25 +247,29 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
       entriesList.sort(isAscending ? comparator : comparator.reversed());
     }
 
-    protected void initInspectors(ObjectInspector[] parameters) {
-      if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {// ...for real input data
-        inputOI = (PrimitiveObjectInspector) parameters[0];
-        if (parameters.length == 2) { // Order direction was not given, default to asc
-          isAscending = true;
-        } else {
-          isAscending = ((WritableConstantIntObjectInspector) parameters[2]).
-                  getWritableConstantValue().get() != DESCENDING_CODE;
-        }
-      } else { // ...for partial result as input
-        soi = (StructObjectInspector) parameters[0];
+    // ...for real input data, no order direction
+    protected void initInspectors(PrimitiveObjectInspector orderByColumnOI) {
+      inputOI = orderByColumnOI;
+      isAscending = true;
+    }
 
-        countsField = soi.getStructFieldRef("counts");
-        percentilesField = soi.getStructFieldRef("percentiles");
-        isAscendingField = soi.getStructFieldRef("isAscending");
+    // ...for real input data, with order direction
+    protected void initInspectors(
+            PrimitiveObjectInspector orderByColumnOI, WritableConstantIntObjectInspector orderDirectionOI) {
+      inputOI = orderByColumnOI;
+      isAscending = orderDirectionOI.getWritableConstantValue().get() != DESCENDING_CODE;
+    }
 
-        countsOI = (MapObjectInspector) countsField.getFieldObjectInspector();
-        percentilesOI = (ListObjectInspector) percentilesField.getFieldObjectInspector();
-      }
+    // ...for partial result as input
+    protected void initPartialInspectors(StructObjectInspector objectInspector) {
+      soi = objectInspector;
+
+      countsField = soi.getStructFieldRef("counts");
+      percentilesField = soi.getStructFieldRef("percentiles");
+      isAscendingField = soi.getStructFieldRef("isAscending");
+
+      countsOI = (MapObjectInspector) countsField.getFieldObjectInspector();
+      percentilesOI = (ListObjectInspector) percentilesField.getFieldObjectInspector();
     }
 
     @Override
@@ -268,16 +290,23 @@ public class GenericUDAFPercentileCont extends AbstractGenericUDAFResolver {
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       PercentileAgg percAgg = (PercentileAgg) agg;
+      if (parameters.length == 4) {
+        iterate(percAgg, parameters[0], parameters[1]);
+      } else {
+        iterate(percAgg, parameters[1], parameters[0]);
+      }
+    }
 
+    private void iterate(PercentileAgg percAgg, Object percentiles, Object oderByColumnValue) {
       if (percAgg.percentiles == null) {
-        percAgg.percentiles = converter.convertPercentileParameter(parameters[1]);
+        percAgg.percentiles = converter.convertPercentileParameter(percentiles);
       }
 
-      if (parameters[0] == null) {
+      if (oderByColumnValue == null) {
         return;
       }
 
-      T input = getInput(parameters[0], inputOI);
+      T input = getInput(oderByColumnValue, inputOI);
 
       if (input != null) {
         increment(percAgg, wrapInput(input), 1);

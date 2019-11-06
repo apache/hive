@@ -22,12 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
 
@@ -41,36 +38,19 @@ import org.apache.hadoop.io.LongWritable;
 @WindowFunctionDescription(
         supportsWindow = false,
         pivotResult = true,
-        supportsWithinGroup = true)
+        orderedAggregate = true)
 public class GenericUDAFPercentileDisc extends GenericUDAFPercentileCont {
 
   @Override
-  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
-    validateParameterTypes(parameters);
+  protected GenericUDAFEvaluator createLongEvaluator(TypeInfo percentile) {
+    return percentile.getCategory() == ObjectInspector.Category.LIST ?
+            new PercentileDiscLongArrayEvaluator() : new PercentileDiscLongEvaluator();
+  }
 
-    switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
-    case BYTE:
-    case SHORT:
-    case INT:
-    case LONG:
-    case VOID:
-      return parameters[1].getCategory() == ObjectInspector.Category.LIST ?
-              new PercentileDiscLongArrayEvaluator() : new PercentileDiscLongEvaluator();
-    case FLOAT:
-    case DOUBLE:
-    case DECIMAL:
-      return parameters[1].getCategory() == ObjectInspector.Category.LIST ?
-              new PercentileDiscDoubleArrayEvaluator() : new PercentileDiscDoubleEvaluator();
-    case STRING:
-    case TIMESTAMP:
-    case VARCHAR:
-    case CHAR:
-    case BOOLEAN:
-    case DATE:
-    default:
-      throw new UDFArgumentTypeException(0,
-          "Only numeric arguments are accepted but " + parameters[0].getTypeName() + " is passed.");
-    }
+  @Override
+  protected GenericUDAFEvaluator createDoubleEvaluator(TypeInfo percentile) {
+    return percentile.getCategory() == ObjectInspector.Category.LIST ?
+            new PercentileDiscDoubleArrayEvaluator() : new PercentileDiscDoubleEvaluator();
   }
 
   /**
