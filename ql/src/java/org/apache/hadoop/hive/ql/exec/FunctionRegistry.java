@@ -1892,10 +1892,10 @@ public final class FunctionRegistry {
     }
   }
 
-  public static boolean supportsWithinGroup(String functionName) throws SemanticException {
+  public static boolean isOrderedAggregate(String functionName) throws SemanticException {
     WindowFunctionInfo windowInfo = getWindowFunctionInfo(functionName);
     if (windowInfo != null) {
-      return windowInfo.supportsWithinGroup();
+      return windowInfo.isOrderedAggregate();
     }
     return false;
   }
