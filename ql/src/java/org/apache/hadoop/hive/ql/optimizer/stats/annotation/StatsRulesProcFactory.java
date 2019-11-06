@@ -2239,12 +2239,12 @@ public class StatsRulesProcFactory {
         selectivity = selectivityAdjustment * selectivity > 1 ? selectivity : selectivityAdjustment
             * selectivity;
 
-        if (selectivity < pkfkSelectivity) {
+        boolean independent =
+            !entry.getValue().isFilteredColumn() && OperatorUtils.treesWithIndependentInputs(opWithFK, opWithPK);
+
+        if (fkInd < 0 || (independent && selectivity < pkfkSelectivity)) {
           pkfkSelectivity = selectivity;
           fkInd = pos;
-          boolean independent =
-              !entry.getValue().isFilteredColumn() && OperatorUtils.treesWithIndependentInputs(opWithFK, opWithPK);
-
           isFKIndependentFromPK = independent;
         }
       }
