@@ -70,8 +70,8 @@ STAGE PLANS:
             Statistics: Num rows: 2000 Data size: 37248 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
-              Filter Operator
-                predicate: false (type: boolean)
+              Limit
+                Number of rows: 0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
@@ -187,8 +187,8 @@ STAGE PLANS:
             Statistics: Num rows: 2000 Data size: 37248 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
-              Filter Operator
-                predicate: false (type: boolean)
+              Limit
+                Number of rows: 0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()

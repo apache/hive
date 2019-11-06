@@ -255,6 +255,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSurrogateKey;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFInline;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
@@ -952,17 +953,35 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void transformWithinGroup(ASTNode expressionTree, Tree withinGroupNode) throws SemanticException {
     Tree functionNameNode = expressionTree.getChild(0);
-    if (!FunctionRegistry.supportsWithinGroup(functionNameNode.getText())) {
+    if (!FunctionRegistry.isOrderedAggregate(functionNameNode.getText())) {
       throw new SemanticException(ErrorMsg.WITHIN_GROUP_NOT_ALLOWED, functionNameNode.getText());
     }
 
-    Tree tabSortColNameNode = withinGroupNode.getChild(0);
-    ASTNode sortKey = (ASTNode) tabSortColNameNode.getChild(0).getChild(0);
-    expressionTree.deleteChild(withinGroupNode.getChildIndex());
-    // backward compatibility: the sortkey is the first paramater of the percentile_cont and percentile_disc functions
-    expressionTree.insertChild(1, sortKey);
-    expressionTree.addChild(ASTBuilder.createAST(HiveParser.NumberLiteral,
-            Integer.toString(DirectionUtils.tokenToCode(tabSortColNameNode.getType()))));
+    List<Tree> parameters = new ArrayList<>(expressionTree.getChildCount() - 2);
+    for (int i = 1; i < expressionTree.getChildCount() - 1; ++i) {
+      parameters.add(expressionTree.getChild(i));
+    }
+    while (expressionTree.getChildCount() > 1) {
+      expressionTree.deleteChild(1);
+    }
+
+    Tree orderByNode = withinGroupNode.getChild(0);
+    if (parameters.size() != orderByNode.getChildCount()) {
+      throw new SemanticException(ErrorMsg.WITHIN_GROUP_PARAMETER_MISMATCH,
+              Integer.toString(parameters.size()), Integer.toString(orderByNode.getChildCount()));
+    }
+
+    for (int i = 0; i < orderByNode.getChildCount(); ++i) {
+      expressionTree.addChild(parameters.get(i));
+      Tree tabSortColNameNode = orderByNode.getChild(i);
+      Tree nullsNode = tabSortColNameNode.getChild(0);
+      ASTNode sortKey = (ASTNode) tabSortColNameNode.getChild(0).getChild(0);
+      expressionTree.addChild(sortKey);
+      expressionTree.addChild(ASTBuilder.createAST(HiveParser.NumberLiteral,
+              Integer.toString(DirectionUtils.tokenToCode(tabSortColNameNode.getType()))));
+      expressionTree.addChild(ASTBuilder.createAST(HiveParser.NumberLiteral,
+              Integer.toString(NullOrdering.fromToken(nullsNode.getType()).getCode())));
+    }
   }
 
   private List<ASTNode> doPhase1GetDistinctFuncExprs(Map<String, ASTNode> aggregationTrees) {
@@ -8599,7 +8618,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Operator genLimitMapRedPlan(String dest, QB qb, Operator input,
-                                      int offset, int limit, boolean extraMRStep) throws SemanticException {
+      int offset, int limit, boolean extraMRStep) throws SemanticException {
     // A map-only job can be optimized - instead of converting it to a
     // map-reduce job, we can have another map
     // job to do the same to avoid the cost of sorting in the map-reduce phase.
@@ -10928,23 +10947,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (limit != null) {
         // In case of order by, only 1 reducer is used, so no need of
         // another shuffle
-        curr = genLimitMapRedPlan(dest, qb, curr, offset.intValue(),
-            limit.intValue(), !hasOrderBy);
+        curr = genLimitMapRedPlan(dest, qb, curr, offset,
+            limit, limit != 0 && !hasOrderBy);
       }
     } else {
       // exact limit can be taken care of by the fetch operator
       if (limit != null) {
         boolean extraMRStep = true;
 
-        if (hasOrderBy ||
+        if (limit == 0 || hasOrderBy ||
             qb.getIsQuery() && qbp.getClusterByForClause(dest) == null &&
                 qbp.getSortByForClause(dest) == null) {
           extraMRStep = false;
         }
 
-        curr = genLimitMapRedPlan(dest, qb, curr, offset.intValue(),
-            limit.intValue(), extraMRStep);
-        qb.getParseInfo().setOuterQueryLimit(limit.intValue());
+        curr = genLimitMapRedPlan(dest, qb, curr, offset,
+            limit, extraMRStep);
+        qb.getParseInfo().setOuterQueryLimit(limit);
       }
       if (!queryState.getHiveOperation().equals(HiveOperation.CREATEVIEW)) {
         curr = genFileSinkPlan(dest, qb, curr);

@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdSelectivity;
 import org.apache.calcite.rel.metadata.RelMdUtil;
@@ -65,7 +64,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
   }
 
   public Double getSelectivity(Join j, RelMetadataQuery mq, RexNode predicate) {
-    if (j.getJoinType().equals(JoinRelType.INNER)) {
+    if (j.getJoinType().equals(JoinRelType.INNER) || j.isSemiJoin()) {
       return computeInnerJoinSelectivity(j, mq, predicate);
     } else if (j.getJoinType().equals(JoinRelType.LEFT) ||
             j.getJoinType().equals(JoinRelType.RIGHT)) {
@@ -143,7 +142,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
         ndvEstimate = exponentialBackoff(peLst, colStatMap);
       }
 
-      if (j instanceof SemiJoin) {
+      if (j.isSemiJoin()) {
         ndvEstimate = Math.min(mq.getRowCount(j.getLeft()),
             ndvEstimate);
       } else if (j instanceof HiveJoin) {

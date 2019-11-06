@@ -519,7 +519,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void createCatalog(Catalog cat) throws MetaException {
-    LOG.debug("Creating catalog " + cat.getName());
+    LOG.debug("Creating catalog {}", cat);
     boolean committed = false;
     MCatalog mCat = catToMCat(cat);
     try {
@@ -560,7 +560,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public Catalog getCatalog(String catalogName) throws NoSuchObjectException, MetaException {
-    LOG.debug("Fetching catalog " + catalogName);
+    LOG.debug("Fetching catalog {}", catalogName);
     MCatalog mCat = getMCatalog(catalogName);
     if (mCat == null) {
       throw new NoSuchObjectException("No catalog " + catalogName);
@@ -592,7 +592,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void dropCatalog(String catalogName) throws NoSuchObjectException, MetaException {
-    LOG.debug("Dropping catalog " + catalogName);
+    LOG.debug("Dropping catalog {}", catalogName);
     boolean committed = false;
     try {
       openTransaction();
@@ -712,7 +712,7 @@ public class ObjectStore implements RawStore, Configurable {
       ex = e;
     }
     if (db == null) {
-      LOG.warn("Failed to get database {}.{}, returning NoSuchObjectException",
+      LOG.debug("Failed to get database {}.{}, returning NoSuchObjectException",
           catalogName, name, ex);
       throw new NoSuchObjectException(name + (ex == null ? "" : (": " + ex.getMessage())));
     }
@@ -1534,7 +1534,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       if (LOG.isDebugEnabled()) {
-        LOG.debug("getTableMeta with filter " + filterBuilder.toString() + " params: " +
+        LOG.debug("getTableMeta with filter " + filterBuilder + " params: " +
             StringUtils.join(parameterVals, ", "));
       }
       // Add the fetch group here which retrieves the database object along with the MTable
@@ -1636,8 +1636,10 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters(
           "java.lang.String table, java.lang.String db, java.lang.String catname");
       query.setUnique(true);
-      LOG.debug("Executing getMTable for " +
-          TableName.getQualified(catName, db, table));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Executing getMTable for {}",
+            TableName.getQualified(catName, db, table));
+      }
       mtbl = (MTable) query.execute(table, db, catName);
       pm.retrieve(mtbl);
       // Retrieving CD can be expensive and unnecessary, so do it only when required.
@@ -3631,9 +3633,7 @@ public class ObjectStore implements RawStore, Configurable {
         message = ex.toString() + "; error building a better message: " + t.getMessage();
       }
       LOG.warn(message); // Don't log the exception, people just get confused.
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Full DirectSQL callstack for debugging (note: this is not an error)", ex);
-      }
+      LOG.debug("Full DirectSQL callstack for debugging (not an error)", ex);
       if (!allowJdo) {
         if (ex instanceof MetaException) {
           throw (MetaException)ex;
@@ -8695,7 +8695,8 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
       return result;
     } finally {
-      LOG.debug("Done executing getTableColumnStatistics with status : {}", committed);
+      LOG.debug("Done executing getTableColumnStatistics with status : {}",
+          committed);
       rollbackAndCleanup(committed, query);
     }
   }
@@ -8801,7 +8802,8 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
       return result;
     } finally {
-      LOG.debug("Done executing getTableColumnStatistics with status : {}", committed);
+      LOG.debug("Done executing getTableColumnStatistics with status : {}",
+          committed);
       rollbackAndCleanup(committed, query);
     }
   }
@@ -8929,8 +8931,9 @@ public class ObjectStore implements RawStore, Configurable {
 
         if (!isCurrentStatsValidForTheQuery(part, part.getWriteId(), writeIdList, false)) {
           String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
-          LOG.debug("The current metastore transactional partition column statistics for " + dbName
-              + "." + tblName + "." + partName + " is not valid for the current query");
+          LOG.debug("The current metastore transactional partition column "
+              + "statistics for {}.{}.{} is not valid for the current query",
+              dbName, tblName, partName);
           return null;
         }
       }
@@ -9631,25 +9634,10 @@ public class ObjectStore implements RawStore, Configurable {
     return this.getMPartition(catName, dbName, tableName, name) != null;
   }
 
-  private void debugLog(String message) {
+  private void debugLog(final String message) {
     if (LOG.isDebugEnabled()) {
-      LOG.debug("{} {}", message, getCallStack());
+      LOG.debug("{}", message, new Exception());
     }
-  }
-
-  private static final int stackLimit = 3;
-
-  private String getCallStack() {
-    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-    int thislimit = Math.min(stackLimit, stackTrace.length);
-    StringBuilder sb = new StringBuilder();
-    sb.append(" at:");
-    // Offset by 4 because the first 4 frames are just calls to get down here.
-    for (int i = 4; i < thislimit + 4; i++) {
-      sb.append("\n\t");
-      sb.append(stackTrace[i].toString());
-    }
-    return sb.toString();
   }
 
   private Function convertToFunction(MFunction mfunc) {
@@ -11131,7 +11119,7 @@ public class ObjectStore implements RawStore, Configurable {
         parameters.put("colType", type);
       }
       if (LOG.isDebugEnabled()) {
-        LOG.debug("getSchemaVersionsByColumns going to execute query " + sql.toString());
+        LOG.debug("getSchemaVersionsByColumns going to execute query {}", sql);
         LOG.debug("With parameters");
         for (Map.Entry<String, String> p : parameters.entrySet()) {
           LOG.debug(p.getKey() + " : " + p.getValue());
@@ -12451,7 +12439,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void addRuntimeStat(RuntimeStat stat) throws MetaException {
-    LOG.debug("runtimeStat: " + stat);
+    LOG.debug("runtimeStat: {}", stat);
     MRuntimeStat mStat = MRuntimeStat.fromThrift(stat);
     boolean committed = false;
     openTransaction();

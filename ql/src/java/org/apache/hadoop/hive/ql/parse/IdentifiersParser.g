@@ -224,9 +224,9 @@ function
         (STAR) => (star=STAR)
         | (dist=KW_DISTINCT | KW_ALL)? (selectExpression (COMMA selectExpression)*)?
       )
-    RPAREN ((KW_OVER ws=window_specification) | (within=KW_WITHIN KW_GROUP LPAREN KW_ORDER KW_BY colRef=columnRefOrder RPAREN))?
+    RPAREN ((KW_OVER ws=window_specification) | (within=KW_WITHIN KW_GROUP LPAREN ordBy=orderByClause RPAREN))?
            -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName $ws?)
-           -> {$within != null}? ^(TOK_FUNCTION functionName (selectExpression+)? ^(TOK_WITHIN_GROUP $colRef))
+           -> {$within != null}? ^(TOK_FUNCTION functionName (selectExpression+)? ^(TOK_WITHIN_GROUP $ordBy))
            -> {$dist == null}? ^(TOK_FUNCTION functionName (selectExpression+)? $ws?)
                             -> ^(TOK_FUNCTIONDI functionName (selectExpression+)? $ws?)
     ;

@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -36,11 +35,10 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -52,11 +50,11 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
@@ -81,7 +79,6 @@ import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lock.CompileLock;
@@ -184,6 +181,7 @@ public class Driver implements IDriver {
   // Transaction manager used for the query. This will be set at compile time based on
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager queryTxnMgr;
+  private TxnType queryTxnType = TxnType.DEFAULT;
   private StatsSource statsSource;
 
   // Boolean to store information about whether valid txn list was generated
@@ -474,7 +472,9 @@ public class Driver implements IDriver {
                 && queryState.getHiveOperation().equals(HiveOperation.REPLDUMP)) {
           setLastReplIdForDump(queryState.getConf());
         }
-        openTransaction();
+        queryTxnType = AcidUtils.getTxnType(tree);
+        openTransaction(queryTxnType);
+
         generateValidTxnList();
       }
 
@@ -675,7 +675,7 @@ public class Driver implements IDriver {
               lckCmp.getType() == LockType.SHARED_WRITE) &&
               lckCmp.getTablename() != null) {
             nonSharedLocks.add(
-                Warehouse.getQualifiedName(
+                TableName.getDbTable(
                     lckCmp.getDbname(), lckCmp.getTablename()));
           }
         }
@@ -686,7 +686,7 @@ public class Driver implements IDriver {
             lock.getHiveLockMode() == HiveLockMode.SEMI_SHARED) &&
             lock.getHiveLockObject().getPaths().length == 2) {
           nonSharedLocks.add(
-              Warehouse.getQualifiedName(
+              TableName.getDbTable(
                   lock.getHiveLockObject().getPaths()[0], lock.getHiveLockObject().getPaths()[1]));
         }
       }
@@ -698,25 +698,27 @@ public class Driver implements IDriver {
       return true;
     }
     ValidTxnWriteIdList txnWriteIdList = new ValidTxnWriteIdList(txnWriteIdListStr);
-    List<Pair<String, Table>> writtenTables = getWrittenTableList(plan);
+    Map<String, Table> writtenTables = getWrittenTables(plan);
+
     ValidTxnWriteIdList currentTxnWriteIds =
         queryTxnMgr.getValidWriteIds(
-            writtenTables.stream()
-                .filter(e -> AcidUtils.isTransactionalTable(e.getRight()))
-                .map(e -> e.getLeft())
+            writtenTables.entrySet().stream()
+                .filter(e -> AcidUtils.isTransactionalTable(e.getValue()))
+                .map(Map.Entry::getKey)
                 .collect(Collectors.toList()),
             currentTxnString);
-    for (Pair<String, Table> tableInfo : writtenTables) {
-      String fullQNameForLock = Warehouse.getQualifiedName(
-          tableInfo.getRight().getDbName(),
-          MetaStoreUtils.encodeTableName(tableInfo.getRight().getTableName()));
+
+    for (Map.Entry<String, Table> tableInfo : writtenTables.entrySet()) {
+      String fullQNameForLock = TableName.getDbTable(
+          tableInfo.getValue().getDbName(),
+          MetaStoreUtils.encodeTableName(tableInfo.getValue().getTableName()));
       if (nonSharedLocks.contains(fullQNameForLock)) {
         // Check if table is transactional
-        if (AcidUtils.isTransactionalTable(tableInfo.getRight())) {
+        if (AcidUtils.isTransactionalTable(tableInfo.getValue())) {
           // Check that write id is still valid
           if (!TxnIdUtils.checkEquivalentWriteIds(
-              txnWriteIdList.getTableValidWriteIdList(tableInfo.getLeft()),
-              currentTxnWriteIds.getTableValidWriteIdList(tableInfo.getLeft()))) {
+              txnWriteIdList.getTableValidWriteIdList(tableInfo.getKey()),
+              currentTxnWriteIds.getTableValidWriteIdList(tableInfo.getKey()))) {
             // Write id has changed, it is not valid anymore,
             // we need to recompile
             return false;
@@ -728,7 +730,7 @@ public class Driver implements IDriver {
     if (!nonSharedLocks.isEmpty()) {
       throw new LockException("Wrong state: non-shared locks contain information for tables that have not" +
           " been visited when trying to validate the locks from query tables.\n" +
-          "Tables: " + writtenTables.stream().map(e -> e.getLeft()).collect(Collectors.toList()) + "\n" +
+          "Tables: " + writtenTables.keySet() + "\n" +
           "Remaining locks after check: " + nonSharedLocks);
     }
     // It passes the test, it is valid
@@ -765,10 +767,10 @@ public class Driver implements IDriver {
     LOG.debug("Setting " + ReplUtils.LAST_REPL_ID_KEY + " = " + lastReplId);
   }
 
-  private void openTransaction() throws LockException, CommandProcessorException {
+  private void openTransaction(TxnType txnType) throws LockException, CommandProcessorException {
     if (checkConcurrency() && startImplicitTxn(queryTxnMgr) && !queryTxnMgr.isTxnOpen()) {
       String userFromUGI = getUserFromUGI();
-      queryTxnMgr.openTxn(ctx, userFromUGI);
+      queryTxnMgr.openTxn(ctx, userFromUGI, txnType);
     }
   }
 
@@ -932,7 +934,7 @@ public class Driver implements IDriver {
       throw new IllegalStateException("calling recordValidWritsIdss() without initializing ValidTxnList " +
               JavaUtils.txnIdToString(txnMgr.getCurrentTxnId()));
     }
-    List<String> txnTables = getTransactionalTableList(plan);
+    List<String> txnTables = getTransactionalTables(plan);
     ValidTxnWriteIdList txnWriteIds = null;
     if (compactionWriteIds != null) {
       /**
@@ -945,12 +947,17 @@ public class Driver implements IDriver {
       if (txnTables.size() != 1) {
         throw new LockException("Unexpected tables in compaction: " + txnTables);
       }
-      String fullTableName = txnTables.get(0);
       txnWriteIds = new ValidTxnWriteIdList(compactorTxnId);
       txnWriteIds.addTableValidWriteIdList(compactionWriteIds);
     } else {
       txnWriteIds = txnMgr.getValidWriteIds(txnTables, txnString);
     }
+    if (queryTxnType == TxnType.READ_ONLY && !getWrittenTables(plan).isEmpty()) {
+      throw new IllegalStateException(String.format(
+          "Inferred transaction type '%s' doesn't conform to the actual query string '%s'",
+          queryTxnType, queryState.getQueryString()));
+    }
+
     String writeIdStr = txnWriteIds.toString();
     conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, writeIdStr);
     if (plan.getFetchTask() != null) {
@@ -979,20 +986,31 @@ public class Driver implements IDriver {
     return txnWriteIds;
   }
 
-  // Make the list of transactional tables list which are getting read or written by current txn
-  private List<String> getTransactionalTableList(QueryPlan plan) {
-    Set<String> tableList = new HashSet<>();
-
-    for (ReadEntity input : plan.getInputs()) {
-      addTableFromEntity(input, tableList);
-    }
-    for (WriteEntity output : plan.getOutputs()) {
-      addTableFromEntity(output, tableList);
-    }
-    return new ArrayList<String>(tableList);
+  // Make the list of transactional tables that are read or written by current txn
+  private List<String> getTransactionalTables(QueryPlan plan) {
+    Map<String, Table> tables = new HashMap<>();
+    plan.getInputs().forEach(
+        input -> addTableFromEntity(input, tables)
+    );
+    plan.getOutputs().forEach(
+        output -> addTableFromEntity(output, tables)
+    );
+    return tables.entrySet().stream()
+      .filter(entry -> AcidUtils.isTransactionalTable(entry.getValue()))
+      .map(Map.Entry::getKey)
+      .collect(Collectors.toList());
   }
 
-  private void addTableFromEntity(Entity entity, Collection<String> tableList) {
+  // Make the map of tables written by current txn
+  private Map<String, Table> getWrittenTables(QueryPlan plan) {
+    Map<String, Table> tables = new HashMap<>();
+    plan.getOutputs().forEach(
+        output -> addTableFromEntity(output, tables)
+    );
+    return tables;
+  }
+
+  private void addTableFromEntity(Entity entity, Map<String, Table> tables) {
     Table tbl;
     switch (entity.getType()) {
       case TABLE: {
@@ -1008,39 +1026,8 @@ public class Driver implements IDriver {
         return;
       }
     }
-    if (!AcidUtils.isTransactionalTable(tbl)) {
-      return;
-    }
     String fullTableName = AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName());
-    tableList.add(fullTableName);
-  }
-
-  // Make the list of transactional tables list which are getting written by current txn
-  private List<Pair<String, Table>> getWrittenTableList(QueryPlan plan) {
-    List<Pair<String, Table>> result = new ArrayList<>();
-    Set<String> tableList = new HashSet<>();
-    for (WriteEntity output : plan.getOutputs()) {
-      Table tbl;
-      switch (output.getType()) {
-        case TABLE: {
-          tbl = output.getTable();
-          break;
-        }
-        case PARTITION:
-        case DUMMYPARTITION: {
-          tbl = output.getPartition().getTable();
-          break;
-        }
-        default: {
-          continue;
-        }
-      }
-      String fullTableName = AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName());
-      if (tableList.add(fullTableName)) {
-        result.add(new ImmutablePair(fullTableName, tbl));
-      }
-    }
-    return result;
+    tables.put(fullTableName, tbl);
   }
 
   private String getUserFromUGI() throws CommandProcessorException {

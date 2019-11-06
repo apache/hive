@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -143,6 +144,9 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
     }
     catch (Exception e) {
       LOGGER.warn("next() threw exception", e);
+      if (e instanceof SQLException){
+        throw new RuntimeException(e);
+      }
       return null;
     }
   }

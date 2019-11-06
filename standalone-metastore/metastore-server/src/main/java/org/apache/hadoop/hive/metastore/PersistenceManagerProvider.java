@@ -483,6 +483,11 @@ public class PersistenceManagerProvider {
     final String autoStartKey = "datanucleus.autoStartMechanismMode";
     final String autoStartIgnore = "ignored";
     String currentAutoStartVal = conf.get(autoStartKey);
+    if (currentAutoStartVal == null) {
+      LOG.info("Configuration {} is not set. Defaulting to '{}'", autoStartKey,
+          autoStartIgnore);
+      currentAutoStartVal = autoStartIgnore;
+    }
     if (!autoStartIgnore.equalsIgnoreCase(currentAutoStartVal)) {
       LOG.warn("{} is set to unsupported value {} . Setting it to value: {}", autoStartKey,
           conf.get(autoStartKey), autoStartIgnore);

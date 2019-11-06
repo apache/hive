@@ -94,4 +94,14 @@ debug_help(){
   echo "childSuspend=<y|n>          Should child JVMs wait with execution for the debugger to connect. Default: n"
   echo "swapSuspend                 Swaps suspend options between main and child JVMs"
   echo
+  echo "Environment:"
+  echo
+  echo "HADOOP_HOME: [$HADOOP_HOME]"
+  echo "HIVE_HOME  : [$HIVE_HOME]"
+  echo "HIVE_CONF  : [$HIVE_CONF_DIR]"
+  echo "SPARK_HOME : [$SPARK_HOME]"
+  echo "TEZ_CONF   : [$TEZ_CONF_DIR]"
+  echo "HBASE_HOME : [$HBASE_HOME]"
+  echo "HBASE_CONF : [$HBASE_CONF_DIR]"
+  echo
 }

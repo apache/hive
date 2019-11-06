@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -74,6 +75,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * An implementation of HiveTxnManager that stores the transactions in the metastore database.
@@ -166,6 +168,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private ScheduledFuture<?> heartbeatTask = null;
   private Runnable shutdownRunner = null;
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
+  private final ReentrantLock heartbeatTaskLock = new ReentrantLock();
 
   /**
    * We do this on every call to make sure TM uses same MS connection as is used by the caller (Driver,
@@ -226,11 +229,16 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public long openTxn(Context ctx, String user) throws LockException {
-    return openTxn(ctx, user, 0);
+    return openTxn(ctx, user, TxnType.DEFAULT, 0);
+  }
+
+  @Override
+  public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
+    return openTxn(ctx, user, txnType, 0);
   }
 
   @VisibleForTesting
-  long openTxn(Context ctx, String user, long delay) throws LockException {
+  long openTxn(Context ctx, String user, TxnType txnType, long delay) throws LockException {
     /*Q: why don't we lock the snapshot here???  Instead of having client make an explicit call
     whenever it chooses
     A: If we want to rely on locks for transaction scheduling we must get the snapshot after lock
@@ -242,7 +250,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException("Transaction already opened. " + JavaUtils.txnIdToString(txnId));
     }
     try {
-      txnId = getMS().openTxn(user);
+      txnId = getMS().openTxn(user, txnType);
       stmtId = 0;
       numStatements = 0;
       tableWriteIds.clear();
@@ -276,9 +284,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     catch(LockException e) {
       if(e.getCause() instanceof TxnAbortedException) {
-        txnId = 0;
-        stmtId = -1;
-        tableWriteIds.clear();
+        resetTxnInfo();
       }
       throw e;
     }
@@ -560,11 +566,18 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     if (!isTxnOpen()) {
       throw new RuntimeException("Attempt to rollback before opening a transaction");
     }
+    stopHeartbeat();
+
     try {
       lockMgr.clearLocalLockRecords();
-      stopHeartbeat();
       LOG.debug("Rolling back " + JavaUtils.txnIdToString(txnId));
-      getMS().rollbackTxn(txnId);
+
+      // Re-checking as txn could have been closed, in the meantime, by a competing thread.
+      if (isTxnOpen()) {
+        getMS().rollbackTxn(txnId);
+      } else {
+        LOG.warn("Transaction is already closed.");
+      }
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
@@ -574,10 +587,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);
     } finally {
-      txnId = 0;
-      stmtId = -1;
-      numStatements = 0;
-      tableWriteIds.clear();
+      resetTxnInfo();
     }
   }
 
@@ -660,11 +670,21 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException("error while getting current user,", e);
     }
 
-    Heartbeater heartbeater = new Heartbeater(this, conf, queryId, currentUser);
-    heartbeatTask = startHeartbeat(initialDelay, heartbeatInterval, heartbeater);
-    LOG.debug("Started heartbeat with delay/interval = " + initialDelay + "/" + heartbeatInterval +
-        " " + TimeUnit.MILLISECONDS + " for query: " + queryId);
-    return heartbeater;
+    try {
+      heartbeatTaskLock.lock();
+      if (heartbeatTask != null) {
+        throw new IllegalStateException("Heartbeater is already started.");
+      }
+
+      Heartbeater heartbeater = new Heartbeater(this, conf, queryId, currentUser);
+      heartbeatTask = startHeartbeat(initialDelay, heartbeatInterval, heartbeater);
+      LOG.debug("Started heartbeat with delay/interval = " + initialDelay + "/" + heartbeatInterval +
+          " " + TimeUnit.MILLISECONDS + " for query: " + queryId);
+
+      return heartbeater;
+    } finally {
+      heartbeatTaskLock.unlock();
+    }
   }
 
   private ScheduledFuture<?> startHeartbeat(long initialDelay, long heartbeatInterval, Runnable heartbeater) {
@@ -682,30 +702,49 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     return task;
   }
 
-  private void stopHeartbeat() throws LockException {
-    if (heartbeatTask != null) {
-      heartbeatTask.cancel(true);
-      long startTime = System.currentTimeMillis();
-      long sleepInterval = 100;
-      while (!heartbeatTask.isCancelled() && !heartbeatTask.isDone()) {
-        // We will wait for 30 seconds for the task to be cancelled.
-        // If it's still not cancelled (unlikely), we will just move on.
-        long now = System.currentTimeMillis();
-        if (now - startTime > 30000) {
-          LOG.warn("Heartbeat task cannot be cancelled for unknown reason. QueryId: " + queryId);
-          break;
+  private void stopHeartbeat() {
+    if (heartbeatTask == null) {
+      // avoid unnecessary locking if the field is null
+      return;
+    }
+
+    boolean isLockAcquired = false;
+    try {
+      // The lock should not be held by other thread trying to stop the heartbeat for more than 31 seconds
+      isLockAcquired = heartbeatTaskLock.tryLock(31000, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      // safe to go on
+    }
+
+    try {
+      if (isLockAcquired && heartbeatTask != null) {
+        heartbeatTask.cancel(true);
+        long startTime = System.currentTimeMillis();
+        long sleepInterval = 100;
+        while (!heartbeatTask.isCancelled() && !heartbeatTask.isDone()) {
+          // We will wait for 30 seconds for the task to be cancelled.
+          // If it's still not cancelled (unlikely), we will just move on.
+          long now = System.currentTimeMillis();
+          if (now - startTime > 30000) {
+            LOG.warn("Heartbeat task cannot be cancelled for unknown reason. QueryId: " + queryId);
+            break;
+          }
+          try {
+            Thread.sleep(sleepInterval);
+          } catch (InterruptedException e) {
+          }
+          sleepInterval *= 2;
         }
-        try {
-          Thread.sleep(sleepInterval);
-        } catch (InterruptedException e) {
+        if (heartbeatTask.isCancelled() || heartbeatTask.isDone()) {
+          LOG.info("Stopped heartbeat for query: " + queryId);
         }
-        sleepInterval *= 2;
+        heartbeatTask = null;
+        queryId = null;
       }
-      if (heartbeatTask.isCancelled() || heartbeatTask.isDone()) {
-        LOG.info("Stopped heartbeat for query: " + queryId);
+    } finally {
+      if (isLockAcquired) {
+        heartbeatTaskLock.unlock();
       }
-      heartbeatTask = null;
-      queryId = null;
     }
   }
 

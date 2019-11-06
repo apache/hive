@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory.
+        writableDoubleObjectInspector;
+
 import java.util.ArrayList;
 
 import org.slf4j.Logger;
@@ -28,7 +31,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 
 @Description(
@@ -40,14 +42,19 @@ import org.apache.hadoop.io.IntWritable;
         supportsWindow = false,
         pivotResult = true,
         rankingFunction = true,
-        impliesOrder = true)
+        orderedAggregate = true)
 public class GenericUDAFPercentRank extends GenericUDAFRank {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFPercentRank.class.getName());
 
   @Override
-  protected GenericUDAFAbstractRankEvaluator createEvaluator() {
+  protected GenericUDAFAbstractRankEvaluator createWindowingEvaluator() {
     return new GenericUDAFPercentRankEvaluator();
+  }
+
+  @Override
+  protected GenericUDAFHypotheticalSetRankEvaluator createHypotheticalSetEvaluator() {
+    return new GenericUDAFHypotheticalSetPercentRankEvaluator();
   }
 
   public static class GenericUDAFPercentRankEvaluator extends GenericUDAFAbstractRankEvaluator {
@@ -56,7 +63,7 @@ public class GenericUDAFPercentRank extends GenericUDAFRank {
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       super.init(m, parameters);
       return ObjectInspectorFactory.getStandardListObjectInspector(
-        PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+        writableDoubleObjectInspector);
     }
 
     @Override
@@ -74,6 +81,24 @@ public class GenericUDAFPercentRank extends GenericUDAFRank {
       }
 
       return pranks;
+    }
+  }
+
+  /**
+   * Evaluator for calculating the percent rank.
+   * SELECT percent_rank(expression1[, expressionn]*) WITHIN GROUP (ORDER BY col1[, coln]*)
+   * Implementation is based on hypothetical rank calculation: rank - 1 / count
+   */
+  public static class GenericUDAFHypotheticalSetPercentRankEvaluator extends GenericUDAFHypotheticalSetRankEvaluator {
+
+    public GenericUDAFHypotheticalSetPercentRankEvaluator() {
+      super(false, PARTIAL_RANK_OI, writableDoubleObjectInspector);
+    }
+
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      HypotheticalSetRankBuffer rankBuffer = (HypotheticalSetRankBuffer) agg;
+      return new DoubleWritable(((double)rankBuffer.rank) / rankBuffer.rowCount);
     }
   }
 }

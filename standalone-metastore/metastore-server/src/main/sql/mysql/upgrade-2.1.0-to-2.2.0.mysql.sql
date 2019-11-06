@@ -1,6 +1,6 @@
 SELECT 'Upgrading MetaStore schema from 2.1.0 to 2.2.0' AS MESSAGE;
 
---SOURCE 037-HIVE-14496.mysql.sql;
+-- SOURCE 037-HIVE-14496.mysql.sql;
 -- Step 1: Add the column allowing null
 ALTER TABLE `TBLS` ADD `IS_REWRITE_ENABLED` bit(1);
 
@@ -10,7 +10,7 @@ UPDATE `TBLS` SET `IS_REWRITE_ENABLED` = false;
 -- Step 3: Alter the column to disallow null values
 ALTER TABLE `TBLS` MODIFY COLUMN `IS_REWRITE_ENABLED` bit(1) NOT NULL DEFAULT 0;
 
---SOURCE 038-HIVE-10562.mysql.sql;
+-- SOURCE 038-HIVE-10562.mysql.sql;
 -- Step 1: Add the column for format
 ALTER TABLE `NOTIFICATION_LOG` ADD `MESSAGE_FORMAT` varchar(16);
 -- if MESSAGE_FORMAT is null, then it is the legacy hcat JSONMessageFactory that created this message
@@ -18,7 +18,7 @@ ALTER TABLE `NOTIFICATION_LOG` ADD `MESSAGE_FORMAT` varchar(16);
 -- Step 2 : Change the type of the MESSAGE field from mediumtext to longtext
 ALTER TABLE `NOTIFICATION_LOG` MODIFY `MESSAGE` longtext;
 
---SOURCE 039-HIVE-12274.mysql.sql;
+-- SOURCE 039-HIVE-12274.mysql.sql;
 ALTER TABLE COLUMNS_V2 MODIFY TYPE_NAME MEDIUMTEXT;
 ALTER TABLE TABLE_PARAMS MODIFY PARAM_VALUE MEDIUMTEXT;
 ALTER TABLE SERDE_PARAMS MODIFY PARAM_VALUE MEDIUMTEXT;
