@@ -211,7 +211,7 @@ public class QTestUtil {
     conf.set("test.data.dir", datasetHandler.getDataDir(conf));
     dispatcher.register("dataset", datasetHandler);
     dispatcher.register("replace", replaceHandler);
-    dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider());
+    dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider(conf));
     dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
 
     String scriptsDir = getScriptsDir();
@@ -220,8 +220,6 @@ public class QTestUtil {
     this.cleanupScript = scriptsDir + File.separator + testArgs.getCleanupScript();
 
     postInit();
-    conf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME, "1s");
-    conf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL, "1s");
     savedConf = new HiveConf(conf);
 
   }
