@@ -2,6 +2,7 @@
 --! qt:dataset:src
 
 source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
+set user.name=hive_test_user;
 
 use sys;
 
@@ -33,6 +34,6 @@ select	scheduled_execution_id,
 
 alter scheduled query asd disable;
 
-select schedule_name from scheduled_queries where enabled = false;
+select schedule_name,enabled from scheduled_queries;
 
 !sleep 1;

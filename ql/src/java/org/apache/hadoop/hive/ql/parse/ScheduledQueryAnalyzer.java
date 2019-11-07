@@ -104,6 +104,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       for (ScheduledQuery o : overlays) {
         if (o.isSet(field)) {
           ret.setFieldValue(field, o.getFieldValue(field));
+          break;
         }
       }
     }
