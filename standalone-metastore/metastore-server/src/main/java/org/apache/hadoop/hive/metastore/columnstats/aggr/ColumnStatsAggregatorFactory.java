@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsData
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
 
 public class ColumnStatsAggregatorFactory {
 
@@ -47,6 +48,9 @@ public class ColumnStatsAggregatorFactory {
       break;
     case DATE_STATS:
       agg = new DateColumnStatsAggregator();
+      break;
+    case TIMESTAMP_STATS:
+      agg = new TimestampColumnStatsAggregator();
       break;
     case DOUBLE_STATS:
       agg = new DoubleColumnStatsAggregator();
@@ -84,6 +88,10 @@ public class ColumnStatsAggregatorFactory {
 
     case DATE_STATS:
       csd.setDateStats(new DateColumnStatsDataInspector());
+      break;
+
+    case TIMESTAMP_STATS:
+      csd.setTimestampStats(new TimestampColumnStatsDataInspector());
       break;
 
     case DOUBLE_STATS:

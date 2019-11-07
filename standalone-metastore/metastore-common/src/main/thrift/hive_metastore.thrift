@@ -562,6 +562,18 @@ struct DateColumnStatsData {
 5: optional binary bitVectors
 }
 
+struct Timestamp {
+1: required i64 secondsSinceEpoch
+}
+
+struct TimestampColumnStatsData {
+1: optional Timestamp lowValue,
+2: optional Timestamp highValue,
+3: required i64 numNulls,
+4: required i64 numDVs,
+5: optional binary bitVectors
+}
+
 union ColumnStatisticsData {
 1: BooleanColumnStatsData booleanStats,
 2: LongColumnStatsData longStats,
@@ -569,7 +581,8 @@ union ColumnStatisticsData {
 4: StringColumnStatsData stringStats,
 5: BinaryColumnStatsData binaryStats,
 6: DecimalColumnStatsData decimalStats,
-7: DateColumnStatsData dateStats
+7: DateColumnStatsData dateStats,
+8: TimestampColumnStatsData timestampStats
 }
 
 struct ColumnStatisticsObj {

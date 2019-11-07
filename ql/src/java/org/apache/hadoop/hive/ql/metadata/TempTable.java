@@ -132,7 +132,10 @@ public final class TempTable {
   }
 
   private boolean checkPrivilegesForPartition(Partition partition, String userName, List<String> groupNames) {
-    if ((userName == null || userName.isEmpty()) && (groupNames == null || groupNames.isEmpty())) {
+    if (userName == null || userName.isEmpty()) {
+      return true;
+    }
+    if (groupNames == null || groupNames.isEmpty()) {
       return true;
     }
     PrincipalPrivilegeSet privileges = partition.getPrivileges();
@@ -145,9 +148,6 @@ public final class TempTable {
       }
     }
     if (privileges.isSetGroupPrivileges()) {
-      if (groupNames == null) {
-        return false;
-      }
       for (String group : groupNames) {
         if (!privileges.getGroupPrivileges().containsKey(group)) {
           return false;
@@ -190,6 +190,14 @@ public final class TempTable {
   void renamePartition(List<String> partitionVals, Partition newPart)
       throws MetaException, InvalidOperationException, NoSuchObjectException {
     pTree.renamePartition(partitionVals, newPart);
+  }
+
+  int getNumPartitionsByFilter(String filter) throws MetaException {
+    return pTree.getPartitionsByFilter(filter).size();
+  }
+
+  List<Partition> listPartitionsByFilter(String filter) throws MetaException {
+    return pTree.getPartitionsByFilter(filter);
   }
 
 }

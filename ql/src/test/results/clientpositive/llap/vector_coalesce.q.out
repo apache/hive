@@ -347,7 +347,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: SelectColumnIsNotNull(col 8:timestamp), SelectColumnIsNotNull(col 9:timestamp))
+                        predicateExpression: FilterExprOrExpr(children: SelectColumnIsNotNull(col 9:timestamp), SelectColumnIsNotNull(col 8:timestamp))
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true

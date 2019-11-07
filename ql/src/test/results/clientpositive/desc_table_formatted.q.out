@@ -222,8 +222,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
 col_name            	ts                  
 data_type           	timestamp           
-min                 	1325379722          
-max                 	1325379723          
+min                 	2012-01-01 01:02:02 
+max                 	2012-01-01 01:02:03 
 num_nulls           	1                   
 distinct_count      	2                   
 avg_col_len         	                    
@@ -585,7 +585,7 @@ PREHOOK: Input: default@datatype_stats_n0
 POSTHOOK: query: DESC FORMATTED datatype_stats_n0 ts
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats_n0
-{"columns":[{"name":"ts","type":"timestamp","comment":"from deserializer","min":1325379722,"max":1325379723,"numNulls":1,"distinctCount":2}]}
+{"columns":[{"name":"ts","type":"timestamp","comment":"from deserializer","min":"2012-01-01 01:02:02","max":"2012-01-01 01:02:03","numNulls":1,"distinctCount":2}]}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats_n0
