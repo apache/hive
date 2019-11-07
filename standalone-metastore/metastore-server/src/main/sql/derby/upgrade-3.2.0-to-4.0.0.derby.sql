@@ -21,7 +21,7 @@ UPDATE "APP"."PART_COL_STATS" SET ENGINE = 'hive' WHERE ENGINE IS NULL;
 CREATE TABLE "APP"."SCHEDULED_QUERIES" (
   "SCHEDULED_QUERY_ID" bigint primary key not null,
   "SCHEDULE_NAME" varchar(256) not null,
-  "ENABLED" BOOLEAN not null,
+  "ENABLED" CHAR(1) NOT NULL DEFAULT 'N',
   "CLUSTER_NAMESPACE" varchar(256) not null,
   "USER" varchar(128) not null,
   "SCHEDULE" varchar(256) not null,

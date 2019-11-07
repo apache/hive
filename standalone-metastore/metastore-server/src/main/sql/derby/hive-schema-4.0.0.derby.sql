@@ -726,7 +726,7 @@ INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) VALUES ('org.apache.hadoop.
 CREATE TABLE "APP"."SCHEDULED_QUERIES" (
   "SCHEDULED_QUERY_ID" bigint primary key not null,
   "SCHEDULE_NAME" varchar(256) not null,
-  "ENABLED" BOOLEAN not null,
+  "ENABLED" CHAR(1) NOT NULL DEFAULT 'N',
   "CLUSTER_NAMESPACE" varchar(256) not null,
   "USER" varchar(128) not null,
   "SCHEDULE" varchar(256) not null,
