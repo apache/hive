@@ -501,10 +501,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: c_name string, c_custkey bigint, o_orderkey bigint, o_orderdate string, o_totalprice double, _c5 double
+      name: tpch_test.q18_large_volume_customer_cached
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
       serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-      name: tpch_test.q18_large_volume_customer_cached
       table properties:
         transactional true
         transactional_properties default

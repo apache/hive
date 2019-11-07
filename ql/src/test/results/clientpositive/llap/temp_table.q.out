@@ -50,11 +50,11 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: key string, value string
+      name: default.foo
       input format: org.apache.hadoop.mapred.TextInputFormat
 #### A masked pattern was here ####
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.foo
       isTemporary: true
 
   Stage: Stage-3
@@ -129,11 +129,11 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: key string, value string
+      name: default.bar
       input format: org.apache.hadoop.mapred.TextInputFormat
 #### A masked pattern was here ####
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.bar
       isTemporary: true
 
   Stage: Stage-3

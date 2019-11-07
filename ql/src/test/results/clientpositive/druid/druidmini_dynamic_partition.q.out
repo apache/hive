@@ -168,8 +168,8 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: __time timestamp with local time zone, cstring1 string, cstring2 string, cdouble double, cfloat float, ctinyint tinyint, csmallint smallint, cint int, cbigint bigint, cboolean1 boolean, cboolean2 boolean
-      storage handler: org.apache.hadoop.hive.druid.DruidStorageHandler
       name: default.druid_partitioned_table
+      storage handler: org.apache.hadoop.hive.druid.DruidStorageHandler
       table properties:
         druid.query.granularity MINUTE
         druid.segment.granularity HOUR
@@ -345,9 +345,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Unset Properties
+      table name: default.druid_partitioned_table
       properties:
         COLUMN_STATS_ACCURATE 
-      table name: default.druid_partitioned_table
 
   Stage: Stage-1
     Pre-Insert task
@@ -486,9 +486,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Unset Properties
+      table name: default.druid_partitioned_table
       properties:
         COLUMN_STATS_ACCURATE 
-      table name: default.druid_partitioned_table
 
   Stage: Stage-1
     Pre-Insert task
