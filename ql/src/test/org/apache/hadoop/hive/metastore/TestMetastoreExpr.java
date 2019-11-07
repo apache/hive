@@ -183,7 +183,10 @@ public class TestMetastoreExpr {
     assertEquals("Partition check failed: " + expr.getExprString(), numParts, parts.size());
   }
 
-  private static class ExprBuilder {
+  /**
+   * Helper class for building an expression.
+   */
+  public static class ExprBuilder {
     private final String tblName;
     private final Stack<ExprNodeDesc> stack = new Stack<ExprNodeDesc>();
 

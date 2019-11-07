@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TestMetastoreExpr;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -33,7 +33,8 @@ import org.apache.hadoop.hive.metastore.client.TestListPartitions;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
-import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.thrift.TException;
 import org.junit.Before;
@@ -47,7 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -128,14 +128,6 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     assertTrue(privileges.getGroupPrivileges().containsKey(group));
   }
 
-  @Test
-  @Override
-  public void testListPartitionsAllHighMaxParts() throws Exception {
-    List<List<String>> testData = createTable4PartColsParts(getClient());
-    List<Partition> partitions = getClient().listPartitions(DB_NAME, TABLE_NAME, (short) 101);
-    assertFalse(partitions.isEmpty());
-    assertEquals(testData.size(), partitions.size());
-  }
 
   @Test(expected = MetaException.class)
   @Override
@@ -149,42 +141,11 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     super.testListPartitionsAllNullDbName();
   }
 
-  @Test
-  @Override
-  public void testListPartitionSpecsHighMaxParts() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(getClient());
-    PartitionSpecProxy partitionSpecs = getClient().listPartitionSpecs(DB_NAME, TABLE_NAME, 101);
-    assertNotNull(partitionSpecs);
-    assertPartitionsSpecProxy(partitionSpecs, testValues);
-  }
 
   @Test(expected = MetaException.class)
   @Override
   public void testListPartitionSpecsNullTblName() throws Exception {
     super.testListPartitionSpecsNullTblName();
-  }
-
-  @Test
-  @Override
-  public void testListPartitionsWithAuthHighMaxParts() throws Exception {
-    createTable4PartColsPartsAuthOn(getClient());
-    List<Partition> partitions =
-        getClient().listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, (short) 101, USER_NAME, Lists.newArrayList(GROUP));
-    partitions.forEach(p -> assertAuthInfoReturned(USER_NAME, GROUP, p));
-  }
-
-  @Test(expected = NoSuchObjectException.class)
-  @Override
-  public void testListPartitionsWithAuthNullGroup()
-      throws Exception {
-    super.testListPartitionsWithAuthNullGroup();
-  }
-
-  @Test(expected = NoSuchObjectException.class)
-  @Override
-  public void testListPartitionsWithAuthByValues()
-      throws Exception {
-    super.testListPartitionsWithAuthByValues();
   }
 
   @Test(expected = MetaException.class)
@@ -227,10 +188,116 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     super.testListPartitionNamesByValuesNullTblName();
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   @Override
-  public void testListPartitionsWithAuthNoTable() throws Exception {
-    getClient().listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, (short)-1, "", Lists.newArrayList());
+  public void testListPartitionsByFilterNullTblName() throws Exception {
+    super.testListPartitionsByFilterNullTblName();
+  }
+
+  @Test(expected = MetaException.class)
+  @Override
+  public void testListPartitionsByFilterNullDbName() throws Exception {
+    super.testListPartitionsByFilterNullDbName();
+  }
+
+  @Test(expected = MetaException.class)
+  @Override
+  public void testListPartitionValuesNullDbName() throws Exception {
+    super.testListPartitionValuesNullDbName();
+  }
+
+  @Test(expected = MetaException.class)
+  @Override
+  public void testListPartitionValuesNullTblName() throws Exception {
+    super.testListPartitionValuesNullTblName();
+  }
+
+  @Test
+  public void testListPartitionsByExpr() throws Exception {
+    createTable4PartColsParts(getClient());
+    TestMetastoreExpr.ExprBuilder e = new TestMetastoreExpr.ExprBuilder(TABLE_NAME);
+    checkExpr(2, e.strCol("yyyy").val("2017").pred("=", 2).build());
+    checkExpr(3, e.strCol("mm").val("11").pred(">", 2).build());
+    checkExpr(4, e.strCol("dd").val("29").pred(">=", 2).build());
+    checkExpr(2, e.strCol("yyyy").val("2017").pred("!=", 2).build());
+    checkExpr(1, e.strCol("yyyy").val("2017").pred("=", 2)
+        .strCol("mm").val("10").pred(">=", 2).pred("and", 2).build());
+    checkExpr(3, e.strCol("dd").val("10").pred("<", 2).strCol("yyyy")
+        .val("2009").pred("!=", 2).pred("or", 2).build());
+    checkExpr(0, e.strCol("yyyy").val("2019").pred("=", 2).build());
+  }
+
+  @Test(expected = AssertionError.class)
+  public void testListPartitionsByExprNullResult() throws Exception {
+    createTable4PartColsParts(getClient());
+    TestMetastoreExpr.ExprBuilder e = new TestMetastoreExpr.ExprBuilder(TABLE_NAME);
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeExpressionToKryo(
+        e.strCol("yyyy").val("2017").pred("=", 2).build()), null, (short)-1, null);
+  }
+
+  @Test
+  public void testListPartitionsByExprDefMaxParts() throws Exception {
+    createTable4PartColsParts(getClient());
+    TestMetastoreExpr.ExprBuilder e = new TestMetastoreExpr.ExprBuilder(TABLE_NAME);
+    List<Partition> result = new ArrayList<>();
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeExpressionToKryo(
+        e.strCol("yyyy").val("2017").pred(">=", 2).build()), null, (short)3, result);
+    assertEquals(3, result.size());
+  }
+
+  @Test
+  public void testListPartitionsByExprHighMaxParts() throws Exception {
+    createTable4PartColsParts(getClient());
+    TestMetastoreExpr.ExprBuilder e = new TestMetastoreExpr.ExprBuilder(TABLE_NAME);
+    List<Partition> result = new ArrayList<>();
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeExpressionToKryo(
+        e.strCol("yyyy").val("2017").pred(">=", 2).build()), null, (short)100, result);
+    assertEquals(4, result.size());
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void testListPartitionsByExprNoDb() throws Exception {
+    getClient().dropDatabase(DB_NAME);
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, new byte[] {'f', 'o', 'o'},
+        null, (short)-1, new ArrayList<>());
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void testListPartitionsByExprNoTbl() throws Exception {
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, new byte[] {'f', 'o', 'o'},
+        null, (short)-1, new ArrayList<>());
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void testListPartitionsByExprEmptyDbName() throws Exception {
+    getClient().listPartitionsByExpr("", TABLE_NAME, new byte[] {'f', 'o', 'o'},
+        null, (short)-1, new ArrayList<>());
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void testListPartitionsByExprEmptyTblName() throws Exception {
+    createTable3PartCols1Part(getClient());
+    getClient().listPartitionsByExpr(DB_NAME, "", new byte[] {'f', 'o', 'o'},
+        null, (short)-1, new ArrayList<>());
+  }
+
+  @Test(expected = MetaException.class)
+  public void testListPartitionsByExprNullDbName() throws Exception {
+    getClient().listPartitionsByExpr(null, TABLE_NAME, new byte[] {'f', 'o', 'o'},
+        null, (short)-1, new ArrayList<>());
+  }
+
+  @Test(expected = MetaException.class)
+  public void testListPartitionsByExprNullTblName() throws Exception {
+    getClient().listPartitionsByExpr(DB_NAME, null, new byte[] {'f', 'o', 'o' },
+        null, (short)-1, new ArrayList<>());
+  }
+
+  private void checkExpr(int numParts, ExprNodeGenericFuncDesc expr) throws Exception {
+    List<Partition> parts = new ArrayList<>();
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeExpressionToKryo(expr),
+        null, (short) -1, parts);
+    assertEquals("Partition check failed: " + expr.getExprString(), numParts, parts.size());
   }
 
 }
