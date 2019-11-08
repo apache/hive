@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -150,57 +151,66 @@ public class JdbcSerDe extends AbstractSerDe {
     }
   }
 
-  /*
-   * This method takes an object representing a row of data from Hive, and
-   * uses the ObjectInspector to get the data for each column and serialize.
-   */
   @Override
-  public DBRecordWritable serialize(Object row, ObjectInspector inspector)
-          throws SerDeException {
+  public DBRecordWritable serialize(Object row, ObjectInspector inspector) throws SerDeException {
     LOGGER.trace("Serializing from SerDe");
-    final StructObjectInspector structObjectInspector = (StructObjectInspector) inspector;
-    final List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
-    if (fields.size() != numColumns) {
-      throw new SerDeException(String.format("Required %d columns, received %d.", numColumns, fields.size()));
+    if ((row == null) || (hiveColumnTypes == null)) {
+      throw new SerDeException("JDBC SerDe hasn't been initialized properly");
+    }
+
+    if (((Object[])row).length != numColumns) {
+      throw new SerDeException(String.format("Required %d columns, received %d.", numColumns, ((Object[])row).length));
     }
 
     dbRecordWritable.clear();
     for (int i = 0; i < numColumns; i++) {
-      StructField structField = fields.get(i);
-      if (structField != null) {
-        Object field = structObjectInspector.getStructFieldData(row, structField);
-        ObjectInspector fieldObjectInspector = structField.getFieldObjectInspector();
-
-        if (fieldObjectInspector.getCategory() == ObjectInspector.Category.PRIMITIVE) {
-          PrimitiveObjectInspector primitiveObjectInspector = (PrimitiveObjectInspector) fieldObjectInspector;
-          Object primitiveJavaObject;
-
-          switch (primitiveObjectInspector.getPrimitiveCategory()) {
-            case CHAR:
-            case VARCHAR:
-              primitiveJavaObject = java.lang.String.valueOf(field.toString());
-              break;
-            case DECIMAL:
-              primitiveJavaObject = java.math.BigDecimal.valueOf(Double.valueOf(field.toString()));
-              break;
-            case DATE:
-              primitiveJavaObject = java.sql.Date.valueOf(field.toString());
-              break;
-            case TIMESTAMP:
-              primitiveJavaObject = java.sql.Timestamp.valueOf(field.toString());
-              break;
-            default:
-              primitiveJavaObject = primitiveObjectInspector.getPrimitiveJavaObject(field);
-          }
-          dbRecordWritable.set(i, primitiveJavaObject);
-        } else {
-          throw new SerDeException("Non primitive types not supported yet");
-        }
+      Object rowData = ((Object[])row)[i];
+      switch (hiveColumnTypes[i].getPrimitiveCategory()) {
+        case INT:
+          rowData = Integer.valueOf(rowData.toString());
+          break;
+        case SHORT:
+          rowData = Short.valueOf(rowData.toString());
+          break;
+        case BYTE:
+          rowData = Byte.valueOf(rowData.toString());
+          break;
+        case LONG:
+          rowData = Long.valueOf(rowData.toString());
+          break;
+        case FLOAT:
+          rowData = Float.valueOf(rowData.toString());
+          break;
+        case DOUBLE:
+          rowData = Double.valueOf(rowData.toString());
+          break;
+        case DECIMAL:
+          int scale = ((HiveDecimalWritable) rowData).getScale();
+          long value  = ((HiveDecimalWritable) rowData).getHiveDecimal().unscaledValue().longValue();
+          rowData = java.math.BigDecimal.valueOf(value, scale);
+          break;
+        case BOOLEAN:
+          rowData = Boolean.valueOf(rowData.toString());
+          break;
+        case CHAR:
+        case VARCHAR:
+        case STRING:
+          rowData = String.valueOf(rowData.toString());
+          break;
+        case DATE:
+          rowData = java.sql.Date.valueOf(rowData.toString());
+          break;
+        case TIMESTAMP:
+          rowData = java.sql.Timestamp.valueOf(rowData.toString());
+          break;
+        default:
+          //do nothing
+          break;
       }
+      dbRecordWritable.set(i, rowData);
     }
     return dbRecordWritable;
   }
-
 
   @Override
   public Object deserialize(Writable blob) throws SerDeException {
