@@ -79,6 +79,7 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -1341,9 +1342,8 @@ public class Hive {
    *              if there's an internal error or if the table doesn't exist
    */
   public Table getTable(TableName tableName) throws HiveException {
-
-    return tableName.getDb() == null ? this.getTable(tableName.getTable(), true) : this
-        .getTable(tableName.getDb(), tableName.getTable(), true);
+    return this.getTable(ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
+        tableName.getTable(), true);
   }
 
   /**
