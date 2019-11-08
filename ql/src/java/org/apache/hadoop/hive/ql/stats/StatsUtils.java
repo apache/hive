@@ -1975,6 +1975,7 @@ public class StatsUtils {
             newDV = (long) Math.ceil(ratio * oldDV);
           }
           cs.setCountDistint(newDV);
+          cs.setFilterColumn();
           oldDV = newDV;
         }
         if (oldDV > newNumRows) {

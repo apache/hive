@@ -166,8 +166,8 @@ Stage-0
                       predicate:((d_year = 2000) and d_date_sk is not null)
                       TableScan [TS_3] (rows=56 width=8)
                         default@x1_date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year"]
-                Dynamic Partitioning Event Operator [EVENT_29] (rows=1 width=4)
-                  Group By Operator [GBY_28] (rows=1 width=4)
+                Dynamic Partitioning Event Operator [EVENT_29] (rows=2 width=4)
+                  Group By Operator [GBY_28] (rows=2 width=4)
                     Output:["_col0"],keys:_col0
                     Select Operator [SEL_27] (rows=28 width=4)
                       Output:["_col0"]
