@@ -2,7 +2,9 @@
 --! qt:dataset:src
 
 source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 set user.name=hive_test_user;
+
 
 use sys;
 
