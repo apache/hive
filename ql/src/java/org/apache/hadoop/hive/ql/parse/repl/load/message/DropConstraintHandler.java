@@ -37,7 +37,7 @@ public class DropConstraintHandler extends AbstractMessageHandler {
     DropConstraintMessage msg = deserializer.getDropConstraintMessage(context.dmd.getPayload());
     final String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
     final String actualTblName = msg.getTable();
-    final TableName tName = HiveTableName.ofNullable(actualDbName, actualTblName);
+    final TableName tName = HiveTableName.ofNullable(actualTblName, actualDbName);
     String constraintName = msg.getConstraint();
 
     AlterTableDropConstraintDesc dropConstraintsDesc =
