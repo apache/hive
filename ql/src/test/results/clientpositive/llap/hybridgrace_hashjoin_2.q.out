@@ -1597,7 +1597,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 12 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -1607,7 +1607,7 @@ STAGE PLANS:
                           outputColumnNames: _col1
                           input vertices:
                             1 Map 5
-                          Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 76 Data size: 6764 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -1616,7 +1616,7 @@ STAGE PLANS:
                               1 value (type: string)
                             input vertices:
                               1 Map 6
-                            Statistics: Num rows: 185 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 123 Data size: 984 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -1828,7 +1828,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 12 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -1838,7 +1838,7 @@ STAGE PLANS:
                           outputColumnNames: _col1
                           input vertices:
                             1 Map 5
-                          Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 76 Data size: 6764 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -1847,7 +1847,7 @@ STAGE PLANS:
                               1 value (type: string)
                             input vertices:
                               1 Map 6
-                            Statistics: Num rows: 185 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 123 Data size: 984 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99

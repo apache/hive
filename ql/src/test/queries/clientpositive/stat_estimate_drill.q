@@ -1,3 +1,6 @@
+
+set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.hooks.AccurateEstimatesCheckerHook;
+
 set hive.explain.user=true;
 set hive.strict.checks.cartesian.product=false;
 set hive.stats.fetch.column.stats=true;
@@ -24,5 +27,9 @@ explain analyze select sum(a) from t3 where a=1 or (a=2  and b=3) group by b;
 explain analyze select sum(a) from t3 where a=1 group by b;
 explain analyze select sum(a) from t3 where a=1 and b=2 group by b;
 explain analyze select sum(a) from t3 where a=1 and b=2 and c=3 group by b;
+
+
+-- FIXME: for the below case; we right now get an IN which is estimated as 1/3 - might worth consider improving
+set hive.semantic.analyzer.hook=;
 
 explain analyze select sum(a) from t3 where (a=1 and b=2) or (a=2 and b=3) or (a=3 and b=4) group by b;
