@@ -386,7 +386,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
   @Test
   public void testOutdatedCleanup() throws Exception {
-    String namespace = "cleanup";
+    String namespace = "outdatedcleanup";
     ObjectStore objStore = new ObjectStore();
     objStore.setConf(metaStore.getConf());
     objStore.deleteScheduledExecutions(0);
