@@ -313,7 +313,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       try {
         driver.compileAndRespond(query, false);
       } catch (CommandProcessorException e) {
-        throw new HiveException("Failed to compile query: " + e.getException());
+        throw new HiveException("Failed to compile query", e);
       }
 
       QueryPlan plan = driver.getPlan();
@@ -337,7 +337,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
       if (tezWork == null || tezWork.getAllWork().size() != 1) {
 
-        String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
+        String tableName = "table_" + UUID.randomUUID().toString().replaceAll("-", "");
 
         String storageFormatString = getTempTableStorageFormatString(conf);
         String ctas = "create temporary table " + tableName + " " + storageFormatString + " as " + query;
@@ -348,7 +348,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         try {
           driver.run(ctas, false);
         } catch (CommandProcessorException e) {
-          throw new HiveException("Failed to create temp table: " + e.getException());
+          throw new HiveException("Failed to create temp table [" + tableName + "]", e);
         }
 
         HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, "llap");
@@ -356,7 +356,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         try {
           driver.compileAndRespond(query, true);
         } catch (CommandProcessorException e) {
-          throw new HiveException("Failed to create temp table: " + e.getException());
+          throw new HiveException("Failed to select from table [" + tableName + "]", e);
         }
 
         plan = driver.getPlan();
