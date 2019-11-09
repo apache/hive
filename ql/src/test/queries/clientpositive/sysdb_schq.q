@@ -10,7 +10,7 @@ use sys;
 
 create scheduled query asd cron '* * * * * ? *' defined as select 1;
 
-!sleep 5;
+!sleep 10;
 
 desc formatted scheduled_queries;
 
