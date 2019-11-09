@@ -26,9 +26,22 @@ import java.util.function.Predicate;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.tez.dag.api.TezConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.security.ssl.SSLFactory.SSL_CLIENT_CONF_KEY;
 
 public class TezConfigurationFactory {
   private static TezConfiguration defaultConf = new TezConfiguration();
+
+  private static final Logger LOG = LoggerFactory.getLogger(TezConfigurationFactory.class.getName());
+
+  static {
+    //SSL configs are added as needed
+    String sslConf = defaultConf.get(SSL_CLIENT_CONF_KEY, "ssl-client.xml");
+    defaultConf.addResource(sslConf);
+    LOG.info("SSL conf : " + sslConf);
+  }
 
   public static Configuration copyInto(Configuration target, Configuration src,
       Predicate<String> sourceFilter) {
