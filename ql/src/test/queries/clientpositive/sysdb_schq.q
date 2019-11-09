@@ -2,23 +2,6 @@
 --! qt:dataset:src
 
 source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
-set role admin;
-create role src_role_wadmin;
-grant  src_role_wadmin to user hive_test_user with admin option;
-
-set hive.test.authz.sstd.hs2.mode=true;
-set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
-set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
-
-set hive.support.concurrency=true;
-set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-
-
-set user.name=hive_admin_user;
-
-
-
-set role admin;
 
 use sys;
 
