@@ -304,6 +304,9 @@ public class Operation2Privilege {
     adminPrivOps.add(HiveOperationType.DROP_MAPPING);
     adminPrivOps.add(HiveOperationType.CREATEFUNCTION);
     adminPrivOps.add(HiveOperationType.DROPFUNCTION);
+    adminPrivOps.add(HiveOperationType.CREATE_SCHEDULED_QUERY);
+    adminPrivOps.add(HiveOperationType.ALTER_SCHEDULED_QUERY);
+    adminPrivOps.add(HiveOperationType.DROP_SCHEDULED_QUERY);
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
