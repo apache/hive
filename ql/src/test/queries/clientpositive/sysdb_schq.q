@@ -2,11 +2,14 @@
 --! qt:dataset:src
 
 source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
+
 set hive.test.authz.sstd.hs2.mode=true;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
 set hive.security.authorization.enabled=true;
-set user.name=hive_test_user;
+
+set user.name=hive_admin_user;
+set role admin;
 
 use sys;
 
