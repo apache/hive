@@ -8,7 +8,6 @@ set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.Sessi
 set hive.security.authorization.enabled=true;
 set user.name=hive_test_user;
 
-
 use sys;
 
 create scheduled query asd cron '* * * * * ? *' defined as select 1;
