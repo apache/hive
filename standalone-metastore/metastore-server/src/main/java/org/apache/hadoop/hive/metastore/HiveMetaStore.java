@@ -6724,7 +6724,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
            final List<String> partNames, boolean getColStats, String engine) throws TException {
       return get_partitions_by_names(dbName, tblName, partNames, getColStats, engine, null, null);
     }
- 
+
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
            final List<String> partNames, boolean getColStats, String engine,
            List<String> processorCapabilities, String processorId) throws TException {
@@ -9648,6 +9648,70 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       } finally {
         endFunction("get_runtime_stats", ex == null, ex);
+      }
+    }
+
+    @Override
+    public ScheduledQueryPollResponse scheduled_query_poll(ScheduledQueryPollRequest request)
+        throws MetaException, TException {
+      startFunction("scheduled_query_poll");
+      Exception ex = null;
+      try {
+        RawStore ms = getMS();
+        return ms.scheduledQueryPoll(request);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("scheduled_query_poll", ex == null, ex);
+      }
+    }
+
+    @Override
+    public void scheduled_query_maintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
+      startFunction("scheduled_query_poll");
+      Exception ex = null;
+      try {
+        RawStore ms = getMS();
+        ms.scheduledQueryMaintenance(request);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("scheduled_query_poll", ex == null, ex);
+      }
+    }
+
+    @Override
+    public void scheduled_query_progress(ScheduledQueryProgressInfo info) throws MetaException, TException {
+      startFunction("scheduled_query_poll");
+      Exception ex = null;
+      try {
+        RawStore ms = getMS();
+        ms.scheduledQueryProgress(info);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("scheduled_query_poll", ex == null, ex);
+      }
+    }
+
+    @Override
+    public ScheduledQuery get_scheduled_query(ScheduledQueryKey scheduleKey) throws TException {
+      startFunction("get_scheduled_query");
+      Exception ex = null;
+      try {
+        return getMS().getScheduledQuery(scheduleKey);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_scheduled_query", ex == null, ex);
       }
     }
   }

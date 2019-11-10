@@ -251,6 +251,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void add_runtime_stats(RuntimeStat stat)')
   print('   get_runtime_stats(GetRuntimeStatsRequest rqst)')
   print('  GetPartitionsResponse get_partitions_with_specs(GetPartitionsRequest request)')
+  print('  ScheduledQueryPollResponse scheduled_query_poll(ScheduledQueryPollRequest request)')
+  print('  void scheduled_query_maintenance(ScheduledQueryMaintenanceRequest request)')
+  print('  void scheduled_query_progress(ScheduledQueryProgressInfo info)')
+  print('  ScheduledQuery get_scheduled_query(ScheduledQueryKey scheduleKey)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1681,6 +1685,30 @@ elif cmd == 'get_partitions_with_specs':
     print('get_partitions_with_specs requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_partitions_with_specs(eval(args[0]),))
+
+elif cmd == 'scheduled_query_poll':
+  if len(args) != 1:
+    print('scheduled_query_poll requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.scheduled_query_poll(eval(args[0]),))
+
+elif cmd == 'scheduled_query_maintenance':
+  if len(args) != 1:
+    print('scheduled_query_maintenance requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.scheduled_query_maintenance(eval(args[0]),))
+
+elif cmd == 'scheduled_query_progress':
+  if len(args) != 1:
+    print('scheduled_query_progress requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.scheduled_query_progress(eval(args[0]),))
+
+elif cmd == 'get_scheduled_query':
+  if len(args) != 1:
+    print('get_scheduled_query requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_scheduled_query(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

@@ -2861,4 +2861,36 @@ public class CachedStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
     return rawStore.getPartitionColsWithStats(catName, dbName, tableName);
   }
+
+  @Override
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException {
+    return rawStore.scheduledQueryPoll(request);
+  }
+
+  @Override
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request)
+      throws MetaException, NoSuchObjectException, AlreadyExistsException, InvalidInputException {
+    rawStore.scheduledQueryMaintenance(request);
+  }
+
+  @Override
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info)
+      throws MetaException, NoSuchObjectException, InvalidOperationException {
+    rawStore.scheduledQueryProgress(info);
+  }
+
+  @Override
+  public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws MetaException, NoSuchObjectException {
+    return rawStore.getScheduledQuery(scheduleKey);
+  }
+
+  @Override
+  public int deleteScheduledExecutions(int maxRetainSecs) {
+    return rawStore.deleteScheduledExecutions(maxRetainSecs);
+  }
+
+  @Override
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+    return rawStore.markScheduledExecutionsTimedOut(timeoutSecs);
+  }
 }

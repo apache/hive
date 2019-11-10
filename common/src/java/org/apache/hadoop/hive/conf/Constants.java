@@ -74,4 +74,7 @@ public class Constants {
   public static final String MATERIALIZED_VIEW_REWRITING_TIME_WINDOW = "rewriting.time.window";
   public static final String MATERIALIZED_VIEW_SORT_COLUMNS = "materializedview.sort.columns";
   public static final String MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS = "materializedview.distribute.columns";
+
+  /**  A named lock is acquired prior to executing the query; enabling to run queries in parallel which might interfere with eachother. */
+  public static final String HIVE_QUERY_EXCLUSIVE_LOCK = "hive.query.exclusive.lock";
 }

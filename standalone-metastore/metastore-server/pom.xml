@@ -226,6 +226,10 @@
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.cronutils</groupId>
+      <artifactId>cron-utils</artifactId>
+    </dependency>
     <!-- test scope dependencies -->
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>

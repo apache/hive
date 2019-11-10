@@ -2757,6 +2757,126 @@ POSTHOOK: Lineage: COMPACTIONS.c_state EXPRESSION [(completed_compactions)comple
 POSTHOOK: Lineage: COMPACTIONS.c_table EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_table, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_table, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COMPACTIONS.c_type EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_type, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_type, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COMPACTIONS.c_worker_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_QUERIES` (
+  `SCHEDULED_QUERY_ID` bigint,
+  `SCHEDULE_NAME` string,
+  `ENABLED` boolean,
+  `CLUSTER_NAMESPACE` string,
+  `SCHEDULE` string,
+  `USER` string,
+  `QUERY` string,
+  `NEXT_EXECUTION` bigint,
+  CONSTRAINT `SYS_PK_SCHEDULED_QUERIES` PRIMARY KEY (`SCHEDULED_QUERY_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SCHEDULED_QUERY_ID\",
+  \"SCHEDULE_NAME\",
+  \"ENABLED\",
+  \"CLUSTER_NAMESPACE\",
+  \"SCHEDULE\",
+  \"USER\",
+  \"QUERY\",
+  \"NEXT_EXECUTION\"
+FROM
+  \"SCHEDULED_QUERIES\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SCHEDULED_QUERIES
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_QUERIES` (
+  `SCHEDULED_QUERY_ID` bigint,
+  `SCHEDULE_NAME` string,
+  `ENABLED` boolean,
+  `CLUSTER_NAMESPACE` string,
+  `SCHEDULE` string,
+  `USER` string,
+  `QUERY` string,
+  `NEXT_EXECUTION` bigint,
+  CONSTRAINT `SYS_PK_SCHEDULED_QUERIES` PRIMARY KEY (`SCHEDULED_QUERY_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SCHEDULED_QUERY_ID\",
+  \"SCHEDULE_NAME\",
+  \"ENABLED\",
+  \"CLUSTER_NAMESPACE\",
+  \"SCHEDULE\",
+  \"USER\",
+  \"QUERY\",
+  \"NEXT_EXECUTION\"
+FROM
+  \"SCHEDULED_QUERIES\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SCHEDULED_QUERIES
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_EXECUTIONS` (
+  `SCHEDULED_EXECUTION_ID` bigint,
+  `SCHEDULED_QUERY_ID` bigint,
+  `EXECUTOR_QUERY_ID` string,
+  `STATE` string,
+  `START_TIME` int,
+  `END_TIME` int,
+  `ERROR_MESSAGE` string,
+  `LAST_UPDATE_TIME` int,
+  CONSTRAINT `SYS_PK_SCHEDULED_EXECUTIONS` PRIMARY KEY (`SCHEDULED_EXECUTION_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SCHEDULED_EXECUTION_ID\",
+  \"SCHEDULED_QUERY_ID\",
+  \"EXECUTOR_QUERY_ID\",
+  \"STATE\",
+  \"START_TIME\",
+  \"END_TIME\",
+  \"ERROR_MESSAGE\",
+  \"LAST_UPDATE_TIME\"
+FROM
+  \"SCHEDULED_EXECUTIONS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SCHEDULED_EXECUTIONS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_EXECUTIONS` (
+  `SCHEDULED_EXECUTION_ID` bigint,
+  `SCHEDULED_QUERY_ID` bigint,
+  `EXECUTOR_QUERY_ID` string,
+  `STATE` string,
+  `START_TIME` int,
+  `END_TIME` int,
+  `ERROR_MESSAGE` string,
+  `LAST_UPDATE_TIME` int,
+  CONSTRAINT `SYS_PK_SCHEDULED_EXECUTIONS` PRIMARY KEY (`SCHEDULED_EXECUTION_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SCHEDULED_EXECUTION_ID\",
+  \"SCHEDULED_QUERY_ID\",
+  \"EXECUTOR_QUERY_ID\",
+  \"STATE\",
+  \"START_TIME\",
+  \"END_TIME\",
+  \"ERROR_MESSAGE\",
+  \"LAST_UPDATE_TIME\"
+FROM
+  \"SCHEDULED_EXECUTIONS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SCHEDULED_EXECUTIONS
+POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:INFORMATION_SCHEMA
@@ -3665,6 +3785,99 @@ POSTHOOK: Lineage: COMPACTIONS.c_state EXPRESSION [(completed_compactions)comple
 POSTHOOK: Lineage: COMPACTIONS.c_table EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_table, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_table, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COMPACTIONS.c_type EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_type, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_type, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COMPACTIONS.c_worker_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
+PREHOOK: query: create or replace view SCHEDULED_QUERIES  as
+select
+  `SCHEDULED_QUERY_ID` ,
+  `SCHEDULE_NAME` ,
+  `ENABLED`,
+  `CLUSTER_NAMESPACE`,
+  `SCHEDULE`,
+  `USER`,
+  `QUERY`,
+  FROM_UNIXTIME(NEXT_EXECUTION) as NEXT_EXECUTION
+FROM
+  SYS.SCHEDULED_QUERIES
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@scheduled_queries
+PREHOOK: Output: INFORMATION_SCHEMA@SCHEDULED_QUERIES
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: create or replace view SCHEDULED_QUERIES  as
+select
+  `SCHEDULED_QUERY_ID` ,
+  `SCHEDULE_NAME` ,
+  `ENABLED`,
+  `CLUSTER_NAMESPACE`,
+  `SCHEDULE`,
+  `USER`,
+  `QUERY`,
+  FROM_UNIXTIME(NEXT_EXECUTION) as NEXT_EXECUTION
+FROM
+  SYS.SCHEDULED_QUERIES
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@scheduled_queries
+POSTHOOK: Output: INFORMATION_SCHEMA@SCHEDULED_QUERIES
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Lineage: SCHEDULED_QUERIES.cluster_namespace SIMPLE [(scheduled_queries)scheduled_queries.FieldSchema(name:cluster_namespace, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_QUERIES.enabled SIMPLE [(scheduled_queries)scheduled_queries.FieldSchema(name:enabled, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_QUERIES.next_execution EXPRESSION [(scheduled_queries)scheduled_queries.FieldSchema(name:next_execution, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_QUERIES.query SIMPLE [(scheduled_queries)scheduled_queries.FieldSchema(name:query, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_QUERIES.schedule SIMPLE [(scheduled_queries)scheduled_queries.FieldSchema(name:schedule, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_QUERIES.schedule_name SIMPLE [(scheduled_queries)scheduled_queries.FieldSchema(name:schedule_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_QUERIES.scheduled_query_id SIMPLE [(scheduled_queries)scheduled_queries.FieldSchema(name:scheduled_query_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_QUERIES.user SIMPLE [(scheduled_queries)scheduled_queries.FieldSchema(name:user, type:string, comment:from deserializer), ]
+PREHOOK: query: create or replace view SCHEDULED_EXECUTIONS as
+SELECT
+  SCHEDULED_EXECUTION_ID,
+  SCHEDULE_NAME,
+  EXECUTOR_QUERY_ID,
+  `STATE`,
+  FROM_UNIXTIME(START_TIME) as START_TIME,
+  FROM_UNIXTIME(END_TIME) as END_TIME,
+  END_TIME-START_TIME as ELAPSED,
+  ERROR_MESSAGE,
+  FROM_UNIXTIME(LAST_UPDATE_TIME) AS LAST_UPDATE_TIME
+FROM
+  SYS.SCHEDULED_EXECUTIONS SE
+JOIN
+  SYS.SCHEDULED_QUERIES SQ
+WHERE
+  SE.SCHEDULED_QUERY_ID=SQ.SCHEDULED_QUERY_ID
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@scheduled_executions
+PREHOOK: Input: sys@scheduled_queries
+PREHOOK: Output: INFORMATION_SCHEMA@SCHEDULED_EXECUTIONS
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: create or replace view SCHEDULED_EXECUTIONS as
+SELECT
+  SCHEDULED_EXECUTION_ID,
+  SCHEDULE_NAME,
+  EXECUTOR_QUERY_ID,
+  `STATE`,
+  FROM_UNIXTIME(START_TIME) as START_TIME,
+  FROM_UNIXTIME(END_TIME) as END_TIME,
+  END_TIME-START_TIME as ELAPSED,
+  ERROR_MESSAGE,
+  FROM_UNIXTIME(LAST_UPDATE_TIME) AS LAST_UPDATE_TIME
+FROM
+  SYS.SCHEDULED_EXECUTIONS SE
+JOIN
+  SYS.SCHEDULED_QUERIES SQ
+WHERE
+  SE.SCHEDULED_QUERY_ID=SQ.SCHEDULED_QUERY_ID
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@scheduled_executions
+POSTHOOK: Input: sys@scheduled_queries
+POSTHOOK: Output: INFORMATION_SCHEMA@SCHEDULED_EXECUTIONS
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.elapsed EXPRESSION [(scheduled_executions)se.FieldSchema(name:end_time, type:int, comment:from deserializer), (scheduled_executions)se.FieldSchema(name:start_time, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.end_time EXPRESSION [(scheduled_executions)se.FieldSchema(name:end_time, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.error_message SIMPLE [(scheduled_executions)se.FieldSchema(name:error_message, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.executor_query_id SIMPLE [(scheduled_executions)se.FieldSchema(name:executor_query_id, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.last_update_time EXPRESSION [(scheduled_executions)se.FieldSchema(name:last_update_time, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.schedule_name SIMPLE [(scheduled_queries)sq.FieldSchema(name:schedule_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.scheduled_execution_id SIMPLE [(scheduled_executions)se.FieldSchema(name:scheduled_execution_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.start_time EXPRESSION [(scheduled_executions)se.FieldSchema(name:start_time, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.state SIMPLE [(scheduled_executions)se.FieldSchema(name:state, type:string, comment:from deserializer), ]
 PREHOOK: query: use sys
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:sys
@@ -3733,6 +3946,8 @@ PREHOOK: Output: sys@partition_stats_view
 PREHOOK: Output: sys@partitions
 PREHOOK: Output: sys@role_map
 PREHOOK: Output: sys@roles
+PREHOOK: Output: sys@scheduled_executions
+PREHOOK: Output: sys@scheduled_queries
 PREHOOK: Output: sys@sd_params
 PREHOOK: Output: sys@sds
 PREHOOK: Output: sys@sequence_table
@@ -3785,6 +4000,8 @@ POSTHOOK: Output: sys@partition_stats_view
 POSTHOOK: Output: sys@partitions
 POSTHOOK: Output: sys@role_map
 POSTHOOK: Output: sys@roles
+POSTHOOK: Output: sys@scheduled_executions
+POSTHOOK: Output: sys@scheduled_queries
 POSTHOOK: Output: sys@sd_params
 POSTHOOK: Output: sys@sds
 POSTHOOK: Output: sys@sequence_table
@@ -3815,6 +4032,8 @@ PREHOOK: Output: database:information_schema
 PREHOOK: Output: information_schema@column_privileges
 PREHOOK: Output: information_schema@columns
 PREHOOK: Output: information_schema@compactions
+PREHOOK: Output: information_schema@scheduled_executions
+PREHOOK: Output: information_schema@scheduled_queries
 PREHOOK: Output: information_schema@schemata
 PREHOOK: Output: information_schema@table_privileges
 PREHOOK: Output: information_schema@tables
@@ -3826,6 +4045,8 @@ POSTHOOK: Output: database:information_schema
 POSTHOOK: Output: information_schema@column_privileges
 POSTHOOK: Output: information_schema@columns
 POSTHOOK: Output: information_schema@compactions
+POSTHOOK: Output: information_schema@scheduled_executions
+POSTHOOK: Output: information_schema@scheduled_queries
 POSTHOOK: Output: information_schema@schemata
 POSTHOOK: Output: information_schema@table_privileges
 POSTHOOK: Output: information_schema@tables
