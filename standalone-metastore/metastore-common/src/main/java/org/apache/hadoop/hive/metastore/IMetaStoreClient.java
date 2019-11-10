@@ -3253,7 +3253,7 @@ public interface IMetaStoreClient {
    */
   void insertTable(Table table, boolean overwrite) throws MetaException;
 
-  /**
+    /**
    * A filter provided by the client that determines if a given notification event should be
    * returned.
    */
@@ -3905,4 +3905,29 @@ public interface IMetaStoreClient {
    * @return String representation of the version number of Metastore server (eg: 3.1.0-SNAPSHOT)
    */
   String getServerVersion() throws TException;
+
+  /**
+   * Returns details about a scheduled query by name.
+   * 
+   * @throws NoSuchObjectException if an object by the given name dosen't exists.
+   */
+  ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws TException;
+
+  /**
+   * Carries out maintenance of scheduled queries (insert/update/drop).
+   */
+  void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException;
+
+  /**
+   * Checks whenever a query is available for execution.
+   *
+   * @return optionally a scheduled query to be processed.
+   */
+  ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException, TException;
+
+  /**
+   * Registers the progress a scheduled query being executed.
+   */
+  void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException;
+
 }

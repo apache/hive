@@ -15,6 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.scheduled;
 
-/** Create view DDL operation. */
-package org.apache.hadoop.hive.ql.ddl.view.create;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
+
+/**
+ * Interface to cover Scheduled Query source service.
+ */
+public interface IScheduledQueryMaintenanceService {
+
+  ScheduledQueryPollResponse scheduledQueryPoll();
+
+  void scheduledQueryProgress(ScheduledQueryProgressInfo info);
+
+  String getClusterNamespace();
+
+}

@@ -363,4 +363,9 @@
   <value>query</value>
 </property>
 
+<property>
+  <name>hive.semantic.analyzer.hook</name>
+  <value>org.apache.hadoop.hive.ql.hooks.ScheduledQueryCreationRegistryHook</value>
+</property>
+
 </configuration>

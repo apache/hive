@@ -170,6 +170,11 @@ public class Context {
 
   // Load data rewrite
   private Table tempTableForLoad;
+  /**
+   * Unparsing is not available in {@link SemanticAnalyzer} by default - because of performance reasons.
+   * After enabling unparsing before analysis - a valid query unparse can be done.
+   */
+  private boolean enableUnparse;
 
   public void setOperation(Operation operation) {
     this.operation = operation;
@@ -187,7 +192,7 @@ public class Context {
    * These ops require special handling in various places
    * (note that Insert into Acid table is in OTHER category)
    */
-  public enum Operation {UPDATE, DELETE, MERGE, OTHER};
+  public enum Operation {UPDATE, DELETE, MERGE, OTHER}
   public enum DestClausePrefix {
     INSERT("insclause-"), UPDATE("updclause-"), DELETE("delclause-");
     private final String prefix;
@@ -1212,6 +1217,14 @@ public class Context {
 
   public void setTempTableForLoad(Table tempTableForLoad) {
     this.tempTableForLoad = tempTableForLoad;
+  }
+
+  public boolean enableUnparse() {
+    return enableUnparse;
+  }
+
+  public void setEnableUnparse(boolean enableUnparse) {
+    this.enableUnparse = enableUnparse;
   }
 
 }

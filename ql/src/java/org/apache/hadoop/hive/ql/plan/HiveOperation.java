@@ -199,7 +199,11 @@ public enum HiveOperation {
   DROP_POOL("DROP POOL", HiveParser.TOK_DROP_POOL, null, null, false, false),
   CREATE_MAPPING("CREATE MAPPING", HiveParser.TOK_CREATE_MAPPING, null, null, false, false),
   ALTER_MAPPING("ALTER MAPPING", HiveParser.TOK_ALTER_MAPPING, null, null, false, false),
-  DROP_MAPPING("DROP MAPPING", HiveParser.TOK_DROP_MAPPING, null, null, false, false);
+  DROP_MAPPING("DROP MAPPING", HiveParser.TOK_DROP_MAPPING, null, null, false, false),
+  CREATE_SCHEDULED_QUERY("CREATE SCHEDULED QUERY", HiveParser.TOK_CREATE_SCHEDULED_QUERY, null, null),
+  ALTER_SCHEDULED_QUERY("ALTER SCHEDULED QUERY", HiveParser.TOK_ALTER_SCHEDULED_QUERY, null, null),
+  DROP_SCHEDULED_QUERY("DROP SCHEDULED QUERY", HiveParser.TOK_DROP_SCHEDULED_QUERY, null, null)
+  ;
 
   private final String operationName;
   private final int[] tokens;

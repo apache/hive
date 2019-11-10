@@ -272,6 +272,9 @@ TOK_DROP_MATERIALIZED_VIEW;
 TOK_ALTER_MATERIALIZED_VIEW;
 TOK_ALTER_MATERIALIZED_VIEW_REWRITE;
 TOK_ALTER_MATERIALIZED_VIEW_REBUILD;
+TOK_CREATE_SCHEDULED_QUERY;
+TOK_ALTER_SCHEDULED_QUERY;
+TOK_DROP_SCHEDULED_QUERY;
 TOK_REWRITE_ENABLED;
 TOK_REWRITE_DISABLED;
 TOK_VIEWPARTCOLS;
@@ -450,6 +453,8 @@ TOK_LIKERP;
 TOK_UNMANAGED;
 TOK_INPUTFORMAT;
 TOK_WITHIN_GROUP;
+TOK_CRON;
+TOK_EXECUTED_AS;
 }
 
 
@@ -987,6 +992,9 @@ ddlStatement
     | metastoreCheck
     | createViewStatement
     | createMaterializedViewStatement
+    | createScheduledQueryStatement
+    | alterScheduledQueryStatement
+    | dropScheduledQueryStatement
     | dropViewStatement
     | dropMaterializedViewStatement
     | createFunctionStatement
@@ -2072,6 +2080,71 @@ dropMaterializedViewStatement
 @after { popMsg(state); }
     : KW_DROP KW_MATERIALIZED KW_VIEW ifExists? viewName -> ^(TOK_DROP_MATERIALIZED_VIEW viewName ifExists?)
     ;
+
+createScheduledQueryStatement
+@init { pushMsg("create scheduled query statement", state); }
+@after { popMsg(state); }
+    : KW_CREATE KW_SCHEDULED KW_QUERY name=identifier
+        scheduleSpec
+        executedAsSpec?
+        enableSpecification?
+        definedAsSpec
+    -> ^(TOK_CREATE_SCHEDULED_QUERY
+            $name
+            scheduleSpec
+            executedAsSpec?
+            enableSpecification?
+            definedAsSpec
+        )
+    ;
+    
+dropScheduledQueryStatement
+@init { pushMsg("drop scheduled query statement", state); }
+@after { popMsg(state); }
+    : KW_DROP KW_SCHEDULED KW_QUERY name=identifier
+    -> ^(TOK_DROP_SCHEDULED_QUERY
+            $name
+        )
+    ;
+
+    
+alterScheduledQueryStatement
+@init { pushMsg("alter scheduled query statement", state); }
+@after { popMsg(state); }
+    : KW_ALTER KW_SCHEDULED KW_QUERY name=identifier
+            mod=alterScheduledQueryChange
+    -> ^(TOK_ALTER_SCHEDULED_QUERY
+            $name
+            $mod
+        )
+    ;
+    
+alterScheduledQueryChange
+@init { pushMsg("alter scheduled query change", state); }
+@after { popMsg(state); }
+    : scheduleSpec
+    | executedAsSpec
+    | enableSpecification
+    | definedAsSpec
+    ;
+
+scheduleSpec
+@init { pushMsg("schedule specification", state); }
+@after { popMsg(state); }
+        : KW_CRON cronString=StringLiteral -> ^(TOK_CRON $cronString)
+        ;
+
+executedAsSpec
+@init { pushMsg("executedAs specification", state); }
+@after { popMsg(state); }
+        : KW_EXECUTED KW_AS executedAs=StringLiteral -> ^(TOK_EXECUTED_AS $executedAs)
+        ;
+
+definedAsSpec
+@init { pushMsg("definedAs specification", state); }
+@after { popMsg(state); }
+        : KW_DEFINED? KW_AS statement -> ^(TOK_QUERY statement)
+        ;
 
 showFunctionIdentifier
 @init { pushMsg("identifier for show function statement", state); }
