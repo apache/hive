@@ -15,22 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.api;
+package org.apache.hadoop.hive.ql.scheduled;
 
-public class MetastoreException extends Exception {
-  public MetastoreException() {
-    super();
-  }
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 
-  public MetastoreException(String message) {
-    super(message);
-  }
+/**
+ * Interface to cover Scheduled Query source service.
+ */
+public interface IScheduledQueryMaintenanceService {
 
-  public MetastoreException(Throwable cause) {
-    super(cause);
-  }
+  ScheduledQueryPollResponse scheduledQueryPoll();
 
-  public MetastoreException(String message, Throwable cause) {
-    super(message, cause);
-  }
+  void scheduledQueryProgress(ScheduledQueryProgressInfo info);
+
+  String getClusterNamespace();
+
 }

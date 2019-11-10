@@ -75,6 +75,12 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.metastore.api.SchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -1280,5 +1286,36 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
       String dbName, String tableName) throws MetaException,
       NoSuchObjectException {
     return null;
+  }
+
+  @Override
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) {
+    return objectStore.scheduledQueryPoll(request);
+  }
+
+  @Override
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request)
+      throws MetaException, NoSuchObjectException, AlreadyExistsException, InvalidInputException {
+    objectStore.scheduledQueryMaintenance(request);
+  }
+
+  @Override
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws InvalidOperationException {
+    objectStore.scheduledQueryProgress(info);
+  }
+
+  @Override
+  public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws NoSuchObjectException {
+    return objectStore.getScheduledQuery(scheduleKey);
+  }
+
+  @Override
+  public int deleteScheduledExecutions(int maxRetainSecs) {
+    return objectStore.deleteScheduledExecutions(maxRetainSecs);
+  }
+
+  @Override
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+    return objectStore.markScheduledExecutionsTimedOut(timeoutSecs);
   }
 }

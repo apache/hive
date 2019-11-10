@@ -1152,6 +1152,26 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_runtime_stats\n");
   }
 
+  void scheduled_query_poll(ScheduledQueryPollResponse& _return, const ScheduledQueryPollRequest& request) {
+    // Your implementation goes here
+    printf("scheduled_query_poll\n");
+  }
+
+  void scheduled_query_maintenance(const ScheduledQueryMaintenanceRequest& request) {
+    // Your implementation goes here
+    printf("scheduled_query_maintenance\n");
+  }
+
+  void scheduled_query_progress(const ScheduledQueryProgressInfo& info) {
+    // Your implementation goes here
+    printf("scheduled_query_progress\n");
+  }
+
+  void get_scheduled_query(ScheduledQuery& _return, const ScheduledQueryKey& scheduleKey) {
+    // Your implementation goes here
+    printf("get_scheduled_query\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

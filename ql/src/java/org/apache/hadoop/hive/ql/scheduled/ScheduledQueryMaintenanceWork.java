@@ -15,6 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.scheduled;
 
-/** Unit tests for the HiveMetaTool program. */
-package org.apache.hadoop.hive.metastore.tools.metatool;
+import java.io.Serializable;
+
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
+
+public class ScheduledQueryMaintenanceWork implements Serializable {
+
+  private static final long serialVersionUID = 1L;
+  private ScheduledQueryMaintenanceRequestType type;
+  private ScheduledQuery schq;
+
+  public ScheduledQueryMaintenanceWork(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schq) {
+    this.type = type;
+    this.schq = schq;
+  }
+
+  public ScheduledQueryMaintenanceRequestType getType() {
+    return type;
+  }
+
+  public ScheduledQuery getScheduledQuery() {
+    return schq;
+  }
+
+}

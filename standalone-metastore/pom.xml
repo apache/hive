@@ -85,6 +85,7 @@
     <storage-api.version>2.3.0.7.1.0.0-SNAPSHOT</storage-api.version>
     <ST4.version>4.0.4</ST4.version>
     <curator.version>4.2.0</curator.version>
+    <cron-utils.version>8.1.1</cron-utils.version>
 
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
@@ -345,6 +346,11 @@
       <artifactId>curator-framework</artifactId>
       <version>${curator.version}</version>
     </dependency>
+      <dependency>
+        <groupId>com.cronutils</groupId>
+        <artifactId>cron-utils</artifactId>
+        <version>${cron-utils.version}</version>
+      </dependency>
 
     <!-- test scope dependencies -->
 

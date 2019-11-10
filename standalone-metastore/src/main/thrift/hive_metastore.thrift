@@ -1716,6 +1716,57 @@ struct CreateTableRequest {
    10: optional string processorIdentifier
 }
 
+struct ScheduledQueryPollRequest {
+  1: required string clusterNamespace
+}
+
+struct ScheduledQueryPollResponse {
+  1: optional ScheduledQueryKey scheduleKey,
+  2: optional i64 executionId,
+  3: optional string query,
+  4: optional string user,
+}
+
+struct ScheduledQueryKey {
+  1: required string scheduleName,
+  2: required string clusterNamespace,
+}
+
+struct ScheduledQuery {
+  1: required ScheduledQueryKey scheduleKey,
+  2: optional bool enabled,
+  4: optional string schedule,
+  5: optional string user,
+  6: optional string query,
+  7: optional i32 nextExecution,
+}
+
+enum ScheduledQueryMaintenanceRequestType {
+    CREATE = 1,
+    ALTER = 2,
+    DROP = 3,
+}
+
+struct ScheduledQueryMaintenanceRequest {
+  1: required ScheduledQueryMaintenanceRequestType type,
+  2: required ScheduledQuery scheduledQuery,
+}
+
+enum QueryState {
+   INITED,
+   EXECUTING,
+   ERRORED,
+   FINISHED,
+   TIMED_OUT,
+}
+
+struct ScheduledQueryProgressInfo{
+  1: required i64 scheduledExecutionId,
+  2: required QueryState state,
+  3: required string executorQueryId,
+  4: optional string errorMessage,
+}
+
 struct AlterPartitionsRequest {
   1: optional string catName,
   2: required string dbName,
@@ -2453,6 +2504,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   
   void add_runtime_stats(1: RuntimeStat stat) throws(1:MetaException o1)
   list<RuntimeStat> get_runtime_stats(1: GetRuntimeStatsRequest rqst) throws(1:MetaException o1)
+
+  ScheduledQueryPollResponse scheduled_query_poll(1: ScheduledQueryPollRequest request) throws(1:MetaException o1)
+  void scheduled_query_maintenance(1: ScheduledQueryMaintenanceRequest request) throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:AlreadyExistsException o3, 4:InvalidInputException o4)
+  void scheduled_query_progress(1: ScheduledQueryProgressInfo info) throws(1:MetaException o1, 2: InvalidOperationException o2)
+  ScheduledQuery get_scheduled_query(1: ScheduledQueryKey scheduleKey) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

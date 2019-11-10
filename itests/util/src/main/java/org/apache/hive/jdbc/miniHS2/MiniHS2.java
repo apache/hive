@@ -245,6 +245,7 @@ public class MiniHS2 extends AbstractHiveService {
     hiveConf.setLongVar(ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS, 3l);
     hiveConf.setTimeVar(ConfVars.HIVE_SERVER2_SLEEP_INTERVAL_BETWEEN_START_ATTEMPTS, 10,
         TimeUnit.SECONDS);
+    hiveConf.setBoolVar(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED, false);
     this.miniClusterType = miniClusterType;
     this.useMiniKdc = useMiniKdc;
     this.serverPrincipal = serverPrincipal;

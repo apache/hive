@@ -248,6 +248,10 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) = 0;
   virtual void add_runtime_stats(const RuntimeStat& stat) = 0;
   virtual void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst) = 0;
+  virtual void scheduled_query_poll(ScheduledQueryPollResponse& _return, const ScheduledQueryPollRequest& request) = 0;
+  virtual void scheduled_query_maintenance(const ScheduledQueryMaintenanceRequest& request) = 0;
+  virtual void scheduled_query_progress(const ScheduledQueryProgressInfo& info) = 0;
+  virtual void get_scheduled_query(ScheduledQuery& _return, const ScheduledQueryKey& scheduleKey) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -981,6 +985,18 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_runtime_stats(std::vector<RuntimeStat> & /* _return */, const GetRuntimeStatsRequest& /* rqst */) {
+    return;
+  }
+  void scheduled_query_poll(ScheduledQueryPollResponse& /* _return */, const ScheduledQueryPollRequest& /* request */) {
+    return;
+  }
+  void scheduled_query_maintenance(const ScheduledQueryMaintenanceRequest& /* request */) {
+    return;
+  }
+  void scheduled_query_progress(const ScheduledQueryProgressInfo& /* info */) {
+    return;
+  }
+  void get_scheduled_query(ScheduledQuery& /* _return */, const ScheduledQueryKey& /* scheduleKey */) {
     return;
   }
 };
@@ -28444,6 +28460,478 @@ class ThriftHiveMetastore_get_runtime_stats_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_scheduled_query_poll_args__isset {
+  _ThriftHiveMetastore_scheduled_query_poll_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_scheduled_query_poll_args__isset;
+
+class ThriftHiveMetastore_scheduled_query_poll_args {
+ public:
+
+  ThriftHiveMetastore_scheduled_query_poll_args(const ThriftHiveMetastore_scheduled_query_poll_args&);
+  ThriftHiveMetastore_scheduled_query_poll_args& operator=(const ThriftHiveMetastore_scheduled_query_poll_args&);
+  ThriftHiveMetastore_scheduled_query_poll_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_scheduled_query_poll_args() throw();
+  ScheduledQueryPollRequest request;
+
+  _ThriftHiveMetastore_scheduled_query_poll_args__isset __isset;
+
+  void __set_request(const ScheduledQueryPollRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_scheduled_query_poll_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_scheduled_query_poll_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_scheduled_query_poll_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_scheduled_query_poll_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_scheduled_query_poll_pargs() throw();
+  const ScheduledQueryPollRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_scheduled_query_poll_result__isset {
+  _ThriftHiveMetastore_scheduled_query_poll_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_scheduled_query_poll_result__isset;
+
+class ThriftHiveMetastore_scheduled_query_poll_result {
+ public:
+
+  ThriftHiveMetastore_scheduled_query_poll_result(const ThriftHiveMetastore_scheduled_query_poll_result&);
+  ThriftHiveMetastore_scheduled_query_poll_result& operator=(const ThriftHiveMetastore_scheduled_query_poll_result&);
+  ThriftHiveMetastore_scheduled_query_poll_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_scheduled_query_poll_result() throw();
+  ScheduledQueryPollResponse success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_scheduled_query_poll_result__isset __isset;
+
+  void __set_success(const ScheduledQueryPollResponse& val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_scheduled_query_poll_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_scheduled_query_poll_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_scheduled_query_poll_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_scheduled_query_poll_presult__isset {
+  _ThriftHiveMetastore_scheduled_query_poll_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_scheduled_query_poll_presult__isset;
+
+class ThriftHiveMetastore_scheduled_query_poll_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_scheduled_query_poll_presult() throw();
+  ScheduledQueryPollResponse* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_scheduled_query_poll_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_scheduled_query_maintenance_args__isset {
+  _ThriftHiveMetastore_scheduled_query_maintenance_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_scheduled_query_maintenance_args__isset;
+
+class ThriftHiveMetastore_scheduled_query_maintenance_args {
+ public:
+
+  ThriftHiveMetastore_scheduled_query_maintenance_args(const ThriftHiveMetastore_scheduled_query_maintenance_args&);
+  ThriftHiveMetastore_scheduled_query_maintenance_args& operator=(const ThriftHiveMetastore_scheduled_query_maintenance_args&);
+  ThriftHiveMetastore_scheduled_query_maintenance_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_scheduled_query_maintenance_args() throw();
+  ScheduledQueryMaintenanceRequest request;
+
+  _ThriftHiveMetastore_scheduled_query_maintenance_args__isset __isset;
+
+  void __set_request(const ScheduledQueryMaintenanceRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_scheduled_query_maintenance_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_scheduled_query_maintenance_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_scheduled_query_maintenance_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_scheduled_query_maintenance_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_scheduled_query_maintenance_pargs() throw();
+  const ScheduledQueryMaintenanceRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_scheduled_query_maintenance_result__isset {
+  _ThriftHiveMetastore_scheduled_query_maintenance_result__isset() : o1(false), o2(false), o3(false), o4(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+  bool o4 :1;
+} _ThriftHiveMetastore_scheduled_query_maintenance_result__isset;
+
+class ThriftHiveMetastore_scheduled_query_maintenance_result {
+ public:
+
+  ThriftHiveMetastore_scheduled_query_maintenance_result(const ThriftHiveMetastore_scheduled_query_maintenance_result&);
+  ThriftHiveMetastore_scheduled_query_maintenance_result& operator=(const ThriftHiveMetastore_scheduled_query_maintenance_result&);
+  ThriftHiveMetastore_scheduled_query_maintenance_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_scheduled_query_maintenance_result() throw();
+  MetaException o1;
+  NoSuchObjectException o2;
+  AlreadyExistsException o3;
+  InvalidInputException o4;
+
+  _ThriftHiveMetastore_scheduled_query_maintenance_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const NoSuchObjectException& val);
+
+  void __set_o3(const AlreadyExistsException& val);
+
+  void __set_o4(const InvalidInputException& val);
+
+  bool operator == (const ThriftHiveMetastore_scheduled_query_maintenance_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    if (!(o4 == rhs.o4))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_scheduled_query_maintenance_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_scheduled_query_maintenance_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_scheduled_query_maintenance_presult__isset {
+  _ThriftHiveMetastore_scheduled_query_maintenance_presult__isset() : o1(false), o2(false), o3(false), o4(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+  bool o4 :1;
+} _ThriftHiveMetastore_scheduled_query_maintenance_presult__isset;
+
+class ThriftHiveMetastore_scheduled_query_maintenance_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_scheduled_query_maintenance_presult() throw();
+  MetaException o1;
+  NoSuchObjectException o2;
+  AlreadyExistsException o3;
+  InvalidInputException o4;
+
+  _ThriftHiveMetastore_scheduled_query_maintenance_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_scheduled_query_progress_args__isset {
+  _ThriftHiveMetastore_scheduled_query_progress_args__isset() : info(false) {}
+  bool info :1;
+} _ThriftHiveMetastore_scheduled_query_progress_args__isset;
+
+class ThriftHiveMetastore_scheduled_query_progress_args {
+ public:
+
+  ThriftHiveMetastore_scheduled_query_progress_args(const ThriftHiveMetastore_scheduled_query_progress_args&);
+  ThriftHiveMetastore_scheduled_query_progress_args& operator=(const ThriftHiveMetastore_scheduled_query_progress_args&);
+  ThriftHiveMetastore_scheduled_query_progress_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_scheduled_query_progress_args() throw();
+  ScheduledQueryProgressInfo info;
+
+  _ThriftHiveMetastore_scheduled_query_progress_args__isset __isset;
+
+  void __set_info(const ScheduledQueryProgressInfo& val);
+
+  bool operator == (const ThriftHiveMetastore_scheduled_query_progress_args & rhs) const
+  {
+    if (!(info == rhs.info))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_scheduled_query_progress_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_scheduled_query_progress_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_scheduled_query_progress_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_scheduled_query_progress_pargs() throw();
+  const ScheduledQueryProgressInfo* info;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_scheduled_query_progress_result__isset {
+  _ThriftHiveMetastore_scheduled_query_progress_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_scheduled_query_progress_result__isset;
+
+class ThriftHiveMetastore_scheduled_query_progress_result {
+ public:
+
+  ThriftHiveMetastore_scheduled_query_progress_result(const ThriftHiveMetastore_scheduled_query_progress_result&);
+  ThriftHiveMetastore_scheduled_query_progress_result& operator=(const ThriftHiveMetastore_scheduled_query_progress_result&);
+  ThriftHiveMetastore_scheduled_query_progress_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_scheduled_query_progress_result() throw();
+  MetaException o1;
+  InvalidOperationException o2;
+
+  _ThriftHiveMetastore_scheduled_query_progress_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const InvalidOperationException& val);
+
+  bool operator == (const ThriftHiveMetastore_scheduled_query_progress_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_scheduled_query_progress_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_scheduled_query_progress_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_scheduled_query_progress_presult__isset {
+  _ThriftHiveMetastore_scheduled_query_progress_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_scheduled_query_progress_presult__isset;
+
+class ThriftHiveMetastore_scheduled_query_progress_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_scheduled_query_progress_presult() throw();
+  MetaException o1;
+  InvalidOperationException o2;
+
+  _ThriftHiveMetastore_scheduled_query_progress_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_scheduled_query_args__isset {
+  _ThriftHiveMetastore_get_scheduled_query_args__isset() : scheduleKey(false) {}
+  bool scheduleKey :1;
+} _ThriftHiveMetastore_get_scheduled_query_args__isset;
+
+class ThriftHiveMetastore_get_scheduled_query_args {
+ public:
+
+  ThriftHiveMetastore_get_scheduled_query_args(const ThriftHiveMetastore_get_scheduled_query_args&);
+  ThriftHiveMetastore_get_scheduled_query_args& operator=(const ThriftHiveMetastore_get_scheduled_query_args&);
+  ThriftHiveMetastore_get_scheduled_query_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_scheduled_query_args() throw();
+  ScheduledQueryKey scheduleKey;
+
+  _ThriftHiveMetastore_get_scheduled_query_args__isset __isset;
+
+  void __set_scheduleKey(const ScheduledQueryKey& val);
+
+  bool operator == (const ThriftHiveMetastore_get_scheduled_query_args & rhs) const
+  {
+    if (!(scheduleKey == rhs.scheduleKey))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_scheduled_query_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_scheduled_query_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_scheduled_query_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_scheduled_query_pargs() throw();
+  const ScheduledQueryKey* scheduleKey;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_scheduled_query_result__isset {
+  _ThriftHiveMetastore_get_scheduled_query_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_scheduled_query_result__isset;
+
+class ThriftHiveMetastore_get_scheduled_query_result {
+ public:
+
+  ThriftHiveMetastore_get_scheduled_query_result(const ThriftHiveMetastore_get_scheduled_query_result&);
+  ThriftHiveMetastore_get_scheduled_query_result& operator=(const ThriftHiveMetastore_get_scheduled_query_result&);
+  ThriftHiveMetastore_get_scheduled_query_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_scheduled_query_result() throw();
+  ScheduledQuery success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_scheduled_query_result__isset __isset;
+
+  void __set_success(const ScheduledQuery& val);
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const NoSuchObjectException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_scheduled_query_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_scheduled_query_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_scheduled_query_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_scheduled_query_presult__isset {
+  _ThriftHiveMetastore_get_scheduled_query_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_scheduled_query_presult__isset;
+
+class ThriftHiveMetastore_get_scheduled_query_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_scheduled_query_presult() throw();
+  ScheduledQuery* success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_scheduled_query_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -29133,6 +29621,18 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst);
   void send_get_runtime_stats(const GetRuntimeStatsRequest& rqst);
   void recv_get_runtime_stats(std::vector<RuntimeStat> & _return);
+  void scheduled_query_poll(ScheduledQueryPollResponse& _return, const ScheduledQueryPollRequest& request);
+  void send_scheduled_query_poll(const ScheduledQueryPollRequest& request);
+  void recv_scheduled_query_poll(ScheduledQueryPollResponse& _return);
+  void scheduled_query_maintenance(const ScheduledQueryMaintenanceRequest& request);
+  void send_scheduled_query_maintenance(const ScheduledQueryMaintenanceRequest& request);
+  void recv_scheduled_query_maintenance();
+  void scheduled_query_progress(const ScheduledQueryProgressInfo& info);
+  void send_scheduled_query_progress(const ScheduledQueryProgressInfo& info);
+  void recv_scheduled_query_progress();
+  void get_scheduled_query(ScheduledQuery& _return, const ScheduledQueryKey& scheduleKey);
+  void send_get_scheduled_query(const ScheduledQueryKey& scheduleKey);
+  void recv_get_scheduled_query(ScheduledQuery& _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -29369,6 +29869,10 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_heartbeat_lock_materialization_rebuild(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_runtime_stats(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_runtime_stats(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_scheduled_query_poll(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_scheduled_query_maintenance(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_scheduled_query_progress(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_scheduled_query(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -29599,6 +30103,10 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["heartbeat_lock_materialization_rebuild"] = &ThriftHiveMetastoreProcessor::process_heartbeat_lock_materialization_rebuild;
     processMap_["add_runtime_stats"] = &ThriftHiveMetastoreProcessor::process_add_runtime_stats;
     processMap_["get_runtime_stats"] = &ThriftHiveMetastoreProcessor::process_get_runtime_stats;
+    processMap_["scheduled_query_poll"] = &ThriftHiveMetastoreProcessor::process_scheduled_query_poll;
+    processMap_["scheduled_query_maintenance"] = &ThriftHiveMetastoreProcessor::process_scheduled_query_maintenance;
+    processMap_["scheduled_query_progress"] = &ThriftHiveMetastoreProcessor::process_scheduled_query_progress;
+    processMap_["get_scheduled_query"] = &ThriftHiveMetastoreProcessor::process_get_scheduled_query;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -31805,6 +32313,44 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void scheduled_query_poll(ScheduledQueryPollResponse& _return, const ScheduledQueryPollRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->scheduled_query_poll(_return, request);
+    }
+    ifaces_[i]->scheduled_query_poll(_return, request);
+    return;
+  }
+
+  void scheduled_query_maintenance(const ScheduledQueryMaintenanceRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->scheduled_query_maintenance(request);
+    }
+    ifaces_[i]->scheduled_query_maintenance(request);
+  }
+
+  void scheduled_query_progress(const ScheduledQueryProgressInfo& info) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->scheduled_query_progress(info);
+    }
+    ifaces_[i]->scheduled_query_progress(info);
+  }
+
+  void get_scheduled_query(ScheduledQuery& _return, const ScheduledQueryKey& scheduleKey) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_scheduled_query(_return, scheduleKey);
+    }
+    ifaces_[i]->get_scheduled_query(_return, scheduleKey);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -32499,6 +33045,18 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst);
   int32_t send_get_runtime_stats(const GetRuntimeStatsRequest& rqst);
   void recv_get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t seqid);
+  void scheduled_query_poll(ScheduledQueryPollResponse& _return, const ScheduledQueryPollRequest& request);
+  int32_t send_scheduled_query_poll(const ScheduledQueryPollRequest& request);
+  void recv_scheduled_query_poll(ScheduledQueryPollResponse& _return, const int32_t seqid);
+  void scheduled_query_maintenance(const ScheduledQueryMaintenanceRequest& request);
+  int32_t send_scheduled_query_maintenance(const ScheduledQueryMaintenanceRequest& request);
+  void recv_scheduled_query_maintenance(const int32_t seqid);
+  void scheduled_query_progress(const ScheduledQueryProgressInfo& info);
+  int32_t send_scheduled_query_progress(const ScheduledQueryProgressInfo& info);
+  void recv_scheduled_query_progress(const int32_t seqid);
+  void get_scheduled_query(ScheduledQuery& _return, const ScheduledQueryKey& scheduleKey);
+  int32_t send_get_scheduled_query(const ScheduledQueryKey& scheduleKey);
+  void recv_get_scheduled_query(ScheduledQuery& _return, const int32_t seqid);
 };
 
 #ifdef _WIN32

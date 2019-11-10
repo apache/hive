@@ -68,7 +68,7 @@ public class DriverFactory {
         "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
   }
 
-  private static QueryState getNewQueryState(HiveConf conf) {
+  public static QueryState getNewQueryState(HiveConf conf) {
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
 }

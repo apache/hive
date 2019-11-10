@@ -16,7 +16,17 @@
  * limitations under the License.
  */
 
-/**
- * This package contains test and utility classes for IMetaStoreClient API tests.
- */
-package org.apache.hadoop.hive.metastore.client;
+package org.apache.hadoop.hive.metastore;
+
+public abstract class ObjectStoreTestHook {
+
+  public static ObjectStoreTestHook instance = null;
+
+  public abstract void scheduledQueryPoll();
+
+  static void onScheduledQueryPoll() {
+    if (instance != null) {
+      instance.scheduledQueryPoll();
+    }
+  }
+}

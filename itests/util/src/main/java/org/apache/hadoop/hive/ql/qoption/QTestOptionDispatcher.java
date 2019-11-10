@@ -28,6 +28,14 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
 
+/**
+ * Provides facilities to invoke {@link QTestOptionHandler}-s.
+ * 
+ * Enables to dispatch option arguments to a specific option handler.
+ * The option invocation format is '--! qt:<optionName>:<optionArgs> 
+ * 
+ * Please refer to specific implementations of {@link QTestOptionHandler} for more detailed information about them. 
+ */
 public class QTestOptionDispatcher {
 
   Map<String, QTestOptionHandler> handlers = new HashMap<String, QTestOptionHandler>();

@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.conf;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask;
@@ -32,11 +29,6 @@ import org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
 import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
-import org.apache.hadoop.hive.metastore.utils.StringUtils;
-import org.apache.hadoop.security.alias.CredentialProviderFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -52,6 +44,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * A set of definitions of config values used by the Metastore.  One of the key aims of this
@@ -708,6 +709,17 @@ public class MetastoreConf {
     RUNTIME_STATS_MAX_AGE("runtime.stats.max.age", "hive.metastore.runtime.stats.max.age", 86400 * 3, TimeUnit.SECONDS,
         "Stat entries which are older than this are removed."),
 
+    SCHEDULED_QUERIES_EXECUTION_PROGRESS_TIMEOUT("scheduled.queries.execution.timeout",
+        "hive.metastore.scheduled.queries.progress.timeout", 120, TimeUnit.SECONDS,
+        "If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
+    SCHEDULED_QUERIES_EXECUTION_MAINT_TASK_FREQUENCY("scheduled.queries.execution.maint.task.frequency",
+        "hive.metastore.scheduled.queries.execution.clean.frequency", 60, TimeUnit.SECONDS,
+        "Interval of scheduled query maintenance task. Which removes executions above max age;"
+            + "and marks executions as timed out if the condition is met"),
+    SCHEDULED_QUERIES_EXECUTION_MAX_AGE("scheduled.queries.execution.max.age",
+        "hive.metastore.scheduled.queries.execution.max.age", 30 * 86400, TimeUnit.SECONDS,
+        "Maximal age of a scheduled query execution entry before it is removed."),
+
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
     METADATA_EXPORT_LOCATION("metastore.metadata.export.location", "hive.metadata.export.location",
@@ -945,7 +957,8 @@ public class MetastoreConf {
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EventCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName() + "," +
           "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
-          "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask",
+            "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask" + ","
+            + "org.apache.hadoop.hive.metastore.ScheduledQueryExecutionsMaintTask",
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + MetastoreTaskThread.class.getName()),

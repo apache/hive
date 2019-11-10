@@ -249,6 +249,28 @@ struct WMPoolSchedulingPolicy {
 
 extern const std::map<int, const char*> _WMPoolSchedulingPolicy_VALUES_TO_NAMES;
 
+struct ScheduledQueryMaintenanceRequestType {
+  enum type {
+    CREATE = 1,
+    ALTER = 2,
+    DROP = 3
+  };
+};
+
+extern const std::map<int, const char*> _ScheduledQueryMaintenanceRequestType_VALUES_TO_NAMES;
+
+struct QueryState {
+  enum type {
+    INITED = 0,
+    EXECUTING = 1,
+    ERRORED = 2,
+    FINISHED = 3,
+    TIMED_OUT = 4
+  };
+};
+
+extern const std::map<int, const char*> _QueryState_VALUES_TO_NAMES;
+
 class Version;
 
 class FieldSchema;
@@ -706,6 +728,18 @@ class RuntimeStat;
 class GetRuntimeStatsRequest;
 
 class CreateTableRequest;
+
+class ScheduledQueryPollRequest;
+
+class ScheduledQueryPollResponse;
+
+class ScheduledQueryKey;
+
+class ScheduledQuery;
+
+class ScheduledQueryMaintenanceRequest;
+
+class ScheduledQueryProgressInfo;
 
 class AlterPartitionsRequest;
 
@@ -14640,6 +14674,356 @@ class CreateTableRequest {
 void swap(CreateTableRequest &a, CreateTableRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const CreateTableRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class ScheduledQueryPollRequest {
+ public:
+
+  ScheduledQueryPollRequest(const ScheduledQueryPollRequest&);
+  ScheduledQueryPollRequest& operator=(const ScheduledQueryPollRequest&);
+  ScheduledQueryPollRequest() : clusterNamespace() {
+  }
+
+  virtual ~ScheduledQueryPollRequest() throw();
+  std::string clusterNamespace;
+
+  void __set_clusterNamespace(const std::string& val);
+
+  bool operator == (const ScheduledQueryPollRequest & rhs) const
+  {
+    if (!(clusterNamespace == rhs.clusterNamespace))
+      return false;
+    return true;
+  }
+  bool operator != (const ScheduledQueryPollRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ScheduledQueryPollRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ScheduledQueryPollRequest &a, ScheduledQueryPollRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ScheduledQueryPollRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ScheduledQueryPollResponse__isset {
+  _ScheduledQueryPollResponse__isset() : scheduleKey(false), executionId(false), query(false), user(false) {}
+  bool scheduleKey :1;
+  bool executionId :1;
+  bool query :1;
+  bool user :1;
+} _ScheduledQueryPollResponse__isset;
+
+class ScheduledQueryPollResponse {
+ public:
+
+  ScheduledQueryPollResponse(const ScheduledQueryPollResponse&);
+  ScheduledQueryPollResponse& operator=(const ScheduledQueryPollResponse&);
+  ScheduledQueryPollResponse() : executionId(0), query(), user() {
+  }
+
+  virtual ~ScheduledQueryPollResponse() throw();
+  ScheduledQueryKey scheduleKey;
+  int64_t executionId;
+  std::string query;
+  std::string user;
+
+  _ScheduledQueryPollResponse__isset __isset;
+
+  void __set_scheduleKey(const ScheduledQueryKey& val);
+
+  void __set_executionId(const int64_t val);
+
+  void __set_query(const std::string& val);
+
+  void __set_user(const std::string& val);
+
+  bool operator == (const ScheduledQueryPollResponse & rhs) const
+  {
+    if (__isset.scheduleKey != rhs.__isset.scheduleKey)
+      return false;
+    else if (__isset.scheduleKey && !(scheduleKey == rhs.scheduleKey))
+      return false;
+    if (__isset.executionId != rhs.__isset.executionId)
+      return false;
+    else if (__isset.executionId && !(executionId == rhs.executionId))
+      return false;
+    if (__isset.query != rhs.__isset.query)
+      return false;
+    else if (__isset.query && !(query == rhs.query))
+      return false;
+    if (__isset.user != rhs.__isset.user)
+      return false;
+    else if (__isset.user && !(user == rhs.user))
+      return false;
+    return true;
+  }
+  bool operator != (const ScheduledQueryPollResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ScheduledQueryPollResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ScheduledQueryPollResponse &a, ScheduledQueryPollResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ScheduledQueryPollResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class ScheduledQueryKey {
+ public:
+
+  ScheduledQueryKey(const ScheduledQueryKey&);
+  ScheduledQueryKey& operator=(const ScheduledQueryKey&);
+  ScheduledQueryKey() : scheduleName(), clusterNamespace() {
+  }
+
+  virtual ~ScheduledQueryKey() throw();
+  std::string scheduleName;
+  std::string clusterNamespace;
+
+  void __set_scheduleName(const std::string& val);
+
+  void __set_clusterNamespace(const std::string& val);
+
+  bool operator == (const ScheduledQueryKey & rhs) const
+  {
+    if (!(scheduleName == rhs.scheduleName))
+      return false;
+    if (!(clusterNamespace == rhs.clusterNamespace))
+      return false;
+    return true;
+  }
+  bool operator != (const ScheduledQueryKey &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ScheduledQueryKey & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ScheduledQueryKey &a, ScheduledQueryKey &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ScheduledQueryKey& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ScheduledQuery__isset {
+  _ScheduledQuery__isset() : enabled(false), schedule(false), user(false), query(false), nextExecution(false) {}
+  bool enabled :1;
+  bool schedule :1;
+  bool user :1;
+  bool query :1;
+  bool nextExecution :1;
+} _ScheduledQuery__isset;
+
+class ScheduledQuery {
+ public:
+
+  ScheduledQuery(const ScheduledQuery&);
+  ScheduledQuery& operator=(const ScheduledQuery&);
+  ScheduledQuery() : enabled(0), schedule(), user(), query(), nextExecution(0) {
+  }
+
+  virtual ~ScheduledQuery() throw();
+  ScheduledQueryKey scheduleKey;
+  bool enabled;
+  std::string schedule;
+  std::string user;
+  std::string query;
+  int32_t nextExecution;
+
+  _ScheduledQuery__isset __isset;
+
+  void __set_scheduleKey(const ScheduledQueryKey& val);
+
+  void __set_enabled(const bool val);
+
+  void __set_schedule(const std::string& val);
+
+  void __set_user(const std::string& val);
+
+  void __set_query(const std::string& val);
+
+  void __set_nextExecution(const int32_t val);
+
+  bool operator == (const ScheduledQuery & rhs) const
+  {
+    if (!(scheduleKey == rhs.scheduleKey))
+      return false;
+    if (__isset.enabled != rhs.__isset.enabled)
+      return false;
+    else if (__isset.enabled && !(enabled == rhs.enabled))
+      return false;
+    if (__isset.schedule != rhs.__isset.schedule)
+      return false;
+    else if (__isset.schedule && !(schedule == rhs.schedule))
+      return false;
+    if (__isset.user != rhs.__isset.user)
+      return false;
+    else if (__isset.user && !(user == rhs.user))
+      return false;
+    if (__isset.query != rhs.__isset.query)
+      return false;
+    else if (__isset.query && !(query == rhs.query))
+      return false;
+    if (__isset.nextExecution != rhs.__isset.nextExecution)
+      return false;
+    else if (__isset.nextExecution && !(nextExecution == rhs.nextExecution))
+      return false;
+    return true;
+  }
+  bool operator != (const ScheduledQuery &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ScheduledQuery & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ScheduledQuery &a, ScheduledQuery &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ScheduledQuery& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class ScheduledQueryMaintenanceRequest {
+ public:
+
+  ScheduledQueryMaintenanceRequest(const ScheduledQueryMaintenanceRequest&);
+  ScheduledQueryMaintenanceRequest& operator=(const ScheduledQueryMaintenanceRequest&);
+  ScheduledQueryMaintenanceRequest() : type((ScheduledQueryMaintenanceRequestType::type)0) {
+  }
+
+  virtual ~ScheduledQueryMaintenanceRequest() throw();
+  ScheduledQueryMaintenanceRequestType::type type;
+  ScheduledQuery scheduledQuery;
+
+  void __set_type(const ScheduledQueryMaintenanceRequestType::type val);
+
+  void __set_scheduledQuery(const ScheduledQuery& val);
+
+  bool operator == (const ScheduledQueryMaintenanceRequest & rhs) const
+  {
+    if (!(type == rhs.type))
+      return false;
+    if (!(scheduledQuery == rhs.scheduledQuery))
+      return false;
+    return true;
+  }
+  bool operator != (const ScheduledQueryMaintenanceRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ScheduledQueryMaintenanceRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ScheduledQueryMaintenanceRequest &a, ScheduledQueryMaintenanceRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ScheduledQueryMaintenanceRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ScheduledQueryProgressInfo__isset {
+  _ScheduledQueryProgressInfo__isset() : errorMessage(false) {}
+  bool errorMessage :1;
+} _ScheduledQueryProgressInfo__isset;
+
+class ScheduledQueryProgressInfo {
+ public:
+
+  ScheduledQueryProgressInfo(const ScheduledQueryProgressInfo&);
+  ScheduledQueryProgressInfo& operator=(const ScheduledQueryProgressInfo&);
+  ScheduledQueryProgressInfo() : scheduledExecutionId(0), state((QueryState::type)0), executorQueryId(), errorMessage() {
+  }
+
+  virtual ~ScheduledQueryProgressInfo() throw();
+  int64_t scheduledExecutionId;
+  QueryState::type state;
+  std::string executorQueryId;
+  std::string errorMessage;
+
+  _ScheduledQueryProgressInfo__isset __isset;
+
+  void __set_scheduledExecutionId(const int64_t val);
+
+  void __set_state(const QueryState::type val);
+
+  void __set_executorQueryId(const std::string& val);
+
+  void __set_errorMessage(const std::string& val);
+
+  bool operator == (const ScheduledQueryProgressInfo & rhs) const
+  {
+    if (!(scheduledExecutionId == rhs.scheduledExecutionId))
+      return false;
+    if (!(state == rhs.state))
+      return false;
+    if (!(executorQueryId == rhs.executorQueryId))
+      return false;
+    if (__isset.errorMessage != rhs.__isset.errorMessage)
+      return false;
+    else if (__isset.errorMessage && !(errorMessage == rhs.errorMessage))
+      return false;
+    return true;
+  }
+  bool operator != (const ScheduledQueryProgressInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ScheduledQueryProgressInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ScheduledQueryProgressInfo &a, ScheduledQueryProgressInfo &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ScheduledQueryProgressInfo& obj)
 {
   obj.printTo(out);
   return out;

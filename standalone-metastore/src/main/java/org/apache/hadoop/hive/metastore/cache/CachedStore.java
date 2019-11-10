@@ -99,6 +99,12 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.metastore.api.SchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -3120,5 +3126,37 @@ public class CachedStore implements RawStore, Configurable {
   public Map<String, List<String>> getPartitionColsWithStats(String catName,
       String dbName, String tableName) throws MetaException, NoSuchObjectException {
     return rawStore.getPartitionColsWithStats(catName, dbName, tableName);
+  }
+
+  @Override
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException {
+    return rawStore.scheduledQueryPoll(request);
+  }
+
+  @Override
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request)
+      throws MetaException, NoSuchObjectException, AlreadyExistsException, InvalidInputException {
+    rawStore.scheduledQueryMaintenance(request);
+  }
+
+  @Override
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info)
+      throws MetaException, NoSuchObjectException, InvalidOperationException {
+    rawStore.scheduledQueryProgress(info);
+  }
+
+  @Override
+  public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws MetaException, NoSuchObjectException {
+    return rawStore.getScheduledQuery(scheduleKey);
+  }
+
+  @Override
+  public int deleteScheduledExecutions(int maxRetainSecs) {
+    return rawStore.deleteScheduledExecutions(maxRetainSecs);
+  }
+
+  @Override
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+    return rawStore.markScheduledExecutionsTimedOut(timeoutSecs);
   }
 }

@@ -542,6 +542,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     unparseTranslator.clear();
     queryProperties.clear();
     outputs.clear();
+
+    if (ctx != null && ctx.enableUnparse()) {
+      unparseTranslator.enable();
+    }
   }
 
   public void initParseCtx(ParseContext pctx) {
@@ -15650,4 +15654,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   public WriteEntity getAcidAnalyzeTable() {
     return acidAnalyzeTable;
   }
+
+  @Override
+  protected void executeUnparseTranlations() {
+    unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
+  }
+  
 }

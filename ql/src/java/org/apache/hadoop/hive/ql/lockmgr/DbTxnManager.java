@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import com.cronutils.utils.StringUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -39,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -66,6 +69,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -322,7 +327,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         " for " + getQueryIdWaterMark(queryPlan));
     }
     if(queryPlan.getOperation() == null) {
-      throw new IllegalStateException("Unkown HiverOperation for " + getQueryIdWaterMark(queryPlan));
+      throw new IllegalStateException("Unknown HiveOperation(null) for " + getQueryIdWaterMark(queryPlan));
     }
     numStatements++;
     switch (queryPlan.getOperation()) {
@@ -439,6 +444,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
 
     List<LockComponent> lockComponents = AcidUtils.makeLockComponents(plan.getOutputs(), plan.getInputs(), conf);
+
+    lockComponents.addAll(getGlobalLocks(ctx.getConf()));
+
     //It's possible there's nothing to lock even if we have w/r entities.
     if(lockComponents.isEmpty()) {
       LOG.debug("No locks needed for queryId=" + queryId);
@@ -458,6 +466,28 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     return t;
   }
+  private Collection<LockComponent> getGlobalLocks(Configuration conf) {
+    String lockNames = conf.get(Constants.HIVE_QUERY_EXCLUSIVE_LOCK);
+    if (StringUtils.isEmpty(lockNames)) {
+      return Collections.emptyList();
+    }
+    List<LockComponent> globalLocks = new ArrayList<LockComponent>();
+    for (String lockName : lockNames.split(",")) {
+      lockName = lockName.trim();
+      if (StringUtils.isEmpty(lockName)) {
+        continue;
+      }
+      LockComponentBuilder compBuilder = new LockComponentBuilder();
+      compBuilder.setExclusive();
+      compBuilder.setOperationType(DataOperationType.UPDATE);
+      compBuilder.setDbName("__GLOBAL_LOCKS");
+      compBuilder.setTableName(lockName);
+      globalLocks.add(compBuilder.build());
+      LOG.debug("Adding global lock: " + lockName);
+    }
+    return globalLocks;
+  }
+
   /**
    * @param delay time to delay for first heartbeat
    */
@@ -850,8 +880,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       if (shutdownRunner != null) {
         ShutdownHookManager.removeShutdownHook(shutdownRunner);
       }
-      if (isTxnOpen()) rollbackTxn();
-      if (lockMgr != null) lockMgr.close();
+      if (isTxnOpen()) {
+        rollbackTxn();
+      }
+      if (lockMgr != null) {
+        lockMgr.close();
+      }
     } catch (Exception e) {
       LOG.error("Caught exception " + e.getClass().getName() + " with message <" + e.getMessage()
       + ">, swallowing as there is nothing we can do with it.");
@@ -975,6 +1009,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
   }
 
+  @Override
   public void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
                                              List<TxnToWriteId> srcTxnToWriteIdList) throws LockException {
     try {
