@@ -17,12 +17,21 @@
  */
 package org.apache.hadoop.hive.ql.hooks;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
@@ -36,8 +45,9 @@ public class MapJoinCounterHook implements ExecuteWithHookContext {
     }
 
     QueryPlan plan = hookContext.getQueryPlan();
-    String queryID = plan.getQueryId();
-    // String query = SessionState.get().getCmd();
+    LogHelper console = SessionState.getConsole();
+    String engine = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+    final String MR = "mr", TEZ = "tez", SPARK = "spark";
 
     int commonJoin = 0;
     int hintedMapJoin = 0;
@@ -45,36 +55,76 @@ public class MapJoinCounterHook implements ExecuteWithHookContext {
     int hintedMapJoinLocal = 0;
     int convertedMapJoinLocal = 0;
     int backupCommonJoin = 0;
+    int bucketMapJoin = 0;
+    int hybridHashJoin = 0;
+    int dynamicPartitionHashJoin = 0;
 
-    List<TaskRunner> list = hookContext.getCompleteTaskList();
-    for (TaskRunner tskRunner : list) {
-      Task tsk = tskRunner.getTask();
-      int tag = tsk.getTaskTag();
-      switch (tag) {
-      case Task.COMMON_JOIN:
-        commonJoin++;
+    switch (engine) {
+      case MR:
+        List<TaskRunner> list = hookContext.getCompleteTaskList();
+        for (TaskRunner tskRunner : list) {
+          Task tsk = tskRunner.getTask();
+          int tag = tsk.getTaskTag();
+          switch (tag) {
+            case Task.COMMON_JOIN:
+              commonJoin++;
+              break;
+            case Task.HINTED_MAPJOIN:
+              hintedMapJoin++;
+              break;
+            case Task.HINTED_MAPJOIN_LOCAL:
+              hintedMapJoinLocal++;
+              break;
+            case Task.CONVERTED_MAPJOIN:
+              convertedMapJoin++;
+              break;
+            case Task.CONVERTED_MAPJOIN_LOCAL:
+              convertedMapJoinLocal++;
+              break;
+            case Task.BACKUP_COMMON_JOIN:
+              backupCommonJoin++;
+              break;
+          }
+        }
         break;
-      case Task.HINTED_MAPJOIN:
-        hintedMapJoin++;
+
+      case TEZ:
+        for(Task<? extends Serializable>  tezTask: plan.getRootTasks()) {
+          TezWork work = (TezWork) tezTask.getWork();
+          Map<String, BaseWork> workGraph = work.getWorkMap();
+          for(Map.Entry<String, BaseWork> baseWorkEntry : workGraph.entrySet()) {
+            Set<Operator<?>> operatorSet = baseWorkEntry.getValue().getAllOperators();
+            for(Operator<?> operator : operatorSet) {
+              if(operator instanceof MapJoinOperator) {
+                MapJoinDesc mapJoinDesc = (MapJoinDesc) operator.getConf();
+                if (mapJoinDesc.isBucketMapJoin()) {
+                  bucketMapJoin++;
+                }
+                if (mapJoinDesc.isHybridHashJoin()) {
+                  hybridHashJoin++;
+                }
+                if (mapJoinDesc.isDynamicPartitionHashJoin()) {
+                  dynamicPartitionHashJoin++;
+                }
+                if (mapJoinDesc.isMapSideJoin()) {
+                  convertedMapJoin++;
+                }
+              } else if(operator instanceof CommonMergeJoinOperator) {
+                commonJoin++;
+              }
+            }
+          }
+        }
         break;
-      case Task.HINTED_MAPJOIN_LOCAL:
-        hintedMapJoinLocal++;
+
+      case SPARK:
+        //todo
         break;
-      case Task.CONVERTED_MAPJOIN:
-        convertedMapJoin++;
-        break;
-      case Task.CONVERTED_MAPJOIN_LOCAL:
-        convertedMapJoinLocal++;
-        break;
-      case Task.BACKUP_COMMON_JOIN:
-        backupCommonJoin++;
-        break;
-      }
     }
-    LogHelper console = SessionState.getConsole();
     console.printError("[MapJoinCounter PostHook] COMMON_JOIN: " + commonJoin
-        + " HINTED_MAPJOIN: " + hintedMapJoin + " HINTED_MAPJOIN_LOCAL: " + hintedMapJoinLocal
-        + " CONVERTED_MAPJOIN: " + convertedMapJoin + " CONVERTED_MAPJOIN_LOCAL: " + convertedMapJoinLocal
-        + " BACKUP_COMMON_JOIN: " + backupCommonJoin);
+            + " HINTED_MAPJOIN: " + hintedMapJoin + " HINTED_MAPJOIN_LOCAL: " + hintedMapJoinLocal
+            + " CONVERTED_MAPJOIN: " + convertedMapJoin + " CONVERTED_MAPJOIN_LOCAL: " + convertedMapJoinLocal
+            + " BACKUP_COMMON_JOIN: " + backupCommonJoin +" BUCKET_MAP_JOIN: " + bucketMapJoin +
+            " HYBRID_HASH_JOIN: " + hybridHashJoin + " DYNAMIC_PARTITION_HASH_JOIN: " + dynamicPartitionHashJoin );
   }
 }

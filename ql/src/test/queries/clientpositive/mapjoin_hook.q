@@ -30,6 +30,7 @@ where (src1.ds = '2008-04-08' or src1.ds = '2008-04-09' )and (src1.hr = '12' or 
 FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
 INSERT OVERWRITE TABLE dest1_n171 SELECT src1.key, src3.value;
 
+set hive.auto.convert.join = false;
 
 
 
