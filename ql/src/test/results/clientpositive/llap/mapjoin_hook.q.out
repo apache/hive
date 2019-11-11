@@ -6,6 +6,121 @@ PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_n171
 RUN: Stage-0:DDL
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin
+RUN: Stage-0:DDL
+PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_part
+RUN: Stage-0:DDL
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part
+RUN: Stage-0:DDL
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
+RUN: Stage-1:MAPRED
+RUN: Stage-2:DEPENDENCY_COLLECTION
+RUN: Stage-0:MOVE
+RUN: Stage-3:STATS
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
+RUN: Stage-1:MAPRED
+RUN: Stage-2:DEPENDENCY_COLLECTION
+RUN: Stage-0:MOVE
+RUN: Stage-3:STATS
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+RUN: Stage-1:MAPRED
+RUN: Stage-2:DEPENDENCY_COLLECTION
+RUN: Stage-0:MOVE
+RUN: Stage-3:STATS
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+RUN: Stage-1:MAPRED
+RUN: Stage-2:DEPENDENCY_COLLECTION
+RUN: Stage-0:MOVE
+RUN: Stage-3:STATS
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+RUN: Stage-1:MAPRED
+RUN: Stage-2:DEPENDENCY_COLLECTION
+RUN: Stage-0:MOVE
+RUN: Stage-3:STATS
+PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+RUN: Stage-1:MAPRED
+RUN: Stage-2:DEPENDENCY_COLLECTION
+RUN: Stage-0:MOVE
+RUN: Stage-3:STATS
+PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
+  select key,value from srcbucket_mapjoin_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Output: default@tab_part@ds=2008-04-08
+RUN: Stage-1:MAPRED
+RUN: Stage-2:DEPENDENCY_COLLECTION
+RUN: Stage-0:MOVE
+RUN: Stage-3:STATS
+PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab
+RUN: Stage-0:DDL
+PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
+  select key,value from srcbucket_mapjoin
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+PREHOOK: Output: default@tab@ds=2008-04-08
+RUN: Stage-1:MAPRED
+RUN: Stage-2:DEPENDENCY_COLLECTION
+RUN: Stage-0:MOVE
+RUN: Stage-3:STATS
+PREHOOK: query: DROP TABLE IF EXISTS alltypesorc
+PREHOOK: type: DROPTABLE
+RUN: Stage-0:DDL
+PREHOOK: query: CREATE TABLE alltypesorc(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN)
+    STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypesorc
+RUN: Stage-0:DDL
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" OVERWRITE INTO  TABLE alltypesorc
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alltypesorc
+RUN: Stage-0:MOVE
+RUN: Stage-1:STATS
 PREHOOK: query: INSERT OVERWRITE TABLE dest1_n171 
 SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 PREHOOK: type: QUERY
@@ -53,3 +168,38 @@ RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
 RUN: Stage-3:STATS
+PREHOOK: query: select count(*)
+from
+(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
+  join
+  tab_part d on c.key = d.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab
+PREHOOK: Input: default@tab@ds=2008-04-08
+PREHOOK: Input: default@tab_part
+PREHOOK: Input: default@tab_part@ds=2008-04-08
+#### A masked pattern was here ####
+[MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 0 HINTED_MAPJOIN_LOCAL: 0 CONVERTED_MAPJOIN: 2 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 0 BUCKET_MAP_JOIN: 2 HYBRID_HASH_JOIN: 0 DYNAMIC_PARTITION_HASH_JOIN: 0
+RUN: Stage-1:MAPRED
+1166
+PREHOOK: query: select
+*
+from alltypesorc a join alltypesorc b on a.cint = b.cint
+where
+a.cint between 1000000 and 3000000 and b.cbigint is not null
+order by a.cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+[MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 0 HINTED_MAPJOIN_LOCAL: 0 CONVERTED_MAPJOIN: 1 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 0 BUCKET_MAP_JOIN: 0 HYBRID_HASH_JOIN: 0 DYNAMIC_PARTITION_HASH_JOIN: 1
+RUN: Stage-1:MAPRED
+11	NULL	1000828	1531084669	11.0	NULL	wM316f6NqGIkoP388j3F6	poWQQo3Upvt3Wh	1969-12-31 16:00:02.351	NULL	false	true	11	NULL	1000828	1531084669	11.0	NULL	wM316f6NqGIkoP388j3F6	poWQQo3Upvt3Wh	1969-12-31 16:00:02.351	NULL	false	true
+NULL	-3799	1248059	1864027286	NULL	-3799.0	Uhps6mMh3IfHB3j7yH62K	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:54.622	false	true	NULL	-3799	1248059	1864027286	NULL	-3799.0	Uhps6mMh3IfHB3j7yH62K	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:54.622	false	true
+NULL	10782	1286921	1864027286	NULL	10782.0	ODLrXI8882q8LS8	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:52.138	true	true	NULL	10782	1286921	1864027286	NULL	10782.0	ODLrXI8882q8LS8	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:52.138	true	true
+NULL	-13036	1288927	-1645852809	NULL	-13036.0	yinBY725P7V2	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:00.763	true	false	NULL	-13036	1288927	-1645852809	NULL	-13036.0	yinBY725P7V2	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:00.763	true	false
+11	NULL	1310786	-413875656	11.0	NULL	W0rvA4H1xn0xMG4uk0	8yVVjG	1969-12-31 16:00:02.351	NULL	false	true	11	NULL	1310786	-413875656	11.0	NULL	W0rvA4H1xn0xMG4uk0	8yVVjG	1969-12-31 16:00:02.351	NULL	false	true
+-51	NULL	2089466	-240556350	-51.0	NULL	cXX24dH7tblSj46j2g	C31eea0wrHHqvj	1969-12-31 16:00:08.451	NULL	true	true	-51	NULL	2089466	-240556350	-51.0	NULL	cXX24dH7tblSj46j2g	C31eea0wrHHqvj	1969-12-31 16:00:08.451	NULL	true	true
+NULL	-8915	2101183	1864027286	NULL	-8915.0	x7By66525	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:05.831	false	true	NULL	-8915	2101183	1864027286	NULL	-8915.0	x7By66525	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:05.831	false	true
+8	NULL	2229621	-381406148	8.0	NULL	q7onkS7QRPh5ghOK	oKb0bi	1969-12-31 16:00:15.892	NULL	true	false	8	NULL	2229621	-381406148	8.0	NULL	q7onkS7QRPh5ghOK	oKb0bi	1969-12-31 16:00:15.892	NULL	true	false
+8	NULL	2433892	-1611863517	8.0	NULL	674ILv3V2TxFqXP6wSbL	VLprkK2XfX	1969-12-31 16:00:15.892	NULL	false	true	8	NULL	2433892	-1611863517	8.0	NULL	674ILv3V2TxFqXP6wSbL	VLprkK2XfX	1969-12-31 16:00:15.892	NULL	false	true
+-51	NULL	2949963	-1580871111	-51.0	NULL	0K68k3bdl7jO7	TPPAu	1969-12-31 16:00:08.451	NULL	true	false	-51	NULL	2949963	-1580871111	-51.0	NULL	0K68k3bdl7jO7	TPPAu	1969-12-31 16:00:08.451	NULL	true	false
