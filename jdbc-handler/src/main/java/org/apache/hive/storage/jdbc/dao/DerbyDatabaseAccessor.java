@@ -18,7 +18,7 @@
 package org.apache.hive.storage.jdbc.dao;
 
 /**
- * Derby specific data accessor
+ * Derby specific data accessor.
  */
 public class DerbyDatabaseAccessor extends GenericJdbcDatabaseAccessor {
   @Override

@@ -361,17 +361,21 @@ name                	string              	from deserializer
 type                	string              	from deserializer   
 #### A masked pattern was here ####
 PREHOOK: query: FROM src
+
 #### A masked pattern was here ####
 'CREATE TABLE INSERT_TO_DERBY_TABLE (a BOOLEAN, b  INTEGER, c BIGINT, d FLOAT, e DOUBLE, f DATE, g VARCHAR(27),
                                   h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT)' )
+
 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: FROM src
+
 #### A masked pattern was here ####
 'CREATE TABLE INSERT_TO_DERBY_TABLE (a BOOLEAN, b  INTEGER, c BIGINT, d FLOAT, e DOUBLE, f DATE, g VARCHAR(27),
                                   h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT)' )
+
 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

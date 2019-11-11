@@ -28,9 +28,6 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -158,54 +155,54 @@ public class JdbcSerDe extends AbstractSerDe {
       throw new SerDeException("JDBC SerDe hasn't been initialized properly");
     }
 
-    if (((Object[])row).length != numColumns) {
-      throw new SerDeException(String.format("Required %d columns, received %d.", numColumns, ((Object[])row).length));
+    if (((Object[]) row).length != numColumns) {
+      throw new SerDeException(String.format("Required %d columns, received %d.", numColumns, ((Object[]) row).length));
     }
 
     dbRecordWritable.clear();
     for (int i = 0; i < numColumns; i++) {
-      Object rowData = ((Object[])row)[i];
+      Object rowData = ((Object[]) row)[i];
       switch (hiveColumnTypes[i].getPrimitiveCategory()) {
-        case INT:
-          rowData = Integer.valueOf(rowData.toString());
-          break;
-        case SHORT:
-          rowData = Short.valueOf(rowData.toString());
-          break;
-        case BYTE:
-          rowData = Byte.valueOf(rowData.toString());
-          break;
-        case LONG:
-          rowData = Long.valueOf(rowData.toString());
-          break;
-        case FLOAT:
-          rowData = Float.valueOf(rowData.toString());
-          break;
-        case DOUBLE:
-          rowData = Double.valueOf(rowData.toString());
-          break;
-        case DECIMAL:
-          int scale = ((HiveDecimalWritable) rowData).getScale();
-          long value  = ((HiveDecimalWritable) rowData).getHiveDecimal().unscaledValue().longValue();
-          rowData = java.math.BigDecimal.valueOf(value, scale);
-          break;
-        case BOOLEAN:
-          rowData = Boolean.valueOf(rowData.toString());
-          break;
-        case CHAR:
-        case VARCHAR:
-        case STRING:
-          rowData = String.valueOf(rowData.toString());
-          break;
-        case DATE:
-          rowData = java.sql.Date.valueOf(rowData.toString());
-          break;
-        case TIMESTAMP:
-          rowData = java.sql.Timestamp.valueOf(rowData.toString());
-          break;
-        default:
-          //do nothing
-          break;
+      case INT:
+        rowData = Integer.valueOf(rowData.toString());
+        break;
+      case SHORT:
+        rowData = Short.valueOf(rowData.toString());
+        break;
+      case BYTE:
+        rowData = Byte.valueOf(rowData.toString());
+        break;
+      case LONG:
+        rowData = Long.valueOf(rowData.toString());
+        break;
+      case FLOAT:
+        rowData = Float.valueOf(rowData.toString());
+        break;
+      case DOUBLE:
+        rowData = Double.valueOf(rowData.toString());
+        break;
+      case DECIMAL:
+        int scale = ((HiveDecimalWritable) rowData).getScale();
+        long value = ((HiveDecimalWritable) rowData).getHiveDecimal().unscaledValue().longValue();
+        rowData = java.math.BigDecimal.valueOf(value, scale);
+        break;
+      case BOOLEAN:
+        rowData = Boolean.valueOf(rowData.toString());
+        break;
+      case CHAR:
+      case VARCHAR:
+      case STRING:
+        rowData = String.valueOf(rowData.toString());
+        break;
+      case DATE:
+        rowData = java.sql.Date.valueOf(rowData.toString());
+        break;
+      case TIMESTAMP:
+        rowData = java.sql.Timestamp.valueOf(rowData.toString());
+        break;
+      default:
+        //do nothing
+        break;
       }
       dbRecordWritable.set(i, rowData);
     }
