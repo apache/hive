@@ -18,37 +18,9 @@
 package org.apache.hive.storage.jdbc.dao;
 
 /**
- * Oracle specific data accessor. This is needed because Oracle JDBC drivers do not support generic LIMIT and OFFSET
- * escape functions
+ * Derby specific data accessor.
  */
-public class OracleDatabaseAccessor extends GenericJdbcDatabaseAccessor {
-
-  // Random column name to reduce the chance of conflict
-  static final String ROW_NUM_COLUMN_NAME = "dummy_rownum_col_rn1938392";
-
-  @Override
-  protected String addLimitAndOffsetToQuery(String sql, int limit, int offset) {
-    if (offset == 0) {
-      return addLimitToQuery(sql, limit);
-    } else {
-      if (limit == -1) {
-        return sql;
-      }
-      // A simple ROWNUM > offset and ROWNUM <= (offset + limit) won't work, it will return nothing
-      return "SELECT * FROM (SELECT t.*, ROWNUM AS " + ROW_NUM_COLUMN_NAME + " FROM (" + sql + ") t) WHERE "
-          +  ROW_NUM_COLUMN_NAME + " >" + offset + " AND " + ROW_NUM_COLUMN_NAME + " <=" + (offset + limit);
-    }
-  }
-
-
-  @Override
-  protected String addLimitToQuery(String sql, int limit) {
-    if (limit == -1) {
-      return sql;
-    }
-    return "SELECT * FROM (" + sql + ") WHERE ROWNUM <= " + limit;
-  }
-
+public class DerbyDatabaseAccessor extends GenericJdbcDatabaseAccessor {
   @Override
   protected String constructQuery(String table, String[] columnNames) {
     if(columnNames == null) {
@@ -67,5 +39,4 @@ public class OracleDatabaseAccessor extends GenericJdbcDatabaseAccessor {
     query.append(")");
     return query.toString();
   }
-
 }
