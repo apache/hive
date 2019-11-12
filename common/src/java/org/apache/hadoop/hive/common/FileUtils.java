@@ -47,14 +47,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.GlobFilter;
 import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.conf.HiveConfUtil;
-import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -332,17 +331,45 @@ public final class FileUtils {
    */
   public static void listStatusRecursively(FileSystem fs, FileStatus fileStatus,
       List<FileStatus> results) throws IOException {
-    listStatusRecursively(fs, fileStatus, HIDDEN_FILES_PATH_FILTER, results);
+    if (isS3a(fs)) {
+      // S3A file system has an optimized recursive directory listing implementation however it doesn't support filtering.
+      // Therefore we filter the result set afterwards. This might be not so optimal in HDFS case (which does a tree walking) where a filter could have been used.
+      listS3FilesRecursive(fileStatus, fs, results);
+    } else {
+      generalListStatusRecursively(fs, fileStatus, results);
+    }
   }
 
-  public static void listStatusRecursively(FileSystem fs, FileStatus fileStatus,
-      PathFilter filter, List<FileStatus> results) throws IOException {
+  private static void generalListStatusRecursively(FileSystem fs, FileStatus fileStatus, List<FileStatus> results) throws IOException {
     if (fileStatus.isDir()) {
-      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), filter)) {
-        listStatusRecursively(fs, stat, results);
+      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), HIDDEN_FILES_PATH_FILTER)) {
+        generalListStatusRecursively(fs, stat, results);
       }
     } else {
       results.add(fileStatus);
+    }
+  }
+
+  private static void listS3FilesRecursive(FileStatus base, FileSystem fs, List<FileStatus> results) throws IOException {
+    if (!base.isDirectory()) {
+      results.add(base);
+      return;
+    }
+    RemoteIterator<LocatedFileStatus> remoteIterator = fs.listFiles(base.getPath(), true);
+    while (remoteIterator.hasNext()) {
+      LocatedFileStatus each = remoteIterator.next();
+      Path relativePath = new Path(each.getPath().toString().replace(base.toString(), ""));
+      if (org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER.accept(relativePath)) {
+        results.add(each);
+      }
+    }
+  }
+
+  public static boolean isS3a(FileSystem fs) {
+    try {
+      return "s3a".equalsIgnoreCase(fs.getScheme());
+    } catch (UnsupportedOperationException ex) {
+      return false;
     }
   }
 
