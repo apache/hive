@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -61,9 +62,11 @@ public class JdbcSerDe extends AbstractSerDe {
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSerDe.class);
 
   private String[] hiveColumnNames;
+  private int numColumns;
   private PrimitiveTypeInfo[] hiveColumnTypes;
   private ObjectInspector inspector;
   private List<Object> row;
+  private DBRecordWritable dbRecordWritable;
 
 
   /*
@@ -113,6 +116,9 @@ public class JdbcSerDe extends AbstractSerDe {
           throw new SerDeException("Received an empty Hive column type definition");
         }
 
+        numColumns = hiveColumnNames.length;
+        dbRecordWritable = new DBRecordWritable(numColumns);
+
         // Populate column types and inspector
         hiveColumnTypes = new PrimitiveTypeInfo[hiveColumnTypesList.size()];
         List<ObjectInspector> fieldInspectors = new ArrayList<>(hiveColumnNames.length);
@@ -140,6 +146,67 @@ public class JdbcSerDe extends AbstractSerDe {
       LOGGER.debug("JdbcSerDe initialized with\n" + "\t columns: " + Arrays.toString(hiveColumnNames) + "\n\t types: " + Arrays
           .toString(hiveColumnTypes));
     }
+  }
+
+  @Override
+  public DBRecordWritable serialize(Object row, ObjectInspector inspector) throws SerDeException {
+    LOGGER.trace("Serializing from SerDe");
+    if ((row == null) || (hiveColumnTypes == null)) {
+      throw new SerDeException("JDBC SerDe hasn't been initialized properly");
+    }
+
+    if (((Object[]) row).length != numColumns) {
+      throw new SerDeException(String.format("Required %d columns, received %d.", numColumns, ((Object[]) row).length));
+    }
+
+    dbRecordWritable.clear();
+    for (int i = 0; i < numColumns; i++) {
+      Object rowData = ((Object[]) row)[i];
+      switch (hiveColumnTypes[i].getPrimitiveCategory()) {
+      case INT:
+        rowData = Integer.valueOf(rowData.toString());
+        break;
+      case SHORT:
+        rowData = Short.valueOf(rowData.toString());
+        break;
+      case BYTE:
+        rowData = Byte.valueOf(rowData.toString());
+        break;
+      case LONG:
+        rowData = Long.valueOf(rowData.toString());
+        break;
+      case FLOAT:
+        rowData = Float.valueOf(rowData.toString());
+        break;
+      case DOUBLE:
+        rowData = Double.valueOf(rowData.toString());
+        break;
+      case DECIMAL:
+        int scale = ((HiveDecimalWritable) rowData).getScale();
+        long value = ((HiveDecimalWritable) rowData).getHiveDecimal().unscaledValue().longValue();
+        rowData = java.math.BigDecimal.valueOf(value, scale);
+        break;
+      case BOOLEAN:
+        rowData = Boolean.valueOf(rowData.toString());
+        break;
+      case CHAR:
+      case VARCHAR:
+      case STRING:
+        rowData = String.valueOf(rowData.toString());
+        break;
+      case DATE:
+        rowData = java.sql.Date.valueOf(rowData.toString());
+        break;
+      case TIMESTAMP:
+        rowData = java.sql.Timestamp.valueOf(rowData.toString());
+        break;
+      default:
+        //do nothing
+        break;
+      }
+      dbRecordWritable.set(i, rowData);
+    }
+    return dbRecordWritable;
   }
 
   @Override
@@ -267,12 +334,6 @@ public class JdbcSerDe extends AbstractSerDe {
   @Override
   public Class<? extends Writable> getSerializedClass() {
     return MapWritable.class;
-  }
-
-
-  @Override
-  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
-    throw new UnsupportedOperationException("Writes are not allowed");
   }
 
 
