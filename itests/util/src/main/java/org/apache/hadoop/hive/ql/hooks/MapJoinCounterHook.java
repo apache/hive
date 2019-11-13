@@ -89,31 +89,35 @@ public class MapJoinCounterHook implements ExecuteWithHookContext {
         break;
 
       case TEZ:
-        for(Task<? extends Serializable>  tezTask: plan.getRootTasks()) {
-          TezWork work = (TezWork) tezTask.getWork();
-          Map<String, BaseWork> workGraph = work.getWorkMap();
-          for(Map.Entry<String, BaseWork> baseWorkEntry : workGraph.entrySet()) {
-            Set<Operator<?>> operatorSet = baseWorkEntry.getValue().getAllOperators();
-            for(Operator<?> operator : operatorSet) {
-              if(operator instanceof MapJoinOperator) {
-                MapJoinDesc mapJoinDesc = (MapJoinDesc) operator.getConf();
-                if (mapJoinDesc.isBucketMapJoin()) {
-                  bucketMapJoin++;
+        try {
+          for(Task<? extends Serializable>  tezTask: plan.getRootTasks()) {
+            TezWork work = (TezWork) tezTask.getWork();
+            Map<String, BaseWork> workGraph = work.getWorkMap();
+            for(Map.Entry<String, BaseWork> baseWorkEntry : workGraph.entrySet()) {
+              Set<Operator<?>> operatorSet = baseWorkEntry.getValue().getAllOperators();
+              for(Operator<?> operator : operatorSet) {
+                if(operator instanceof MapJoinOperator) {
+                  MapJoinDesc mapJoinDesc = (MapJoinDesc) operator.getConf();
+                  if (mapJoinDesc.isBucketMapJoin()) {
+                    bucketMapJoin++;
+                  }
+                  if (mapJoinDesc.isHybridHashJoin()) {
+                    hybridHashJoin++;
+                  }
+                  if (mapJoinDesc.isDynamicPartitionHashJoin()) {
+                    dynamicPartitionHashJoin++;
+                  }
+                  if (mapJoinDesc.isMapSideJoin()) {
+                    convertedMapJoin++;
+                  }
+                } else if(operator instanceof CommonMergeJoinOperator) {
+                  commonJoin++;
                 }
-                if (mapJoinDesc.isHybridHashJoin()) {
-                  hybridHashJoin++;
-                }
-                if (mapJoinDesc.isDynamicPartitionHashJoin()) {
-                  dynamicPartitionHashJoin++;
-                }
-                if (mapJoinDesc.isMapSideJoin()) {
-                  convertedMapJoin++;
-                }
-              } else if(operator instanceof CommonMergeJoinOperator) {
-                commonJoin++;
               }
             }
           }
+        } catch (Exception e) {
+            console.printWarning("Unable to update Map Join Counters with Exception " + e);
         }
         break;
 
