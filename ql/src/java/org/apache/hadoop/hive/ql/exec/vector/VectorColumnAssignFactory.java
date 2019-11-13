@@ -55,6 +55,7 @@ import org.apache.hadoop.io.Writable;
  * This class is used as a static factory for VectorColumnAssign.
  * Is capable of building assigners from expression nodes or from object inspectors.
  */
+@Deprecated
 public class VectorColumnAssignFactory {
 
   private static abstract class VectorColumnAssignVectorBase<T extends ColumnVector>

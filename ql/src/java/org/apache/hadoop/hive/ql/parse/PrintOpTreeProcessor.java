@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  * PrintOpTreeProcessor.
  *
  */
+@Deprecated
 public class PrintOpTreeProcessor implements NodeProcessor {
 
   private final PrintStream out;

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
 
+@Deprecated
 public abstract class VectorMapJoinFastHashMap
           extends VectorMapJoinFastHashTable
           implements VectorMapJoinHashMap {

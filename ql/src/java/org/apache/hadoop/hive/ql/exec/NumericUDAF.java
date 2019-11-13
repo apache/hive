@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.exec;
  * Base class of numeric UDAFs like sum and avg which need a
  * NumericUDAFEvaluatorResolver.
  */
+@Deprecated
 public class NumericUDAF extends UDAF {
 
   /**
