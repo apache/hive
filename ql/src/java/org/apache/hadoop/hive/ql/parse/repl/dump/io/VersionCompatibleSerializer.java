@@ -28,6 +28,7 @@ import static org.apache.hadoop.hive.ql.parse.EximUtil.METADATA_FORMAT_FORWARD_C
  * This is not used as of now as the conditional which lead to its usage is always false
  * hence we have removed the conditional and the usage of this class, but might be required in future.
  */
+@Deprecated
 public class VersionCompatibleSerializer implements JsonWriter.Serializer {
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)

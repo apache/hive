@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * ExplosionDesc.
  *
  */
+@Deprecated
 @Explain(displayName = "Explosion", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ExplosionDesc implements Serializable {
   private static final long serialVersionUID = 1L;

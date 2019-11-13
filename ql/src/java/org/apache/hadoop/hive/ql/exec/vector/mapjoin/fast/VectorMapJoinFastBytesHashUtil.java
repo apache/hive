@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 
+@Deprecated
 public class VectorMapJoinFastBytesHashUtil {
 
   public static String displayBytes(byte[] bytes, int start, int length) {

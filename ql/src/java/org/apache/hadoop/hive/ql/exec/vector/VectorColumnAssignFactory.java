@@ -56,6 +56,7 @@ import org.apache.hive.common.util.DateUtils;
  * This class is used as a static factory for VectorColumnAssign.
  * Is capable of building assigners from expression nodes or from object inspectors.
  */
+@Deprecated
 public class VectorColumnAssignFactory {
 
   private static abstract class VectorColumnAssignVectorBase<T extends ColumnVector>
