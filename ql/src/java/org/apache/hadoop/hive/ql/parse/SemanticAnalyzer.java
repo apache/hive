@@ -13548,10 +13548,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (isTemporary) {
-      if (partCols.size() > 0) {
-        throw new SemanticException("Partition columns are not supported on temporary tables");
-      }
-
       if (location == null) {
         // for temporary tables we set the location to something in the session's scratch dir
         // it has the same life cycle as the tmp table
@@ -13630,10 +13626,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Table likeTable = getTable(likeTableName, false);
       if (likeTable != null) {
         if (isTemporary) {
-          if (likeTable.getPartCols().size() > 0) {
-            throw new SemanticException("Partition columns are not supported on temporary tables "
-                + "and source table in CREATE TABLE LIKE is partitioned.");
-          }
           updateDefaultTblProps(likeTable.getParameters(), tblProps,
               new ArrayList<>(Arrays.asList(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL,
                   hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)));
