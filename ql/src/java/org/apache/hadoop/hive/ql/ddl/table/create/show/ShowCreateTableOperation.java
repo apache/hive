@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.creation;
+package org.apache.hadoop.hive.ql.ddl.table.create.show;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
