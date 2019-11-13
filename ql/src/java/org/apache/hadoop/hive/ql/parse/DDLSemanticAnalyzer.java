@@ -74,8 +74,6 @@ import org.apache.hadoop.hive.ql.ddl.table.column.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.constaint.AlterTableAddConstraintDesc;
 import org.apache.hadoop.hive.ql.ddl.table.constaint.AlterTableDropConstraintDesc;
 import org.apache.hadoop.hive.ql.ddl.table.constaint.Constraints;
-import org.apache.hadoop.hive.ql.ddl.table.creation.DropTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.creation.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.info.DescTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.info.ShowTablePropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.info.ShowTableStatusDesc;
@@ -347,9 +345,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       break;
     }
-    case HiveParser.TOK_DROPTABLE:
-      analyzeDropTable(ast);
-      break;
     case HiveParser.TOK_TRUNCATETABLE:
       analyzeTruncateTable(ast);
       break;
@@ -408,10 +403,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOWPARTITIONS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowPartitions(ast);
-      break;
-    case HiveParser.TOK_SHOW_CREATETABLE:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowCreateTable(ast);
       break;
     case HiveParser.TOK_LOCKTABLE:
       analyzeLockTable(ast);
@@ -541,23 +532,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       return partSpecs.size() == counter ? counter : -1;
     }
     return counter;
-  }
-
-  private void analyzeDropTable(ASTNode ast) throws SemanticException {
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
-    boolean throwException = !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
-
-    Table table = getTable(tableName, throwException);
-    if (table != null) {
-      inputs.add(new ReadEntity(table));
-      outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_EXCLUSIVE));
-    }
-
-    boolean purge = (ast.getFirstChildWithType(HiveParser.KW_PURGE) != null);
-    ReplicationSpec replicationSpec = new ReplicationSpec(ast);
-    DropTableDesc dropTableDesc = new DropTableDesc(tableName, ifExists, purge, replicationSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTableDesc)));
   }
 
   private void analyzeTruncateTable(ASTNode ast) throws SemanticException {
@@ -1613,17 +1587,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     inputs.add(new ReadEntity(getTable(tableName)));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showPartsDesc)));
     setFetchTask(createFetchTask(ShowPartitionsDesc.SCHEMA));
-  }
-
-  private void analyzeShowCreateTable(ASTNode ast) throws SemanticException {
-    ShowCreateTableDesc showCreateTblDesc;
-    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
-    showCreateTblDesc = new ShowCreateTableDesc(tableName, ctx.getResFile().toString());
-
-    Table tab = getTable(tableName);
-    inputs.add(new ReadEntity(tab));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showCreateTblDesc)));
-    setFetchTask(createFetchTask(ShowCreateTableDesc.SCHEMA));
   }
 
   private void analyzeShowTables(ASTNode ast) throws SemanticException {

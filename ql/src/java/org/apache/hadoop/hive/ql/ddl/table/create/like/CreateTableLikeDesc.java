@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.creation;
+package org.apache.hadoop.hive.ql.ddl.table.create.like;
 
 import java.io.Serializable;
 import java.util.Map;
