@@ -16,5 +16,5 @@
  * limitations under the License.
  */
 
-/** Table creation related DDL operation descriptions and operations. */
-package org.apache.hadoop.hive.ql.ddl.table.creation;
+/** Drop table DDL operation. */
+package org.apache.hadoop.hive.ql.ddl.table.drop;

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.creation;
+package org.apache.hadoop.hive.ql.ddl.table.create;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.Path;
@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -163,14 +164,12 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
         Path tabLocation = new Path(tTable.getSd().getLocation());
         List<Path> newFilesList = new ArrayList<>();
         try {
-          context.getDb().listFilesInsideAcidDirectory(tabLocation,
-                  tabLocation.getFileSystem(context.getConf()), newFilesList);
+          Hive.listFilesInsideAcidDirectory(tabLocation, tabLocation.getFileSystem(context.getConf()), newFilesList);
         } catch (IOException e) {
           LOG.error("Error listing files", e);
           throw new HiveException(e);
         }
-        context.getDb().addWriteNotificationLog(createdTable, null, newFilesList,
-                tTable.getWriteId());
+        context.getDb().addWriteNotificationLog(createdTable, null, newFilesList, tTable.getWriteId());
       }
     }
   }
