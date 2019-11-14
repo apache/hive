@@ -178,7 +178,6 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-common</artifactId>
           <scope>provided</scope>
-          <version>${hadoop.version}</version>
           <optional>true</optional>
           <exclusions>
               <exclusion>
@@ -203,7 +202,6 @@
       <groupId>org.apache.hadoop</groupId>
       <scope>provided</scope>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
-      <version>${hadoop.version}</version>
       <optional>true</optional>
       <exclusions>
         <exclusion>
@@ -240,7 +238,6 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -279,7 +276,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>${maven.shade.plugin.version}</version>
             <executions>
               <!-- we need to shade netty, as there is a conflict between versions
               used by Hadoop (3.6.2.Final) and Druid (3.10.4.Final) -->
