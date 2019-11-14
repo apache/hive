@@ -444,7 +444,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     Configuration configuration) {
     Set<String> groupPaths = ColumnProjectionUtils.getNestedColumnPaths(configuration);
     List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
-    if (!ColumnProjectionUtils.isReadAllColumns(configuration) && !indexColumnsWanted.isEmpty()) {
+    if (!ColumnProjectionUtils.isReadAllColumns(configuration)) {
       return getProjectedSchema(fileSchema, columnNamesList, indexColumnsWanted, groupPaths);
     } else {
       return fileSchema;
