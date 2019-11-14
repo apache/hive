@@ -342,7 +342,6 @@
     <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-core</artifactId>
-      <version>${calcite.version}</version>
       <exclusions>
         <!-- hsqldb interferes with the use of derby as the default db
           in hive's use of datanucleus.
@@ -376,7 +375,6 @@
     <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-druid</artifactId>
-      <version>${calcite.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.calcite.avatica</groupId>
@@ -387,7 +385,6 @@
     <dependency>
       <groupId>org.apache.calcite.avatica</groupId>
       <artifactId>avatica</artifactId>
-      <version>${avatica.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.calcite.avatica</groupId>
@@ -417,7 +414,6 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>${guava.version}</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javaewah</groupId>
