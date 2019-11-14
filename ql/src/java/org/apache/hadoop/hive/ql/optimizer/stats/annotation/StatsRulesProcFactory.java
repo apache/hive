@@ -229,8 +229,8 @@ public class StatsRulesProcFactory {
    * <li>T(S) - Number of tuples in relations S</li>
    * <li>V(S,A) - Number of distinct values of attribute A in relation S</li>
    * </ul>
+   * <i>Rules:</i>
    * <ul>
-   * <i>Rules:</i> <b>
    * <li>Column equals a constant</li></b> T(S) = T(R) / V(R,A)
    * <p>
    * <b>
@@ -877,10 +877,12 @@ public class StatsRulesProcFactory {
 
       if (pred instanceof ExprNodeColumnDesc) {
         ExprNodeColumnDesc encd = (ExprNodeColumnDesc) pred;
-        aspCtx.addAffectedColumn(encd);
         ColStatistics cs = stats.getColumnStatisticsFromColName(encd.getColumn());
         if (cs != null) {
           tmpNoNulls = cs.getNumNulls();
+        }
+        if (cs == null || tmpNoNulls > 0) {
+          aspCtx.addAffectedColumn(encd);
         }
       } else if (pred instanceof ExprNodeGenericFuncDesc || pred instanceof ExprNodeColumnListDesc) {
         long noNullsOfChild = 0;
@@ -2081,6 +2083,7 @@ public class StatsRulesProcFactory {
         CommonJoinOperator<? extends JoinDesc> jop) {
       double pkfkSelectivity = Double.MAX_VALUE;
       int fkInd = -1;
+      boolean isFKIndependentFromPK = false;
       // 1. We iterate through all the operators that have candidate FKs and
       // choose the FK that has the minimum selectivity. We assume that PK and this FK
       // have the PK-FK relationship. This is heuristic and can be
@@ -2088,13 +2091,19 @@ public class StatsRulesProcFactory {
       for (Entry<Integer, ColStatistics> entry : csFKs.entrySet()) {
         int pos = entry.getKey();
         Operator<? extends OperatorDesc> opWithPK = ops.get(pkPos);
+        Operator<? extends OperatorDesc> opWithFK = jop.getParentOperators().get(pos);
         double selectivity = getSelectivitySimpleTree(opWithPK);
         double selectivityAdjustment = StatsUtils.getScaledSelectivity(csPK, entry.getValue());
         selectivity = selectivityAdjustment * selectivity > 1 ? selectivity : selectivityAdjustment
             * selectivity;
-        if (selectivity < pkfkSelectivity) {
+
+        boolean independent =
+            !entry.getValue().isFilteredColumn() && OperatorUtils.treesWithIndependentInputs(opWithFK, opWithPK);
+
+        if (fkInd < 0 || (independent && selectivity < pkfkSelectivity)) {
           pkfkSelectivity = selectivity;
           fkInd = pos;
+          isFKIndependentFromPK = independent;
         }
       }
       long newrows = 1;
@@ -2113,8 +2122,14 @@ public class StatsRulesProcFactory {
         Statistics parentStats = parent.getStatistics();
         if (fkInd == pos) {
           // 2.1 This is the new number of rows after PK is joining with FK
-          newrows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
+          if (!isFKIndependentFromPK) {
+            // if the foreign key is filtered by some condition we may not re-scale it
+            newrows = parentStats.getNumRows();
+          } else {
+            newrows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
+          }
           rowCounts.add(newrows);
+
           // 2.1 The ndv is the minimum of the PK and the FK.
           distinctVals.add(Math.min(csFK.getCountDistint(), csPK.getCountDistint()));
         } else {

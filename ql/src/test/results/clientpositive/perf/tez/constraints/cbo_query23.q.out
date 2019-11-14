@@ -1,7 +1,5 @@
-Warning: Shuffle Join MERGEJOIN[457][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 19' is a cross product
-Warning: Shuffle Join MERGEJOIN[458][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 20' is a cross product
-Warning: Shuffle Join MERGEJOIN[460][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 24' is a cross product
-Warning: Shuffle Join MERGEJOIN[461][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 25' is a cross product
+Warning: Shuffle Join MERGEJOIN[457][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 17' is a cross product
+Warning: Shuffle Join MERGEJOIN[458][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 18' is a cross product
 PREHOOK: query: explain cbo
 with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt

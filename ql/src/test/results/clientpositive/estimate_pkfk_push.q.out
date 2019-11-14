@@ -1,0 +1,281 @@
+PREHOOK: query: drop table if exists admirals
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists admirals
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists ship_types
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists ship_types
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists ships
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists ships
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists torpedos
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists torpedos
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table ships (id integer,ship_type_id integer,crew_size integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ships
+POSTHOOK: query: create table ships (id integer,ship_type_id integer,crew_size integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ships
+PREHOOK: query: create table ship_types (id integer,type_name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ship_types
+POSTHOOK: query: create table ship_types (id integer,type_name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ship_types
+PREHOOK: query: insert into ship_types values
+    (1,'galaxy class'),
+    (2,'nebula class'),
+    (3,'orion class'),
+    (4,'first class'),
+    (5,'last pass'),
+    (6,'last pass'),
+    (7,'akira class'),
+    (8,'aeon type'),
+    (9,'antares type'),
+    (10,'apollo class')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ship_types
+POSTHOOK: query: insert into ship_types values
+    (1,'galaxy class'),
+    (2,'nebula class'),
+    (3,'orion class'),
+    (4,'first class'),
+    (5,'last pass'),
+    (6,'last pass'),
+    (7,'akira class'),
+    (8,'aeon type'),
+    (9,'antares type'),
+    (10,'apollo class')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ship_types
+POSTHOOK: Lineage: ship_types.id SCRIPT []
+POSTHOOK: Lineage: ship_types.type_name SCRIPT []
+PREHOOK: query: create table admirals as
+    select id from ship_types
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ship_types
+PREHOOK: Output: database:default
+PREHOOK: Output: default@admirals
+POSTHOOK: query: create table admirals as
+    select id from ship_types
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ship_types
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@admirals
+POSTHOOK: Lineage: admirals.id SIMPLE [(ship_types)ship_types.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: create table torpedos (id integer,ship_id integer,admiral_id integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@torpedos
+POSTHOOK: query: create table torpedos (id integer,ship_id integer,admiral_id integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@torpedos
+Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: insert into ships
+select row_number() over (),t.id,row_number() over (partition by t.id) from ship_types t join ship_types t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ship_types
+PREHOOK: Output: default@ships
+POSTHOOK: query: insert into ships
+select row_number() over (),t.id,row_number() over (partition by t.id) from ship_types t join ship_types t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ship_types
+POSTHOOK: Output: default@ships
+POSTHOOK: Lineage: ships.crew_size SCRIPT [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: ships.id SCRIPT [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: ships.ship_type_id SIMPLE [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
+Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: insert into torpedos
+select row_number() over (),s.id,row_number() over (partition by s.id) from ships s join ship_types t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ship_types
+PREHOOK: Input: default@ships
+PREHOOK: Output: default@torpedos
+POSTHOOK: query: insert into torpedos
+select row_number() over (),s.id,row_number() over (partition by s.id) from ships s join ship_types t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ship_types
+POSTHOOK: Input: default@ships
+POSTHOOK: Output: default@torpedos
+POSTHOOK: Lineage: torpedos.admiral_id SCRIPT [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: torpedos.id SCRIPT [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: torpedos.ship_id SIMPLE [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: select
+    s.id
+from
+    ships s,
+    ship_types st,
+    torpedos t
+where
+    (st.id = 1 or st.id=2)
+    and ship_type_id=st.id
+    and ship_id=s.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ship_types
+PREHOOK: Input: default@ships
+PREHOOK: Input: default@torpedos
+#### A masked pattern was here ####
+POSTHOOK: query: select
+    s.id
+from
+    ships s,
+    ship_types st,
+    torpedos t
+where
+    (st.id = 1 or st.id=2)
+    and ship_type_id=st.id
+    and ship_id=s.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ship_types
+POSTHOOK: Input: default@ships
+POSTHOOK: Input: default@torpedos
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze
+select
+    s.id
+from
+    ships s,
+    ship_types st,
+    torpedos t
+where
+    (st.id = 1 or st.id=2)
+    and ship_type_id=st.id
+    and ship_id=s.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ship_types
+PREHOOK: Input: default@ships
+PREHOOK: Input: default@torpedos
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze
+select
+    s.id
+from
+    ships s,
+    ship_types st,
+    torpedos t
+where
+    (st.id = 1 or st.id=2)
+    and ship_type_id=st.id
+    and ship_id=s.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ship_types
+POSTHOOK: Input: default@ships
+POSTHOOK: Input: default@torpedos
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            filterExpr: ((ship_type_id) IN (1, 2) and id is not null) (type: boolean)
+            Statistics: Num rows: 100/100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ((ship_type_id) IN (1, 2) and id is not null) (type: boolean)
+              Statistics: Num rows: 20/20 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: id (type: int), ship_type_id (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 20/20 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 20/20 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
+          TableScan
+            alias: st
+            filterExpr: (id) IN (1, 2) (type: boolean)
+            Statistics: Num rows: 10/10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (id) IN (1, 2) (type: boolean)
+              Statistics: Num rows: 2/2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: id (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2/2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 2/2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col1 (type: int)
+            1 _col0 (type: int)
+          outputColumnNames: _col0
+          Statistics: Num rows: 5/20 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: int)
+              Statistics: Num rows: 5/20 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+          TableScan
+            alias: t
+            filterExpr: ship_id is not null (type: boolean)
+            Statistics: Num rows: 1000/1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ship_id is not null (type: boolean)
+              Statistics: Num rows: 1000/1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: ship_id (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1000/1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1000/1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col0 (type: int)
+            1 _col0 (type: int)
+          outputColumnNames: _col0
+          Statistics: Num rows: 201/200 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 201/200 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
