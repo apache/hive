@@ -61,4 +61,18 @@ public class RemoteHiveMetaStoreDualAuthTest extends TestRemoteHiveMetaStore {
     }
     super.setUp();
   }
+
+  @Override
+  public void testExternalDirectory() {
+    // This test from org.apache.hadoop.hive.metastore.TestHiveMetaStore tests whether the
+    // external directory is created by the UserGroupInformation.getCurrentUser(). Since this
+    // test is using the local file system, the file will be created by system user, which in
+    // standalone-metastore directory is same as UserGroupInformation.getCurrentUser() because of
+    // hadoop config settings there. But in this directory, no UGI is initialized and UGI is set
+    // for "hive" user with Keberos authentication which is different from the system user. This
+    // testcase is particularly aimed at HMS authentication, so that particular test is not
+    // relevant here. In a real cluster, the service principal will be supported by the
+    // underlying file system. The actual test scenario is covered by the test in
+    // TestHiveMetaStore, hence overriding this test here.
+  }
 }
