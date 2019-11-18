@@ -57,6 +57,7 @@ public class TestLowLevelLrfuCachePolicy {
     Configuration conf = new Configuration();
     // Set lambda to 1 so the heap size becomes 1 (LRU).
     conf.setDouble(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 1.0f);
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
     final LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, memSize, conf);
     Field f = LowLevelLrfuCachePolicy.class.getDeclaredField("listLock");
     f.setAccessible(true);
@@ -127,6 +128,7 @@ public class TestLowLevelLrfuCachePolicy {
     Configuration conf = new Configuration();
     ArrayList<LlapDataBuffer> inserted = new ArrayList<LlapDataBuffer>(heapSize);
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.0f);
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
     LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(heapSize, lfu,
@@ -157,6 +159,7 @@ public class TestLowLevelLrfuCachePolicy {
     Configuration conf = new Configuration();
     ArrayList<LlapDataBuffer> inserted = new ArrayList<LlapDataBuffer>(heapSize);
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 1.0f);
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lru = new LowLevelLrfuCachePolicy(1, heapSize, conf);
     LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(heapSize, lru,
@@ -183,6 +186,7 @@ public class TestLowLevelLrfuCachePolicy {
     final int HEAP_SIZE = 32;
     Configuration conf = new Configuration();
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.2f);
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, HEAP_SIZE, conf);
     MetricsMock m = createMetricsMock();
@@ -225,6 +229,7 @@ public class TestLowLevelLrfuCachePolicy {
     ArrayList<LlapDataBuffer> inserted = new ArrayList<LlapDataBuffer>(heapSize);
     EvictionTracker et = new EvictionTracker();
     Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
     LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
     LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(heapSize, lrfu,
         LlapDaemonCacheMetrics.create("test", "1"));
@@ -302,6 +307,7 @@ public class TestLowLevelLrfuCachePolicy {
     Configuration conf = new Configuration();
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.2f); // very small heap, 14 elements
     EvictionTracker et = new EvictionTracker();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
     LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
     MetricsMock m = createMetricsMock();
     LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(heapSize, lrfu, m.metricsMock);
