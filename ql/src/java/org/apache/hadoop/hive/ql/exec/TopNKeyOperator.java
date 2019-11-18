@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
@@ -58,21 +59,26 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
   }
 
   public static class KeyWrapperComparator implements Comparator<KeyWrapper> {
-    private ObjectInspector[] objectInspectors1;
-    private ObjectInspector[] objectInspectors2;
-    private boolean[] columnSortOrderIsDesc;
 
-    public KeyWrapperComparator(ObjectInspector[] objectInspectors1, ObjectInspector[]
-        objectInspectors2, boolean[] columnSortOrderIsDesc) {
-      this.objectInspectors1 = objectInspectors1;
-      this.objectInspectors2 = objectInspectors2;
-      this.columnSortOrderIsDesc = columnSortOrderIsDesc;
+    private final ObjectInspector[] keyObjectInspectors;
+    private final boolean[] columnSortOrderIsDesc;
+    private final ObjectInspectorUtils.NullValueOption[] nullSortOrder;
+
+    KeyWrapperComparator(ObjectInspector[] keyObjectInspectors, String columnSortOrder, String nullSortOrder) {
+      this.keyObjectInspectors = keyObjectInspectors;
+      this.columnSortOrderIsDesc = new boolean[columnSortOrder.length()];
+      this.nullSortOrder = new ObjectInspectorUtils.NullValueOption[nullSortOrder.length()];
+      for (int i = 0; i < columnSortOrder.length(); ++i) {
+        this.columnSortOrderIsDesc[i] = columnSortOrder.charAt(i) == '-';
+        this.nullSortOrder[i] = NullOrdering.fromSign(nullSortOrder.charAt(i)).getNullValueOption();
+      }
     }
 
     @Override
     public int compare(KeyWrapper key1, KeyWrapper key2) {
-      return ObjectInspectorUtils.compare(key1.getKeyArray(), objectInspectors1,
-          key2.getKeyArray(), objectInspectors2, columnSortOrderIsDesc);
+      return ObjectInspectorUtils.compare(
+              key1.getKeyArray(), keyObjectInspectors, key2.getKeyArray(), keyObjectInspectors,
+              columnSortOrderIsDesc, nullSortOrder);
     }
   }
 
@@ -81,12 +87,6 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
     super.initializeOp(hconf);
 
     this.topN = conf.getTopN();
-
-    String columnSortOrder = conf.getColumnSortOrder();
-    boolean[] columnSortOrderIsDesc = new boolean[columnSortOrder.length()];
-    for (int i = 0; i < columnSortOrderIsDesc.length; i++) {
-      columnSortOrderIsDesc[i] = (columnSortOrder.charAt(i) == '-');
-    }
 
     ObjectInspector rowInspector = inputObjInspectors[0];
     ObjectInspector standardObjInspector = ObjectInspectorUtils.getStandardObjectInspector(rowInspector);
@@ -107,8 +107,13 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
       standardKeyObjectInspectors[i] = standardKeyFields[i].initialize(standardObjInspector);
     }
 
-    priorityQueue = new PriorityQueue<>(topN + 1, new TopNKeyOperator.KeyWrapperComparator(
-        standardKeyObjectInspectors, standardKeyObjectInspectors, columnSortOrderIsDesc));
+    String columnSortOrder = conf.getColumnSortOrder();
+    String nullSortOrder = conf.getNullOrder();
+
+    // We need a reversed comparator because the PriorityQueue.poll() method is used for filtering out keys.
+    // Ex.: When ORDER BY key1 ASC then call of poll() should remove the largest key.
+    priorityQueue = new PriorityQueue<>(topN + 1,
+            new KeyWrapperComparator(standardKeyObjectInspectors, columnSortOrder, nullSortOrder).reversed());
 
     KeyWrapperFactory keyWrapperFactory = new KeyWrapperFactory(keyFields, keyObjectInspectors,
         standardKeyObjectInspectors);

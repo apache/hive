@@ -53,7 +53,7 @@ public class TopNKeyProcessor implements NodeProcessor {
 
   @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-      Object... nodeOutputs) throws SemanticException {
+                        Object... nodeOutputs) throws SemanticException {
 
     // Get ReduceSinkOperator
     ReduceSinkOperator reduceSinkOperator = (ReduceSinkOperator) nd;
@@ -95,11 +95,11 @@ public class TopNKeyProcessor implements NodeProcessor {
     }
 
     // Insert a new top n key operator between the group by operator and its parent
-    TopNKeyDesc topNKeyDesc = new TopNKeyDesc(reduceSinkDesc.getTopN(), reduceSinkDesc.getOrder(),
-        groupByKeyColumns);
+    TopNKeyDesc topNKeyDesc = new TopNKeyDesc(
+            reduceSinkDesc.getTopN(), reduceSinkDesc.getOrder(), reduceSinkDesc.getNullOrder(), groupByKeyColumns);
     Operator<? extends OperatorDesc> newOperator = OperatorFactory.getAndMakeChild(
-        groupByOperator.getCompilationOpContext(), (OperatorDesc) topNKeyDesc,
-        new RowSchema(groupByOperator.getSchema()), groupByOperator.getParentOperators());
+            groupByOperator.getCompilationOpContext(), (OperatorDesc) topNKeyDesc,
+            new RowSchema(groupByOperator.getSchema()), groupByOperator.getParentOperators());
     newOperator.getChildOperators().add(groupByOperator);
     groupByOperator.getParentOperators().add(newOperator);
     parentOperator.removeChild(groupByOperator);

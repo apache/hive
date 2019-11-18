@@ -33,6 +33,7 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
 
   private int topN;
   private String columnSortOrder;
+  private String nullOrder;
   private List<ExprNodeDesc> keyColumns;
 
   public TopNKeyDesc() {
@@ -41,10 +42,12 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
   public TopNKeyDesc(
       final int topN,
       final String columnSortOrder,
+      final String nullOrder,
       final List<ExprNodeDesc> keyColumns) {
 
     this.topN = topN;
     this.columnSortOrder = columnSortOrder;
+    this.nullOrder = nullOrder;
     this.keyColumns = keyColumns;
   }
 
@@ -64,6 +67,15 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
 
   public void setColumnSortOrder(String columnSortOrder) {
     this.columnSortOrder = columnSortOrder;
+  }
+
+  @Explain(displayName = "null sort order", explainLevels = { Level.EXTENDED })
+  public String getNullOrder() {
+    return nullOrder;
+  }
+
+  public void setNullOrder(String nullOrder) {
+    this.nullOrder = nullOrder;
   }
 
   @Explain(displayName = "keys")
@@ -98,6 +110,7 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
       TopNKeyDesc otherDesc = (TopNKeyDesc) other;
       return getTopN() == otherDesc.getTopN() &&
           Objects.equals(columnSortOrder, otherDesc.columnSortOrder) &&
+          Objects.equals(nullOrder, otherDesc.nullOrder) &&
           ExprNodeDescUtils.isSame(keyColumns, otherDesc.keyColumns);
     }
     return false;
@@ -108,6 +121,7 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
     TopNKeyDesc ret = new TopNKeyDesc();
     ret.setTopN(topN);
     ret.setColumnSortOrder(columnSortOrder);
+    ret.setNullOrder(nullOrder);
     ret.setKeyColumns(getKeyColumns() == null ? null : new ArrayList<>(getKeyColumns()));
     return ret;
   }
