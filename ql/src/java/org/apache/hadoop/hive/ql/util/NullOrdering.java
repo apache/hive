@@ -24,18 +24,20 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.NullVa
  * Enum for converting different Null ordering description types.
  */
 public enum NullOrdering {
-  NULLS_FIRST(1, HiveParser.TOK_NULLS_FIRST, NullValueOption.MAXVALUE),
-  NULLS_LAST(0, HiveParser.TOK_NULLS_LAST, NullValueOption.MINVALUE);
+  NULLS_FIRST(1, HiveParser.TOK_NULLS_FIRST, NullValueOption.MAXVALUE, 'a'),
+  NULLS_LAST(0, HiveParser.TOK_NULLS_LAST, NullValueOption.MINVALUE, 'z');
 
-  NullOrdering(int code, int token, NullValueOption nullValueOption) {
+  NullOrdering(int code, int token, NullValueOption nullValueOption, char sign) {
     this.code = code;
     this.token = token;
     this.nullValueOption = nullValueOption;
+    this.sign = sign;
   }
 
   private final int code;
   private final int token;
   private final NullValueOption nullValueOption;
+  private final char sign;
 
   public static NullOrdering fromToken(int token) {
     for (NullOrdering nullOrdering : NullOrdering.values()) {
@@ -55,6 +57,15 @@ public enum NullOrdering {
     throw new EnumConstantNotPresentException(NullOrdering.class, "No enum constant present with code " + code);
   }
 
+  public static NullOrdering fromSign(char sign) {
+    for (NullOrdering nullOrdering : NullOrdering.values()) {
+      if (nullOrdering.sign == sign) {
+        return nullOrdering;
+      }
+    }
+    throw new EnumConstantNotPresentException(NullOrdering.class, "No enum constant present with sign " + sign);
+  }
+
   public int getCode() {
     return code;
   }
@@ -65,5 +76,9 @@ public enum NullOrdering {
 
   public NullValueOption getNullValueOption() {
     return nullValueOption;
+  }
+
+  public char getSign() {
+    return sign;
   }
 }
