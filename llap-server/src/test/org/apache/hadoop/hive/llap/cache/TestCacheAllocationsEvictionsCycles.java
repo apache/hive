@@ -57,6 +57,7 @@ public class TestCacheAllocationsEvictionsCycles {
     Configuration conf = new Configuration();
     // Set lambda to 1 so the heap size becomes 1 (LRU).
     conf.setDouble(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 1.0f);
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
     int minBufferSize = 1;
     cachePolicy = new LowLevelLrfuCachePolicy(minBufferSize, maxSize, conf);
     memoryManager = new LowLevelCacheMemoryManager(maxSize, cachePolicy, CACHE_METRICS);

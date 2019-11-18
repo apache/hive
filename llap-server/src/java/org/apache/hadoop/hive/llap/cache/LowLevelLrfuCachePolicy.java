@@ -42,7 +42,7 @@ import org.apache.hadoop.metrics2.impl.MsInfo;
  * that Subsumes the Least Recently Used (LRU) and Least Frequently Used (LFU) Policies".
  * Additionally, buffer locking has to be handled (locked buffer cannot be evicted).
  */
-public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
+public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   private final double lambda;
   private double f(long x) {
     return Math.pow(0.5, lambda * x);
@@ -67,7 +67,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
    * ONLY LIST REMOVAL is allowed under list lock.
    */
   private LlapCacheableBuffer[] heap;
-  private final Object heapLock = new Object();
+  private final ReentrantLock heapLock = new ReentrantLock();
   private final ReentrantLock listLock = new ReentrantLock();
   private LlapCacheableBuffer listHead, listTail;
   /** Number of elements. */
@@ -75,9 +75,15 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   private final int maxHeapSize;
   private EvictionListener evictionListener;
   private final PolicyMetrics metrics;
+  private final ThreadLocal<LlapCacheableBuffer[]> threadLocalBuffers;
+  private final ThreadLocal<Integer> threadLocalCount;
+  private final int maxQueueSize;
 
   public LowLevelLrfuCachePolicy(int minBufferSize, long maxSize, Configuration conf) {
-    lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
+
+    this.maxQueueSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE);
+    this.lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
+
     int maxBuffers = (int)Math.ceil((maxSize * 1.0) / minBufferSize);
     if (lambda == 0) {
       maxHeapSize = maxBuffers; // lrfuThreshold is +inf in this case
@@ -99,8 +105,9 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
 
     // register new metrics provider for this cache policy
     metrics = new PolicyMetrics(sessID);
-    LlapMetricsSystem.instance().register("LowLevelLrfuCachePolicy-" + MetricsUtils.getHostName(),
-                                          null, metrics);
+    LlapMetricsSystem.instance().register("LowLevelLrfuCachePolicy-" + MetricsUtils.getHostName(), null, metrics);
+    threadLocalBuffers = ThreadLocal.withInitial(() -> new LlapCacheableBuffer[maxQueueSize]);
+    threadLocalCount = ThreadLocal.withInitial(() -> 0);
   }
 
   @Override
@@ -140,11 +147,47 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
 
   @Override
   public void notifyUnlock(LlapCacheableBuffer buffer) {
-    long time = timer.incrementAndGet();
-    if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
-      LlapIoImpl.CACHE_LOGGER.trace("Touching {} at {}", buffer, time);
+
+    int count = threadLocalCount.get();
+    final LlapCacheableBuffer[] cacheableBuffers = threadLocalBuffers.get() ;
+    if (count < maxQueueSize) {
+      cacheableBuffers[count] = buffer;
+      threadLocalCount.set(++count);
     }
-    synchronized (heapLock) {
+    if (count <= maxQueueSize / 2) {
+      // case too early to flush
+      return;
+    }
+
+    if (count == maxQueueSize) {
+      // case we have to flush thus block on heap lock
+      heapLock.lock();
+      try {
+        doNotifyUnderHeapLock(count, cacheableBuffers);
+      } finally {
+        threadLocalCount.set(0);
+        heapLock.unlock();
+      }
+      return;
+    }
+    if (heapLock.tryLock()) {
+      try {
+        doNotifyUnderHeapLock(count, cacheableBuffers);
+      } finally {
+        threadLocalCount.set(0);
+        heapLock.unlock();
+      }
+    }
+  }
+
+  private void doNotifyUnderHeapLock(int count, LlapCacheableBuffer[] cacheableBuffers) {
+    LlapCacheableBuffer buffer;
+    for (int i = 0; i < count; i++) {
+      buffer = cacheableBuffers[i];
+      long time = timer.incrementAndGet();
+      if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
+        LlapIoImpl.CACHE_LOGGER.trace("Touching {} at {}", buffer, time);
+      }
       // First, update buffer priority - we have just been using it.
       buffer.priority = (buffer.lastUpdate == -1) ? F0
           : touchPriority(time, buffer.lastUpdate, buffer.priority);
@@ -200,7 +243,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   @Override
   public long purge() {
     long evicted = 0;
-    LlapCacheableBuffer oldTail = null;
+    LlapCacheableBuffer oldTail;
     listLock.lock();
     try {
       LlapCacheableBuffer current = listTail;
@@ -223,9 +266,10 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       listLock.unlock();
     }
 
-    LlapCacheableBuffer[] oldHeap = null;
-    int oldHeapSize = -1;
-    synchronized (heapLock) {
+    LlapCacheableBuffer[] oldHeap;
+    int oldHeapSize;
+    heapLock.lock();
+    try {
       oldHeap = heap;
       oldHeapSize = heapSize;
       heap = new LlapCacheableBuffer[maxHeapSize];
@@ -238,6 +282,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
           oldHeap[i] = null; // Removed from heap without evicting.
         }
       }
+    } finally {
+      heapLock.unlock();
     }
     LlapCacheableBuffer current = oldTail;
     while (current != null) {
@@ -285,9 +331,12 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     // there's a small number of buffers and they all live in the heap).
     long time = timer.get();
     while (evicted < memoryToReserve) {
-      LlapCacheableBuffer buffer = null;
-      synchronized (heapLock) {
+      LlapCacheableBuffer buffer;
+      heapLock.lock();
+      try {
         buffer = evictFromHeapUnderLock(time);
+      } finally {
+        heapLock.unlock();
       }
       if (buffer == null) {
         return evicted;
@@ -300,7 +349,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
 
   private long evictFromList(long memoryToReserve) {
     long evicted = 0;
-    LlapCacheableBuffer nextCandidate = null, firstCandidate = null;
+    LlapCacheableBuffer nextCandidate, firstCandidate;
     listLock.lock();
     // We assume that there are no locked blocks in the list; or if they are, they can be dropped.
     // Therefore we always evict one contiguous sequence from the tail. We can find it in one pass,
@@ -702,7 +751,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       long lockedMeta = 0L;   // number of bytes in locked metadata buffers
 
       // aggregate values on the heap
-      synchronized (heapLock) {
+      heapLock.lock();
+      try {
         for (int heapIdx = 0; heapIdx < heapSize; ++heapIdx) {
           LlapCacheableBuffer buff = heap[heapIdx];
 
@@ -720,6 +770,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
             }
           }
         }
+      } finally {
+        heapLock.unlock();
       }
 
       // aggregate values on the evicition short list
