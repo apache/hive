@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelCollations;
@@ -37,6 +38,7 @@ import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
@@ -46,6 +48,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -67,6 +71,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.parse.JoinCond;
@@ -97,8 +102,15 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,10 +198,94 @@ public class HiveOpConverter {
       return visit((HiveSortExchange) rn);
     } else if (rn instanceof HiveAggregate) {
       return visit((HiveAggregate) rn);
+    } else if (rn instanceof HiveTableFunctionScan) {
+      return visit((HiveTableFunctionScan) rn);
     }
     LOG.error(rn.getClass().getCanonicalName() + "operator translation not supported"
         + " yet in return path.");
     return null;
+  }
+
+  private OpAttr visit(HiveTableFunctionScan scanRel) throws SemanticException {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Translating operator rel#" + scanRel.getId() + ":"
+          + scanRel.getRelTypeName() + " with row type: [" + scanRel.getRowType() + "]");
+    }
+
+    RexCall call = (RexCall)scanRel.getCall();
+
+    RowResolver rowResolver = new RowResolver();
+    List<String> fieldNames = new ArrayList<>(scanRel.getRowType().getFieldNames());
+    List<String> exprNames = new ArrayList<>(fieldNames);
+    List<ExprNodeDesc> exprCols = new ArrayList<>();
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
+    for (int pos = 0; pos < call.getOperands().size(); pos++) {
+      ExprNodeConverter converter = new ExprNodeConverter(SemanticAnalyzer.DUMMY_TABLE, fieldNames.get(pos),
+          scanRel.getRowType(), scanRel.getRowType(), ((HiveTableScan)scanRel.getInput(0)).getPartOrVirtualCols(),
+          scanRel.getCluster().getTypeFactory(), true);
+      ExprNodeDesc exprCol = call.getOperands().get(pos).accept(converter);
+      colExprMap.put(exprNames.get(pos), exprCol);
+      exprCols.add(exprCol);
+
+      ColumnInfo columnInfo = new ColumnInfo(fieldNames.get(pos), exprCol.getWritableObjectInspector(), null, false);
+      rowResolver.put(columnInfo.getTabAlias(), columnInfo.getAlias(), columnInfo);
+    }
+
+    OpAttr inputOpAf = dispatch(scanRel.getInputs().get(0));
+    TableScanOperator op = (TableScanOperator)inputOpAf.inputs.get(0);
+    op.getConf().setRowLimit(1);
+
+    Operator<?> output = OperatorFactory.getAndMakeChild(new SelectDesc(exprCols, fieldNames, false),
+        new RowSchema(rowResolver.getRowSchema()), op);
+    output.setColumnExprMap(colExprMap);
+
+    Operator<?> funcOp = genUDTFPlan(call, fieldNames, output, rowResolver);
+
+    return new OpAttr(null, new HashSet<Integer>(), funcOp);
+  }
+
+  private Operator<?> genUDTFPlan(RexCall call, List<String> colAliases, Operator<?> input, RowResolver rowResolver)
+      throws SemanticException {
+    LOG.debug("genUDTFPlan, Col aliases: {}", colAliases);
+
+    GenericUDTF genericUDTF = createGenericUDTF(call);
+    StructObjectInspector rowOI = createStructObjectInspector(rowResolver, colAliases);
+    StructObjectInspector outputOI = genericUDTF.initialize(rowOI);
+    List<ColumnInfo> columnInfos = createColumnInfos(outputOI);
+
+    // Add the UDTFOperator to the operator DAG
+    return OperatorFactory.getAndMakeChild(new UDTFDesc(genericUDTF, false), new RowSchema(columnInfos), input);
+  }
+
+  private GenericUDTF createGenericUDTF(RexCall call) throws SemanticException {
+    String functionName = call.getOperator().getName();
+    FunctionInfo fi = FunctionRegistry.getFunctionInfo(functionName);
+    return fi.getGenericUDTF();
+  }
+
+  private StructObjectInspector createStructObjectInspector(RowResolver rowResolver, List<String> colAliases)
+      throws SemanticException {
+    // Create the object inspector for the input columns and initialize the UDTF
+    List<String> colNames = rowResolver.getColumnInfos().stream().map(ci -> ci.getInternalName())
+        .collect(Collectors.toList());
+    List<ObjectInspector> colOIs = rowResolver.getColumnInfos().stream().map(ci -> ci.getObjectInspector())
+        .collect(Collectors.toList());
+
+    return ObjectInspectorFactory.getStandardStructObjectInspector(colNames, colOIs);
+  }
+
+  private List<ColumnInfo> createColumnInfos(StructObjectInspector outputOI) {
+    // Generate the output column info's / row resolver using internal names.
+    List<ColumnInfo> columnInfos = new ArrayList<>();
+    for (StructField sf : outputOI.getAllStructFieldRefs()) {
+
+      // Since the UDTF operator feeds into a LVJ operator that will rename all the internal names, we can just use
+      // field name from the UDTF's OI as the internal name
+      ColumnInfo col = new ColumnInfo(sf.getFieldName(),
+          TypeInfoUtils.getTypeInfoFromObjectInspector(sf.getFieldObjectInspector()), null, false);
+      columnInfos.add(col);
+    }
+    return columnInfos;
   }
 
   /**
