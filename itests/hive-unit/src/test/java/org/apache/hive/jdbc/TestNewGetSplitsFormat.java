@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.hive.jdbc;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -32,8 +31,6 @@ import org.junit.BeforeClass;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * TestNewGetSplitsFormat.
