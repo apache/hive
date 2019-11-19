@@ -176,6 +176,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     fileMetadataBatchSize = MetastoreConf.getIntVar(
         conf, ConfVars.BATCH_RETRIEVE_OBJECTS_MAX);
 
+    if ((MetastoreConf.get(conf, "hive.metastore.client.capabilities")) != null) {
+      String[] capabilities = MetastoreConf.get(conf, "hive.metastore.client.capabilities").split(",");
+      setProcessorCapabilities(capabilities);
+      String hostName = "unknown";
+      try {
+        hostName = InetAddress.getLocalHost().getCanonicalHostName();
+      } catch (UnknownHostException ue) {
+      }
+      setProcessorIdentifier("HMSClient-" + "@" + hostName);
+    }
+
     String msUri = MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS);
     localMetaStore = MetastoreConf.isEmbeddedMetaStore(msUri);
     if (localMetaStore) {
