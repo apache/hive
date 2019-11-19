@@ -1788,7 +1788,8 @@ import com.google.common.annotations.VisibleForTesting;
         if((leftType.precision() + returnDecimalTypeInfo.getScale()) > 18) {
           return null;
         }
-      } else if (returnDecimalTypeInfo.getScale() != decimal64ColumnScale) {
+      } else if (returnDecimalTypeInfo.getScale() != decimal64ColumnScale &&
+          !(genericUdf instanceof GenericUDFOPMultiply)) {
         return null;
       }
       returnDataTypePhysicalVariation = DataTypePhysicalVariation.DECIMAL_64;
