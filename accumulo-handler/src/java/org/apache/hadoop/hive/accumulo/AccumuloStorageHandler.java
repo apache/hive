@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.accumulo.predicate.AccumuloPredicateHandler;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloIndexParameters;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDe;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -110,7 +111,7 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
     if (DEFAULT_PREFIX.equals(table.getDbName())) {
       return table.getTableName();
     } else {
-      return table.getDbName() + "." + table.getTableName();
+      return TableName.getDbTable(table.getDbName(), table.getTableName());
     }
   }
 

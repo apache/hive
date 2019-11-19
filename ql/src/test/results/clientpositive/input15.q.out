@@ -15,11 +15,11 @@ STAGE PLANS:
   Stage: Stage-0
     Create Table
       columns: key int, value string
+      name: default.TEST15
       field delimiter: 	
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.TEST15
 
 PREHOOK: query: CREATE TABLE TEST15(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE

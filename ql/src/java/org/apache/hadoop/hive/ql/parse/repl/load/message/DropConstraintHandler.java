@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.constaint.AlterTableDropConstraintDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 import java.io.Serializable;
@@ -33,12 +35,13 @@ public class DropConstraintHandler extends AbstractMessageHandler {
   public List<Task<?>> handle(Context context)
       throws SemanticException {
     DropConstraintMessage msg = deserializer.getDropConstraintMessage(context.dmd.getPayload());
-    String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
-    String actualTblName = msg.getTable();
+    final String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
+    final String actualTblName = msg.getTable();
+    final TableName tName = HiveTableName.ofNullable(actualTblName, actualDbName);
     String constraintName = msg.getConstraint();
 
-    AlterTableDropConstraintDesc dropConstraintsDesc = new AlterTableDropConstraintDesc(
-        actualDbName + "." + actualTblName, context.eventOnlyReplicationSpec(), constraintName);
+    AlterTableDropConstraintDesc dropConstraintsDesc =
+        new AlterTableDropConstraintDesc(tName, context.eventOnlyReplicationSpec(), constraintName);
     Task<DDLWork> dropConstraintsTask = TaskFactory.get(
             new DDLWork(readEntitySet, writeEntitySet, dropConstraintsDesc), context.hiveConf);
     context.log.debug("Added drop constrain task : {}:{}", dropConstraintsTask.getId(), actualTblName);

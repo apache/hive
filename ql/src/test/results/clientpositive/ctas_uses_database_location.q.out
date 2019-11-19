@@ -100,10 +100,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key string, value string
+      name: db1.table_db1
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: db1.table_db1
 
   Stage: Stage-2
     Stats Work

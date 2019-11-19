@@ -472,9 +472,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Unset Properties
+      table name: default.cmv_mat_view2_n0
       properties:
         COLUMN_STATS_ACCURATE 
-      table name: default.cmv_mat_view2_n0
 
   Stage: Stage-4
     Materialized View Update

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.misc;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -34,7 +35,7 @@ public class AlterTableRenameDesc extends AbstractAlterTableDesc {
 
   private final String newName;
 
-  public AlterTableRenameDesc(String tableName, ReplicationSpec replicationSpec, boolean expectView, String newName)
+  public AlterTableRenameDesc(TableName tableName, ReplicationSpec replicationSpec, boolean expectView, String newName)
       throws SemanticException {
     super(AlterTableType.RENAME, tableName, null, replicationSpec, false, expectView, null);
     this.newName = newName;

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.misc;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -38,7 +39,7 @@ public class AlterTableUnsetPropertiesDesc extends AbstractAlterTableDesc {
   private final boolean isExplicitStatsUpdate;
   private final EnvironmentContext environmentContext;
 
-  public AlterTableUnsetPropertiesDesc(String tableName, Map<String, String> partitionSpec,
+  public AlterTableUnsetPropertiesDesc(TableName tableName, Map<String, String> partitionSpec,
       ReplicationSpec replicationSpec, boolean expectView, Map<String, String> props, boolean isExplicitStatsUpdate,
       EnvironmentContext environmentContext) throws SemanticException {
     super(AlterTableType.DROPPROPS, tableName, partitionSpec, replicationSpec, false, expectView, props);

@@ -403,7 +403,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
     query = "create table like_table like junit_sem_analysis";
     hcatDriver.run(query);
 //    Table tbl = client.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, likeTbl);
-//    assertEquals(likeTbl,tbl.getTableName());
+//    assertEquals(likeTbl,tbl.getDbTableName());
 //    List<FieldSchema> cols = tbl.getSd().getCols();
 //    assertEquals(1, cols.size());
 //    assertEquals(new FieldSchema("a", "int", null), cols.get(0));

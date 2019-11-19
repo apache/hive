@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -53,8 +54,9 @@ public class AddPrimaryKeyHandler extends AbstractMessageHandler {
       return tasks;
     }
 
-    String actualDbName = context.isDbNameEmpty() ? pks.get(0).getTable_db() : context.dbName;
-    String actualTblName = pks.get(0).getTable_name();
+    final String actualDbName = context.isDbNameEmpty() ? pks.get(0).getTable_db() : context.dbName;
+    final String actualTblName = pks.get(0).getTable_name();
+    final TableName tName = TableName.fromString(actualTblName, null, actualDbName);
 
     for (SQLPrimaryKey pk : pks) {
       pk.setTable_db(actualDbName);
@@ -62,7 +64,7 @@ public class AddPrimaryKeyHandler extends AbstractMessageHandler {
     }
 
     Constraints constraints = new Constraints(pks, null, null, null, null, null);
-    AlterTableAddConstraintDesc addConstraintsDesc = new AlterTableAddConstraintDesc(actualDbName + "." + actualTblName,
+    AlterTableAddConstraintDesc addConstraintsDesc = new AlterTableAddConstraintDesc(tName,
         context.eventOnlyReplicationSpec(), constraints);
     Task<DDLWork> addConstraintsTask = TaskFactory.get(
             new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);

@@ -79,10 +79,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: key string, value string, _c1 double, _c2 string
+      name: default.summary
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.summary
 
   Stage: Stage-2
     Stats Work
@@ -290,10 +290,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: key string, value string, rr int
+      name: default.x4
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.x4
 
   Stage: Stage-2
     Stats Work
@@ -533,10 +533,10 @@ STAGE PLANS:
   Stage: Stage-5
     Create Table
       columns: key string, value string, lead1 string
+      name: default.x5
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.x5
 
   Stage: Stage-3
     Stats Work
@@ -734,10 +734,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key string, value string, _c1 double
+      name: default.x6
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.x6
 
   Stage: Stage-2
     Stats Work
@@ -944,10 +944,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: _col0 string, _col1 string, _c1 bigint
+      name: default.x7
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.x7
 
   Stage: Stage-2
     Stats Work
@@ -1431,10 +1431,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: _col0 string, _col1 string, _c1 bigint
+      name: default.x8
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.x8
 
   Stage: Stage-2
     Stats Work
@@ -1621,10 +1621,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: _c0 string, key string
+      name: default.x9
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.x9
 
   Stage: Stage-2
     Stats Work

@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
@@ -43,8 +44,9 @@ public class DropPartitionHandler extends AbstractMessageHandler {
       Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
           ReplUtils.genPartSpecs(new Table(msg.getTableObj()), msg.getPartitions());
       if (partSpecs.size() > 0) {
-        AlterTableDropPartitionDesc dropPtnDesc = new AlterTableDropPartitionDesc(actualDbName + "." + actualTblName,
-            partSpecs, true, context.eventOnlyReplicationSpec());
+        AlterTableDropPartitionDesc dropPtnDesc =
+            new AlterTableDropPartitionDesc(HiveTableName.ofNullable(actualTblName, actualDbName), partSpecs, true,
+                context.eventOnlyReplicationSpec());
         Task<DDLWork> dropPtnTask = TaskFactory.get(
             new DDLWork(readEntitySet, writeEntitySet, dropPtnDesc), context.hiveConf
         );

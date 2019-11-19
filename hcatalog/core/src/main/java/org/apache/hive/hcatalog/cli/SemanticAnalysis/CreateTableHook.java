@@ -19,7 +19,6 @@
 package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,7 +174,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
     }
 
     try {
-      Table table = context.getHive().newTable(desc.getTableName());
+      Table table = context.getHive().newTable(desc.getDbTableName());
       if (desc.getLocation() != null) {
         table.setDataLocation(new Path(desc.getLocation()));
       }

@@ -134,10 +134,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key string, value string
+      name: default.orc_createas1b
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
       serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-      name: default.orc_createas1b
 
   Stage: Stage-2
     Stats Work
@@ -345,10 +345,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key int, value string, part int
+      name: default.orc_createas1c
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
       serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-      name: default.orc_createas1c
 
   Stage: Stage-2
     Stats Work

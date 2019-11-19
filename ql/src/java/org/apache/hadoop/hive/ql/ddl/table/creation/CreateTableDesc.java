@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.PartitionManagementTask;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -74,8 +75,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(CreateTableDesc.class);
 
-  String databaseName;
-  String tableName;
+  TableName tableName;
   boolean isExternal;
   List<FieldSchema> cols;
   List<FieldSchema> partCols;
@@ -123,7 +123,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   public CreateTableDesc() {
   }
 
-  public CreateTableDesc(String databaseName, String tableName, boolean isExternal, boolean isTemporary,
+  public CreateTableDesc(TableName tableName, boolean isExternal, boolean isTemporary,
       List<FieldSchema> cols, List<FieldSchema> partCols,
       List<String> bucketCols, List<Order> sortCols, int numBuckets,
       String fieldDelim, String fieldEscape, String collItemDelim,
@@ -145,12 +145,11 @@ public class CreateTableDesc implements DDLDesc, Serializable {
         tblProps, ifNotExists, skewedColNames, skewedColValues,
         primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
 
-    this.databaseName = databaseName;
     this.colStats = colStats;
     this.replWriteId = writeId;
   }
 
-  public CreateTableDesc(String databaseName, String tableName, boolean isExternal, boolean isTemporary,
+  public CreateTableDesc(TableName tableName, boolean isExternal, boolean isTemporary,
       List<FieldSchema> cols, List<String> partColNames,
       List<String> bucketCols, List<Order> sortCols, int numBuckets,
       String fieldDelim, String fieldEscape, String collItemDelim,
@@ -163,7 +162,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       boolean isCTAS, List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
       List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
       List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
-    this(databaseName, tableName, isExternal, isTemporary, cols, new ArrayList<>(),
+    this(tableName, isExternal, isTemporary, cols, new ArrayList<>(),
         bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
         collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
         outputFormat, location, serName, storageHandler, serdeProps,
@@ -174,7 +173,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     this.isCTAS = isCTAS;
   }
 
-  public CreateTableDesc(String tableName, boolean isExternal, boolean isTemporary,
+  public CreateTableDesc(TableName tableName, boolean isExternal, boolean isTemporary,
       List<FieldSchema> cols, List<FieldSchema> partCols,
       List<String> bucketCols, List<Order> sortCols, int numBuckets,
       String fieldDelim, String fieldEscape, String collItemDelim,
@@ -243,15 +242,17 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getTableName() {
-    return tableName;
+  public String getDbTableName() {
+    return tableName.getNotEmptyDbTable();
   }
 
-  public String getDatabaseName() {
-    return databaseName;
+  public TableName getTableName(){ return tableName; }
+
+  public String getDatabaseName(){
+    return tableName.getDb();
   }
 
-  public void setTableName(String tableName) {
+  public void setTableName(TableName tableName) {
     this.tableName = tableName;
   }
 
@@ -723,16 +724,8 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   }
 
   public Table toTable(HiveConf conf) throws HiveException {
-    String databaseName = getDatabaseName();
-    String tableName = getTableName();
 
-    if (databaseName == null || tableName.contains(".")) {
-      String[] names = Utilities.getDbTableName(tableName);
-      databaseName = names[0];
-      tableName = names[1];
-    }
-
-    Table tbl = new Table(databaseName, tableName);
+    Table tbl = new Table(tableName.getDb(), tableName.getTable());
 
     if (getTblProps() != null) {
       tbl.getTTable().getParameters().putAll(getTblProps());
