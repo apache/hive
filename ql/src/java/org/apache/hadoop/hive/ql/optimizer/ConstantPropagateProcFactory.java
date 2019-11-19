@@ -530,12 +530,15 @@ public final class ConstantPropagateProcFactory {
         return;
       }
       // If both sides are constants, there is nothing to propagate
-      ExprNodeColumnDesc c = ExprNodeDescUtils.getColumnExpr(lOperand);
-      if (null == c) {
-        c = ExprNodeDescUtils.getColumnExpr(rOperand);
-      }
-      if (null == c) {
-        // we need a column expression on other side.
+      ExprNodeColumnDesc c;
+      if (lOperand instanceof ExprNodeColumnDesc) {
+        c = (ExprNodeColumnDesc)lOperand;
+      } else if (rOperand instanceof ExprNodeColumnDesc) {
+        c = (ExprNodeColumnDesc)rOperand;
+      } else {
+        // we need a column expression on other side
+        // NOTE: we also cannot rely on column expressions wrapped inside casts as casting might
+        // truncate information
         return;
       }
       ColumnInfo ci = resolveColumn(rs, c);
