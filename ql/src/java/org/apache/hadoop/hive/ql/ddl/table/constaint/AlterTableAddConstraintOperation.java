@@ -38,11 +38,11 @@ public class AlterTableAddConstraintOperation extends DDLOperation<AlterTableAdd
 
   @Override
   public int execute() throws Exception {
-    if (!DDLUtils.allowOperationInReplicationScope(context.getDb(), desc.getTableName(), null,
+    if (!DDLUtils.allowOperationInReplicationScope(context.getDb(), desc.getDbTableName(), null,
         desc.getReplicationSpec())) {
       // no alter, the table is missing either due to drop/rename which follows the alter.
       // or the existing table is newer than our update.
-      LOG.debug("DDLTask: Alter Table is skipped as table {} is newer than update", desc.getTableName());
+      LOG.debug("DDLTask: Alter Table is skipped as table {} is newer than update", desc.getDbTableName());
       return 0;
     }
 

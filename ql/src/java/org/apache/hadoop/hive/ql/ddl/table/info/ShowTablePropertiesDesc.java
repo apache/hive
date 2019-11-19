@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.info;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -34,10 +35,10 @@ public class ShowTablePropertiesDesc implements DDLDesc, Serializable {
   public static final String SCHEMA = "prpt_name,prpt_value#string:string";
 
   private final String resFile;
-  private final String tableName;
+  private final TableName tableName;
   private final String propertyName;
 
-  public ShowTablePropertiesDesc(String resFile, String tableName, String propertyName) {
+  public ShowTablePropertiesDesc(String resFile, TableName tableName, String propertyName) {
     this.resFile = resFile;
     this.tableName = tableName;
     this.propertyName = propertyName;
@@ -54,7 +55,7 @@ public class ShowTablePropertiesDesc implements DDLDesc, Serializable {
 
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
-    return tableName;
+    return tableName.getNotEmptyDbTable();
   }
 
   @Explain(displayName = "property name")

@@ -56,15 +56,15 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
 
   @Override
   public int execute() throws HiveException {
-    if (!AlterTableUtils.allowOperationInReplicationScope(context.getDb(), desc.getTableName(), null,
+    if (!AlterTableUtils.allowOperationInReplicationScope(context.getDb(), desc.getDbTableName(), null,
         desc.getReplicationSpec())) {
       // no alter, the table is missing either due to drop/rename which follows the alter.
       // or the existing table is newer than our update.
-      LOG.debug("DDLTask: Alter Table is skipped as table {} is newer than update", desc.getTableName());
+      LOG.debug("DDLTask: Alter Table is skipped as table {} is newer than update", desc.getDbTableName());
       return 0;
     }
 
-    Table oldTable = context.getDb().getTable(desc.getTableName());
+    Table oldTable = context.getDb().getTable(desc.getDbTableName());
     List<Partition> partitions = getPartitions(oldTable, desc.getPartitionSpec(), context);
 
     // Don't change the table object returned by the metastore, as we'll mess with it's caches.
@@ -148,8 +148,8 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
           }
           writeId = tmpWriteId;
         }
-        context.getDb().alterTable(desc.getTableName(), table, desc.isCascade(), environmentContext,
-                true, writeId);
+        context.getDb().alterTable(alterTable.getDbTableName(), table, alterTable.isCascade(), environmentContext, true,
+            writeId);
       } else {
         // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
         //       For any other updates, we don't want to do txn check on partitions when altering table.

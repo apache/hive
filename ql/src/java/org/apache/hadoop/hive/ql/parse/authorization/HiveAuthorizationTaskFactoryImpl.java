@@ -251,8 +251,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     ASTNode gchild = (ASTNode)child.getChild(0);
     if (child.getType() == HiveParser.TOK_TABLE_TYPE) {
       isTable = true;
-      String[] qualified = BaseSemanticAnalyzer.getQualifiedTableName(gchild);
-      object = BaseSemanticAnalyzer.getDotName(qualified);
+      object = BaseSemanticAnalyzer.getQualifiedTableName(gchild).getNotEmptyDbTable();
     } else if (child.getType() == HiveParser.TOK_URI_TYPE || child.getType() == HiveParser.TOK_SERVER_TYPE) {
       throw new SemanticException("Hive authorization does not support the URI or SERVER objects");
     } else {

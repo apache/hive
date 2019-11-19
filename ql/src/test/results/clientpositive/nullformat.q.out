@@ -49,10 +49,10 @@ STAGE PLANS:
   Stage: Stage-0
     Create Table
       columns: a string, b string
+      name: default.null_tab1
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.null_tab1
 
 PREHOOK: query: CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
 PREHOOK: type: CREATETABLE

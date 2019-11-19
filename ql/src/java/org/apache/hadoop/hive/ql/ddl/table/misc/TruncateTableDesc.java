@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -39,8 +40,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class TruncateTableDesc implements DDLDescWithWriteId, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final String tableName;
-  private final String fullTableName;
+  private final TableName tableName;
   private final Map<String, String> partSpec;
   private final ReplicationSpec replicationSpec;
   private final boolean isTransactional;
@@ -51,19 +51,18 @@ public class TruncateTableDesc implements DDLDescWithWriteId, Serializable {
 
   private long writeId = 0;
 
-  public TruncateTableDesc(String tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec) {
+  public TruncateTableDesc(TableName tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec) {
     this(tableName, partSpec, replicationSpec, null);
   }
 
-  public TruncateTableDesc(String tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec,
+  public TruncateTableDesc(TableName tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec,
       Table table) {
     this(tableName, partSpec, replicationSpec, table, null, null, null, null);
   }
 
-  public TruncateTableDesc(String tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec,
+  public TruncateTableDesc(TableName tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec,
       Table table, List<Integer> columnIndexes, Path inputDir, Path outputDir, ListBucketingCtx lbCtx) {
     this.tableName = tableName;
-    this.fullTableName = table == null ? tableName : Warehouse.getQualifiedName(table.getTTable());
     this.partSpec = partSpec;
     this.replicationSpec = replicationSpec;
     this.isTransactional = AcidUtils.isTransactionalTable(table);
@@ -75,12 +74,12 @@ public class TruncateTableDesc implements DDLDescWithWriteId, Serializable {
 
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
-    return tableName;
+    return tableName.getNotEmptyDbTable();
   }
 
   @Override
   public String getFullTableName() {
-    return fullTableName;
+    return tableName.getNotEmptyDbTable();
   }
 
   @Explain(displayName = "partition spec", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

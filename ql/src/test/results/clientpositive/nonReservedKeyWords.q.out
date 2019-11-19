@@ -13,10 +13,10 @@ STAGE PLANS:
   Stage: Stage-0
     Create Table
       columns: col string
+      name: default.CACHE
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.CACHE
 
 PREHOOK: query: explain CREATE TABLE DAYOFWEEK (col STRING)
 PREHOOK: type: CREATETABLE
@@ -33,10 +33,10 @@ STAGE PLANS:
   Stage: Stage-0
     Create Table
       columns: col string
+      name: default.DAYOFWEEK
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.DAYOFWEEK
 
 PREHOOK: query: explain CREATE TABLE VIEWS (col STRING)
 PREHOOK: type: CREATETABLE
@@ -53,8 +53,8 @@ STAGE PLANS:
   Stage: Stage-0
     Create Table
       columns: col string
+      name: default.VIEWS
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.VIEWS
 

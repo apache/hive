@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -35,17 +34,17 @@ public class AlterTableDropConstraintOperation extends DDLOperation<AlterTableDr
 
   @Override
   public int execute() throws Exception {
-    if (!DDLUtils.allowOperationInReplicationScope(context.getDb(), desc.getTableName(), null,
+    if (!DDLUtils.allowOperationInReplicationScope(context.getDb(), desc.getDbTableName(), null,
         desc.getReplicationSpec())) {
       // no alter, the table is missing either due to drop/rename which follows the alter.
       // or the existing table is newer than our update.
-      LOG.debug("DDLTask: Alter Table is skipped as table {} is newer than update", desc.getTableName());
+      LOG.debug("DDLTask: Alter Table is skipped as table {} is newer than update", desc.getDbTableName());
       return 0;
     }
 
     try {
-      context.getDb().dropConstraint(Utilities.getDatabaseName(desc.getTableName()),
-          Utilities.getTableName(desc.getTableName()), desc.getConstraintName());
+      context.getDb().dropConstraint(desc.getTableName().getDb(),
+          desc.getTableName().getTable(), desc.getConstraintName());
     } catch (NoSuchObjectException e) {
       throw new HiveException(e);
     }

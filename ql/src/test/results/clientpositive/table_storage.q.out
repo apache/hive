@@ -41,9 +41,9 @@ STAGE PLANS:
   Stage: Stage-0
     Clustered By
       bucket columns: key
+      table name: default.t
       number of buckets: 2
       sort columns: key ASC
-      table name: default.t
 
 PREHOOK: query: ALTER TABLE t CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
@@ -90,8 +90,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Into Buckets
-      number of buckets: 3
       table name: default.t
+      number of buckets: 3
 
 PREHOOK: query: ALTER TABLE t INTO 3 BUCKETS
 PREHOOK: type: ALTERTABLE_BUCKETNUM
@@ -230,9 +230,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Skewed By
+      table name: default.t
       skewedColumnNames: key
       skewedColumnValues: [a], [b]
-      table name: default.t
       isStoredAsDirectories: true
 
 PREHOOK: query: ALTER TABLE t SKEWED BY (key) ON (("a"), ("b")) STORED AS DIRECTORIES
@@ -281,6 +281,7 @@ STAGE PLANS:
   Stage: Stage-0
 #### A masked pattern was here ####
       table name: default.t
+#### A masked pattern was here ####
 
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTBLPART_SKEWED_LOCATION
@@ -372,10 +373,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Set File Format
+      table name: default.t
       input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
       output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
       serde name: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-      table name: default.t
 
 PREHOOK: query: ALTER TABLE t SET FILEFORMAT parquet
 PREHOOK: type: ALTERTABLE_FILEFORMAT
@@ -420,6 +421,7 @@ STAGE PLANS:
   Stage: Stage-0
 #### A masked pattern was here ####
       table name: default.t
+#### A masked pattern was here ####
 
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_LOCATION
@@ -464,8 +466,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Set Serde
-      serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
       table name: default.t
+      serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 
 PREHOOK: query: ALTER TABLE t SET SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe"
 PREHOOK: type: ALTERTABLE_SERIALIZER
@@ -509,10 +511,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Set Serde Props
+      table name: default.t
       properties:
         property1 value1
         property2 value2
-      table name: default.t
 
 PREHOOK: query: ALTER TABLE t SET SERDEPROPERTIES('property1'='value1', 'property2'='value2')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES

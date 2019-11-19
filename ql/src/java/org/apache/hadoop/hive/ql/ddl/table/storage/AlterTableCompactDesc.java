@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.storage;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -36,9 +37,9 @@ public class AlterTableCompactDesc implements DDLDesc {
   private final boolean isBlocking;
   private final Map<String, String> properties;
 
-  public AlterTableCompactDesc(String tableName, Map<String, String> partitionSpec, String compactionType,
+  public AlterTableCompactDesc(TableName tableName, Map<String, String> partitionSpec, String compactionType,
       boolean isBlocking, Map<String, String> properties) {
-    this.tableName = tableName;
+    this.tableName = tableName.getNotEmptyDbTable();
     this.partitionSpec = partitionSpec;
     this.compactionType = compactionType;
     this.isBlocking = isBlocking;

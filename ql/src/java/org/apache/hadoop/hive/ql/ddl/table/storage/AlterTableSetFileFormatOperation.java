@@ -43,7 +43,7 @@ public class AlterTableSetFileFormatOperation extends AbstractAlterTableOperatio
     if (AlterTableUtils.isSchemaEvolutionEnabled(table, context.getConf()) &&
         sd.getInputFormat().equals(OrcInputFormat.class.getName())
         && !desc.getInputFormat().equals(OrcInputFormat.class.getName())) {
-      throw new HiveException(ErrorMsg.CANNOT_CHANGE_FILEFORMAT, "ORC", desc.getTableName());
+      throw new HiveException(ErrorMsg.CANNOT_CHANGE_FILEFORMAT, "ORC", desc.getDbTableName());
     }
 
     sd.setInputFormat(desc.getInputFormat());

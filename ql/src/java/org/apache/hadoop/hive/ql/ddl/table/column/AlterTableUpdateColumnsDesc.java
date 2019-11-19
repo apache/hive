@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.column;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -33,7 +34,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterTableUpdateColumnsDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  public AlterTableUpdateColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade)
+  public AlterTableUpdateColumnsDesc(TableName tableName, Map<String, String> partitionSpec, boolean isCascade)
       throws SemanticException {
     super(AlterTableType.UPDATE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
   }

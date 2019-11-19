@@ -52,7 +52,7 @@ public class AlterTableChangeColumnOperation extends AbstractAlterTableOperation
     boolean isOrcSchemaEvolution = sd.getInputFormat().equals(OrcInputFormat.class.getName()) &&
         AlterTableUtils.isSchemaEvolutionEnabled(table, context.getConf());
     if (isOrcSchemaEvolution && (desc.isFirst() || StringUtils.isNotBlank(desc.getAfterColumn()))) {
-      throw new HiveException(ErrorMsg.CANNOT_REORDER_COLUMNS, desc.getTableName());
+      throw new HiveException(ErrorMsg.CANNOT_REORDER_COLUMNS, desc.getDbTableName());
     }
 
     FieldSchema column = null;

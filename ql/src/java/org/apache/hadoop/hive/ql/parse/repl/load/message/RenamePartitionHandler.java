@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
@@ -45,7 +46,7 @@ public class RenamePartitionHandler extends AbstractMessageHandler {
 
     Map<String, String> newPartSpec = new LinkedHashMap<>();
     Map<String, String> oldPartSpec = new LinkedHashMap<>();
-    String tableName = actualDbName + "." + actualTblName;
+    TableName tableName = TableName.fromString(actualTblName, null, actualDbName);
     Table tableObj;
     ReplicationSpec replicationSpec = context.eventOnlyReplicationSpec();
     try {

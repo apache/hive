@@ -77,9 +77,10 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   public int execute() throws Exception {
     Table table = getTable();
     Partition part = getPartition(table);
+    final String dbTableName = desc.getDbTableName();
 
     try (DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
-      LOG.debug("DDLTask: got data for {}", desc.getTableName());
+      LOG.debug("DDLTask: got data for {}", dbTableName);
 
       List<FieldSchema> cols = new ArrayList<>();
       List<ColumnStatisticsObj> colStats = new ArrayList<>();
@@ -102,22 +103,22 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
-      context.getFormatter().describeTable(outStream, desc.getColumnPath(), desc.getTableName(), table, part, cols,
+      context.getFormatter().describeTable(outStream, desc.getColumnPath(), dbTableName, table, part, cols,
           desc.isFormatted(), desc.isExtended(), isOutputPadded, colStats);
 
-      LOG.debug("DDLTask: written data for {}", desc.getTableName());
+      LOG.debug("DDLTask: written data for {}", dbTableName);
 
     } catch (SQLException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, desc.getTableName());
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, dbTableName);
     }
 
     return 0;
   }
 
   private Table getTable() throws HiveException {
-    Table table = context.getDb().getTable(desc.getTableName(), false);
+    Table table = context.getDb().getTable(desc.getTableName().getDb(), desc.getTableName().getTable(), false);
     if (table == null) {
-      throw new HiveException(ErrorMsg.INVALID_TABLE, desc.getTableName());
+      throw new HiveException(ErrorMsg.INVALID_TABLE, desc.getDbTableName());
     }
     return table;
   }
@@ -128,7 +129,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       part = context.getDb().getPartition(table, desc.getPartitionSpec(), false);
       if (part == null) {
         throw new HiveException(ErrorMsg.INVALID_PARTITION,
-            StringUtils.join(desc.getPartitionSpec().keySet(), ','), desc.getTableName());
+            StringUtils.join(desc.getPartitionSpec().keySet(), ','), desc.getDbTableName());
       }
     }
     return part;
@@ -191,11 +192,11 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private void getColumnDataColPathSpecified(Table table, Partition part, List<FieldSchema> cols,
       List<ColumnStatisticsObj> colStats, Deserializer deserializer)
       throws SemanticException, HiveException, MetaException {
-    // when column name is specified in describe table DDL, colPath will be table_name.column_name
-    String colName = desc.getColumnPath().split("\\.")[1];
+    // when column name is specified in describe table DDL, colPath will be db_name.table_name.column_name
+    String colName = desc.getColumnPath().split("\\.")[2];
     List<String> colNames = Lists.newArrayList(colName.toLowerCase());
 
-    String[] dbTab = Utilities.getDbTableName(desc.getTableName());
+    String[] dbTab = Utilities.getDbTableName(desc.getDbTableName());
     if (null == part) {
       if (table.isPartitioned()) {
         Map<String, String> tableProps = table.getParameters() == null ?

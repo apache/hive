@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -35,26 +36,24 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterTableRenamePartitionDesc implements DDLDescWithWriteId, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final String tableName;
+  private final TableName tableName;
   private final Map<String, String> oldPartSpec;
   private final Map<String, String> newPartSpec;
   private final ReplicationSpec replicationSpec;
-  private final String fqTableName;
 
   private long writeId;
 
-  public AlterTableRenamePartitionDesc(String tableName, Map<String, String> oldPartSpec,
+  public AlterTableRenamePartitionDesc(TableName tableName, Map<String, String> oldPartSpec,
       Map<String, String> newPartSpec, ReplicationSpec replicationSpec, Table table) {
     this.tableName = tableName;
     this.oldPartSpec = new LinkedHashMap<String, String>(oldPartSpec);
     this.newPartSpec = new LinkedHashMap<String, String>(newPartSpec);
     this.replicationSpec = replicationSpec;
-    this.fqTableName = table != null ? (table.getDbName() + "." + table.getTableName()) : tableName;
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
-    return tableName;
+    return tableName.getNotEmptyDbTable();
   }
 
   @Explain(displayName = "old partitions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -87,7 +86,7 @@ public class AlterTableRenamePartitionDesc implements DDLDescWithWriteId, Serial
 
   @Override
   public String getFullTableName() {
-    return fqTableName;
+    return tableName.getNotEmptyDbTable();
   }
 
   @Override

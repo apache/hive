@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.misc;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -40,7 +41,7 @@ public class AlterTableSetPropertiesDesc extends AbstractAlterTableDesc {
   private final boolean isFullAcidConversion;
   private final EnvironmentContext environmentContext;
 
-  public AlterTableSetPropertiesDesc(String tableName, Map<String, String> partitionSpec,
+  public AlterTableSetPropertiesDesc(TableName tableName, Map<String, String> partitionSpec,
       ReplicationSpec replicationSpec, boolean expectView, Map<String, String> props, boolean isExplicitStatsUpdate,
       boolean isFullAcidConversion, EnvironmentContext environmentContext) throws SemanticException {
     super(AlterTableType.ADDPROPS, tableName, partitionSpec, replicationSpec, false, expectView, props);

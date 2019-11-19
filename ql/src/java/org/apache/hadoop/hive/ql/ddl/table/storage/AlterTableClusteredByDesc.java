@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -41,7 +42,7 @@ public class AlterTableClusteredByDesc extends AbstractAlterTableDesc {
   private final List<String> bucketColumns;
   private final List<Order> sortColumns;
 
-  public AlterTableClusteredByDesc(String tableName, Map<String, String> partitionSpec, int numberBuckets,
+  public AlterTableClusteredByDesc(TableName tableName, Map<String, String> partitionSpec, int numberBuckets,
       List<String> bucketColumns, List<Order> sortColumns) throws SemanticException {
     super(AlterTableType.CLUSTERED_BY, tableName, partitionSpec, null, false, false, null);
     this.numberBuckets = numberBuckets;

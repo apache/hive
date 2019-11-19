@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.ddl.table.column;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableWithConstraintsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.constaint.Constraints;
@@ -40,7 +41,7 @@ public class AlterTableChangeColumnDesc extends AbstractAlterTableWithConstraint
   private final boolean first;
   private final String afterColumn;
 
-  public AlterTableChangeColumnDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade,
+  public AlterTableChangeColumnDesc(TableName tableName, Map<String, String> partitionSpec, boolean isCascade,
       Constraints constraints, String oldColumnName, String newColumnName, String newColumnType,
       String newColumnComment, boolean first, String afterColumn) throws SemanticException {
     super(AlterTableType.RENAME_COLUMN, tableName, partitionSpec, null, isCascade, false, null, constraints);

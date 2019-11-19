@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.misc;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -34,7 +35,7 @@ public class AlterTableSetOwnerDesc extends AbstractAlterTableDesc {
 
   private final PrincipalDesc ownerPrincipal;
 
-  public AlterTableSetOwnerDesc(String tableName, PrincipalDesc ownerPrincipal) throws SemanticException {
+  public AlterTableSetOwnerDesc(TableName tableName, PrincipalDesc ownerPrincipal) throws SemanticException {
     super(AlterTableType.OWNER, tableName, null, null, false, false, null);
     this.ownerPrincipal = ownerPrincipal;
   }

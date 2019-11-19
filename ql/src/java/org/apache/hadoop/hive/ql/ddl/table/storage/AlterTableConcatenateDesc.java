@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.storage;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
@@ -42,9 +43,9 @@ public class AlterTableConcatenateDesc implements DDLDesc {
   private final Class<? extends InputFormat> inputFormatClass;
   private final TableDesc tableDesc;
 
-  public AlterTableConcatenateDesc(String tableName, Map<String, String> partitionSpec, ListBucketingCtx lbCtx,
+  public AlterTableConcatenateDesc(TableName tableName, Map<String, String> partitionSpec, ListBucketingCtx lbCtx,
       Path inputDir, Path outputDir, Class<? extends InputFormat> inputFormatClass, TableDesc tableDesc) {
-    this.tableName = tableName;
+    this.tableName = tableName.getNotEmptyDbTable();
     this.partitionSpec = partitionSpec;
     this.lbCtx = lbCtx;
     this.inputDir = inputDir;

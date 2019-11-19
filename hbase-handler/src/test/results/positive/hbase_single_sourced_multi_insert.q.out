@@ -55,9 +55,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Unset Properties
+      table name: default.src_x2
       properties:
         COLUMN_STATS_ACCURATE 
-      table name: default.src_x2
 
   Stage: Stage-4
     Stats Work

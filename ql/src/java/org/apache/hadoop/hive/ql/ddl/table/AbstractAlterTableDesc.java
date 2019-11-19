@@ -21,9 +21,9 @@ package org.apache.hadoop.hive.ql.ddl.table;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -36,7 +36,7 @@ public abstract class AbstractAlterTableDesc implements DDLDescWithWriteId, Seri
   private static final long serialVersionUID = 1L;
 
   private final AlterTableType type;
-  private final String tableName;
+  private final TableName tableName;
   private final Map<String, String> partitionSpec;
   private final ReplicationSpec replicationSpec;
   private final boolean isCascade;
@@ -45,11 +45,11 @@ public abstract class AbstractAlterTableDesc implements DDLDescWithWriteId, Seri
 
   private Long writeId;
 
-  public AbstractAlterTableDesc(AlterTableType type, String tableName, Map<String, String> partitionSpec,
+  public AbstractAlterTableDesc(AlterTableType type, TableName tableName, Map<String, String> partitionSpec,
       ReplicationSpec replicationSpec, boolean isCascade, boolean expectView, Map<String, String> props)
       throws SemanticException {
     this.type = type;
-    this.tableName = tableName.contains(".") ? tableName : String.join(".", Utilities.getDbTableName(tableName));
+    this.tableName = tableName;
     this.partitionSpec = partitionSpec;
     this.replicationSpec = replicationSpec;
     this.isCascade = isCascade;
@@ -62,8 +62,8 @@ public abstract class AbstractAlterTableDesc implements DDLDescWithWriteId, Seri
   }
 
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getTableName() {
-    return tableName;
+  public String getDbTableName() {
+    return tableName.getNotEmptyDbTable();
   }
 
   @Explain(displayName = "partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -96,7 +96,7 @@ public abstract class AbstractAlterTableDesc implements DDLDescWithWriteId, Seri
 
   @Override
   public String getFullTableName() {
-    return tableName;
+    return tableName.getNotEmptyDbTable();
   }
 
   @Override

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -55,31 +56,31 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     }
 
     ASTNode tableTree = (ASTNode) root.getChild(0);
-    String[] qualifiedTableName = getQualifiedTableName(tableTree);
-    String dbDotTable = getDotName(qualifiedTableName);
+    TableName tableName = getQualifiedTableName(tableTree);
     if (ctx.enableUnparse()) {
       unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
       return;
     }
 
-    ASTNode rewrittenAST = getRewrittenAST(qualifiedTableName, dbDotTable);
+    ASTNode rewrittenAST = getRewrittenAST(tableName);
 
     mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
-    mvRebuildDbName = qualifiedTableName[0];
-    mvRebuildName = qualifiedTableName[1];
+    mvRebuildDbName = tableName.getDb();
+    mvRebuildName = tableName.getTable();
 
-    LOG.debug("Rebuilding materialized view " + dbDotTable);
+    LOG.debug("Rebuilding materialized view " + tableName.getNotEmptyDbTable());
     super.analyzeInternal(rewrittenAST);
   }
 
-  private static final String REWRITTEN_INSERT_STATEMENT = "INSERT OVERWRITE TABLE `%s`.`%s` %s";
+  private static final String REWRITTEN_INSERT_STATEMENT = "INSERT OVERWRITE TABLE %s %s";
 
-  private ASTNode getRewrittenAST(String[] qualifiedTableName, String dbDotTable) throws SemanticException {
+  private ASTNode getRewrittenAST(TableName tableName) throws SemanticException {
     ASTNode rewrittenAST;
     // We need to go lookup the table and get the select statement and then parse it.
     try {
-      Table table = getTableObjectByName(dbDotTable, true);
+      Table table = getTableObjectByName(tableName.getNotEmptyDbTable(), true);
       if (!table.isMaterializedView()) {
+        // Cannot rebuild not materialized view
         throw new SemanticException(ErrorMsg.REBUILD_NO_MATERIALIZED_VIEW);
       }
 
@@ -91,8 +92,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       }
 
       Context ctx = new Context(queryState.getConf());
-      String rewrittenInsertStatement = String.format(REWRITTEN_INSERT_STATEMENT, qualifiedTableName[0],
-          qualifiedTableName[1], viewText);
+      String rewrittenInsertStatement = String.format(REWRITTEN_INSERT_STATEMENT,
+          tableName.getEscapedNotEmptyDbTable(), viewText);
       rewrittenAST = ParseUtils.parse(rewrittenInsertStatement, ctx);
       this.ctx.addRewrittenStatementContext(ctx);
 
@@ -103,12 +104,13 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         LockState state;
         try {
           state = txnManager.acquireMaterializationRebuildLock(
-              qualifiedTableName[0], qualifiedTableName[1], txnManager.getCurrentTxnId()).getState();
+              tableName.getDb(), tableName.getTable(), txnManager.getCurrentTxnId()).getState();
         } catch (LockException e) {
           throw new SemanticException("Exception acquiring lock for rebuilding the materialized view", e);
         }
         if (state != LockState.ACQUIRED) {
-          throw new SemanticException("Another process is rebuilding the materialized view " + dbDotTable);
+          throw new SemanticException(
+              "Another process is rebuilding the materialized view " + tableName.getNotEmptyDbTable());
         }
       }
     } catch (Exception e) {

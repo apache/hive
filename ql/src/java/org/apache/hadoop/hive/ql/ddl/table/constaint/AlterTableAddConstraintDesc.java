@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.constaint;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableWithConstraintsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -32,7 +33,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterTableAddConstraintDesc extends AbstractAlterTableWithConstraintsDesc {
   private static final long serialVersionUID = 1L;
 
-  public AlterTableAddConstraintDesc(String tableName, ReplicationSpec replicationSpec, Constraints constraints)
+  public AlterTableAddConstraintDesc(TableName tableName, ReplicationSpec replicationSpec, Constraints constraints)
       throws SemanticException {
     super(AlterTableType.ADD_CONSTRAINT, tableName, null, replicationSpec, false, false, null, constraints);
   }

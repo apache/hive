@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.constaint.Constraints;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -33,7 +34,7 @@ public abstract class AbstractAlterTableWithConstraintsDesc extends AbstractAlte
 
   private final Constraints constraints;
 
-  public AbstractAlterTableWithConstraintsDesc(AlterTableType type, String tableName,
+  public AbstractAlterTableWithConstraintsDesc(AlterTableType type, TableName tableName,
       Map<String, String> partitionSpec, ReplicationSpec replicationSpec, boolean isCascade, boolean expectView,
       Map<String, String> props, Constraints constraints) throws SemanticException {
     super(type, tableName, partitionSpec, replicationSpec, isCascade, expectView, props);

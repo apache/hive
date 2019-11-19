@@ -16,9 +16,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
 #### A masked pattern was here ####
+      table name: default.t
+#### A masked pattern was here ####
         Principal
           name: user1
-      table name: default.t
 
 PREHOOK: query: ALTER TABLE t SET OWNER USER user1
 PREHOOK: type: ALTERTABLE_OWNER

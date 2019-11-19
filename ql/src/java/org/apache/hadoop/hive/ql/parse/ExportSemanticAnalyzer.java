@@ -115,8 +115,8 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
     MmContext mmCtx = MmContext.createIfNeeded(ts == null ? null : ts.tableHandle);
 
     Utilities.FILE_OP_LOGGER.debug("Exporting table {}: MM context {}",
-        ts == null ? null : ts.tableName, mmCtx);
-    // Configure export work
+        ts == null ? null : ts.getTableName(), mmCtx);
+      // Configure export work
     ExportWork exportWork = new ExportWork(exportRootDirName, ts, replicationSpec,
         ErrorMsg.INVALID_PATH.getMsg(ast), acidTableName, mmCtx);
     // Create an export task and add it as a root task

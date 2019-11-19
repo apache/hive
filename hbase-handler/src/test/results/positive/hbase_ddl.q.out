@@ -50,9 +50,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Unset Properties
+      table name: default.hbase_table_1
       properties:
         COLUMN_STATS_ACCURATE 
-      table name: default.hbase_table_1
 
   Stage: Stage-1
     Pre-Insert task

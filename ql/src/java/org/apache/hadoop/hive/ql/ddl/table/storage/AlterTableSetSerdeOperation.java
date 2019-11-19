@@ -52,7 +52,7 @@ public class AlterTableSetSerdeOperation extends AbstractAlterTableOperation<Alt
         oldSerdeName.equalsIgnoreCase(OrcSerde.class.getName()) &&
         !serdeName.equalsIgnoreCase(OrcSerde.class.getName())) {
       throw new HiveException(ErrorMsg.CANNOT_CHANGE_SERDE, OrcSerde.class.getSimpleName(),
-          desc.getTableName());
+          desc.getDbTableName());
     }
 
     sd.getSerdeInfo().setSerializationLib(serdeName);

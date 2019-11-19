@@ -126,7 +126,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Truncate Table or Partition
-      table name: src_truncate
+      table name: default.src_truncate
 
 PREHOOK: query: TRUNCATE TABLE src_truncate
 PREHOOK: type: TRUNCATETABLE
@@ -166,7 +166,7 @@ STAGE PLANS:
       partition spec:
         ds 2008-04-08
         hr 11
-      table name: srcpart_truncate
+      table name: default.srcpart_truncate
 
 PREHOOK: query: TRUNCATE TABLE srcpart_truncate partition (ds='2008-04-08', hr='11')
 PREHOOK: type: TRUNCATETABLE
@@ -210,7 +210,7 @@ STAGE PLANS:
       partition spec:
         ds 
         hr 12
-      table name: srcpart_truncate
+      table name: default.srcpart_truncate
 
 PREHOOK: query: TRUNCATE TABLE srcpart_truncate partition (ds, hr='12')
 PREHOOK: type: TRUNCATETABLE
@@ -259,7 +259,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Truncate Table or Partition
-      table name: srcpart_truncate
+      table name: default.srcpart_truncate
 
 PREHOOK: query: TRUNCATE TABLE srcpart_truncate
 PREHOOK: type: TRUNCATETABLE

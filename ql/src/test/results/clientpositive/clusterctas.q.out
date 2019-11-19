@@ -79,10 +79,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: key string, value string
+      name: default.x
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
       serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-      name: default.x
       table properties:
         transactional true
 

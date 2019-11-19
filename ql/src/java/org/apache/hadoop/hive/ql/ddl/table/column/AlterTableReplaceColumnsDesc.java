@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.column;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -37,7 +38,7 @@ public class AlterTableReplaceColumnsDesc extends AbstractAlterTableDesc {
 
   private final List<FieldSchema> newColumns;
 
-  public AlterTableReplaceColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade,
+  public AlterTableReplaceColumnsDesc(TableName tableName, Map<String, String> partitionSpec, boolean isCascade,
       List<FieldSchema> newColumns) throws SemanticException {
     super(AlterTableType.REPLACE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
     this.newColumns = newColumns;

@@ -24,10 +24,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Change Column
+      table name: default.t1_n14
       new column name: c1
       new column type: smallint
       old column name: c1
-      table name: default.t1_n14
 
 PREHOOK: query: alter table t1_n14 change column c1 c1 smallint
 PREHOOK: type: ALTERTABLE_RENAMECOL

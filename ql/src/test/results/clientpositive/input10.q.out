@@ -21,7 +21,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Describe Table
-      table: TEST10
+      table: default.TEST10
 
   Stage: Stage-1
     Fetch Operator

@@ -92,9 +92,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Describe Table
+      table: default.INPUTDDL6
       partition:
         ds 2008-04-09
-      table: INPUTDDL6
       extended: true
 
   Stage: Stage-1
