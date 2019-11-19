@@ -60,7 +60,7 @@ public class AlterTableReplaceColumnsOperation extends AbstractAlterTableOperati
       context.getConsole().printInfo("Replacing columns for columnsetSerDe and changing to LazySimpleSerDe");
       sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
     } else if (!VALID_SERIALIZATION_LIBS.contains(serializationLib)) {
-      throw new HiveException(ErrorMsg.CANNOT_REPLACE_COLUMNS, desc.getTableName());
+      throw new HiveException(ErrorMsg.CANNOT_REPLACE_COLUMNS, desc.getDbTableName());
     }
 
     // adding columns and limited integer type promotion is not supported for ORC schema evolution
@@ -71,7 +71,7 @@ public class AlterTableReplaceColumnsOperation extends AbstractAlterTableOperati
       List<FieldSchema> replaceCols = desc.getNewColumns();
 
       if (replaceCols.size() < existingCols.size()) {
-        throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, desc.getTableName());
+        throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, desc.getDbTableName());
       }
     }
 
@@ -79,7 +79,7 @@ public class AlterTableReplaceColumnsOperation extends AbstractAlterTableOperati
     if (ParquetHiveSerDe.isParquetTable(table) && AlterTableUtils.isSchemaEvolutionEnabled(table, context.getConf()) &&
         !desc.isCascade() && droppingColumns && table.isPartitioned()) {
       LOG.warn("Cannot drop columns from a partitioned parquet table without the CASCADE option");
-      throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, desc.getTableName());
+      throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, desc.getDbTableName());
     }
 
     sd.setCols(desc.getNewColumns());

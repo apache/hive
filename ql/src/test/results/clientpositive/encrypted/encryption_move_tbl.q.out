@@ -109,8 +109,8 @@ POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 src
-FAILED: SemanticException [Error 10001]: Table not found encrypted_table_n1
-FAILED: SemanticException [Error 10001]: Table not found encrypted_table_n1
+FAILED: SemanticException [Error 10001]: Table not found default.encrypted_table_n1
+FAILED: SemanticException [Error 10001]: Table not found default.encrypted_table_n1
 FAILED: SemanticException [Error 10001]: Table not found default.encrypted_table_n1
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES

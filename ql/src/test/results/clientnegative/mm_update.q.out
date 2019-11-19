@@ -55,4 +55,4 @@ POSTHOOK: Input: default@mm_srcpart@ds=2008-04-09/hr=11
 2008-04-09	11	43	val_43
 2008-04-09	11	413	val_413
 2008-04-09	11	413	val_413
-FAILED: SemanticException [Error 10414]: Attempt to do update or delete on table default.mm_srcpart that is insert-only transactional
+FAILED: SemanticException [Error 10414]: Attempt to do update or delete on table mm_srcpart that is insert-only transactional

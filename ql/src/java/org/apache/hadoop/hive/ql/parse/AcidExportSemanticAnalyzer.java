@@ -28,6 +28,7 @@ import java.util.UUID;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -97,6 +98,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     //tableHandle can be null if table doesn't exist
     return tableHandle != null && AcidUtils.isFullAcidTable(tableHandle);
   }
+
   private static String getTmptTableNameForExport(Table exportTable) {
     String tmpTableDb = exportTable.getDbName();
     String tmpTableName = exportTable.getTableName() + "_" + UUID.randomUUID().toString().replace('-', '_');
@@ -123,7 +125,8 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     //need to create the table "manually" rather than creating a task since it has to exist to
     // compile the insert into T...
-    String newTableName = getTmptTableNameForExport(exportTable); //this is db.table
+    final String newTableName = getTmptTableNameForExport(exportTable); //this is db.table
+    final TableName newTableNameRef = HiveTableName.of(newTableName);
     Map<String, String> tblProps = new HashMap<>();
     tblProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.FALSE.toString());
     String location;
@@ -189,7 +192,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     // IMPORT is done for this archive and target table doesn't exist, it will be created as Acid.
     Map<String, String> mapProps = new HashMap<>();
     mapProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.TRUE.toString());
-    AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(newTableName, null, null, false,
+    AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(newTableNameRef, null, null, false,
         mapProps, false, false, null);
     addExportTask(rootTasks, exportTask, TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
 

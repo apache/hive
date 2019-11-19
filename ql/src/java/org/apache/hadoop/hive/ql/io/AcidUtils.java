@@ -2340,7 +2340,7 @@ public class AcidUtils {
   }
 
   public static String getFullTableName(String dbName, String tableName) {
-    return TableName.getDbTable(dbName.toLowerCase(), tableName.toLowerCase());
+    return TableName.fromString(tableName, null, dbName).getNotEmptyDbTable().toLowerCase();
   }
 
   /**

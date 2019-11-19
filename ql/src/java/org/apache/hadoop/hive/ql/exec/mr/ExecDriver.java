@@ -417,7 +417,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         return 5;
       }
 
-      rj = jc.submitJob(job);
+    rj = jc.submitJob(job);
 
       if (driverContext.isShutdown()) {
         LOG.warn("Task was cancelled");

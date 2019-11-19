@@ -79,6 +79,7 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -1085,7 +1086,7 @@ public class Hive {
     List<SQLCheckConstraint> checkConstraints)
             throws HiveException {
     try {
-      if (tbl.getDbName() == null || "".equals(tbl.getDbName().trim())) {
+      if (org.apache.commons.lang3.StringUtils.isBlank(tbl.getDbName())) {
         tbl.setDbName(SessionState.get().getCurrentDatabase());
       }
       if (tbl.getCols().size() == 0 || tbl.getSd().getColsSize() == 0) {
@@ -1334,6 +1335,20 @@ public class Hive {
   /**
    * Returns metadata of the table
    *
+   * @param tableName
+   *          the tableName object
+   * @return the table
+   * @exception HiveException
+   *              if there's an internal error or if the table doesn't exist
+   */
+  public Table getTable(TableName tableName) throws HiveException {
+    return this.getTable(ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
+        tableName.getTable(), true);
+  }
+
+  /**
+   * Returns metadata of the table
+   *
    * @param dbName
    *          the name of the database
    * @param tableName
@@ -1349,7 +1364,7 @@ public class Hive {
   }
 
   /**
-   * Returns metadata of the table
+   * Returns metadata of the table.
    *
    * @param dbName
    *          the name of the database

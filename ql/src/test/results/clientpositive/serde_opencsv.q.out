@@ -43,6 +43,7 @@ STAGE PLANS:
   Stage: Stage-0
     Create Table
       columns: words string, int1 int, tinyint1 tinyint, smallint1 smallint, bigint1 bigint, boolean1 boolean, float1 float, double1 double
+      name: default.serde_opencsv
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.OpenCSVSerde
@@ -50,7 +51,6 @@ STAGE PLANS:
         escapeChar \
         quoteChar '
         separatorChar ,
-      name: default.serde_opencsv
 
 PREHOOK: query: CREATE TABLE serde_opencsv(
                           words STRING,

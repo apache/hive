@@ -122,10 +122,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: a string, b string
+      name: default.null_tab3
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.null_tab3
 
   Stage: Stage-2
     Stats Work

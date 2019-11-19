@@ -128,10 +128,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key string, value string
+      name: default.M1
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.M1
 
   Stage: Stage-2
     Stats Work
@@ -257,10 +257,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key string, value string
+      name: default.M1
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.M1
 
   Stage: Stage-2
     Stats Work
@@ -390,10 +390,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key string, value string
+      name: default.M1
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.M1
 
   Stage: Stage-2
     Stats Work
@@ -519,10 +519,10 @@ STAGE PLANS:
   Stage: Stage-8
     Create Table
       columns: key string, value string
+      name: default.V1_n0
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.V1_n0
 
   Stage: Stage-2
     Stats Work
@@ -795,7 +795,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Truncate Table or Partition
-      table name: M1
+      table name: default.m1
 
 PREHOOK: query: select count(*) from M1 where key > 0
 PREHOOK: type: QUERY

@@ -383,10 +383,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: contact_event_id string, ce_create_dt string, ce_end_dt string, contact_type string, cnctevs_cd string, contact_mode string, cntvnst_stts_cd string, total_transfers int, ce_notes array<string>, svcrqst_id string, svcrqct_cds array<string>, svcrtyp_cd string, cmpltyp_cd string, src string, cnctmd_cd string, notes array<string>
+      name: default.ct_events1_test
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.ct_events1_test
 
   Stage: Stage-3
     Stats Work
@@ -1388,10 +1388,10 @@ STAGE PLANS:
   Stage: Stage-4
     Create Table
       columns: contact_event_id string, ce_create_dt string, ce_end_dt string, contact_type string, cnctevs_cd string, contact_mode string, cntvnst_stts_cd string, total_transfers int, ce_notes array<string>, svcrqst_id string, svcrqct_cds array<string>, svcrtyp_cd string, cmpltyp_cd string, src string, cnctmd_cd string, notes array<string>
+      name: default.ct_events1_test
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.ct_events1_test
 
   Stage: Stage-3
     Stats Work
