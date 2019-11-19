@@ -745,10 +745,7 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTORE_CAPABILITY_CHECK("hive.metastore.client.capability.check", true,
         "Whether to check client capabilities for potentially breaking API usage."),
-    METASTORE_CLIENT_CAPABILITIES("hive.metastore.client.capabilities", "EXTWRITE,EXTREAD,HIVEBUCKET2,"
-        + "HIVEFULLACIDREAD,HIVEFULLACIDWRITE,HIVECACHEINVALIDATE,HIVEMANAGESTATS,"
-        + "HIVEMANAGEDINSERTWRITE,HIVEMANAGEDINSERTREAD,"
-        + "HIVESQL,HIVEMQT,HIVEONLYMQTWRITE", "Capabilities possessed by HiveServer"),
+    METASTORE_CLIENT_CAPABILITIES("hive.metastore.client.capabilities", "", "Capabilities possessed by HiveServer"),
     METASTORE_CLIENT_CACHE_ENABLED("hive.metastore.client.cache.enabled", false,
       "Whether to enable metastore client cache"),
     METASTORE_CLIENT_CACHE_EXPIRY_TIME("hive.metastore.client.cache.expiry.time", "120s",
@@ -5620,8 +5617,15 @@ public class HiveConf extends Configuration {
     // metastore can be embedded within hiveserver2, in such cases
     // the conf params in hiveserver2-site.xml will override whats defined
     // in hivemetastore-site.xml
-    if (isLoadHiveServer2Config() && hiveServer2SiteUrl != null) {
-      addResource(hiveServer2SiteUrl);
+    if (isLoadHiveServer2Config()) {
+      // set the hardcoded value first, so anything in hiveserver2-site.xml can override it
+      set(ConfVars.METASTORE_CLIENT_CAPABILITIES.varname, "EXTWRITE,EXTREAD,HIVEBUCKET2,HIVEFULLACIDREAD,"
+          + "HIVEFULLACIDWRITE,HIVECACHEINVALIDATE,HIVEMANAGESTATS,HIVEMANAGEDINSERTWRITE,HIVEMANAGEDINSERTREAD,"
+          + "HIVESQL,HIVEMQT,HIVEONLYMQTWRITE");
+
+      if (hiveServer2SiteUrl != null) {
+        addResource(hiveServer2SiteUrl);
+      }
     }
 
     String val = this.getVar(HiveConf.ConfVars.HIVE_ADDITIONAL_CONFIG_FILES);
