@@ -87,7 +87,7 @@ public class RecordReaderUtils {
       if (!includedRowGroups[group]) continue;
       int posn = getIndexPosition(
           encoding.getKind(), type.getKind(), stream.getKind(), isCompressed, hasNull);
-      long start = index.getEntry(group).getPositions(posn);
+      long start = group == 0 ? 0 : index.getEntry(group).getPositions(posn);
       final long nextGroupOffset;
       boolean isLast = group == (includedRowGroups.length - 1);
       nextGroupOffset = isLast ? length : index.getEntry(group + 1).getPositions(posn);
