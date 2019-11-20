@@ -58,11 +58,11 @@ public class TxnCommonUtils {
 
     // We care only about open/aborted txns below currentTxn and hence the size should be determined
     // for the exceptions list. The currentTxn will be missing in openTxns list only in rare case like
-    // txn is aborted by AcidHouseKeeperService and compactor actually cleans up the aborted txns.
+    // txn is read-only or aborted by AcidHouseKeeperService and compactor actually cleans up the aborted txns.
     // So, for such cases, we get negative value for sizeToHwm with found position for currentTxn, and so,
     // we just negate it to get the size.
-    int sizeToHwm = (currentTxn > 0) ? Collections.binarySearch(openTxns, currentTxn) : openTxns.size();
-    sizeToHwm = (sizeToHwm < 0) ? (-sizeToHwm) : sizeToHwm;
+    int sizeToHwm = (currentTxn > 0) ? Math.abs(Collections.binarySearch(openTxns, currentTxn)) : openTxns.size();
+    sizeToHwm = Math.min(sizeToHwm, openTxns.size());
     long[] exceptions = new long[sizeToHwm];
     BitSet inAbortedBits = BitSet.valueOf(txns.getAbortedBits());
     BitSet outAbortedBits = new BitSet();

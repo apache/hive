@@ -100,6 +100,19 @@ public class TestHiveMetaStoreTxns {
   }
 
   @Test
+  public void testOpenReadOnlyTxnExcluded() throws Exception {
+    client.openTxn("me", TxnType.READ_ONLY);
+    client.openTxns("me", 3);
+    client.rollbackTxn(2);
+    client.commitTxn(3);
+    ValidTxnList validTxns = client.getValidTxns(4);
+    Assert.assertTrue(validTxns.isTxnValid(1));
+    Assert.assertFalse(validTxns.isTxnValid(2));
+    Assert.assertTrue(validTxns.isTxnValid(3));
+    Assert.assertTrue(validTxns.isTxnValid(4));
+  }
+
+  @Test
   public void testTxNWithKeyValue() throws Exception {
     Statement stm = conn.createStatement();
 
