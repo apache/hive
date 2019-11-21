@@ -86,6 +86,14 @@ public class DriverContext {
     return queryDisplay;
   }
 
+  public String getQueryId() {
+    return queryDisplay.getQueryId();
+  }
+
+  public String getQueryString() {
+    return queryDisplay.getQueryString();
+  }
+
   public QueryState getQueryState() {
     return queryState;
   }
