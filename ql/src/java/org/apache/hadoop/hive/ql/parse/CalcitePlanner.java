@@ -318,6 +318,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private SemanticException semanticException;
   private boolean runCBO = true;
   private boolean disableSemJoinReordering = true;
+
   private EnumSet<ExtendedCBOProfile> profilesCBO;
 
   private static final CommonToken FROM_TOKEN =
@@ -1818,8 +1819,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
       HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null,
-          HiveRelFactories.HIVE_BUILDER.create(optCluster, null), this.columnAccessInfo,
-          this.viewProjectToTableSchema);
+          HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
+          this.columnAccessInfo, this.viewProjectToTableSchema);
 
       fieldTrimmer.trim(calciteGenPlan);
 

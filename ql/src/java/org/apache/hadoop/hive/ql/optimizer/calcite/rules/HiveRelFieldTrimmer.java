@@ -61,6 +61,7 @@ import org.apache.calcite.util.mapping.IntPair;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -672,10 +673,10 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   public TrimResult trimFields(Project project, ImmutableBitSet fieldsUsed,
       Set<RelDataTypeField> extraFields) {
     // set columnAccessInfo for ViewColumnAuthorization
-    for (Ord<RexNode> ord : Ord.zip(project.getProjects())) {
-      if (fieldsUsed.get(ord.i)) {
-        if (this.columnAccessInfo != null && this.viewProjectToTableSchema != null
-            && this.viewProjectToTableSchema.containsKey(project)) {
+    if (this.columnAccessInfo != null && this.viewProjectToTableSchema != null
+        && this.viewProjectToTableSchema.containsKey(project)) {
+      for (Ord<RexNode> ord : Ord.zip(project.getProjects())) {
+        if (fieldsUsed.get(ord.i)) {
           Table tab = this.viewProjectToTableSchema.get(project);
           this.columnAccessInfo.add(tab.getCompleteName(), tab.getAllCols().get(ord.i).getName());
         }
@@ -684,10 +685,26 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     return super.trimFields(project, fieldsUsed, extraFields);
   }
 
-  @Override
-  public TrimResult trimFields(TableScan tableAccessRel, ImmutableBitSet fieldsUsed,
+  public TrimResult trimFields(HiveTableScan tableAccessRel, ImmutableBitSet fieldsUsed,
       Set<RelDataTypeField> extraFields) {
     final TrimResult result = super.trimFields(tableAccessRel, fieldsUsed, extraFields);
+    if (this.columnAccessInfo != null) {
+      // Store information about column accessed by the table so it can be used
+      // to send only this information for column masking
+      final RelOptHiveTable tab = (RelOptHiveTable) tableAccessRel.getTable();
+      final String qualifiedName = tab.getHiveTableMD().getCompleteName();
+      final List<FieldSchema> allCols = tab.getHiveTableMD().getAllCols();
+      final boolean insideView = tableAccessRel.isInsideView();
+      fieldsUsed.asList().stream()
+        .filter(idx -> idx < tab.getNoOfNonVirtualCols())
+        .forEach(idx -> {
+          if (insideView) {
+            columnAccessInfo.addIndirect(qualifiedName, allCols.get(idx).getName());
+          } else {
+            columnAccessInfo.add(qualifiedName, allCols.get(idx).getName());
+          }
+        });
+    }
     if (fetchStats) {
       fetchColStats(result.getKey(), tableAccessRel, fieldsUsed, extraFields);
     }
