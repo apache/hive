@@ -1722,7 +1722,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         Reader orcReader = OrcFile.createReader(file.getPath(),
             OrcFile.readerOptions(context.conf)
                 .filesystem(fs)
-                .maxLength(AcidUtils.getLogicalLength(fs, file)));
+                .maxLength(context.isAcid ? AcidUtils.getLogicalLength(fs, file) : file.getLen()));
         orcTail = new OrcTail(orcReader.getFileTail(), orcReader.getSerializedFileFooter(),
             file.getModificationTime());
         if (context.cacheStripeDetails) {

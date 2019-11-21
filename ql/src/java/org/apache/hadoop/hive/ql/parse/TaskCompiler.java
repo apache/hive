@@ -69,7 +69,6 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -87,7 +86,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -482,7 +480,7 @@ public abstract class TaskCompiler {
       String protoName = null;
       boolean isExternal = false;
       if (pCtx.getQueryProperties().isCTAS()) {
-        protoName = pCtx.getCreateTable().getTableName();
+        protoName = pCtx.getCreateTable().getDbTableName();
         isExternal = pCtx.getCreateTable().isExternal();
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();

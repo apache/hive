@@ -50,7 +50,7 @@ public final class SemanticAnalyzerFactory {
     }
     return sem;
   }
-  
+
   private static BaseSemanticAnalyzer getInternal(QueryState queryState, ASTNode tree)
       throws SemanticException {
     if (tree.getToken() == null) {
@@ -122,7 +122,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_LOCKTABLE:
       case HiveParser.TOK_UNLOCKTABLE:
       case HiveParser.TOK_TRUNCATETABLE:
-      case HiveParser.TOK_CACHE_METADATA:
         return new DDLSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_ANALYZE:
@@ -134,6 +133,11 @@ public final class SemanticAnalyzerFactory {
 
       case HiveParser.TOK_MERGE:
         return new MergeSemanticAnalyzer(queryState);
+
+      case HiveParser.TOK_ALTER_SCHEDULED_QUERY:
+      case HiveParser.TOK_CREATE_SCHEDULED_QUERY:
+      case HiveParser.TOK_DROP_SCHEDULED_QUERY:
+        return new ScheduledQueryAnalyzer(queryState);
 
       case HiveParser.TOK_START_TRANSACTION:
       case HiveParser.TOK_COMMIT:

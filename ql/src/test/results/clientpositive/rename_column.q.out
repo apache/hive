@@ -63,10 +63,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Change Column
+      table name: default.kv_rename_test
       new column name: a2
       new column type: int
       old column name: a1
-      table name: default.kv_rename_test
       first: true
 
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a1 a2 INT FIRST
@@ -101,10 +101,10 @@ STAGE PLANS:
   Stage: Stage-0
     Change Column
       after column: b
+      table name: default.kv_rename_test
       new column name: a
       new column type: int
       old column name: a2
-      table name: default.kv_rename_test
 
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a2 a INT AFTER b
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -154,11 +154,11 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Change Column
+      table name: default.kv_rename_test
       new column comment: test comment2
       new column name: a2
       new column type: int
       old column name: a1
-      table name: default.kv_rename_test
       first: true
 
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a1 a2 INT COMMENT 'test comment2' FIRST

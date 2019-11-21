@@ -43,106 +43,89 @@
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-core</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-core</artifactId>
-      <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-pig-adapter</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-server-extensions</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-webhcat-java-client</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>org.apache.hive.hcatalog</groupId>
         <artifactId>hive-webhcat-java-client</artifactId>
-        <version>${project.version}</version>
-        <type>test-jar</type>
+        <classifier>tests</classifier>
         <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-hbase-handler</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-cli</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- test inter-project -->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>${commons-io.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-annotations</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-archives</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
         <exclusions>
              <exclusion>
@@ -158,7 +141,6 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
         <exclusions>
@@ -175,26 +157,22 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
-      <version>${hadoop.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
-      <version>${hadoop.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
         <exclusions>
@@ -211,19 +189,16 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-server-tests</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-servlet</artifactId>
-      <version>${jersey.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-hs</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
         <exclusions>
              <exclusion>
@@ -239,52 +214,44 @@
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
-      <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-common</artifactId>
-      <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-common</artifactId>
-      <version>${hbase.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-hadoop-compat</artifactId>
-      <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-hadoop-compat</artifactId>
-      <version>${hbase.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-hadoop2-compat</artifactId>
-      <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-hadoop2-compat</artifactId>
-      <version>${hbase.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
-      <version>${hbase.version}</version>
       <scope>test</scope>
         <exclusions>
           <exclusion>
@@ -296,13 +263,11 @@
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-mapreduce</artifactId>
-      <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
-      <version>${hbase.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
@@ -334,8 +299,7 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
   </dependencies>

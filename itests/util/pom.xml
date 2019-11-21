@@ -32,8 +32,6 @@
   </properties>
 
   <dependencies>
-    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
-    <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.accumulo</groupId>
       <artifactId>accumulo-minicluster</artifactId>
@@ -55,55 +53,45 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-accumulo-handler</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-accumulo-handler</artifactId>
-      <version>${project.version}</version>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-cli</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-beeline</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-hbase-handler</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-hbase-handler</artifactId>
-      <version>${project.version}</version>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-kudu-handler</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-kudu-handler</artifactId>
-      <version>${project.version}</version>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-metastore</artifactId>
-      <version>${project.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>guice</artifactId>
@@ -114,41 +102,34 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
-      <version>${project.version}</version>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
+      <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
+      <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-llap-server</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-llap-server</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
+      <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>guice</artifactId>
@@ -159,7 +140,6 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
-      <version>${hadoop.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>guice</artifactId>
@@ -170,17 +150,14 @@
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
-      <version>${hbase.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-common</artifactId>
-      <version>${hbase.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
-      <version>${hbase.version}</version>
         <exclusions>
           <exclusion>
             <groupId>org.glassfish.web</groupId>
@@ -191,7 +168,6 @@
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-mapreduce</artifactId>
-      <version>${hbase.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.kudu</groupId>
@@ -201,24 +177,19 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
-      <version>${tez.version}</version>
     </dependency>
-    <!-- test inter-project -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
-      <version>${hadoop.version}</version>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
-      <version>${hadoop.version}</version>
       <classifier>tests</classifier>
         <exclusions>
              <exclusion>
@@ -234,25 +205,21 @@
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-common</artifactId>
-      <version>${hbase.version}</version>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
-      <version>${hbase.version}</version>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-mapreduce</artifactId>
-      <version>${hbase.version}</version>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-it-druid</artifactId>
-      <version>${project.version}</version>
       <exclusions>
         <exclusion>
           <groupId>com.sun.jersey</groupId>

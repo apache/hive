@@ -70,6 +70,11 @@
 </property>
 
 <property>
+  <name>datanucleus.connectionPool.maxPoolSize</name>
+  <value>4</value>
+</property>
+
+<property>
   <name>hive.metastore.schema.verification</name>
   <value>false</value>
 </property>

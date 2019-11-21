@@ -152,7 +152,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
           while (driver.getResults(new ArrayList<String>())) {
           }
         } catch (CommandProcessorException e) {
-          throw new SemanticException(e.getErrorMessage(), e.getException());
+          throw new SemanticException(e.getErrorMessage(), e);
         }
         config.setOpIdToRuntimeNumRows(aggregateStats(config.getExplainRootPath()));
       } catch (IOException e1) {

@@ -1445,6 +1445,75 @@
       <field name="payload">
         <column name="PAYLOAD" jdbc-type="BLOB" allows-null="true"/>
       </field>
+    </class>
+    <class name="MScheduledQuery" identity-type="datastore" table="SCHEDULED_QUERIES" detachable="true">
+      <datastore-identity>
+        <column name="SCHEDULED_QUERY_ID"/>
+      </datastore-identity>
+      <field name="scheduleName">
+        <column name="SCHEDULE_NAME" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="enabled">
+        <column name="ENABLED"/>
+      </field>
+      <field name="clusterNamespace">
+        <column name="CLUSTER_NAMESPACE" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="schedule">
+        <column name="SCHEDULE" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="user">
+        <column name="USER" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="query">
+        <column name="QUERY" jdbc-type="varchar" length="4000" allows-null="true"/>
+      </field>
+      <field name="nextExecution">
+        <column name="NEXT_EXECUTION" jdbc-type="integer" allows-null="true"/>
+      </field>
+      <field name="executions" mapped-by="scheduledQuery" dependent-element="true">
+        <collection element-type="MScheduledExecution" dependent-element="true" />
+        <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_FK" delete-action="cascade"/>
+      </field>
+      <index name="UniqueSchedule" unique="true">
+        <column name="SCHEDULE_NAME"/>
+        <column name="CLUSTER_NAMESPACE"/>
+      </index>
+      <index name="NextExecutionIndex">
+        <column name="ENABLED"/>
+        <column name="CLUSTER_NAMESPACE"/>
+        <column name="NEXT_EXECUTION"/>
+      </index>
+   </class>
+    <class name="MScheduledExecution" identity-type="application" table="SCHEDULED_EXECUTIONS" detachable="true">
+      <field name="scheduledExecutionId" primary-key="true" value-strategy="native">
+        <column name="SCHEDULED_EXECUTION_ID" jdbc-type="bigint" />
+      </field>
+      <field name="scheduledQuery">
+        <column name="SCHEDULED_QUERY_ID" />
+        <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_FK" delete-action="cascade"/>
+      </field>
+      <field name="executorQueryId">
+        <column name="EXECUTOR_QUERY_ID" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="state">
+        <column name="STATE" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="startTime">
+        <column name="START_TIME" jdbc-type="integer" allows-null="true"/>
+      </field>
+      <field name="endTime">
+        <column name="END_TIME" jdbc-type="integer" allows-null="true"/>
+      </field>
+      <field name="errorMessage">
+        <column name="ERROR_MESSAGE" jdbc-type="varchar" length="2000" allows-null="true"/>
+      </field>
+      <field name="lastUpdateTime">
+        <column name="LAST_UPDATE_TIME" jdbc-type="integer" allows-null="true"/>
+      </field>
+	  <index name="LastUpdateTimeIndex">
+        <column name="LAST_UPDATE_TIME"/>
+      </index>
    </class>
   </package>
 </jdo>

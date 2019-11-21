@@ -21,13 +21,14 @@ package org.apache.hadoop.hive.conf;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
-import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.conf.Validator.PatternSet;
 import org.apache.hadoop.hive.conf.Validator.RangeValidator;
 import org.apache.hadoop.hive.conf.Validator.RatioValidator;
@@ -45,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -357,6 +359,7 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_ALLOCATOR_DIRECT.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_USE_LRFU.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_LRFU_LAMBDA.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_IO_USE_FILEID_PATH.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_IO_DECODING_METRICS_PERCENTILE_INTERVALS.varname);
@@ -742,10 +745,7 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTORE_CAPABILITY_CHECK("hive.metastore.client.capability.check", true,
         "Whether to check client capabilities for potentially breaking API usage."),
-    METASTORE_CLIENT_CAPABILITIES("hive.metastore.client.capabilities", "EXTWRITE,EXTREAD,HIVEBUCKET2,"
-        + "HIVEFULLACIDREAD,HIVEFULLACIDWRITE,HIVECACHEINVALIDATE,HIVEMANAGESTATS,"
-        + "HIVEMANAGEDINSERTWRITE,HIVEMANAGEDINSERTREAD,"
-        + "HIVESQL,HIVEMQT,HIVEONLYMQTWRITE", "Capabilities possessed by HiveServer"),
+    METASTORE_CLIENT_CAPABILITIES("hive.metastore.client.capabilities", "", "Capabilities possessed by HiveServer"),
     METASTORE_CLIENT_CACHE_ENABLED("hive.metastore.client.cache.enabled", false,
       "Whether to enable metastore client cache"),
     METASTORE_CLIENT_CACHE_EXPIRY_TIME("hive.metastore.client.cache.expiry.time", "120s",
@@ -2557,7 +2557,7 @@ public class HiveConf extends Configuration {
         "in the number of rows filtered by a certain operator, which in turn might lead to overprovision or\n" +
         "underprovision of resources. This factor is applied to the cardinality estimation of IN clauses in\n" +
         "filter operators."),
-    HIVE_STATS_IN_MIN_RATIO("hive.stats.filter.in.min.ratio", (float) 0.0f,
+    HIVE_STATS_IN_MIN_RATIO("hive.stats.filter.in.min.ratio", 0.0f,
         "Output estimation of an IN filter can't be lower than this ratio"),
     HIVE_STATS_UDTF_FACTOR("hive.stats.udtf.factor", (float) 1.0,
         "UDTFs change the number of rows of the output. A common UDTF is the explode() method that creates\n" +
@@ -4117,12 +4117,15 @@ public class HiveConf extends Configuration {
          "partitions and tables) for reporting."),
     LLAP_USE_LRFU("hive.llap.io.use.lrfu", true,
         "Whether ORC low-level cache should use LRFU cache policy instead of default (FIFO)."),
-    LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.000001f,
+    LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.1f,
         "Lambda for ORC low-level cache LRFU cache policy. Must be in [0, 1]. 0 makes LRFU\n" +
         "behave like LFU, 1 makes it behave like LRU, values in between balance accordingly.\n" +
         "The meaning of this parameter is the inverse of the number of time ticks (cache\n" +
         " operations, currently) that cause the combined recency-frequency of a block in cache\n" +
         " to be halved."),
+    LLAP_LRFU_BP_WRAPPER_SIZE("hive.llap.io.lrfu.bp.wrapper.size", 64, "thread local queue "
+        + "used to amortize the lock contention, the idea hear is to try locking as soon we reach max size / 2 "
+        + "and block when max queue size reached"),
     LLAP_CACHE_ALLOW_SYNTHETIC_FILEID("hive.llap.cache.allow.synthetic.fileid", true,
         "Whether LLAP cache should use synthetic file ID if real one is not available. Systems\n" +
         "like HDFS, Isilon, etc. provide a unique file/inode ID. On other FSes (e.g. local\n" +
@@ -4773,7 +4776,24 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE("hive.query.reexecution.stats.cache.size", 100_000,
         "Size of the runtime statistics cache. Unit is: OperatorStat entry; a query plan consist ~100."),
     HIVE_QUERY_PLANMAPPER_LINK_RELNODES("hive.query.planmapper.link.relnodes", true,
-        "Wether to link Calcite nodes to runtime statistics."),
+        "Whether to link Calcite nodes to runtime statistics."),
+
+    HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED("hive.scheduled.queries.executor.enabled", true,
+        "Controls whether HS2 will run scheduled query executor."),
+    HIVE_SCHEDULED_QUERIES_NAMESPACE("hive.scheduled.queries.namespace", "hive",
+        "Sets the scheduled query namespace to be used. New scheduled queries are created in this namespace;"
+            + "and execution is also bound to the namespace"),
+    HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME("hive.scheduled.queries.executor.idle.sleep.time", "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Time to sleep between quering for the presence of a scheduled query."),
+    HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL("hive.scheduled.queries.executor.progress.report.interval",
+        "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "While scheduled queries are in flight; "
+            + "a background update happens periodically to report the actual state of the query"),
+    HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED("hive.security.authorization.scheduled.queries.supported",
+        false,
+        "Enable this if the configured authorizer is able to handle scheduled query related calls."),
 
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
@@ -5597,8 +5617,15 @@ public class HiveConf extends Configuration {
     // metastore can be embedded within hiveserver2, in such cases
     // the conf params in hiveserver2-site.xml will override whats defined
     // in hivemetastore-site.xml
-    if (isLoadHiveServer2Config() && hiveServer2SiteUrl != null) {
-      addResource(hiveServer2SiteUrl);
+    if (isLoadHiveServer2Config()) {
+      // set the hardcoded value first, so anything in hiveserver2-site.xml can override it
+      set(ConfVars.METASTORE_CLIENT_CAPABILITIES.varname, "EXTWRITE,EXTREAD,HIVEBUCKET2,HIVEFULLACIDREAD,"
+          + "HIVEFULLACIDWRITE,HIVECACHEINVALIDATE,HIVEMANAGESTATS,HIVEMANAGEDINSERTWRITE,HIVEMANAGEDINSERTREAD,"
+          + "HIVESQL,HIVEMQT,HIVEONLYMQTWRITE");
+
+      if (hiveServer2SiteUrl != null) {
+        addResource(hiveServer2SiteUrl);
+      }
     }
 
     String val = this.getVar(HiveConf.ConfVars.HIVE_ADDITIONAL_CONFIG_FILES);
@@ -5831,6 +5858,7 @@ public class HiveConf extends Configuration {
     "hive\\.tez\\..*",
     "hive\\.vectorized\\..*",
     "hive\\.query\\.reexecution\\..*",
+    "hive\\.query\\.exclusive\\.lock",
     "reexec\\.overlay\\..*",
     "fs\\.defaultFS",
     "ssl\\.client\\.truststore\\.location",

@@ -52,9 +52,8 @@ import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
-import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.TaskQueue;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -173,9 +172,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    * Initialization when invoked from QL.
    */
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
-      CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, driverContext, opContext);
+  public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
+    super.initialize(queryState, queryPlan, taskQueue, context);
 
     job = new JobConf(conf, ExecDriver.class);
 
@@ -220,19 +218,18 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    */
   @SuppressWarnings({"deprecation", "unchecked"})
   @Override
-  public int execute(DriverContext driverContext) {
+  public int execute() {
 
     IOPrepareCache ioPrepareCache = IOPrepareCache.get();
     ioPrepareCache.clear();
 
     boolean success = true;
 
-    Context ctx = driverContext.getCtx();
     boolean ctxCreated = false;
     Path emptyScratchDir;
     JobClient jc = null;
 
-    if (driverContext.isShutdown()) {
+    if (taskQueue.isShutdown()) {
       LOG.warn("Task was cancelled");
       return 5;
     }
@@ -240,6 +237,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     MapWork mWork = work.getMapWork();
     ReduceWork rWork = work.getReduceWork();
 
+    Context ctx = context;
     try {
       if (ctx == null) {
         ctx = new Context(job);
@@ -412,14 +410,14 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
       HiveConfUtil.updateJobCredentialProviders(job);
       // Finally SUBMIT the JOB!
-      if (driverContext.isShutdown()) {
+      if (taskQueue.isShutdown()) {
         LOG.warn("Task was cancelled");
         return 5;
       }
 
-      rj = jc.submitJob(job);
+    rj = jc.submitJob(job);
 
-      if (driverContext.isShutdown()) {
+      if (taskQueue.isShutdown()) {
         LOG.warn("Task was cancelled");
         killJob();
         return 5;
@@ -768,12 +766,14 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       memoryMXBean = ManagementFactory.getMemoryMXBean();
       MapredLocalWork plan = SerializationUtilities.deserializePlan(pathData, MapredLocalWork.class);
       MapredLocalTask ed = new MapredLocalTask(plan, conf, isSilent);
-      ret = ed.executeInProcess(new DriverContext());
+      ed.initialize(null, null, new TaskQueue(), null);
+      ret = ed.executeInProcess();
 
     } else {
       MapredWork plan = SerializationUtilities.deserializePlan(pathData, MapredWork.class);
       ExecDriver ed = new ExecDriver(plan, conf, isSilent);
-      ret = ed.execute(new DriverContext());
+      ed.setTaskQueue(new TaskQueue());
+      ret = ed.execute();
     }
 
     if (ret != 0) {

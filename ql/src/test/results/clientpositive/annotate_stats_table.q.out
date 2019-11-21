@@ -369,10 +369,10 @@ STAGE PLANS:
   Stage: Stage-7
     Create Table
       columns: _c0 int
+      name: default.tmp_n0
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      name: default.tmp_n0
 
   Stage: Stage-2
     Map Reduce

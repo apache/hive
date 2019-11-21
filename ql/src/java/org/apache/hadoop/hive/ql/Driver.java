@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
@@ -100,6 +101,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
@@ -131,78 +133,33 @@ import com.google.common.collect.ImmutableMap;
 
 public class Driver implements IDriver {
 
-  static final private String CLASS_NAME = Driver.class.getName();
+  private static final String CLASS_NAME = Driver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-  static final private LogHelper console = new LogHelper(LOG);
+  private static final LogHelper CONSOLE = new LogHelper(LOG);
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
-  private final QueryInfo queryInfo;
   private Runnable shutdownRunner = null;
 
   private int maxRows = 100;
   private ByteStream.Output bos = new ByteStream.Output();
 
-  private final HiveConf conf;
   private DataInput resStream;
   private Context ctx;
-  private DriverContext driverCxt;
-  private QueryPlan plan;
-  private Schema schema;
-
-  private FetchTask fetchTask;
-  private List<HiveLock> hiveLocks = new ArrayList<HiveLock>();
-
-  // A limit on the number of threads that can be launched
-  private int maxthreads;
-
-  private String userName;
+  private final DriverContext driverContext;
+  private TaskQueue taskQueue;
+  private final List<HiveLock> hiveLocks = new ArrayList<HiveLock>();
 
   // HS2 operation handle guid string
   private String operationId;
 
-  // For WebUI.  Kept alive after queryPlan is freed.
-  private final QueryDisplay queryDisplay = new QueryDisplay();
   private DriverState driverState = new DriverState();
 
-  // Query specific info
-  private final QueryState queryState;
-
-  // Query hooks that execute before compilation and after execution
-  private HookRunner hookRunner;
-
-  // Transaction manager the Driver has been initialized with (can be null).
-  // If this is set then this Transaction manager will be used during query
-  // compilation/execution rather than using the current session's transaction manager.
-  // This might be needed in a situation where a Driver is nested within an already
-  // running Driver/query - the nested Driver requires a separate transaction manager
-  // so as not to conflict with the outer Driver/query which is using the session
-  // transaction manager.
-  private final HiveTxnManager initTxnMgr;
-
-  // Transaction manager used for the query. This will be set at compile time based on
-  // either initTxnMgr or from the SessionState, in that order.
-  private HiveTxnManager queryTxnMgr;
-  private TxnType queryTxnType = TxnType.DEFAULT;
-  private StatsSource statsSource;
-
-  // Boolean to store information about whether valid txn list was generated
-  // for current query.
-  private boolean validTxnListsGenerated;
-
-  private CacheUsage cacheUsage;
-  private CacheEntry usedCacheEntry;
-  private ValidWriteIdList compactionWriteIds = null;
-  private long compactorTxnId = 0;
-
-  private Context backupContext = null;
-  private boolean retrial = false;
-
   private boolean checkConcurrency() {
-    return conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    return driverContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
   }
 
   @Override
   public Schema getSchema() {
-    return schema;
+    return driverContext.getSchema();
   }
 
   public Schema getExplainSchema() {
@@ -302,13 +259,9 @@ public class Driver implements IDriver {
     this(queryState, userName, queryInfo, null);
   }
 
-  public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnMgr) {
-    this.queryState = queryState;
-    this.conf = queryState.getConf();
-    this.userName = userName;
-    this.hookRunner = new HookRunner(conf, console);
-    this.queryInfo = queryInfo;
-    this.initTxnMgr = txnMgr;
+  public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnManager) {
+    driverContext = new DriverContext(queryState, queryInfo, userName, new HookRunner(queryState.getConf(), CONSOLE),
+        txnManager);
   }
 
   /**
@@ -357,13 +310,13 @@ public class Driver implements IDriver {
       public Map<String, String> getHiveVariable() {
         return SessionState.get().getHiveVariables();
       }
-    }).substitute(conf, command);
+    }).substitute(driverContext.getConf(), command);
 
     String queryStr = command;
 
     try {
       // command should be redacted to avoid to logging sensitive data
-      queryStr = HookUtils.redactLogString(conf, command);
+      queryStr = HookUtils.redactLogString(driverContext.getConf(), command);
     } catch (Exception e) {
       LOG.warn("WARNING! Query command could not be redacted." + e);
     }
@@ -381,8 +334,8 @@ public class Driver implements IDriver {
 
     DriverState.setDriverState(driverState);
 
-    final String queryId = Strings.isNullOrEmpty(queryState.getQueryId()) ?
-        QueryPlan.makeQueryId() : queryState.getQueryId();
+    final String queryId = Strings.isNullOrEmpty(driverContext.getQueryState().getQueryId()) ?
+        QueryPlan.makeQueryId() : driverContext.getQueryState().getQueryId();
 
     SparkSession ss = SessionState.get().getSparkSession();
     if (ss != null) {
@@ -393,12 +346,12 @@ public class Driver implements IDriver {
       setTriggerContext(queryId);
     }
     //save some info for webUI for use after plan is freed
-    this.queryDisplay.setQueryStr(queryStr);
-    this.queryDisplay.setQueryId(queryId);
+    driverContext.getQueryDisplay().setQueryStr(queryStr);
+    driverContext.getQueryDisplay().setQueryId(queryId);
 
     LOG.info("Compiling command(queryId=" + queryId + "): " + queryStr);
 
-    conf.setQueryString(queryStr);
+    driverContext.getConf().setQueryString(queryStr);
     // FIXME: sideeffect will leave the last query set at the session level
     if (SessionState.get() != null) {
       SessionState.get().getConf().setQueryString(queryStr);
@@ -413,19 +366,19 @@ public class Driver implements IDriver {
       checkInterrupted("before parsing and analysing the query", null, null);
 
       if (ctx == null) {
-        ctx = new Context(conf);
+        ctx = new Context(driverContext.getConf());
         setTriggerContext(queryId);
       }
 
-      ctx.setHiveTxnManager(queryTxnMgr);
-      ctx.setStatsSource(statsSource);
+      ctx.setHiveTxnManager(driverContext.getTxnManager());
+      ctx.setStatsSource(driverContext.getStatsSource());
       ctx.setCmd(command);
       ctx.setHDFSCleanup(true);
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARSE);
 
       // Trigger query hook before compilation
-      hookRunner.runBeforeParseHook(command);
+      driverContext.getHookRunner().runBeforeParseHook(command);
 
       ASTNode tree;
       try {
@@ -434,11 +387,11 @@ public class Driver implements IDriver {
         parseError = true;
         throw e;
       } finally {
-        hookRunner.runAfterParseHook(command, parseError);
+        driverContext.getHookRunner().runAfterParseHook(command, parseError);
       }
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
-      hookRunner.runBeforeCompileHook(command);
+      driverContext.getHookRunner().runBeforeCompileHook(command);
       // clear CurrentFunctionsInUse set, to capture new set of functions
       // that SemanticAnalyzer finds are in use
       SessionState.get().getCurrentFunctionsInUse().clear();
@@ -450,30 +403,30 @@ public class Driver implements IDriver {
       // because at that point we need access to the objects.
       Hive.get().getMSC().flushCache();
 
-      backupContext = new Context(ctx);
-      boolean executeHooks = hookRunner.hasPreAnalyzeHooks();
+      driverContext.setBackupContext(new Context(ctx));
+      boolean executeHooks = driverContext.getHookRunner().hasPreAnalyzeHooks();
 
       HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
       if (executeHooks) {
-        hookCtx.setConf(conf);
-        hookCtx.setUserName(userName);
+        hookCtx.setConf(driverContext.getConf());
+        hookCtx.setUserName(driverContext.getUserName());
         hookCtx.setIpAddress(SessionState.get().getUserIpAddress());
         hookCtx.setCommand(command);
-        hookCtx.setHiveOperation(queryState.getHiveOperation());
+        hookCtx.setHiveOperation(driverContext.getQueryState().getHiveOperation());
 
-        tree =  hookRunner.runPreAnalyzeHooks(hookCtx, tree);
+        tree = driverContext.getHookRunner().runPreAnalyzeHooks(hookCtx, tree);
       }
 
       // Do semantic analysis and plan generation
-      BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
+      BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(driverContext.getQueryState(), tree);
 
-      if (!retrial) {
-        if ((queryState.getHiveOperation() != null)
-                && queryState.getHiveOperation().equals(HiveOperation.REPLDUMP)) {
-          setLastReplIdForDump(queryState.getConf());
+      if (!driverContext.isRetrial()) {
+        if ((driverContext.getQueryState().getHiveOperation() != null) &&
+            driverContext.getQueryState().getHiveOperation().equals(HiveOperation.REPLDUMP)) {
+          setLastReplIdForDump(driverContext.getQueryState().getConf());
         }
-        queryTxnType = AcidUtils.getTxnType(tree);
-        openTransaction(queryTxnType);
+        driverContext.setTxnType(AcidUtils.getTxnType(tree));
+        openTransaction(driverContext.getTxnType());
 
         generateValidTxnList();
       }
@@ -482,14 +435,14 @@ public class Driver implements IDriver {
 
       if (executeHooks) {
         hookCtx.update(sem);
-        hookRunner.runPostAnalyzeHooks(hookCtx, sem.getAllRootTasks());
+        driverContext.getHookRunner().runPostAnalyzeHooks(hookCtx, sem.getAllRootTasks());
       }
 
-      LOG.info("Semantic Analysis Completed (retrial = {})", retrial);
+      LOG.info("Semantic Analysis Completed (retrial = {})", driverContext.isRetrial());
 
       // Retrieve information about cache usage for the query.
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED)) {
-        cacheUsage = sem.getCacheUsage();
+      if (driverContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED)) {
+        driverContext.setCacheUsage(sem.getCacheUsage());
       }
 
       // validate the plan
@@ -499,51 +452,52 @@ public class Driver implements IDriver {
       checkInterrupted("after analyzing query.", null, null);
 
       // get the output schema
-      schema = getSchema(sem, conf);
-      plan = new QueryPlan(queryStr, sem, queryDisplay.getQueryStartTime(), queryId,
-          queryState.getHiveOperation(), schema);
+      driverContext.setSchema(getSchema(sem, driverContext.getConf()));
+      QueryPlan plan = new QueryPlan(queryStr, sem, driverContext.getQueryDisplay().getQueryStartTime(), queryId,
+          driverContext.getQueryState().getHiveOperation(), driverContext.getSchema());
       // save the optimized plan and sql for the explain
       plan.setOptimizedCBOPlan(ctx.getCalcitePlan());
       plan.setOptimizedQueryString(ctx.getOptimizedSql());
+      driverContext.setPlan(plan);
 
-      conf.set("mapreduce.workflow.id", "hive_" + queryId);
-      conf.set("mapreduce.workflow.name", queryStr);
+      driverContext.getConf().set("mapreduce.workflow.id", "hive_" + queryId);
+      driverContext.getConf().set("mapreduce.workflow.name", queryStr);
 
       // initialize FetchTask right here
       if (plan.getFetchTask() != null) {
-        plan.getFetchTask().initialize(queryState, plan, null, ctx.getOpContext());
+        plan.getFetchTask().initialize(driverContext.getQueryState(), plan, null, ctx);
       }
 
       //do the authorization check
       if (!sem.skipAuthorization() &&
-          HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+          HiveConf.getBoolVar(driverContext.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
 
         try {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
           // Authorization check for kill query will be in KillQueryImpl
           // As both admin or operation owner can perform the operation.
           // Which is not directly supported in authorizer
-          if (queryState.getHiveOperation() != HiveOperation.KILL_QUERY) {
-            CommandAuthorizer.doAuthorization(queryState.getHiveOperation(), sem, command);
+          if (driverContext.getQueryState().getHiveOperation() != HiveOperation.KILL_QUERY) {
+            CommandAuthorizer.doAuthorization(driverContext.getQueryState().getHiveOperation(), sem, command);
           }
         } catch (AuthorizationException authExp) {
-          console.printError("Authorization failed:" + authExp.getMessage() + ". Use SHOW GRANT to get more details.");
+          CONSOLE.printError("Authorization failed:" + authExp.getMessage() + ". Use SHOW GRANT to get more details.");
           throw createProcessorException(403, authExp.getMessage(), "42000", null);
         } finally {
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
         }
       }
 
-      if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)
-          || conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
+      if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)
+          || driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
         String explainOutput = getExplainOutput(sem, plan, tree);
         if (explainOutput != null) {
-          if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
+          if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
             LOG.info("EXPLAIN output for queryid " + queryId + " : " + explainOutput);
           }
-          if (conf.isWebUiQueryInfoCacheEnabled()
-              && conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
-            queryDisplay.setExplainPlan(explainOutput);
+          if (driverContext.getConf().isWebUiQueryInfoCacheEnabled()
+              && driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
+            driverContext.getQueryDisplay().setExplainPlan(explainOutput);
           }
         }
       }
@@ -570,14 +524,14 @@ public class Driver implements IDriver {
         errorMessage += ". Failed command: " + queryStr;
       }
 
-      console.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
+      CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
       throw createProcessorException(error.getErrorCode(), errorMessage, error.getSQLState(), e);
     } finally {
       // Trigger post compilation hook. Note that if the compilation fails here then
       // before/after execution hook will never be executed.
       if (!parseError) {
         try {
-          hookRunner.runAfterCompilationHook(command, compileError);
+          driverContext.getHookRunner().runAfterCompilationHook(command, compileError);
         } catch (Exception e) {
           LOG.warn("Failed when invoking query after-compilation hook.", e);
         }
@@ -585,7 +539,7 @@ public class Driver implements IDriver {
 
       double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE)/1000.00;
       ImmutableMap<String, Long> compileHMSTimings = dumpMetaCallTimingWithoutEx("compilation");
-      queryDisplay.setHmsTimings(QueryDisplay.Phase.COMPILATION, compileHMSTimings);
+      driverContext.getQueryDisplay().setHmsTimings(QueryDisplay.Phase.COMPILATION, compileHMSTimings);
 
       boolean isInterrupted = driverState.isAborted();
       if (isInterrupted && !deferClose) {
@@ -605,15 +559,14 @@ public class Driver implements IDriver {
   private void createTransactionManager() throws CommandProcessorException {
     try {
       // Initialize the transaction manager.  This must be done before analyze is called.
-      if (initTxnMgr != null) {
-        queryTxnMgr = initTxnMgr;
-      } else {
-        queryTxnMgr = SessionState.get().initTxnMgr(conf);
+      HiveTxnManager queryTxnManager = (driverContext.getInitTxnManager() != null) ?
+          driverContext.getInitTxnManager() : SessionState.get().initTxnMgr(driverContext.getConf());
+
+      if (queryTxnManager instanceof Configurable) {
+        ((Configurable) queryTxnManager).setConf(driverContext.getConf());
       }
-      if (queryTxnMgr instanceof Configurable) {
-        ((Configurable) queryTxnMgr).setConf(conf);
-      }
-      queryState.setTxnManager(queryTxnMgr);
+      driverContext.setTxnManager(queryTxnManager);
+      driverContext.getQueryState().setTxnManager(queryTxnManager);
 
       // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
       // if compile is being called multiple times, clear the old shutdownhook
@@ -622,7 +575,7 @@ public class Driver implements IDriver {
         @Override
         public void run() {
           try {
-            releaseLocksAndCommitOrRollback(false, queryTxnMgr);
+            releaseLocksAndCommitOrRollback(false, driverContext.getTxnManager());
           } catch (LockException e) {
             LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
                 e.getMessage());
@@ -634,7 +587,7 @@ public class Driver implements IDriver {
       ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
       String errorMessage = "FAILED: " + e.getClass().getSimpleName() + " [Error "  + error.getErrorCode()  + "]:";
 
-      console.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
+      CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
       throw createProcessorException(error.getErrorCode(), errorMessage, error.getSQLState(), e);
     }
   }
@@ -645,12 +598,12 @@ public class Driver implements IDriver {
   // required.
   private boolean isValidTxnListState() throws LockException {
     // 1) Get valid txn list.
-    String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if (txnString == null) {
       // Not a transactional op, nothing more to do
       return true;
     }
-    ValidTxnList currentTxnList = queryTxnMgr.getValidTxns();
+    ValidTxnList currentTxnList = driverContext.getTxnManager().getValidTxns();
     String currentTxnString = currentTxnList.toString();
     if (currentTxnString.equals(txnString)) {
       // Still valid, nothing more to do
@@ -692,16 +645,16 @@ public class Driver implements IDriver {
       }
     }
     // 3) Get txn tables that are being written
-    String txnWriteIdListStr = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+    String txnWriteIdListStr = driverContext.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
     if (txnWriteIdListStr == null || txnWriteIdListStr.length() == 0) {
       // Nothing to check
       return true;
     }
     ValidTxnWriteIdList txnWriteIdList = new ValidTxnWriteIdList(txnWriteIdListStr);
-    Map<String, Table> writtenTables = getWrittenTables(plan);
+    Map<String, Table> writtenTables = getWrittenTables(driverContext.getPlan());
 
     ValidTxnWriteIdList currentTxnWriteIds =
-        queryTxnMgr.getValidWriteIds(
+        driverContext.getTxnManager().getValidWriteIds(
             writtenTables.entrySet().stream()
                 .filter(e -> AcidUtils.isTransactionalTable(e.getValue()))
                 .map(Map.Entry::getKey)
@@ -742,10 +695,10 @@ public class Driver implements IDriver {
     // query info is created by SQLOperation which will have start time of the operation. When JDBC Statement is not
     // used queryInfo will be null, in which case we take creation of Driver instance as query start time (which is also
     // the time when query display object is created)
-    if (queryInfo != null) {
-      queryStartTime = queryInfo.getBeginTime();
+    if (driverContext.getQueryInfo() != null) {
+      queryStartTime = driverContext.getQueryInfo().getBeginTime();
     } else {
-      queryStartTime = queryDisplay.getQueryStartTime();
+      queryStartTime = driverContext.getQueryDisplay().getQueryStartTime();
     }
     WmContext wmContext = new WmContext(queryStartTime, queryId);
     ctx.setWmContext(wmContext);
@@ -768,9 +721,10 @@ public class Driver implements IDriver {
   }
 
   private void openTransaction(TxnType txnType) throws LockException, CommandProcessorException {
-    if (checkConcurrency() && startImplicitTxn(queryTxnMgr) && !queryTxnMgr.isTxnOpen()) {
+    if (checkConcurrency() && startImplicitTxn(driverContext.getTxnManager()) &&
+        !driverContext.getTxnManager().isTxnOpen()) {
       String userFromUGI = getUserFromUGI();
-      queryTxnMgr.openTxn(ctx, userFromUGI, txnType);
+      driverContext.getTxnManager().openTxn(ctx, userFromUGI, txnType);
     }
   }
 
@@ -779,12 +733,12 @@ public class Driver implements IDriver {
     // compilation and processing. We only do this if 1) a transaction
     // was already opened and 2) the list has not been recorded yet,
     // e.g., by an explicit open transaction command.
-    validTxnListsGenerated = false;
-    String currentTxnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-    if (queryTxnMgr.isTxnOpen() && (currentTxnString == null || currentTxnString.isEmpty())) {
+    driverContext.setValidTxnListsGenerated(false);
+    String currentTxnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
+    if (driverContext.getTxnManager().isTxnOpen() && (currentTxnString == null || currentTxnString.isEmpty())) {
       try {
-        recordValidTxns(queryTxnMgr);
-        validTxnListsGenerated = true;
+        recordValidTxns(driverContext.getTxnManager());
+        driverContext.setValidTxnListsGenerated(true);
       } catch (LockException e) {
         LOG.error("Exception while acquiring valid txn list", e);
         throw e;
@@ -795,33 +749,34 @@ public class Driver implements IDriver {
   private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {
     boolean shouldOpenImplicitTxn = !ctx.isExplainPlan();
     //this is dumb. HiveOperation is not always set. see HIVE-16447/HIVE-16443
-    switch (queryState.getHiveOperation() == null ? HiveOperation.QUERY : queryState.getHiveOperation()) {
-      case COMMIT:
-      case ROLLBACK:
-        if(!txnManager.isTxnOpen()) {
-          throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, queryState.getHiveOperation().getOperationName());
-        }
-      case SWITCHDATABASE:
-      case SET_AUTOCOMMIT:
-        /**
-         * autocommit is here for completeness.  TM doesn't use it.  If we want to support JDBC
-         * semantics (or any other definition of autocommit) it should be done at session level.
-         */
-      case SHOWDATABASES:
-      case SHOWTABLES:
-      case SHOWCOLUMNS:
-      case SHOWFUNCTIONS:
-      case SHOWPARTITIONS:
-      case SHOWLOCKS:
-      case SHOWVIEWS:
-      case SHOW_ROLES:
-      case SHOW_ROLE_PRINCIPALS:
-      case SHOW_COMPACTIONS:
-      case SHOW_TRANSACTIONS:
-      case ABORT_TRANSACTIONS:
-      case KILL_QUERY:
-        shouldOpenImplicitTxn = false;
-        //this implies that no locks are needed for such a command
+    HiveOperation hiveOperation = driverContext.getQueryState().getHiveOperation();
+    switch (hiveOperation == null ? HiveOperation.QUERY : hiveOperation) {
+    case COMMIT:
+    case ROLLBACK:
+      if (!txnManager.isTxnOpen()) {
+        throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, hiveOperation.getOperationName());
+      }
+    case SWITCHDATABASE:
+    case SET_AUTOCOMMIT:
+      /**
+       * autocommit is here for completeness.  TM doesn't use it.  If we want to support JDBC
+       * semantics (or any other definition of autocommit) it should be done at session level.
+       */
+    case SHOWDATABASES:
+    case SHOWTABLES:
+    case SHOWCOLUMNS:
+    case SHOWFUNCTIONS:
+    case SHOWPARTITIONS:
+    case SHOWLOCKS:
+    case SHOWVIEWS:
+    case SHOW_ROLES:
+    case SHOW_ROLE_PRINCIPALS:
+    case SHOW_COMPACTIONS:
+    case SHOW_TRANSACTIONS:
+    case ABORT_TRANSACTIONS:
+    case KILL_QUERY:
+      shouldOpenImplicitTxn = false;
+      //this implies that no locks are needed for such a command
     }
     return shouldOpenImplicitTxn;
   }
@@ -830,7 +785,7 @@ public class Driver implements IDriver {
       throws CommandProcessorException {
     if (driverState.isAborted()) {
       String errorMessage = "FAILED: command has been interrupted: " + msg;
-      console.printError(errorMessage);
+      CONSOLE.printError(errorMessage);
       if (hookContext != null) {
         try {
           invokeFailureHooks(perfLogger, hookContext, errorMessage, null);
@@ -864,18 +819,18 @@ public class Driver implements IDriver {
       ASTNode astTree) throws IOException {
     String ret = null;
     ExplainTask task = new ExplainTask();
-    task.initialize(queryState, plan, null, ctx.getOpContext());
+    task.initialize(driverContext.getQueryState(), plan, null, ctx);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
     try {
       List<Task<?>> rootTasks = sem.getAllRootTasks();
-      if (conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH)) {
+      if (driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH)) {
         JSONObject jsonPlan = task.getJSONPlan(
             null, rootTasks, sem.getFetchTask(), true, true, true, sem.getCboInfo(),
             plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
         if (jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES) != null &&
             jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES).length() <=
-                conf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE)) {
+                driverContext.getConf().getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE)) {
           ret = jsonPlan.toString();
         } else {
           ret = null;
@@ -894,7 +849,7 @@ public class Driver implements IDriver {
 
   @Override
   public HiveConf getConf() {
-    return conf;
+    return driverContext.getConf();
   }
 
   /**
@@ -902,7 +857,7 @@ public class Driver implements IDriver {
    */
   @Override
   public QueryPlan getPlan() {
-    return plan;
+    return driverContext.getPlan();
   }
 
   /**
@@ -910,33 +865,33 @@ public class Driver implements IDriver {
    */
   @Override
   public FetchTask getFetchTask() {
-    return fetchTask;
+    return driverContext.getFetchTask();
   }
 
   // Write the current set of valid transactions into the conf file
   private void recordValidTxns(HiveTxnManager txnMgr) throws LockException {
-    String oldTxnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    String oldTxnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if ((oldTxnString != null) && (oldTxnString.length() > 0)) {
       throw new IllegalStateException("calling recordValidTxn() more than once in the same " +
               JavaUtils.txnIdToString(txnMgr.getCurrentTxnId()));
     }
     ValidTxnList txnList = txnMgr.getValidTxns();
     String txnStr = txnList.toString();
-    conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
+    driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY, txnStr);
     LOG.debug("Encoding valid txns info " + txnStr + " txnid:" + txnMgr.getCurrentTxnId());
   }
 
   // Write the current set of valid write ids for the operated acid tables into the conf file so
   // that it can be read by the input format.
   private ValidTxnWriteIdList recordValidWriteIds(HiveTxnManager txnMgr) throws LockException {
-    String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if ((txnString == null) || (txnString.isEmpty())) {
       throw new IllegalStateException("calling recordValidWritsIdss() without initializing ValidTxnList " +
               JavaUtils.txnIdToString(txnMgr.getCurrentTxnId()));
     }
-    List<String> txnTables = getTransactionalTables(plan);
+    List<String> txnTables = getTransactionalTables(driverContext.getPlan());
     ValidTxnWriteIdList txnWriteIds = null;
-    if (compactionWriteIds != null) {
+    if (driverContext.getCompactionWriteIds() != null) {
       /**
        * This is kludgy: here we need to read with Compactor's snapshot/txn
        * rather than the snapshot of the current {@code txnMgr}, in effect
@@ -947,27 +902,27 @@ public class Driver implements IDriver {
       if (txnTables.size() != 1) {
         throw new LockException("Unexpected tables in compaction: " + txnTables);
       }
-      txnWriteIds = new ValidTxnWriteIdList(compactorTxnId);
-      txnWriteIds.addTableValidWriteIdList(compactionWriteIds);
+      txnWriteIds = new ValidTxnWriteIdList(driverContext.getCompactorTxnId());
+      txnWriteIds.addTableValidWriteIdList(driverContext.getCompactionWriteIds());
     } else {
       txnWriteIds = txnMgr.getValidWriteIds(txnTables, txnString);
     }
-    if (queryTxnType == TxnType.READ_ONLY && !getWrittenTables(plan).isEmpty()) {
+    if (driverContext.getTxnType() == TxnType.READ_ONLY && !getWrittenTables(driverContext.getPlan()).isEmpty()) {
       throw new IllegalStateException(String.format(
           "Inferred transaction type '%s' doesn't conform to the actual query string '%s'",
-          queryTxnType, queryState.getQueryString()));
+          driverContext.getTxnType(), driverContext.getQueryState().getQueryString()));
     }
 
     String writeIdStr = txnWriteIds.toString();
-    conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, writeIdStr);
-    if (plan.getFetchTask() != null) {
+    driverContext.getConf().set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, writeIdStr);
+    if (driverContext.getPlan().getFetchTask() != null) {
       /**
        * This is needed for {@link HiveConf.ConfVars.HIVEFETCHTASKCONVERSION} optimization which
        * initializes JobConf in FetchOperator before recordValidTxns() but this has to be done
        * after locks are acquired to avoid race conditions in ACID.
        * This case is supported only for single source query.
        */
-      Operator<?> source = plan.getFetchTask().getWork().getSource();
+      Operator<?> source = driverContext.getPlan().getFetchTask().getWork().getSource();
       if (source instanceof TableScanOperator) {
         TableScanOperator tsOp = (TableScanOperator)source;
         String fullTableName = AcidUtils.getFullTableName(tsOp.getConf().getDatabaseName(),
@@ -978,7 +933,7 @@ public class Driver implements IDriver {
                   + " is missing from the ValidWriteIdList config: " + writeIdStr);
         }
         if (writeIdList != null) {
-          plan.getFetchTask().setValidWriteIdList(writeIdList.toString());
+          driverContext.getPlan().getFetchTask().setValidWriteIdList(writeIdList.toString());
         }
       }
     }
@@ -1034,10 +989,10 @@ public class Driver implements IDriver {
     // Don't use the userName member, as it may or may not have been set.  Get the value from
     // conf, which calls into getUGI to figure out who the process is running as.
     try {
-      return conf.getUser();
+      return driverContext.getConf().getUser();
     } catch (IOException e) {
       String errorMessage = "FAILED: Error in determining user while acquiring locks: " + e.getMessage();
-      console.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
+      CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
       throw createProcessorException(10, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
     }
   }
@@ -1055,7 +1010,7 @@ public class Driver implements IDriver {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
-    if(!queryTxnMgr.isTxnOpen() && queryTxnMgr.supportsAcid()) {
+    if(!driverContext.getTxnManager().isTxnOpen() && driverContext.getTxnManager().supportsAcid()) {
       /*non acid txn managers don't support txns but fwd lock requests to lock managers
         acid txn manager requires all locks to be associated with a txn so if we
         end up here w/o an open txn it's because we are processing something like "use <database>
@@ -1066,16 +1021,16 @@ public class Driver implements IDriver {
       String userFromUGI = getUserFromUGI();
 
       // Set the table write id in all of the acid file sinks
-      if (!plan.getAcidSinks().isEmpty()) {
-        List<FileSinkDesc> acidSinks = new ArrayList<>(plan.getAcidSinks());
+      if (!driverContext.getPlan().getAcidSinks().isEmpty()) {
+        List<FileSinkDesc> acidSinks = new ArrayList<>(driverContext.getPlan().getAcidSinks());
         //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
         //so this makes (file name -> data) mapping stable
         acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) ->
           fsd1.getDirName().compareTo(fsd2.getDirName()));
         for (FileSinkDesc desc : acidSinks) {
           TableDesc tableInfo = desc.getTableInfo();
-          long writeId = queryTxnMgr.getTableWriteId(Utilities.getDatabaseName(tableInfo.getTableName()),
-                  Utilities.getTableName(tableInfo.getTableName()));
+          final TableName tn = HiveTableName.ofNullable(tableInfo.getTableName());
+          long writeId = driverContext.getTxnManager().getTableWriteId(tn.getDb(), tn.getTable());
           desc.setTableWriteId(writeId);
 
           /**
@@ -1084,53 +1039,54 @@ public class Driver implements IDriver {
            * Insert ... Select ... Union All Select ... using
            * {@link org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}
            */
-          desc.setStatementId(queryTxnMgr.getStmtIdAndIncrement());
+          desc.setStatementId(driverContext.getTxnManager().getStmtIdAndIncrement());
           String unionAllSubdir = "/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
           if(desc.getInsertOverwrite() && desc.getDirName().toString().contains(unionAllSubdir) &&
               desc.isFullAcidTable()) {
-            throw new UnsupportedOperationException("QueryId=" + plan.getQueryId() +
+            throw new UnsupportedOperationException("QueryId=" + driverContext.getPlan().getQueryId() +
                 " is not supported due to OVERWRITE and UNION ALL.  Please use truncate + insert");
           }
         }
       }
 
-      if (plan.getAcidAnalyzeTable() != null) {
+      if (driverContext.getPlan().getAcidAnalyzeTable() != null) {
         // Allocate write ID for the table being analyzed.
-        Table t = plan.getAcidAnalyzeTable().getTable();
-        queryTxnMgr.getTableWriteId(t.getDbName(), t.getTableName());
+        Table t = driverContext.getPlan().getAcidAnalyzeTable().getTable();
+        driverContext.getTxnManager().getTableWriteId(t.getDbName(), t.getTableName());
       }
 
 
-      DDLDescWithWriteId acidDdlDesc = plan.getAcidDdlDesc();
+      DDLDescWithWriteId acidDdlDesc = driverContext.getPlan().getAcidDdlDesc();
       boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
       if (hasAcidDdl) {
         String fqTableName = acidDdlDesc.getFullTableName();
-        long writeId = queryTxnMgr.getTableWriteId(
-            Utilities.getDatabaseName(fqTableName), Utilities.getTableName(fqTableName));
+        final TableName tn = HiveTableName.ofNullableWithNoDefault(fqTableName);
+        long writeId = driverContext.getTxnManager().getTableWriteId(tn.getDb(), tn.getTable());
         acidDdlDesc.setWriteId(writeId);
       }
 
       /*It's imperative that {@code acquireLocks()} is called for all commands so that
       HiveTxnManager can transition its state machine correctly*/
-      queryTxnMgr.acquireLocks(plan, ctx, userFromUGI, driverState);
+      driverContext.getTxnManager().acquireLocks(driverContext.getPlan(), ctx, userFromUGI, driverState);
       final List<HiveLock> locks = ctx.getHiveLocks();
-      LOG.info("Operation {} obtained {} locks", plan.getOperation(),
+      LOG.info("Operation {} obtained {} locks", driverContext.getPlan().getOperation(),
           ((locks == null) ? 0 : locks.size()));
       // This check is for controlling the correctness of the current state
-      if (queryTxnMgr.recordSnapshot(plan) && !validTxnListsGenerated) {
+      if (driverContext.getTxnManager().recordSnapshot(driverContext.getPlan()) &&
+          !driverContext.isValidTxnListsGenerated()) {
         throw new IllegalStateException(
             "Need to record valid WriteID list but there is no valid TxnID list (" +
-                JavaUtils.txnIdToString(queryTxnMgr.getCurrentTxnId()) +
-                ", queryId:" + plan.getQueryId() + ")");
+                JavaUtils.txnIdToString(driverContext.getTxnManager().getCurrentTxnId()) +
+                ", queryId:" + driverContext.getPlan().getQueryId() + ")");
       }
 
-      if (plan.hasAcidResourcesInQuery() || hasAcidDdl) {
-        recordValidWriteIds(queryTxnMgr);
+      if (driverContext.getPlan().hasAcidResourcesInQuery() || hasAcidDdl) {
+        recordValidWriteIds(driverContext.getTxnManager());
       }
 
     } catch (Exception e) {
       String errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
-      console.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
+      CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
       throw createProcessorException(10, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
     } finally {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
@@ -1138,7 +1094,7 @@ public class Driver implements IDriver {
   }
 
   public void releaseLocksAndCommitOrRollback(boolean commit) throws LockException {
-    releaseLocksAndCommitOrRollback(commit, queryTxnMgr);
+    releaseLocksAndCommitOrRollback(commit, driverContext.getTxnManager());
   }
 
   /**
@@ -1154,20 +1110,21 @@ public class Driver implements IDriver {
     HiveTxnManager txnMgr;
     if (txnManager == null) {
       // Default to driver's txn manager if no txn manager specified
-      txnMgr = queryTxnMgr;
+      txnMgr = driverContext.getTxnManager();
     } else {
       txnMgr = txnManager;
     }
     // If we've opened a transaction we need to commit or rollback rather than explicitly
     // releasing the locks.
-    conf.unset(ValidTxnList.VALID_TXNS_KEY);
-    conf.unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+    driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
+    driverContext.getConf().unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
     if(!checkConcurrency()) {
       return;
     }
     if (txnMgr.isTxnOpen()) {
       if (commit) {
-        if(conf.getBoolVar(ConfVars.HIVE_IN_TEST) && conf.getBoolVar(ConfVars.HIVETESTMODEROLLBACKTXN)) {
+        if (driverContext.getConf().getBoolVar(ConfVars.HIVE_IN_TEST) &&
+            driverContext.getConf().getBoolVar(ConfVars.HIVETESTMODEROLLBACKTXN)) {
           txnMgr.rollbackTxn();
         }
         else {
@@ -1197,7 +1154,7 @@ public class Driver implements IDriver {
    */
   public void releaseResources() {
     releasePlan();
-    releaseDriverContext();
+    releaseTaskQueue();
   }
 
   @Override
@@ -1255,7 +1212,7 @@ public class Driver implements IDriver {
               StringUtils.stringifyException(cpe.getException()));
         }
       } catch (HiveException ex) {
-        console.printError("Unable to JSON-encode the error", StringUtils.stringifyException(ex));
+        CONSOLE.printError("Unable to JSON-encode the error", StringUtils.stringifyException(ex));
       }
       throw cpe;
     }
@@ -1277,16 +1234,16 @@ public class Driver implements IDriver {
       if (cleanupTxnList) {
         // Valid txn list might be generated for a query compiled using this
         // command, thus we need to reset it
-        conf.unset(ValidTxnList.VALID_TXNS_KEY);
+        driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
       }
     }
   }
 
   public void lockAndRespond() throws CommandProcessorException {
     // Assumes the query has already been compiled
-    if (plan == null) {
+    if (driverContext.getPlan() == null) {
       throw new IllegalStateException(
-          "No previously compiled query for driver - queryId=" + queryState.getQueryId());
+          "No previously compiled query for driver - queryId=" + driverContext.getQueryState().getQueryId());
     }
 
     if (requiresLock()) {
@@ -1308,7 +1265,7 @@ public class Driver implements IDriver {
     PerfLogger perfLogger = SessionState.getPerfLogger(true);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.WAIT_COMPILE);
 
-    try (CompileLock compileLock = CompileLockFactory.newInstance(conf, command)) {
+    try (CompileLock compileLock = CompileLockFactory.newInstance(driverContext.getConf(), command)) {
       boolean success = compileLock.tryAcquire();
 
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.WAIT_COMPILE);
@@ -1335,8 +1292,8 @@ public class Driver implements IDriver {
     //Save compile-time PerfLogging for WebUI.
     //Execution-time Perf logs are done by either another thread's PerfLogger
     //or a reset PerfLogger.
-    queryDisplay.setPerfLogStarts(QueryDisplay.Phase.COMPILATION, perfLogger.getStartTimes());
-    queryDisplay.setPerfLogEnds(QueryDisplay.Phase.COMPILATION, perfLogger.getEndTimes());
+    driverContext.getQueryDisplay().setPerfLogStarts(QueryDisplay.Phase.COMPILATION, perfLogger.getStartTimes());
+    driverContext.getQueryDisplay().setPerfLogEnds(QueryDisplay.Phase.COMPILATION, perfLogger.getEndTimes());
   }
 
   private void runInternal(String command, boolean alreadyCompiled) throws CommandProcessorException {
@@ -1349,7 +1306,7 @@ public class Driver implements IDriver {
           driverState.executing();
         } else {
           String errorMessage = "FAILED: Precompiled query has been cancelled or closed.";
-          console.printError(errorMessage);
+          CONSOLE.printError(errorMessage);
           throw createProcessorException(12, errorMessage, null, null);
         }
       } else {
@@ -1363,14 +1320,14 @@ public class Driver implements IDriver {
     // the method has been returned by an error or not.
     boolean isFinishedWithError = true;
     try {
-      HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf,
+      HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(driverContext.getConf(),
           alreadyCompiled ? ctx.getCmd() : command);
       // Get all the driver run hooks and pre-execute them.
       try {
-        hookRunner.runPreDriverHooks(hookContext);
+        driverContext.getHookRunner().runPreDriverHooks(hookContext);
       } catch (Exception e) {
         String errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
-        console.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
+        CONSOLE.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
         throw createProcessorException(12, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
       }
 
@@ -1379,7 +1336,7 @@ public class Driver implements IDriver {
         compileInternal(command, true);
       } else {
         // Since we're reusing the compiled plan, we need to update its start time for current run
-        plan.setQueryStartTime(queryDisplay.getQueryStartTime());
+        driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
       }
 
       //Reset the PerfLogger so that it doesn't retain any previous values.
@@ -1389,7 +1346,7 @@ public class Driver implements IDriver {
       // the reason that we set the txn manager for the cxt here is because each
       // query has its own ctx object. The txn mgr is shared across the
       // same instance of Driver, which can run multiple queries.
-      ctx.setHiveTxnManager(queryTxnMgr);
+      ctx.setHiveTxnManager(driverContext.getTxnManager());
 
       checkInterrupted("at acquiring the lock.", null, null);
 
@@ -1404,13 +1361,14 @@ public class Driver implements IDriver {
           // Currently, we acquire a snapshot, we compile the query wrt that snapshot,
           // and then, we acquire locks. If snapshot is still valid, we continue as usual.
           // But if snapshot is not valid, we recompile the query.
-          retrial = true;
-          backupContext.addRewrittenStatementContext(ctx);
-          backupContext.setHiveLocks(ctx.getHiveLocks());
-          ctx = backupContext;
-          conf.set(ValidTxnList.VALID_TXNS_KEY, queryTxnMgr.getValidTxns().toString());
-          if (plan.hasAcidResourcesInQuery()) {
-            recordValidWriteIds(queryTxnMgr);
+          driverContext.setRetrial(true);
+          driverContext.getBackupContext().addRewrittenStatementContext(ctx);
+          driverContext.getBackupContext().setHiveLocks(ctx.getHiveLocks());
+          ctx = driverContext.getBackupContext();
+          driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
+              driverContext.getTxnManager().getValidTxns().toString());
+          if (driverContext.getPlan().hasAcidResourcesInQuery()) {
+            recordValidWriteIds(driverContext.getTxnManager());
           }
 
           if (!alreadyCompiled) {
@@ -1418,7 +1376,7 @@ public class Driver implements IDriver {
             compileInternal(command, true);
           } else {
             // Since we're reusing the compiled plan, we need to update its start time for current run
-            plan.setQueryStartTime(queryDisplay.getQueryStartTime());
+            driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
           }
 
           if (!isValidTxnListState()) {
@@ -1432,7 +1390,7 @@ public class Driver implements IDriver {
           // the reason that we set the txn manager for the cxt here is because each
           // query has its own ctx object. The txn mgr is shared across the
           // same instance of Driver, which can run multiple queries.
-          ctx.setHiveTxnManager(queryTxnMgr);
+          ctx.setHiveTxnManager(driverContext.getTxnManager());
         }
       } catch (LockException e) {
         throw handleHiveException(e, 13);
@@ -1448,12 +1406,14 @@ public class Driver implements IDriver {
       //if needRequireLock is false, the release here will do nothing because there is no lock
       try {
         //since set autocommit starts an implicit txn, close it
-        if(queryTxnMgr.isImplicitTransactionOpen() || plan.getOperation() == HiveOperation.COMMIT) {
+        if (driverContext.getTxnManager().isImplicitTransactionOpen() ||
+            driverContext.getPlan().getOperation() == HiveOperation.COMMIT) {
           releaseLocksAndCommitOrRollback(true);
         }
-        else if(plan.getOperation() == HiveOperation.ROLLBACK) {
+        else if(driverContext.getPlan().getOperation() == HiveOperation.ROLLBACK) {
           releaseLocksAndCommitOrRollback(false);
-        } else if (!queryTxnMgr.isTxnOpen() && queryState.getHiveOperation() == HiveOperation.REPLLOAD) {
+        } else if (!driverContext.getTxnManager().isTxnOpen() &&
+            driverContext.getQueryState().getHiveOperation() == HiveOperation.REPLLOAD) {
           // repl load during migration, commits the explicit txn and start some internal txns. Call
           // releaseLocksAndCommitOrRollback to do the clean up.
           releaseLocksAndCommitOrRollback(false);
@@ -1464,15 +1424,15 @@ public class Driver implements IDriver {
         throw handleHiveException(e, 12);
       }
 
-      queryDisplay.setPerfLogStarts(QueryDisplay.Phase.EXECUTION, perfLogger.getStartTimes());
-      queryDisplay.setPerfLogEnds(QueryDisplay.Phase.EXECUTION, perfLogger.getEndTimes());
+      driverContext.getQueryDisplay().setPerfLogStarts(QueryDisplay.Phase.EXECUTION, perfLogger.getStartTimes());
+      driverContext.getQueryDisplay().setPerfLogEnds(QueryDisplay.Phase.EXECUTION, perfLogger.getEndTimes());
 
       // Take all the driver run hooks and post-execute them.
       try {
-        hookRunner.runPostDriverHooks(hookContext);
+        driverContext.getHookRunner().runPostDriverHooks(hookContext);
       } catch (Exception e) {
         String errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
-        console.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
+        CONSOLE.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
         throw createProcessorException(12, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
       }
       isFinishedWithError = false;
@@ -1480,7 +1440,7 @@ public class Driver implements IDriver {
       if (driverState.isAborted()) {
         closeInProcess(true);
       } else {
-        // only release the related resources ctx, driverContext as normal
+        // only release the related resources ctx, taskQueue as normal
         releaseResources();
       }
 
@@ -1518,9 +1478,10 @@ public class Driver implements IDriver {
     }
     String sqlState = e.getCanonicalErrorMsg() != null ?
         e.getCanonicalErrorMsg().getSQLState() : ErrorMsg.findSQLState(e.getMessage());
-    console.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
+    CONSOLE.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
     throw createProcessorException(ret, errorMessage, sqlState, e);
   }
+
   private boolean requiresLock() {
     if (!checkConcurrency()) {
       LOG.info("Concurrency mode is disabled, not creating a lock manager");
@@ -1530,21 +1491,24 @@ public class Driver implements IDriver {
     if (isExplicitLockOperation()) {
       return false;
     }
-    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_LOCK_MAPRED_ONLY)) {
+    if (!HiveConf.getBoolVar(driverContext.getConf(), ConfVars.HIVE_LOCK_MAPRED_ONLY)) {
       return true;
     }
-    Queue<Task<?>> taskQueue = new LinkedList<Task<?>>();
-    taskQueue.addAll(plan.getRootTasks());
-    while (taskQueue.peek() != null) {
-      Task<?> tsk = taskQueue.remove();
+    if (driverContext.getConf().get(Constants.HIVE_QUERY_EXCLUSIVE_LOCK) != null) {
+      return true;
+    }
+    Queue<Task<?>> tasks = new LinkedList<Task<?>>();
+    tasks.addAll(driverContext.getPlan().getRootTasks());
+    while (tasks.peek() != null) {
+      Task<?> tsk = tasks.remove();
       if (tsk.requireLock()) {
         return true;
       }
       if (tsk instanceof ConditionalTask) {
-        taskQueue.addAll(((ConditionalTask)tsk).getListTasks());
+        tasks.addAll(((ConditionalTask)tsk).getListTasks());
       }
-      if (tsk.getChildTasks()!= null) {
-        taskQueue.addAll(tsk.getChildTasks());
+      if (tsk.getChildTasks() != null) {
+        tasks.addAll(tsk.getChildTasks());
       }
       // does not add back up task here, because back up task should be the same
       // type of the original task.
@@ -1553,7 +1517,7 @@ public class Driver implements IDriver {
   }
 
   private boolean isExplicitLockOperation() {
-    HiveOperation currentOpt = plan.getOperation();
+    HiveOperation currentOpt = driverContext.getPlan().getOperation();
     if (currentOpt != null) {
       switch (currentOpt) {
       case LOCKDB:
@@ -1571,7 +1535,7 @@ public class Driver implements IDriver {
   private CommandProcessorException createProcessorException(int ret, String errorMessage, String sqlState,
       Throwable downstreamError) {
     SessionState.getPerfLogger().cleanupPerfLogMetrics();
-    queryDisplay.setErrorMessage(errorMessage);
+    driverContext.getQueryDisplay().setErrorMessage(errorMessage);
     if (downstreamError != null && downstreamError instanceof HiveException) {
       ErrorMsg em = ((HiveException)downstreamError).getCanonicalErrorMsg();
       if (em != null) {
@@ -1584,60 +1548,60 @@ public class Driver implements IDriver {
   private void useFetchFromCache(CacheEntry cacheEntry) {
     // Change query FetchTask to use new location specified in results cache.
     FetchTask fetchTaskFromCache = (FetchTask) TaskFactory.get(cacheEntry.getFetchWork());
-    fetchTaskFromCache.initialize(queryState, plan, null, ctx.getOpContext());
-    plan.setFetchTask(fetchTaskFromCache);
-    cacheUsage = new CacheUsage(CacheUsage.CacheStatus.QUERY_USING_CACHE, cacheEntry);
+    fetchTaskFromCache.initialize(driverContext.getQueryState(), driverContext.getPlan(), null, ctx);
+    driverContext.getPlan().setFetchTask(fetchTaskFromCache);
+    driverContext.setCacheUsage(new CacheUsage(CacheUsage.CacheStatus.QUERY_USING_CACHE, cacheEntry));
   }
 
   private void preExecutionCacheActions() throws Exception {
-    if (cacheUsage != null) {
-      if (cacheUsage.getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
-          plan.getFetchTask() != null) {
+    if (driverContext.getCacheUsage() != null) {
+      if (driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
+          driverContext.getPlan().getFetchTask() != null) {
         ValidTxnWriteIdList txnWriteIdList = null;
-        if (plan.hasAcidResourcesInQuery()) {
-          txnWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
+        if (driverContext.getPlan().hasAcidResourcesInQuery()) {
+          txnWriteIdList = AcidUtils.getValidTxnWriteIdList(driverContext.getConf());
         }
         // The results of this query execution might be cacheable.
         // Add a placeholder entry in the cache so other queries know this result is pending.
         CacheEntry pendingCacheEntry =
-            QueryResultsCache.getInstance().addToCache(cacheUsage.getQueryInfo(), txnWriteIdList);
+            QueryResultsCache.getInstance().addToCache(driverContext.getCacheUsage().getQueryInfo(), txnWriteIdList);
         if (pendingCacheEntry != null) {
           // Update cacheUsage to reference the pending entry.
-          this.cacheUsage.setCacheEntry(pendingCacheEntry);
+          this.driverContext.getCacheUsage().setCacheEntry(pendingCacheEntry);
         }
       }
     }
   }
 
   private void postExecutionCacheActions() throws Exception {
-    if (cacheUsage != null) {
-      if (cacheUsage.getStatus() == CacheUsage.CacheStatus.QUERY_USING_CACHE) {
+    if (driverContext.getCacheUsage() != null) {
+      if (driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.QUERY_USING_CACHE) {
         // Using a previously cached result.
-        CacheEntry cacheEntry = cacheUsage.getCacheEntry();
+        CacheEntry cacheEntry = driverContext.getCacheUsage().getCacheEntry();
 
         // Reader count already incremented during cache lookup.
         // Save to usedCacheEntry to ensure reader is released after query.
-        this.usedCacheEntry = cacheEntry;
-      } else if (cacheUsage.getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
-          cacheUsage.getCacheEntry() != null &&
-          plan.getFetchTask() != null) {
+        driverContext.setUsedCacheEntry(cacheEntry);
+      } else if (driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
+          driverContext.getCacheUsage().getCacheEntry() != null &&
+          driverContext.getPlan().getFetchTask() != null) {
         // Save results to the cache for future queries to use.
         PerfLogger perfLogger = SessionState.getPerfLogger();
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
 
         ValidTxnWriteIdList txnWriteIdList = null;
-        if (plan.hasAcidResourcesInQuery()) {
-          txnWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
+        if (driverContext.getPlan().hasAcidResourcesInQuery()) {
+          txnWriteIdList = AcidUtils.getValidTxnWriteIdList(driverContext.getConf());
         }
-        CacheEntry cacheEntry = cacheUsage.getCacheEntry();
+        CacheEntry cacheEntry = driverContext.getCacheUsage().getCacheEntry();
         boolean savedToCache = QueryResultsCache.getInstance().setEntryValid(
             cacheEntry,
-            plan.getFetchTask().getWork());
+            driverContext.getPlan().getFetchTask().getWork());
         LOG.info("savedToCache: {} ({})", savedToCache, cacheEntry);
         if (savedToCache) {
-          useFetchFromCache(cacheUsage.getCacheEntry());
+          useFetchFromCache(driverContext.getCacheUsage().getCacheEntry());
           // setEntryValid() already increments the reader count. Set usedCacheEntry so it gets released.
-          this.usedCacheEntry = cacheUsage.getCacheEntry();
+          driverContext.setUsedCacheEntry(driverContext.getCacheUsage().getCacheEntry());
         }
 
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
@@ -1649,20 +1613,20 @@ public class Driver implements IDriver {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
-    boolean noName = Strings.isNullOrEmpty(conf.get(MRJobConfig.JOB_NAME));
+    boolean noName = Strings.isNullOrEmpty(driverContext.getConf().get(MRJobConfig.JOB_NAME));
 
     int maxlen;
-    if ("spark".equals(conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
-      maxlen = conf.getIntVar(HiveConf.ConfVars.HIVESPARKJOBNAMELENGTH);
+    if ("spark".equals(driverContext.getConf().getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
+      maxlen = driverContext.getConf().getIntVar(HiveConf.ConfVars.HIVESPARKJOBNAMELENGTH);
     } else {
-      maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
+      maxlen = driverContext.getConf().getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
     }
     Metrics metrics = MetricsFactory.getInstance();
 
-    String queryId = plan.getQueryId();
+    String queryId = driverContext.getPlan().getQueryId();
     // Get the query string from the conf file as the compileInternal() method might
     // hide sensitive information during query redaction.
-    String queryStr = conf.getQueryString();
+    String queryStr = driverContext.getConf().getQueryString();
 
     driverState.lock();
     try {
@@ -1670,7 +1634,7 @@ public class Driver implements IDriver {
       // a combined compile/execute in runInternal, throws the error
       if (!driverState.isCompiled() && !driverState.isExecuting()) {
         String errorMessage = "FAILED: unexpected driverstate: " + driverState + ", for query " + queryStr;
-        console.printError(errorMessage);
+        CONSOLE.printError(errorMessage);
         throw createProcessorException(1000, errorMessage, "HY008", null);
       } else {
         driverState.executing();
@@ -1678,8 +1642,6 @@ public class Driver implements IDriver {
     } finally {
       driverState.unlock();
     }
-
-    maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 
     HookContext hookContext = null;
 
@@ -1692,40 +1654,42 @@ public class Driver implements IDriver {
       // so clear timing in this thread's Hive object before proceeding.
       Hive.get().clearMetaCallTiming();
 
-      plan.setStarted();
+      driverContext.getPlan().setStarted();
 
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().startQuery(queryStr, queryId);
-        SessionState.get().getHiveHistory().logPlanProgress(plan);
+        SessionState.get().getHiveHistory().logPlanProgress(driverContext.getPlan());
       }
       resStream = null;
 
       SessionState ss = SessionState.get();
 
       // TODO: should this use getUserFromAuthenticator?
-      hookContext = new PrivateHookContext(plan, queryState, ctx.getPathToCS(), SessionState.get().getUserName(),
+      hookContext = new PrivateHookContext(driverContext.getPlan(), driverContext.getQueryState(), ctx.getPathToCS(),
+          SessionState.get().getUserName(),
           ss.getUserIpAddress(), InetAddress.getLocalHost().getHostAddress(), operationId,
-          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo, ctx);
+          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger,
+          driverContext.getQueryInfo(), ctx);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
-      hookRunner.runPreHooks(hookContext);
+      driverContext.getHookRunner().runPreHooks(hookContext);
 
       // Trigger query hooks before query execution.
-      hookRunner.runBeforeExecutionHook(queryStr, hookContext);
+      driverContext.getHookRunner().runBeforeExecutionHook(queryStr, hookContext);
 
-      setQueryDisplays(plan.getRootTasks());
-      int mrJobs = Utilities.getMRTasks(plan.getRootTasks()).size();
-      int jobs = mrJobs + Utilities.getTezTasks(plan.getRootTasks()).size()
-          + Utilities.getSparkTasks(plan.getRootTasks()).size();
+      setQueryDisplays(driverContext.getPlan().getRootTasks());
+      int mrJobs = Utilities.getMRTasks(driverContext.getPlan().getRootTasks()).size();
+      int jobs = mrJobs + Utilities.getTezTasks(driverContext.getPlan().getRootTasks()).size()
+          + Utilities.getSparkTasks(driverContext.getPlan().getRootTasks()).size();
       if (jobs > 0) {
         logMrWarning(mrJobs);
-        console.printInfo("Query ID = " + queryId);
-        console.printInfo("Total jobs = " + jobs);
+        CONSOLE.printInfo("Query ID = " + queryId);
+        CONSOLE.printInfo("Total jobs = " + jobs);
       }
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setQueryProperty(queryId, Keys.QUERY_NUM_TASKS,
             String.valueOf(jobs));
-        SessionState.get().getHiveHistory().setIdToTableMap(plan.getIdToTableNameMap());
+        SessionState.get().getHiveHistory().setIdToTableMap(driverContext.getPlan().getIdToTableNameMap());
       }
       String jobname = Utilities.abbreviate(queryStr, maxlen - 6);
 
@@ -1737,22 +1701,21 @@ public class Driver implements IDriver {
 
       checkInterrupted("before running tasks.", hookContext, perfLogger);
 
-      DriverContext driverCxt = new DriverContext(ctx);
-      driverCxt.prepare(plan);
+      taskQueue = new TaskQueue(ctx); // for canceling the query (should be bound to session?)
+      taskQueue.prepare(driverContext.getPlan());
 
       ctx.setHDFSCleanup(true);
-      this.driverCxt = driverCxt; // for canceling the query (should be bound to session?)
 
       SessionState.get().setMapRedStats(new LinkedHashMap<>());
       SessionState.get().setStackTraces(new HashMap<>());
       SessionState.get().setLocalMapRedErrors(new HashMap<>());
 
       // Add root Tasks to runnable
-      for (Task<?> tsk : plan.getRootTasks()) {
+      for (Task<?> tsk : driverContext.getPlan().getRootTasks()) {
         // This should never happen, if it does, it's a bug with the potential to produce
         // incorrect results.
         assert tsk.getParentTasks() == null || tsk.getParentTasks().isEmpty();
-        driverCxt.addToRunnable(tsk);
+        taskQueue.addToRunnable(tsk);
 
         if (metrics != null) {
           tsk.updateTaskMetrics(metrics);
@@ -1763,18 +1726,19 @@ public class Driver implements IDriver {
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RUN_TASKS);
       // Loop while you either have tasks running, or tasks queued up
-      while (driverCxt.isRunning()) {
+      while (taskQueue.isRunning()) {
         // Launch upto maxthreads tasks
         Task<?> task;
-        while ((task = driverCxt.getRunnable(maxthreads)) != null) {
-          TaskRunner runner = launchTask(task, queryId, noName, jobname, jobs, driverCxt);
+        int maxthreads = HiveConf.getIntVar(driverContext.getConf(), HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
+        while ((task = taskQueue.getRunnable(maxthreads)) != null) {
+          TaskRunner runner = launchTask(task, queryId, noName, jobname, jobs, taskQueue);
           if (!runner.isRunning()) {
             break;
           }
         }
 
         // poll the Tasks to see which one completed
-        TaskRunner tskRun = driverCxt.pollFinished();
+        TaskRunner tskRun = taskQueue.pollFinished();
         if (tskRun == null) {
           continue;
         }
@@ -1784,14 +1748,14 @@ public class Driver implements IDriver {
           Briefly for replication the graph is huge and so memory pressure is going to be huge if
           we keep a lot of references around.
         */
-        String opName = plan.getOperationName();
+        String opName = driverContext.getPlan().getOperationName();
         boolean isReplicationOperation = opName.equals(HiveOperation.REPLDUMP.getOperationName())
             || opName.equals(HiveOperation.REPLLOAD.getOperationName());
         if (!isReplicationOperation) {
           hookContext.addCompleteTask(tskRun);
         }
 
-        queryDisplay.setTaskResult(tskRun.getTask().getId(), tskRun.getTaskResult());
+        driverContext.getQueryDisplay().setTaskResult(tskRun.getTask().getId(), tskRun.getTaskResult());
 
         Task<?> tsk = tskRun.getTask();
         TaskResult result = tskRun.getTaskResult();
@@ -1803,19 +1767,19 @@ public class Driver implements IDriver {
           Task<?> backupTask = tsk.getAndInitBackupTask();
           if (backupTask != null) {
             String errorMessage = getErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
-            console.printError(errorMessage);
+            CONSOLE.printError(errorMessage);
             errorMessage = "ATTEMPT: Execute BackupTask: " + backupTask.getClass().getName();
-            console.printError(errorMessage);
+            CONSOLE.printError(errorMessage);
 
             // add backup task to runnable
-            if (DriverContext.isLaunchable(backupTask)) {
-              driverCxt.addToRunnable(backupTask);
+            if (TaskQueue.isLaunchable(backupTask)) {
+              taskQueue.addToRunnable(backupTask);
             }
             continue;
 
           } else {
             String errorMessage = getErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
-            if (driverCxt.isShutdown()) {
+            if (taskQueue.isShutdown()) {
               errorMessage = "FAILED: Operation cancelled. " + errorMessage;
             }
             invokeFailureHooks(perfLogger, hookContext,
@@ -1832,8 +1796,8 @@ public class Driver implements IDriver {
               }
             }
 
-            console.printError(errorMessage);
-            driverCxt.shutdown();
+            CONSOLE.printError(errorMessage);
+            taskQueue.shutdown();
             // in case we decided to run everything in local mode, restore the
             // the jobtracker setting to its initial value
             ctx.restoreOriginalTracker();
@@ -1841,7 +1805,7 @@ public class Driver implements IDriver {
           }
         }
 
-        driverCxt.finished(tskRun);
+        taskQueue.finished(tskRun);
 
         if (SessionState.get() != null) {
           SessionState.get().getHiveHistory().setTaskProperty(queryId, tsk.getId(),
@@ -1851,8 +1815,8 @@ public class Driver implements IDriver {
 
         if (tsk.getChildTasks() != null) {
           for (Task<?> child : tsk.getChildTasks()) {
-            if (DriverContext.isLaunchable(child)) {
-              driverCxt.addToRunnable(child);
+            if (TaskQueue.isLaunchable(child)) {
+              taskQueue.addToRunnable(child);
             }
           }
         }
@@ -1865,10 +1829,10 @@ public class Driver implements IDriver {
       // the jobtracker setting to its initial value
       ctx.restoreOriginalTracker();
 
-      if (driverCxt.isShutdown()) {
+      if (taskQueue.isShutdown()) {
         String errorMessage = "FAILED: Operation cancelled";
         invokeFailureHooks(perfLogger, hookContext, errorMessage, null);
-        console.printError(errorMessage);
+        CONSOLE.printError(errorMessage);
         throw createProcessorException(1000, errorMessage, "HY008", null);
       }
 
@@ -1876,27 +1840,27 @@ public class Driver implements IDriver {
       // Some incomplete outputs may be added at the beginning, for eg: for dynamic partitions.
       // remove them
       HashSet<WriteEntity> remOutputs = new LinkedHashSet<WriteEntity>();
-      for (WriteEntity output : plan.getOutputs()) {
+      for (WriteEntity output : driverContext.getPlan().getOutputs()) {
         if (!output.isComplete()) {
           remOutputs.add(output);
         }
       }
 
       for (WriteEntity output : remOutputs) {
-        plan.getOutputs().remove(output);
+        driverContext.getPlan().getOutputs().remove(output);
       }
 
 
       hookContext.setHookType(HookContext.HookType.POST_EXEC_HOOK);
 
-      hookRunner.runPostExecHooks(hookContext);
+      driverContext.getHookRunner().runPostExecHooks(hookContext);
 
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setQueryProperty(queryId, Keys.QUERY_RET_CODE,
             String.valueOf(0));
         SessionState.get().getHiveHistory().printRowCount(queryId);
       }
-      releasePlan(plan);
+      releasePlan(driverContext.getPlan());
     } catch (CommandProcessorException cpe) {
       executionError = true;
       throw cpe;
@@ -1919,12 +1883,12 @@ public class Driver implements IDriver {
           LOG.warn("Failed to invoke failure hook", t);
         }
       }
-      console.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
+      CONSOLE.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
       throw createProcessorException(12, errorMessage, "08S01", e);
     } finally {
       // Trigger query hooks after query completes its execution.
       try {
-        hookRunner.runAfterExecutionHook(queryStr, hookContext, executionError);
+        driverContext.getHookRunner().runAfterExecutionHook(queryStr, hookContext, executionError);
       } catch (Exception e) {
         LOG.warn("Failed when invoking query after execution hook", e);
       }
@@ -1933,20 +1897,20 @@ public class Driver implements IDriver {
         SessionState.get().getHiveHistory().endQuery(queryId);
       }
       if (noName) {
-        conf.set(MRJobConfig.JOB_NAME, "");
+        driverContext.getConf().set(MRJobConfig.JOB_NAME, "");
       }
       double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE)/1000.00;
 
       ImmutableMap<String, Long> executionHMSTimings = dumpMetaCallTimingWithoutEx("execution");
-      queryDisplay.setHmsTimings(QueryDisplay.Phase.EXECUTION, executionHMSTimings);
+      driverContext.getQueryDisplay().setHmsTimings(QueryDisplay.Phase.EXECUTION, executionHMSTimings);
 
       Map<String, MapRedStats> stats = SessionState.get().getMapRedStats();
       if (stats != null && !stats.isEmpty()) {
         long totalCpu = 0;
         long numModifiedRows = 0;
-        console.printInfo("MapReduce Jobs Launched: ");
+        CONSOLE.printInfo("MapReduce Jobs Launched: ");
         for (Map.Entry<String, MapRedStats> entry : stats.entrySet()) {
-          console.printInfo("Stage-" + entry.getKey() + ": " + entry.getValue());
+          CONSOLE.printInfo("Stage-" + entry.getKey() + ": " + entry.getValue());
           totalCpu += entry.getValue().getCpuMSec();
 
           if (numModifiedRows > -1) {
@@ -1954,8 +1918,8 @@ public class Driver implements IDriver {
             numModifiedRows = addWithOverflowCheck(numModifiedRows, entry.getValue().getNumModifiedRows());
           }
         }
-        queryState.setNumModifiedRows(numModifiedRows);
-        console.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
+        driverContext.getQueryState().setNumModifiedRows(numModifiedRows);
+        CONSOLE.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
       }
       SparkSession ss = SessionState.get().getSparkSession();
       if (ss != null) {
@@ -2020,7 +1984,7 @@ public class Driver implements IDriver {
       if (visited.contains(task)) {
         continue;
       }
-      task.setQueryDisplay(queryDisplay);
+      task.setQueryDisplay(driverContext.getQueryDisplay());
       if (task.getDependentTasks() != null) {
         childTasks.addAll(task.getDependentTasks());
       }
@@ -2030,7 +1994,7 @@ public class Driver implements IDriver {
   }
 
   private void logMrWarning(int mrJobs) {
-    if (mrJobs <= 0 || !("mr".equals(HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE)))) {
+    if (mrJobs <= 0 || !("mr".equals(HiveConf.getVar(driverContext.getConf(), ConfVars.HIVE_EXECUTION_ENGINE)))) {
       return;
     }
     String warning = HiveConf.generateMrDeprecationWarning();
@@ -2064,7 +2028,7 @@ public class Driver implements IDriver {
     hookContext.setErrorMessage(errorMessage);
     hookContext.setException(exception);
     // Get all the failure execution hooks and execute them.
-    hookRunner.runFailureHooks(hookContext);
+    driverContext.getHookRunner().runFailureHooks(hookContext);
   }
 
   /**
@@ -2080,27 +2044,27 @@ public class Driver implements IDriver {
    *          name of the task, if it is a map-reduce job
    * @param jobs
    *          number of map-reduce jobs
-   * @param cxt
-   *          the driver context
+   * @param taskQueue
+   *          the task queue
    */
   private TaskRunner launchTask(Task<?> tsk, String queryId, boolean noName,
-      String jobname, int jobs, DriverContext cxt) throws HiveException {
+      String jobname, int jobs, TaskQueue taskQueue) throws HiveException {
     if (SessionState.get() != null) {
       SessionState.get().getHiveHistory().startTask(queryId, tsk, tsk.getClass().getName());
     }
     if (tsk.isMapRedTask() && !(tsk instanceof ConditionalTask)) {
       if (noName) {
-        conf.set(MRJobConfig.JOB_NAME, jobname + " (" + tsk.getId() + ")");
+        driverContext.getConf().set(MRJobConfig.JOB_NAME, jobname + " (" + tsk.getId() + ")");
       }
-      conf.set(DagUtils.MAPREDUCE_WORKFLOW_NODE_NAME, tsk.getId());
-      Utilities.setWorkflowAdjacencies(conf, plan);
-      cxt.incCurJobNo(1);
-      console.printInfo("Launching Job " + cxt.getCurJobNo() + " out of " + jobs);
+      driverContext.getConf().set(DagUtils.MAPREDUCE_WORKFLOW_NODE_NAME, tsk.getId());
+      Utilities.setWorkflowAdjacencies(driverContext.getConf(), driverContext.getPlan());
+      taskQueue.incCurJobNo(1);
+      CONSOLE.printInfo("Launching Job " + taskQueue.getCurJobNo() + " out of " + jobs);
     }
-    tsk.initialize(queryState, plan, cxt, ctx.getOpContext());
-    TaskRunner tskRun = new TaskRunner(tsk, cxt);
+    tsk.initialize(driverContext.getQueryState(), driverContext.getPlan(), taskQueue, ctx);
+    TaskRunner tskRun = new TaskRunner(tsk, taskQueue);
 
-    cxt.launching(tskRun);
+    taskQueue.launching(tskRun);
     // Launch Task
     if (HiveConf.getBoolVar(tsk.getConf(), HiveConf.ConfVars.EXECPARALLEL) && tsk.canExecuteInParallel()) {
       // Launch it in the parallel mode, as a separate thread only for MR tasks
@@ -2119,7 +2083,7 @@ public class Driver implements IDriver {
 
   @Override
   public boolean isFetchingTable() {
-    return fetchTask != null;
+    return driverContext.getFetchTask() != null;
   }
 
   @SuppressWarnings("unchecked")
@@ -2135,11 +2099,11 @@ public class Driver implements IDriver {
        * indeed written using ThriftJDBCBinarySerDe, read one row from the output sequence file,
        * since it is a blob of row batches.
        */
-      if (fetchTask.getWork().isUsingThriftJDBCBinarySerDe()) {
+      if (driverContext.getFetchTask().getWork().isUsingThriftJDBCBinarySerDe()) {
         maxRows = 1;
       }
-      fetchTask.setMaxRows(maxRows);
-      return fetchTask.fetch(res);
+      driverContext.getFetchTask().setMaxRows(maxRows);
+      return driverContext.getFetchTask().fetch(res);
     }
 
     if (resStream == null) {
@@ -2177,7 +2141,7 @@ public class Driver implements IDriver {
         }
         row = null;
       } catch (IOException e) {
-        console.printError("FAILED: Unexpected IO exception : " + e.getMessage());
+        CONSOLE.printError("FAILED: Unexpected IO exception : " + e.getMessage());
         return false;
       }
 
@@ -2195,26 +2159,26 @@ public class Driver implements IDriver {
     }
     if (isFetchingTable()) {
       try {
-        fetchTask.clearFetch();
+        driverContext.getFetchTask().clearFetch();
       } catch (Exception e) {
         throw new IOException("Error closing the current fetch task", e);
       }
       // FetchTask should not depend on the plan.
-      fetchTask.initialize(queryState, null, null, ctx.getOpContext());
+      driverContext.getFetchTask().initialize(driverContext.getQueryState(), null, null, ctx);
     } else {
       ctx.resetStream();
       resStream = null;
     }
   }
 
-  // DriverContext could be released in the query and close processes at same
+  // TaskQueue could be released in the query and close processes at same
   // time, which needs to be thread protected.
-  private void releaseDriverContext() {
+  private void releaseTaskQueue() {
     driverState.lock();
     try {
-      if (driverCxt != null) {
-        driverCxt.shutdown();
-        driverCxt = null;
+      if (taskQueue != null) {
+        taskQueue.shutdown();
+        taskQueue = null;
       }
     } catch (Exception e) {
       LOG.debug("Exception while shutting down the task runner", e);
@@ -2225,14 +2189,15 @@ public class Driver implements IDriver {
 
   private void releasePlan() {
     try {
-      if (plan != null) {
-        fetchTask = plan.getFetchTask();
+      if (driverContext.getPlan() != null) {
+        FetchTask fetchTask = driverContext.getPlan().getFetchTask();
         if (fetchTask != null) {
-          fetchTask.setDriverContext(null);
+          fetchTask.setTaskQueue(null);
           fetchTask.setQueryPlan(null);
         }
+        driverContext.setFetchTask(fetchTask);
       }
-      plan = null;
+      driverContext.setPlan(null);
     } catch (Exception e) {
       LOG.debug("Exception while clearing the Fetch task", e);
     }
@@ -2243,8 +2208,8 @@ public class Driver implements IDriver {
       if (ctx != null) {
         boolean deleteResultDir = true;
         // don't let context delete result dirs and scratch dirs if result was cached
-        if(this.cacheUsage != null
-            && this.cacheUsage.getStatus() == CacheUsage.CacheStatus.QUERY_USING_CACHE) {
+        if (driverContext.getCacheUsage() != null
+            && driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.QUERY_USING_CACHE) {
           deleteResultDir = false;
 
         }
@@ -2273,9 +2238,9 @@ public class Driver implements IDriver {
 
   private void releaseFetchTask() {
     try {
-      if (fetchTask != null) {
-        fetchTask.clearFetch();
-        fetchTask = null;
+      if (driverContext.getFetchTask() != null) {
+        driverContext.getFetchTask().clearFetch();
+        driverContext.setFetchTask(null);
       }
     } catch (Exception e) {
       LOG.debug(" Exception while clearing the FetchTask ", e);
@@ -2285,35 +2250,35 @@ public class Driver implements IDriver {
   private boolean hasBadCacheAttempt() {
     // Check if the query results were cacheable, and created a pending cache entry.
     // If we successfully saved the results, the usage would have changed to QUERY_USING_CACHE.
-    return (cacheUsage != null &&
-        cacheUsage.getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
-        cacheUsage.getCacheEntry() != null);
+    return (driverContext.getCacheUsage() != null &&
+        driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
+        driverContext.getCacheUsage().getCacheEntry() != null);
   }
 
   private void releaseCachedResult() {
     // Assumes the reader count has been incremented automatically by the results cache by either
     // lookup or creating the cache entry.
-    if (usedCacheEntry != null) {
-      usedCacheEntry.releaseReader();
-      usedCacheEntry = null;
+    if (driverContext.getUsedCacheEntry() != null) {
+      driverContext.getUsedCacheEntry().releaseReader();
+      driverContext.setUsedCacheEntry(null);
     } else if (hasBadCacheAttempt()) {
       // This query create a pending cache entry but it was never saved with real results, cleanup.
       // This step is required, as there may be queries waiting on this pending cache entry.
       // Removing/invalidating this entry will notify the waiters that this entry cannot be used.
       try {
-        QueryResultsCache.getInstance().removeEntry(cacheUsage.getCacheEntry());
+        QueryResultsCache.getInstance().removeEntry(driverContext.getCacheUsage().getCacheEntry());
       } catch (Exception err) {
-        LOG.error("Error removing failed cache entry " + cacheUsage.getCacheEntry(), err);
+        LOG.error("Error removing failed cache entry " + driverContext.getCacheUsage().getCacheEntry(), err);
       }
     }
-    cacheUsage = null;
+    driverContext.setCacheUsage(null);
   }
 
   // Close and release resources within a running query process. Since it runs under
   // driver state COMPILING, EXECUTING or INTERRUPT, it would not have race condition
   // with the releases probably running in the other closing thread.
   private int closeInProcess(boolean destroyed) {
-    releaseDriverContext();
+    releaseTaskQueue();
     releasePlan();
     releaseCachedResult();
     releaseFetchTask();
@@ -2338,7 +2303,7 @@ public class Driver implements IDriver {
   public void close() {
     driverState.lock();
     try {
-      releaseDriverContext();
+      releaseTaskQueue();
       if (driverState.isCompiling() || driverState.isExecuting()) {
         driverState.abort();
       }
@@ -2384,7 +2349,7 @@ public class Driver implements IDriver {
 
   @Override
   public QueryDisplay getQueryDisplay() {
-    return queryDisplay;
+    return driverContext.getQueryDisplay();
   }
 
   /**
@@ -2398,36 +2363,37 @@ public class Driver implements IDriver {
 
   @Override
   public QueryState getQueryState() {
-    return queryState;
+    return driverContext.getQueryState();
   }
 
   public HookRunner getHookRunner() {
-    return hookRunner;
+    return driverContext.getHookRunner();
   }
 
   public void setStatsSource(StatsSource runtimeStatsSource) {
-    this.statsSource = runtimeStatsSource;
+    driverContext.setStatsSource(runtimeStatsSource);
   }
 
   public StatsSource getStatsSource() {
-    return statsSource;
+    return driverContext.getStatsSource();
   }
 
   @Override
   public boolean hasResultSet() {
 
     // TODO explain should use a FetchTask for reading
-    for (Task<?> task : plan.getRootTasks()) {
+    for (Task<?> task : driverContext.getPlan().getRootTasks()) {
       if (task.getClass() == ExplainTask.class) {
         return true;
       }
     }
 
-    return plan.getFetchTask() != null && plan.getResultSchema() != null && plan.getResultSchema().isSetFieldSchemas();
+    return driverContext.getPlan().getFetchTask() != null && driverContext.getPlan().getResultSchema() != null &&
+        driverContext.getPlan().getResultSchema().isSetFieldSchemas();
   }
 
-  void setCompactionWriteIds(ValidWriteIdList val, long compactorTxnId) {
-    this.compactionWriteIds = val;
-    this.compactorTxnId = compactorTxnId;
+  void setCompactionWriteIds(ValidWriteIdList compactionWriteIds, long compactorTxnId) {
+    driverContext.setCompactionWriteIds(compactionWriteIds);
+    driverContext.setCompactorTxnId(compactorTxnId);
   }
 }

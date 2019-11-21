@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -60,12 +61,12 @@ public class AlterTableDropPartitionDesc implements DDLDesc, Serializable {
     }
   }
 
-  private final String tableName;
+  private final TableName tableName;
   private final ArrayList<PartitionDesc> partSpecs;
   private final boolean ifPurge;
   private final ReplicationSpec replicationSpec;
 
-  public AlterTableDropPartitionDesc(String tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
+  public AlterTableDropPartitionDesc(TableName tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
       boolean ifPurge, ReplicationSpec replicationSpec) {
     this.tableName = tableName;
     this.partSpecs = new ArrayList<PartitionDesc>(partSpecs.size());
@@ -81,7 +82,7 @@ public class AlterTableDropPartitionDesc implements DDLDesc, Serializable {
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
-    return tableName;
+    return tableName.getNotEmptyDbTable();
   }
 
   public ArrayList<PartitionDesc> getPartSpecs() {

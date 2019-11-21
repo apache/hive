@@ -75,6 +75,12 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.metastore.api.SchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -1276,5 +1282,33 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
     return null;
+  }
+
+  @Override
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) {
+  }
+
+  @Override
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
+  }
+
+  @Override
+  public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public int deleteScheduledExecutions(int maxRetainSecs) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+    throw new RuntimeException("unimplemented");
   }
 }

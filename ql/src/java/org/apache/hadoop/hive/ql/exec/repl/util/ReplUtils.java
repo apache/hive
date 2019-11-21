@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl.util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,7 +45,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -149,8 +149,8 @@ public class ReplUtils {
     HashMap<String, String> mapProp = new HashMap<>();
     mapProp.put(REPL_CHECKPOINT_KEY, dumpRoot);
 
-    String fqTableName = StatsUtils.getFullyQualifiedTableName(tableDesc.getDatabaseName(), tableDesc.getTableName());
-    AlterTableSetPropertiesDesc alterTblDesc =  new AlterTableSetPropertiesDesc(fqTableName, partSpec, null, false,
+    final TableName tName = TableName.fromString(tableDesc.getTableName(), null, tableDesc.getDatabaseName());
+    AlterTableSetPropertiesDesc alterTblDesc =  new AlterTableSetPropertiesDesc(tName, partSpec, null, false,
         mapProp, false, false, null);
     return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterTblDesc), conf);
   }

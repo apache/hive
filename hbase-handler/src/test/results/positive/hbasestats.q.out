@@ -77,9 +77,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Unset Properties
+      table name: default.users
       properties:
         COLUMN_STATS_ACCURATE 
-      table name: default.users
 
   Stage: Stage-1
     Pre-Insert task

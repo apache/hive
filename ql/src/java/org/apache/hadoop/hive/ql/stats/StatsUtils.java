@@ -1779,10 +1779,12 @@ public class StatsUtils {
     return result;
   }
 
+  @Deprecated
   public static String getFullyQualifiedTableName(String dbName, String tabName) {
     return getFullyQualifiedName(dbName, tabName);
   }
 
+  @Deprecated
   private static String getFullyQualifiedName(String... names) {
     List<String> nonNullAndEmptyNames = Lists.newArrayList();
     for (String name : names) {
@@ -1975,6 +1977,7 @@ public class StatsUtils {
             newDV = (long) Math.ceil(ratio * oldDV);
           }
           cs.setCountDistint(newDV);
+          cs.setFilterColumn();
           oldDV = newDV;
         }
         if (oldDV > newNumRows) {

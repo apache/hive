@@ -21,6 +21,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.mapreduce.RecordWriter;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +34,7 @@ import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 
 import javax.sql.DataSource;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -172,6 +176,55 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     }
   }
 
+  public RecordWriter getRecordWriter(TaskAttemptContext context)
+          throws IOException {
+    Configuration conf = context.getConfiguration();
+    String tableName =  conf.get(JdbcStorageConfig.TABLE.getPropertyName());
+
+    if (tableName == null || tableName.isEmpty()) {
+      throw new IllegalArgumentException("Table name should be defined");
+    }
+    Connection conn = null;
+    PreparedStatement ps = null;
+    String[] columnNames = conf.get(serdeConstants.LIST_COLUMNS).split(",");
+
+    try {
+      initializeDatabaseConnection(conf);
+      conn = dbcpDataSource.getConnection();
+      ps = conn.prepareStatement(constructQuery(tableName, columnNames));
+      return new org.apache.hadoop.mapreduce.lib.db.DBOutputFormat()
+              .new DBRecordWriter(conn, ps);
+    } catch (Exception e) {
+      cleanupResources(conn, ps, null);
+      throw new IOException(e.getMessage());
+    }
+  }
+
+  /**
+   * Constructs the query used as the prepared statement to insert data.
+   *
+   * @param table
+   *          the table to insert into
+   * @param columnNames
+   *          the columns to insert into
+   */
+  protected String constructQuery(String table, String[] columnNames) {
+    if(columnNames == null) {
+      throw new IllegalArgumentException("Column names may not be null");
+    }
+
+    StringBuilder query = new StringBuilder();
+    query.append("INSERT INTO ").append(table).append(" VALUES (");
+
+    for (int i = 0; i < columnNames.length; i++) {
+      query.append("?");
+      if(i != columnNames.length - 1) {
+        query.append(",");
+      }
+    }
+    query.append(");");
+    return query.toString();
+  }
 
   /**
    * Uses generic JDBC escape functions to add a limit and offset clause to a query string

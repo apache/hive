@@ -18,14 +18,12 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
-import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -35,12 +33,11 @@ import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -59,44 +56,43 @@ public class ImportTableDesc {
   public ImportTableDesc(String dbName, Table table) throws Exception {
     this.dbName = dbName;
     this.table = table;
+    final TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
 
     switch (getDescType()) {
-      case TABLE:
-        this.createTblDesc = new CreateTableDesc(dbName,
-                table.getTableName(),
-                false, // isExternal: set to false here, can be overwritten by the IMPORT stmt
-                false,
-                table.getSd().getCols(),
-                table.getPartitionKeys(),
-                table.getSd().getBucketCols(),
-                table.getSd().getSortCols(),
-                table.getSd().getNumBuckets(),
-                null, null, null, null, null, // these 5 delims passed as serde params
-                null, // comment passed as table params
-                table.getSd().getInputFormat(),
-                table.getSd().getOutputFormat(),
-                null, // location: set to null here, can be overwritten by the IMPORT stmt
-                table.getSd().getSerdeInfo().getSerializationLib(),
-                null, // storagehandler passed as table params
-                table.getSd().getSerdeInfo().getParameters(),
-                table.getParameters(), false,
-                (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
-                        .getSkewedColNames(),
-                (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
-                        .getSkewedColValues(),
-                null,
-                null,
-                null,
-                null,
-            null,
-            null,
-                table.getColStats(),
-                table.getTTable().getWriteId());
-        this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
-        break;
-      case VIEW:
-        String[] qualViewName = { dbName, table.getTableName() };
-        String dbDotView = BaseSemanticAnalyzer.getDotName(qualViewName);
+    case TABLE:
+      this.createTblDesc = new CreateTableDesc(tableName,
+              false, // isExternal: set to false here, can be overwritten by the IMPORT stmt
+              false,
+              table.getSd().getCols(),
+              table.getPartitionKeys(),
+              table.getSd().getBucketCols(),
+              table.getSd().getSortCols(),
+              table.getSd().getNumBuckets(),
+              null, null, null, null, null, // these 5 delims passed as serde params
+              null, // comment passed as table params
+              table.getSd().getInputFormat(),
+              table.getSd().getOutputFormat(),
+              null, // location: set to null here, can be overwritten by the IMPORT stmt
+              table.getSd().getSerdeInfo().getSerializationLib(),
+              null, // storagehandler passed as table params
+              table.getSd().getSerdeInfo().getParameters(),
+              table.getParameters(), false,
+              (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
+                      .getSkewedColNames(),
+              (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
+                      .getSkewedColValues(),
+              null,
+              null,
+              null,
+              null,
+          null,
+          null,
+              table.getColStats(),
+              table.getTTable().getWriteId());
+      this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
+      break;
+    case VIEW:
+      final String dbDotView = tableName.getNotEmptyDbTable();
         if (table.isMaterializedView()) {
           this.createViewDesc = new CreateViewDesc(dbDotView,
                   table.getAllCols(),
@@ -201,27 +197,23 @@ public class ImportTableDesc {
     return null;
   }
 
-  public void setTableName(String tableName) throws SemanticException {
+  public void setTableName(TableName tableName) throws SemanticException {
     switch (getDescType()) {
-      case TABLE:
-        createTblDesc.setTableName(tableName);
-        break;
-      case VIEW:
-        String[] qualViewName = { dbName, tableName };
-        String dbDotView = BaseSemanticAnalyzer.getDotName(qualViewName);
-        createViewDesc.setViewName(dbDotView);
-        break;
+    case TABLE:
+      createTblDesc.setTableName(tableName);
+      break;
+    case VIEW:
+      createViewDesc.setViewName(tableName.getNotEmptyDbTable());
+      break;
     }
   }
 
   public String getTableName() throws SemanticException {
     switch (getDescType()) {
       case TABLE:
-        return createTblDesc.getTableName();
+        return createTblDesc.getTableName().getTable();
       case VIEW:
-        String dbDotView = createViewDesc.getViewName();
-        String[] names = Utilities.getDbTableName(dbDotView);
-        return names[1]; // names[0] have the Db name and names[1] have the view name
+        return TableName.fromString(createViewDesc.getViewName(), null, null).getTable();
     }
     return null;
   }

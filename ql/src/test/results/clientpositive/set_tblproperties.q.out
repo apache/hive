@@ -20,10 +20,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Set Properties
+      table name: default.t
       properties:
         a x
         b y
-      table name: default.t
 
 PREHOOK: query: ALTER TABLE t SET TBLPROPERTIES('a'='x', 'b'='y')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -68,10 +68,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Unset Properties
+      table name: default.t
       properties:
         a 
         b 
-      table name: default.t
 
 PREHOOK: query: ALTER TABLE t UNSET TBLPROPERTIES('a', 'b')
 PREHOOK: type: ALTERTABLE_PROPERTIES

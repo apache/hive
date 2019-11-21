@@ -86,14 +86,23 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
   @Override
   public String toString() {
-    return getClass().toString()
-        + "["
-        + Arrays.asList(serdeParams.getSeparators())
-        + ":"
-        + ((StructTypeInfo) serdeParams.getRowTypeInfo()).getAllStructFieldNames()
-        + ":"
-        + ((StructTypeInfo) serdeParams.getRowTypeInfo())
-            .getAllStructFieldTypeInfos() + "]";
+    StringBuilder sb = new StringBuilder(128);
+    sb.append(getClass() + " [serdeParams=" + serdeParams + ", cachedObjectInspector=" + cachedObjectInspector
+        + ", serializedSize=" + serializedSize + ", stats=" + stats + ", lastOperationSerialize="
+        + lastOperationSerialize + ", lastOperationDeserialize=" + lastOperationDeserialize);
+
+    if (serdeParams != null) {
+      sb.append(' ').append(Arrays.toString(serdeParams.getSeparators()));
+      if (serdeParams.getRowTypeInfo() != null) {
+        sb.append(" : ");
+        sb.append(((StructTypeInfo) serdeParams.getRowTypeInfo()).getAllStructFieldNames());
+        sb.append(" : ");
+        sb.append(((StructTypeInfo) serdeParams.getRowTypeInfo()).getAllStructFieldTypeInfos());
+      }
+    }
+
+    sb.append(']');
+    return sb.toString();
   }
 
   public LazySimpleSerDe() throws SerDeException {

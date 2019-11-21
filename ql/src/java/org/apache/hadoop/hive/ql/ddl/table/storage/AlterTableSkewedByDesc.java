@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.storage;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -38,8 +39,8 @@ public class AlterTableSkewedByDesc extends AbstractAlterTableDesc {
   private final List<List<String>> skewedColumnValues;
   private final boolean isStoredAsDirectories;
 
-  public AlterTableSkewedByDesc(String tableName, List<String> skewedColumnNames, List<List<String>> skewedColumnValues,
-      boolean isStoredAsDirectories) throws SemanticException {
+  public AlterTableSkewedByDesc(TableName tableName, List<String> skewedColumnNames,
+      List<List<String>> skewedColumnValues, boolean isStoredAsDirectories) throws SemanticException {
     super(AlterTableType.SKEWED_BY, tableName, null, null, false, false, null);
     this.skewedColumnNames = skewedColumnNames;
     this.skewedColumnValues = skewedColumnValues;

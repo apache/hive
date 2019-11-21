@@ -101,6 +101,7 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -2130,11 +2131,22 @@ public final class Utilities {
    * @param dbtable
    * @return String array with two elements, first is db name, second is table name
    * @throws SemanticException
+   * @deprecated use {@link TableName} or {@link org.apache.hadoop.hive.ql.parse.HiveTableName} instead
    */
+  @Deprecated
   public static String[] getDbTableName(String dbtable) throws SemanticException {
     return getDbTableName(SessionState.get().getCurrentDatabase(), dbtable);
   }
 
+  /**
+   * Extract db and table name from dbtable string.
+   * @param defaultDb
+   * @param dbtable
+   * @return String array with two elements, first is db name, second is table name
+   * @throws SemanticException
+   * @deprecated use {@link TableName} or {@link org.apache.hadoop.hive.ql.parse.HiveTableName} instead
+   */
+  @Deprecated
   public static String[] getDbTableName(String defaultDb, String dbtable) throws SemanticException {
     if (dbtable == null) {
       return new String[2];
@@ -2148,36 +2160,6 @@ public final class Utilities {
       default:
         throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, dbtable);
     }
-  }
-
-  /**
-   * Accepts qualified name which is in the form of dbname.tablename and returns dbname from it
-   *
-   * @param dbTableName
-   * @return dbname
-   * @throws SemanticException input string is not qualified name
-   */
-  public static String getDatabaseName(String dbTableName) throws SemanticException {
-    String[] split = dbTableName.split("\\.");
-    if (split.length != 2) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, dbTableName);
-    }
-    return split[0];
-  }
-
-  /**
-   * Accepts qualified name which is in the form of dbname.tablename and returns tablename from it
-   *
-   * @param dbTableName
-   * @return tablename
-   * @throws SemanticException input string is not qualified name
-   */
-  public static String getTableName(String dbTableName) throws SemanticException {
-    String[] split = dbTableName.split("\\.");
-    if (split.length != 2) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, dbTableName);
-    }
-    return split[1];
   }
 
   public static void validateColumnNames(List<String> colNames, List<String> checkCols)
@@ -2196,6 +2178,44 @@ public final class Utilities {
       }
       if (!found) {
         throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
+      }
+    }
+  }
+
+  /**
+   * Accepts qualified name which is in the form of table, dbname.tablename or catalog.dbname.tablename and returns a
+   * {@link TableName}. All parts can be null.
+   *
+   * @param dbTableName
+   * @return a {@link TableName}
+   * @throws SemanticException
+   * @deprecated handle null values and use {@link TableName#fromString(String, String, String)}
+   */
+  @Deprecated
+  public static TableName getNullableTableName(String dbTableName) throws SemanticException {
+    return getNullableTableName(dbTableName, SessionState.get().getCurrentDatabase());
+  }
+
+  /**
+   * Accepts qualified name which is in the form of table, dbname.tablename or catalog.dbname.tablename and returns a
+   * {@link TableName}. All parts can be null.
+   *
+   * @param dbTableName
+   * @param defaultDb
+   * @return a {@link TableName}
+   * @throws SemanticException
+   * @deprecated handle null values and use {@link TableName#fromString(String, String, String)}
+   */
+  @Deprecated
+  public static TableName getNullableTableName(String dbTableName, String defaultDb) throws SemanticException {
+    if (dbTableName == null) {
+      return new TableName(null, null, null);
+    } else {
+      try {
+        return TableName
+            .fromString(dbTableName, SessionState.get().getCurrentCatalog(), defaultDb);
+      } catch (IllegalArgumentException e) {
+        throw new SemanticException(e.getCause());
       }
     }
   }

@@ -329,9 +329,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Update Columns
+      table name: default.avro_extschema_url_parted
       partition:
         p1 2018
-      table name: default.avro_extschema_url_parted
 
 PREHOOK: query: ALTER TABLE avro_extschema_url_parted PARTITION (p1=2018) UPDATE COLUMNS
 PREHOOK: type: ALTERTABLE_UPDATECOLUMNS

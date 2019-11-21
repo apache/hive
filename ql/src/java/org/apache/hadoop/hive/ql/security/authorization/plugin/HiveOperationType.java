@@ -145,6 +145,9 @@ public enum HiveOperationType {
   DROP_MAPPING,
   LLAP_CLUSTER_INFO,
   LLAP_CACHE_PURGE,
+  CREATE_SCHEDULED_QUERY,
+  ALTER_SCHEDULED_QUERY,
+  DROP_SCHEDULED_QUERY,
 
   // ==== Hive command operation types starts here ==== //
   SET,

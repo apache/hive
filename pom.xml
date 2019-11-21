@@ -135,7 +135,7 @@
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.7</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
-    <commons-compress.version>1.18</commons-compress.version>
+    <commons-compress.version>1.19</commons-compress.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-lang3.version>3.9</commons-lang3.version>
@@ -449,6 +449,26 @@
         <version>${activemq.version}</version>
       </dependency>
       <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica</artifactId>
+          <version>${avatica.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-core</artifactId>
+          <version>${avatica.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-metrics</artifactId>
+          <version>${avatica.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-server</artifactId>
+          <version>${avatica.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.avro</groupId>
         <artifactId>avro</artifactId>
         <version>${avro.version}</version>
@@ -483,6 +503,21 @@
         <groupId>stax</groupId>
         <artifactId>stax-api</artifactId>
         <version>${stax.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.calcite</groupId>
+        <artifactId>calcite-core</artifactId>
+        <version>${calcite.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.calcite</groupId>
+        <artifactId>calcite-linq4j</artifactId>
+        <version>${calcite.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.calcite</groupId>
+        <artifactId>calcite-druid</artifactId>
+        <version>${calcite.version}</version>
       </dependency>
        <dependency>
         <groupId>org.apache.orc</groupId>
@@ -644,6 +679,11 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-webapp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-util</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
@@ -967,7 +1007,6 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>${slf4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>

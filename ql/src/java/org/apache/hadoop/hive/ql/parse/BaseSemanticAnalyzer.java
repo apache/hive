@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -37,12 +36,13 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -394,15 +394,10 @@ public abstract class BaseSemanticAnalyzer {
     if (tokenType == HiveParser.TOK_TABNAME) {
       // table node
       Map.Entry<String,String> dbTablePair = getDbTableNamePair(tableOrColumnNode);
-      String dbName = dbTablePair.getKey();
-      String tableName = dbTablePair.getValue();
-      if (dbName != null){
-        return dbName + "." + tableName;
-      }
-      if (currentDatabase != null) {
-        return currentDatabase + "." + tableName;
-      }
-      return tableName;
+      return TableName.fromString(dbTablePair.getValue(),
+          null,
+          dbTablePair.getKey() == null ? currentDatabase : dbTablePair.getKey())
+          .getNotEmptyDbTable();
     } else if (tokenType == HiveParser.StringLiteral) {
       return unescapeSQLString(tableOrColumnNode.getText());
     }
@@ -410,32 +405,42 @@ public abstract class BaseSemanticAnalyzer {
     return unescapeIdentifier(tableOrColumnNode.getText());
   }
 
-  public static String[] getQualifiedTableName(ASTNode tabNameNode) throws SemanticException {
-    if (tabNameNode.getType() != HiveParser.TOK_TABNAME ||
-        (tabNameNode.getChildCount() != 1 && tabNameNode.getChildCount() != 2)) {
+  /**
+   * Get the name reference of a DB table node.
+   * @param tabNameNode
+   * @return a {@link TableName}, not null. The catalog will be missing from this.
+   * @throws SemanticException
+   */
+  public static TableName getQualifiedTableName(ASTNode tabNameNode) throws SemanticException {
+    // Ideally this would be removed, once the catalog is accessible in all use cases
+    return getQualifiedTableName(tabNameNode, null);
+  }
+
+  /**
+   * Get the name reference of a DB table node.
+   * @param tabNameNode
+   * @param catalogName the catalog of the DB/object
+   * @return a {@link TableName}, not null. The catalog will be missing from this.
+   * @throws SemanticException
+   */
+  public static TableName getQualifiedTableName(ASTNode tabNameNode, String catalogName) throws SemanticException {
+    if (tabNameNode.getType() != HiveParser.TOK_TABNAME || (tabNameNode.getChildCount() != 1
+        && tabNameNode.getChildCount() != 2)) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME.getMsg(tabNameNode));
     }
     if (tabNameNode.getChildCount() == 2) {
-      String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
-      String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
+      final String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
+      final String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
       if (dbName.contains(".") || tableName.contains(".")) {
         throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tabNameNode));
       }
-      return new String[] {dbName, tableName};
+      return HiveTableName.ofNullable(tableName, dbName);
     }
-    String tableName = unescapeIdentifier(tabNameNode.getChild(0).getText());
+    final String tableName = unescapeIdentifier(tabNameNode.getChild(0).getText());
     if (tableName.contains(".")) {
       throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tabNameNode));
     }
-    return Utilities.getDbTableName(tableName);
-  }
-
-  public static String getDotName(String[] qname) throws SemanticException {
-    String genericName = StringUtils.join(qname, ".");
-    if (qname.length != 2) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, genericName);
-    }
-    return genericName;
+    return HiveTableName.ofNullable(tableName);
   }
 
   /**
@@ -707,112 +712,104 @@ public abstract class BaseSemanticAnalyzer {
   /**
    * Process the primary keys from the ast node and populate the SQLPrimaryKey list.
    */
-  protected static void processPrimaryKeys(String databaseName, String tableName,
-      ASTNode child, List<SQLPrimaryKey> primaryKeys) throws SemanticException {
+  protected static void processPrimaryKeys(TableName tName, ASTNode child, List<SQLPrimaryKey> primaryKeys)
+      throws SemanticException {
     List<ConstraintInfo> primaryKeyInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, primaryKeyInfos);
-    constraintInfosToPrimaryKeys(databaseName, tableName, primaryKeyInfos, primaryKeys);
+    constraintInfosToPrimaryKeys(tName, primaryKeyInfos, primaryKeys);
   }
 
-  protected static void processPrimaryKeys(String databaseName, String tableName,
-      ASTNode child, List<String> columnNames, List<SQLPrimaryKey> primaryKeys)
-          throws SemanticException {
+  protected static void processPrimaryKeys(TableName tName, ASTNode child, List<String> columnNames,
+      List<SQLPrimaryKey> primaryKeys) throws SemanticException {
     List<ConstraintInfo> primaryKeyInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, primaryKeyInfos, null, null);
-    constraintInfosToPrimaryKeys(databaseName, tableName, primaryKeyInfos, primaryKeys);
+    constraintInfosToPrimaryKeys(tName, primaryKeyInfos, primaryKeys);
   }
 
-  private static void constraintInfosToPrimaryKeys(String databaseName, String tableName,
-          List<ConstraintInfo> primaryKeyInfos, List<SQLPrimaryKey> primaryKeys) {
+  private static void constraintInfosToPrimaryKeys(TableName tName, List<ConstraintInfo> primaryKeyInfos,
+      List<SQLPrimaryKey> primaryKeys) {
     int i = 1;
     for (ConstraintInfo primaryKeyInfo : primaryKeyInfos) {
-      primaryKeys.add(new SQLPrimaryKey(databaseName, tableName, primaryKeyInfo.colName,
-              i++, primaryKeyInfo.constraintName, primaryKeyInfo.enable,
-              primaryKeyInfo.validate, primaryKeyInfo.rely));
+      primaryKeys.add(
+          new SQLPrimaryKey(tName.getDb(), tName.getTable(), primaryKeyInfo.colName, i++, primaryKeyInfo.constraintName,
+              primaryKeyInfo.enable, primaryKeyInfo.validate, primaryKeyInfo.rely));
     }
   }
 
   /**
    * Process the unique constraints from the ast node and populate the SQLUniqueConstraint list.
    */
-  protected static void processUniqueConstraints(String catName, String databaseName, String tableName,
-      ASTNode child, List<SQLUniqueConstraint> uniqueConstraints) throws SemanticException {
+  protected static void processUniqueConstraints(TableName tName, ASTNode child,
+      List<SQLUniqueConstraint> uniqueConstraints) throws SemanticException {
     List<ConstraintInfo> uniqueInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, uniqueInfos);
-    constraintInfosToUniqueConstraints(catName, databaseName, tableName, uniqueInfos, uniqueConstraints);
+    constraintInfosToUniqueConstraints(tName, uniqueInfos, uniqueConstraints);
   }
 
-  protected static void processUniqueConstraints(String catName, String databaseName, String tableName,
-      ASTNode child, List<String> columnNames, List<SQLUniqueConstraint> uniqueConstraints)
-          throws SemanticException {
+  protected static void processUniqueConstraints(TableName tName, ASTNode child, List<String> columnNames,
+      List<SQLUniqueConstraint> uniqueConstraints) throws SemanticException {
     List<ConstraintInfo> uniqueInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, uniqueInfos, null, null);
-    constraintInfosToUniqueConstraints(catName, databaseName, tableName, uniqueInfos, uniqueConstraints);
+    constraintInfosToUniqueConstraints(tName, uniqueInfos, uniqueConstraints);
   }
 
-  private static void constraintInfosToUniqueConstraints(String catName, String databaseName, String tableName,
-          List<ConstraintInfo> uniqueInfos, List<SQLUniqueConstraint> uniqueConstraints) {
+  private static void constraintInfosToUniqueConstraints(TableName tName, List<ConstraintInfo> uniqueInfos,
+      List<SQLUniqueConstraint> uniqueConstraints) {
     int i = 1;
     for (ConstraintInfo uniqueInfo : uniqueInfos) {
-      uniqueConstraints.add(new SQLUniqueConstraint(catName, databaseName, tableName, uniqueInfo.colName,
-              i++, uniqueInfo.constraintName, uniqueInfo.enable, uniqueInfo.validate, uniqueInfo.rely));
+      uniqueConstraints.add(
+          new SQLUniqueConstraint(tName.getCat(), tName.getDb(), tName.getTable(), uniqueInfo.colName, i++,
+              uniqueInfo.constraintName, uniqueInfo.enable, uniqueInfo.validate, uniqueInfo.rely));
     }
   }
 
-  protected static void processCheckConstraints(String catName, String databaseName, String tableName,
-                                                  ASTNode child, List<String> columnNames,
-                                                List<SQLCheckConstraint> checkConstraints, final ASTNode typeChild,
-                                                final TokenRewriteStream tokenRewriteStream)
+  protected static void processCheckConstraints(TableName tName, ASTNode child, List<String> columnNames,
+      List<SQLCheckConstraint> checkConstraints, final ASTNode typeChild, final TokenRewriteStream tokenRewriteStream)
       throws SemanticException {
     List<ConstraintInfo> checkInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, checkInfos, typeChild, tokenRewriteStream);
-    constraintInfosToCheckConstraints(catName, databaseName, tableName, checkInfos, checkConstraints);
+    constraintInfosToCheckConstraints(tName, checkInfos, checkConstraints);
   }
 
-  private static void constraintInfosToCheckConstraints(String catName, String databaseName, String tableName,
-                                                          List<ConstraintInfo> checkInfos,
-                                                        List<SQLCheckConstraint> checkConstraints) {
+  private static void constraintInfosToCheckConstraints(TableName tName, List<ConstraintInfo> checkInfos,
+      List<SQLCheckConstraint> checkConstraints) {
     for (ConstraintInfo checkInfo : checkInfos) {
-      checkConstraints.add(new SQLCheckConstraint(catName, databaseName, tableName, checkInfo.colName,
-                                                      checkInfo.defaultValue, checkInfo.constraintName, checkInfo.enable,
-                                                      checkInfo.validate, checkInfo.rely));
+      checkConstraints.add(new SQLCheckConstraint(tName.getCat(), tName.getDb(), tName.getTable(), checkInfo.colName,
+          checkInfo.defaultValue, checkInfo.constraintName, checkInfo.enable, checkInfo.validate, checkInfo.rely));
     }
   }
 
-  protected static void processDefaultConstraints(String catName, String databaseName, String tableName,
-      ASTNode child, List<String> columnNames, List<SQLDefaultConstraint> defaultConstraints, final ASTNode typeChild,
-                                                  final TokenRewriteStream tokenRewriteStream)
-      throws SemanticException {
+  protected static void processDefaultConstraints(TableName tName, ASTNode child, List<String> columnNames,
+      List<SQLDefaultConstraint> defaultConstraints, final ASTNode typeChild,
+      final TokenRewriteStream tokenRewriteStream) throws SemanticException {
     List<ConstraintInfo> defaultInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, defaultInfos, typeChild, tokenRewriteStream);
-    constraintInfosToDefaultConstraints(catName, databaseName, tableName, defaultInfos, defaultConstraints);
+    constraintInfosToDefaultConstraints(tName, defaultInfos, defaultConstraints);
   }
 
-  private static void constraintInfosToDefaultConstraints(
-      String catName, String databaseName, String tableName,
-     List<ConstraintInfo> defaultInfos, List<SQLDefaultConstraint> defaultConstraints) {
+  private static void constraintInfosToDefaultConstraints(TableName tName, List<ConstraintInfo> defaultInfos,
+      List<SQLDefaultConstraint> defaultConstraints) {
     for (ConstraintInfo defaultInfo : defaultInfos) {
-      defaultConstraints.add(new SQLDefaultConstraint(catName, databaseName, tableName,
-          defaultInfo.colName, defaultInfo.defaultValue, defaultInfo.constraintName,
-          defaultInfo.enable, defaultInfo.validate, defaultInfo.rely));
+      defaultConstraints.add(
+          new SQLDefaultConstraint(tName.getCat(), tName.getDb(), tName.getTable(), defaultInfo.colName,
+              defaultInfo.defaultValue, defaultInfo.constraintName, defaultInfo.enable, defaultInfo.validate,
+              defaultInfo.rely));
     }
   }
 
-  protected static void processNotNullConstraints(String catName, String databaseName, String tableName,
-      ASTNode child, List<String> columnNames, List<SQLNotNullConstraint> notNullConstraints)
-          throws SemanticException {
+  protected static void processNotNullConstraints(TableName tName, ASTNode child, List<String> columnNames,
+      List<SQLNotNullConstraint> notNullConstraints) throws SemanticException {
     List<ConstraintInfo> notNullInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, notNullInfos, null, null);
-    constraintInfosToNotNullConstraints(catName, databaseName, tableName, notNullInfos, notNullConstraints);
+    constraintInfosToNotNullConstraints(tName, notNullInfos, notNullConstraints);
   }
 
-  private static void constraintInfosToNotNullConstraints(
-      String catName, String databaseName, String tableName, List<ConstraintInfo> notNullInfos,
+  private static void constraintInfosToNotNullConstraints(TableName tName, List<ConstraintInfo> notNullInfos,
       List<SQLNotNullConstraint> notNullConstraints) {
     for (ConstraintInfo notNullInfo : notNullInfos) {
-      notNullConstraints.add(new SQLNotNullConstraint(catName, databaseName, tableName,
-          notNullInfo.colName, notNullInfo.constraintName, notNullInfo.enable, notNullInfo.validate,
-          notNullInfo.rely));
+      notNullConstraints.add(
+          new SQLNotNullConstraint(tName.getCat(), tName.getDb(), tName.getTable(), notNullInfo.colName,
+              notNullInfo.constraintName, notNullInfo.enable, notNullInfo.validate, notNullInfo.rely));
     }
   }
 
@@ -1097,12 +1094,13 @@ public abstract class BaseSemanticAnalyzer {
 
   /**
    * Process the foreign keys from the AST and populate the foreign keys in the SQLForeignKey list
+   * @param tName catalog/db/table name reference
    * @param child Foreign Key token node
    * @param foreignKeys SQLForeignKey list
    * @throws SemanticException
    */
-  protected static void processForeignKeys(String databaseName, String tableName,
-      ASTNode child, List<SQLForeignKey> foreignKeys) throws SemanticException {
+  protected static void processForeignKeys(TableName tName, ASTNode child, List<SQLForeignKey> foreignKeys)
+      throws SemanticException {
     // The ANTLR grammar looks like :
     // 1.  KW_CONSTRAINT idfr=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList
     // KW_REFERENCES tabName=tableName parCols=columnParenthesesList
@@ -1160,16 +1158,16 @@ public abstract class BaseSemanticAnalyzer {
         " The number of foreign key columns should be same as number of parent key columns "));
     }
 
-    String[] parentDBTbl = getQualifiedTableName((ASTNode) child.getChild(ptIndex));
+    final TableName parentTblName = getQualifiedTableName((ASTNode) child.getChild(ptIndex));
     for (int j = 0; j < child.getChild(fkIndex).getChildCount(); j++) {
       SQLForeignKey sqlForeignKey = new SQLForeignKey();
-      sqlForeignKey.setFktable_db(databaseName);
-      sqlForeignKey.setFktable_name(tableName);
+      sqlForeignKey.setFktable_db(tName.getDb());
+      sqlForeignKey.setFktable_name(tName.getTable());
       Tree fkgrandChild = child.getChild(fkIndex).getChild(j);
       checkColumnName(fkgrandChild.getText());
       sqlForeignKey.setFkcolumn_name(unescapeIdentifier(fkgrandChild.getText().toLowerCase()));
-      sqlForeignKey.setPktable_db(parentDBTbl[0]);
-      sqlForeignKey.setPktable_name(parentDBTbl[1]);
+      sqlForeignKey.setPktable_db(parentTblName.getDb());
+      sqlForeignKey.setPktable_name(parentTblName.getTable());
       Tree pkgrandChild = child.getChild(pkIndex).getChild(j);
       sqlForeignKey.setPkcolumn_name(unescapeIdentifier(pkgrandChild.getText().toLowerCase()));
       sqlForeignKey.setKey_seq(j+1);
@@ -1224,34 +1222,33 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode child = (ASTNode) ast.getChild(i);
       switch (child.getToken().getType()) {
       case HiveParser.TOK_UNIQUE: {
-        String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+        final TableName tName =
+            getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf));
         // TODO CAT - for now always use the default catalog.  Eventually will want to see if
         // the user specified a catalog
-        String catName = MetaStoreUtils.getDefaultCatalog(conf);
-        processUniqueConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], child,
-            uniqueConstraints);
+        processUniqueConstraints(tName, child, uniqueConstraints);
       }
       break;
       case HiveParser.TOK_PRIMARY_KEY: {
         if (!primaryKeys.isEmpty()) {
-          throw new SemanticException(ErrorMsg.INVALID_CONSTRAINT.getMsg(
-              "Cannot exist more than one primary key definition for the same table"));
+          throw new SemanticException(ErrorMsg.INVALID_CONSTRAINT
+              .getMsg("Cannot exist more than one primary key definition for the same table"));
         }
-        String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
-        processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1], child, primaryKeys);
+        final TableName tName = getQualifiedTableName((ASTNode) parent.getChild(0));
+        processPrimaryKeys(tName, child, primaryKeys);
       }
       break;
       case HiveParser.TOK_FOREIGN_KEY: {
-        String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
-        processForeignKeys(qualifiedTabName[0], qualifiedTabName[1], child, foreignKeys);
+        final TableName tName = getQualifiedTableName((ASTNode) parent.getChild(0));
+        processForeignKeys(tName, child, foreignKeys);
       }
       break;
       case HiveParser.TOK_CHECK_CONSTRAINT: {
+        final TableName tName =
+            getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf));
         // TODO CAT - for now always use the default catalog.  Eventually will want to see if
         // the user specified a catalog
-        String catName = MetaStoreUtils.getDefaultCatalog(conf);
-        String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
-        processCheckConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], child, null,
+        processCheckConstraints(tName, child, null,
             checkConstraints, null, tokenRewriteStream);
       }
       break;
@@ -1282,39 +1279,35 @@ public abstract class BaseSemanticAnalyzer {
             constraintChild = (ASTNode) child.getChild(2);
           }
           if (constraintChild != null) {
-            String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+            final TableName tName =
+                getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf));
             // TODO CAT - for now always use the default catalog.  Eventually will want to see if
             // the user specified a catalog
-            String catName = MetaStoreUtils.getDefaultCatalog(conf);
             // Process column constraint
             switch (constraintChild.getToken().getType()) {
             case HiveParser.TOK_CHECK_CONSTRAINT:
-              processCheckConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                  ImmutableList.of(col.getName()), checkConstraints, typeChild,
-                  tokenRewriteStream);
+              processCheckConstraints(tName, constraintChild, ImmutableList.of(col.getName()), checkConstraints,
+                  typeChild, tokenRewriteStream);
               break;
             case HiveParser.TOK_DEFAULT_VALUE:
-              processDefaultConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                  ImmutableList.of(col.getName()), defaultConstraints, typeChild, tokenRewriteStream);
+              processDefaultConstraints(tName, constraintChild, ImmutableList.of(col.getName()), defaultConstraints,
+                  typeChild, tokenRewriteStream);
               break;
             case HiveParser.TOK_NOT_NULL:
-              processNotNullConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                  ImmutableList.of(col.getName()), notNullConstraints);
+              processNotNullConstraints(tName, constraintChild, ImmutableList.of(col.getName()), notNullConstraints);
               break;
             case HiveParser.TOK_UNIQUE:
-              processUniqueConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                  ImmutableList.of(col.getName()), uniqueConstraints);
+              processUniqueConstraints(tName, constraintChild, ImmutableList.of(col.getName()), uniqueConstraints);
               break;
             case HiveParser.TOK_PRIMARY_KEY:
               if (!primaryKeys.isEmpty()) {
-                throw new SemanticException(ErrorMsg.INVALID_CONSTRAINT.getMsg(
-                    "Cannot exist more than one primary key definition for the same table"));
+                throw new SemanticException(ErrorMsg.INVALID_CONSTRAINT
+                    .getMsg("Cannot exist more than one primary key definition for the same table"));
               }
-              processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                  ImmutableList.of(col.getName()), primaryKeys);
+              processPrimaryKeys(tName, constraintChild, ImmutableList.of(col.getName()), primaryKeys);
               break;
             case HiveParser.TOK_FOREIGN_KEY:
-              processForeignKeys(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+              processForeignKeys(tName, constraintChild,
                   foreignKeys);
               break;
             default:
@@ -1426,13 +1419,13 @@ public abstract class BaseSemanticAnalyzer {
    *
    */
   public static class TableSpec {
-    public String tableName;
+    private TableName tableName;
     public Table tableHandle;
     public Map<String, String> partSpec; // has to use LinkedHashMap to enforce order
     public Partition partHandle;
     public int numDynParts; // number of dynamic partition columns
     public List<Partition> partitions; // involved partitions in TableScanOperator/FileSinkOperator
-    public static enum SpecType {TABLE_ONLY, STATIC_PARTITION, DYNAMIC_PARTITION};
+    public static enum SpecType {TABLE_ONLY, STATIC_PARTITION, DYNAMIC_PARTITION}
     public SpecType specType;
 
     public TableSpec(Hive db, HiveConf conf, ASTNode ast)
@@ -1442,19 +1435,21 @@ public abstract class BaseSemanticAnalyzer {
 
     public TableSpec(Table table) {
       tableHandle = table;
-      tableName = table.getDbName() + "." + table.getTableName();
+      tableName = TableName.fromString(table.getTableName(), SessionState.get().getCurrentCatalog(), table.getDbName());
       specType = SpecType.TABLE_ONLY;
     }
 
-    public TableSpec(Hive db, String tableName, Map<String, String> partSpec)
+    public TableSpec(Hive db, TableName tableName, Map<String, String> partSpec)
         throws HiveException {
-      this(db, tableName, partSpec, false);
+      this(db, tableName.getNotEmptyDbTable(), partSpec, false);
     }
+
     public TableSpec(Hive db, String tableName, Map<String, String> partSpec, boolean allowPartialPartitionsSpec)
         throws HiveException {
       Table table = db.getTable(tableName);
       tableHandle = table;
-      this.tableName = table.getDbName() + "." + table.getTableName();
+      this.tableName = TableName.fromString(table.getTableName(), SessionState.get().getCurrentCatalog(),
+          table.getDbName());
       if (partSpec == null) {
         specType = SpecType.TABLE_ONLY;
       } else if(allowPartialPartitionsSpec) {
@@ -1474,7 +1469,8 @@ public abstract class BaseSemanticAnalyzer {
     public TableSpec(Table tableHandle, List<Partition> partitions)
         throws HiveException {
       this.tableHandle = tableHandle;
-      this.tableName = tableHandle.getTableName();
+      this.tableName =
+          TableName.fromString(tableHandle.getTableName(), tableHandle.getCatalogName(), tableHandle.getDbName());
       if (partitions != null && !partitions.isEmpty()) {
         this.specType = SpecType.STATIC_PARTITION;
         this.partitions = partitions;
@@ -1513,11 +1509,11 @@ public abstract class BaseSemanticAnalyzer {
 
       try {
         // get table metadata
-        tableName = getUnescapedName((ASTNode)ast.getChild(0));
+        tableName = HiveTableName.withNoDefault(getUnescapedName((ASTNode)ast.getChild(0)));
         boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
         if (testMode) {
-          tableName = conf.getVar(HiveConf.ConfVars.HIVETESTMODEPREFIX)
-              + tableName;
+          tableName = TableName.fromString(String.join("", conf.getVar(HiveConf.ConfVars.HIVETESTMODEPREFIX),
+              tableName.getTable()), tableName.getCat(), tableName.getDb()); // not that elegant, but hard to refactor
         }
         if (ast.getToken().getType() != HiveParser.TOK_CREATETABLE &&
             ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW &&
@@ -1636,6 +1632,14 @@ public abstract class BaseSemanticAnalyzer {
       } else {
         specType = SpecType.TABLE_ONLY;
       }
+    }
+
+    public TableName getTableName() {
+      return tableName;
+    }
+
+    public void setTableName(TableName tableName) {
+      this.tableName = tableName;
     }
 
     public Map<String, String> getPartSpec() {
@@ -2011,6 +2015,58 @@ public abstract class BaseSemanticAnalyzer {
     return result;
   }
 
+  /**
+   * Get the partition specs from the tree.
+   *
+   * @param ast
+   *          Tree to extract partitions from.
+   * @return A list of partition name to value mappings.
+   * @throws SemanticException
+   */
+  public List<Map<String, String>> getPartitionSpecs(Table tbl, CommonTree ast)
+      throws SemanticException {
+    List<Map<String, String>> partSpecs = new ArrayList<Map<String, String>>();
+    int childIndex = 0;
+    // get partition metadata if partition specified
+    for (childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
+      ASTNode partSpecNode = (ASTNode)ast.getChild(childIndex);
+      // sanity check
+      if (partSpecNode.getType() == HiveParser.TOK_PARTSPEC) {
+        Map<String, String> partSpec = getValidatedPartSpec(tbl, partSpecNode, conf, false);
+        partSpecs.add(partSpec);
+      }
+    }
+    return partSpecs;
+  }
+
+  public static Map<String, String> getValidatedPartSpec(Table table, ASTNode astNode,
+      HiveConf conf, boolean shouldBeFull) throws SemanticException {
+    Map<String, String> partSpec = getPartSpec(astNode);
+    if (partSpec != null && !partSpec.isEmpty()) {
+      validatePartSpec(table, partSpec, astNode, conf, shouldBeFull);
+    }
+    return partSpec;
+  }
+
+  public static Map<String, String> getPartSpec(ASTNode node)
+      throws SemanticException {
+    if (node == null) {
+      return null;
+    }
+
+    Map<String, String> partSpec = new LinkedHashMap<String, String>();
+    for (int i = 0; i < node.getChildCount(); ++i) {
+      ASTNode child = (ASTNode) node.getChild(i);
+      String key = child.getChild(0).getText();
+      String val = null;
+      if (child.getChildCount() > 1) {
+        val = stripQuotes(child.getChild(1).getText());
+      }
+      partSpec.put(key.toLowerCase(), val);
+    }
+    return partSpec;
+  }
+
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
       ASTNode astNode, HiveConf conf, boolean shouldBeFull) throws SemanticException {
     tbl.validatePartColumnNames(partSpec, shouldBeFull);
@@ -2172,12 +2228,12 @@ public abstract class BaseSemanticAnalyzer {
     return database;
   }
 
-  protected Table getTable(String[] qualified) throws SemanticException {
-    return getTable(qualified[0], qualified[1], true);
+  protected Table getTable(TableName tn) throws SemanticException {
+    return getTable(tn, true);
   }
 
-  protected Table getTable(String[] qualified, boolean throwException) throws SemanticException {
-    return getTable(qualified[0], qualified[1], throwException);
+  protected Table getTable(TableName tn, boolean throwException) throws SemanticException {
+    return getTable(tn.getDb(), tn.getTable(), throwException);
   }
 
   protected Table getTable(String tblName) throws SemanticException {
@@ -2196,13 +2252,14 @@ public abstract class BaseSemanticAnalyzer {
           : db.getTable(database, tblName, false);
     }
     catch (InvalidTableException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName), e);
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);
     }
     catch (Exception e) {
       throw new SemanticException(e.getMessage(), e);
     }
     if (tab == null && throwException) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
+      // getTable needs a refactor with all ~50 occurences
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()));
     }
     return tab;
   }
@@ -2324,4 +2381,13 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
   }
+
+  /**
+   * Unparses the analyzed statement
+   */
+  protected void executeUnparseTranlations() {
+    UnparseTranslator unparseTranslator = new UnparseTranslator(conf);
+    unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
+  }
+
 }

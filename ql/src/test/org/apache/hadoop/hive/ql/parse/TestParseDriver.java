@@ -304,4 +304,25 @@ public class TestParseDriver {
 
   }
 
+  @Test
+  public void testParseCreateScheduledQuery() throws Exception {
+    parseDriver.parse("create scheduled query asd cron '123' as select 1");
+    parseDriver.parse("create scheduled query asd cron '123' executed as 'x' as select 1");
+    parseDriver.parse("create scheduled query asd cron '123' executed as 'x' defined as select 1");
+    parseDriver.parse("create scheduled query asd cron '123' executed as 'x' disabled defined as select 1");
+  }
+
+  @Test
+  public void testParseAlterScheduledQuery() throws Exception {
+    parseDriver.parse("alter scheduled query asd cron '123'");
+    parseDriver.parse("alter scheduled query asd disabled");
+    parseDriver.parse("alter scheduled query asd defined as select 22");
+    parseDriver.parse("alter scheduled query asd executed as 'joe'");
+  }
+
+  @Test
+  public void testParseDropScheduledQuery() throws Exception {
+    parseDriver.parse("drop scheduled query asd");
+  }
+
 }

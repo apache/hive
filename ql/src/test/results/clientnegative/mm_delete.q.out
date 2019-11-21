@@ -65,4 +65,4 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@mm_srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: mm_srcpart PARTITION(ds=2008-04-08,hr=11).key SCRIPT []
 POSTHOOK: Lineage: mm_srcpart PARTITION(ds=2008-04-08,hr=11).value SCRIPT []
-FAILED: SemanticException [Error 10414]: Attempt to do update or delete on table default.mm_srcpart that is insert-only transactional
+FAILED: SemanticException [Error 10414]: Attempt to do update or delete on table mm_srcpart that is insert-only transactional

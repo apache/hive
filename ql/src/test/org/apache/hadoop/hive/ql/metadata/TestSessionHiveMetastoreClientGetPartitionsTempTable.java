@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.client.CustomIgnoreRule;
 import org.apache.hadoop.hive.metastore.client.TestGetPartitions;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
@@ -169,13 +168,6 @@ public class TestSessionHiveMetastoreClientGetPartitionsTempTable extends TestGe
   public void testGetPartitionWithAuthInfoNullTblName()
       throws Exception {
     super.testGetPartitionWithAuthInfoNullTblName();
-  }
-
-  @Test(expected = NoSuchObjectException.class)
-  @Override
-  public void testGetPartitionWithAuthInfoNullGroups()
-      throws Exception {
-    super.testGetPartitionWithAuthInfoNullGroups();
   }
 
   private void assertAuthInfoReturned(String userName, List<String> groups, Partition partition) {

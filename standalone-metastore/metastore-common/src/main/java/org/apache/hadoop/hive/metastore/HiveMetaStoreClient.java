@@ -176,6 +176,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     fileMetadataBatchSize = MetastoreConf.getIntVar(
         conf, ConfVars.BATCH_RETRIEVE_OBJECTS_MAX);
 
+    if ((MetastoreConf.get(conf, "hive.metastore.client.capabilities")) != null) {
+      String[] capabilities = MetastoreConf.get(conf, "hive.metastore.client.capabilities").split(",");
+      setProcessorCapabilities(capabilities);
+      String hostName = "unknown";
+      try {
+        hostName = InetAddress.getLocalHost().getCanonicalHostName();
+      } catch (UnknownHostException ue) {
+      }
+      setProcessorIdentifier("HMSClient-" + "@" + hostName);
+    }
+
     String msUri = MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS);
     localMetaStore = MetastoreConf.isEmbeddedMetaStore(msUri);
     if (localMetaStore) {
@@ -4069,9 +4080,30 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.getVersion();
   }
 
+  @Override
+  public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws TException {
+    return client.get_scheduled_query(scheduleKey);
+  }
+
+  @Override
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException {
+    client.scheduled_query_progress(info);
+  }
+
+  @Override
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request)
+      throws MetaException, TException {
+    return client.scheduled_query_poll(request);
+  }
+
+  @Override
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
+    client.scheduled_query_maintenance(request);
+  }
+
   /**
-   * Builder for requiredFields bitmask to be sent via GetTablesExtRequest
-   */
+  * Builder for requiredFields bitmask to be sent via GetTablesExtRequest
+  */
    public static class GetTablesRequestBuilder {
     private int requestedFields = 0x0;
     final static GetTablesExtRequestFields defValue = GetTablesExtRequestFields.ALL;

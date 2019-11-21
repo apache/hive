@@ -78,6 +78,8 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
+import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryCleaner;
+import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryServiceProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -209,6 +211,8 @@ public class QTestUtil {
     conf.set("test.data.dir", datasetHandler.getDataDir(conf));
     dispatcher.register("dataset", datasetHandler);
     dispatcher.register("replace", replaceHandler);
+    dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider(conf));
+    dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
 
     String scriptsDir = getScriptsDir();
 
@@ -217,6 +221,7 @@ public class QTestUtil {
 
     postInit();
     savedConf = new HiveConf(conf);
+
   }
 
   private String getScriptsDir() {
@@ -257,6 +262,7 @@ public class QTestUtil {
    * Clear out any side effects of running tests
    */
   public void clearPostTestEffects() throws Exception {
+    dispatcher.afterTest(this);
     miniClusters.postTest(conf);
   }
 
@@ -552,6 +558,7 @@ public class QTestUtil {
 
     dispatcher.process(file);
     dispatcher.beforeTest(this);
+
 
     if (qTestResultProcessor.shouldNotReuseSession(fileName)) {
       newSession(false);

@@ -18,220 +18,199 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.NodeUtils;
-import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.StatsTask;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskRunner;
-import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.ReduceWork;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
+import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 
 /**
- * DriverContext.
- *
+ * Context for the procedure managed by the Driver.
  */
 public class DriverContext {
+  // For WebUI.  Kept alive after queryPlan is freed.
+  private final QueryDisplay queryDisplay = new QueryDisplay();
 
-  private static final Logger LOG = LoggerFactory.getLogger(Driver.class.getName());
-  private static final SessionState.LogHelper console = new SessionState.LogHelper(LOG);
+  private final QueryState queryState;
+  private final QueryInfo queryInfo;
+  private final HiveConf conf;
+  private final String userName;
+  private final HookRunner hookRunner;
 
-  private static final int SLEEP_TIME = 2000;
+  // Transaction manager the Driver has been initialized with (can be null).
+  // If this is set then this Transaction manager will be used during query
+  // compilation/execution rather than using the current session's transaction manager.
+  // This might be needed in a situation where a Driver is nested within an already
+  // running Driver/query - the nested Driver requires a separate transaction manager
+  // so as not to conflict with the outer Driver/query which is using the session
+  // transaction manager.
+  private final HiveTxnManager initTxnManager;
 
-  private Queue<Task<?>> runnable;
-  private Queue<TaskRunner> running;
+  private QueryPlan plan;
+  private Schema schema;
 
-  // how many jobs have been started
-  private int curJobNo;
+  private FetchTask fetchTask;
+  // Transaction manager used for the query. This will be set at compile time based on
+  // either initTxnMgr or from the SessionState, in that order.
+  private HiveTxnManager txnManager;
+  private TxnType txnType = TxnType.DEFAULT;
+  private StatsSource statsSource;
 
-  private Context ctx;
-  private boolean shutdown;
+  // Boolean to store information about whether valid txn list was generated
+  // for current query.
+  private boolean validTxnListsGenerated;
 
-  final Map<String, StatsTask> statsTasks = new HashMap<>(1);
+  private CacheUsage cacheUsage;
+  private CacheEntry usedCacheEntry;
+  private ValidWriteIdList compactionWriteIds = null;
+  private long compactorTxnId = 0;
 
-  public DriverContext() {
+  private Context backupContext = null;
+  private boolean retrial = false;
+
+  public DriverContext(QueryState queryState, QueryInfo queryInfo, String userName, HookRunner hookRunner,
+      HiveTxnManager initTxnManager) {
+    this.queryState = queryState;
+    this.queryInfo = queryInfo;
+    this.conf = queryState.getConf();
+    this.userName = userName;
+    this.hookRunner = hookRunner;
+    this.initTxnManager = initTxnManager;
   }
 
-  public DriverContext(Context ctx) {
-    this.runnable = new ConcurrentLinkedQueue<Task<?>>();
-    this.running = new LinkedBlockingQueue<TaskRunner>();
-    this.ctx = ctx;
+  public QueryDisplay getQueryDisplay() {
+    return queryDisplay;
   }
 
-  public synchronized boolean isShutdown() {
-    return shutdown;
+  public QueryState getQueryState() {
+    return queryState;
   }
 
-  public synchronized boolean isRunning() {
-    return !shutdown && (!running.isEmpty() || !runnable.isEmpty());
+  public QueryInfo getQueryInfo() {
+    return queryInfo;
   }
 
-  public synchronized void remove(Task<?> task) {
-    runnable.remove(task);
+  public HiveConf getConf() {
+    return conf;
   }
 
-  public synchronized void launching(TaskRunner runner) throws HiveException {
-    checkShutdown();
-    running.add(runner);
+  public String getUserName() {
+    return userName;
   }
 
-  public synchronized Task<?> getRunnable(int maxthreads) throws HiveException {
-    checkShutdown();
-    if (runnable.peek() != null && running.size() < maxthreads) {
-      return runnable.remove();
-    }
-    return null;
+  public HookRunner getHookRunner() {
+    return hookRunner;
   }
 
-  public synchronized void releaseRunnable() {
-    //release the waiting poller.
-    notify();
+  public HiveTxnManager getInitTxnManager() {
+    return initTxnManager;
   }
 
-  /**
-   * Polls running tasks to see if a task has ended.
-   *
-   * @return The result object for any completed/failed task
-   */
-  public synchronized TaskRunner pollFinished() throws InterruptedException {
-    while (!shutdown) {
-      Iterator<TaskRunner> it = running.iterator();
-      while (it.hasNext()) {
-        TaskRunner runner = it.next();
-        if (runner != null && !runner.isRunning()) {
-          it.remove();
-          return runner;
-        }
-      }
-      wait(SLEEP_TIME);
-    }
-    return null;
+  public QueryPlan getPlan() {
+    return plan;
   }
 
-  private void checkShutdown() throws HiveException {
-    if (shutdown) {
-      throw new HiveException("FAILED: Operation cancelled");
-    }
-  }
-  /**
-   * Cleans up remaining tasks in case of failure
-   */
-  public synchronized void shutdown() {
-    LOG.debug("Shutting down query " + ctx.getCmd());
-    shutdown = true;
-    for (TaskRunner runner : running) {
-      if (runner.isRunning()) {
-        Task<?> task = runner.getTask();
-        LOG.warn("Shutting down task : " + task);
-        try {
-          task.shutdown();
-        } catch (Exception e) {
-          console.printError("Exception on shutting down task " + task.getId() + ": " + e);
-        }
-        Thread thread = runner.getRunner();
-        if (thread != null) {
-          thread.interrupt();
-        }
-      }
-    }
-    running.clear();
+  public void setPlan(QueryPlan plan) {
+    this.plan = plan;
   }
 
-  /**
-   * Checks if a task can be launched.
-   *
-   * @param tsk
-   *          the task to be checked
-   * @return true if the task is launchable, false otherwise
-   */
-
-  public static boolean isLaunchable(Task<?> tsk) {
-    // A launchable task is one that hasn't been queued, hasn't been
-    // initialized, and is runnable.
-    return tsk.isNotInitialized() && tsk.isRunnable();
+  public Schema getSchema() {
+    return schema;
   }
 
-  public synchronized boolean addToRunnable(Task<?> tsk) throws HiveException {
-    if (runnable.contains(tsk)) {
-      return false;
-    }
-    checkShutdown();
-    runnable.add(tsk);
-    tsk.setQueued();
-    return true;
+  public void setSchema(Schema schema) {
+    this.schema = schema;
   }
 
-  public int getCurJobNo() {
-    return curJobNo;
+  public FetchTask getFetchTask() {
+    return fetchTask;
   }
 
-  public Context getCtx() {
-    return ctx;
+  public void setFetchTask(FetchTask fetchTask) {
+    this.fetchTask = fetchTask;
   }
 
-  public void incCurJobNo(int amount) {
-    this.curJobNo = this.curJobNo + amount;
+  public HiveTxnManager getTxnManager() {
+    return txnManager;
   }
 
-  public void prepare(QueryPlan plan) {
-    // extract stats keys from StatsTask
-    List<Task<?>> rootTasks = plan.getRootTasks();
-    NodeUtils.iterateTask(rootTasks, StatsTask.class, new Function<StatsTask>() {
-      @Override
-      public void apply(StatsTask statsTask) {
-        if (statsTask.getWork().isAggregating()) {
-          statsTasks.put(statsTask.getWork().getAggKey(), statsTask);
-        }
-      }
-    });
+  public void setTxnManager(HiveTxnManager txnManager) {
+    this.txnManager = txnManager;
   }
 
-  public void prepare(TaskRunner runner) {
+  public TxnType getTxnType() {
+    return txnType;
   }
 
-  public void finished(TaskRunner runner) {
-    if (statsTasks.isEmpty() || !(runner.getTask() instanceof MapRedTask)) {
-      return;
-    }
-    MapRedTask mapredTask = (MapRedTask) runner.getTask();
+  public void setTxnType(TxnType txnType) {
+    this.txnType = txnType;
+  }
 
-    MapWork mapWork = mapredTask.getWork().getMapWork();
-    ReduceWork reduceWork = mapredTask.getWork().getReduceWork();
-    List<Operator> operators = new ArrayList<Operator>(mapWork.getAliasToWork().values());
-    if (reduceWork != null) {
-      operators.add(reduceWork.getReducer());
-    }
-    final List<String> statKeys = new ArrayList<String>(1);
-    NodeUtils.iterate(operators, FileSinkOperator.class, new Function<FileSinkOperator>() {
-      @Override
-      public void apply(FileSinkOperator fsOp) {
-        if (fsOp.getConf().isGatherStats()) {
-          statKeys.add(fsOp.getConf().getStatsAggPrefix());
-        }
-      }
-    });
-    for (String statKey : statKeys) {
-      if (statsTasks.containsKey(statKey)) {
-        statsTasks.get(statKey).getWork().setSourceTask(mapredTask);
-      } else {
-        LOG.debug("There is no correspoing statTask for: " + statKey);
-      }
-    }
+  public StatsSource getStatsSource() {
+    return statsSource;
+  }
+
+  public void setStatsSource(StatsSource statsSource) {
+    this.statsSource = statsSource;
+  }
+
+  public boolean isValidTxnListsGenerated() {
+    return validTxnListsGenerated;
+  }
+
+  public void setValidTxnListsGenerated(boolean validTxnListsGenerated) {
+    this.validTxnListsGenerated = validTxnListsGenerated;
+  }
+
+  public CacheUsage getCacheUsage() {
+    return cacheUsage;
+  }
+
+  public void setCacheUsage(CacheUsage cacheUsage) {
+    this.cacheUsage = cacheUsage;
+  }
+
+  public CacheEntry getUsedCacheEntry() {
+    return usedCacheEntry;
+  }
+
+  public void setUsedCacheEntry(CacheEntry usedCacheEntry) {
+    this.usedCacheEntry = usedCacheEntry;
+  }
+
+  public ValidWriteIdList getCompactionWriteIds() {
+    return compactionWriteIds;
+  }
+
+  public void setCompactionWriteIds(ValidWriteIdList compactionWriteIds) {
+    this.compactionWriteIds = compactionWriteIds;
+  }
+
+  public long getCompactorTxnId() {
+    return compactorTxnId;
+  }
+
+  public void setCompactorTxnId(long compactorTxnId) {
+    this.compactorTxnId = compactorTxnId;
+  }
+
+  public Context getBackupContext() {
+    return backupContext;
+  }
+
+  public void setBackupContext(Context backupContext) {
+    this.backupContext = backupContext;
+  }
+
+  public boolean isRetrial() {
+    return retrial;
+  }
+
+  public void setRetrial(boolean retrial) {
+    this.retrial = retrial;
   }
 }

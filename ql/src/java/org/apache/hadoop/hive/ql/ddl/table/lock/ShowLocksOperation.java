@@ -57,7 +57,7 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
 
   @Override
   public int execute() throws HiveException {
-    Context ctx = context.getDriverContext().getCtx();
+    Context ctx = context.getContext();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
     HiveLockManager lockMgr = txnManager.getLockManager();
 
