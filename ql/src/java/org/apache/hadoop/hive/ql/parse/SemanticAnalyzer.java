@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
@@ -52,7 +50,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -290,7 +287,10 @@ import org.apache.hadoop.security.UserGroupInformation;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
@@ -12146,9 +12146,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames), null);
           }
         } else {
-          List<String> colNames = new ArrayList<>();
-          List<String> colTypes = new ArrayList<>();
-          extractColumnInfos(table, colNames, colTypes);
+          List<String> colNames;
+          List<String> colTypes;
+          if (isCBOExecuted() && this.columnAccessInfo != null &&
+              (colNames = this.columnAccessInfo.getTableToColumnAllAccessMap().get(table.getCompleteName())) != null) {
+            Map<String, String> colNameToType = table.getAllCols().stream()
+                .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType));
+            colTypes = colNames.stream().map(colNameToType::get).collect(Collectors.toList());
+          } else {
+            colNames = new ArrayList<>();
+            colTypes = new ArrayList<>();
+            extractColumnInfos(table, colNames, colTypes);
+          }
 
           basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames),
               new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode, table.isView(), table.isNonNative()));
