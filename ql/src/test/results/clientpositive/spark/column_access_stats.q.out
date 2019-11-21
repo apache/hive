@@ -836,10 +836,10 @@ PREHOOK: Input: default@t1_n127
 PREHOOK: Input: default@t2_n75
 PREHOOK: Input: default@t3_n29
 #### A masked pattern was here ####
-Table:default@t2_n75
+Table:default@t1_n127
 Columns:key
 
-Table:default@t1_n127
+Table:default@t2_n75
 Columns:key
 
 Table:default@t3_n29
