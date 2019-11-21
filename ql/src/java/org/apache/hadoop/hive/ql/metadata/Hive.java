@@ -5389,6 +5389,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
     metaCallTimeMap.clear();
   }
 
+  public static ImmutableMap<String, Long> dumpMetaCallTimingWithoutEx(String phase) {
+    try {
+      return get().dumpAndClearMetaCallTiming(phase);
+    } catch (HiveException he) {
+      LOG.warn("Caught exception attempting to write metadata call information " + he, he);
+    }
+    return null;
+  }
+
   public ImmutableMap<String, Long> dumpAndClearMetaCallTiming(String phase) {
     boolean phaseInfoLogged = false;
     if (LOG.isDebugEnabled()) {
