@@ -227,13 +227,13 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveNoAggregateIn
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewRewritingRelVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.JoinCondTypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.JoinTypeCheckCtx;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.PlanModifierForReturnPath;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer.HiveOpConverter;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
