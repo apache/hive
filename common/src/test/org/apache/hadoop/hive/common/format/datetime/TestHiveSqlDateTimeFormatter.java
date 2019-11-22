@@ -103,12 +103,6 @@ public class TestHiveSqlDateTimeFormatter {
     verifyBadPattern("tzm", false);
     verifyBadPattern("tzh", false);
 
-    //ambiguous case for formatting
-    verifyBadPattern("MOnth", false);
-    verifyBadPattern("DaY", false);
-    verifyBadPattern("dAy", false);
-    verifyBadPattern("dY", false);
-
     //illegal for parsing
     verifyBadPattern("yyyy-mm-dd q", true);
     verifyBadPattern("yyyy-mm-dd d", true);
@@ -130,15 +124,24 @@ public class TestHiveSqlDateTimeFormatter {
     checkFormatTs("YYYY-MM-DD HH12PM", "2017-05-05 00:00:00", "2017-05-05 12AM");
 
     checkFormatTs("YYYY-MONTH-DD", "2019-01-01 00:00:00", "2019-JANUARY  -01"); //fill to length 9
+    checkFormatTs("YYYY-MOnth-DD", "2019-01-01 00:00:00", "2019-JANUARY  -01");
     checkFormatTs("YYYY-Month-DD", "2019-01-01 00:00:00", "2019-January  -01");
+    checkFormatTs("YYYY-MoNTH-DD", "2019-01-01 00:00:00", "2019-January  -01");
     checkFormatTs("YYYY-month-DD", "2019-01-01 00:00:00", "2019-january  -01");
+    checkFormatTs("YYYY-mONTH-DD", "2019-01-01 00:00:00", "2019-january  -01");
     checkFormatTs("YYYY-MON-DD", "2019-01-01 00:00:00", "2019-JAN-01");
+    checkFormatTs("YYYY-MOn-DD", "2019-01-01 00:00:00", "2019-JAN-01");
     checkFormatTs("YYYY-Mon-DD", "2019-01-01 00:00:00", "2019-Jan-01");
+    checkFormatTs("YYYY-MoN-DD", "2019-01-01 00:00:00", "2019-Jan-01");
     checkFormatTs("YYYY-mon-DD", "2019-01-01 00:00:00", "2019-jan-01");
+    checkFormatTs("YYYY-mON-DD", "2019-01-01 00:00:00", "2019-jan-01");
 
     checkFormatTs("D: DAY", "2019-01-01 00:00:00", "3: TUESDAY  "); //fill to length 9
+    checkFormatTs("D: DAy", "2019-01-01 00:00:00", "3: TUESDAY  ");
     checkFormatTs("D: Day", "2019-01-02 00:00:00", "4: Wednesday");
+    checkFormatTs("D: DaY", "2019-01-02 00:00:00", "4: Wednesday");
     checkFormatTs("D: day", "2019-01-03 00:00:00", "5: thursday ");
+    checkFormatTs("D: dAY", "2019-01-03 00:00:00", "5: thursday ");
     checkFormatTs("D: DY", "2019-01-04 00:00:00", "6: FRI");
     checkFormatTs("D: Dy", "2019-01-05 00:00:00", "7: Sat");
     checkFormatTs("D: dy", "2019-01-06 00:00:00", "1: sun");
