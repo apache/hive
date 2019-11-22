@@ -1309,11 +1309,10 @@ class MetaStoreDirectSql {
             TBL_COL_PRIVS + ".\"GRANTOR_TYPE\", " +
             TBL_COL_PRIVS + ".\"PRINCIPAL_NAME\", " +
             TBL_COL_PRIVS + ".\"PRINCIPAL_TYPE\", " +
-            TBL_COL_PRIVS + ".\"TBL_COL_PRIV\", " +
-            TBL_COL_PRIVS + ".\"TBL_COLUMN_GRANT_ID\" " +
-            "FROM " + TBL_COL_PRIVS + " LEFT OUTER JOIN " + TBLS +
+            TBL_COL_PRIVS + ".\"TBL_COL_PRIV\" " +
+            "FROM " + TBL_COL_PRIVS + " JOIN " + TBLS +
             " ON " + TBL_COL_PRIVS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\"" +
-            " LEFT OUTER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" " +
+            " JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" " +
             " WHERE " + TBLS + ".\"TBL_NAME\" = ?" +
             " AND " + DBS + ".\"NAME\" = ?" +
             " AND " + DBS + ".\"CTLG_NAME\" = ?";
@@ -1331,11 +1330,12 @@ class MetaStoreDirectSql {
 
     // Collect the results into a list that the caller can consume.
     List<HiveObjectPrivilege> result = new ArrayList<>();
+    final boolean doTrace = LOG.isDebugEnabled();
+    long start = doTrace ? System.nanoTime() : 0;
+    query = pm.newQuery("javax.jdo.query.SQL", queryText);
     try {
-      final boolean doTrace = LOG.isDebugEnabled();
-      long start = doTrace ? System.nanoTime() : 0;
-      query = pm.newQuery("javax.jdo.query.SQL", queryText);
-      List<Object[]> queryResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(query, params, queryText));
+      List<Object[]> queryResult = MetastoreDirectSqlUtils.ensureList(
+              executeWithArray(query, params, queryText));
       long end = doTrace ? System.nanoTime() : 0;
       MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
 
@@ -1364,9 +1364,7 @@ class MetaStoreDirectSql {
                 privAuthorizer));
       }
     } finally {
-      if (query != null) {
-        query.closeAll();
-      }
+      query.closeAll();
     }
 
     return result;
