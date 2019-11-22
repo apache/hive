@@ -12,6 +12,22 @@ module ThriftHiveMetastore
   class Client < ::FacebookService::Client 
     include ::Thrift::Client
 
+    def get_hms_api_version()
+      send_get_hms_api_version()
+      return recv_get_hms_api_version()
+    end
+
+    def send_get_hms_api_version()
+      send_message('get_hms_api_version', Get_hms_api_version_args)
+    end
+
+    def recv_get_hms_api_version()
+      result = receive_message(Get_hms_api_version_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_hms_api_version failed: unknown result')
+    end
+
     def getMetaConf(key)
       send_getMetaConf(key)
       return recv_getMetaConf()
@@ -3836,6 +3852,17 @@ module ThriftHiveMetastore
   class Processor < ::FacebookService::Processor 
     include ::Thrift::Processor
 
+    def process_get_hms_api_version(seqid, iprot, oprot)
+      args = read_args(iprot, Get_hms_api_version_args)
+      result = Get_hms_api_version_result.new()
+      begin
+        result.success = @handler.get_hms_api_version()
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_hms_api_version', seqid)
+    end
+
     def process_getMetaConf(seqid, iprot, oprot)
       args = read_args(iprot, GetMetaConf_args)
       result = GetMetaConf_result.new()
@@ -6705,6 +6732,39 @@ module ThriftHiveMetastore
   end
 
   # HELPER FUNCTIONS AND STRUCTURES
+
+  class Get_hms_api_version_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_hms_api_version_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
 
   class GetMetaConf_args
     include ::Thrift::Struct, ::Thrift::Struct_Union

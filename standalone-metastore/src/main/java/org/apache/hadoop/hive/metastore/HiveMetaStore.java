@@ -798,6 +798,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public String get_hms_api_version() throws MetaException {
+      return hive_metastoreConstants.HMS_API;
+    }
+
+    @Override
     public String getMetaConf(String key) throws MetaException {
       ConfVars confVar = MetastoreConf.getMetaConf(key);
       if (confVar == null) {

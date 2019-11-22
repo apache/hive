@@ -22,6 +22,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     // Your initialization goes here
   }
 
+  void get_hms_api_version(std::string& _return) {
+    // Your implementation goes here
+    printf("get_hms_api_version\n");
+  }
+
   void getMetaConf(std::string& _return, const std::string& key) {
     // Your implementation goes here
     printf("getMetaConf\n");

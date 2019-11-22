@@ -10,6 +10,7 @@ from thrift.Thrift import TType, TMessageType, TException, TApplicationException
 from ttypes import *
 
 DDL_TIME = "transient_lastDdlTime"
+HMS_API = "1.0.0"
 ACCESSTYPE_NONE = 1
 ACCESSTYPE_READONLY = 2
 ACCESSTYPE_WRITEONLY = 4

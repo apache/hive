@@ -85,6 +85,11 @@ public interface IMetaStoreClient {
   String getMetaConf(String key) throws MetaException, TException;
 
   /**
+   * get current HMS API version
+   */
+  String getHMSAPIVersion() throws MetaException, TException;
+
+  /**
    * Create a new catalog.
    * @param catalog catalog object to create.
    * @throws AlreadyExistsException A catalog of this name already exists.

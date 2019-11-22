@@ -13,6 +13,8 @@ const hive_metastoreConstants g_hive_metastore_constants;
 hive_metastoreConstants::hive_metastoreConstants() {
   DDL_TIME = "transient_lastDdlTime";
 
+  HMS_API = "1.0.0";
+
   ACCESSTYPE_NONE = 1;
 
   ACCESSTYPE_READONLY = 2;

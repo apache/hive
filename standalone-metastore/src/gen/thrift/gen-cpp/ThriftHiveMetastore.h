@@ -22,6 +22,7 @@ namespace Apache { namespace Hadoop { namespace Hive {
 class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookServiceIf {
  public:
   virtual ~ThriftHiveMetastoreIf() {}
+  virtual void get_hms_api_version(std::string& _return) = 0;
   virtual void getMetaConf(std::string& _return, const std::string& key) = 0;
   virtual void setMetaConf(const std::string& key, const std::string& value) = 0;
   virtual void create_catalog(const CreateCatalogRequest& catalog) = 0;
@@ -281,6 +282,9 @@ class ThriftHiveMetastoreIfSingletonFactory : virtual public ThriftHiveMetastore
 class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual public  ::facebook::fb303::FacebookServiceNull {
  public:
   virtual ~ThriftHiveMetastoreNull() {}
+  void get_hms_api_version(std::string& /* _return */) {
+    return;
+  }
   void getMetaConf(std::string& /* _return */, const std::string& /* key */) {
     return;
   }
@@ -999,6 +1003,106 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_scheduled_query(ScheduledQuery& /* _return */, const ScheduledQueryKey& /* scheduleKey */) {
     return;
   }
+};
+
+
+class ThriftHiveMetastore_get_hms_api_version_args {
+ public:
+
+  ThriftHiveMetastore_get_hms_api_version_args(const ThriftHiveMetastore_get_hms_api_version_args&);
+  ThriftHiveMetastore_get_hms_api_version_args& operator=(const ThriftHiveMetastore_get_hms_api_version_args&);
+  ThriftHiveMetastore_get_hms_api_version_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_hms_api_version_args() throw();
+
+  bool operator == (const ThriftHiveMetastore_get_hms_api_version_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_hms_api_version_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_hms_api_version_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_hms_api_version_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_hms_api_version_pargs() throw();
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_hms_api_version_result__isset {
+  _ThriftHiveMetastore_get_hms_api_version_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_hms_api_version_result__isset;
+
+class ThriftHiveMetastore_get_hms_api_version_result {
+ public:
+
+  ThriftHiveMetastore_get_hms_api_version_result(const ThriftHiveMetastore_get_hms_api_version_result&);
+  ThriftHiveMetastore_get_hms_api_version_result& operator=(const ThriftHiveMetastore_get_hms_api_version_result&);
+  ThriftHiveMetastore_get_hms_api_version_result() : success() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_hms_api_version_result() throw();
+  std::string success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_hms_api_version_result__isset __isset;
+
+  void __set_success(const std::string& val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_hms_api_version_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_hms_api_version_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_hms_api_version_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_hms_api_version_presult__isset {
+  _ThriftHiveMetastore_get_hms_api_version_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_hms_api_version_presult__isset;
+
+class ThriftHiveMetastore_get_hms_api_version_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_hms_api_version_presult() throw();
+  std::string* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_hms_api_version_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
 };
 
 typedef struct _ThriftHiveMetastore_getMetaConf_args__isset {
@@ -28943,6 +29047,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
+  void get_hms_api_version(std::string& _return);
+  void send_get_hms_api_version();
+  void recv_get_hms_api_version(std::string& _return);
   void getMetaConf(std::string& _return, const std::string& key);
   void send_getMetaConf(const std::string& key);
   void recv_getMetaConf(std::string& _return);
@@ -29643,6 +29750,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   typedef  void (ThriftHiveMetastoreProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);
   typedef std::map<std::string, ProcessFunction> ProcessMap;
   ProcessMap processMap_;
+  void process_get_hms_api_version(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getMetaConf(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_setMetaConf(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_catalog(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -29877,6 +29985,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
     iface_(iface) {
+    processMap_["get_hms_api_version"] = &ThriftHiveMetastoreProcessor::process_get_hms_api_version;
     processMap_["getMetaConf"] = &ThriftHiveMetastoreProcessor::process_getMetaConf;
     processMap_["setMetaConf"] = &ThriftHiveMetastoreProcessor::process_setMetaConf;
     processMap_["create_catalog"] = &ThriftHiveMetastoreProcessor::process_create_catalog;
@@ -30140,6 +30249,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_.push_back(iface);
   }
  public:
+  void get_hms_api_version(std::string& _return) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_hms_api_version(_return);
+    }
+    ifaces_[i]->get_hms_api_version(_return);
+    return;
+  }
+
   void getMetaConf(std::string& _return, const std::string& key) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -32367,6 +32486,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
+  void get_hms_api_version(std::string& _return);
+  int32_t send_get_hms_api_version();
+  void recv_get_hms_api_version(std::string& _return, const int32_t seqid);
   void getMetaConf(std::string& _return, const std::string& key);
   int32_t send_getMetaConf(const std::string& key);
   void recv_getMetaConf(std::string& _return, const int32_t seqid);

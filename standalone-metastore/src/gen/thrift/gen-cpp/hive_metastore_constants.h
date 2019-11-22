@@ -16,6 +16,7 @@ class hive_metastoreConstants {
   hive_metastoreConstants();
 
   std::string DDL_TIME;
+  std::string HMS_API;
   int8_t ACCESSTYPE_NONE;
   int8_t ACCESSTYPE_READONLY;
   int8_t ACCESSTYPE_WRITEONLY;

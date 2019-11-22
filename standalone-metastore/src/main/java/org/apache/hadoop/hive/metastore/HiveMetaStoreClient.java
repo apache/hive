@@ -754,6 +754,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public String getHMSAPIVersion() throws TException {
+    return client.get_hms_api_version();
+  }
+
+  @Override
   public void createCatalog(Catalog catalog) throws TException {
     client.create_catalog(new CreateCatalogRequest(catalog));
   }

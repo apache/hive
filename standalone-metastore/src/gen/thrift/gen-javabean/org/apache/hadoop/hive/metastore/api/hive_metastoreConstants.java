@@ -38,6 +38,8 @@ import org.slf4j.LoggerFactory;
 
   public static final String DDL_TIME = "transient_lastDdlTime";
 
+  public static final String HMS_API = "1.0.0";
+
   public static final byte ACCESSTYPE_NONE = (byte)1;
 
   public static final byte ACCESSTYPE_READONLY = (byte)2;

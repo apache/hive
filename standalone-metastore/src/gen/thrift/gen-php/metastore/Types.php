@@ -37093,6 +37093,7 @@ class NoSuchLockException extends TException {
 
 final class Constant extends \Thrift\Type\TConstant {
   static protected $DDL_TIME;
+  static protected $HMS_API;
   static protected $ACCESSTYPE_NONE;
   static protected $ACCESSTYPE_READONLY;
   static protected $ACCESSTYPE_WRITEONLY;
@@ -37126,6 +37127,10 @@ final class Constant extends \Thrift\Type\TConstant {
 
   static protected function init_DDL_TIME() {
     return "transient_lastDdlTime";
+  }
+
+  static protected function init_HMS_API() {
+    return "1.0.0";
   }
 
   static protected function init_ACCESSTYPE_NONE() {

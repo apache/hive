@@ -614,6 +614,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return client.getMetaConf(key);
   }
 
+  @Override
+  public String getHMSAPIVersion() throws TException {
+    return client.get_hms_api_version();
+  }
+
   /**
    * @param new_part
    * @return the added partition

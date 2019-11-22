@@ -29,6 +29,7 @@ namespace php metastore
 namespace cpp Apache.Hadoop.Hive
 
 const string DDL_TIME = "transient_lastDdlTime"
+const string HMS_API = "1.0.0"
 const byte ACCESSTYPE_NONE       = 1;
 const byte ACCESSTYPE_READONLY   = 2;
 const byte ACCESSTYPE_WRITEONLY  = 4;
@@ -1876,6 +1877,8 @@ exception NoSuchLockException {
 */
 service ThriftHiveMetastore extends fb303.FacebookService
 {
+  string get_hms_api_version() throws(1:MetaException o1)
+
   string getMetaConf(1:string key) throws(1:MetaException o1)
   void setMetaConf(1:string key, 2:string value) throws(1:MetaException o1)
 
