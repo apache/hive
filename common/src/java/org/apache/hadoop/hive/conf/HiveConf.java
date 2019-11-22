@@ -675,6 +675,8 @@ public class HiveConf extends Configuration {
         "Table alias will be added to column names for queries of type \"select *\" or \n" +
         "if query explicitly uses table alias \"select r1.x..\"."),
 
+    HIVE_PROTO_EVENTS_QUEUE_CAPACITY("hive.hook.proto.queue.capacity", 64,
+      "Queue capacity for the proto events logging threads."),
     HIVE_PROTO_EVENTS_BASE_PATH("hive.hook.proto.base-directory", "",
             "Base directory into which the proto event messages are written by HiveProtoLoggingHook."),
     HIVE_PROTO_EVENTS_ROLLOVER_CHECK_INTERVAL("hive.hook.proto.rollover-interval", "600s",
