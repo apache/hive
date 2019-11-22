@@ -243,9 +243,14 @@ import java.util.regex.Pattern;
  *
  * A.2. Character temporals
  * Temporal elements, but spelled out.
- * - For datetime to string conversion, the pattern's case must match one of the listed formats
- *   (e.g. mOnTh is not accepted) to avoid ambiguity. Output is right padded with trailing spaces
- *   unless the pattern is marked with the fill mode modifier (FM).
+ * - Output is right padded with trailing spaces unless the pattern is marked with the fill mode
+ *   modifier (FM). Capitalization happens as follows:
+ *   - If the first letter of the pattern is lowercase then the output is lowercase:
+ *     'mONTH' -> 'may'
+ *   - If the first two letters of the pattern are uppercase then the output is uppercase:
+ *     'MOnth' -> 'MAY'
+ *   - If the first letter of the pattern is uppercase and the second is lowercase then the output
+ *     is capitalized: 'Month' -> 'May'.
  * - For string to datetime conversion, the case of the pattern does not matter.
  *
  * MONTH|Month|month
@@ -868,14 +873,6 @@ public class HiveSqlDateTimeFormatter implements Serializable {
         throw new IllegalArgumentException(token.string.toUpperCase() + " not a valid format for "
             + "timestamp or date.");
       }
-      if (token.type == TokenType.CHARACTER_TEMPORAL) {
-        String s = token.string;
-        if (!(s.equals(s.toUpperCase()) || s.equals(capitalize(s)) || s.equals(s.toLowerCase()))) {
-          throw new IllegalArgumentException(
-              "Ambiguous capitalization of token " + s + ". Accepted " + "forms are " + s
-                  .toUpperCase() + ", " + capitalize(s) + ", or " + s.toLowerCase() + ".");
-        }
-      }
     }
   }
 
@@ -965,11 +962,17 @@ public class HiveSqlDateTimeFormatter implements Serializable {
       output = StringUtils.rightPad(output, token.length); //pad to size
     }
 
-    // set case
-    if (Character.isUpperCase(token.string.charAt(1))) {
-      output = output.toUpperCase();
-    } else if (Character.isLowerCase(token.string.charAt(0))) {
+    // Set case.
+    // If the first letter is lowercase then the output is lowercase: 'mONTH' -> 'may'
+    // If the first two letters are uppercase then the output is uppercase: 'MOnth' -> 'MAY'
+    // If the first letter is uppercase and the second is lowercase then the output is capitalized:
+    //     'Month' -> 'May'.
+    if (Character.isLowerCase(token.string.charAt(0))) {
       output = output.toLowerCase();
+    } else if (Character.isUpperCase(token.string.charAt(1))) {
+      output = output.toUpperCase();
+    } else {
+      output = capitalize(output);
     }
     return output;
   }
