@@ -18,25 +18,41 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
-import java.io.PrintWriter;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.GregorianCalendar;
 import java.util.Random;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
-
-import static org.junit.Assert.*;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Test for ListColumnVector
  */
 public class TestTimestampColumnVector {
+  private static final GregorianCalendar PROLEPTIC_GREGORIAN_CALENDAR_UTC =
+      new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+  private static final GregorianCalendar GREGORIAN_CALENDAR_UTC =
+      new GregorianCalendar(TimeZone.getTimeZone("UTC"));
 
-  private static int TEST_COUNT = 5000;
+  private static final SimpleDateFormat PROLEPTIC_GREGORIAN_TIMESTAMP_FORMATTER_UTC =
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  private static final SimpleDateFormat GREGORIAN_TIMESTAMP_FORMATTER_UTC =
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+  static {
+    PROLEPTIC_GREGORIAN_CALENDAR_UTC.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
+
+    PROLEPTIC_GREGORIAN_TIMESTAMP_FORMATTER_UTC.setCalendar(PROLEPTIC_GREGORIAN_CALENDAR_UTC);
+    GREGORIAN_TIMESTAMP_FORMATTER_UTC.setCalendar(GREGORIAN_CALENDAR_UTC);
+  }
 
   private static int fake = 0;
 
@@ -98,20 +114,102 @@ public class TestTimestampColumnVector {
     }
   }
 
-  /*
+  /**
+   * Test case for TimestampColumnVector's changeCalendar
+   *   16768: hybrid: 2015-11-29 proleptic: 2015-11-29
+   * -141418: hybrid: 1582-10-24 proleptic: 1582-10-24
+   * -141427: hybrid: 1582-10-15 proleptic: 1582-10-15
+   * -141428: hybrid: 1582-10-04 proleptic: 1582-10-14
+   * -141430: hybrid: 1582-10-02 proleptic: 1582-10-12
+   * -141437: hybrid: 1582-09-25 proleptic: 1582-10-05
+   * -141438: hybrid: 1582-09-24 proleptic: 1582-10-04
+   * -499952: hybrid: 0601-03-04 proleptic: 0601-03-07
+   * -499955: hybrid: 0601-03-01 proleptic: 0601-03-04
+   */
   @Test
-  public void testGenerate() throws Exception {
-    PrintWriter writer = new PrintWriter("/Users/you/timestamps.txt");
-    Random r = new Random(18485);
-    for (int i = 0; i < 25; i++) {
-      Timestamp randTimestamp = RandomTypeUtil.getRandTimestamp(r);
-      writer.println(randTimestamp.toString());
-    }
-    for (int i = 0; i < 25; i++) {
-      Timestamp randTimestamp = RandomTypeUtil.getRandTimestamp(r, 1965, 2025);
-      writer.println(randTimestamp.toString());
-    }
-    writer.close();
+  public void testProlepticCalendar() {
+    int randomMillis = new Random().nextInt(24 * 60 * 60 * 1000 - 1);
+
+    // from hybrid internal representation to proleptic
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(16768, randomMillis),
+        appendTime("2015-11-29", randomMillis), false, true);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-141418, randomMillis),
+        appendTime("1582-10-24", randomMillis), false, true);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-141427, randomMillis),
+        appendTime("1582-10-15", randomMillis), false, true);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-141428, randomMillis),
+        appendTime("1582-10-04", randomMillis), false, true);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-141430, randomMillis),
+        appendTime("1582-10-02", randomMillis), false, true);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-141437, randomMillis),
+        appendTime("1582-09-25", randomMillis), false, true);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-499952, randomMillis),
+        appendTime("0601-03-04", randomMillis), false, true);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-499955, randomMillis),
+        appendTime("0601-03-01", randomMillis), false, true);
+
+    // from proleptic internal representation to hybrid
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(16768, randomMillis),
+        appendTime("2015-11-29", randomMillis), true, false);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-141418, randomMillis),
+        appendTime("1582-10-24", randomMillis), true, false);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-141427, randomMillis),
+        appendTime("1582-10-15", randomMillis), true, false);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-141428, randomMillis),
+        appendTime("1582-10-24", randomMillis), true, false);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-141430, randomMillis),
+        appendTime("1582-10-22", randomMillis), true, false);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-141437, randomMillis),
+        appendTime("1582-10-15", randomMillis), true, false);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-499952, randomMillis),
+        appendTime("0601-03-07", randomMillis), true, false);
+    setAndVerifyProlepticUpdate(getMillisForDayPlusMillis(-499955, randomMillis),
+        appendTime("0601-03-04", randomMillis), true, false);
   }
-  */
+
+  private long getMillisForDayPlusMillis(int days, int millis) {
+    return TimeUnit.DAYS.toMillis(days) + millis;
+  }
+
+  private String appendTime(String datePart, int millis) {
+    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
+    sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+    return datePart + " " + sdf.format(millis);
+  }
+
+  private void setAndVerifyProlepticUpdate(long epochMilli, String expected,
+      boolean originalUseProleptic, boolean newUseProleptic) {
+
+    DateFormat testFormatter = getTestFormatter(newUseProleptic);
+
+    Instant instant = Instant.ofEpochMilli(epochMilli); // instant is always a moment in UTC
+
+    int nanos = instant.getNano() + new Random().nextInt(999999) + 0;
+    TimestampColumnVector timestampColVector =
+        new TimestampColumnVector().setUsingProlepticCalendar(originalUseProleptic);
+
+    timestampColVector.time[0] = instant.toEpochMilli();
+    timestampColVector.nanos[0] = nanos;
+
+    timestampColVector.changeCalendar(newUseProleptic, true);
+
+    Assert.assertEquals(expected,
+        testFormatter.format(Timestamp.from(Instant.ofEpochMilli(timestampColVector.time[0]))));
+    Assert.assertEquals(nanos, timestampColVector.nanos[0]); // preserving nanos
+  }
+
+  private DateFormat getTestFormatter(boolean useProleptic) {
+    DateFormat testFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
+    if (useProleptic) {
+      testFormatter.setCalendar(PROLEPTIC_GREGORIAN_CALENDAR_UTC);
+    } else {
+      testFormatter.setCalendar(GREGORIAN_CALENDAR_UTC);
+    }
+
+    testFormatter.setLenient(false);
+
+    return testFormatter;
+  }
 }
