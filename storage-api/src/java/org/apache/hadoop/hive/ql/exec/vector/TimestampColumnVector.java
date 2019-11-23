@@ -18,10 +18,13 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import org.apache.hadoop.io.Writable;
 
@@ -38,6 +41,26 @@ import org.apache.hadoop.io.Writable;
  * using the scratch timestamp, and then perhaps update the column vector row with a result.
  */
 public class TimestampColumnVector extends ColumnVector {
+  private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+  private static final GregorianCalendar PROLEPTIC_GREGORIAN_CALENDAR_UTC =
+      new GregorianCalendar(UTC);
+  private static final GregorianCalendar GREGORIAN_CALENDAR_UTC =
+      new GregorianCalendar(UTC);
+
+  private static final SimpleDateFormat PROLEPTIC_GREGORIAN_TIMESTAMP_FORMATTER_UTC =
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  private static final SimpleDateFormat GREGORIAN_TIMESTAMP_FORMATTER_UTC =
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+  static {
+    PROLEPTIC_GREGORIAN_CALENDAR_UTC.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
+
+    PROLEPTIC_GREGORIAN_TIMESTAMP_FORMATTER_UTC.setCalendar(PROLEPTIC_GREGORIAN_CALENDAR_UTC);
+    GREGORIAN_TIMESTAMP_FORMATTER_UTC.setCalendar(GREGORIAN_CALENDAR_UTC);
+  }
+
+  // it's 1582-10-15 in both calendars
+  private static final int CUTOVER_MILLIS_EPOCH = -141427 * 24 * 60 * 60 * 1000;
 
   /*
    * The storage arrays for this column vector corresponds to the storage of a Timestamp:
@@ -57,6 +80,8 @@ public class TimestampColumnVector extends ColumnVector {
       // Supports keeping a TimestampWritable object without having to import that definition...
 
   private boolean isUTC;
+
+  private boolean usingProlepticCalendar = false;
 
   /**
    * Use this constructor by default. All column vectors
@@ -545,5 +570,61 @@ public class TimestampColumnVector extends ColumnVector {
     super.shallowCopyTo(other);
     other.time = time;
     other.nanos = nanos;
+  }
+
+  /**
+   * Change the calendar to or from proleptic. If the new and old values of the flag are the
+   * same, nothing is done.
+   * useProleptic - set the flag for the proleptic calendar
+   * updateData - change the data to match the new value of the flag.
+   */
+  public void changeCalendar(boolean useProleptic, boolean updateData) {
+    if (useProleptic == usingProlepticCalendar) {
+      return;
+    }
+    usingProlepticCalendar = useProleptic;
+    if (updateData) {
+      try {
+        updateDataAccordingProlepticSetting();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  private void updateDataAccordingProlepticSetting() throws Exception {
+    for (int i = 0; i < nanos.length; i++) {
+      if (time[i] >= CUTOVER_MILLIS_EPOCH) { // no need for conversion
+        continue;
+      }
+      asScratchTimestamp(i);
+      long offset = 0;
+      String formatted =
+          usingProlepticCalendar ? GREGORIAN_TIMESTAMP_FORMATTER_UTC.format(scratchTimestamp)
+            : PROLEPTIC_GREGORIAN_TIMESTAMP_FORMATTER_UTC.format(scratchTimestamp);
+
+      long millis = usingProlepticCalendar
+        ? PROLEPTIC_GREGORIAN_TIMESTAMP_FORMATTER_UTC.parse(formatted).getTime()
+        : GREGORIAN_TIMESTAMP_FORMATTER_UTC.parse(formatted).getTime();
+
+      Timestamp newTimeStamp = Timestamp.from(Instant.ofEpochMilli(millis));
+
+      scratchTimestamp.setTime(newTimeStamp.getTime() + offset);
+      scratchTimestamp.setNanos(nanos[i]);
+
+      setFromScratchTimestamp(i);
+    }
+  }
+
+  public TimestampColumnVector setUsingProlepticCalendar(boolean usingProlepticCalendar) {
+    this.usingProlepticCalendar = usingProlepticCalendar;
+    return this;
+  }
+
+  /**
+   * Detect whether this data is using the proleptic calendar.
+   */
+  public boolean usingProlepticCalendar() {
+    return usingProlepticCalendar;
   }
 }
