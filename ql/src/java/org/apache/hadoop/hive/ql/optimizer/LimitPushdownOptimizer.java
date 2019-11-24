@@ -168,6 +168,10 @@ public class LimitPushdownOptimizer extends Transform {
         // No limit, nothing to propagate, we just bail out
         return false;
       }
+      if (cRS.getConf().isPTFReduceSink()) {
+        // Limit per partition key not supported yet
+        return false;
+      }
       ReduceSinkOperator pRS = null;
       for (int i = stack.size() - 2 ; i >= 0; i--) {
         Operator<?> operator = (Operator<?>) stack.get(i);

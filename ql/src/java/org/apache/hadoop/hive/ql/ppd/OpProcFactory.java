@@ -217,6 +217,7 @@ public final class OpProcFactory {
       }
 
       WindowTableFunctionDef wTFn = (WindowTableFunctionDef) conf.getFuncDef();
+
       List<Integer> rFnIdxs = rankingFunctions(wTFn);
 
       if ( rFnIdxs.size() == 0 ) {
@@ -325,7 +326,6 @@ public final class OpProcFactory {
      * reference rows past the Current Row.
      */
     private boolean canPushLimitToReduceSink(WindowTableFunctionDef wTFn) {
-
       for(WindowFunctionDef wFnDef : wTFn.getWindowFunctions() ) {
         if ( (wFnDef.getWFnEval() instanceof GenericUDAFRankEvaluator) ||
             (wFnDef.getWFnEval() instanceof GenericUDAFDenseRankEvaluator )  ||
