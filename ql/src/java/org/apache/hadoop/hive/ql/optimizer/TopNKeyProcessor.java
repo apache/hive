@@ -68,6 +68,12 @@ public class TopNKeyProcessor implements NodeProcessor {
       return null;
     }
 
+    // Currently, per partitioning top n key is not supported
+    // in TopNKey operator
+    if (reduceSinkDesc.isPTFReduceSink()) {
+      return null;
+    }
+
     // Check whether the group by operator is in hash mode
     if (groupByDesc.getMode() != GroupByDesc.Mode.HASH) {
       return null;
