@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.PriorityQueue;
 
 import static org.apache.hadoop.hive.ql.plan.api.OperatorType.TOPNKEY;
 
@@ -41,11 +40,7 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
 
   private static final long serialVersionUID = 1L;
 
-  // Maximum number of keys to hold
-  private transient int topN;
-
-  // Priority queue that holds occurred keys
-  private transient PriorityQueue<KeyWrapper> priorityQueue;
+  private transient TopNKeyFilter<KeyWrapper> topNKeyFilter;
 
   private transient KeyWrapper keyWrapper;
 
@@ -86,7 +81,8 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
-    this.topN = conf.getTopN();
+    String columnSortOrder = conf.getColumnSortOrder();
+    String nullSortOrder = conf.getNullOrder();
 
     ObjectInspector rowInspector = inputObjInspectors[0];
     ObjectInspector standardObjInspector = ObjectInspectorUtils.getStandardObjectInspector(rowInspector);
@@ -107,13 +103,8 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
       standardKeyObjectInspectors[i] = standardKeyFields[i].initialize(standardObjInspector);
     }
 
-    String columnSortOrder = conf.getColumnSortOrder();
-    String nullSortOrder = conf.getNullOrder();
-
-    // We need a reversed comparator because the PriorityQueue.poll() method is used for filtering out keys.
-    // Ex.: When ORDER BY key1 ASC then call of poll() should remove the largest key.
-    priorityQueue = new PriorityQueue<>(topN + 1,
-            new KeyWrapperComparator(standardKeyObjectInspectors, columnSortOrder, nullSortOrder).reversed());
+    this.topNKeyFilter = new TopNKeyFilter<>(conf.getTopN(), new TopNKeyOperator.KeyWrapperComparator(
+        standardKeyObjectInspectors, columnSortOrder, nullSortOrder));
 
     KeyWrapperFactory keyWrapperFactory = new KeyWrapperFactory(keyFields, keyObjectInspectors,
         standardKeyObjectInspectors);
@@ -122,28 +113,16 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
 
   @Override
   public void process(Object row, int tag) throws HiveException {
-    if (canProcess(row, tag)) {
+    keyWrapper.getNewKey(row, inputObjInspectors[tag]);
+    keyWrapper.setHashKey();
+    if (topNKeyFilter.canForward(keyWrapper)) {
       forward(row, outputObjInspector);
     }
   }
 
-  protected boolean canProcess(Object row, int tag) throws HiveException {
-    keyWrapper.getNewKey(row, inputObjInspectors[tag]);
-    keyWrapper.setHashKey();
-
-    if (!priorityQueue.contains(keyWrapper)) {
-      priorityQueue.offer(keyWrapper.copyKey());
-    }
-    if (priorityQueue.size() > topN) {
-      priorityQueue.poll();
-    }
-
-    return priorityQueue.contains(keyWrapper);
-  }
-
   @Override
   protected final void closeOp(boolean abort) throws HiveException {
-    priorityQueue.clear();
+    topNKeyFilter.clear();
     super.closeOp(abort);
   }
 

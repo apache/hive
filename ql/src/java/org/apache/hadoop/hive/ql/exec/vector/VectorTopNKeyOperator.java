@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,31 +21,32 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TopNKeyFilter;
 import org.apache.hadoop.hive.ql.exec.TopNKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorTopNKeyDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
  * VectorTopNKeyOperator passes rows that contains top N keys only.
  */
-public class VectorTopNKeyOperator extends TopNKeyOperator implements VectorizationOperator {
+public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements VectorizationOperator {
 
   private static final long serialVersionUID = 1L;
 
   private VectorTopNKeyDesc vectorDesc;
   private VectorizationContext vContext;
 
-  // Extract row
-  private transient Object[] extractedRow;
-  private transient VectorExtractRow vectorExtractRow;
-
   // Batch processing
   private transient int[] temporarySelected;
+  private transient VectorHashKeyWrapperBatch keyWrappersBatch;
+  private transient TopNKeyFilter<VectorHashKeyWrapperBase> topNKeyFilter;
 
   public VectorTopNKeyOperator(CompilationOpContext ctx, OperatorDesc conf,
       VectorizationContext vContext, VectorDesc vectorDesc) {
@@ -70,17 +71,18 @@ public class VectorTopNKeyOperator extends TopNKeyOperator implements Vectorizat
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
-    VectorExpression.doTransientInit(vectorDesc.getKeyExpressions(), hconf);
-    for (VectorExpression keyExpression : vectorDesc.getKeyExpressions()) {
+    VectorExpression[] keyExpressions = vectorDesc.getKeyExpressions();
+    VectorExpression.doTransientInit(keyExpressions, hconf);
+    for (VectorExpression keyExpression : keyExpressions) {
       keyExpression.init(hconf);
     }
 
-    vectorExtractRow = new VectorExtractRow();
-    vectorExtractRow.init((StructObjectInspector) inputObjInspectors[0],
-        vContext.getProjectedColumns());
-    extractedRow = new Object[vectorExtractRow.getCount()];
-
     temporarySelected = new int [VectorizedRowBatch.DEFAULT_SIZE];
+
+    keyWrappersBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
+    this.topNKeyFilter = new TopNKeyFilter<>(conf.getTopN(), keyWrappersBatch.getComparator(
+            conf.getColumnSortOrder(),
+            conf.getNullOrder()));
   }
 
   @Override
@@ -99,6 +101,9 @@ public class VectorTopNKeyOperator extends TopNKeyOperator implements Vectorizat
       keyExpression.evaluate(batch);
     }
 
+    keyWrappersBatch.evaluateBatch(batch);
+    VectorHashKeyWrapperBase[] keyWrappers = keyWrappersBatch.getVectorHashKeyWrappers();
+
     // Filter rows with top n keys
     int size = 0;
     int[] selected = new int[batch.selected.length];
@@ -110,11 +115,8 @@ public class VectorTopNKeyOperator extends TopNKeyOperator implements Vectorizat
         j = i;
       }
 
-      // Get keys
-      vectorExtractRow.extractRow(batch, j, extractedRow);
-
       // Select a row in the priority queue
-      if (canProcess(extractedRow, tag)) {
+      if (topNKeyFilter.canForward(keyWrappers[i])) {
         selected[size++] = j;
       }
     }
@@ -153,5 +155,45 @@ public class VectorTopNKeyOperator extends TopNKeyOperator implements Vectorizat
     for (Operator<? extends OperatorDesc> op : childOperators) {
       op.setNextVectorBatchGroupStatus(isLastGroupBatch);
     }
+  }
+
+  @Override
+  public String getName() {
+    return TopNKeyOperator.getOperatorName();
+  }
+
+  @Override
+  public OperatorType getType() {
+    return OperatorType.TOPNKEY;
+  }
+
+  @Override
+  protected void closeOp(boolean abort) throws HiveException {
+    topNKeyFilter.clear();
+    super.closeOp(abort);
+  }
+
+  // Because a TopNKeyOperator works like a FilterOperator with top n key condition, its properties
+  // for optimizers has same values. Following methods are same with FilterOperator;
+  // supportSkewJoinOptimization, columnNamesRowResolvedCanBeObtained,
+  // supportAutomaticSortMergeJoin, and supportUnionRemoveOptimization.
+  @Override
+  public boolean supportSkewJoinOptimization() {
+    return true;
+  }
+
+  @Override
+  public boolean columnNamesRowResolvedCanBeObtained() {
+    return true;
+  }
+
+  @Override
+  public boolean supportAutomaticSortMergeJoin() {
+    return true;
+  }
+
+  @Override
+  public boolean supportUnionRemoveOptimization() {
+    return true;
   }
 }
