@@ -290,6 +290,7 @@ STAGE PLANS:
                         Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: PARTIAL
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: smallint)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: smallint)
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: PARTIAL

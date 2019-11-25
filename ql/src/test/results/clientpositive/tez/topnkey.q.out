@@ -214,15 +214,16 @@ Stage-0
             Output:["_col0"]
           <-Reducer 2 [SIMPLE_EDGE]
             SHUFFLE [RS_6]
+              null sort order:z,sort order:+
               Group By Operator [GBY_4] (rows=250 width=87)
                 Output:["_col0"],keys:KEY._col0
               <-Map 1 [SIMPLE_EDGE]
                 SHUFFLE [RS_3]
-                  PartitionCols:_col0
+                  PartitionCols:_col0,null sort order:z,sort order:+
                   Group By Operator [GBY_2] (rows=250 width=87)
                     Output:["_col0"],keys:key
                     Top N Key Operator [TNK_10] (rows=500 width=87)
-                      keys:key,sort order:+,top n:5
+                      keys:key,null sort order:z,sort order:+,top n:5
                       Select Operator [SEL_1] (rows=500 width=87)
                         Output:["key"]
                         TableScan [TS_0] (rows=500 width=87)
@@ -283,6 +284,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -301,6 +303,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -321,6 +324,7 @@ STAGE PLANS:
                   Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
@@ -432,15 +436,16 @@ Stage-0
             Output:["_col0","_col1"]
           <-Reducer 2 [SIMPLE_EDGE]
             SHUFFLE [RS_6]
+              null sort order:zz,sort order:++
               Group By Operator [GBY_4] (rows=6 width=4)
                 Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
               <-Map 1 [SIMPLE_EDGE]
                 SHUFFLE [RS_3]
-                  PartitionCols:_col0, _col1
+                  PartitionCols:_col0, _col1,null sort order:zz,sort order:++
                   Group By Operator [GBY_2] (rows=6 width=4)
                     Output:["_col0","_col1"],keys:a, b
                     Top N Key Operator [TNK_10] (rows=12 width=6)
-                      keys:a, b,sort order:++,top n:3
+                      keys:a, b,null sort order:zz,sort order:++,top n:3
                       Select Operator [SEL_1] (rows=12 width=6)
                         Output:["a","b"]
                         TableScan [TS_0] (rows=12 width=6)
@@ -485,15 +490,16 @@ Stage-0
             Output:["_col0","_col1"]
           <-Reducer 2 [SIMPLE_EDGE]
             SHUFFLE [RS_6]
+              null sort order:z,sort order:+
               Group By Operator [GBY_4] (rows=4 width=10)
                 Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
               <-Map 1 [SIMPLE_EDGE]
                 SHUFFLE [RS_3]
-                  PartitionCols:_col0
+                  PartitionCols:_col0,null sort order:z,sort order:+
                   Group By Operator [GBY_2] (rows=4 width=10)
                     Output:["_col0","_col1"],aggregations:["count(b)"],keys:a
                     Top N Key Operator [TNK_10] (rows=12 width=6)
-                      keys:a,sort order:+,top n:2
+                      keys:a,null sort order:z,sort order:+,top n:2
                       Select Operator [SEL_1] (rows=12 width=6)
                         Output:["a","b"]
                         TableScan [TS_0] (rows=12 width=6)

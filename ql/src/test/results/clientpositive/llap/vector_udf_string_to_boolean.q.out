@@ -145,6 +145,7 @@ STAGE PLANS:
                     Statistics: Num rows: 12 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 12 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: boolean)

@@ -1841,6 +1841,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1886,6 +1887,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13 Data size: 3003 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), _col3 (type: bigint)
+                        null sort order: aaaa
                         sort order: ++++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int), _col3 (type: bigint)
                         Statistics: Num rows: 13 Data size: 3003 Basic stats: COMPLETE Column stats: COMPLETE

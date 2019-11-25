@@ -365,6 +365,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 'US' (type: char(2)), 'DEF' (type: char(3)), '200' (type: char(3))
+                null sort order: aaa
                 sort order: +++
                 Map-reduce partition columns: 'US' (type: char(2)), 'DEF' (type: char(3)), '200' (type: char(3))
                 Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: COMPLETE
@@ -379,6 +380,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 1156 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col3 (type: char(2)), _col4 (type: char(3)), '200' (type: char(3))
+                null sort order: aaa
                 sort order: +++
                 Map-reduce partition columns: _col3 (type: char(2)), _col4 (type: char(3)), '200' (type: char(3))
                 Statistics: Num rows: 2 Data size: 1156 Basic stats: COMPLETE Column stats: COMPLETE
@@ -498,6 +500,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 'US' (type: string), 'DEF' (type: string), '200' (type: string)
+                null sort order: aaa
                 sort order: +++
                 Map-reduce partition columns: 'US' (type: string), 'DEF' (type: string), '200' (type: string)
                 Statistics: Num rows: 2 Data size: 1604 Basic stats: COMPLETE Column stats: COMPLETE
@@ -512,6 +515,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 1546 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col3 (type: string), _col4 (type: string), '200' (type: string)
+                null sort order: aaa
                 sort order: +++
                 Map-reduce partition columns: _col3 (type: string), _col4 (type: string), '200' (type: string)
                 Statistics: Num rows: 2 Data size: 1546 Basic stats: COMPLETE Column stats: COMPLETE

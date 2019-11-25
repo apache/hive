@@ -301,6 +301,7 @@ WHERE "ikey" IS NOT NULL
                     Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -325,6 +326,7 @@ WHERE "ikey" IS NOT NULL
                     Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -457,6 +459,7 @@ FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int)
@@ -478,6 +481,7 @@ FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int)

@@ -245,6 +245,7 @@ STAGE PLANS:
                   Statistics: Num rows: 511 Data size: 995378 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Reduce Sink Vectorization:
@@ -295,6 +296,7 @@ STAGE PLANS:
                 native: true
             Reduce Output Operator
               key expressions: _col3 (type: string)
+              null sort order: z
               sort order: +
               Reduce Sink Vectorization:
                   className: VectorReduceSinkOperator

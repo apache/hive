@@ -363,6 +363,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: +
                       keys: _col0 (type: string)
+                      null sort order: z
                       Statistics: Num rows: 2000 Data size: 106288 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 50
                       Top N Key Vectorization:
@@ -384,6 +385,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1000 Data size: 184000 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Reduce Sink Vectorization:
@@ -426,6 +428,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: z
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator

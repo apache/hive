@@ -37,21 +37,21 @@ Stage-0
               Output:["_col1","_col2"]
             <-Reducer 3 [SIMPLE_EDGE] vectorized, llap
               SHUFFLE [RS_43]
-                PartitionCols:0
+                PartitionCols:0,null sort order:az,sort order:++
                 Select Operator [SEL_42] (rows=2 width=20)
                   Output:["_col1","_col2"]
                   Group By Operator [GBY_41] (rows=2 width=20)
                     Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0
                   <-Reducer 2 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_11]
-                      PartitionCols:_col0
+                      PartitionCols:_col0,null sort order:a,sort order:+
                       Group By Operator [GBY_10] (rows=3 width=20)
                         Output:["_col0","_col1","_col2"],aggregations:["sum(_col3)","sum(_col1)"],keys:_col2
                         Merge Join Operator [MERGEJOIN_34] (rows=36 width=7)
                           Conds:RS_37._col0=RS_40._col1(Inner),Output:["_col1","_col2","_col3"]
                         <-Map 1 [SIMPLE_EDGE] vectorized, llap
                           SHUFFLE [RS_37]
-                            PartitionCols:_col0
+                            PartitionCols:_col0,null sort order:a,sort order:+
                             Select Operator [SEL_36] (rows=18 width=87)
                               Output:["_col0","_col1","_col2"]
                               Filter Operator [FIL_35] (rows=18 width=87)
@@ -60,7 +60,7 @@ Stage-0
                                   default@cbo_t3,ws,Tbl:COMPLETE,Col:COMPLETE,Output:["value","c_int","c_boolean"]
                         <-Map 5 [SIMPLE_EDGE] vectorized, llap
                           SHUFFLE [RS_40]
-                            PartitionCols:_col1
+                            PartitionCols:_col1,null sort order:a,sort order:+
                             Select Operator [SEL_39] (rows=9174 width=73)
                               Output:["_col0","_col1"]
                               Filter Operator [FIL_38] (rows=9174 width=73)

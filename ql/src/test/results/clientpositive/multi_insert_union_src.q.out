@@ -86,6 +86,7 @@ STAGE PLANS:
                     Statistics: Num rows: 58 Data size: 10324 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 58 Data size: 10324 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
@@ -116,6 +117,7 @@ STAGE PLANS:
                     Statistics: Num rows: 58 Data size: 10324 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 58 Data size: 10324 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
@@ -186,6 +188,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: string)
+              null sort order: z
               sort order: +
               Statistics: Num rows: 58 Data size: 10324 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: string)

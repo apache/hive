@@ -395,6 +395,7 @@ STAGE PLANS:
                 Statistics: Num rows: 7 Data size: 12180 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 7 Data size: 12180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -419,6 +420,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Statistics: Num rows: 7 Data size: 2268 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: bigint), _col7 (type: double), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col13 (type: decimal(14,4)), _col14 (type: decimal(14,4))

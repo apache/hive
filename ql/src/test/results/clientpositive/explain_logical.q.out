@@ -95,6 +95,7 @@ srcpart
         Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
         Reduce Output Operator (RS_4)
           key expressions: _col0 (type: string)
+          null sort order: a
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
@@ -141,6 +142,7 @@ src
         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
         Reduce Output Operator (RS_3)
           key expressions: _col0 (type: string)
+          null sort order: a
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -232,6 +234,7 @@ $hdt$_0:s1
         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
         Reduce Output Operator (RS_6)
           key expressions: _col0 (type: string)
+          null sort order: a
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -268,6 +271,7 @@ $hdt$_1:s2
         Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
         Reduce Output Operator (RS_7)
           key expressions: _col0 (type: string)
+          null sort order: a
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -367,6 +371,7 @@ $hdt$_0:srcpart
         Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
         Reduce Output Operator (RS_6)
           key expressions: _col0 (type: string)
+          null sort order: a
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -405,6 +410,7 @@ $hdt$_1:src2
         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
         Reduce Output Operator (RS_7)
           key expressions: _col0 (type: string)
+          null sort order: a
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -451,6 +457,7 @@ $hdt$_0:srcpart
         Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
         Reduce Output Operator (RS_9)
           key expressions: _col0 (type: string)
+          null sort order: a
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -465,6 +472,7 @@ $hdt$_0:srcpart
             Statistics: Num rows: 3164 Data size: 838460 Basic stats: COMPLETE Column stats: COMPLETE
             Reduce Output Operator (RS_12)
               key expressions: _col0 (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 3164 Data size: 838460 Basic stats: COMPLETE Column stats: COMPLETE
@@ -504,6 +512,7 @@ $hdt$_1:src
         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
         Reduce Output Operator (RS_10)
           key expressions: _col0 (type: string)
+          null sort order: a
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -531,6 +540,7 @@ $hdt$_2:src3
         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
         Reduce Output Operator (RS_13)
           key expressions: _col0 (type: string)
+          null sort order: a
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -611,6 +621,7 @@ $hdt$_0:src
         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
         Reduce Output Operator (RS_4)
           key expressions: _col0 (type: string)
+          null sort order: a
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -623,6 +634,7 @@ $hdt$_0:src
             Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
             Reduce Output Operator (RS_10)
               key expressions: _col0 (type: string)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -641,6 +653,7 @@ $hdt$_0:src
                   Statistics: Num rows: 395 Data size: 73470 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator (RS_14)
                     key expressions: _col0 (type: string)
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 395 Data size: 73470 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint), _col2 (type: string)
@@ -669,6 +682,7 @@ $hdt$_1:s2
         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
         Reduce Output Operator (RS_11)
           key expressions: _col0 (type: string)
+          null sort order: a
           sort order: +
           Map-reduce partition columns: _col0 (type: string)
           Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE

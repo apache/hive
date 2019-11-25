@@ -64,6 +64,7 @@ STAGE PLANS:
                       Statistics: Num rows: 10 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col11 (type: int)
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 10 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
@@ -84,6 +85,7 @@ STAGE PLANS:
                         Statistics: Num rows: 10 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col11 (type: int)
+                          null sort order: zz
                           sort order: ++
                           Statistics: Num rows: 10 Data size: 16002 Basic stats: COMPLETE Column stats: NONE
                           TopN Hash Memory Usage: 0.1
@@ -109,6 +111,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string), _col11 (type: int)
+              null sort order: zz
               sort order: ++
               Statistics: Num rows: 1 Data size: 1600 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1

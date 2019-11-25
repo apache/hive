@@ -67,6 +67,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: ++++
                       keys: cint (type: int), cdouble (type: double), cdecimal1 (type: decimal(20,10)), cdecimal2 (type: decimal(23,14))
+                      null sort order: zzzz
                       Statistics: Num rows: 6102 Data size: 1440072 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 50
                       Top N Key Vectorization:
@@ -90,6 +91,7 @@ STAGE PLANS:
                         Statistics: Num rows: 6102 Data size: 2123496 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: double), _col2 (type: decimal(20,10)), _col3 (type: decimal(23,14))
+                          null sort order: zzzz
                           sort order: ++++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: double), _col2 (type: decimal(20,10)), _col3 (type: decimal(23,14))
                           Reduce Sink Vectorization:
@@ -135,6 +137,7 @@ STAGE PLANS:
                 Statistics: Num rows: 6102 Data size: 2123496 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: double), _col2 (type: decimal(20,10)), _col3 (type: decimal(23,14))
+                  null sort order: zzzz
                   sort order: ++++
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator

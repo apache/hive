@@ -53,6 +53,7 @@ STAGE PLANS:
               outputColumnNames: _col1
               Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
+                null sort order: 
                 sort order: 
                 Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col1 (type: double)

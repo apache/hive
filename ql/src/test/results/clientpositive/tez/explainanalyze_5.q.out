@@ -135,7 +135,7 @@ Stage-3
                         Conds:RS_15._col0=RS_16._col0(Inner),Output:["_col0","_col2"]
                       <-Map 7 [SIMPLE_EDGE]
                         SHUFFLE [RS_16]
-                          PartitionCols:_col0
+                          PartitionCols:_col0,null sort order:a,sort order:+
                           Select Operator [SEL_14] (rows=500/500 width=178)
                             Output:["_col0","_col1"]
                             Filter Operator [FIL_31] (rows=500/500 width=178)
@@ -144,7 +144,7 @@ Stage-3
                                 default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                       <-Reducer 3 [SIMPLE_EDGE]
                         SHUFFLE [RS_15]
-                          PartitionCols:_col0
+                          PartitionCols:_col0,null sort order:a,sort order:+
                           Select Operator [SEL_11] (rows=525/319 width=87)
                             Output:["_col0"]
                             Group By Operator [GBY_10] (rows=525/319 width=178)
@@ -152,7 +152,7 @@ Stage-3
                             <-Union 2 [SIMPLE_EDGE]
                               <-Map 1 [CONTAINS]
                                 Reduce Output Operator [RS_48]
-                                  PartitionCols:_col0, _col1
+                                  PartitionCols:_col0, _col1,null sort order:aa,sort order:++
                                   Select Operator [SEL_46] (rows=500/500 width=178)
                                     Output:["_col0","_col1"]
                                     Filter Operator [FIL_45] (rows=500/500 width=178)
@@ -161,7 +161,7 @@ Stage-3
                                         Output:["key","value"]
                               <-Map 6 [CONTAINS]
                                 Reduce Output Operator [RS_53]
-                                  PartitionCols:_col0, _col1
+                                  PartitionCols:_col0, _col1,null sort order:aa,sort order:++
                                   Select Operator [SEL_51] (rows=25/25 width=175)
                                     Output:["_col0","_col1"]
                                     Filter Operator [FIL_50] (rows=25/25 width=175)
@@ -319,7 +319,7 @@ Stage-3
                   Output:["_col0","_col1","_col2","_col3"]
                 <-Map 1 [SIMPLE_EDGE]
                   SHUFFLE [RS_3]
-                    PartitionCols:UDFToInteger(_col0)
+                    PartitionCols:UDFToInteger(_col0),null sort order:z,sort order:+
                     Select Operator [SEL_2] (rows=2/2 width=302)
                       Output:["_col0","_col1","_col3"]
                       Filter Operator [FIL_9] (rows=2/2 width=226)
@@ -436,7 +436,7 @@ Stage-3
                   Output:["_col0"]
                 <-Map 1 [SIMPLE_EDGE]
                   SHUFFLE [RS_3]
-                    PartitionCols:UDFToInteger(_col0)
+                    PartitionCols:UDFToInteger(_col0),null sort order:z,sort order:+
                     Select Operator [SEL_2] (rows=1/8 width=3)
                       Output:["_col0"]
                       Filter Operator [FIL_8] (rows=1/8 width=3)

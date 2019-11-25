@@ -243,6 +243,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: double)
@@ -259,6 +260,7 @@ STAGE PLANS:
                     druid.query.type scan
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                     value expressions: a (type: int), c (type: double)
@@ -376,6 +378,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: double)
@@ -395,6 +398,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: double)
@@ -512,6 +516,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 1104 Basic stats: COMPLETE Column stats: PARTIAL
                         Reduce Output Operator
                           key expressions: __time_granularity (type: timestamp)
+                          null sort order: a
                           sort order: +
                           Map-reduce partition columns: __time_granularity (type: timestamp)
                           Statistics: Num rows: 4 Data size: 1104 Basic stats: COMPLETE Column stats: PARTIAL
@@ -533,6 +538,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4 Data size: 1104 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: __time_granularity (type: timestamp)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: __time_granularity (type: timestamp)
                         Statistics: Num rows: 4 Data size: 1104 Basic stats: COMPLETE Column stats: PARTIAL
@@ -634,6 +640,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: double)
@@ -650,6 +657,7 @@ STAGE PLANS:
                     druid.query.type scan
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                     value expressions: a (type: int), c (type: double)

@@ -42,6 +42,7 @@ STAGE PLANS:
                     Statistics: Num rows: 762 Data size: 182450 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col5 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col5 (type: string)
                       Statistics: Num rows: 762 Data size: 182450 Basic stats: COMPLETE Column stats: COMPLETE
@@ -59,6 +60,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -89,6 +91,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1705 Data size: 687326 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                        null sort order: zzzzzz
                         sort order: ++++++
                         Statistics: Num rows: 1705 Data size: 687326 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
@@ -679,6 +682,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1204 Data size: 554114 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                          null sort order: zzzzzz
                           sort order: ++++++
                           Statistics: Num rows: 1204 Data size: 554114 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
@@ -694,6 +698,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -711,6 +716,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1280,6 +1286,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1320,6 +1327,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1204 Data size: 554114 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                          null sort order: zzzzzz
                           sort order: ++++++
                           Statistics: Num rows: 1204 Data size: 554114 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
@@ -1335,6 +1343,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1917,6 +1926,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1943,6 +1953,7 @@ STAGE PLANS:
                     Statistics: Num rows: 762 Data size: 182450 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col5 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col5 (type: string)
                       Statistics: Num rows: 762 Data size: 182450 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1973,6 +1984,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1705 Data size: 643826 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                        null sort order: zzzzzz
                         sort order: ++++++
                         Statistics: Num rows: 1705 Data size: 643826 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
@@ -2576,6 +2588,7 @@ STAGE PLANS:
                           Statistics: Num rows: 221 Data size: 102884 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                            null sort order: zzzzzz
                             sort order: ++++++
                             Statistics: Num rows: 221 Data size: 102884 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
@@ -2591,6 +2604,7 @@ STAGE PLANS:
                     Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2608,6 +2622,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2688,6 +2703,7 @@ STAGE PLANS:
                       Statistics: Num rows: 86 Data size: 30616 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col5 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col5 (type: string)
                         Statistics: Num rows: 86 Data size: 30616 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2705,6 +2721,7 @@ STAGE PLANS:
                     Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2735,6 +2752,7 @@ STAGE PLANS:
                       Statistics: Num rows: 636 Data size: 161980 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                        null sort order: zzzzzz
                         sort order: ++++++
                         Statistics: Num rows: 636 Data size: 161980 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
@@ -3328,6 +3346,7 @@ STAGE PLANS:
                           Statistics: Num rows: 401 Data size: 184586 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                            null sort order: zzzzzz
                             sort order: ++++++
                             Statistics: Num rows: 401 Data size: 184586 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
@@ -3343,6 +3362,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3360,6 +3380,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3429,6 +3450,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3473,6 +3495,7 @@ STAGE PLANS:
                           Statistics: Num rows: 414 Data size: 221076 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                            null sort order: zzzzzz
                             sort order: ++++++
                             Statistics: Num rows: 414 Data size: 221076 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
@@ -3488,6 +3511,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3590,6 +3614,7 @@ STAGE PLANS:
                       Statistics: Num rows: 86 Data size: 30616 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col5 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col5 (type: string)
                         Statistics: Num rows: 86 Data size: 30616 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3607,6 +3632,7 @@ STAGE PLANS:
                     Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3638,6 +3664,7 @@ STAGE PLANS:
                         Statistics: Num rows: 135 Data size: 72090 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                          null sort order: zzzzzz
                           sort order: ++++++
                           Statistics: Num rows: 135 Data size: 72090 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
