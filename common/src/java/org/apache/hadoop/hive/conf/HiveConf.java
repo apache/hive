@@ -4517,6 +4517,10 @@ public class HiveConf extends Configuration {
       "llap.daemon.service.port"),
     LLAP_DAEMON_WEB_SSL("hive.llap.daemon.web.ssl", false,
       "Whether LLAP daemon web UI should use SSL.", "llap.daemon.service.ssl"),
+    LLAP_DAEMON_WEB_XFRAME_ENABLED("hive.llap.daemon.web.xframe.enabled", true,
+        "Whether to enable xframe on LLAP daemon webUI\n"),
+    LLAP_DAEMON_WEB_XFRAME_VALUE("hive.llap.daemon.web.xframe.value", "SAMEORIGIN",
+        "Configuration to allow the user to set the x_frame-options value\n"),
     LLAP_CLIENT_CONSISTENT_SPLITS("hive.llap.client.consistent.splits", true,
         "Whether to setup split locations to match nodes on which llap daemons are running, " +
         "instead of using the locations provided by the split itself. If there is no llap daemon " +
