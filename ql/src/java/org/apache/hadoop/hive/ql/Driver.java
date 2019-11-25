@@ -637,7 +637,7 @@ public class Driver implements IDriver {
                 && queryState.getHiveOperation().equals(HiveOperation.REPLDUMP)) {
           setLastReplIdForDump(queryState.getConf());
         }
-        queryTxnType = AcidUtils.getTxnType(tree);
+        queryTxnType = AcidUtils.getTxnType(conf, tree);
         openTransaction(queryTxnType);
 
         generateValidTxnList();
