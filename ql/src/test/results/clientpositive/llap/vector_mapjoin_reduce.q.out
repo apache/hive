@@ -55,6 +55,7 @@ STAGE PLANS:
                       Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
                         Reduce Sink Vectorization:
@@ -104,6 +105,7 @@ STAGE PLANS:
                       Statistics: Num rows: 50 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
@@ -160,6 +162,7 @@ STAGE PLANS:
                         Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
@@ -440,6 +443,7 @@ STAGE PLANS:
                         Statistics: Num rows: 50 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
@@ -497,6 +501,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: int)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                           Reduce Sink Vectorization:

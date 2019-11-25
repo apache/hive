@@ -121,6 +121,7 @@ STAGE PLANS:
                   Statistics: Num rows: 693 Data size: 122752 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                    null sort order: aaaaa
                     sort order: +++++
                     Map-reduce partition columns: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
                     Reduce Sink Vectorization:
@@ -177,6 +178,7 @@ STAGE PLANS:
                 vectorizationSchemaColumns: [0:_col0:boolean, 1:_col1:tinyint, 2:_col2:timestamp, 3:_col3:float, 4:_col4:string, 5:_col5:tinyint, 6:_col6:tinyint, 7:_col7:tinyint, 8:_col8:double, 9:_col9:double, 10:_col10:double, 11:_col11:float, 12:_col12:double, 13:_col13:double, 14:_col14:double, 15:_col15:decimal(7,3), 16:_col16:double, 17:_col17:double, 18:_col18:float, 19:_col19:double, 20:_col20:tinyint]
             Reduce Output Operator
               key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: decimal(7,3)), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
+              null sort order: zzzzzzzzzzzzzzzzzzzzz
               sort order: +++++++++++++++++++++
               Reduce Sink Vectorization:
                   className: VectorReduceSinkOperator
@@ -457,6 +459,7 @@ STAGE PLANS:
                   Statistics: Num rows: 693 Data size: 122752 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                    null sort order: aaaaa
                     sort order: +++++
                     Map-reduce partition columns: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
                     Reduce Sink Vectorization:
@@ -506,6 +509,7 @@ STAGE PLANS:
                 native: true
             Reduce Output Operator
               key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: decimal(7,3)), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
+              null sort order: zzzzzzzzzzzzzzzzzzzzz
               sort order: +++++++++++++++++++++
               Reduce Sink Vectorization:
                   className: VectorReduceSinkOperator

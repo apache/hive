@@ -83,6 +83,7 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           TableScan
@@ -95,6 +96,7 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
@@ -117,10 +119,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
+              null sort order: 
               sort order: 
               Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
+              null sort order: 
               sort order: 
               Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
@@ -156,6 +160,7 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           TableScan
@@ -168,6 +173,7 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
@@ -361,10 +367,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
+              null sort order: 
               sort order: 
               Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
+              null sort order: 
               sort order: 
               Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:

@@ -199,6 +199,7 @@ STAGE PLANS:
                       Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(26,2))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: decimal(26,2))
                         Reduce Sink Vectorization:
@@ -484,6 +485,7 @@ STAGE PLANS:
                       Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(26,2))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: decimal(26,2))
                         Reduce Sink Vectorization:
@@ -847,6 +849,7 @@ STAGE PLANS:
                       Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(16,2))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: decimal(16,2))
                         Reduce Sink Vectorization:
@@ -1133,6 +1136,7 @@ STAGE PLANS:
                       Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(16,2))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: decimal(16,2))
                         Reduce Sink Vectorization:
@@ -1420,6 +1424,7 @@ STAGE PLANS:
                       Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(16,2))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: decimal(16,2))
                         Reduce Sink Vectorization:
@@ -1707,6 +1712,7 @@ STAGE PLANS:
                       Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(16,2))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: decimal(16,2))
                         Reduce Sink Vectorization:

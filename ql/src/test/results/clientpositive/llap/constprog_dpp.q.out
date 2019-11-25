@@ -62,14 +62,14 @@ Stage-0
           Conds:RS_35._col0=RS_39._col0(Left Outer),Output:["_col0"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_35]
-            PartitionCols:_col0
+            PartitionCols:_col0,null sort order:a,sort order:+
             Select Operator [SEL_34] (rows=1 width=4)
               Output:["_col0"]
               TableScan [TS_0] (rows=1 width=4)
                 default@tb1,a,Tbl:COMPLETE,Col:NONE,Output:["id"]
         <-Reducer 5 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_39]
-            PartitionCols:_col0
+            PartitionCols:_col0,null sort order:a,sort order:+
             Filter Operator [FIL_38] (rows=1 width=2)
               predicate:_col0 is not null
               Limit [LIM_37] (rows=1 width=2)

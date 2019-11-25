@@ -98,6 +98,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 214 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator
@@ -213,6 +214,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator
@@ -336,6 +338,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator
@@ -471,6 +474,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 1264 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator
@@ -618,6 +622,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 1040 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: timestamp)
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator
@@ -747,6 +752,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: timestamp)
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator
@@ -858,6 +864,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator
@@ -975,6 +982,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 256 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator

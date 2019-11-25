@@ -290,6 +290,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp with local time zone)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
@@ -381,6 +382,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp with local time zone)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
@@ -474,6 +476,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp with local time zone)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
@@ -569,6 +572,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp with local time zone)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
@@ -664,6 +668,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp with local time zone)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
@@ -759,6 +764,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp with local time zone)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1

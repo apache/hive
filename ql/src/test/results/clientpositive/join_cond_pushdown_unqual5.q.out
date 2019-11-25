@@ -64,6 +64,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col2 (type: string), _col3 (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
                 Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
@@ -81,6 +82,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string), _col2 (type: string)
+                  null sort order: aa
                   sort order: ++
                   Map-reduce partition columns: _col1 (type: string), _col2 (type: string)
                   Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE

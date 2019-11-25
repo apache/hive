@@ -381,7 +381,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
    *         (ascending order) and "-" (descending order).
    */
   @Signature
-  @Explain(displayName = "sort order")
+  @Explain(displayName = "sort order", explainLevels = { Level.DEFAULT, Level.EXTENDED, Level.USER })
   public String getOrder() {
     return keySerializeInfo.getProperties().getProperty(
         org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_SORT_ORDER);
@@ -407,7 +407,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
    *         of the same length as key columns, that consists of only "a"
    *         (null first) and "z" (null last).
    */
-  @Explain(displayName = "null sort order", explainLevels = { Level.EXTENDED })
+  @Explain(displayName = "null sort order", explainLevels = { Level.DEFAULT, Level.EXTENDED, Level.USER })
   public String getNullOrder() {
     return keySerializeInfo.getProperties().getProperty(
         org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_SORT_ORDER);

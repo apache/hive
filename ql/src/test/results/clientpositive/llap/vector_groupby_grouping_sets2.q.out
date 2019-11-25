@@ -89,6 +89,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
@@ -148,6 +149,7 @@ STAGE PLANS:
                 Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  null sort order: aaa
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Reduce Sink Vectorization:
@@ -275,6 +277,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
@@ -334,6 +337,7 @@ STAGE PLANS:
                 Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  null sort order: aaa
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Reduce Sink Vectorization:
@@ -470,6 +474,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
@@ -514,6 +519,7 @@ STAGE PLANS:
                 Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  null sort order: aaa
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Reduce Sink Vectorization:
@@ -689,6 +695,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
@@ -748,6 +755,7 @@ STAGE PLANS:
                 Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  null sort order: aaa
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Reduce Sink Vectorization:

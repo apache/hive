@@ -21,6 +21,7 @@ STAGE PLANS:
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
+                null sort order: 
                 sort order: 
                 Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: key (type: string), value (type: string)
@@ -32,6 +33,7 @@ STAGE PLANS:
               predicate: (key < 10) (type: boolean)
               Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
+                null sort order: 
                 sort order: 
                 Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: key (type: string), value (type: string)
@@ -61,6 +63,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+              null sort order: zzzz
               sort order: ++++
               Statistics: Num rows: 27556 Data size: 9809936 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized

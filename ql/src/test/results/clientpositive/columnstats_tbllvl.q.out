@@ -72,6 +72,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 1480 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 1480 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
@@ -276,6 +277,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 3928 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 3928 Basic stats: COMPLETE Column stats: PARTIAL
                   value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col6 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col7 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col8 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -422,6 +424,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 1 Data size: 2192 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 2192 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,counttrues:bigint,countfalses:bigint,countnulls:bigint>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint>)
@@ -574,6 +577,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 1480 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 1480 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
@@ -778,6 +782,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 3928 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 3928 Basic stats: COMPLETE Column stats: PARTIAL
                   value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col6 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col7 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col8 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)

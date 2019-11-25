@@ -85,6 +85,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(25,14)), _col1 (type: decimal(26,14)), _col2 (type: decimal(38,13)), _col3 (type: decimal(38,17)), _col4 (type: decimal(12,10)), _col5 (type: int), _col6 (type: smallint), _col7 (type: tinyint), _col8 (type: bigint), _col9 (type: boolean), _col10 (type: double), _col11 (type: float), _col12 (type: string), _col13 (type: timestamp)
+                        null sort order: zzzzzzzzzzzzzz
                         sort order: ++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
@@ -262,6 +263,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(11,3)), _col1 (type: decimal(11,3)), _col2 (type: decimal(21,11)), _col3 (type: decimal(23,9)), _col4 (type: decimal(5,3)), _col5 (type: int), _col6 (type: smallint), _col7 (type: tinyint), _col8 (type: bigint), _col9 (type: boolean), _col10 (type: double), _col11 (type: float), _col12 (type: string), _col13 (type: timestamp)
+                        null sort order: zzzzzzzzzzzzzz
                         sort order: ++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator

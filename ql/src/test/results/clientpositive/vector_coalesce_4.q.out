@@ -65,6 +65,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col1 (type: int), _col2 (type: int)
+                null sort order: zz
                 sort order: ++
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator

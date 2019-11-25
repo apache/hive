@@ -105,6 +105,7 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: varchar(10)), _col1 (type: int), _col2 (type: string)
+                      null sort order: zzz
                       sort order: +++
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator

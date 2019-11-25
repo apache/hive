@@ -64,12 +64,14 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 658500 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                          null sort order: aaa
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 500 Data size: 658500 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                     Reduce Output Operator
                       key expressions: _col2 (type: int), _col3 (type: int)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: int), _col3 (type: int)
                       Statistics: Num rows: 500 Data size: 51500 Basic stats: COMPLETE Column stats: COMPLETE

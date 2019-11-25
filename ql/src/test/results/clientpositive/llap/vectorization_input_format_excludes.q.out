@@ -194,6 +194,7 @@ STAGE PLANS:
                       Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
@@ -535,6 +536,7 @@ STAGE PLANS:
                       Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
@@ -876,6 +878,7 @@ STAGE PLANS:
                       Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1265,6 +1268,7 @@ STAGE PLANS:
                       Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE

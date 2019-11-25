@@ -96,6 +96,7 @@ STAGE PLANS:
                       Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
@@ -116,6 +117,7 @@ STAGE PLANS:
                       Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
@@ -156,6 +158,7 @@ STAGE PLANS:
                       Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
@@ -172,6 +175,7 @@ STAGE PLANS:
                 Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: decimal(17,2)), _col3 (type: decimal(17,2)), _col4 (type: decimal(17,2)), _col5 (type: decimal(17,2)), _col6 (type: decimal(17,2)), _col7 (type: decimal(17,2)), _col8 (type: decimal(17,2))
+                  null sort order: zzzzzzzzz
                   sort order: +++++++++
                   Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1

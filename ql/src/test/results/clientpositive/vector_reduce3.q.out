@@ -138,6 +138,7 @@ STAGE PLANS:
               Statistics: Num rows: 2000 Data size: 188000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator

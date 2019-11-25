@@ -58,6 +58,7 @@ STAGE PLANS:
                   Number of rows: 10
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
@@ -139,6 +140,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
+              null sort order: 
               sort order: 
               Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -170,6 +172,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
+              null sort order: 
               sort order: 
               Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
               TopN Hash Memory Usage: 0.1
@@ -227,6 +230,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
+              null sort order: 
               sort order: 
               Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)

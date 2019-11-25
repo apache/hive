@@ -80,6 +80,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:i:int, 1:type:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: type (type: string), i (type: int)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: type (type: string)
                     Reduce Sink Vectorization:

@@ -75,7 +75,7 @@ Stage-0
           Conds:MAPJOIN_53._col0=RS_50._col0(Inner),Output:["_col0","_col1","_col2"]
         <-Map 3 [BROADCAST_EDGE] vectorized, llap
           BROADCAST [RS_50]
-            PartitionCols:_col0
+            PartitionCols:_col0,null sort order:a,sort order:+
             Select Operator [SEL_49] (rows=1 width=4)
               Output:["_col0"]
               Filter Operator [FIL_48] (rows=1 width=4)
@@ -86,7 +86,7 @@ Stage-0
             Conds:SEL_52._col0=RS_47._col0(Left Outer),Output:["_col0","_col1"]
           <-Map 2 [BROADCAST_EDGE] vectorized, llap
             BROADCAST [RS_47]
-              PartitionCols:_col0
+              PartitionCols:_col0,null sort order:a,sort order:+
               Select Operator [SEL_46] (rows=1 width=4)
                 Output:["_col0"]
                 Filter Operator [FIL_45] (rows=1 width=4)

@@ -89,6 +89,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_retailprice (type: double)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
@@ -286,6 +287,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_retailprice (type: double)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
@@ -484,6 +486,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: t (type: tinyint), bo (type: boolean), s (type: string), si (type: smallint), f (type: float)
+                    null sort order: azzzz
                     sort order: ++++-
                     Map-reduce partition columns: t (type: tinyint)
                     Reduce Sink Vectorization:
@@ -710,6 +713,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: si (type: smallint), i (type: int), s (type: string)
+                    null sort order: azz
                     sort order: +++
                     Map-reduce partition columns: si (type: smallint)
                     Reduce Sink Vectorization:
@@ -936,6 +940,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: b (type: bigint), si (type: smallint), s (type: string), d (type: double)
+                    null sort order: azzz
                     sort order: ++++
                     Map-reduce partition columns: b (type: bigint)
                     Reduce Sink Vectorization:
@@ -1162,6 +1167,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: f (type: float), b (type: bigint)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: f (type: float)
                     Reduce Sink Vectorization:
@@ -1390,6 +1396,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_type (type: string)
+                    null sort order: za
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_type (type: string)
                     Reduce Sink Vectorization:
@@ -1571,6 +1578,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_type (type: string)
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
@@ -1775,6 +1783,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: ts (type: timestamp), i (type: int)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: ts (type: timestamp)
                     Reduce Sink Vectorization:
@@ -2022,6 +2031,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_retailprice (type: double)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:

@@ -121,6 +121,7 @@ STAGE PLANS:
                   Statistics: Num rows: 379 Data size: 62308 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: float), _col2 (type: double), _col3 (type: timestamp), _col4 (type: boolean)
+                    null sort order: aaaaa
                     sort order: +++++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: float), _col2 (type: double), _col3 (type: timestamp), _col4 (type: boolean)
                     Reduce Sink Vectorization:
@@ -177,6 +178,7 @@ STAGE PLANS:
                 vectorizationSchemaColumns: [0:_col0:timestamp, 1:_col1:float, 2:_col2:string, 3:_col3:boolean, 4:_col4:double, 5:_col5:double, 6:_col6:double, 7:_col7:double, 8:_col8:float, 9:_col9:float, 10:_col10:float, 11:_col11:float, 12:_col12:double, 13:_col13:double, 14:_col14:bigint, 15:_col15:double, 16:_col16:double, 17:_col17:double, 18:_col18:double, 19:_col19:double, 20:_col20:double, 21:_col21:double]
             Reduce Output Operator
               key expressions: _col2 (type: string), _col1 (type: float), _col4 (type: double), _col0 (type: timestamp)
+              null sort order: zzzz
               sort order: ++++
               Reduce Sink Vectorization:
                   className: VectorReduceSinkOperator

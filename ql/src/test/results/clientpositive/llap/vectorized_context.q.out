@@ -193,6 +193,7 @@ STAGE PLANS:
                       Statistics: Num rows: 6075 Data size: 24300 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 6075 Data size: 24300 Basic stats: COMPLETE Column stats: COMPLETE
@@ -222,6 +223,7 @@ STAGE PLANS:
                       Statistics: Num rows: 6075 Data size: 615730 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 6075 Data size: 615730 Basic stats: COMPLETE Column stats: COMPLETE
