@@ -87,8 +87,20 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
   private ScheduledQuery buildEmptySchq() {
     ScheduledQuery ret = new ScheduledQuery();
     ret.setEnabled(true);
-    ret.setUser(SessionState.get().getUserName());
+    ret.setUser(getUserName());
     return ret;
+  }
+
+  private String getUserName() {
+    SessionState sessionState = SessionState.get();
+    if (sessionState.getAuthenticator() != null && sessionState.getAuthenticator().getUserName() != null) {
+      return sessionState.getAuthenticator().getUserName();
+    }
+    String userName = sessionState.getUserName();
+    if(userName == null) {
+     throw new RuntimeException("userName is unset; this is unexpected");
+    }
+    return userName;
   }
 
   /**
@@ -169,7 +181,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
 
     try {
       if (!schqAuthorization) {
-        String currentUser = SessionState.get().getUserName();
+        String currentUser = getUserName();
         if (!Objects.equal(currentUser, schq.getUser())) {
           throw new HiveAccessControlException(
               "authorization of scheduled queries is not enabled - only owners may change scheduled queries");
