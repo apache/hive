@@ -309,12 +309,15 @@ public class GenVectorCode extends Task {
 
       {"Decimal64ColumnArithmeticDecimal64Scalar", "Add", "+"},
       {"Decimal64ColumnArithmeticDecimal64Scalar", "Subtract", "-"},
+      {"Decimal64ColumnArithmeticDecimal64Scalar", "Multiply", "*"},
 
       {"Decimal64ScalarArithmeticDecimal64Column", "Add", "+"},
       {"Decimal64ScalarArithmeticDecimal64Column", "Subtract", "-"},
+      {"Decimal64ScalarArithmeticDecimal64Column", "Multiply", "*"},
 
       {"Decimal64ColumnArithmeticDecimal64Column", "Add", "+"},
       {"Decimal64ColumnArithmeticDecimal64Column", "Subtract", "-"},
+      {"Decimal64ColumnArithmeticDecimal64Column", "Multiply", "*"},
 
       {"Decimal64ColumnDivideDecimal64Scalar", "Divide", "/"},
       {"Decimal64ColumnDivideDecimal64Column", "Divide", "/"},

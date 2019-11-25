@@ -1788,7 +1788,8 @@ import com.google.common.annotations.VisibleForTesting;
         if((leftType.precision() + returnDecimalTypeInfo.getScale()) > 18) {
           return null;
         }
-      } else if (returnDecimalTypeInfo.getScale() != decimal64ColumnScale) {
+      } else if (returnDecimalTypeInfo.getScale() != decimal64ColumnScale
+          && !(genericUdf instanceof GenericUDFOPMultiply)) {
         return null;
       }
       returnDataTypePhysicalVariation = DataTypePhysicalVariation.DECIMAL_64;
@@ -1810,17 +1811,19 @@ import com.google.common.annotations.VisibleForTesting;
     }
 
     VectorExpressionDescriptor.Mode childrenMode = getChildrenMode(mode, udfClass);
+    boolean dontScaleArguments = (genericUdf instanceof GenericUDFOPMultiply);
 
     return createDecimal64VectorExpression(
         vectorClass, childExprs, childrenMode,
         isDecimal64ScaleEstablished, decimal64ColumnScale,
-        returnTypeInfo, returnDataTypePhysicalVariation);
+        returnTypeInfo, returnDataTypePhysicalVariation, dontScaleArguments);
   }
 
   private VectorExpression createDecimal64VectorExpression(Class<?> vectorClass,
       List<ExprNodeDesc> childExprs, VectorExpressionDescriptor.Mode childrenMode,
       boolean isDecimal64ScaleEstablished, int decimal64ColumnScale,
-      TypeInfo returnTypeInfo, DataTypePhysicalVariation returnDataTypePhysicalVariation)
+      TypeInfo returnTypeInfo, DataTypePhysicalVariation returnDataTypePhysicalVariation,
+      boolean dontScaleArguments)
           throws HiveException {
 
     final int numChildren = childExprs.size();
@@ -1848,13 +1851,8 @@ import com.google.common.annotations.VisibleForTesting;
       } else if (childExpr instanceof ExprNodeColumnDesc) {
         int colIndex = getInputColumnIndex((ExprNodeColumnDesc) childExpr);
         if (childrenMode == VectorExpressionDescriptor.Mode.FILTER) {
-
           VectorExpression filterExpr =
               getFilterOnBooleanColumnExpression((ExprNodeColumnDesc) childExpr, colIndex);
-          if (filterExpr == null) {
-            return null;
-          }
-
           children.add(filterExpr);
         }
         arguments[i] = colIndex;
@@ -1870,9 +1868,11 @@ import com.google.common.annotations.VisibleForTesting;
             // For now, bail out on decimal constants with larger scale than column scale.
             return null;
           }
-          final long decimal64Scalar =
-              new HiveDecimalWritable(hiveDecimal).serialize64(decimal64ColumnScale);
-          arguments[i] = decimal64Scalar;
+          if (dontScaleArguments) {
+            arguments[i] = new HiveDecimalWritable(hiveDecimal).serialize64(hiveDecimal.scale());
+          } else {
+            arguments[i] = new HiveDecimalWritable(hiveDecimal).serialize64(decimal64ColumnScale);
+          }
         } else {
           Object scalarValue = getVectorTypeScalarValue(constDesc);
           arguments[i] =
@@ -2770,7 +2770,7 @@ import com.google.common.annotations.VisibleForTesting;
             cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION,
             /* isDecimal64ScaleEstablished */ true,
             /* decimal64ColumnScale */ scale,
-            returnType, DataTypePhysicalVariation.NONE);
+            returnType, DataTypePhysicalVariation.NONE, false);
         if (expr != null) {
           long[] inVals = new long[childrenForInList.size()];
           for (int i = 0; i != inVals.length; i++) {
@@ -3398,7 +3398,7 @@ import com.google.common.annotations.VisibleForTesting;
             cl, childrenAfterNot, VectorExpressionDescriptor.Mode.PROJECTION,
             /* isDecimal64ScaleEstablished */ true,
             /* decimal64ColumnScale */ ((DecimalTypeInfo) colExpr.getTypeInfo()).getScale(),
-            returnTypeInfo, DataTypePhysicalVariation.NONE);
+            returnTypeInfo, DataTypePhysicalVariation.NONE, false);
   }
 
   /* Get a [NOT] BETWEEN filter or projection expression. This is treated as a special case
