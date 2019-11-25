@@ -314,13 +314,15 @@ public interface TxnStore extends Configurable {
    * This will look through the completed_txn_components table and look for partitions or tables
    * that may be ready for compaction.  Also, look through txns and txn_components tables for
    * aborted transactions that we should add to the list.
-   * @param maxAborted Maximum number of aborted queries to allow before marking this as a
-   *                   potential compaction.
+   * @param abortedThreshold  number of aborted queries forming a potential compaction request.
    * @return list of CompactionInfo structs.  These will not have id, type,
    * or runAs set since these are only potential compactions not actual ones.
    */
   @RetrySemantics.ReadOnly
-  Set<CompactionInfo> findPotentialCompactions(int maxAborted) throws MetaException;
+  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold) throws MetaException;
+
+  @RetrySemantics.ReadOnly
+  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long checkInterval) throws MetaException;
 
   /**
    * This updates COMPACTION_QUEUE.  Set runAs username for the case where the request was

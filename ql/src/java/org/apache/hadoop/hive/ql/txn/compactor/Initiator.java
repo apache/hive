@@ -68,10 +68,10 @@ public class Initiator extends MetaStoreCompactorThread {
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
-  Map<String, String> tblNameOwnersCache = new HashMap<>();
-
+  private Map<String, String> tblNameOwnersCache = new HashMap<>();
 
   private long checkInterval;
+  private long prevStart = -1;
 
   @Override
   public void run() {
@@ -95,9 +95,13 @@ public class Initiator extends MetaStoreCompactorThread {
         try {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Initiator.name());
           startedAt = System.currentTimeMillis();
+
+          long compactionInterval = (prevStart < 0) ? prevStart : (startedAt - prevStart)/1000;
+          prevStart = startedAt;
+
           //todo: add method to only get current i.e. skip history - more efficient
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
-          Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold)
+          Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold, compactionInterval)
                   .stream().filter(ci -> checkCompactionElig(ci)).collect(Collectors.toSet());
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
