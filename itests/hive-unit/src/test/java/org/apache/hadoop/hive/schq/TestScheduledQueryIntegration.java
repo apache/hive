@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.schq;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -45,10 +47,10 @@ import org.junit.rules.TestRule;
 public class TestScheduledQueryIntegration {
 
   @ClassRule
-  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+  public static HiveTestEnvSetup envSetup = new HiveTestEnvSetup();
 
   @Rule
-  public TestRule methodRule = env_setup.getMethodRule();
+  public TestRule methodRule = envSetup.getMethodRule();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -65,14 +67,12 @@ public class TestScheduledQueryIntegration {
       driver.run(cmd);
     }
 
-    ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
-
   }
 
   @AfterClass
   public static void afterClass() throws Exception {
-    env_setup.getTestCtx().hiveConf.set("hive.test.authz.sstd.hs2.mode", "false");
-    env_setup.getTestCtx().hiveConf.set("hive.security.authorization.enabled", "false");
+    envSetup.getTestCtx().hiveConf.set("hive.test.authz.sstd.hs2.mode", "false");
+    envSetup.getTestCtx().hiveConf.set("hive.security.authorization.enabled", "false");
 
     IDriver driver = createDriver();
     dropTables(driver);
@@ -85,31 +85,37 @@ public class TestScheduledQueryIntegration {
     }
   }
 
-  @Test(expected = CommandProcessorException.class)
+  @Test
   public void testBasicImpersonation() throws ParseException, Exception {
-    CommandProcessorResponse ret;
 
     setupAuthorization();
 
-    ret = runAsUser("user1", "create table t1 (a integer)");
-
-    ret = runAsUser("user2", "drop table t1");
+    runAsUser("user1", "create table t1 (a integer)");
+    try {
+      runAsUser("user2", "drop table t1");
+      fail("Exception expected");
+    } catch (CommandProcessorException cpe) {
+      assertThat(cpe.getErrorMessage(), Matchers.containsString("HiveAccessControlException Permission denied"));
+    }
+    runAsUser("user1", "drop table t1");
   }
 
   @Test
   public void testScheduledQueryExecutionImpersonation() throws ParseException, Exception {
-    env_setup.getTestCtx().hiveConf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME, "1s");
-    env_setup.getTestCtx().hiveConf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL,
+    envSetup.getTestCtx().hiveConf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME, "1s");
+    envSetup.getTestCtx().hiveConf.setVar(HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL,
         "1s");
     setupAuthorization();
 
-    ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
+    try (ScheduledQueryExecutionService schqS =
+        ScheduledQueryExecutionService.startScheduledQueryExecutorService(envSetup.getTestCtx().hiveConf)) {
 
-    runAsUser("user1",
-        "create scheduled query s1 cron '* * * * * ? *' defined as create table tx1 as select 12 as i");
+      runAsUser("user1",
+          "create scheduled query s1 cron '* * * * * ? *' defined as create table tx1 as select 12 as i");
 
+      Thread.sleep(20000);
 
-    Thread.sleep(20000);
+    }
 
     // table exists - and owner is able to select from it
     runAsUser("user1", "select * from tx1");
@@ -127,7 +133,7 @@ public class TestScheduledQueryIntegration {
   }
 
   private CommandProcessorResponse runAsUser(String userName, String sql) throws CommandProcessorException {
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    HiveConf conf = envSetup.getTestCtx().hiveConf;
     conf.set("user.name", userName);
     try(IDriver driver = createDriver()) {
       return driver.run(sql);
@@ -135,7 +141,7 @@ public class TestScheduledQueryIntegration {
   }
 
   private void setupAuthorization() {
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    HiveConf conf = envSetup.getTestCtx().hiveConf;
     conf.set("hive.test.authz.sstd.hs2.mode", "true");
     conf.set("hive.security.authorization.manager",
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest");
@@ -159,9 +165,11 @@ public class TestScheduledQueryIntegration {
   }
 
   private static IDriver createDriver() {
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    HiveConf conf = envSetup.getTestCtx().hiveConf;
 
-    SessionState.start(conf);
+    String userName = conf.get("user.name");
+    SessionState ss = new SessionState(conf, userName);
+    SessionState.start(ss);
 
     IDriver driver = DriverFactory.newDriver(conf);
     return driver;
