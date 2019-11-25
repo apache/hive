@@ -24,6 +24,9 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDatetimeLegacyHybridCalendarDate;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDatetimeLegacyHybridCalendarTimestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
@@ -36,16 +39,25 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 
 
 /**
- * GenericUDFToProlepticGregorian.
+ * GenericUDFDatetimeLegacyHybridCalendar.
  */
 @Description(name = "datetime_legacy_hybrid_calendar",
-    value = "_FUNC_(date/timestamp) - Converts a date/timestamp to new proleptic Gregorian calendar \n"
-        + "assuming that its internal days/milliseconds since epoch is calculated using legacy Gregorian-Julian hybrid calendar.",
-    extended = "Converts a date/timestamp to new proleptic Gregorian calendar (ISO 8601 standard), which is produced \n"
-        + "by extending the Gregorian calendar backward to dates preceding its official introduction in 1582, assuming \n"
-        + "that its internal days/milliseconds since epoch is calculated using legacy Gregorian-Julian hybrid calendar, \n"
-        + "i.e., calendar that supports both the Julian and Gregorian calendar systems with the support of a single \n"
-        + "discontinuity, which corresponds by default to the Gregorian date when the Gregorian calendar was instituted.")
+    value = "_FUNC_(date/timestamp) - Converts a date/timestamp to legacy hybrid Julian-Gregorian "
+        + "calendar\n"
+        + "assuming that its internal days/milliseconds since epoch is calculated using the "
+        + "proleptic Gregorian calendar.",
+    extended = "Converts a date/timestamp to legacy Gregorian-Julian hybrid calendar, i.e., "
+        + "calendar that supports both\n"
+        + "the Julian and Gregorian calendar systems with the support of a single discontinuity, "
+        + "which corresponds by\n"
+        + "default to the Gregorian date when the Gregorian calendar was instituted; assuming "
+        + "that its internal\n"
+        + "days/milliseconds since epoch is calculated using new proleptic Gregorian calendar "
+        + "(ISO 8601 standard), which\n"
+        + "is produced by extending the Gregorian calendar backward to dates preceding its "
+        + "official introduction in 1582.\n")
+@VectorizedExpressions({VectorUDFDatetimeLegacyHybridCalendarTimestamp.class,
+    VectorUDFDatetimeLegacyHybridCalendarDate.class })
 public class GenericUDFDatetimeLegacyHybridCalendar extends GenericUDF {
 
   private transient PrimitiveObjectInspector inputOI;
