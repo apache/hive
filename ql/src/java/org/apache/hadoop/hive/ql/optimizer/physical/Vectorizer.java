@@ -4334,7 +4334,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     TopNKeyDesc topNKeyDesc = (TopNKeyDesc) topNKeyOperator.getConf();
 
     List<ExprNodeDesc> keyColumns = topNKeyDesc.getKeyColumns();
-    VectorExpression[] keyExpressions = vContext.getVectorExpressions(keyColumns);
+    VectorExpression[] keyExpressions = vContext.getVectorExpressionsUpConvertDecimal64(keyColumns);
     vectorTopNKeyDesc.setKeyExpressions(keyExpressions);
     return OperatorFactory.getVectorOperator(
         topNKeyOperator.getCompilationOpContext(), topNKeyDesc,
