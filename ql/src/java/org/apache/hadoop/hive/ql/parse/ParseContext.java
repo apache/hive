@@ -128,7 +128,6 @@ public class ParseContext {
   private Map<SelectOperator, Table> viewProjectToViewSchema;
   private ColumnAccessInfo columnAccessInfo;
   private boolean needViewColumnAuthorization;
-  private Set<FileSinkDesc> acidFileSinks = Collections.emptySet();
 
   private Map<ReduceSinkOperator, RuntimeValuesInfo> rsToRuntimeValuesInfo =
           new LinkedHashMap<ReduceSinkOperator, RuntimeValuesInfo>();
@@ -199,7 +198,7 @@ public class ParseContext {
       AnalyzeRewriteContext analyzeRewrite, CreateTableDesc createTableDesc,
       CreateViewDesc createViewDesc, MaterializedViewUpdateDesc materializedViewUpdateDesc,
       QueryProperties queryProperties,
-      Map<SelectOperator, Table> viewProjectToTableSchema, Set<FileSinkDesc> acidFileSinks) {
+      Map<SelectOperator, Table> viewProjectToTableSchema) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
     this.opToPartPruner = opToPartPruner;
@@ -239,17 +238,8 @@ public class ParseContext {
       // authorization info.
       this.columnAccessInfo = new ColumnAccessInfo();
     }
-    if(acidFileSinks != null && !acidFileSinks.isEmpty()) {
-      this.acidFileSinks = new HashSet<>();
-      this.acidFileSinks.addAll(acidFileSinks);
-    }
   }
-  public Set<FileSinkDesc> getAcidSinks() {
-    return acidFileSinks;
-  }
-  public boolean hasAcidWrite() {
-    return !acidFileSinks.isEmpty();
-  }
+
   /**
    * @return the context
    */

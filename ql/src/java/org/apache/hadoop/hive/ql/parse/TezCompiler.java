@@ -195,8 +195,7 @@ public class TezCompiler extends TaskCompiler {
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Sorted dynamic partition optimization");
     }
 
-    if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)
-        || procCtx.parseContext.hasAcidWrite()) {
+    if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
       // Dynamic sort partition adds an extra RS therefore need to de-dup
       new ReduceSinkDeDuplication().transform(procCtx.parseContext);
