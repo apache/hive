@@ -27,6 +27,12 @@ import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import com.google.common.collect.ImmutableSet;
+
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static org.junit.Assert.assertNotNull;
+
 public class TestLlapWebServices {
 
   private static LlapWebServices llapWS = null;
@@ -45,18 +51,43 @@ public class TestLlapWebServices {
   @Test
   public void testContextRootUrlRewrite() throws Exception {
     String contextRootURL = "http://localhost:" + llapWSPort + "/";
-    String contextRootContent = getURLResponseAsString(contextRootURL);
+    String contextRootContent = getURLResponseAsString(contextRootURL, HTTP_OK);
 
     String indexHtmlUrl = "http://localhost:" + llapWSPort + "/index.html";
-    String indexHtmlContent = getURLResponseAsString(indexHtmlUrl);
+    String indexHtmlContent = getURLResponseAsString(indexHtmlUrl, HTTP_OK);
 
     Assert.assertEquals(contextRootContent, indexHtmlContent);
   }
 
-  private String getURLResponseAsString(String baseURL) throws IOException {
+  @Test
+  public void testDirListingDisabled() throws Exception {
+    for (String folder : ImmutableSet.of("images", "js", "css")) {
+      String url = "http://localhost:" + llapWSPort + "/" + folder;
+      getURLResponseAsString(url, HTTP_FORBIDDEN);
+    }
+  }
+
+  @Test
+  public void testBaseUrlResponseHeader() throws Exception{
+    String baseURL = "http://localhost:" + llapWSPort + "/";
     URL url = new URL(baseURL);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
+    String xfoHeader = conn.getHeaderField("X-FRAME-OPTIONS");
+    String xXSSProtectionHeader = conn.getHeaderField("X-XSS-Protection");
+    String xContentTypeHeader = conn.getHeaderField("X-Content-Type-Options");
+    assertNotNull(xfoHeader);
+    assertNotNull(xXSSProtectionHeader);
+    assertNotNull(xContentTypeHeader);
+  }
+
+  private static String getURLResponseAsString(String baseURL, int expectedStatus)
+      throws IOException {
+    URL url = new URL(baseURL);
+    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    Assert.assertEquals(expectedStatus, conn.getResponseCode());
+    if (expectedStatus != HTTP_OK) {
+      return null;
+    }
     StringWriter writer = new StringWriter();
     IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
     return writer.toString();
