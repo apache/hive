@@ -30,7 +30,7 @@ public class TestNewGetSplitsFormatReturnPath extends TestNewGetSplitsFormat {
     HiveConf conf = defaultConf();
     conf.setBoolVar(HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP, true);
+    conf.setVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP, "true");
     BaseJdbcWithMiniLlap.beforeTest(conf);
   }
 }

@@ -548,6 +548,7 @@ public final class ParseUtils {
     final Context ctx = new Context(conf);
     ctx.setIsLoadingMaterializedView(true);
     final ASTNode ast = parse(viewQuery, ctx);
+    ReturnPathManager.init(conf, ast);
     final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
     return analyzer.genLogicalPlan(ast);
   }

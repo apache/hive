@@ -464,7 +464,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // 0. Gen Optimized Plan
           RelNode newPlan = logicalPlan();
 
-          if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+          if (ReturnPathManager.shouldUse()) {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
               throw new SemanticException("Create view is not supported in cbo return path.");
             }
@@ -2351,7 +2351,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       // 9. Run rules to aid in translation from Calcite tree to Hive tree
-      if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+      if (ReturnPathManager.shouldUse()) {
         // 9.1. Merge join into multijoin operators (if possible)
         generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
             HiveJoinProjectTransposeRule.BOTH_PROJECT_INCLUDE_OUTER,
@@ -2901,7 +2901,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // 2. if returnpath is on and hivetestmode is on bail
         if (qb.getParseInfo().getTabSample(tableAlias) != null
             || getNameToSplitSampleMap().containsKey(tableAlias)
-            || (conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) && (conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)) ) {
+            || (ReturnPathManager.shouldUse()) && (conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE))) {
           String msg = String.format("Table Sample specified for %s."
               + " Currently we don't support Table Sample clauses in CBO,"
               + " turn off cbo for queries on tableSamples.", tableAlias);
@@ -3025,8 +3025,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
             final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
                 optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
-                getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
-                    HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
+                getAliasId(tableAlias, qb), ReturnPathManager.shouldUse(), qb.isInsideView()
                     || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
             tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
                 optTable, druidTable, ImmutableList.of(scan), DruidSqlOperatorConverter.getDefaultMap());
@@ -3038,7 +3037,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
                   null == tableAlias ? tabMetaData.getTableName() : tableAlias,
                   getAliasId(tableAlias, qb),
-                  HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP),
+                  ReturnPathManager.shouldUse(),
                   qb.isInsideView() || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
 
             final String dataBaseType = tabMetaData.getProperty(Constants.JDBC_DATABASE_TYPE);
@@ -3083,8 +3082,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // Build Hive Table Scan Rel
           tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,
-              getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
-                  HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
+              getAliasId(tableAlias, qb), ReturnPathManager.shouldUse(), qb.isInsideView()
                   || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
         }
 

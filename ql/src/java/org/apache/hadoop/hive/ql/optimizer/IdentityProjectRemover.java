@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.ReturnPathManager;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
@@ -76,7 +77,7 @@ public class IdentityProjectRemover extends Transform {
     // 0. We check the conditions to apply this transformation,
     //    if we do not meet them we bail out
     final boolean cboEnabled = HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVE_CBO_ENABLED);
-    final boolean returnPathEnabled = HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP);
+    final boolean returnPathEnabled = ReturnPathManager.shouldUse();
     final boolean cboSucceeded = pctx.getContext().isCboSucceeded();
     if(cboEnabled && returnPathEnabled && cboSucceeded) {
       return pctx;

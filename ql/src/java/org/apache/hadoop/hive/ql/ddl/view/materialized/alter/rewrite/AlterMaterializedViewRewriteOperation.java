@@ -27,8 +27,10 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.ReturnPathManager;
 
 /**
  * Operation process of enabling/disabling materialized view rewrite.
@@ -56,7 +58,9 @@ public class AlterMaterializedViewRewriteOperation extends DDLOperation<AlterMat
         planner.initCtx(ctx);
         planner.init(false);
 
-        RelNode plan = planner.genLogicalPlan(ParseUtils.parse(newMV.getViewExpandedText()));
+        ASTNode root = ParseUtils.parse(newMV.getViewExpandedText());
+        ReturnPathManager.init(context.getConf(), root);
+        RelNode plan = planner.genLogicalPlan(root);
         if (plan == null) {
           String msg = "Cannot enable automatic rewriting for materialized view.";
           if (ctx.getCboInfo() != null) {
