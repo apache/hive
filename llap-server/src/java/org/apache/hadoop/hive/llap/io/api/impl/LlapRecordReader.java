@@ -99,7 +99,8 @@ class LlapRecordReader
   private boolean isFirst = true;
   private int maxQueueSize = 0;
 
-  private boolean isClosed = false, isInterrupted = false;
+  private volatile boolean isClosed = false;
+  private volatile boolean isInterrupted = false;
   private final ConsumerFeedback<ColumnVectorBatch> feedback;
   private final QueryFragmentCounters counters;
   private long firstReturnTime;
