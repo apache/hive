@@ -20,6 +20,7 @@ package org.apache.hive.service.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -50,6 +51,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -110,7 +113,7 @@ public class TestHS2HttpServer {
     String baseURL = "http://localhost:" + webUIPort + "/stacks";
     URL url = new URL(baseURL);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
+    Assert.assertEquals(HTTP_OK, conn.getResponseCode());
     BufferedReader reader =
         new BufferedReader(new InputStreamReader(conn.getInputStream()));
     boolean contents = false;
@@ -136,17 +139,27 @@ public class TestHS2HttpServer {
     assertNotNull(xContentTypeHeader);
   }
 
-  private BufferedReader getReaderForUrl(String urlString) throws Exception {
+  @Test
+  public void testDirListingDisabledOnStaticServlet() throws Exception {
+    String url = "http://localhost:" + webUIPort + "/static";
+    getReaderForUrl(url, HTTP_FORBIDDEN);
+  }
+
+  private BufferedReader getReaderForUrl(String urlString, int expectedStatus) throws Exception {
     URL url = new URL(urlString);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
+    Assert.assertEquals(expectedStatus, conn.getResponseCode());
+    if (expectedStatus != HTTP_OK) {
+      return null;
+    }
+
     BufferedReader reader =
         new BufferedReader(new InputStreamReader(conn.getInputStream()));
     return reader;
   }
 
   private String readFromUrl(String urlString) throws Exception {
-    BufferedReader reader = getReaderForUrl(urlString);
+    BufferedReader reader = getReaderForUrl(urlString, HTTP_OK);
     StringBuilder response = new StringBuilder();
     String inputLine;
 
@@ -306,7 +319,7 @@ public class TestHS2HttpServer {
   private String getURLResponseAsString(String baseURL) throws IOException {
     URL url = new URL(baseURL);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    Assert.assertEquals("Got an HTTP response code other thank OK.", HttpURLConnection.HTTP_OK, conn.getResponseCode());
+    Assert.assertEquals("Got an HTTP response code other thank OK.", HTTP_OK, conn.getResponseCode());
     StringWriter writer = new StringWriter();
     IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
     return writer.toString();
