@@ -18,10 +18,12 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetaStorePreEventListener;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -34,6 +36,11 @@ import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.security.HiveMetastoreAuthenticationProvider;
@@ -45,16 +52,20 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionC
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.DatabaseFilterContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.TableFilterContext;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * HiveMetaStoreAuthorizer :  Do authorization checks on MetaStore Events in MetaStorePreEventListener
  */
 
-public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener {
+public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implements MetaStoreFilterHook {
   private static final Log    LOG              = LogFactory.getLog(HiveMetaStoreAuthorizer.class);
 
   private static final ThreadLocal<Configuration> tConfig = new ThreadLocal<Configuration>() {
@@ -85,38 +96,268 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener {
       LOG.debug("==> HiveMetaStoreAuthorizer.onEvent(): EventType=" + preEventContext.getEventType());
     }
 
-    HiveMetaStoreAuthzInfo authzContext = buildAuthzContext(preEventContext);
-
-    if (!skipAuthorization(authzContext)) {
-      try {
-        HiveConf              hiveConf          = new HiveConf(super.getConf(), HiveConf.class);
-        HiveAuthorizerFactory authorizerFactory = HiveUtils.getAuthorizerFactory(hiveConf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
-
-        if (authorizerFactory != null) {
-          HiveMetastoreAuthenticationProvider authenticator = tAuthenticator.get();
-
-          authenticator.setConf(hiveConf);
-
-          HiveAuthzSessionContext.Builder authzContextBuilder = new HiveAuthzSessionContext.Builder();
-
-          authzContextBuilder.setClientType(HiveAuthzSessionContext.CLIENT_TYPE.HIVEMETASTORE);
-          authzContextBuilder.setSessionString("HiveMetaStore");
-
-          HiveAuthzSessionContext authzSessionContext = authzContextBuilder.build();
-
-          HiveAuthorizer hiveAuthorizer = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(), hiveConf, authenticator, authzSessionContext);
-
+    try {
+        HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
+        if (!skipAuthorization()) {
+          HiveMetaStoreAuthzInfo authzContext = buildAuthzContext(preEventContext);
           checkPrivileges(authzContext, hiveAuthorizer);
         }
-      } catch (Exception e) {
-        LOG.error("HiveMetaStoreAuthorizer.onEvent(): failed", e);
-        throw new MetaException(e.getMessage());
-      }
+    } catch (Exception e) {
+      LOG.error("HiveMetaStoreAuthorizer.onEvent(): failed", e);
+      throw new MetaException(e.getMessage());
     }
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("<== HiveMetaStoreAuthorizer.onEvent(): EventType=" + preEventContext.getEventType());
     }
+  }
+
+  @Override
+  public final List<String> filterDatabases(List<String> list) throws MetaException {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("HiveMetaStoreAuthorizer.filterDatabases()");
+    }
+
+    if (list == null) {
+      return Collections.emptyList();
+    }
+
+    DatabaseFilterContext   databaseFilterContext    = new DatabaseFilterContext(list);
+    HiveMetaStoreAuthzInfo  hiveMetaStoreAuthzInfo   = databaseFilterContext.getAuthzContext();
+    List<String>            filteredDatabases        = filterDatabaseObjects(hiveMetaStoreAuthzInfo);
+    if (CollectionUtils.isEmpty(filteredDatabases)) {
+      filteredDatabases = Collections.emptyList();
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("HiveMetaStoreAuthorizer.filterDatabases() :" + filteredDatabases);
+    }
+    return filteredDatabases ;
+  }
+
+  @Override
+  public final Database filterDatabase(Database database) throws MetaException, NoSuchObjectException {
+    if (database != null) {
+      String dbName = database.getName();
+      List<String> databases = filterDatabases(Collections.singletonList(dbName));
+      if (databases.isEmpty()) {
+        throw new NoSuchObjectException(String.format("Database %s does not exist", dbName));
+      }
+    }
+    return database;
+  }
+
+  @Override
+  public final List<String> filterTableNames(String s, String s1, List<String> list) throws MetaException {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("==> HiveMetaStoreAuthorizer.filterTableNames()");
+    }
+    List<String> filteredTableNames = null;
+    if (list != null) {
+      String dbName = getDBName(s1);
+      TableFilterContext     tableFilterContext     = new TableFilterContext(dbName, list);
+      HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo = tableFilterContext.getAuthzContext();
+      filteredTableNames = filterTableNames(hiveMetaStoreAuthzInfo, dbName, list);
+      if (CollectionUtils.isEmpty(filteredTableNames)) {
+        filteredTableNames = Collections.emptyList();
+      }
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("<== HiveMetaStoreAuthorizer.filterTableNames() : " + filteredTableNames);
+    }
+
+    return filteredTableNames;
+  }
+
+  @Override
+  public final Table filterTable(Table table) throws MetaException, NoSuchObjectException {
+    if (table != null) {
+      List<Table> tables = filterTables(Collections.singletonList(table));
+      if (tables.isEmpty()) {
+        throw new NoSuchObjectException(String.format("Database %s does not exist", table.getTableName()));
+      }
+    }
+    return table;
+  }
+
+  @Override
+  public final List<Table> filterTables(List<Table> list) throws MetaException {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("==> HiveMetaStoreAuthorizer.filterTables()");
+    }
+
+    List<Table> filteredTables = null;
+
+    if (list != null) {
+      TableFilterContext     tableFilterContext     = new TableFilterContext(list);
+      HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo = tableFilterContext.getAuthzContext();
+      filteredTables = filterTableObjects(hiveMetaStoreAuthzInfo, list);
+      if (CollectionUtils.isEmpty(filteredTables)) {
+        filteredTables = Collections.emptyList();
+      }
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("<== HiveMetaStoreAuthorizer.filterTables(): " + filteredTables);
+    }
+    return filteredTables;
+  }
+
+  @Override
+  public final Catalog filterCatalog(Catalog catalog) throws MetaException {
+    return catalog;
+  }
+
+  @Override
+  public final List<String> filterCatalogs(List<String> catalogs) throws MetaException {
+    return catalogs;
+  }
+
+  @Override
+  public final List<TableMeta> filterTableMetas(String catName,String dbName,List<TableMeta> tableMetas) throws MetaException {
+    return tableMetas;
+  }
+
+  @Override
+  public final List<Partition> filterPartitions(List<Partition> list) throws MetaException {
+    return list;
+  }
+
+  @Override
+  public final List<PartitionSpec> filterPartitionSpecs(List<PartitionSpec> list) throws MetaException {
+    return list;
+  }
+
+  @Override
+  public final Partition filterPartition(Partition partition) throws MetaException, NoSuchObjectException {
+    return partition;
+  }
+
+  @Override
+  public final List<String> filterPartitionNames(String s, String s1, String s2, List<String> list) throws MetaException {
+    return list;
+  }
+
+  private List<String> filterDatabaseObjects(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo) throws MetaException {
+    List<String> ret = null;
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("==> HiveMetaStoreAuthorizer.filterDatabaseObjects()");
+    }
+
+    try {
+      HiveAuthorizer            hiveAuthorizer               = createHiveMetaStoreAuthorizer();
+      List<HivePrivilegeObject> hivePrivilegeObjects         = hiveMetaStoreAuthzInfo.getInputHObjs();
+      HiveAuthzContext          hiveAuthzContext             = hiveMetaStoreAuthzInfo.getHiveAuthzContext();
+      List<HivePrivilegeObject> filteredHivePrivilegeObjects = hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
+      if (CollectionUtils.isNotEmpty(filteredHivePrivilegeObjects)) {
+        ret = getFilterDatabaseList(filteredHivePrivilegeObjects);
+      }
+    } catch (Exception e) {
+      throw new MetaException("Error in HiveMetaStoreAuthorizer.filterDatabase()" + e.getMessage());
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("<== HiveMetaStoreAuthorizer.filterDatabaseObjects() :" + ret );
+    }
+    return ret;
+  }
+
+  private List<Table> filterTableObjects(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo, List<Table> tableList) throws MetaException {
+    List<Table> ret = null;
+
+    try {
+      HiveAuthorizer            hiveAuthorizer               = createHiveMetaStoreAuthorizer();
+      List<HivePrivilegeObject> hivePrivilegeObjects         = hiveMetaStoreAuthzInfo.getInputHObjs();
+      HiveAuthzContext          hiveAuthzContext             = hiveMetaStoreAuthzInfo.getHiveAuthzContext();
+      List<HivePrivilegeObject> filteredHivePrivilegeObjects = hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
+      if (CollectionUtils.isNotEmpty(filteredHivePrivilegeObjects)) {
+        ret = getFilteredTableList(filteredHivePrivilegeObjects, tableList);
+      }
+    } catch (Exception e) {
+      throw new MetaException("Error in HiveMetaStoreAuthorizer.filterTables()" + e.getMessage());
+    }
+    return ret;
+  }
+
+  private List<String> getFilterDatabaseList(List<HivePrivilegeObject> hivePrivilegeObjects) {
+    List<String> ret = new ArrayList<>();
+    for(HivePrivilegeObject hivePrivilegeObject:hivePrivilegeObjects) {
+      String dbName = hivePrivilegeObject.getDbname();
+      ret.add(dbName);
+    }
+    return ret;
+  }
+
+  private List<Table> getFilteredTableList(List<HivePrivilegeObject> hivePrivilegeObjects, List<Table> tableList) {
+    List<Table> ret = new ArrayList<>();
+    for(HivePrivilegeObject hivePrivilegeObject:hivePrivilegeObjects) {
+      String dbName  = hivePrivilegeObject.getDbname();
+      String tblName = hivePrivilegeObject.getObjectName();
+      Table  table   = getFilteredTable(dbName,tblName,tableList);
+      if (table != null) {
+        ret.add(table);
+      }
+    }
+    return ret;
+  }
+
+  private Table getFilteredTable(String dbName, String tblName, List<Table> tableList) {
+    Table ret = null;
+    for (Table table: tableList) {
+      String databaseName = table.getDbName();
+      String tableName = table.getTableName();
+      if (dbName.equals(databaseName) && tblName.equals(tableName)) {
+        ret = table;
+        break;
+      }
+    }
+    return ret;
+  }
+
+  private List<String> filterTableNames(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo, String dbName, List<String> tableNames) throws MetaException {
+    List<String> ret = null;
+
+    try {
+      HiveAuthorizer            hiveAuthorizer               = createHiveMetaStoreAuthorizer();
+      List<HivePrivilegeObject> hivePrivilegeObjects         = hiveMetaStoreAuthzInfo.getInputHObjs();
+      HiveAuthzContext          hiveAuthzContext             = hiveMetaStoreAuthzInfo.getHiveAuthzContext();
+      List<HivePrivilegeObject> filteredHivePrivilegeObjects = hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
+      if (CollectionUtils.isNotEmpty(filteredHivePrivilegeObjects)) {
+        ret = getFilteredTableNames(filteredHivePrivilegeObjects, dbName, tableNames);
+      }
+    } catch (Exception e) {
+      throw new MetaException("Error in HiveMetaStoreAuthorizer.filterTables()" + e.getMessage());
+    }
+    return ret;
+  }
+
+  private List<String> getFilteredTableNames(List<HivePrivilegeObject> hivePrivilegeObjects, String databaseName, List<String> tableNames) {
+    List<String> ret = new ArrayList<>();
+    for(HivePrivilegeObject hivePrivilegeObject:hivePrivilegeObjects) {
+      String dbName  = hivePrivilegeObject.getDbname();
+      String tblName = hivePrivilegeObject.getObjectName();
+      String table   = getFilteredTableNames(dbName, tblName, databaseName, tableNames);
+      if (table != null) {
+        ret.add(table);
+      }
+    }
+    return ret;
+  }
+
+  private String getFilteredTableNames(String dbName, String tblName, String databaseName, List<String> tableNames) {
+    String ret = null;
+    for (String tableName: tableNames) {
+      if (dbName.equals(databaseName) && tblName.equals(tableName)) {
+        ret = tableName;
+        break;
+      }
+    }
+    return ret;
+  }
+
+  private String getDBName(String str) {
+   return (str != null) ? str.substring(str.indexOf("#")+1) : null;
   }
 
   HiveMetaStoreAuthzInfo buildAuthzContext(PreEventContext preEventContext) throws MetaException {
@@ -168,6 +409,12 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener {
         case DROP_PARTITION:
           authzEvent = new DropPartitionEvent(preEventContext);
           break;
+        case READ_TABLE:
+          authzEvent = new ReadTableEvent(preEventContext);
+          break;
+        case READ_DATABASE:
+          authzEvent = new ReadDatabaseEvent(preEventContext);
+          break;
         case AUTHORIZATION_API_CALL:
         case READ_ISCHEMA:
         case CREATE_ISCHEMA:
@@ -193,6 +440,29 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener {
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("<== HiveMetaStoreAuthorizer.buildAuthzContext(): EventType=" + preEventContext.getEventType() + "; ret=" + ret);
+    }
+
+    return ret;
+  }
+
+  HiveAuthorizer createHiveMetaStoreAuthorizer() throws Exception {
+    HiveAuthorizer        ret               = null;
+    HiveConf              hiveConf          = new HiveConf(super.getConf(), HiveConf.class);
+    HiveAuthorizerFactory authorizerFactory = HiveUtils.getAuthorizerFactory(hiveConf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
+
+    if (authorizerFactory != null) {
+      HiveMetastoreAuthenticationProvider authenticator = tAuthenticator.get();
+
+      authenticator.setConf(hiveConf);
+
+      HiveAuthzSessionContext.Builder authzContextBuilder = new HiveAuthzSessionContext.Builder();
+
+      authzContextBuilder.setClientType(HiveAuthzSessionContext.CLIENT_TYPE.HIVEMETASTORE);
+      authzContextBuilder.setSessionString("HiveMetaStore");
+
+      HiveAuthzSessionContext authzSessionContext = authzContextBuilder.build();
+
+      ret = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(), hiveConf, authenticator, authzSessionContext);
     }
 
     return ret;
@@ -252,28 +522,23 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener {
     }
   }
 
-  private boolean skipAuthorization(HiveMetaStoreAuthzInfo authzContext) {
+  private boolean skipAuthorization() {
     if (LOG.isDebugEnabled()) {
-      LOG.debug("==> HiveMetaStoreAuthorizer.skipAuthorization(): authzContext=" + authzContext);
+      LOG.debug("==> HiveMetaStoreAuthorizer.skipAuthorization()");
     }
 
     boolean ret = false;
 
-    if (authzContext == null) {
-      ret = true;
-    } else {
+    UserGroupInformation ugi = getUGI();
 
-      UserGroupInformation ugi = authzContext.getUGI();
-
-      if (ugi == null) {
-        ret = true;
-      } else {
-        ret = isSuperUser(ugi.getShortUserName());
-      }
+    if (ugi == null) {
+       ret = true;
+     } else {
+       ret = isSuperUser(ugi.getShortUserName());
     }
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("<== HiveMetaStoreAuthorizer.skipAuthorization(): authzContext=" + authzContext + "; ret=" + ret);
+     LOG.debug("<== HiveMetaStoreAuthorizer.skipAuthorization(): " + ret);
     }
 
     return ret;
@@ -311,6 +576,14 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener {
 
   private String getCurrentUser(HiveMetaStoreAuthorizableEvent authorizableEvent) {
     return authorizableEvent.getAuthzContext().getUGI().getShortUserName();
+  }
+
+  private UserGroupInformation getUGI() {
+    try {
+      return UserGroupInformation.getCurrentUser();
+    } catch (IOException excp) {
+    }
+    return null;
   }
 }
 

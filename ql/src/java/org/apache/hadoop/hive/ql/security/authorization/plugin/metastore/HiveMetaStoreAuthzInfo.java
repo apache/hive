@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
@@ -80,7 +81,8 @@ public class HiveMetaStoreAuthzInfo {
     public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append("HiveMetaStoreAuthzInfo= ").append("{");
-      sb.append("eventType=").append(preEventContext.getEventType().name());
+      String eventType = (preEventContext != null)? preEventContext.getEventType().name(): StringUtils.EMPTY;
+      sb.append("eventType=").append(eventType);
       sb.append(", operationType=").append(operationType.name());
       sb.append(", commandString=" ).append(commandString);
       sb.append(", inputHObjs=").append(inputHObjs);

@@ -1368,7 +1368,7 @@ public class TestListPartitions extends MetaStoreClientTest {
     }
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testListPartitionValuesNoDbName() throws Exception {
     createTable4PartColsParts(client);
@@ -1381,7 +1381,7 @@ public class TestListPartitions extends MetaStoreClientTest {
     client.listPartitionValues(request);
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testListPartitionValuesNoTblName() throws Exception {
     createTable4PartColsParts(client);

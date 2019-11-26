@@ -124,13 +124,13 @@ public class TestSessionHiveMetastoreClientGetPartitionsTempTable extends TestGe
     getClient().getPartitionsByNames(DB_NAME, TABLE_NAME, Lists.newArrayList("", ""));
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   @Override
   public void testGetPartitionsByNamesNullDbName() throws Exception {
     super.testGetPartitionsByNamesNullDbName();
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   @Override
   public void testGetPartitionsByNamesNullTblName() throws Exception {
     super.testGetPartitionsByNamesNullTblName();
