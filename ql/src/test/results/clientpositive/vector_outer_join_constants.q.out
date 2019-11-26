@@ -1,0 +1,993 @@
+PREHOOK: query: CREATE EXTERNAL TABLE item(ID int, S_ID int, NAME string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@item
+POSTHOOK: query: CREATE EXTERNAL TABLE item(ID int, S_ID int, NAME string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@item
+PREHOOK: query: CREATE EXTERNAL TABLE odetail(ID int, O_DATE timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@odetail
+POSTHOOK: query: CREATE EXTERNAL TABLE odetail(ID int, O_DATE timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@odetail
+PREHOOK: query: CREATE EXTERNAL TABLE ytday(D_DATE timestamp, YTD_DATE timestamp )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ytday
+POSTHOOK: query: CREATE EXTERNAL TABLE ytday(D_DATE timestamp, YTD_DATE timestamp )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ytday
+PREHOOK: query: CREATE EXTERNAL TABLE lday(D_DATE timestamp, LY_DATE timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lday
+POSTHOOK: query: CREATE EXTERNAL TABLE lday(D_DATE timestamp, LY_DATE timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lday
+PREHOOK: query: INSERT INTO item values(101, 22, "Item 101")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@item
+POSTHOOK: query: INSERT INTO item values(101, 22, "Item 101")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@item
+POSTHOOK: Lineage: item.id SCRIPT []
+POSTHOOK: Lineage: item.name SCRIPT []
+POSTHOOK: Lineage: item.s_id SCRIPT []
+PREHOOK: query: INSERT INTO item values(102, 22, "Item 102")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@item
+POSTHOOK: query: INSERT INTO item values(102, 22, "Item 102")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@item
+POSTHOOK: Lineage: item.id SCRIPT []
+POSTHOOK: Lineage: item.name SCRIPT []
+POSTHOOK: Lineage: item.s_id SCRIPT []
+PREHOOK: query: INSERT INTO odetail values(101, '2001-06-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@odetail
+POSTHOOK: query: INSERT INTO odetail values(101, '2001-06-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@odetail
+POSTHOOK: Lineage: odetail.id SCRIPT []
+POSTHOOK: Lineage: odetail.o_date SCRIPT []
+PREHOOK: query: INSERT INTO odetail values(102, '2002-06-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@odetail
+POSTHOOK: query: INSERT INTO odetail values(102, '2002-06-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@odetail
+POSTHOOK: Lineage: odetail.id SCRIPT []
+POSTHOOK: Lineage: odetail.o_date SCRIPT []
+PREHOOK: query: INSERT INTO ytday values('2008-04-30 00:00:00', '2001-06-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ytday
+POSTHOOK: query: INSERT INTO ytday values('2008-04-30 00:00:00', '2001-06-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ytday
+POSTHOOK: Lineage: ytday.d_date SCRIPT []
+POSTHOOK: Lineage: ytday.ytd_date SCRIPT []
+PREHOOK: query: INSERT INTO ytday values('2008-04-30 00:00:00', '2022-06-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ytday
+POSTHOOK: query: INSERT INTO ytday values('2008-04-30 00:00:00', '2022-06-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ytday
+POSTHOOK: Lineage: ytday.d_date SCRIPT []
+POSTHOOK: Lineage: ytday.ytd_date SCRIPT []
+PREHOOK: query: INSERT INTO lday values('2021-06-30 00:00:00', '2001-06-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@lday
+POSTHOOK: query: INSERT INTO lday values('2021-06-30 00:00:00', '2001-06-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@lday
+POSTHOOK: Lineage: lday.d_date SCRIPT []
+POSTHOOK: Lineage: lday.ly_date SCRIPT []
+PREHOOK: query: INSERT INTO lday values('2022-06-30 00:00:00', '2002-06-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@lday
+POSTHOOK: query: INSERT INTO lday values('2022-06-30 00:00:00', '2002-06-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@lday
+POSTHOOK: Lineage: lday.d_date SCRIPT []
+POSTHOOK: Lineage: lday.ly_date SCRIPT []
+PREHOOK: query: analyze table item compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@item
+PREHOOK: Output: default@item
+POSTHOOK: query: analyze table item compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@item
+POSTHOOK: Output: default@item
+PREHOOK: query: analyze table item compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@item
+PREHOOK: Output: default@item
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table item compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@item
+POSTHOOK: Output: default@item
+#### A masked pattern was here ####
+PREHOOK: query: analyze table odetail compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@odetail
+PREHOOK: Output: default@odetail
+POSTHOOK: query: analyze table odetail compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@odetail
+POSTHOOK: Output: default@odetail
+PREHOOK: query: analyze table odetail compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@odetail
+PREHOOK: Output: default@odetail
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table odetail compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@odetail
+POSTHOOK: Output: default@odetail
+#### A masked pattern was here ####
+PREHOOK: query: analyze table ytday compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ytday
+PREHOOK: Output: default@ytday
+POSTHOOK: query: analyze table ytday compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ytday
+POSTHOOK: Output: default@ytday
+PREHOOK: query: analyze table ytday compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ytday
+PREHOOK: Output: default@ytday
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table ytday compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ytday
+POSTHOOK: Output: default@ytday
+#### A masked pattern was here ####
+PREHOOK: query: analyze table lday compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lday
+PREHOOK: Output: default@lday
+POSTHOOK: query: analyze table lday compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lday
+POSTHOOK: Output: default@lday
+PREHOOK: query: analyze table lday compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@lday
+PREHOOK: Output: default@lday
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table lday compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@lday
+POSTHOOK: Output: default@lday
+#### A masked pattern was here ####
+Warning: Shuffle Join JOIN[51][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-4:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+select * from
+(select        item1.S_ID  S_ID,
+                ytday1.D_DATE  D_DATE
+        from        odetail        od1
+                join        ytday        ytday1
+                  on         (od1.O_DATE = ytday1.YTD_DATE)
+                join        item        item1
+                  on         (od1.ID = item1.ID)
+        where        (item1.S_ID in (22)
+         and ytday1.D_DATE = '2008-04-30 00:00:00')
+        group by        item1.S_ID,
+                ytday1.D_DATE
+        )        pa11
+        full outer join
+        (select        item2.S_ID  S_ID,
+                ytday2.D_DATE  D_DATE
+        from        odetail        od2
+                join        lday        lday2 -- map8
+                  on         (od2.O_DATE = lday2.LY_DATE)
+                join        ytday        ytday2
+                  on         (lday2.D_DATE = ytday2.YTD_DATE)
+                join        item        item2
+                  on         (od2.ID = item2.ID)
+        where        (item2.S_ID in (22)
+         and ytday2.D_DATE = '2008-04-30 00:00:00')
+        group by        item2.S_ID,
+                ytday2.D_DATE
+        )        pa12
+          on         (pa11.D_DATE = pa12.D_DATE and
+        pa11.S_ID = pa12.S_ID)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@item
+PREHOOK: Input: default@lday
+PREHOOK: Input: default@odetail
+PREHOOK: Input: default@ytday
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+select * from
+(select        item1.S_ID  S_ID,
+                ytday1.D_DATE  D_DATE
+        from        odetail        od1
+                join        ytday        ytday1
+                  on         (od1.O_DATE = ytday1.YTD_DATE)
+                join        item        item1
+                  on         (od1.ID = item1.ID)
+        where        (item1.S_ID in (22)
+         and ytday1.D_DATE = '2008-04-30 00:00:00')
+        group by        item1.S_ID,
+                ytday1.D_DATE
+        )        pa11
+        full outer join
+        (select        item2.S_ID  S_ID,
+                ytday2.D_DATE  D_DATE
+        from        odetail        od2
+                join        lday        lday2 -- map8
+                  on         (od2.O_DATE = lday2.LY_DATE)
+                join        ytday        ytday2
+                  on         (lday2.D_DATE = ytday2.YTD_DATE)
+                join        item        item2
+                  on         (od2.ID = item2.ID)
+        where        (item2.S_ID in (22)
+         and ytday2.D_DATE = '2008-04-30 00:00:00')
+        group by        item2.S_ID,
+                ytday2.D_DATE
+        )        pa12
+          on         (pa11.D_DATE = pa12.D_DATE and
+        pa11.S_ID = pa12.S_ID)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@lday
+POSTHOOK: Input: default@odetail
+POSTHOOK: Input: default@ytday
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-20 is a root stage
+  Stage-3 depends on stages: Stage-20
+  Stage-4 depends on stages: Stage-3, Stage-9
+  Stage-23 is a root stage
+  Stage-18 depends on stages: Stage-23
+  Stage-17 depends on stages: Stage-18, Stage-19 , consists of Stage-21, Stage-22, Stage-8
+  Stage-21 has a backup stage: Stage-8
+  Stage-15 depends on stages: Stage-21
+  Stage-9 depends on stages: Stage-8, Stage-15, Stage-16
+  Stage-22 has a backup stage: Stage-8
+  Stage-16 depends on stages: Stage-22
+  Stage-8
+  Stage-24 is a root stage
+  Stage-19 depends on stages: Stage-24
+  Stage-0 depends on stages: Stage-4
+
+STAGE PLANS:
+  Stage: Stage-20
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_0:$hdt$_0:$hdt$_1:item1 
+          Fetch Operator
+            limit: -1
+        $hdt$_0:$hdt$_0:$hdt$_2:ytday1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_0:$hdt$_0:$hdt$_1:item1 
+          TableScan
+            alias: item1
+            filterExpr: ((s_id = 22) and id is not null) (type: boolean)
+            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ((s_id = 22) and id is not null) (type: boolean)
+              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: id (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+        $hdt$_0:$hdt$_0:$hdt$_2:ytday1 
+          TableScan
+            alias: ytday1
+            filterExpr: ((d_date = TIMESTAMP'2008-04-30 00:00:00') and ytd_date is not null) (type: boolean)
+            Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ((d_date = TIMESTAMP'2008-04-30 00:00:00') and ytd_date is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: ytd_date (type: timestamp)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  keys:
+                    0 _col1 (type: timestamp)
+                    1 _col0 (type: timestamp)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: od1
+            filterExpr: (o_date is not null and id is not null) (type: boolean)
+            Statistics: Num rows: 2 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:id:int, 1:o_date:timestamp, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:timestamp), SelectColumnIsNotNull(col 0:int))
+              predicate: (o_date is not null and id is not null) (type: boolean)
+              Statistics: Num rows: 2 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: id (type: int), o_date (type: timestamp)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 2 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Map Join Vectorization:
+                      bigTableKeyExpressions: col 0:int
+                      bigTableValueExpressions: col 1:timestamp
+                      className: VectorMapJoinOperator
+                      native: false
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 _col1 (type: timestamp)
+                      1 _col0 (type: timestamp)
+                    Map Join Vectorization:
+                        bigTableKeyExpressions: col 0:timestamp
+                        className: VectorMapJoinOperator
+                        native: false
+                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                        nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: ConstantVectorExpression(val 1) -> 0:boolean
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
+                      keys: true (type: boolean)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: boolean)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: boolean)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: id:int, o_date:timestamp
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Local Work:
+        Map Reduce Local Work
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: boolean)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 22 (type: int), TIMESTAMP'2008-04-30 00:00:00' (type: timestamp)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              null sort order: 
+              sort order: 
+              Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+              value expressions: _col0 (type: int), _col1 (type: timestamp)
+          TableScan
+            Reduce Output Operator
+              null sort order: 
+              sort order: 
+              Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+              value expressions: _col0 (type: int), _col1 (type: timestamp)
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Full Outer Join 0 to 1
+          filter predicates:
+            0 
+            1 {true}
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-23
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:$hdt$_1:$hdt$_1:lday2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:$hdt$_1:$hdt$_1:lday2 
+          TableScan
+            alias: lday2
+            filterExpr: (ly_date is not null and d_date is not null) (type: boolean)
+            Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (ly_date is not null and d_date is not null) (type: boolean)
+              Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: d_date (type: timestamp), ly_date (type: timestamp)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: timestamp)
+                    1 _col0 (type: timestamp)
+
+  Stage: Stage-18
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: ytday2
+            filterExpr: ((d_date = TIMESTAMP'2008-04-30 00:00:00') and ytd_date is not null) (type: boolean)
+            Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:d_date:timestamp, 1:ytd_date:timestamp, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprAndExpr(children: FilterTimestampColEqualTimestampScalar(col 0:timestamp, val 2008-04-30 00:00:00), SelectColumnIsNotNull(col 1:timestamp))
+              predicate: ((d_date = TIMESTAMP'2008-04-30 00:00:00') and ytd_date is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: ytd_date (type: timestamp)
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1]
+                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: timestamp)
+                    1 _col0 (type: timestamp)
+                  Map Join Vectorization:
+                      bigTableKeyExpressions: col 1:timestamp
+                      className: VectorMapJoinOperator
+                      native: false
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: d_date:timestamp, ytd_date:timestamp
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [timestamp]
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-17
+    Conditional Operator
+
+  Stage: Stage-21
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:$hdt$_1:$INTNAME1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:$hdt$_1:$INTNAME1 
+          TableScan
+            HashTable Sink Operator
+              keys:
+                0 _col1 (type: timestamp)
+                1 _col1 (type: timestamp)
+
+  Stage: Stage-15
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col1:timestamp]
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              keys:
+                0 _col1 (type: timestamp)
+                1 _col1 (type: timestamp)
+              Map Join Vectorization:
+                  bigTableKeyExpressions: col 0:timestamp
+                  className: VectorMapJoinOperator
+                  native: false
+                  nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: HASH
+                    keyExpressions: ConstantVectorExpression(val 1) -> 0:boolean
+                    native: false
+                    vectorProcessingMode: HASH
+                    projectedOutputColumnNums: []
+                keys: true (type: boolean)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col1:timestamp
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-9
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:boolean]
+            Reduce Output Operator
+              key expressions: _col0 (type: boolean)
+              null sort order: a
+              sort order: +
+              Map-reduce partition columns: _col0 (type: boolean)
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: boolean)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 22 (type: int), TIMESTAMP'2008-04-30 00:00:00' (type: timestamp)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-22
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:$hdt$_1:$INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:$hdt$_1:$INTNAME 
+          TableScan
+            HashTable Sink Operator
+              keys:
+                0 _col1 (type: timestamp)
+                1 _col1 (type: timestamp)
+
+  Stage: Stage-16
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col1:timestamp]
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              keys:
+                0 _col1 (type: timestamp)
+                1 _col1 (type: timestamp)
+              Map Join Vectorization:
+                  bigTableKeyExpressions: col 0:timestamp
+                  className: VectorMapJoinOperator
+                  native: false
+                  nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: HASH
+                    keyExpressions: ConstantVectorExpression(val 1) -> 0:boolean
+                    native: false
+                    vectorProcessingMode: HASH
+                    projectedOutputColumnNums: []
+                keys: true (type: boolean)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col1:timestamp
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-8
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col1 (type: timestamp)
+              null sort order: a
+              sort order: +
+              Map-reduce partition columns: _col1 (type: timestamp)
+              Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+          TableScan
+            Reduce Output Operator
+              key expressions: _col1 (type: timestamp)
+              null sort order: a
+              sort order: +
+              Map-reduce partition columns: _col1 (type: timestamp)
+              Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col1 (type: timestamp)
+            1 _col1 (type: timestamp)
+          Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+          Group By Operator
+            keys: true (type: boolean)
+            minReductionHashAggr: 0.99
+            mode: hash
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-24
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:$hdt$_1:$hdt$_3:$hdt$_4:item2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:$hdt$_1:$hdt$_3:$hdt$_4:item2 
+          TableScan
+            alias: item2
+            filterExpr: ((s_id = 22) and id is not null) (type: boolean)
+            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ((s_id = 22) and id is not null) (type: boolean)
+              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: id (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+
+  Stage: Stage-19
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: od2
+            filterExpr: (o_date is not null and id is not null) (type: boolean)
+            Statistics: Num rows: 2 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:id:int, 1:o_date:timestamp, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:timestamp), SelectColumnIsNotNull(col 0:int))
+              predicate: (o_date is not null and id is not null) (type: boolean)
+              Statistics: Num rows: 2 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: id (type: int), o_date (type: timestamp)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 2 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Map Join Vectorization:
+                      bigTableKeyExpressions: col 0:int
+                      bigTableValueExpressions: col 1:timestamp
+                      className: VectorMapJoinOperator
+                      native: false
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: id:int, o_date:timestamp
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join JOIN[51][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-4:MAPRED' is a cross product
+PREHOOK: query: select * from
+(select        item1.S_ID  S_ID,
+                ytday1.D_DATE  D_DATE
+        from        odetail        od1
+                join        ytday        ytday1
+                  on         (od1.O_DATE = ytday1.YTD_DATE)
+                join        item        item1
+                  on         (od1.ID = item1.ID)
+        where        (item1.S_ID in (22)
+         and ytday1.D_DATE = '2008-04-30 00:00:00')
+        group by        item1.S_ID,
+                ytday1.D_DATE
+        )        pa11
+        full outer join
+        (select        item2.S_ID  S_ID,
+                ytday2.D_DATE  D_DATE
+        from        odetail        od2
+                join        lday        lday2 -- map8
+                  on         (od2.O_DATE = lday2.LY_DATE)
+                join        ytday        ytday2
+                  on         (lday2.D_DATE = ytday2.YTD_DATE)
+                join        item        item2
+                  on         (od2.ID = item2.ID)
+        where        (item2.S_ID in (22)
+         and ytday2.D_DATE = '2008-04-30 00:00:00')
+        group by        item2.S_ID,
+                ytday2.D_DATE
+        )        pa12
+          on         (pa11.D_DATE = pa12.D_DATE and
+        pa11.S_ID = pa12.S_ID)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@item
+PREHOOK: Input: default@lday
+PREHOOK: Input: default@odetail
+PREHOOK: Input: default@ytday
+#### A masked pattern was here ####
+POSTHOOK: query: select * from
+(select        item1.S_ID  S_ID,
+                ytday1.D_DATE  D_DATE
+        from        odetail        od1
+                join        ytday        ytday1
+                  on         (od1.O_DATE = ytday1.YTD_DATE)
+                join        item        item1
+                  on         (od1.ID = item1.ID)
+        where        (item1.S_ID in (22)
+         and ytday1.D_DATE = '2008-04-30 00:00:00')
+        group by        item1.S_ID,
+                ytday1.D_DATE
+        )        pa11
+        full outer join
+        (select        item2.S_ID  S_ID,
+                ytday2.D_DATE  D_DATE
+        from        odetail        od2
+                join        lday        lday2 -- map8
+                  on         (od2.O_DATE = lday2.LY_DATE)
+                join        ytday        ytday2
+                  on         (lday2.D_DATE = ytday2.YTD_DATE)
+                join        item        item2
+                  on         (od2.ID = item2.ID)
+        where        (item2.S_ID in (22)
+         and ytday2.D_DATE = '2008-04-30 00:00:00')
+        group by        item2.S_ID,
+                ytday2.D_DATE
+        )        pa12
+          on         (pa11.D_DATE = pa12.D_DATE and
+        pa11.S_ID = pa12.S_ID)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@lday
+POSTHOOK: Input: default@odetail
+POSTHOOK: Input: default@ytday
+#### A masked pattern was here ####
+22	2008-04-30 00:00:00	22	2008-04-30 00:00:00
