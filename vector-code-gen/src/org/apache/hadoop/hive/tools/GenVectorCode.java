@@ -309,12 +309,15 @@ public class GenVectorCode extends Task {
 
       {"Decimal64ColumnArithmeticDecimal64Scalar", "Add", "+"},
       {"Decimal64ColumnArithmeticDecimal64Scalar", "Subtract", "-"},
+      {"Decimal64ColumnArithmeticDecimal64Scalar", "Multiply", "*"},
 
       {"Decimal64ScalarArithmeticDecimal64Column", "Add", "+"},
       {"Decimal64ScalarArithmeticDecimal64Column", "Subtract", "-"},
+      {"Decimal64ScalarArithmeticDecimal64Column", "Multiply", "*"},
 
       {"Decimal64ColumnArithmeticDecimal64Column", "Add", "+"},
       {"Decimal64ColumnArithmeticDecimal64Column", "Subtract", "-"},
+      {"Decimal64ColumnArithmeticDecimal64Column", "Multiply", "*"},
 
       {"Decimal64ColumnDivideDecimal64Scalar", "Divide", "/"},
       {"Decimal64ColumnDivideDecimal64Column", "Divide", "/"},
@@ -2535,22 +2538,32 @@ public class GenVectorCode extends Task {
   private void generateDecimal64ColumnArithmeticDecimal64Scalar(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "Decimal64Col" + operatorName + "Decimal64Scalar";
-    generateDecimal64ColumnArithmetic(tdesc, className);
+    generateDecimal64ColumnArithmetic(tdesc, className, /* parentClassName */ null);
+    if (operatorName.equals("Multiply")) {
+      tdesc[0] = tdesc[0] + "Unscaled";
+      String unscaledClassName = className + "Unscaled";
+      generateDecimal64ColumnArithmetic(tdesc, unscaledClassName, className);
+    }
   }
 
   private void generateDecimal64ScalarArithmeticDecimal64Column(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "Decimal64Scalar" + operatorName + "Decimal64Column";
-    generateDecimal64ColumnArithmetic(tdesc, className);
+    generateDecimal64ColumnArithmetic(tdesc, className, /* parentClassName */ null);
+    if (operatorName.equals("Multiply")) {
+      tdesc[0] = tdesc[0] + "Unscaled";
+      String unscaledClassName = className + "Unscaled";
+      generateDecimal64ColumnArithmetic(tdesc, unscaledClassName, className);
+    }
   }
 
   private void generateDecimal64ColumnArithmeticDecimal64Column(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "Decimal64Col" + operatorName + "Decimal64Column";
-    generateDecimal64ColumnArithmetic(tdesc, className);
+    generateDecimal64ColumnArithmetic(tdesc, className, /* parentClassName */ null);
   }
 
-  private void generateDecimal64ColumnArithmetic(String[] tdesc, String className)
+  private void generateDecimal64ColumnArithmetic(String[] tdesc, String className, String parentClassName)
       throws IOException {
 
     String operatorSymbol = tdesc[2];
@@ -2560,6 +2573,9 @@ public class GenVectorCode extends Task {
     String templateString = readFile(templateFile);
 
     // Expand, and write result
+    if (parentClassName != null) {
+      templateString = templateString.replaceAll("<ParentClassName>", parentClassName);
+    }
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
