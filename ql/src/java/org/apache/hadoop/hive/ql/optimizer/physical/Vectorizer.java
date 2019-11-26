@@ -5173,6 +5173,7 @@ public class Vectorizer implements PhysicalPlanResolver {
             if (op instanceof MapJoinOperator) {
 
               MapJoinDesc desc = (MapJoinDesc) op.getConf();
+              int joinType = desc.getConds()[0].getType();
 
               VectorMapJoinDesc vectorMapJoinDesc = new VectorMapJoinDesc();
               boolean specialize =
@@ -5189,6 +5190,10 @@ public class Vectorizer implements PhysicalPlanResolver {
                 if (!isOuterAndFiltered) {
                   opClass = VectorMapJoinOperator.class;
                 } else {
+                  if (joinType == JoinDesc.FULL_OUTER_JOIN) {
+                    setOperatorIssue("Vectorized & filtered full-outer joins not supported");
+                    throw new VectorizerCannotVectorizeException();
+                  }
                   opClass = VectorMapJoinOuterFilteredOperator.class;
                 }
 
