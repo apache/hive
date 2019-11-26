@@ -169,6 +169,7 @@ public class HttpServer {
     private XFrameOption xFrameOption = XFrameOption.SAMEORIGIN;
     private final List<Pair<String, Class<? extends HttpServlet>>> servlets =
         new LinkedList<Pair<String, Class<? extends HttpServlet>>>();
+    private boolean disableDirListing = false;
 
     public Builder(String name) {
       Preconditions.checkArgument(name != null && !name.isEmpty(), "Name must be specified");
@@ -303,6 +304,10 @@ public class HttpServer {
     public Builder setXFrameOption(String option) {
       this.xFrameOption = XFrameOption.getEnum(option);
       return this;
+    }
+
+    public void setDisableDirListing(boolean disableDirListing) {
+      this.disableDirListing = disableDirListing;
     }
   }
 
@@ -577,8 +582,12 @@ public class HttpServer {
     }
 
     Map<String, String> xFrameParams = setHeaders();
-    if(b.xFrameEnabled){
+    if (b.xFrameEnabled) {
       setupXframeFilter(b,xFrameParams);
+    }
+
+    if (b.disableDirListing) {
+      disableDirectoryListingOnServlet(webAppContext);
     }
 
     initializeWebServer(b, threadPool.getMaxThreads());
@@ -611,7 +620,7 @@ public class HttpServer {
     webServer.setHandler(contexts);
 
 
-    if(b.usePAM){
+    if (b.usePAM) {
       setupPam(b, contexts);
     }
 
@@ -646,6 +655,7 @@ public class HttpServer {
     staticCtx.setResourceBase(appDir + "/static");
     staticCtx.addServlet(DefaultServlet.class, "/*");
     staticCtx.setDisplayName("static");
+    disableDirectoryListingOnServlet(staticCtx);
 
     String logDir = getLogDir(b.conf);
     if (logDir != null) {
@@ -747,6 +757,11 @@ public class HttpServer {
       holder.setName(name);
     }
     webAppContext.addServlet(holder, pathSpec);
+  }
+
+
+  private static void disableDirectoryListingOnServlet(ServletContextHandler contextHandler) {
+    contextHandler.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
   }
 
   /**
