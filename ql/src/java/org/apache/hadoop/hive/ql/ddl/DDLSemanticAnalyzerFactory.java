@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.reflections.Reflections;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -51,8 +52,17 @@ public final class DDLSemanticAnalyzerFactory {
     int type();
   }
 
+  /**
+   * Reveals the actual type of an ASTTree that has a category as main element.
+   */
+  public interface DDLSemanticAnalyzerCategory {
+    int getType(ASTNode root);
+  }
+
   private static final String DDL_ROOT = "org.apache.hadoop.hive.ql.ddl";
   private static final Map<Integer, Class<? extends BaseSemanticAnalyzer>> TYPE_TO_ANALYZER = new HashMap<>();
+  private static final Map<Integer, Class<? extends DDLSemanticAnalyzerCategory>> TYPE_TO_ANALYZERCATEGORY =
+      new HashMap<>();
 
   static {
     Set<Class<? extends BaseSemanticAnalyzer>> analyzerClasses1 =
@@ -68,14 +78,25 @@ public final class DDLSemanticAnalyzerFactory {
       DDLType ddlType = analyzerClass.getAnnotation(DDLType.class);
       TYPE_TO_ANALYZER.put(ddlType.type(), analyzerClass);
     }
+
+    Set<Class<? extends DDLSemanticAnalyzerCategory>> analyzerCategoryClasses =
+        new Reflections(DDL_ROOT).getSubTypesOf(DDLSemanticAnalyzerCategory.class);
+    for (Class<? extends DDLSemanticAnalyzerCategory> analyzerCategoryClass : analyzerCategoryClasses) {
+      if (Modifier.isAbstract(analyzerCategoryClass.getModifiers())) {
+        continue;
+      }
+
+      DDLType ddlType = analyzerCategoryClass.getAnnotation(DDLType.class);
+      TYPE_TO_ANALYZERCATEGORY.put(ddlType.type(), analyzerCategoryClass);
+    }
   }
 
-  public static boolean handles(int type) {
-    return TYPE_TO_ANALYZER.containsKey(type);
+  public static boolean handles(ASTNode root) {
+    return getAnalyzerClass(root, null) != null;
   }
 
   public static BaseSemanticAnalyzer getAnalyzer(ASTNode root, QueryState queryState) {
-    Class<? extends BaseSemanticAnalyzer> analyzerClass = TYPE_TO_ANALYZER.get(root.getType());
+    Class<? extends BaseSemanticAnalyzer> analyzerClass = getAnalyzerClass(root, queryState);
     try {
       BaseSemanticAnalyzer analyzer = analyzerClass.getConstructor(QueryState.class).newInstance(queryState);
       return analyzer;
@@ -87,7 +108,7 @@ public final class DDLSemanticAnalyzerFactory {
 
   @VisibleForTesting
   public static BaseSemanticAnalyzer getAnalyzer(ASTNode root, QueryState queryState, Hive db) {
-    Class<? extends BaseSemanticAnalyzer> analyzerClass = TYPE_TO_ANALYZER.get(root.getType());
+    Class<? extends BaseSemanticAnalyzer> analyzerClass = getAnalyzerClass(root, queryState);
     try {
       BaseSemanticAnalyzer analyzer =
           analyzerClass.getConstructor(QueryState.class, Hive.class).newInstance(queryState, db);
@@ -96,5 +117,30 @@ public final class DDLSemanticAnalyzerFactory {
       e.printStackTrace();
       throw new RuntimeException(e);
     }
+  }
+
+  private static Class<? extends BaseSemanticAnalyzer> getAnalyzerClass(ASTNode root, QueryState queryState) {
+    if (TYPE_TO_ANALYZER.containsKey(root.getType())) {
+      return TYPE_TO_ANALYZER.get(root.getType());
+    }
+
+    if (TYPE_TO_ANALYZERCATEGORY.containsKey(root.getType())) {
+      Class<? extends DDLSemanticAnalyzerCategory> analyzerCategoryClass = TYPE_TO_ANALYZERCATEGORY.get(root.getType());
+      try {
+        DDLSemanticAnalyzerCategory analyzerCategory = analyzerCategoryClass.newInstance();
+        int actualType = analyzerCategory.getType(root);
+        if (TYPE_TO_ANALYZER.containsKey(actualType)) {
+          if (queryState != null) {
+            queryState.setCommandType(HiveOperation.operationForToken(actualType));
+          }
+          return TYPE_TO_ANALYZER.get(actualType);
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw new RuntimeException(e);
+      }
+    }
+
+    return null;
   }
 }

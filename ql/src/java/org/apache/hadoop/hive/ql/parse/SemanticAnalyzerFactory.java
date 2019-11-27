@@ -59,7 +59,7 @@ public final class SemanticAnalyzerFactory {
       HiveOperation opType = HiveOperation.operationForToken(tree.getType());
       queryState.setCommandType(opType);
 
-      if (DDLSemanticAnalyzerFactory.handles(tree.getType())) {
+      if (DDLSemanticAnalyzerFactory.handles(tree)) {
         return DDLSemanticAnalyzerFactory.getAnalyzer(tree, queryState);
       }
 
