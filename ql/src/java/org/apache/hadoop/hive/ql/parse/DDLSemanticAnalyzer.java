@@ -71,9 +71,8 @@ import org.apache.hadoop.hive.ql.ddl.table.column.AlterTableChangeColumnDesc;
 import org.apache.hadoop.hive.ql.ddl.table.column.AlterTableReplaceColumnsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.column.AlterTableUpdateColumnsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.column.ShowColumnsDesc;
-import org.apache.hadoop.hive.ql.ddl.table.constaint.AlterTableAddConstraintDesc;
-import org.apache.hadoop.hive.ql.ddl.table.constaint.AlterTableDropConstraintDesc;
-import org.apache.hadoop.hive.ql.ddl.table.constaint.Constraints;
+import org.apache.hadoop.hive.ql.ddl.table.constraint.Constraints;
+import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
 import org.apache.hadoop.hive.ql.ddl.table.info.DescTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.info.ShowTablePropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.info.ShowTableStatusDesc;
@@ -334,10 +333,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS ||
           ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_UPDATECOLSTATS){
         analyzeAlterTableUpdateStats(ast, tName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPCONSTRAINT) {
-        analyzeAlterTableDropConstraint(ast, tName);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT) {
-        analyzeAlterTableAddConstraint(ast, tName);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS) {
         analyzeAlterTableUpdateColumns(ast, tName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_OWNER) {
@@ -1278,52 +1273,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 
-  private void analyzeAlterTableDropConstraint(ASTNode ast, TableName tableName)
-    throws SemanticException {
-    String constraintName = unescapeIdentifier(ast.getChild(0).getText());
-    AlterTableDropConstraintDesc alterTblDesc = new AlterTableDropConstraintDesc(tableName, null, constraintName);
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
-  }
-
-  private void analyzeAlterTableAddConstraint(ASTNode ast, TableName tableName)
-      throws SemanticException {
-    ASTNode parent = (ASTNode) ast.getParent();
-    final TableName tName = getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf));
-    // TODO CAT - for now always use the default catalog.  Eventually will want to see if
-    // the user specified a catalog
-    ASTNode child = (ASTNode) ast.getChild(0);
-    List<SQLPrimaryKey> primaryKeys = new ArrayList<>();
-    List<SQLForeignKey> foreignKeys = new ArrayList<>();
-    List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
-    List<SQLCheckConstraint> checkConstraints = new ArrayList<>();
-
-    switch (child.getToken().getType()) {
-    case HiveParser.TOK_UNIQUE:
-      BaseSemanticAnalyzer.processUniqueConstraints(tName, child, uniqueConstraints);
-      break;
-    case HiveParser.TOK_PRIMARY_KEY:
-      BaseSemanticAnalyzer.processPrimaryKeys(tName, child, primaryKeys);
-      break;
-    case HiveParser.TOK_FOREIGN_KEY:
-      BaseSemanticAnalyzer.processForeignKeys(tName, child, foreignKeys);
-      break;
-    case HiveParser.TOK_CHECK_CONSTRAINT:
-      BaseSemanticAnalyzer
-          .processCheckConstraints(tName, child, null, checkConstraints, child, this.ctx.getTokenRewriteStream());
-      break;
-    default:
-      throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
-          child.getToken().getText()));
-    }
-
-    Constraints constraints = new Constraints(primaryKeys, foreignKeys, null, uniqueConstraints, null,
-        checkConstraints);
-    AlterTableAddConstraintDesc alterTblDesc = new AlterTableAddConstraintDesc(tableName, null, constraints);
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
-  }
-
   private void analyzeAlterTableUpdateColumns(ASTNode ast, TableName tableName,
       Map<String, String> partSpec) throws SemanticException {
 
@@ -1982,29 +1931,31 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (constraintChild.getToken().getType()) {
       case HiveParser.TOK_CHECK_CONSTRAINT:
         checkConstraints = new ArrayList<>();
-        processCheckConstraints(tName, constraintChild, ImmutableList.of(newColName), checkConstraints,
+        ConstraintsUtils.processCheckConstraints(tName, constraintChild, ImmutableList.of(newColName), checkConstraints,
             (ASTNode) ast.getChild(2), this.ctx.getTokenRewriteStream());
         break;
       case HiveParser.TOK_DEFAULT_VALUE:
         defaultConstraints = new ArrayList<>();
-        processDefaultConstraints(tName, constraintChild, ImmutableList.of(newColName), defaultConstraints,
-            (ASTNode) ast.getChild(2), this.ctx.getTokenRewriteStream());
+        ConstraintsUtils.processDefaultConstraints(tName, constraintChild, ImmutableList.of(newColName),
+            defaultConstraints, (ASTNode) ast.getChild(2), this.ctx.getTokenRewriteStream());
         break;
       case HiveParser.TOK_NOT_NULL:
         notNullConstraints = new ArrayList<>();
-        processNotNullConstraints(tName, constraintChild, ImmutableList.of(newColName), notNullConstraints);
+        ConstraintsUtils.processNotNullConstraints(tName, constraintChild, ImmutableList.of(newColName),
+            notNullConstraints);
         break;
       case HiveParser.TOK_UNIQUE:
         uniqueConstraints = new ArrayList<>();
-        processUniqueConstraints(tName, constraintChild, ImmutableList.of(newColName), uniqueConstraints);
+        ConstraintsUtils.processUniqueConstraints(tName, constraintChild, ImmutableList.of(newColName),
+            uniqueConstraints);
         break;
       case HiveParser.TOK_PRIMARY_KEY:
         primaryKeys = new ArrayList<>();
-        processPrimaryKeys(tName, constraintChild, ImmutableList.of(newColName), primaryKeys);
+        ConstraintsUtils.processPrimaryKeys(tName, constraintChild, ImmutableList.of(newColName), primaryKeys);
         break;
       case HiveParser.TOK_FOREIGN_KEY:
         foreignKeys = new ArrayList<>();
-        processForeignKeys(tName, constraintChild, foreignKeys);
+        ConstraintsUtils.processForeignKeys(tName, constraintChild, foreignKeys);
         break;
       default:
         throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(

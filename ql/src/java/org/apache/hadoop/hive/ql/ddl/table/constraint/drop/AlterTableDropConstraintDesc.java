@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.constaint;
+package org.apache.hadoop.hive.ql.ddl.table.constraint.drop;
 
 import java.io.Serializable;
 
