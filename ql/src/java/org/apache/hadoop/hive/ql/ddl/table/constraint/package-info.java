@@ -17,4 +17,4 @@
  */
 
 /** Table constraint related DDL operation descriptions and operations. */
-package org.apache.hadoop.hive.ql.ddl.table.constaint;
+package org.apache.hadoop.hive.ql.ddl.table.constraint;

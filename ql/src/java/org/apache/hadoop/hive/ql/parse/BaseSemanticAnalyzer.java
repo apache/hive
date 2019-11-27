@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -690,168 +691,6 @@ public abstract class BaseSemanticAnalyzer {
             new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), conf);
   }
 
-  private static class ConstraintInfo {
-    final String colName;
-    final String constraintName;
-    final boolean enable;
-    final boolean validate;
-    final boolean rely;
-    final String defaultValue;
-
-    ConstraintInfo(String colName, String constraintName,
-                   boolean enable, boolean validate, boolean rely, String defaultValue) {
-      this.colName = colName;
-      this.constraintName = constraintName;
-      this.enable = enable;
-      this.validate = validate;
-      this.rely = rely;
-      this.defaultValue = defaultValue;
-    }
-  }
-
-  /**
-   * Process the primary keys from the ast node and populate the SQLPrimaryKey list.
-   */
-  protected static void processPrimaryKeys(TableName tName, ASTNode child, List<SQLPrimaryKey> primaryKeys)
-      throws SemanticException {
-    List<ConstraintInfo> primaryKeyInfos = new ArrayList<ConstraintInfo>();
-    generateConstraintInfos(child, primaryKeyInfos);
-    constraintInfosToPrimaryKeys(tName, primaryKeyInfos, primaryKeys);
-  }
-
-  protected static void processPrimaryKeys(TableName tName, ASTNode child, List<String> columnNames,
-      List<SQLPrimaryKey> primaryKeys) throws SemanticException {
-    List<ConstraintInfo> primaryKeyInfos = new ArrayList<ConstraintInfo>();
-    generateConstraintInfos(child, columnNames, primaryKeyInfos, null, null);
-    constraintInfosToPrimaryKeys(tName, primaryKeyInfos, primaryKeys);
-  }
-
-  private static void constraintInfosToPrimaryKeys(TableName tName, List<ConstraintInfo> primaryKeyInfos,
-      List<SQLPrimaryKey> primaryKeys) {
-    int i = 1;
-    for (ConstraintInfo primaryKeyInfo : primaryKeyInfos) {
-      primaryKeys.add(
-          new SQLPrimaryKey(tName.getDb(), tName.getTable(), primaryKeyInfo.colName, i++, primaryKeyInfo.constraintName,
-              primaryKeyInfo.enable, primaryKeyInfo.validate, primaryKeyInfo.rely));
-    }
-  }
-
-  /**
-   * Process the unique constraints from the ast node and populate the SQLUniqueConstraint list.
-   */
-  protected static void processUniqueConstraints(TableName tName, ASTNode child,
-      List<SQLUniqueConstraint> uniqueConstraints) throws SemanticException {
-    List<ConstraintInfo> uniqueInfos = new ArrayList<ConstraintInfo>();
-    generateConstraintInfos(child, uniqueInfos);
-    constraintInfosToUniqueConstraints(tName, uniqueInfos, uniqueConstraints);
-  }
-
-  protected static void processUniqueConstraints(TableName tName, ASTNode child, List<String> columnNames,
-      List<SQLUniqueConstraint> uniqueConstraints) throws SemanticException {
-    List<ConstraintInfo> uniqueInfos = new ArrayList<ConstraintInfo>();
-    generateConstraintInfos(child, columnNames, uniqueInfos, null, null);
-    constraintInfosToUniqueConstraints(tName, uniqueInfos, uniqueConstraints);
-  }
-
-  private static void constraintInfosToUniqueConstraints(TableName tName, List<ConstraintInfo> uniqueInfos,
-      List<SQLUniqueConstraint> uniqueConstraints) {
-    int i = 1;
-    for (ConstraintInfo uniqueInfo : uniqueInfos) {
-      uniqueConstraints.add(
-          new SQLUniqueConstraint(tName.getCat(), tName.getDb(), tName.getTable(), uniqueInfo.colName, i++,
-              uniqueInfo.constraintName, uniqueInfo.enable, uniqueInfo.validate, uniqueInfo.rely));
-    }
-  }
-
-  protected static void processCheckConstraints(TableName tName, ASTNode child, List<String> columnNames,
-      List<SQLCheckConstraint> checkConstraints, final ASTNode typeChild, final TokenRewriteStream tokenRewriteStream)
-      throws SemanticException {
-    List<ConstraintInfo> checkInfos = new ArrayList<ConstraintInfo>();
-    generateConstraintInfos(child, columnNames, checkInfos, typeChild, tokenRewriteStream);
-    constraintInfosToCheckConstraints(tName, checkInfos, checkConstraints);
-  }
-
-  private static void constraintInfosToCheckConstraints(TableName tName, List<ConstraintInfo> checkInfos,
-      List<SQLCheckConstraint> checkConstraints) {
-    for (ConstraintInfo checkInfo : checkInfos) {
-      checkConstraints.add(new SQLCheckConstraint(tName.getCat(), tName.getDb(), tName.getTable(), checkInfo.colName,
-          checkInfo.defaultValue, checkInfo.constraintName, checkInfo.enable, checkInfo.validate, checkInfo.rely));
-    }
-  }
-
-  protected static void processDefaultConstraints(TableName tName, ASTNode child, List<String> columnNames,
-      List<SQLDefaultConstraint> defaultConstraints, final ASTNode typeChild,
-      final TokenRewriteStream tokenRewriteStream) throws SemanticException {
-    List<ConstraintInfo> defaultInfos = new ArrayList<ConstraintInfo>();
-    generateConstraintInfos(child, columnNames, defaultInfos, typeChild, tokenRewriteStream);
-    constraintInfosToDefaultConstraints(tName, defaultInfos, defaultConstraints);
-  }
-
-  private static void constraintInfosToDefaultConstraints(TableName tName, List<ConstraintInfo> defaultInfos,
-      List<SQLDefaultConstraint> defaultConstraints) {
-    for (ConstraintInfo defaultInfo : defaultInfos) {
-      defaultConstraints.add(
-          new SQLDefaultConstraint(tName.getCat(), tName.getDb(), tName.getTable(), defaultInfo.colName,
-              defaultInfo.defaultValue, defaultInfo.constraintName, defaultInfo.enable, defaultInfo.validate,
-              defaultInfo.rely));
-    }
-  }
-
-  protected static void processNotNullConstraints(TableName tName, ASTNode child, List<String> columnNames,
-      List<SQLNotNullConstraint> notNullConstraints) throws SemanticException {
-    List<ConstraintInfo> notNullInfos = new ArrayList<ConstraintInfo>();
-    generateConstraintInfos(child, columnNames, notNullInfos, null, null);
-    constraintInfosToNotNullConstraints(tName, notNullInfos, notNullConstraints);
-  }
-
-  private static void constraintInfosToNotNullConstraints(TableName tName, List<ConstraintInfo> notNullInfos,
-      List<SQLNotNullConstraint> notNullConstraints) {
-    for (ConstraintInfo notNullInfo : notNullInfos) {
-      notNullConstraints.add(
-          new SQLNotNullConstraint(tName.getCat(), tName.getDb(), tName.getTable(), notNullInfo.colName,
-              notNullInfo.constraintName, notNullInfo.enable, notNullInfo.validate, notNullInfo.rely));
-    }
-  }
-
-  /**
-   * Get the constraint from the AST and populate the cstrInfos with the required
-   * information.
-   * @param child  The node with the constraint token
-   * @param cstrInfos Constraint information
-   * @throws SemanticException
-   */
-  private static void generateConstraintInfos(ASTNode child,
-      List<ConstraintInfo> cstrInfos) throws SemanticException {
-    ImmutableList.Builder<String> columnNames = ImmutableList.builder();
-    for (int j = 0; j < child.getChild(0).getChildCount(); j++) {
-      Tree columnName = child.getChild(0).getChild(j);
-      checkColumnName(columnName.getText());
-      columnNames.add(unescapeIdentifier(columnName.getText().toLowerCase()));
-    }
-    generateConstraintInfos(child, columnNames.build(), cstrInfos, null, null);
-  }
-
-  private static boolean isDefaultValueAllowed(ExprNodeDesc defaultValExpr) {
-    while (FunctionRegistry.isOpCast(defaultValExpr)) {
-      defaultValExpr = defaultValExpr.getChildren().get(0);
-    }
-
-    if(defaultValExpr instanceof ExprNodeConstantDesc) {
-      return true;
-    }
-
-    if(defaultValExpr instanceof ExprNodeGenericFuncDesc){
-      for (ExprNodeDesc argument : defaultValExpr.getChildren()) {
-        if (!isDefaultValueAllowed(argument)) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    return false;
-  }
-
   // given an ast node this method recursively goes over checkExpr ast. If it finds a node of type TOK_SUBQUERY_EXPR
   // it throws an error.
   // This method is used to validate check expression since check expression isn't allowed to have subquery
@@ -935,250 +774,6 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  private static String getCheckExpression(ASTNode checkExprAST, final TokenRewriteStream tokenRewriteStream)
-      throws SemanticException{
-    return tokenRewriteStream.toOriginalString(checkExprAST.getTokenStartIndex(), checkExprAST.getTokenStopIndex());
-  }
-
-  /**
-   * Validate and get the default value from the AST
-   * @param defaultValueAST AST node corresponding to default value
-   * @return retrieve the default value and return it as string
-   * @throws SemanticException
-   */
-  private static String getDefaultValue(ASTNode defaultValueAST, ASTNode typeChild,
-                                        final TokenRewriteStream tokenStream) throws SemanticException{
-    // first create expression from defaultValueAST
-    TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
-    ExprNodeDesc defaultValExpr = TypeCheckProcFactory
-        .genExprNode(defaultValueAST, typeCheckCtx).get(defaultValueAST);
-
-    if(defaultValExpr == null) {
-      throw new SemanticException(
-          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid Default value!"));
-    }
-
-    //get default value to be be stored in metastore
-    String defaultValueText  = tokenStream.toOriginalString(defaultValueAST.getTokenStartIndex(),
-                                                            defaultValueAST.getTokenStopIndex());
-    final int DEFAULT_MAX_LEN = 255;
-    if(defaultValueText.length() > DEFAULT_MAX_LEN) {
-      throw new SemanticException(
-          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid Default value:  " + defaultValueText +
-                                                  " .Maximum character length allowed is " + DEFAULT_MAX_LEN +" ."));
-    }
-
-    // Make sure the default value expression type is exactly same as column's type.
-    TypeInfo defaultValTypeInfo = defaultValExpr.getTypeInfo();
-    TypeInfo colTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(getTypeStringFromAST(typeChild));
-    if(!defaultValTypeInfo.equals(colTypeInfo)) {
-      throw new SemanticException(
-          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid type: " + defaultValTypeInfo.getTypeName()
-                                                  + " for default value: "
-                                                  + defaultValueText
-                                                  + ". Please make sure that the type is compatible with column type: "
-                                                  + colTypeInfo.getTypeName()));
-    }
-
-    // throw an error if default value isn't what hive allows
-    if(!isDefaultValueAllowed(defaultValExpr)) {
-      throw new SemanticException(
-          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid Default value: " + defaultValueText
-                                                  + ". DEFAULT only allows constant or function expressions"));
-    }
-    return defaultValueText;
-  }
-
-
-  /**
-   * Get the constraint from the AST and populate the cstrInfos with the required
-   * information.
-   * @param child  The node with the constraint token
-   * @param columnNames The name of the columns for the primary key
-   * @param cstrInfos Constraint information
-   * @param typeChildForDefault type of column used for default value type check
-   * @throws SemanticException
-   */
-  private static void generateConstraintInfos(ASTNode child, List<String> columnNames,
-      List<ConstraintInfo> cstrInfos, ASTNode typeChildForDefault,
-                                              final TokenRewriteStream tokenRewriteStream) throws SemanticException {
-    // The ANTLR grammar looks like :
-    // 1. KW_CONSTRAINT idfr=identifier KW_PRIMARY KW_KEY pkCols=columnParenthesesList
-    //  constraintOptsCreate?
-    // -> ^(TOK_PRIMARY_KEY $pkCols $idfr constraintOptsCreate?)
-    // when the user specifies the constraint name.
-    // 2.  KW_PRIMARY KW_KEY columnParenthesesList
-    // constraintOptsCreate?
-    // -> ^(TOK_PRIMARY_KEY columnParenthesesList constraintOptsCreate?)
-    // when the user does not specify the constraint name.
-    // Default values
-    String constraintName = null;
-    //by default if user hasn't provided any optional constraint properties
-    // it will be considered ENABLE and NOVALIDATE and RELY=true
-    boolean enable = true;
-    boolean validate = false;
-    boolean rely = true;
-    String checkOrDefaultValue = null;
-    for (int i = 0; i < child.getChildCount(); i++) {
-      ASTNode grandChild = (ASTNode) child.getChild(i);
-      int type = grandChild.getToken().getType();
-      if (type == HiveParser.TOK_CONSTRAINT_NAME) {
-        constraintName = unescapeIdentifier(grandChild.getChild(0).getText().toLowerCase());
-      } else if (type == HiveParser.TOK_ENABLE) {
-        enable = true;
-        // validate is false by default if we enable the constraint
-        // TODO: A constraint like NOT NULL could be enabled using ALTER but VALIDATE remains
-        //  false in such cases. Ideally VALIDATE should be set to true to validate existing data
-        validate = false;
-      } else if (type == HiveParser.TOK_DISABLE) {
-        enable = false;
-        // validate is false by default if we disable the constraint
-        validate = false;
-        rely = false;
-      } else if (type == HiveParser.TOK_VALIDATE) {
-        validate = true;
-      } else if (type == HiveParser.TOK_NOVALIDATE) {
-        validate = false;
-      } else if (type == HiveParser.TOK_RELY) {
-        rely = true;
-      } else if( type == HiveParser.TOK_NORELY) {
-        rely = false;
-      } else if( child.getToken().getType() == HiveParser.TOK_DEFAULT_VALUE){
-        // try to get default value only if this is DEFAULT constraint
-        checkOrDefaultValue = getDefaultValue(grandChild, typeChildForDefault, tokenRewriteStream);
-      }
-      else if(child.getToken().getType() == HiveParser.TOK_CHECK_CONSTRAINT) {
-        checkOrDefaultValue = getCheckExpression(grandChild, tokenRewriteStream);
-      }
-    }
-
-    // metastore schema only allows maximum 255 for constraint name column
-    final int CONSTRAINT_MAX_LENGTH = 255;
-    if(constraintName != null && constraintName.length() > CONSTRAINT_MAX_LENGTH) {
-      throw new SemanticException(
-          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Constraint name: " + constraintName + " exceeded maximum allowed "
-                                              + "length: " + CONSTRAINT_MAX_LENGTH ));
-    }
-
-    // metastore schema only allows maximum 255 for constraint value column
-    if(checkOrDefaultValue!= null && checkOrDefaultValue.length() > CONSTRAINT_MAX_LENGTH) {
-      throw new SemanticException(
-          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Constraint value: " + checkOrDefaultValue+ " exceeded maximum allowed "
-                                                  + "length: " + CONSTRAINT_MAX_LENGTH ));
-    }
-
-    // NOT NULL constraint could be enforced/enabled
-    if (enable && child.getToken().getType() != HiveParser.TOK_NOT_NULL
-        && child.getToken().getType() != HiveParser.TOK_DEFAULT_VALUE
-        && child.getToken().getType() != HiveParser.TOK_CHECK_CONSTRAINT) {
-      throw new SemanticException(
-          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("ENABLE/ENFORCED feature not supported yet. "
-              + "Please use DISABLE/NOT ENFORCED instead."));
-    }
-    if (validate) {
-      throw new SemanticException(
-        ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("VALIDATE feature not supported yet. "
-              + "Please use NOVALIDATE instead."));
-    }
-
-    if(columnNames == null) {
-      cstrInfos.add(new ConstraintInfo(null, constraintName,
-                                       enable, validate, rely, checkOrDefaultValue));
-    } else {
-      for (String columnName : columnNames) {
-        cstrInfos.add(new ConstraintInfo(columnName, constraintName,
-                                         enable, validate, rely, checkOrDefaultValue));
-      }
-    }
-  }
-
-  /**
-   * Process the foreign keys from the AST and populate the foreign keys in the SQLForeignKey list
-   * @param tName catalog/db/table name reference
-   * @param child Foreign Key token node
-   * @param foreignKeys SQLForeignKey list
-   * @throws SemanticException
-   */
-  protected static void processForeignKeys(TableName tName, ASTNode child, List<SQLForeignKey> foreignKeys)
-      throws SemanticException {
-    // The ANTLR grammar looks like :
-    // 1.  KW_CONSTRAINT idfr=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList
-    // KW_REFERENCES tabName=tableName parCols=columnParenthesesList
-    // enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
-    // -> ^(TOK_FOREIGN_KEY $idfr $fkCols $tabName $parCols $relySpec $enableSpec $validateSpec)
-    // when the user specifies the constraint name (i.e. child.getChildCount() == 7)
-    // 2.  KW_FOREIGN KW_KEY fkCols=columnParenthesesList
-    // KW_REFERENCES tabName=tableName parCols=columnParenthesesList
-    // enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
-    // -> ^(TOK_FOREIGN_KEY $fkCols  $tabName $parCols $relySpec $enableSpec $validateSpec)
-    // when the user does not specify the constraint name (i.e. child.getChildCount() == 6)
-    String constraintName = null;
-    boolean enable = true;
-    boolean validate = true;
-    boolean rely = false;
-    int fkIndex = -1;
-    for (int i = 0; i < child.getChildCount(); i++) {
-      ASTNode grandChild = (ASTNode) child.getChild(i);
-      int type = grandChild.getToken().getType();
-      if (type == HiveParser.TOK_CONSTRAINT_NAME) {
-        constraintName = unescapeIdentifier(grandChild.getChild(0).getText().toLowerCase());
-      } else if (type == HiveParser.TOK_ENABLE) {
-        enable = true;
-        // validate is true by default if we enable the constraint
-        validate = true;
-      } else if (type == HiveParser.TOK_DISABLE) {
-        enable = false;
-        // validate is false by default if we disable the constraint
-        validate = false;
-      } else if (type == HiveParser.TOK_VALIDATE) {
-        validate = true;
-      } else if (type == HiveParser.TOK_NOVALIDATE) {
-        validate = false;
-      } else if (type == HiveParser.TOK_RELY) {
-        rely = true;
-      } else if (type == HiveParser.TOK_TABCOLNAME && fkIndex == -1) {
-        fkIndex = i;
-      }
-    }
-    if (enable) {
-      throw new SemanticException(
-          ErrorMsg.INVALID_FK_SYNTAX.getMsg("ENABLE feature not supported yet. "
-              + "Please use DISABLE instead."));
-    }
-    if (validate) {
-      throw new SemanticException(
-        ErrorMsg.INVALID_FK_SYNTAX.getMsg("VALIDATE feature not supported yet. "
-              + "Please use NOVALIDATE instead."));
-    }
-
-    int ptIndex = fkIndex + 1;
-    int pkIndex = ptIndex + 1;
-    if (child.getChild(fkIndex).getChildCount() != child.getChild(pkIndex).getChildCount()) {
-      throw new SemanticException(ErrorMsg.INVALID_FK_SYNTAX.getMsg(
-        " The number of foreign key columns should be same as number of parent key columns "));
-    }
-
-    final TableName parentTblName = getQualifiedTableName((ASTNode) child.getChild(ptIndex));
-    for (int j = 0; j < child.getChild(fkIndex).getChildCount(); j++) {
-      SQLForeignKey sqlForeignKey = new SQLForeignKey();
-      sqlForeignKey.setFktable_db(tName.getDb());
-      sqlForeignKey.setFktable_name(tName.getTable());
-      Tree fkgrandChild = child.getChild(fkIndex).getChild(j);
-      checkColumnName(fkgrandChild.getText());
-      sqlForeignKey.setFkcolumn_name(unescapeIdentifier(fkgrandChild.getText().toLowerCase()));
-      sqlForeignKey.setPktable_db(parentTblName.getDb());
-      sqlForeignKey.setPktable_name(parentTblName.getTable());
-      Tree pkgrandChild = child.getChild(pkIndex).getChild(j);
-      sqlForeignKey.setPkcolumn_name(unescapeIdentifier(pkgrandChild.getText().toLowerCase()));
-      sqlForeignKey.setKey_seq(j+1);
-      sqlForeignKey.setFk_name(constraintName);
-      sqlForeignKey.setEnable_cstr(enable);
-      sqlForeignKey.setValidate_cstr(validate);
-      sqlForeignKey.setRely_cstr(rely);
-      foreignKeys.add(sqlForeignKey);
-    }
-  }
-
   protected boolean hasEnabledOrValidatedConstraints(List<SQLNotNullConstraint> notNullConstraints,
                                                      List<SQLDefaultConstraint> defaultConstraints,
                                                      List<SQLCheckConstraint> checkConstraints){
@@ -1198,7 +793,7 @@ public abstract class BaseSemanticAnalyzer {
     return false;
   }
 
-  private static void checkColumnName(String columnName) throws SemanticException {
+  public static void checkColumnName(String columnName) throws SemanticException {
     if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName.toUpperCase())) {
       throw new SemanticException(ErrorMsg.INVALID_COLUMN_NAME.getMsg(columnName));
     }
@@ -1226,7 +821,7 @@ public abstract class BaseSemanticAnalyzer {
             getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf));
         // TODO CAT - for now always use the default catalog.  Eventually will want to see if
         // the user specified a catalog
-        processUniqueConstraints(tName, child, uniqueConstraints);
+        ConstraintsUtils.processUniqueConstraints(tName, child, uniqueConstraints);
       }
       break;
       case HiveParser.TOK_PRIMARY_KEY: {
@@ -1235,12 +830,12 @@ public abstract class BaseSemanticAnalyzer {
               .getMsg("Cannot exist more than one primary key definition for the same table"));
         }
         final TableName tName = getQualifiedTableName((ASTNode) parent.getChild(0));
-        processPrimaryKeys(tName, child, primaryKeys);
+        ConstraintsUtils.processPrimaryKeys(tName, child, primaryKeys);
       }
       break;
       case HiveParser.TOK_FOREIGN_KEY: {
         final TableName tName = getQualifiedTableName((ASTNode) parent.getChild(0));
-        processForeignKeys(tName, child, foreignKeys);
+        ConstraintsUtils.processForeignKeys(tName, child, foreignKeys);
       }
       break;
       case HiveParser.TOK_CHECK_CONSTRAINT: {
@@ -1248,8 +843,7 @@ public abstract class BaseSemanticAnalyzer {
             getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf));
         // TODO CAT - for now always use the default catalog.  Eventually will want to see if
         // the user specified a catalog
-        processCheckConstraints(tName, child, null,
-            checkConstraints, null, tokenRewriteStream);
+        ConstraintsUtils.processCheckConstraints(tName, child, null, checkConstraints, null, tokenRewriteStream);
       }
       break;
       default:
@@ -1286,29 +880,30 @@ public abstract class BaseSemanticAnalyzer {
             // Process column constraint
             switch (constraintChild.getToken().getType()) {
             case HiveParser.TOK_CHECK_CONSTRAINT:
-              processCheckConstraints(tName, constraintChild, ImmutableList.of(col.getName()), checkConstraints,
-                  typeChild, tokenRewriteStream);
+              ConstraintsUtils.processCheckConstraints(tName, constraintChild, ImmutableList.of(col.getName()),
+                  checkConstraints, typeChild, tokenRewriteStream);
               break;
             case HiveParser.TOK_DEFAULT_VALUE:
-              processDefaultConstraints(tName, constraintChild, ImmutableList.of(col.getName()), defaultConstraints,
-                  typeChild, tokenRewriteStream);
+              ConstraintsUtils.processDefaultConstraints(tName, constraintChild, ImmutableList.of(col.getName()),
+                  defaultConstraints, typeChild, tokenRewriteStream);
               break;
             case HiveParser.TOK_NOT_NULL:
-              processNotNullConstraints(tName, constraintChild, ImmutableList.of(col.getName()), notNullConstraints);
+              ConstraintsUtils.processNotNullConstraints(tName, constraintChild, ImmutableList.of(col.getName()),
+                  notNullConstraints);
               break;
             case HiveParser.TOK_UNIQUE:
-              processUniqueConstraints(tName, constraintChild, ImmutableList.of(col.getName()), uniqueConstraints);
+              ConstraintsUtils.processUniqueConstraints(tName, constraintChild, ImmutableList.of(col.getName()),
+                  uniqueConstraints);
               break;
             case HiveParser.TOK_PRIMARY_KEY:
               if (!primaryKeys.isEmpty()) {
                 throw new SemanticException(ErrorMsg.INVALID_CONSTRAINT
                     .getMsg("Cannot exist more than one primary key definition for the same table"));
               }
-              processPrimaryKeys(tName, constraintChild, ImmutableList.of(col.getName()), primaryKeys);
+              ConstraintsUtils.processPrimaryKeys(tName, constraintChild, ImmutableList.of(col.getName()), primaryKeys);
               break;
             case HiveParser.TOK_FOREIGN_KEY:
-              processForeignKeys(tName, constraintChild,
-                  foreignKeys);
+              ConstraintsUtils.processForeignKeys(tName, constraintChild, foreignKeys);
               break;
             default:
               throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
@@ -1353,7 +948,7 @@ public abstract class BaseSemanticAnalyzer {
     return colList;
   }
 
-  protected static String getTypeStringFromAST(ASTNode typeNode)
+  public static String getTypeStringFromAST(ASTNode typeNode)
       throws SemanticException {
     switch (typeNode.getType()) {
     case HiveParser.TOK_LIST:
