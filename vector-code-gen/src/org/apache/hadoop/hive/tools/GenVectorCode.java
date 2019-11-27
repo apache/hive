@@ -2539,7 +2539,7 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String className = "Decimal64Col" + operatorName + "Decimal64Scalar";
     generateDecimal64ColumnArithmetic(tdesc, className, /* parentClassName */ null);
-    if (operatorName.equals("Multiply")) {
+    if ("Multiply".equals(operatorName)) {
       tdesc[0] = tdesc[0] + "Unscaled";
       String unscaledClassName = className + "Unscaled";
       generateDecimal64ColumnArithmetic(tdesc, unscaledClassName, className);
@@ -2550,7 +2550,7 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String className = "Decimal64Scalar" + operatorName + "Decimal64Column";
     generateDecimal64ColumnArithmetic(tdesc, className, /* parentClassName */ null);
-    if (operatorName.equals("Multiply")) {
+    if ("Multiply".equals(operatorName)) {
       tdesc[0] = tdesc[0] + "Unscaled";
       String unscaledClassName = className + "Unscaled";
       generateDecimal64ColumnArithmetic(tdesc, unscaledClassName, className);

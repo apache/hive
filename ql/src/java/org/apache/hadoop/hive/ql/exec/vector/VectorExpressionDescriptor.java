@@ -284,6 +284,9 @@ public class VectorExpressionDescriptor {
       if (!mode.equals(other.mode) || (argCount != other.argCount)) {
         return false;
       }
+      if (unscaled != other.unscaled) {
+        return false;
+      }
       for (int i = 0; i < argCount; i++) {
         if (!argTypes[i].isSameTypeOrFamily(other.argTypes[i])) {
           return false;
@@ -292,9 +295,6 @@ public class VectorExpressionDescriptor {
           return false;
         }
       }
-      if (unscaled != other.unscaled) {
-        return false;
-      }
       return true;
     }
 
@@ -302,9 +302,10 @@ public class VectorExpressionDescriptor {
     private final ArgumentType [] argTypes;
     private final InputExpressionType [] exprTypes;
     private final int argCount;
-    private boolean unscaled;
+    private final boolean unscaled;
 
-    private Descriptor(Mode mode, int argCount, ArgumentType[] argTypes, InputExpressionType[] exprTypes, boolean unscaled) {
+    private Descriptor(Mode mode, int argCount, ArgumentType[] argTypes, InputExpressionType[] exprTypes,
+        boolean unscaled) {
       this.mode = mode;
       this.argTypes = argTypes.clone();
       this.exprTypes = exprTypes.clone();

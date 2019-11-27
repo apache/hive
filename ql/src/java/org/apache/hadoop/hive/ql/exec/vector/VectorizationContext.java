@@ -1723,6 +1723,7 @@ import com.google.common.annotations.VisibleForTesting;
     boolean anyDecimal64Expr = false;
     boolean isDecimal64ScaleEstablished = false;
     int decimal64ColumnScale = 0;
+    boolean hasConstants = false;
 
     for (int i = 0; i < numChildren; i++) {
       ExprNodeDesc childExpr = childExprs.get(i);
@@ -1750,6 +1751,7 @@ import com.google.common.annotations.VisibleForTesting;
         }
         builder.setInputExpressionType(i, InputExpressionType.COLUMN);
       } else if (childExpr instanceof ExprNodeConstantDesc) {
+        hasConstants = true;
         if (isNullConst(childExpr)) {
           // Cannot handle NULL scalar parameter.
           return null;
@@ -1803,7 +1805,7 @@ import com.google.common.annotations.VisibleForTesting;
       returnDataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
     }
 
-    if(dontRescaleArguments) {
+    if(dontRescaleArguments && hasConstants) {
       builder.setUnscaled(true);
     }
     VectorExpressionDescriptor.Descriptor descriptor = builder.build();
@@ -1857,7 +1859,6 @@ import com.google.common.annotations.VisibleForTesting;
 
           VectorExpression filterExpr =
               getFilterOnBooleanColumnExpression((ExprNodeColumnDesc) childExpr, colIndex);
-
           if (filterExpr == null) {
             return null;
           }
