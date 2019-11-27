@@ -30,8 +30,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.List;
 
 import static org.apache.hadoop.hive.ql.plan.api.OperatorType.TOPNKEY;
+import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.NullValueOption;
 
 /**
  * TopNKeyOperator passes rows that contains top N keys only.
@@ -55,25 +57,22 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
 
   public static class KeyWrapperComparator implements Comparator<KeyWrapper> {
 
-    private final ObjectInspector[] keyObjectInspectors;
-    private final boolean[] columnSortOrderIsDesc;
-    private final ObjectInspectorUtils.NullValueOption[] nullSortOrder;
+    private final List<Comparator<Object>> comparatorList;
 
     KeyWrapperComparator(ObjectInspector[] keyObjectInspectors, String columnSortOrder, String nullSortOrder) {
-      this.keyObjectInspectors = keyObjectInspectors;
-      this.columnSortOrderIsDesc = new boolean[columnSortOrder.length()];
-      this.nullSortOrder = new ObjectInspectorUtils.NullValueOption[nullSortOrder.length()];
+      boolean[] columnSortOrderIsDesc = new boolean[columnSortOrder.length()];
+      NullValueOption[] nullSortOrderArray = new NullValueOption[nullSortOrder.length()];
       for (int i = 0; i < columnSortOrder.length(); ++i) {
-        this.columnSortOrderIsDesc[i] = columnSortOrder.charAt(i) == '-';
-        this.nullSortOrder[i] = NullOrdering.fromSign(nullSortOrder.charAt(i)).getNullValueOption();
+        columnSortOrderIsDesc[i] = columnSortOrder.charAt(i) == '-';
+        nullSortOrderArray[i] = NullOrdering.fromSign(nullSortOrder.charAt(i)).getNullValueOption();
       }
+      comparatorList = ObjectInspectorUtils.getComparator(
+              keyObjectInspectors, keyObjectInspectors, columnSortOrderIsDesc, nullSortOrderArray);
     }
 
     @Override
     public int compare(KeyWrapper key1, KeyWrapper key2) {
-      return ObjectInspectorUtils.compare(
-              key1.getKeyArray(), keyObjectInspectors, key2.getKeyArray(), keyObjectInspectors,
-              columnSortOrderIsDesc, nullSortOrder);
+      return ObjectInspectorUtils.compare(comparatorList, key1.getKeyArray(), key2.getKeyArray());
     }
   }
 

@@ -948,14 +948,12 @@ public final class ObjectInspectorUtils {
     return 0;
   }
 
-  public static int compare(
-          Object[] objectArray1, ObjectInspector[] oi1, Object[] objectArray2, ObjectInspector[] oi2,
+  public static List<Comparator<Object>> getComparator(
+          ObjectInspector[] oi1, ObjectInspector[] oi2,
           boolean[] columnSortOrderIsDesc, NullValueOption[] nullSortOrder) {
-    assert (objectArray1.length == objectArray2.length);
-    assert (objectArray1.length == oi1.length);
-    assert (objectArray2.length == oi2.length);
-    assert (columnSortOrderIsDesc.length == objectArray1.length);
-    assert (nullSortOrder.length == objectArray1.length);
+    assert (oi1.length == oi2.length);
+    assert (columnSortOrderIsDesc.length == oi1.length);
+    assert (nullSortOrder.length == oi1.length);
 
     List<Comparator<Object>> comparators = new ArrayList<>(oi1.length);
     for (int i = 0; i < oi1.length; i++) {
@@ -975,7 +973,7 @@ public final class ObjectInspectorUtils {
       }
     }
 
-    return compare(comparators, objectArray1, objectArray2);
+    return comparators;
   }
 
   public static <T> int compare(List<Comparator<T>> comparatorList, T[] o1, T[] o2) {
