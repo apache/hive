@@ -434,10 +434,21 @@ subQueryExpression
 
 precedenceEqualExpression
     :
-    (LPAREN precedenceBitwiseOrExpression COMMA) => precedenceEqualExpressionMutiple
+    (LPAREN partExpression COMMA) => precedenceEqualExpressionMutiple
     |
     precedenceEqualExpressionSingle
     ;
+
+partExpression
+	:	partContent? (LPAREN partArguments RPAREN)? partContent?
+	;
+
+partArguments
+	:	partExpression (COMMA partExpression)*
+	;
+
+partContent:
+		(Identifier|StringLiteral|Number|sysFuncNames|DOT)+;
 
 precedenceEqualExpressionSingle
     :
