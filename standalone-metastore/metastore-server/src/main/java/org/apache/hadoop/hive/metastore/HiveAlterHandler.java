@@ -64,6 +64,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.LinkedList;
 
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTERLOCATION;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTER_TABLE_OPERATION_TYPE;
@@ -732,6 +734,27 @@ public class HiveAlterHandler implements AlterHandler {
         environmentContext, null, -1, null);
   }
 
+  private Map<List<String>, Partition> getExistingPartitions(final RawStore msdb,
+      final List<Partition> new_parts, final Table tbl, final String catName,
+      final String dbname, final String name)
+      throws MetaException, NoSuchObjectException, InvalidOperationException {
+
+    // Get list of partition values
+    List<String> partValues = new LinkedList<>();
+    for (Partition tmpPart : new_parts) {
+      partValues.add(Warehouse.makePartName(tbl.getPartitionKeys(), tmpPart.getValues()));
+    }
+
+    // Get existing partitions from store
+    List<Partition> oldParts = msdb.getPartitionsByNames(catName, dbname, name, partValues);
+    if (new_parts.size() != oldParts.size()) {
+      throw new InvalidOperationException("Alter partition operation failed: "
+          + "new parts size " + new_parts.size()
+          + " not matching with old parts size " + oldParts.size());
+    }
+    return oldParts.stream().collect(Collectors.toMap(Partition::getValues, Partition -> Partition));
+  }
+
   @Override
   public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
                                          final String dbname, final String name,
@@ -760,6 +783,7 @@ public class HiveAlterHandler implements AlterHandler {
 
       blockPartitionLocationChangesOnReplSource(msdb.getDatabase(catName, dbname), tbl,
                                                 environmentContext);
+      Map<List<String>, Partition> oldPartMap = getExistingPartitions(msdb, new_parts, tbl, catName, dbname, name);
 
       for (Partition tmpPart: new_parts) {
         // Set DDL time to now if not specified
@@ -770,7 +794,7 @@ public class HiveAlterHandler implements AlterHandler {
               .currentTimeMillis() / 1000));
         }
 
-        Partition oldTmpPart = msdb.getPartition(catName, dbname, name, tmpPart.getValues());
+        Partition oldTmpPart = oldPartMap.get(tmpPart.getValues());
         oldParts.add(oldTmpPart);
         partValsList.add(tmpPart.getValues());
 

@@ -91,6 +91,8 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   private static com.google.common.base.Function<CurrentNotificationEventId, CurrentNotificationEventId>
           getCurrNotiEventIdModifier = null;
 
+  private static com.google.common.base.Function<List<Partition>, Boolean> alterPartitionsModifier = null;
+
   // Methods to set/reset getTable modifier
   public static void setGetTableBehaviour(com.google.common.base.Function<Table, Table> modifier){
     getTableModifier = (modifier == null) ? com.google.common.base.Functions.identity() : modifier;
@@ -151,6 +153,11 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   public static void resetAlterTableModifier() {
     setAlterTableModifier(null);
   }
+
+  public static void setAlterPartitionsBehaviour(com.google.common.base.Function<List<Partition>, Boolean> modifier){
+    alterPartitionsModifier = modifier;
+  }
+
 
   // ObjectStore methods to be overridden with injected behavior
   @Override
@@ -294,5 +301,20 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
       }
     }
     return id;
+  }
+
+  @Override
+  public List<Partition> alterPartitions(String catName, String dbname, String name,
+                                  List<List<String>> part_vals, List<Partition> newParts,
+                                  long writeId, String queryWriteIdList)
+          throws InvalidObjectException, MetaException {
+    if (alterPartitionsModifier != null) {
+      Boolean success = alterPartitionsModifier.apply(newParts);
+      if ((success != null) && !success) {
+        throw new MetaException("InjectableBehaviourObjectStore: Invalid alterPartitions operation on Catalog : "
+                + catName + " DB: " + dbname + " table: " + name);
+      }
+    }
+    return super.alterPartitions(catName, dbname, name, part_vals, newParts, writeId, queryWriteIdList);
   }
 }
