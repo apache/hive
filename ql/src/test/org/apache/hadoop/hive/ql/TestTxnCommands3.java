@@ -306,7 +306,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into T values(0,2)");//makes delta_1_1 in T1
     runStatementOnDriver("insert into T values(1,4)");//makes delta_2_2 in T2
 
-    Driver driver2 = new Driver(new QueryState.Builder().withHiveConf(hiveConf).build(), null);
+    Driver driver2 = new Driver(new QueryState.Builder().withHiveConf(hiveConf).build());
     driver2.setMaxRows(10000);
 
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(hiveConf);

@@ -100,8 +100,8 @@ public class TestDbTxnManager2 {
   public void setUp() throws Exception {
     SessionState.start(conf);
     ctx = new Context(conf);
-    driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build(), null);
-    driver2 = new Driver(new QueryState.Builder().withHiveConf(conf).build(), null);
+    driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build());
+    driver2 = new Driver(new QueryState.Builder().withHiveConf(conf).build());
     TxnDbUtil.cleanDb(conf);
     TxnDbUtil.prepDb(conf);
     SessionState ss = SessionState.get();

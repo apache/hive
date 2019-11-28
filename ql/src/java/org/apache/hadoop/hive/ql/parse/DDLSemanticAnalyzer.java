@@ -2341,10 +2341,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         cmd.append(")");
       }
-      SessionState ss = SessionState.get();
-      // TODO: should this use getUserFromAuthenticator?
-      String uName = (ss == null? null: ss.getUserName());
-      Driver driver = new Driver(conf, uName, queryState.getLineageState());
+      // FIXME: is it ok to have a completely new querystate?
+      QueryState newQueryState = Driver.getNewQueryState(conf, queryState.getLineageState());
+      // FIXME: this driver instance is never closed
+      Driver driver = new Driver(newQueryState);
       int rc = driver.compile(cmd.toString(), false);
       if (rc != 0) {
         throw new SemanticException(ErrorMsg.NO_VALID_PARTN.getMsg());

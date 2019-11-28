@@ -38,7 +38,6 @@ public class DriverContext {
   private final QueryState queryState;
   private final QueryInfo queryInfo;
   private final HiveConf conf;
-  private final String userName;
   private final HookRunner hookRunner;
 
   // Transaction manager the Driver has been initialized with (can be null).
@@ -72,12 +71,11 @@ public class DriverContext {
   private Context backupContext = null;
   private boolean retrial = false;
 
-  public DriverContext(QueryState queryState, QueryInfo queryInfo, String userName, HookRunner hookRunner,
+  public DriverContext(QueryState queryState, QueryInfo queryInfo, HookRunner hookRunner,
       HiveTxnManager initTxnManager) {
     this.queryState = queryState;
     this.queryInfo = queryInfo;
     this.conf = queryState.getConf();
-    this.userName = userName;
     this.hookRunner = hookRunner;
     this.initTxnManager = initTxnManager;
   }
@@ -96,10 +94,6 @@ public class DriverContext {
 
   public HiveConf getConf() {
     return conf;
-  }
-
-  public String getUserName() {
-    return userName;
   }
 
   public HookRunner getHookRunner() {

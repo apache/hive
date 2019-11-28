@@ -160,7 +160,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   public void prepare(QueryState queryState) throws HiveSQLException {
     setState(OperationState.RUNNING);
     try {
-      driver = DriverFactory.newDriver(queryState, getParentSession().getUserName(), queryInfo);
+      driver = DriverFactory.newDriver(queryState, queryInfo);
 
       // Start the timer thread for cancelling the query when query timeout is reached
       // queryTimeout == 0 means no timeout

@@ -235,32 +235,26 @@ public class Driver implements IDriver {
 
   @VisibleForTesting
   public Driver(HiveConf conf) {
-    this(new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build(), null);
+    this(new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build());
   }
 
   // Pass lineageState when a driver instantiates another Driver to run
   // or compile another query
   public Driver(HiveConf conf, Context ctx, LineageState lineageState) {
-    this(getNewQueryState(conf, lineageState), null, null);
+    this(getNewQueryState(conf, lineageState), null);
     this.ctx = ctx;
   }
 
-  // Pass lineageState when a driver instantiates another Driver to run
-  // or compile another query
-  public Driver(HiveConf conf, String userName, LineageState lineageState) {
-    this(getNewQueryState(conf, lineageState), userName, null);
+  public Driver(QueryState queryState) {
+    this(queryState, null, null);
   }
 
-  public Driver(QueryState queryState, String userName) {
-    this(queryState, userName, null, null);
+  public Driver(QueryState queryState, QueryInfo queryInfo) {
+    this(queryState, queryInfo, null);
   }
 
-  public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    this(queryState, userName, queryInfo, null);
-  }
-
-  public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnManager) {
-    driverContext = new DriverContext(queryState, queryInfo, userName, new HookRunner(queryState.getConf(), CONSOLE),
+  public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager) {
+    driverContext = new DriverContext(queryState, queryInfo, new HookRunner(queryState.getConf(), CONSOLE),
         txnManager);
   }
 
@@ -270,7 +264,7 @@ public class Driver implements IDriver {
    * @param lineageState a LineageState to be set in the new QueryState object
    * @return The new QueryState object
    */
-  private static QueryState getNewQueryState(HiveConf conf, LineageState lineageState) {
+  public static QueryState getNewQueryState(HiveConf conf, LineageState lineageState) {
     return new QueryState.Builder()
         .withGenerateNewQueryId(true)
         .withHiveConf(conf)
@@ -409,7 +403,7 @@ public class Driver implements IDriver {
       HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
       if (executeHooks) {
         hookCtx.setConf(driverContext.getConf());
-        hookCtx.setUserName(driverContext.getUserName());
+        hookCtx.setUserName(SessionState.get().getUserName());
         hookCtx.setIpAddress(SessionState.get().getUserIpAddress());
         hookCtx.setCommand(command);
         hookCtx.setHiveOperation(driverContext.getQueryState().getHiveOperation());
