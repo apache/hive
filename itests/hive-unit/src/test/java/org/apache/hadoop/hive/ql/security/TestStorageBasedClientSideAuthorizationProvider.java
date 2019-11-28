@@ -94,7 +94,7 @@ public class TestStorageBasedClientSideAuthorizationProvider extends
   protected void assertNoPrivileges(CommandProcessorException e){
     assertNotNull(e);
     assertFalse(0 == e.getResponseCode());
-    assertTrue(e.getErrorMessage().indexOf("AccessControlException") != -1);
+    assertTrue(e.getMessage().indexOf("AccessControlException") != -1);
   }
 
 

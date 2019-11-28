@@ -95,7 +95,7 @@ public class TestScheduledQueryIntegration {
       runAsUser("user2", "drop table t1");
       fail("Exception expected");
     } catch (CommandProcessorException cpe) {
-      assertThat(cpe.getErrorMessage(), Matchers.containsString("HiveAccessControlException Permission denied"));
+      assertThat(cpe.getMessage(), Matchers.containsString("HiveAccessControlException Permission denied"));
     }
     runAsUser("user1", "drop table t1");
   }

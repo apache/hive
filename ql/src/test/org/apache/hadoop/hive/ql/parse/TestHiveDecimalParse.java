@@ -62,8 +62,8 @@ public class TestHiveDecimalParse {
       driver.compile(query, true, false);
     } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
-      Assert.assertTrue(cpe.getErrorMessage(),
-          cpe.getErrorMessage().contains("Decimal precision out of allowed range [1,38]"));
+      Assert.assertTrue(cpe.getMessage(),
+          cpe.getMessage().contains("Decimal precision out of allowed range [1,38]"));
       return;
     }
     Assert.assertTrue("Expected to receive an exception", false);
@@ -78,8 +78,8 @@ public class TestHiveDecimalParse {
       driver.compile(query, true, false);
     } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
-      Assert.assertTrue(cpe.getErrorMessage(),
-          cpe.getErrorMessage().contains("Decimal precision out of allowed range [1,38]"));
+      Assert.assertTrue(cpe.getMessage(),
+          cpe.getMessage().contains("Decimal precision out of allowed range [1,38]"));
       return;
     }
     Assert.assertTrue("Expected to receive an exception", false);
@@ -94,8 +94,8 @@ public class TestHiveDecimalParse {
       driver.compile(query, true, false);
     } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
-      Assert.assertTrue(cpe.getErrorMessage(),
-          cpe.getErrorMessage().contains("Decimal scale must be less than or equal to precision"));
+      Assert.assertTrue(cpe.getMessage(),
+          cpe.getMessage().contains("Decimal scale must be less than or equal to precision"));
       return;
     }
     Assert.assertTrue("Expected to receive an exception", false);
@@ -110,8 +110,8 @@ public class TestHiveDecimalParse {
       driver.compile(query, true, false);
     } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
-      Assert.assertTrue(cpe.getErrorMessage(),
-          cpe.getErrorMessage().contains("extraneous input '-' expecting Number"));
+      Assert.assertTrue(cpe.getMessage(),
+          cpe.getMessage().contains("extraneous input '-' expecting Number"));
       return;
     }
     Assert.assertTrue("Expected to receive an exception", false);
@@ -126,8 +126,8 @@ public class TestHiveDecimalParse {
       driver.compile(query, true, false);
     } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
-      Assert.assertTrue(cpe.getErrorMessage(),
-          cpe.getErrorMessage().contains("missing ) at ',' near ',' in column name or constraint"));
+      Assert.assertTrue(cpe.getMessage(),
+          cpe.getMessage().contains("missing ) at ',' near ',' in column name or constraint"));
       return;
     }
     Assert.assertTrue("Expected to receive an exception", false);
@@ -142,8 +142,8 @@ public class TestHiveDecimalParse {
       driver.compile(query, true, false);
     } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
-      Assert.assertTrue(cpe.getErrorMessage(),
-          cpe.getErrorMessage().contains("mismatched input '7a' expecting Number near '('"));
+      Assert.assertTrue(cpe.getMessage(),
+          cpe.getMessage().contains("mismatched input '7a' expecting Number near '('"));
       return;
     }
     Assert.assertTrue("Expected to receive an exception", false);
@@ -158,8 +158,8 @@ public class TestHiveDecimalParse {
       driver.compile(query, true, false);
     } catch (CommandProcessorException cpe) {
       Assert.assertTrue("Got " + cpe.getResponseCode() + ", expected not zero", cpe.getResponseCode() != 0);
-      Assert.assertTrue(cpe.getErrorMessage(),
-          cpe.getErrorMessage().contains("Decimal scale must be less than or equal to precision"));
+      Assert.assertTrue(cpe.getMessage(),
+          cpe.getMessage().contains("Decimal scale must be less than or equal to precision"));
       return;
     }
     Assert.assertTrue("Expected to receive an exception", false);

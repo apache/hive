@@ -302,7 +302,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     try {
       driver.run("select * from " + tblName);
     } catch (CommandProcessorException e) {
-      LOG.debug("cpr.respCode=" + e.getResponseCode() + " cpr.errMsg=" + e.getErrorMessage() + " for table " + tblName);
+      LOG.debug("cpr.respCode=" + e.getResponseCode() + " cpr.errMsg=" + e.getMessage() + " for table " + tblName);
     }
     List l = new ArrayList();
     driver.getResults(l);
@@ -370,7 +370,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     try {
       driver.run("select * from " + tblName);
     } catch (CommandProcessorException e) {
-      LOG.debug("cpr.respCode=" + e.getResponseCode() + " cpr.errMsg=" + e.getErrorMessage());
+      LOG.debug("cpr.respCode=" + e.getResponseCode() + " cpr.errMsg=" + e.getMessage());
     }
     List l = new ArrayList();
     driver.getResults(l);

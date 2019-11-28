@@ -117,7 +117,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
     CommandProcessorException e =
         runStatementOnDriverNegative("ALTER TABLE T ADD PARTITION (p=0) location '" + getWarehouseDir() + "/3/data'");
     Assert.assertTrue("add existing partition",
-        e.getErrorMessage() != null && e.getErrorMessage().contains("Partition already exists"));
+        e.getMessage() != null && e.getMessage().contains("Partition already exists"));
 
     //should be no-op since p=3 exists
     String stmt = "ALTER TABLE T ADD IF NOT EXISTS " +
@@ -191,7 +191,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
     CommandProcessorException e =
         runStatementOnDriverNegative("ALTER TABLE T ADD PARTITION (p=0) location '" + getWarehouseDir() + "/3/data'");
     Assert.assertTrue("add existing partition",
-        e.getErrorMessage() != null && e.getErrorMessage().contains("Partition already exists"));
+        e.getMessage() != null && e.getMessage().contains("Partition already exists"));
 
     //should be no-op since p=3 exists
     runStatementOnDriver("ALTER TABLE T ADD IF NOT EXISTS " +

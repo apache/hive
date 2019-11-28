@@ -237,7 +237,7 @@ public class TestClientSideAuthorizationProvider {
   protected void assertNoPrivileges(CommandProcessorException ret){
     assertNotNull(ret);
     assertFalse(0 == ret.getResponseCode());
-    assertTrue(ret.getErrorMessage().indexOf("No privilege") != -1);
+    assertTrue(ret.getMessage().indexOf("No privilege") != -1);
   }
 
 

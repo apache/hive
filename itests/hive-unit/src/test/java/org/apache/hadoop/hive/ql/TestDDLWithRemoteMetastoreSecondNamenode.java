@@ -163,7 +163,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode {
       assertNotNull("driver.run() was expected to return result for query: " + query, result);
     } catch (CommandProcessorException e) {
       throw new RuntimeException("Execution of (" + query + ") failed with exit status: " +
-          e.getResponseCode() + ", " + e.getErrorMessage() + ", query: " + query);
+          e.getResponseCode() + ", " + e.getMessage() + ", query: " + query);
     }
   }
 

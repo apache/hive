@@ -145,7 +145,7 @@ public class ScheduledQueryExecutionService implements Closeable {
     private String getErrorStringForException(Throwable t) {
       if (t instanceof CommandProcessorException) {
         CommandProcessorException cpr = (CommandProcessorException) t;
-        return String.format("%s", cpr.getErrorMessage());
+        return String.format("%s", cpr.getMessage());
       } else {
         return String.format("%s: %s", t.getClass().getName(), t.getMessage());
       }

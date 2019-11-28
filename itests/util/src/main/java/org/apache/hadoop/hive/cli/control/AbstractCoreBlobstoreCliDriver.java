@@ -156,7 +156,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
         }
       } catch (CommandProcessorException e) {
         if (expectSuccess) {
-          qt.failedQuery(e.getException(), e.getResponseCode(), fname, debugHint);
+          qt.failedQuery(e.getCause(), e.getResponseCode(), fname, debugHint);
         }
       }
 

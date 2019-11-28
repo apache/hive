@@ -762,7 +762,7 @@ public class QTestUtil {
           return response;
         } catch (CommandProcessorException e) {
           SessionState.getConsole().printError(e.toString(),
-                  e.getException() != null ? Throwables.getStackTraceAsString(e.getException()) : "");
+                  e.getCause() != null ? Throwables.getStackTraceAsString(e.getCause()) : "");
           throw e;
         }
       } else {

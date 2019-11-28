@@ -64,9 +64,9 @@ public class TestSparkInvalidFileFormat {
         driver.run("SELECT * FROM test_table ORDER BY key LIMIT 10");
         assert false;
       } catch (CommandProcessorException e) {
-        Assert.assertTrue(e.getException() instanceof HiveException);
-        Assert.assertTrue(e.getException().getMessage().contains("Spark job failed due to task failures"));
-        Assert.assertTrue(e.getException().getMessage().contains("kv1.txt is not a Parquet file. expected " +
+        Assert.assertTrue(e.getCause() instanceof HiveException);
+        Assert.assertTrue(e.getCause().getMessage().contains("Spark job failed due to task failures"));
+        Assert.assertTrue(e.getCause().getMessage().contains("kv1.txt is not a Parquet file. expected " +
               "magic number at tail [80, 65, 82, 49] but found [95, 57, 55, 10]"));
       }
     } finally {

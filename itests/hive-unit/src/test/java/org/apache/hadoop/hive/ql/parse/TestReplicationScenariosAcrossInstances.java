@@ -995,7 +995,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
       replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation + "'");
       assert false;
     } catch (CommandProcessorException e) {
-      assertTrue(e.getErrorMessage().toLowerCase().contains(
+      assertTrue(e.getMessage().toLowerCase().contains(
           "org.apache.hadoop.hive.ql.ddl.DDLTask. Database does not exist: someJunkDB".toLowerCase()));
     }
 
@@ -1004,7 +1004,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     try {
       replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation+"'");
     } catch (CommandProcessorException e) {
-      assertTrue(e.getErrorMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
+      assertTrue(e.getMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
     }
 
     primary.run(" drop database if exists " + testDbName + " cascade");
