@@ -91,7 +91,7 @@ public class TestLocalHiveSparkClient {
     try {
       driver = new Driver(new QueryState.Builder()
           .withGenerateNewQueryId(true)
-          .withHiveConf(conf).build(), null, null);
+          .withHiveConf(conf).build(), null);
 
       SparkSession sparkSession = SparkUtilities.getSparkSession(conf,
           SparkSessionManagerImpl.getInstance());

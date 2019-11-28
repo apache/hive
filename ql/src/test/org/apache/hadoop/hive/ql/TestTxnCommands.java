@@ -272,7 +272,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         throw new RuntimeException(e);
       }
       QueryState qs = new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build();
-      try (Driver d = new Driver(qs, null)) {
+      try (Driver d = new Driver(qs)) {
         LOG.info("Ready to run the query: " + query);
         syncThreadStart(cdlIn, cdlOut);
         try {

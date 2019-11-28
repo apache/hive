@@ -48,7 +48,7 @@ public class DriverUtils {
     boolean isOk = false;
     try {
       QueryState qs = new QueryState.Builder().withHiveConf(conf).withGenerateNewQueryId(true).nonIsolated().build();
-      Driver driver = new Driver(qs, user, null, null);
+      Driver driver = new Driver(qs, null, null);
       driver.setCompactionWriteIds(writeIds, compactorTxnId);
       try {
         try {

@@ -342,7 +342,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         //todo: use DriverUtils.runOnDriver() here
         QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
         SessionState localSession = null;
-        try (Driver d = new Driver(queryState, userName)) {
+        try (Driver d = new Driver(queryState)) {
           if (SessionState.get() == null) {
             localSession = new SessionState(conf);
             SessionState.start(localSession);

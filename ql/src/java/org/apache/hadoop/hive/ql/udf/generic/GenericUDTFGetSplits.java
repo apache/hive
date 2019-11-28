@@ -306,7 +306,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     // So initialize the new Driver with a new TxnManager so that it does not use the
     // Session TxnManager that is already in use.
     HiveTxnManager txnManager = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    Driver driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build(), null, null, txnManager);
+    Driver driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build(), null, txnManager);
     DriverCleanup driverCleanup = new DriverCleanup(driver, txnManager, splitsAppId.toString());
     boolean needsCleanup = true;
     try {
