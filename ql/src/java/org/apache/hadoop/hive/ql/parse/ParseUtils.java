@@ -558,7 +558,7 @@ public final class ParseUtils {
     ctx.setIsLoadingMaterializedView(true);
     final ASTNode ast = parse(viewQuery, ctx);
     final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
-    analyzer.genLogicalPlan(ast);
+    analyzer.analyze(ast, ctx);
     return analyzer.getResultSchema();
   }
 
