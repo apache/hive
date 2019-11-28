@@ -189,7 +189,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
       hcatDriver.run("alter table " + TBL_NAME + " touch partition (b='12')");
       fail("Expected that the command 'alter table " + TBL_NAME + " touch partition (b='12')' would fail");
     } catch (CommandProcessorException e) {
-      assertTrue(e.getErrorMessage().contains("Specified partition does not exist"));
+      assertTrue(e.getMessage().contains("Specified partition does not exist"));
     }
 
     hcatDriver.run("drop table " + TBL_NAME);
@@ -306,7 +306,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
       assert false;
     } catch (CommandProcessorException e) {
       assertEquals(40000, e.getResponseCode());
-      assertTrue(e.getErrorMessage().contains(
+      assertTrue(e.getMessage().contains(
           "FAILED: SemanticException Operation not supported. Create table as Select is not a valid operation."));
     }
     hcatDriver.run("drop table junit_sem_analysis");
@@ -347,7 +347,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
     } catch (CommandProcessorException e) {
       assertEquals(40000, e.getResponseCode());
       assertEquals("FAILED: SemanticException Operation not supported. HCatalog only supports partition columns of " +
-          "type string. For column: b Found type: int", e.getErrorMessage());
+          "type string. For column: b Found type: int", e.getMessage());
     }
   }
 

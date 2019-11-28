@@ -353,9 +353,9 @@ public abstract class Operation {
 
   protected HiveSQLException toSQLException(String prefix, CommandProcessorException e) {
     HiveSQLException ex =
-        new HiveSQLException(prefix + ": " + e.getErrorMessage(), e.getSqlState(), e.getResponseCode());
-    if (e.getException() != null) {
-      ex.initCause(e.getException());
+        new HiveSQLException(prefix + ": " + e.getMessage(), e.getSqlState(), e.getResponseCode());
+    if (e.getCause() != null) {
+      ex.initCause(e.getCause());
     }
     return ex;
   }

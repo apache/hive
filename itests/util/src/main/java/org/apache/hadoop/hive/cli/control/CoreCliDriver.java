@@ -169,7 +169,7 @@ public class CoreCliDriver extends CliAdapter {
         qt.executeClient(fname);
       } catch (CommandProcessorException e) {
         failed = true;
-        qt.failedQuery(e.getException(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
+        qt.failedQuery(e.getCause(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
       }
 
       setupAdditionalPartialMasks();

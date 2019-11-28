@@ -356,7 +356,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
             TxnCommandsBaseForTests.Table.ACIDTBL +
             " where a between 5 and 7 union all select a, b from " +
             TxnCommandsBaseForTests.Table.ACIDTBL + " where a >= 9");
-    Assert.assertTrue("", e.getErrorMessage().contains("not supported due to OVERWRITE and UNION ALL"));
+    Assert.assertTrue("", e.getMessage().contains("not supported due to OVERWRITE and UNION ALL"));
   }
   /**
    * The idea here is to create a non acid table that was written by multiple writers, i.e.
@@ -632,7 +632,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
       "select a, b from " + Table.NONACIDORCTBL);
     ErrorMsg.CTAS_PARCOL_COEXISTENCE.getErrorCode(); //this code doesn't propagate
 //    Assert.assertEquals("Wrong msg", ErrorMsg.CTAS_PARCOL_COEXISTENCE.getErrorCode(), cpr.getErrorCode());
-    Assert.assertTrue(e.getErrorMessage().contains("CREATE-TABLE-AS-SELECT does not support"));
+    Assert.assertTrue(e.getMessage().contains("CREATE-TABLE-AS-SELECT does not support"));
   }
   /**
    * Currently CTAS doesn't support partitioned tables.  Correspondingly Acid only supports CTAS for
@@ -646,7 +646,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
         "by (b int) stored as " +
         "ORC TBLPROPERTIES ('transactional'='true') as select a, b from " + Table.NONACIDORCTBL);
     ErrorMsg.CTAS_PARCOL_COEXISTENCE.getErrorCode(); //this code doesn't propagate
-    Assert.assertTrue(e.getErrorMessage().contains("CREATE-TABLE-AS-SELECT does not support " +
+    Assert.assertTrue(e.getMessage().contains("CREATE-TABLE-AS-SELECT does not support " +
         "partitioning in the target table"));
   }
   /**

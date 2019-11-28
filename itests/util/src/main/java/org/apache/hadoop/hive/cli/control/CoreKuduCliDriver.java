@@ -118,7 +118,7 @@ public class CoreKuduCliDriver extends CliAdapter {
       try {
         qt.executeClient(fname);
       } catch (CommandProcessorException e) {
-        qt.failedQuery(e.getException(), e.getResponseCode(), fname, null);
+        qt.failedQuery(e.getCause(), e.getResponseCode(), fname, null);
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);

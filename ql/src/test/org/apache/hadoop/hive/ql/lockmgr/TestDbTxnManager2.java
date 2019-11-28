@@ -397,7 +397,7 @@ public class TestDbTxnManager2 {
       assert false;
     } catch (CommandProcessorException e) {
       Assert.assertEquals(ErrorMsg.TXNMGR_NOT_ACID.getErrorCode(), e.getResponseCode());
-      Assert.assertTrue(e.getErrorMessage().contains("This command is not allowed on an ACID table"));
+      Assert.assertTrue(e.getMessage().contains("This command is not allowed on an ACID table"));
     }
 
     useDummyTxnManagerTemporarily(conf);
@@ -405,7 +405,7 @@ public class TestDbTxnManager2 {
       driver.compileAndRespond("insert into table T10 values (1, 2)", true);
     } catch (CommandProcessorException e) {
       Assert.assertEquals(ErrorMsg.TXNMGR_NOT_ACID.getErrorCode(), e.getResponseCode());
-      Assert.assertTrue(e.getErrorMessage().contains("This command is not allowed on an ACID table"));
+      Assert.assertTrue(e.getMessage().contains("This command is not allowed on an ACID table"));
     }
 
     useDummyTxnManagerTemporarily(conf);
@@ -413,7 +413,7 @@ public class TestDbTxnManager2 {
       driver.compileAndRespond("update T10 set a=0 where b=1", true);
     } catch (CommandProcessorException e) {
       Assert.assertEquals(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getErrorCode(), e.getResponseCode());
-      Assert.assertTrue(e.getErrorMessage().contains("Attempt to do update or delete using transaction manager that does not support these operations."));
+      Assert.assertTrue(e.getMessage().contains("Attempt to do update or delete using transaction manager that does not support these operations."));
     }
 
     useDummyTxnManagerTemporarily(conf);
@@ -421,7 +421,7 @@ public class TestDbTxnManager2 {
       driver.compileAndRespond("delete from T10", true);
     } catch (CommandProcessorException e) {
       Assert.assertEquals(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getErrorCode(), e.getResponseCode());
-      Assert.assertTrue(e.getErrorMessage().contains("Attempt to do update or delete using transaction manager that does not support these operations."));
+      Assert.assertTrue(e.getMessage().contains("Attempt to do update or delete using transaction manager that does not support these operations."));
     }
 
     conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");

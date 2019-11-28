@@ -1188,8 +1188,8 @@ public class Driver implements IDriver {
        * the error is a specific/expected one.
        * It's written to stdout for backward compatibility (WebHCat consumes it).*/
       try {
-        if (cpe.getException() == null) {
-          mdf.error(ss.out, cpe.getErrorMessage(), cpe.getResponseCode(), cpe.getSqlState());
+        if (cpe.getCause() == null) {
+          mdf.error(ss.out, cpe.getMessage(), cpe.getResponseCode(), cpe.getSqlState());
           throw cpe;
         }
         ErrorMsg canonicalErr = ErrorMsg.getErrorMsg(cpe.getResponseCode());
@@ -1199,17 +1199,17 @@ public class Driver implements IDriver {
             (e.g. #compile()) to find an appropriate canonical error and
             return its code as error code. In this case we want to
             preserve it for downstream code to interpret*/
-          mdf.error(ss.out, cpe.getErrorMessage(), cpe.getResponseCode(), cpe.getSqlState(), null);
+          mdf.error(ss.out, cpe.getMessage(), cpe.getResponseCode(), cpe.getSqlState(), null);
           throw cpe;
         }
-        if (cpe.getException() instanceof HiveException) {
-          HiveException rc = (HiveException)cpe.getException();
-          mdf.error(ss.out, cpe.getErrorMessage(), rc.getCanonicalErrorMsg().getErrorCode(), cpe.getSqlState(),
+        if (cpe.getCause() instanceof HiveException) {
+          HiveException rc = (HiveException)cpe.getCause();
+          mdf.error(ss.out, cpe.getMessage(), rc.getCanonicalErrorMsg().getErrorCode(), cpe.getSqlState(),
               rc.getCanonicalErrorMsg() == ErrorMsg.GENERIC_ERROR ? StringUtils.stringifyException(rc) : null);
         } else {
-          ErrorMsg canonicalMsg = ErrorMsg.getErrorMsg(cpe.getException().getMessage());
-          mdf.error(ss.out, cpe.getErrorMessage(), canonicalMsg.getErrorCode(), cpe.getSqlState(),
-              StringUtils.stringifyException(cpe.getException()));
+          ErrorMsg canonicalMsg = ErrorMsg.getErrorMsg(cpe.getCause().getMessage());
+          mdf.error(ss.out, cpe.getMessage(), canonicalMsg.getErrorCode(), cpe.getSqlState(),
+              StringUtils.stringifyException(cpe.getCause()));
         }
       } catch (HiveException ex) {
         CONSOLE.printError("Unable to JSON-encode the error", StringUtils.stringifyException(ex));
