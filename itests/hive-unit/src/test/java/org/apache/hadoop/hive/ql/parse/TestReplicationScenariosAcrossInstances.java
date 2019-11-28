@@ -1387,27 +1387,28 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     // Inject a behavior where REPL LOAD failed when try to load table "t2" and partition "uk".
     // So, table "t2" will exist and partition "india" will exist, rest failed as operation failed.
-    BehaviourInjection<Partition, Partition> getPartitionStub
-            = new BehaviourInjection<Partition, Partition>() {
-      @Nullable
+    BehaviourInjection<List<Partition>, Boolean> alterPartitionStub
+            = new BehaviourInjection<List<Partition>, Boolean>() {
       @Override
-      public Partition apply(@Nullable Partition ptn) {
-        if (ptn.getValues().get(0).equals("india")) {
-          injectionPathCalled = true;
-          LOG.warn("####getPartition Stub called");
-          return null;
+      public Boolean apply(List<Partition> ptns) {
+        for (Partition ptn : ptns) {
+          if (ptn.getValues().get(0).equals("india")) {
+            injectionPathCalled = true;
+            LOG.warn("####getPartition Stub called");
+            return false;
+          }
         }
-        return ptn;
+        return true;
       }
     };
-    InjectableBehaviourObjectStore.setGetPartitionBehaviour(getPartitionStub);
+    InjectableBehaviourObjectStore.setAlterPartitionsBehaviour(alterPartitionStub);
 
     // Make sure that there's some order in which the objects are loaded.
     List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'",
             "'hive.in.repl.test.files.sorted'='true'");
     replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
-    InjectableBehaviourObjectStore.resetGetPartitionBehaviour(); // reset the behaviour
-    getPartitionStub.assertInjectionsPerformed(true, false);
+    InjectableBehaviourObjectStore.setAlterPartitionsBehaviour(null); // reset the behaviour
+    alterPartitionStub.assertInjectionsPerformed(true, false);
 
     replica.run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
