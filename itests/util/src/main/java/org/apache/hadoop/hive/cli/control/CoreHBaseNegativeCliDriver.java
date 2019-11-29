@@ -26,6 +26,7 @@ import java.io.File;
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.junit.After;
@@ -96,6 +97,11 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
       System.err.flush();
       fail("Unexpected exception in shutdown");
     }
+  }
+
+  @Override
+  protected QTestUtil getQt() {
+    return qt;
   }
 
   @Override

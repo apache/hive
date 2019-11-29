@@ -1,3 +1,11 @@
+PREHOOK: query: CREATE FUNCTION qtest_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
+PREHOOK: Output: default.qtest_get_java_boolean
+POSTHOOK: query: CREATE FUNCTION qtest_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default.qtest_get_java_boolean
 PREHOOK: query: select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -206,6 +214,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 ABC	NULL	ABC
+PREHOOK: query: drop function default.qtest_get_java_boolean
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
+PREHOOK: Output: default.qtest_get_java_boolean
+POSTHOOK: query: drop function default.qtest_get_java_boolean
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default.qtest_get_java_boolean
 PREHOOK: query: drop function mydb.qtest_get_java_boolean
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: database:mydb

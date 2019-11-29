@@ -45,6 +45,12 @@ To run just one test, do
 
 mvn verify -DskipITests=false -Dit.test=ITestMysql -Dtest=nosuch
 
+Supported databases for testing:
+-Dit.test=ITestMysql
+-Dit.test=ITestOracle
+-Dit.test=ITestPostgres
+-Dit.test=ITestSqlServer
+
 You can download the Oracle driver at 
 http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html
 You should download Oracle 11g Release 1, ojdbc6.jar

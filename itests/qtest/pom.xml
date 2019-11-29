@@ -401,6 +401,20 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
+    <dependency>
+      <!-- Note, this is LGPL.  But we're only using it in a test and not changing it, so I
+      believe we are fine. -->
+      <groupId>org.mariadb.jdbc</groupId>
+      <artifactId>mariadb-java-client</artifactId>
+      <version>${mariadb.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.3-1102-jdbc41</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
@@ -437,6 +451,24 @@
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
+            <id>setup-metastore-scripts</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <mkdir dir="${test.tmp.dir}/scripts/metastore" />
+                <copy todir="${test.tmp.dir}/scripts/metastore">
+                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
+                </copy>
+                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
+                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
             <id>generate-tests-sources</id>
             <phase>generate-test-sources</phase>
             <configuration>
@@ -458,10 +490,6 @@
                 <mkdir dir="${project.build.directory}/qfile-results/contribnegative"/>
                 <mkdir dir="${project.build.directory}/qfile-results/contribclientpositive"/>
                 <mkdir dir="${project.build.directory}/qfile-results/contribclientnegative"/>
-
-
-
-
               </target>
             </configuration>
             <goals>
@@ -487,6 +515,17 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
+            <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
+            <additionalClasspathElement>${itest.jdbc.jars}</additionalClasspathElement>
+          </additionalClasspathElements>
+        </configuration>
       </plugin>
     </plugins>
   </build>

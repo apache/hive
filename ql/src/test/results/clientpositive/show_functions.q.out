@@ -102,7 +102,6 @@ day
 dayofmonth
 dayofweek
 decode
-default.qtest_get_java_boolean
 degrees
 dense_rank
 div
@@ -538,7 +537,6 @@ day
 dayofmonth
 dayofweek
 decode
-default.qtest_get_java_boolean
 degrees
 dense_rank
 div

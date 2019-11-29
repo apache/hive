@@ -42,6 +42,7 @@ public class TestMTQueries extends BaseTestQueries {
     QTestUtil[] qts = QTestRunnerUtils.queryListRunnerSetup(qfiles, resDir, logDir, "q_test_init_src_with_stats.sql",
       "q_test_cleanup_src_with_stats.sql");
     for (QTestUtil util : qts) {
+      util.postInit();
       // derby fails creating multiple stats aggregator concurrently
       util.getConf().setBoolean("hive.exec.submitviachild", true);
       util.getConf().setBoolean("hive.exec.submit.local.task.via.child", true);

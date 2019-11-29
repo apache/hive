@@ -142,10 +142,10 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
   @Override
   public String getCreateUserScript() throws HiveMetaException {
     String createScript = CREATE_USER_PREFIX + "." + dbType + SQL_FILE_EXTENSION;
+    File scriptFile = new File(getMetaStoreScriptDir() + File.separatorChar + createScript);
     // check if the file exists
-    if (!(new File(getMetaStoreScriptDir() + File.separatorChar +
-        createScript).exists())) {
-      throw new HiveMetaException("Unable to find create user file, expected: " + createScript);
+    if (!scriptFile.exists()) {
+      throw new HiveMetaException("Unable to find create user file, expected: " + scriptFile.getAbsolutePath());
     }
     return createScript;
   }
