@@ -57,11 +57,6 @@ public class CoreKuduNegativeCliDriver extends CliAdapter {
           .withLlapIo(true)
           .withQTestSetup(new KuduTestSetup())
           .build());
-
-      // do a one time initialization
-      qt.newSession();
-      qt.cleanUp();
-      qt.createSources();
     } catch (Exception e) {
       throw new RuntimeException("Unexpected exception in setUp", e);
     }
@@ -104,6 +99,11 @@ public class CoreKuduNegativeCliDriver extends CliAdapter {
       System.err.flush();
       fail("Unexpected exception in tearDown");
     }
+  }
+
+  @Override
+  protected QTestUtil getQt() {
+    return qt;
   }
 
   @Override

@@ -4911,7 +4911,6 @@ POSTHOOK: query: select func_name, func_type from funcs order by func_name, func
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@funcs
 #### A masked pattern was here ####
-qtest_get_java_boolean	1
 PREHOOK: query: select constraint_name from key_constraints order by constraint_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@key_constraints

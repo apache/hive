@@ -196,8 +196,9 @@ public class MetastoreSchemaTool {
     return verbose;
   }
 
-  protected void setVerbose(boolean verbose) {
+  public MetastoreSchemaTool setVerbose(boolean verbose) {
     this.verbose = verbose;
+    return this;
   }
 
   protected void setDbOpts(String dbOpts) {
@@ -302,7 +303,9 @@ public class MetastoreSchemaTool {
 
   // Generate the beeline args per hive conf and execute the given script
   protected void execSql(String sqlScriptFile) throws IOException {
-    CommandBuilder builder = new CommandBuilder(conf, url, driver, userName, passWord, sqlScriptFile);
+    CommandBuilder builder =
+        new CommandBuilder(conf, url, driver, userName, passWord, sqlScriptFile)
+            .setVerbose(verbose);
 
     // run the script using SqlLine
     SqlLine sqlLine = new SqlLine();
@@ -351,6 +354,7 @@ public class MetastoreSchemaTool {
     protected final String sqlScriptFile;
     protected final String driver;
     protected final String url;
+    private boolean verbose = false;
 
     protected CommandBuilder(Configuration conf, String url, String driver, String userName,
                              String password, String sqlScriptFile) throws IOException {
@@ -363,12 +367,19 @@ public class MetastoreSchemaTool {
       this.sqlScriptFile = sqlScriptFile;
     }
 
+    public CommandBuilder setVerbose(boolean verbose) {
+      this.verbose = verbose;
+      return this;
+    }
+
     public String[] buildToRun() throws IOException {
       return argsWith(password);
     }
 
     public String buildToLog() throws IOException {
-      logScript();
+      if (verbose) {
+        logScript();
+      }
       return StringUtils.join(argsWith(PASSWD_MASK), " ");
     }
 

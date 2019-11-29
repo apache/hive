@@ -1,6 +1,6 @@
 --! qt:dataset:src
 
--- qtest_get_java_boolean should already be created during test initialization
+CREATE FUNCTION qtest_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean';
 select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1;
 
 describe function extended qtest_get_java_boolean;
@@ -46,6 +46,7 @@ use mydb;
 -- unqualified function should resolve to one in mydb db
 select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1;
 
+drop function default.qtest_get_java_boolean;
 drop function mydb.qtest_get_java_boolean;
 
 drop database mydb cascade;

@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.QFileVersionHandler;
+import org.apache.hadoop.hive.ql.QTestUtil;
 
 public class CoreDummy extends CliAdapter {
   QFileVersionHandler qvh = new QFileVersionHandler();
@@ -44,6 +45,11 @@ public class CoreDummy extends CliAdapter {
 
   @Override
   public void shutdown() {
+  }
+
+  @Override
+  protected QTestUtil getQt() {
+    return null;
   }
 
   @Override

@@ -25,6 +25,7 @@ import java.io.File;
 import org.apache.hadoop.hive.accumulo.AccumuloQTestUtil;
 import org.apache.hadoop.hive.accumulo.AccumuloTestSetup;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
@@ -50,12 +51,6 @@ public class CoreAccumuloCliDriver extends CliAdapter {
     try {
       qt = new AccumuloQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
           new AccumuloTestSetup(), initScript, cleanupScript);
-
-      // do a one time initialization
-      qt.newSession();
-      qt.cleanUp();
-      qt.createSources();
-
     } catch (Exception e) {
       throw new RuntimeException("Unexpected exception in setUp", e);
     }
@@ -66,7 +61,6 @@ public class CoreAccumuloCliDriver extends CliAdapter {
   public void shutdown() {
     try {
       qt.shutdown();
-
     } catch (Exception e) {
       throw new RuntimeException("Unexpected exception in tearDown", e);
     }
@@ -77,7 +71,6 @@ public class CoreAccumuloCliDriver extends CliAdapter {
   public void setUp() {
     try {
       qt.newSession();
-
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -92,13 +85,17 @@ public class CoreAccumuloCliDriver extends CliAdapter {
     try {
       qt.clearPostTestEffects();
       qt.clearTestSideEffects();
-
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
       fail("Unexpected exception in tearDown");
     }
+  }
+
+  @Override
+  protected QTestUtil getQt() {
+    return qt;
   }
 
   @Override

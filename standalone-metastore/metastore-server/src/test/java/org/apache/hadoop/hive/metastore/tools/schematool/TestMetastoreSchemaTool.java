@@ -40,7 +40,7 @@ public class TestMetastoreSchemaTool {
   @Mock
   private Configuration conf;
   private MetastoreSchemaTool.CommandBuilder builder;
-  private String pasword = "reallySimplePassword";
+  private String password = "reallySimplePassword";
 
   @Before
   public void setup() throws IOException {
@@ -49,7 +49,9 @@ public class TestMetastoreSchemaTool {
     if (!file.exists()) {
       file.createNewFile();
     }
-    builder = new MetastoreSchemaTool.CommandBuilder(conf, null, null, "testUser", pasword, scriptFile);
+    builder =
+        new MetastoreSchemaTool.CommandBuilder(conf, null, null, "testUser", password, scriptFile)
+            .setVerbose(false);
   }
 
   @After
@@ -59,12 +61,12 @@ public class TestMetastoreSchemaTool {
 
   @Test
   public void shouldReturnStrippedPassword() throws IOException {
-    assertFalse(builder.buildToLog().contains(pasword));
+    assertFalse(builder.buildToLog().contains(password));
   }
 
   @Test
   public void shouldReturnActualPassword() throws IOException {
     String[] strings = builder.buildToRun();
-    assertTrue(Arrays.asList(strings).contains(pasword));
+    assertTrue(Arrays.asList(strings).contains(password));
   }
 }
