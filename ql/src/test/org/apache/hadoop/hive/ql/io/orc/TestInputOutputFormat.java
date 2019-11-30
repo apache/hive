@@ -1211,9 +1211,16 @@ public class TestInputOutputFormat {
     private static String blockedUgi = null;
     private final static List<MockFile> globalFiles = new ArrayList<MockFile>();
     protected Statistics statistics;
+    private int numExistsCalls;
 
     public MockFileSystem() {
       // empty
+    }
+
+    @Override
+    public boolean exists(Path f) throws IOException {
+      numExistsCalls++;
+      return super.exists(f);
     }
 
     @Override
@@ -1570,6 +1577,10 @@ public class TestInputOutputFormat {
       }
       buffer.append("]}");
       return buffer.toString();
+    }
+
+    public int getNumExistsCalls() {
+      return numExistsCalls;
     }
 
     public static void addGlobalFile(MockFile mockFile) {
@@ -3521,7 +3532,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    assertEquals(10, readOpsDelta);
+    assertEquals(6, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3600,7 +3611,7 @@ public class TestInputOutputFormat {
     // call-4: AcidUtils.getAcidState - split 2 => ls mock:/mocktable6
     // call-5: read footer - split 2 => mock:/mocktable6/0_0 (to get offset since it's original file)
     // call-6: file stat - split 2 => mock:/mocktable6/0_0
-    assertEquals(10, readOpsDelta);
+    assertEquals(6, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3675,7 +3686,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    assertEquals(10, readOpsDelta);
+    assertEquals(7, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3749,7 +3760,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    assertEquals(10, readOpsDelta);
+    assertEquals(7, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");

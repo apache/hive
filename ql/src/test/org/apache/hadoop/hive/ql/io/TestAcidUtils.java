@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -263,6 +264,40 @@ public class TestAcidUtils {
     assertEquals("mock:/tbl/part1/delta_050_105", delt.getPath().toString());
     assertEquals(50, delt.getMinWriteId());
     assertEquals(105, delt.getMaxWriteId());
+  }
+
+  @Test
+  public void testRecursiveDirListingIsReusedWhenSnapshotTrue() throws IOException {
+    Configuration conf = new Configuration();
+    MockFileSystem fs = new MockFileSystem(conf,
+        new MockFile("mock:/tbl/part1/base_0/bucket_0", 500, new byte[0]),
+        new MockFile("mock:/tbl/part1/base_0/_orc_acid_version", 10, new byte[0]));
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
+    AcidUtils.Directory dir = AcidUtils.getAcidState(fs, new MockPath(fs, "mock:/tbl/part1"), conf,
+        new ValidReaderWriteIdList(), null, false, null, true);
+    assertEquals("mock:/tbl/part1/base_0", dir.getBaseDirectory().toString());
+    assertEquals(0, dir.getObsolete().size());
+    assertEquals(0, dir.getOriginalFiles().size());
+    assertEquals(0, dir.getCurrentDirectories().size());
+    assertEquals(0, fs.getNumExistsCalls());
+  }
+
+  @Test
+  public void testRecursiveDirListingIsNotReusedWhenSnapshotFalse() throws IOException {
+    Configuration conf = new Configuration();
+    MockFileSystem fs = new MockFileSystem(conf,
+        new MockFile("mock:/tbl/part1/base_0/bucket_0", 500, new byte[0]),
+        new MockFile("mock:/tbl/part1/base_0/_orc_acid_version", 10, new byte[0]));
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
+    AcidUtils.Directory dir = AcidUtils.getAcidState(fs, new MockPath(fs, "mock:/tbl/part1"), conf,
+        new ValidReaderWriteIdList(), null, false, null, false);
+    assertEquals("mock:/tbl/part1/base_0", dir.getBaseDirectory().toString());
+    assertEquals(0, dir.getObsolete().size());
+    assertEquals(0, dir.getOriginalFiles().size());
+    assertEquals(0, dir.getCurrentDirectories().size());
+    assertEquals(2, fs.getNumExistsCalls());
   }
 
   @Test
