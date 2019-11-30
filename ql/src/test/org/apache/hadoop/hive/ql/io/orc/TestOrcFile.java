@@ -1928,52 +1928,22 @@ public class TestOrcFile {
         new MiddleStruct(inner, inner2), list(), map(inner,inner2));
   }
 
-  private static class MyMemoryManager implements MemoryManager {
-    final long totalSpace;
-    double rate;
-    Path path = null;
-    long lastAllocation = 0;
-    int rows = 0;
-    MemoryManager.Callback callback;
-
-    MyMemoryManager(Configuration conf, long totalSpace, double rate) {
-      this.totalSpace = totalSpace;
-      this.rate = rate;
-    }
-
-    @Override
-    public void addWriter(Path path, long requestedAllocation,
-                   MemoryManager.Callback callback) {
-      this.path = path;
-      this.lastAllocation = requestedAllocation;
-      this.callback = callback;
-    }
-
-    @Override
-    public synchronized void removeWriter(Path path) {
-      this.path = null;
-      this.lastAllocation = 0;
-    }
-
-    @Override
-    public void addedRow(int count) throws IOException {
-      rows += count;
-      if (rows >= 100) {
-        callback.checkMemory(rate);
-        rows = 0;
-      }
-    }
-  }
-
   @Test
   public void testMemoryManagementV11() throws Exception {
+    OrcConf.ROWS_BETWEEN_CHECKS.setLong(conf, 100);
+    final long poolSize = 50_000;
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = ObjectInspectorFactory.getReflectionObjectInspector
           (InnerStruct.class,
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
-    MyMemoryManager memory = new MyMemoryManager(conf, 10000, 0.1);
+    MemoryManager memoryManager = new MemoryManagerImpl(poolSize);
+    // set up 10 files that all request the full size.
+    MemoryManager.Callback ignore = newScale -> false;
+    for(int f=0; f < 9; ++f) {
+      memoryManager.addWriter(new Path("file-" + f), poolSize, ignore);
+    }
     Writer writer = OrcFile.createWriter(testFilePath,
                                          OrcFile.writerOptions(conf)
                                          .inspector(inspector)
@@ -1981,15 +1951,14 @@ public class TestOrcFile {
                                          .stripeSize(50000)
                                          .bufferSize(100)
                                          .rowIndexStride(0)
-                                         .memory(memory)
+                                         .memory(memoryManager)
                                          .batchSize(100)
                                          .version(OrcFile.Version.V_0_11));
-    assertEquals(testFilePath, memory.path);
+    assertEquals(0.1, ((MemoryManagerImpl) memoryManager).getAllocationScale());
     for(int i=0; i < 2500; ++i) {
       writer.addRow(new InnerStruct(i*300, Integer.toHexString(10*i)));
     }
     writer.close();
-    assertEquals(null, memory.path);
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     int i = 0;
@@ -2004,29 +1973,35 @@ public class TestOrcFile {
 
   @Test
   public void testMemoryManagementV12() throws Exception {
+    OrcConf.ROWS_BETWEEN_CHECKS.setLong(conf, 100);
+    final long poolSize = 50_000;
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = ObjectInspectorFactory.getReflectionObjectInspector
           (InnerStruct.class,
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
-    MyMemoryManager memory = new MyMemoryManager(conf, 10000, 0.1);
+    MemoryManager memoryManager = new MemoryManagerImpl(poolSize);
+    // set up 10 files that all request the full size.
+    MemoryManager.Callback ignore = newScale -> false;
+    for(int f=0; f < 9; ++f) {
+      memoryManager.addWriter(new Path("file-" + f), poolSize, ignore);
+    }
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .compress(CompressionKind.NONE)
-                                         .stripeSize(50000)
-                                         .bufferSize(100)
-                                         .rowIndexStride(0)
-                                         .memory(memory)
-                                         .batchSize(100)
-                                         .version(OrcFile.Version.V_0_12));
-    assertEquals(testFilePath, memory.path);
+        OrcFile.writerOptions(conf)
+            .inspector(inspector)
+            .compress(CompressionKind.NONE)
+            .stripeSize(50000)
+            .bufferSize(100)
+            .rowIndexStride(0)
+            .memory(memoryManager)
+            .batchSize(100)
+            .version(OrcFile.Version.V_0_12));
+    assertEquals(0.1, ((MemoryManagerImpl) memoryManager).getAllocationScale());
     for(int i=0; i < 2500; ++i) {
       writer.addRow(new InnerStruct(i*300, Integer.toHexString(10*i)));
     }
     writer.close();
-    assertEquals(null, memory.path);
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     int i = 0;
