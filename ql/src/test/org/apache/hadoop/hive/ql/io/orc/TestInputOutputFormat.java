@@ -1211,9 +1211,16 @@ public class TestInputOutputFormat {
     private static String blockedUgi = null;
     private final static List<MockFile> globalFiles = new ArrayList<MockFile>();
     protected Statistics statistics;
+    private int numExistsCalls;
 
     public MockFileSystem() {
       // empty
+    }
+
+    @Override
+    public boolean exists(Path f) throws IOException {
+      numExistsCalls++;
+      return super.exists(f);
     }
 
     @Override
@@ -1570,6 +1577,10 @@ public class TestInputOutputFormat {
       }
       buffer.append("]}");
       return buffer.toString();
+    }
+
+    public int getNumExistsCalls() {
+      return numExistsCalls;
     }
 
     public static void addGlobalFile(MockFile mockFile) {
@@ -3525,15 +3536,9 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: open to read footer - split 1 => mock:/mocktable5/0_0
-    // call-2: open to read data - split 1 => mock:/mocktable5/0_0
-    // call-3: getAcidState - split 1 => mock:/mocktable5 (to compute offset for original read)
-    // call-4: open to read footer - split 2 => mock:/mocktable5/0_1
-    // call-5: open to read data - split 2 => mock:/mocktable5/0_1
-    // call-6: getAcidState - split 2 => mock:/mocktable5 (to compute offset for original read)
-    // call-7: open to read footer - split 2 => mock:/mocktable5/0_0 (to get row count)
-    // call-8: file status - split 2 => mock:/mocktable5/0_0
-    assertEquals(12, readOpsDelta);
+    // for each split, 2 by getAcidState (1 list directory + 1 file status) + 1 footer read + 1 data read
+    // ORC-416 delays opening data reader until data is read but it is not backported to cdpd-master
+    assertEquals(8, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3612,7 +3617,7 @@ public class TestInputOutputFormat {
     // call-4: AcidUtils.getAcidState - split 2 => ls mock:/mocktable6
     // call-5: read footer - split 2 => mock:/mocktable6/0_0 (to get offset since it's original file)
     // call-6: file stat - split 2 => mock:/mocktable6/0_0
-    assertEquals(10, readOpsDelta);
+    assertEquals(6, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3687,7 +3692,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    assertEquals(12, readOpsDelta);
+    assertEquals(9, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3761,7 +3766,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    assertEquals(10, readOpsDelta);
+    assertEquals(7, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");

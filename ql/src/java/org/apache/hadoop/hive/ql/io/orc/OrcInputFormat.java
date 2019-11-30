@@ -1259,7 +1259,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
       //todo: shouldn't ignoreEmptyFiles be set based on ExecutionEngine?
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(
-          fs, dir, context.conf, context.writeIdList, useFileIds, true, null, false);
+          fs, dir, context.conf, context.writeIdList, useFileIds, true, null, true);
       // find the base files (original or new style)
       List<AcidBaseFileInfo> baseFiles = new ArrayList<>();
       if (dirInfo.getBaseDirectory() == null) {
