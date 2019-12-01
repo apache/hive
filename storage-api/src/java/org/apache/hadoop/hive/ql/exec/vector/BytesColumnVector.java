@@ -130,6 +130,7 @@ public class BytesColumnVector extends ColumnVector {
       if (bufferAllocationCount > 0) {
         for (int idx = 0; idx < vector.length; ++idx) {
           vector[idx] = null;
+          length[idx] = 0;
         }
         buffer = smallBuffer; // In case last row was a large bytes value
       }
