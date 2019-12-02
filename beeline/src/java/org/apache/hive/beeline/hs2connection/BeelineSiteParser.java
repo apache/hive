@@ -90,8 +90,9 @@ public class BeelineSiteParser implements HS2ConnectionFileParser {
       for (Entry<String, String> kv : conf) {
         String key = kv.getKey();
         if (key.startsWith(BEELINE_CONNECTION_NAMED_JDBC_URL_PREFIX)) {
+          // using conf.get(key) to help with variable substitution
           props.setProperty(key.substring(BEELINE_CONNECTION_NAMED_JDBC_URL_PREFIX.length()),
-              kv.getValue());
+              conf.get(key));
         }
       }
     } catch (Exception e) {
@@ -117,7 +118,7 @@ public class BeelineSiteParser implements HS2ConnectionFileParser {
         if (key.startsWith(BEELINE_CONNECTION_NAMED_JDBC_URL_PREFIX)
             && (propertyValue.equalsIgnoreCase(kv.getValue()))) {
           props.setProperty(key.substring(BEELINE_CONNECTION_NAMED_JDBC_URL_PREFIX.length()),
-              kv.getValue());
+              conf.get(key));
         }
       }
     } catch (Exception e) {

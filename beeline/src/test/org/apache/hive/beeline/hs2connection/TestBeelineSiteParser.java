@@ -19,8 +19,12 @@ package org.apache.hive.beeline.hs2connection;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
+
+import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,4 +42,18 @@ public class TestBeelineSiteParser {
                         BeelineSiteParser.DEFAULT_BEELINE_SITE_FILE_NAME));
 
     }
+
+    @Test
+    public void testConnectionURLWithVarSubsitition() throws Exception {
+        List<String> locations = new ArrayList<String>();
+        String beelineSite = HiveTestUtils.getFileFromClasspath(BeelineSiteParser.DEFAULT_BEELINE_SITE_FILE_NAME);
+        locations.add(beelineSite);
+        BeelineSiteParser beelineSiteParser = new BeelineSiteParser(locations);
+        Properties properties = beelineSiteParser.getConnectionProperties();
+        Assert.assertEquals("jdbc:hive2://zkhost1:2181,zkhost2:2181,zkhost3:2181/;" +
+                        "serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2?tez.queue.name=myqueue",
+                properties.get("test"));;
+    }
+
+
 }
