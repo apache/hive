@@ -87,7 +87,7 @@ Stage-0
                       Conds:RS_18._col1=RS_152._col0(Inner)
                     <-Map 12 [SIMPLE_EDGE] vectorized
                       SHUFFLE [RS_152]
-                        PartitionCols:_col0,null sort order:a,sort order:+
+                        PartitionCols:_col0
                         Select Operator [SEL_151] (rows=655 width=4)
                           Output:["_col0"]
                           Filter Operator [FIL_150] (rows=655 width=8)
@@ -96,12 +96,12 @@ Stage-0
                               default@household_demographics,household_demographics,Tbl:COMPLETE,Col:COMPLETE,Output:["hd_demo_sk","hd_dep_count"]
                     <-Reducer 3 [SIMPLE_EDGE]
                       SHUFFLE [RS_18]
-                        PartitionCols:_col1,null sort order:a,sort order:+
+                        PartitionCols:_col1
                         Merge Join Operator [MERGEJOIN_144] (rows=143895111 width=3)
                           Conds:RS_15._col0=RS_169._col0(Inner),Output:["_col1"]
                         <-Map 11 [SIMPLE_EDGE] vectorized
                           SHUFFLE [RS_169]
-                            PartitionCols:_col0,null sort order:a,sort order:+
+                            PartitionCols:_col0
                             Select Operator [SEL_167] (rows=9095 width=4)
                               Output:["_col0"]
                               Filter Operator [FIL_165] (rows=9095 width=8)
@@ -110,12 +110,12 @@ Stage-0
                                   default@time_dim,time_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["t_time_sk","t_hour"]
                         <-Reducer 2 [SIMPLE_EDGE]
                           SHUFFLE [RS_15]
-                            PartitionCols:_col0,null sort order:a,sort order:+
+                            PartitionCols:_col0
                             Merge Join Operator [MERGEJOIN_143] (rows=143895111 width=7)
                               Conds:RS_161._col2=RS_164._col0(Inner),Output:["_col0","_col1"]
                             <-Map 1 [SIMPLE_EDGE] vectorized
                               SHUFFLE [RS_161]
-                                PartitionCols:_col2,null sort order:a,sort order:+
+                                PartitionCols:_col2
                                 Select Operator [SEL_160] (rows=143895111 width=11)
                                   Output:["_col0","_col1","_col2"]
                                   Filter Operator [FIL_159] (rows=143895111 width=11)
@@ -135,7 +135,7 @@ Stage-0
                                                  Please refer to the previous Select Operator [SEL_151]
                             <-Map 10 [SIMPLE_EDGE] vectorized
                               SHUFFLE [RS_164]
-                                PartitionCols:_col0,null sort order:a,sort order:+
+                                PartitionCols:_col0
                                 Select Operator [SEL_163] (rows=1175 width=4)
                                   Output:["_col0"]
                                   Filter Operator [FIL_162] (rows=1175 width=7)
@@ -154,16 +154,16 @@ Stage-0
                       Conds:RS_44._col1=RS_154._col0(Inner)
                     <-Map 12 [SIMPLE_EDGE] vectorized
                       SHUFFLE [RS_154]
-                        PartitionCols:_col0,null sort order:a,sort order:+
+                        PartitionCols:_col0
                          Please refer to the previous Select Operator [SEL_151]
                     <-Reducer 7 [SIMPLE_EDGE]
                       SHUFFLE [RS_44]
-                        PartitionCols:_col1,null sort order:a,sort order:+
+                        PartitionCols:_col1
                         Merge Join Operator [MERGEJOIN_147] (rows=143895111 width=3)
                           Conds:RS_41._col0=RS_170._col0(Inner),Output:["_col1"]
                         <-Map 11 [SIMPLE_EDGE] vectorized
                           SHUFFLE [RS_170]
-                            PartitionCols:_col0,null sort order:a,sort order:+
+                            PartitionCols:_col0
                             Select Operator [SEL_168] (rows=9095 width=4)
                               Output:["_col0"]
                               Filter Operator [FIL_166] (rows=9095 width=8)
@@ -171,6 +171,6 @@ Stage-0
                                  Please refer to the previous TableScan [TS_6]
                         <-Reducer 2 [SIMPLE_EDGE]
                           SHUFFLE [RS_41]
-                            PartitionCols:_col0,null sort order:a,sort order:+
+                            PartitionCols:_col0
                              Please refer to the previous Merge Join Operator [MERGEJOIN_143]
 

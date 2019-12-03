@@ -60,7 +60,7 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
     this.topN = topN;
   }
 
-  @Explain(displayName = "sort order", explainLevels = { Level.DEFAULT, Level.EXTENDED, Level.USER })
+  @Explain(displayName = "sort order", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public String getColumnSortOrder() {
     return columnSortOrder;
   }
@@ -69,7 +69,7 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
     this.columnSortOrder = columnSortOrder;
   }
 
-  @Explain(displayName = "null sort order", explainLevels = { Level.DEFAULT, Level.EXTENDED, Level.USER })
+  @Explain(displayName = "null sort order", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public String getNullOrder() {
     return nullOrder;
   }
