@@ -711,7 +711,6 @@ Stage-0
             Output:["_col0","_col1"]
           <-Map 1 [SIMPLE_EDGE] vectorized
             SHUFFLE [RS_7]
-              null sort order:z,sort order:+
               Select Operator [SEL_6] (rows=500/500 width=178)
                 Output:["_col0","_col1"]
                 TableScan [TS_0] (rows=500/500 width=178)
@@ -961,7 +960,7 @@ Stage-0
             BucketMapJoin:true,Conds:RS_29._col0=SEL_31._col0(Inner),Output:["_col0","_col1","_col3"]
           <-Map 1 [CUSTOM_EDGE] vectorized
             MULTICAST [RS_29]
-              PartitionCols:_col0,null sort order:a,sort order:+
+              PartitionCols:_col0
               Select Operator [SEL_28] (rows=242/242 width=95)
                 Output:["_col0","_col1"]
                 Filter Operator [FIL_27] (rows=242/242 width=95)

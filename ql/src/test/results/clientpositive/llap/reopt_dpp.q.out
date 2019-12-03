@@ -159,7 +159,7 @@ Stage-0
                 Conds:SEL_30._col0=RS_26._col0(Inner)
               <-Map 3 [BROADCAST_EDGE] vectorized, llap
                 BROADCAST [RS_26]
-                  PartitionCols:_col0,null sort order:a,sort order:+
+                  PartitionCols:_col0
                   Select Operator [SEL_25] (rows=28 width=4)
                     Output:["_col0"]
                     Filter Operator [FIL_24] (rows=28 width=8)
@@ -259,7 +259,7 @@ Stage-0
                 Conds:SEL_30._col0=RS_26._col0(Inner)
               <-Map 3 [BROADCAST_EDGE] vectorized, llap
                 BROADCAST [RS_26]
-                  PartitionCols:_col0,null sort order:a,sort order:+
+                  PartitionCols:_col0
                   Select Operator [SEL_25] (runtime: rows=1 width=4)
                     Output:["_col0"]
                     Filter Operator [FIL_24] (runtime: rows=1 width=8)
