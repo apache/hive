@@ -691,16 +691,18 @@ public class HiveServer2 extends CompositeService {
       }
     }
 
-    if (!activePassiveHA) {
-      LOG.info("HS2 interactive HA not enabled. Starting tez sessions..");
-      try {
-        startOrReconnectTezSessions();
-      } catch (Exception e) {
-        LOG.error("Error starting  Tez sessions: ", e);
-        throw new ServiceException(e);
+    if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+      if (!activePassiveHA) {
+        LOG.info("HS2 interactive HA not enabled. Starting tez sessions..");
+        try {
+          startOrReconnectTezSessions();
+        } catch (Exception e) {
+          LOG.error("Error starting  Tez sessions: ", e);
+          throw new ServiceException(e);
+        }
+      } else {
+        LOG.info("HS2 interactive HA enabled. Tez sessions will be started/reconnected by the leader.");
       }
-    } else {
-      LOG.info("HS2 interactive HA enabled. Tez sessions will be started/reconnected by the leader.");
     }
   }
 
