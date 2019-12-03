@@ -53,7 +53,6 @@ public class TimestampTZUtil {
     builder.optionalStart().appendLiteral(" ").append(DateTimeFormatter.ofPattern("HH:mm:ss")).
         optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).
         optionalEnd().optionalEnd();
-
     // Zone part
     builder.optionalStart().appendLiteral(" ").optionalEnd();
     builder.optionalStart().appendZoneText(TextStyle.NARROW).optionalEnd();
