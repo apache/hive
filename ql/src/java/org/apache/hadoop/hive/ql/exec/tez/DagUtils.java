@@ -65,7 +65,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -1385,8 +1384,6 @@ public class DagUtils {
 
     // Removing job credential entry/ cannot be set on the tasks
     conf.unset("mapreduce.job.credentials.binary");
-    // Removing job credential path/ cannot be set on the tasks
-    conf.unset(Constants.HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG);
 
     // TODO: convert this to a predicate too
     hiveConf.stripHiddenConfigurations(conf);
