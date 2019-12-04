@@ -192,16 +192,16 @@ select count(*) from orc_ppd_n3 where f = 74.72;
 alter table orc_ppd_n3 change column f f double;
 
 SET hive.optimize.index.filter=false;
-select count(*) from orc_ppd_n3 where f = 74.72;
+select count(*) from orc_ppd_n3 where f = 74.72000122070312;
 SET hive.optimize.index.filter=true;
-select count(*) from orc_ppd_n3 where f = 74.72;
+select count(*) from orc_ppd_n3 where f = 74.72000122070312;
 
 alter table orc_ppd_n3 change column f f string;
 
 SET hive.optimize.index.filter=false;
-select count(*) from orc_ppd_n3 where f = '74.72';
+select count(*) from orc_ppd_n3 where f = '74.72000122070312';
 SET hive.optimize.index.filter=true;
-select count(*) from orc_ppd_n3 where f = '74.72';
+select count(*) from orc_ppd_n3 where f = '74.72000122070312';
 
 SET hive.optimize.index.filter=false;
 -- string tests

@@ -289,7 +289,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	1539                
+	totalSize           	1542                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -528,7 +528,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	1539                
+	totalSize           	1542                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1011,7 +1011,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	0                   
-	totalSize           	2296                
+	totalSize           	2301                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1312,7 +1312,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	3                   
 	rawDataSize         	0                   
-	totalSize           	1041                
+	totalSize           	1047                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1613,7 +1613,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	1039                
+	totalSize           	1044                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2023,7 +2023,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	0                   
-	totalSize           	1795                
+	totalSize           	1801                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
