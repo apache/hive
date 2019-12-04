@@ -42,7 +42,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	170                 
-	totalSize           	283                 
+	totalSize           	285                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -126,7 +126,7 @@ STAGE PLANS:
                     serialization.ddl struct s_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 283
+                    totalSize 285
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -148,7 +148,7 @@ STAGE PLANS:
                       serialization.ddl struct s_n0 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 283
+                      totalSize 285
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.s_n0
@@ -228,7 +228,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	170                 
-	totalSize           	283                 
+	totalSize           	285                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -305,7 +305,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	2                   
 	rawDataSize         	340                 
-	totalSize           	566                 
+	totalSize           	570                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -400,7 +400,7 @@ STAGE PLANS:
                     serialization.ddl struct spart_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 283
+                    totalSize 285
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -445,7 +445,7 @@ STAGE PLANS:
                     serialization.ddl struct spart_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 283
+                    totalSize 285
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -564,7 +564,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	2                   
 	rawDataSize         	340                 
-	totalSize           	566                 
+	totalSize           	570                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -602,7 +602,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	170                 
-	totalSize           	283                 
+	totalSize           	285                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -640,7 +640,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	170                 
-	totalSize           	283                 
+	totalSize           	285                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -721,7 +721,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	2                   
 	rawDataSize         	340                 
-	totalSize           	566                 
+	totalSize           	570                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -812,7 +812,7 @@ STAGE PLANS:
                     serialization.ddl struct spart_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 283
+                    totalSize 285
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -926,7 +926,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	2                   
 	rawDataSize         	340                 
-	totalSize           	566                 
+	totalSize           	570                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -964,7 +964,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	170                 
-	totalSize           	283                 
+	totalSize           	285                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1002,7 +1002,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	170                 
-	totalSize           	283                 
+	totalSize           	285                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

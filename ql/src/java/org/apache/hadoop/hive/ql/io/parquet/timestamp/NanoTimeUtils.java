@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet.timestamp;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -37,14 +38,17 @@ public class NanoTimeUtils {
 
    private static final ThreadLocal<Calendar> parquetGMTCalendar = new ThreadLocal<Calendar>();
 
-   private static Calendar getGMTCalendar() {
-     //Calendar.getInstance calculates the current-time needlessly, so cache an instance.
-     if (parquetGMTCalendar.get() == null) {
-       parquetGMTCalendar.set(Calendar.getInstance(TimeZone.getTimeZone("GMT")));
-     }
-     parquetGMTCalendar.get().clear();
-     return parquetGMTCalendar.get();
-   }
+  private static Calendar getGMTCalendar() {
+    //Calendar.getInstance calculates the current-time needlessly, so cache an instance.
+    if (parquetGMTCalendar.get() == null) {
+      GregorianCalendar calendar = new GregorianCalendar();
+      calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+      calendar.setGregorianChange(new Date(Long.MIN_VALUE));
+      parquetGMTCalendar.set(calendar);
+    }
+    parquetGMTCalendar.get().clear();
+    return parquetGMTCalendar.get();
+  }
 
    public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion) {
      return getNanoTime(ts, skipConversion, null);

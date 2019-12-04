@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -204,12 +205,21 @@ public class ConvertAstToSearchArg {
         }
         return fl.doubleValue();
       case TIMESTAMP:
-        if (lit instanceof org.apache.hadoop.hive.common.type.Timestamp) {
-          return ((org.apache.hadoop.hive.common.type.Timestamp) lit).toSqlTimestamp();
+        final Timestamp ts;
+        if (lit instanceof Timestamp) {
+          ts = (Timestamp) lit;
+        } else if (lit instanceof org.apache.hadoop.hive.common.type.Timestamp) {
+          ts = ((org.apache.hadoop.hive.common.type.Timestamp) lit)
+              .toSqlTimestamp();
+        } else {
+          ts = org.apache.hadoop.hive.common.type.Timestamp.valueOf(lit.toString())
+              .toSqlTimestamp();
         }
-        return Timestamp.valueOf(lit.toString());
+        return ts;
       case DATE:
-        return Date.valueOf(lit.toString());
+        return new Date(
+            DateWritable.daysToMillis(
+                org.apache.hadoop.hive.common.type.Date.valueOf(lit.toString()).toEpochDay()));
       case DECIMAL:
         return new HiveDecimalWritable(lit.toString());
       case BOOLEAN:

@@ -137,9 +137,10 @@ public class VectorizedBatchUtil {
         case SHORT:
         case INT:
         case LONG:
-        case DATE:
         case INTERVAL_YEAR_MONTH:
           return new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+        case DATE:
+          return new DateColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
         case TIMESTAMP:
           return new TimestampColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
         case INTERVAL_DAY_TIME:
@@ -574,9 +575,10 @@ public class VectorizedBatchUtil {
     return typeInfoList.toArray(new TypeInfo[0]);
   }
 
-  public static ColumnVector makeLikeColumnVector(ColumnVector source
-                                        ) throws HiveException{
-    if (source instanceof LongColumnVector) {
+  public static ColumnVector makeLikeColumnVector(ColumnVector source) throws HiveException{
+    if (source instanceof DateColumnVector) {
+      return new DateColumnVector(((DateColumnVector) source).vector.length);
+    } else if (source instanceof LongColumnVector) {
       return new LongColumnVector(((LongColumnVector) source).vector.length);
     } else if (source instanceof DoubleColumnVector) {
       return new DoubleColumnVector(((DoubleColumnVector) source).vector.length);
