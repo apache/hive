@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 
 import org.apache.hive.common.util.HiveVersionInfo;
@@ -35,9 +36,11 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
 
   public static final String PARQUET_HIVE_SCHEMA = "parquet.hive.schema";
   public static final String WRITER_TIMEZONE = "writer.time.zone";
+  public static final String WRITER_DATE_PROLEPTIC = "writer.date.proleptic";
 
   private DataWritableWriter writer;
   private MessageType schema;
+  private boolean defaultDateProleptic;
 
   public static void setSchema(final MessageType schema, final Configuration configuration) {
     configuration.set(PARQUET_HIVE_SCHEMA, schema.toString());
@@ -52,12 +55,15 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
     schema = getSchema(configuration);
     Map<String, String> metaData = new HashMap<>();
     metaData.put(WRITER_TIMEZONE, TimeZone.getDefault().toZoneId().toString());
+    defaultDateProleptic = HiveConf.getBoolVar(
+        configuration, HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN);
+    metaData.put(WRITER_DATE_PROLEPTIC, String.valueOf(defaultDateProleptic));
     return new WriteContext(schema, metaData);
   }
 
   @Override
   public void prepareForWrite(final RecordConsumer recordConsumer) {
-    writer = new DataWritableWriter(recordConsumer, schema);
+    writer = new DataWritableWriter(recordConsumer, schema, defaultDateProleptic);
   }
 
   @Override

@@ -51,7 +51,7 @@ public class OrcFileMetadataHandler extends FileMetadataHandler {
       ByteBuffer metadata = metadatas[i].duplicate(); // Duplicate to avoid modification.
       SplitInfos result = null;
       try {
-        result = getFileFormatProxy().applySargToMetadata(sarg, metadata);
+        result = getFileFormatProxy().applySargToMetadata(sarg, metadata, conf);
       } catch (IOException ex) {
         LOG.error("Failed to apply SARG to metadata", ex);
         metadatas[i] = null;
