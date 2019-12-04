@@ -773,6 +773,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       // Note that we cache each slice separately. We could cache them together at the end, but
       // then we won't be able to pass them to users without inc-refing explicitly.
       ColumnEncoding[] encodings = sd.getEncodings();
+      // Force creation of cache data entry for root (struct) column if not present.
+      if (encodings[0] != null && sd.getData()[0] == null) {
+        createArrayToCache(sd, 0, null);
+      }
       for (int i = 0; i < encodings.length; ++i) {
         // Make data consistent with encodings, don't store useless information.
         if (sd.getData()[i] == null) {
