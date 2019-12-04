@@ -97,6 +97,7 @@ File Version: 0.12 with ORC_517
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
+Calendar: Julian/Gregorian
 Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:string,ts:timestamp,dec:decimal(4,2),bin:binary>
 
 Stripe Statistics:
@@ -269,7 +270,7 @@ Stripes:
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 98 loadFactor: 0.0156 expectedFpp: 5.9604645E-8
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
 
-File length: 32312 bytes
+File length: 32313 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -294,6 +295,7 @@ File Version: 0.12 with ORC_517
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
+Calendar: Julian/Gregorian
 Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:string,ts:timestamp,dec:decimal(4,2),bin:binary>
 
 Stripe Statistics:
@@ -466,7 +468,7 @@ Stripes:
       Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 174 loadFactor: 0.0181 expectedFpp: 6.426078E-13
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 181 loadFactor: 0.0189 expectedFpp: 8.4693775E-13
 
-File length: 36956 bytes
+File length: 36958 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -503,6 +505,7 @@ File Version: 0.12 with ORC_517
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
+Calendar: Julian/Gregorian
 Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:string,ts:timestamp,dec:decimal(4,2),bin:binary>
 
 Stripe Statistics:
@@ -675,7 +678,7 @@ Stripes:
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 98 loadFactor: 0.0156 expectedFpp: 5.9604645E-8
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
 
-File length: 32312 bytes
+File length: 32313 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

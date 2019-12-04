@@ -293,7 +293,7 @@ public class TestAvroDeserializer {
     record.put("timestampField", 1546387200999L);
     assertTrue(GENERIC_DATA.validate(readerSchema, record));
 
-    AvroGenericRecordWritable agrw = new AvroGenericRecordWritable(ZoneId.of("America/New_York"));
+    AvroGenericRecordWritable agrw = new AvroGenericRecordWritable(ZoneId.of("America/New_York"), false);
     agrw.setRecord(record);
     agrw.setFileSchema(readerSchema);
     agrw.setRecordReaderID(new UID());
