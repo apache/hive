@@ -237,7 +237,7 @@ Table Parameters:
 	orc.bloom.filter.columns	*                   
 	orc.row.index.stride	1000                
 	rawDataSize         	1139514             
-	totalSize           	55694               
+	totalSize           	55696               
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

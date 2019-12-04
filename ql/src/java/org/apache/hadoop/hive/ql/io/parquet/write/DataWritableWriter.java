@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.ParquetTimestampUtils;
+import org.apache.hadoop.hive.common.type.CalendarUtils;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -68,21 +69,25 @@ public class DataWritableWriter {
   protected final RecordConsumer recordConsumer;
   private final GroupType schema;
   private Configuration conf;
+  private final boolean defaultDateProleptic;
 
   /* This writer will be created when writing the first row in order to get
   information about how to inspect the record data.  */
   private DataWriter messageWriter;
 
-  public DataWritableWriter(final RecordConsumer recordConsumer, final GroupType schema) {
+  public DataWritableWriter(final RecordConsumer recordConsumer, final GroupType schema,
+      final boolean defaultDateProleptic) {
     this.recordConsumer = recordConsumer;
     this.schema = schema;
+    this.defaultDateProleptic = defaultDateProleptic;
   }
 
-	public DataWritableWriter(final RecordConsumer recordConsumer, final GroupType schema,
-      final Configuration conf) {
-	    this.recordConsumer = recordConsumer;
+  public DataWritableWriter(final RecordConsumer recordConsumer, final GroupType schema,
+      final boolean defaultDateProleptic, final Configuration conf) {
+    this.recordConsumer = recordConsumer;
     this.schema = schema;
     this.conf = conf;
+    this.defaultDateProleptic = defaultDateProleptic;
   }
 
   /**
@@ -595,7 +600,9 @@ public class DataWritableWriter {
     @Override
     public void write(Object value) {
       Date vDate = inspector.getPrimitiveJavaObject(value);
-      recordConsumer.addInteger(DateWritableV2.dateToDays(vDate));
+      recordConsumer.addInteger(
+          defaultDateProleptic ? DateWritableV2.dateToDays(vDate) :
+              CalendarUtils.convertDateToHybrid(DateWritableV2.dateToDays(vDate)));
     }
   }
 }

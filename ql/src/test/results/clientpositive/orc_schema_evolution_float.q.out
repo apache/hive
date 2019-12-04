@@ -153,44 +153,44 @@ POSTHOOK: query: select f from float_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-0.22
-74.72
-PREHOOK: query: select f from float_orc where f=74.72
+0.2199999988079071
+74.72000122070312
+PREHOOK: query: select f from float_orc where f=74.72000122070312
 PREHOOK: type: QUERY
 PREHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select f from float_orc where f=74.72
+POSTHOOK: query: select f from float_orc where f=74.72000122070312
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-74.72
-PREHOOK: query: select f from float_orc where f=0.22
+74.72000122070312
+PREHOOK: query: select f from float_orc where f=0.2199999988079071
 PREHOOK: type: QUERY
 PREHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select f from float_orc where f=0.22
+POSTHOOK: query: select f from float_orc where f=0.2199999988079071
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-0.22
-PREHOOK: query: select f from float_orc where f=74.72
+0.2199999988079071
+PREHOOK: query: select f from float_orc where f=74.72000122070312
 PREHOOK: type: QUERY
 PREHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select f from float_orc where f=74.72
+POSTHOOK: query: select f from float_orc where f=74.72000122070312
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-74.72
-PREHOOK: query: select f from float_orc where f=0.22
+74.72000122070312
+PREHOOK: query: select f from float_orc where f=0.2199999988079071
 PREHOOK: type: QUERY
 PREHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select f from float_orc where f=0.22
+POSTHOOK: query: select f from float_orc where f=0.2199999988079071
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@float_orc
 #### A masked pattern was here ####
-0.22
+0.2199999988079071
 PREHOOK: query: alter table float_orc change column f f decimal(14,5)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@float_orc

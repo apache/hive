@@ -201,7 +201,7 @@ public class TestDataWritableWriter {
 
   private void writeParquetRecord(String schema, ParquetHiveRecord record) throws SerDeException {
     MessageType fileSchema = MessageTypeParser.parseMessageType(schema);
-    DataWritableWriter hiveParquetWriter = new DataWritableWriter(mockRecordConsumer, fileSchema, conf);
+    DataWritableWriter hiveParquetWriter = new DataWritableWriter(mockRecordConsumer, fileSchema, false, conf);
     hiveParquetWriter.write(record);
   }
 
