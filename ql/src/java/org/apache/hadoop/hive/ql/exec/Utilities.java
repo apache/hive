@@ -4610,11 +4610,6 @@ public final class Utilities {
     return passwd;
   }
 
-  public static SupplierWithCheckedException<FileSystem, IOException> getFsSupplier(final Path path,
-    final Configuration conf) {
-    return () -> path.getFileSystem(conf);
-  }
-
   public static String encodeColumnNames(List<String> colNames) throws SemanticException {
     try {
       return JSON_MAPPER.writeValueAsString(colNames);
