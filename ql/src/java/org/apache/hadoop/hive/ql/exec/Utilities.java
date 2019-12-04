@@ -4512,11 +4512,6 @@ public final class Utilities {
     return passwd;
   }
 
-  public static SupplierWithCheckedException<FileSystem, IOException> getFsSupplier(final Path path,
-    final Configuration conf) {
-    return () -> path.getFileSystem(conf);
-  }
-
   /**
    * Logs the class paths of the job class loader and the thread context class loader to the passed logger.
    * Checks both loaders if getURLs method is available; if not, prints a message about this (instead of the class path)
