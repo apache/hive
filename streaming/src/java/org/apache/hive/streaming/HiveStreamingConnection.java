@@ -32,8 +32,11 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.StreamCapabilities;
+import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -519,6 +522,28 @@ public class HiveStreamingConnection implements StreamingConnection {
       String errMsg = this.toString() + " specifies partitions for un-partitioned table";
       LOG.error(errMsg);
       throw new ConnectionError(errMsg);
+    }
+
+    // batch size is only used for managed transactions, not for unmanaged single transactions
+    if (transactionBatchSize > 1) {
+      try (FileSystem fs = tableObject.getDataLocation().getFileSystem(conf)) {
+        if (BlobStorageUtils.isBlobStorageFileSystem(conf, fs)) {
+          // currently not all filesystems implement StreamCapabilities, while FSDataOutputStream does
+          Path path = new Path("/tmp", "_tmp_stream_verify_" + UUID.randomUUID().toString());
+          try(FSDataOutputStream out = fs.create(path, false)){
+            if (!out.hasCapability(StreamCapabilities.HFLUSH)) {
+              throw new ConnectionError(
+                  "The backing filesystem only supports transaction batch sizes of 1, but " + transactionBatchSize
+                      + " was requested.");
+            }
+            fs.deleteOnExit(path);
+          } catch (IOException e){
+            throw new ConnectionError("Could not create path for database", e);
+          }
+        }
+      } catch (IOException e) {
+        throw new ConnectionError("Could not retrieve FileSystem of table", e);
+      }
     }
   }
 
