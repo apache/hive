@@ -529,7 +529,7 @@ public class HiveStreamingConnection implements StreamingConnection {
       try (FileSystem fs = tableObject.getDataLocation().getFileSystem(conf)) {
         if (BlobStorageUtils.isBlobStorageFileSystem(conf, fs)) {
           // currently not all filesystems implement StreamCapabilities, while FSDataOutputStream does
-          Path path = new Path(tableObject.getDataLocation(), "tmp_stream_verify_" + UUID.randomUUID().toString());
+          Path path = new Path(tableObject.getDataLocation(), "_tmp_stream_verify_" + UUID.randomUUID().toString());
           try(FSDataOutputStream out = fs.create(path, false)){
             if (!out.hasCapability(StreamCapabilities.HFLUSH)) {
               throw new ConnectionError(
