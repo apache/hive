@@ -35,7 +35,7 @@ import java.util.Properties;
 
 import javax.security.auth.login.LoginException;
 
-import com.google.common.collect.Maps;
+import org.apache.hive.com.google.guava.collect.Maps;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.classification.InterfaceAudience;

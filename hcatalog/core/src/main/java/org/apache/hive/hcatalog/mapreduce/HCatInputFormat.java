@@ -22,7 +22,7 @@ package org.apache.hive.hcatalog.mapreduce;
 import java.io.IOException;
 import java.util.Properties;
 
-import com.google.common.base.Preconditions;
+import org.apache.hive.com.google.guava.base.Preconditions;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;

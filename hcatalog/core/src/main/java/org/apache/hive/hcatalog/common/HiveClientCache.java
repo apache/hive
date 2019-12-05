@@ -47,11 +47,11 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.hive.com.google.guava.cache.Cache;
+import org.apache.hive.com.google.guava.cache.CacheBuilder;
+import org.apache.hive.com.google.guava.cache.RemovalListener;
+import org.apache.hive.com.google.guava.cache.RemovalNotification;
+import org.apache.hive.com.google.guava.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * A thread safe time expired cache for HiveMetaStoreClient

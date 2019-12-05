@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
-import com.google.common.collect.Lists;
+import org.apache.hive.com.google.guava.collect.Lists;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.hcatalog.common.HCatUtil;

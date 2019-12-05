@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Lists;
+import org.apache.hive.com.google.guava.collect.Lists;
 
 
 import org.apache.hadoop.conf.Configuration;

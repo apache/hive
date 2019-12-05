@@ -19,7 +19,7 @@
 
 package org.apache.hive.hcatalog.mapreduce;
 
-import com.google.common.collect.ImmutableSet;
+import org.apache.hive.com.google.guava.collect.ImmutableSet;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1023,7 +1023,7 @@
                   <shadedPattern>org.apache.hive.com.zaxxer.hikari</shadedPattern>
                 </relocation>
                 <relocation>
-                  <pattern>com.google.guava</pattern>
+                  <pattern>com.google.common</pattern>
                   <shadedPattern>org.apache.hive.com.google.guava</shadedPattern>
                 </relocation>
               </relocations>
