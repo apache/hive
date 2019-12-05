@@ -1024,7 +1024,7 @@
                 </relocation>
                 <relocation>
                   <pattern>com.google.common</pattern>
-                  <shadedPattern>org.apache.hive.com.google.guava</shadedPattern>
+                  <shadedPattern>org.apache.hive.com.google.common</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

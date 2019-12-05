@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.hive.com.google.guava.collect.Maps;
+import org.apache.hive.com.google.common.collect.Maps;
 
 /**
  * This class is a place to put all the code associated with

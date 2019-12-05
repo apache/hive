@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.hive.com.google.guava.collect.Lists;
-import org.apache.hive.com.google.guava.collect.Maps;
+import org.apache.hive.com.google.common.collect.Lists;
+import org.apache.hive.com.google.common.collect.Maps;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.permission.FsAction;

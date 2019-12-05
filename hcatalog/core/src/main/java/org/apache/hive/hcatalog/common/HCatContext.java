@@ -19,8 +19,8 @@
 
 package org.apache.hive.hcatalog.common;
 
-import org.apache.hive.com.google.guava.base.Optional;
-import org.apache.hive.com.google.guava.base.Preconditions;
+import org.apache.hive.com.google.common.base.Optional;
+import org.apache.hive.com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
