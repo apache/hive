@@ -53,7 +53,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@s
 POSTHOOK: Lineage: s.cnt SCRIPT []
 POSTHOOK: Lineage: s.id SCRIPT []
-Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[35][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: from (select id==offset as first,* from s
 join t_offset on id>=offset) s1
 insert into t select id,cnt where not first
@@ -75,7 +75,7 @@ POSTHOOK: Output: default@t_offset
 POSTHOOK: Lineage: t.cnt SIMPLE [(s)s.FieldSchema(name:cnt, type:int, comment:null), ]
 POSTHOOK: Lineage: t.id SIMPLE [(s)s.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: t_offset.offset EXPRESSION [(s)s.FieldSchema(name:id, type:int, comment:null), ]
-Warning: Shuffle Join MERGEJOIN[34][tables = [s, t_offset]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[30][tables = [s, t_offset]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: create scheduled query ingest every 10 minutes defined as
 from (select id==offset as first,* from s
 join t_offset on id>=offset) s1

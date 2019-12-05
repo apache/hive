@@ -1,4 +1,6 @@
 --! qt:dataset:alltypesorc,alltypesparquet,cbo_t1,cbo_t2,cbo_t3,lineitem,part,src,src1,src_cbo,src_json,src_sequencefile,src_thrift,srcbucket,srcbucket2,srcpart
+--! qt:sysdb
+
 set hive.strict.checks.cartesian.product=false;
 
 set hive.compute.query.using.stats=false;
@@ -31,8 +33,6 @@ CREATE VIEW smt_sysdb_view
        from smt_sysdb_src_buck, smt_sysdb_scr_txn where smt_sysdb_src_buck.key = smt_sysdb_scr_txn.key;
 
 show grant user hive_test_user;
-
-source ../../metastore/scripts/upgrade/hive/hive-schema-3.1.0.hive.sql;
 
 use sys;
 

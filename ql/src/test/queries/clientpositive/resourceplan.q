@@ -1,3 +1,5 @@
+--! qt:sysdb
+
 -- Continue on errors, we do check some error conditions below.
 set hive.cli.errors.ignore=true;
 set hive.test.authz.sstd.hs2.mode=true;
@@ -7,9 +9,6 @@ set hive.cbo.enable=false;
 
 -- Force DN to create db_privs tables.
 show grant user hive_test_user;
-
--- Initialize the hive schema.
-source ../../metastore/scripts/upgrade/hive/hive-schema-3.1.0.hive.sql;
 
 -- SORT_QUERY_RESULTS
 

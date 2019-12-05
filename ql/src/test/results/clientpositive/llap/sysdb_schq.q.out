@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 PREHOOK: query: CREATE DATABASE IF NOT EXISTS SYS
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:SYS
@@ -3323,6 +3324,8 @@ POSTHOOK: type: QUERY
 =======
 POSTHOOK: type: CREATE SCHEDULED QUERY
 >>>>>>> 89cf44f7ecf... HIVE-22809: Support materialized view rebuild as a scheduled query (Zoltan Haindrich reviewed by Jesus Camacho Rodriguez)
+=======
+>>>>>>> 9dc2bb83991... HIVE-22517: Sysdb related qtests also output the sysdb sql commands to q.out (Zoltan Haindrich reviewed by László Bodor)
 PREHOOK: query: use sys
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:sys

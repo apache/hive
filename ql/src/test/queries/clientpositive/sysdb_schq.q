@@ -1,8 +1,7 @@
 --! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:dataset:src
-
-source ../../metastore/scripts/upgrade/hive/hive-schema-3.1.3000.hive.sql;
+--! qt:sysdb
 
 set user.name=hive_admin_user;
 set role admin;

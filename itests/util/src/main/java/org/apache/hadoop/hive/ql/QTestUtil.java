@@ -116,6 +116,7 @@ import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.qoption.QTestAuthorizerHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestSysDbHandler;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryCleaner;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryServiceProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -266,7 +267,7 @@ public class QTestUtil {
     }
   }
 
-  private CliDriver getCliDriver() {
+  public CliDriver getCliDriver() {
     if (cliDriver == null) {
       throw new RuntimeException("no clidriver");
     }
@@ -556,6 +557,7 @@ public class QTestUtil {
     conf.setVar(ConfVars.HIVE_QUERY_RESULTS_CACHE_DIRECTORY, "/tmp/hive/_resultscache_" + ProcessUtils.getPid());
     dispatcher.register("dataset", new FakeDatasetHandler());
     dispatcher.register("replace", replaceHandler);
+    dispatcher.register("sysdb", new QTestSysDbHandler());
     dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider(conf));
     dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());

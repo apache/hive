@@ -1,4 +1,5 @@
 --! qt:dataset:alltypesorc,alltypesparquet,part,src,src1,srcbucket,srcbucket2,src_cbo,src_json,src_sequencefile,src_thrift,srcpart,cbo_t1,cbo_t2,cbo_t3,lineitem
+--! qt:sysdb
 
 set hive.strict.checks.cartesian.product=false;
 
@@ -26,8 +27,6 @@ CREATE TEMPORARY TABLE src_tmp (key int, value string);
 CREATE TABLE moretypes (a decimal(10,2), b tinyint, c smallint, d int, e bigint, f varchar(10), g char(3));
 
 show grant user hive_test_user;
-
-source ../../metastore/scripts/upgrade/hive/hive-schema-3.1.3000.hive.sql;
 
 use sys;
 
@@ -125,3 +124,4 @@ select table_catalog,table_schema,table_name,column_name,ordinal_position,column
 select * from COLUMN_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME limit 10;
 
 select TABLE_SCHEMA, TABLE_NAME from views order by TABLE_SCHEMA, TABLE_NAME;
+
