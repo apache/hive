@@ -65,7 +65,7 @@ public final class TxnDbUtil {
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
   }
 
-  public static void prepDb(Configuration conf) throws Exception {
+  public static synchronized void prepDb(Configuration conf) throws Exception {
     // This is a bogus hack because it copies the contents of the SQL file
     // intended for creating derby databases, and thus will inexorably get
     // out of date with it.  I'm open to any suggestions on how to make this
