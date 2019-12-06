@@ -469,12 +469,13 @@ public class TestDbTxnManager2 {
     driver.run("insert into temp.T11 values (4, 4)");
     driver.run("insert into temp.T12p partition (ds='today', hour='1') values (5, 5)");
     driver.run("insert into temp.T12p partition (ds='tomorrow', hour='2') values (6, 6)");
+    driver.run("insert into temp.T12p partition (ds='tomorrow', hour='2') values (13, 13)");
     driver.run("insert into temp.T13p partition (ds='today', hour='1') values (7, 7)");
     driver.run("insert into temp.T13p partition (ds='tomorrow', hour='2') values (8, 8)");
     int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_DATABASE='temp' and CTC_TABLE in ('t10', 't11')");
     Assert.assertEquals(4, count);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_DATABASE='temp' and CTC_TABLE in ('t12p', 't13p')");
-    Assert.assertEquals(4, count);
+    Assert.assertEquals(5, count);
 
     // Fail some inserts, so that we have records in TXN_COMPONENTS
     conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
@@ -532,7 +533,10 @@ public class TestDbTxnManager2 {
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE='t12p' and CC_STATE='s' and CC_TYPE='i'");
     Assert.assertEquals(1, count);
 
-    // Fail compaction, so that we have failed records in COMPLETED_COMPACTIONS
+    // Fail compaction, so that we have failed records in COMPLETED_COMPACTIONS.
+    // Tables need at least 2 delta files to compact, and minor compaction was just run, so insert
+    driver.run("insert into temp.T11 values (14, 14)");
+    driver.run("insert into temp.T12p partition (ds='tomorrow', hour='2') values (15, 15)");
     conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, true);
     driver.run("alter table temp.T11 compact 'major'");
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11' and CQ_STATE='i' and CQ_TYPE='a'");

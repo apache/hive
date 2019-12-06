@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
@@ -242,10 +241,6 @@ public class CompactorMR {
     AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, Ref.from(false), true,
         null, false);
 
-    if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
-      return;
-    }
-
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
     int maxDeltasToHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
     if (parsedDeltas.size() > maxDeltasToHandle) {
@@ -303,38 +298,6 @@ public class CompactorMR {
       dir.getCurrentDirectories().size(), dir.getObsolete().size(), conf, msc, ci.id, jobName);
 
     su.gatherStats();
-  }
-
-  private static boolean isEnoughToCompact(boolean isMajorCompaction, AcidUtils.Directory dir, StorageDescriptor sd) {
-    int deltaCount = dir.getCurrentDirectories().size();
-    int origCount = dir.getOriginalFiles().size();
-
-    StringBuilder deltaInfo = new StringBuilder().append(deltaCount);
-    boolean isEnoughToCompact;
-
-    if (isMajorCompaction) {
-      isEnoughToCompact = (origCount > 0
-          || deltaCount + (dir.getBaseDirectory() == null ? 0 : 1) > 1);
-
-    } else {
-      isEnoughToCompact = (deltaCount > 1);
-
-      if (deltaCount == 2) {
-        Map<String, Long> deltaByType = dir.getCurrentDirectories().stream()
-            .collect(Collectors.groupingBy(delta ->
-                    (delta.isDeleteDelta() ? AcidUtils.DELETE_DELTA_PREFIX : AcidUtils.DELTA_PREFIX),
-                Collectors.counting()));
-
-        isEnoughToCompact = (deltaByType.size() != deltaCount);
-        deltaInfo.append(" ").append(deltaByType);
-      }
-    }
-
-    if (!isEnoughToCompact) {
-      LOG.debug("Not compacting {}; current base: {}, delta files: {}, originals: {}",
-          sd.getLocation(), dir.getBaseDirectory(), deltaInfo, origCount);
-    }
-    return isEnoughToCompact;
   }
 
   private String generateTmpPath(StorageDescriptor sd) {
