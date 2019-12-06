@@ -321,11 +321,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // REPL LOAD
   private void initReplLoad(ASTNode ast) throws SemanticException {
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
-      // For now repl load is blocked in cdp releases.
-      throw new UnsupportedOperationException("REPL LOAD is not supported in this version");
-    }
-
     path = PlanUtils.stripQuotes(ast.getChild(0).getText());
     int numChildren = ast.getChildCount();
     for (int i = 1; i < numChildren; i++) {
