@@ -1112,7 +1112,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         }
 
         FileStatus fileStatus = file.getFileStatus();
-        long logicalLen = AcidUtils.getLogicalLength(fs, fileStatus);
+        long logicalLen = isAcid ? AcidUtils.getLogicalLength(fs, fileStatus) : fileStatus.getLen();
         if (logicalLen != 0) {
           Object fileKey = isDefaultFs ? file.getFileId() : null;
           if (fileKey == null && allowSyntheticFileIds) {
