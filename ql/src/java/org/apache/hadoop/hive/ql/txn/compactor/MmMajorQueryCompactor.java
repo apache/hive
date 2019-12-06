@@ -82,10 +82,6 @@ class MmMajorQueryCompactor extends QueryCompactor {
       return;
     }
 
-    if (!Util.isEnoughToCompact(compactionInfo.isMajorCompaction(), dir, storageDescriptor)) {
-      return;
-    }
-
     try {
       String tmpLocation = Util.generateTmpPath(storageDescriptor);
       Path baseLocation = new Path(tmpLocation, "_base");
