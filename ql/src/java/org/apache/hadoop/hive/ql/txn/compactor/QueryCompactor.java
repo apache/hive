@@ -95,6 +95,24 @@ abstract class QueryCompactor {
     }
 
     /**
+     * Check for obsolete directories, and return true if any exist and Cleaner should be
+     * run. For example if we insert overwrite into a table with only deltas, a new base file with
+     * the highest writeId is created so there will be no live delta directories, only obsolete
+     * ones. Compaction is not needed, but the cleaner should still be run.
+     *
+     * @return true if cleaning is needed
+     */
+    public static boolean needsCleaning(AcidUtils.Directory dir, StorageDescriptor sd) {
+      int numObsoleteDirs = dir.getObsolete().size();
+      boolean needsJustCleaning = numObsoleteDirs > 0;
+      if (needsJustCleaning) {
+        LOG.debug("{} obsolete directories in {} found; marked for cleaning.",
+            numObsoleteDirs, sd.getLocation());
+      }
+      return needsJustCleaning;
+    }
+
+    /**
      * Generate a random tmp path, under the provided storage.
      * @param sd storage descriptor, must be not null.
      * @return path, always not null
