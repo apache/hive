@@ -2293,7 +2293,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         cmd.append(")");
       }
       // FIXME: is it ok to have a completely new querystate?
-      QueryState newQueryState = Driver.getNewQueryState(conf, queryState.getLineageState());
+      QueryState newQueryState = QueryState.getNewQueryState(conf, queryState.getLineageState());
       // FIXME: this driver instance is never closed
       Driver driver = new Driver(newQueryState);
       int rc = driver.compile(cmd.toString(), false);
