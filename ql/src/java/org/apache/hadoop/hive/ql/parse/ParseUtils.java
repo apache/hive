@@ -429,8 +429,17 @@ public final class ParseUtils {
         if (selExpr.getType() == HiveParser.QUERY_HINT) continue;
         assert selExpr.getType() == HiveParser.TOK_SELEXPR;
         assert selExpr.getChildCount() > 0;
-        // Examine the last child. It could be an alias.
-        Tree child = selExpr.getChild(selExpr.getChildCount() - 1);
+
+        if (selExpr.getChildCount() > 1) {
+          if (extractAliases(selExpr, alias, newChildren, aliases)) {
+            continue;
+          }
+          setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+          return;
+        }
+
+        assert selExpr.getChildCount() == 1;
+        Tree child = selExpr.getChild(0);
         switch (child.getType()) {
         case HiveParser.TOK_SETCOLREF:
           // We have a nested setcolref. Process that and start from scratch TODO: use stack?
@@ -486,6 +495,30 @@ public final class ParseUtils {
         parent.insertChild(ix++, node);
       }
     }
+
+  /**
+   * A UDTF can accept multiple aliases such as `AS (c1, c2, c3)`.
+   * In other cases, this selExpr should have only one alias like `AS c1` or `AS (c1)`.
+   * In case of a malformed query, it will fail later.
+   */
+  private static boolean extractAliases(final Tree selExpr, final String alias,
+      final List<ASTNode> newChildren, final HashSet<String> aliases) {
+    // Skip the first child since it's an expression.
+    for (int i = 1; i < selExpr.getChildCount(); ++i) {
+      final Tree child = selExpr.getChild(i);
+      if (child.getType() != HiveParser.Identifier) {
+        // There is probably no case to reach here.
+        LOG.debug("Replacing SETCOLREF with ALLCOLREF "
+                + "because there are multiple children and one of them is not a part of alias "
+                + child.getType() + " " + child.getText());
+        return false;
+      }
+      if (!createChildColumnRef(child, alias, newChildren, aliases)) {
+        return false;
+      }
+    }
+    return true;
+  }
 
     private static boolean createChildColumnRef(Tree child, String alias,
         List<ASTNode> newChildren, HashSet<String> aliases) {
