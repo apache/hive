@@ -1653,164 +1653,164 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 ------------------------------
 -- Transaction and lock tables
 ------------------------------
-CREATE TABLE TXNS (
-  TXN_ID bigint PRIMARY KEY,
-  TXN_STATE char(1) NOT NULL,
-  TXN_STARTED bigint NOT NULL,
-  TXN_LAST_HEARTBEAT bigint NOT NULL,
-  TXN_USER varchar(128) NOT NULL,
-  TXN_HOST varchar(128) NOT NULL,
-  TXN_AGENT_INFO varchar(128),
-  TXN_META_INFO varchar(128),
-  TXN_HEARTBEAT_COUNT integer,
-  TXN_TYPE integer
+CREATE TABLE "TXNS" (
+  "TXN_ID" bigint PRIMARY KEY,
+  "TXN_STATE" char(1) NOT NULL,
+  "TXN_STARTED" bigint NOT NULL,
+  "TXN_LAST_HEARTBEAT" bigint NOT NULL,
+  "TXN_USER" varchar(128) NOT NULL,
+  "TXN_HOST" varchar(128) NOT NULL,
+  "TXN_AGENT_INFO" varchar(128),
+  "TXN_META_INFO" varchar(128),
+  "TXN_HEARTBEAT_COUNT" integer,
+  "TXN_TYPE" integer
 );
 
-CREATE TABLE TXN_COMPONENTS (
-  TC_TXNID bigint NOT NULL REFERENCES TXNS (TXN_ID),
-  TC_DATABASE varchar(128) NOT NULL,
-  TC_TABLE varchar(128),
-  TC_PARTITION varchar(767) DEFAULT NULL,
-  TC_OPERATION_TYPE char(1) NOT NULL,
-  TC_WRITEID bigint
+CREATE TABLE "TXN_COMPONENTS" (
+  "TC_TXNID" bigint NOT NULL REFERENCES "TXNS" ("TXN_ID"),
+  "TC_DATABASE" varchar(128) NOT NULL,
+  "TC_TABLE" varchar(128),
+  "TC_PARTITION" varchar(767) DEFAULT NULL,
+  "TC_OPERATION_TYPE" char(1) NOT NULL,
+  "TC_WRITEID" bigint
 );
 
-CREATE INDEX TC_TXNID_INDEX ON TXN_COMPONENTS USING hash (TC_TXNID);
+CREATE INDEX TC_TXNID_INDEX ON "TXN_COMPONENTS" USING hash ("TC_TXNID");
 
-CREATE TABLE COMPLETED_TXN_COMPONENTS (
-  CTC_TXNID bigint NOT NULL,
-  CTC_DATABASE varchar(128) NOT NULL,
-  CTC_TABLE varchar(256),
-  CTC_PARTITION varchar(767),
-  CTC_TIMESTAMP timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  CTC_WRITEID bigint,
-  CTC_UPDATE_DELETE char(1) NOT NULL
+CREATE TABLE "COMPLETED_TXN_COMPONENTS" (
+  "CTC_TXNID" bigint NOT NULL,
+  "CTC_DATABASE" varchar(128) NOT NULL,
+  "CTC_TABLE" varchar(256),
+  "CTC_PARTITION" varchar(767),
+  "CTC_TIMESTAMP" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  "CTC_WRITEID" bigint,
+  "CTC_UPDATE_DELETE" char(1) NOT NULL
 );
 
-CREATE INDEX COMPLETED_TXN_COMPONENTS_INDEX ON COMPLETED_TXN_COMPONENTS USING btree (CTC_DATABASE, CTC_TABLE, CTC_PARTITION);
+CREATE INDEX COMPLETED_TXN_COMPONENTS_INDEX ON "COMPLETED_TXN_COMPONENTS" USING btree ("CTC_DATABASE", "CTC_TABLE", "CTC_PARTITION");
 
-CREATE TABLE NEXT_TXN_ID (
-  NTXN_NEXT bigint NOT NULL
+CREATE TABLE "NEXT_TXN_ID" (
+  "NTXN_NEXT" bigint NOT NULL
 );
-INSERT INTO NEXT_TXN_ID VALUES(1);
+INSERT INTO "NEXT_TXN_ID" VALUES(1);
 
-CREATE TABLE HIVE_LOCKS (
-  HL_LOCK_EXT_ID bigint NOT NULL,
-  HL_LOCK_INT_ID bigint NOT NULL,
-  HL_TXNID bigint NOT NULL,
-  HL_DB varchar(128) NOT NULL,
-  HL_TABLE varchar(128),
-  HL_PARTITION varchar(767) DEFAULT NULL,
-  HL_LOCK_STATE char(1) NOT NULL,
-  HL_LOCK_TYPE char(1) NOT NULL,
-  HL_LAST_HEARTBEAT bigint NOT NULL,
-  HL_ACQUIRED_AT bigint,
-  HL_USER varchar(128) NOT NULL,
-  HL_HOST varchar(128) NOT NULL,
-  HL_HEARTBEAT_COUNT integer,
-  HL_AGENT_INFO varchar(128),
-  HL_BLOCKEDBY_EXT_ID bigint,
-  HL_BLOCKEDBY_INT_ID bigint,
-  PRIMARY KEY(HL_LOCK_EXT_ID, HL_LOCK_INT_ID)
-);
-
-CREATE INDEX HL_TXNID_INDEX ON HIVE_LOCKS USING hash (HL_TXNID);
-
-CREATE TABLE NEXT_LOCK_ID (
-  NL_NEXT bigint NOT NULL
-);
-INSERT INTO NEXT_LOCK_ID VALUES(1);
-
-CREATE TABLE COMPACTION_QUEUE (
-  CQ_ID bigint PRIMARY KEY,
-  CQ_DATABASE varchar(128) NOT NULL,
-  CQ_TABLE varchar(128) NOT NULL,
-  CQ_PARTITION varchar(767),
-  CQ_STATE char(1) NOT NULL,
-  CQ_TYPE char(1) NOT NULL,
-  CQ_TBLPROPERTIES varchar(2048),
-  CQ_WORKER_ID varchar(128),
-  CQ_START bigint,
-  CQ_RUN_AS varchar(128),
-  CQ_HIGHEST_WRITE_ID bigint,
-  CQ_META_INFO bytea,
-  CQ_HADOOP_JOB_ID varchar(32),
-  CQ_ERROR_MESSAGE text
+CREATE TABLE "HIVE_LOCKS" (
+  "HL_LOCK_EXT_ID" bigint NOT NULL,
+  "HL_LOCK_INT_ID" bigint NOT NULL,
+  "HL_TXNID" bigint NOT NULL,
+  "HL_DB" varchar(128) NOT NULL,
+  "HL_TABLE" varchar(128),
+  "HL_PARTITION" varchar(767) DEFAULT NULL,
+  "HL_LOCK_STATE" char(1) NOT NULL,
+  "HL_LOCK_TYPE" char(1) NOT NULL,
+  "HL_LAST_HEARTBEAT" bigint NOT NULL,
+  "HL_ACQUIRED_AT" bigint,
+  "HL_USER" varchar(128) NOT NULL,
+  "HL_HOST" varchar(128) NOT NULL,
+  "HL_HEARTBEAT_COUNT" integer,
+  "HL_AGENT_INFO" varchar(128),
+  "HL_BLOCKEDBY_EXT_ID" bigint,
+  "HL_BLOCKEDBY_INT_ID" bigint,
+  PRIMARY KEY("HL_LOCK_EXT_ID", "HL_LOCK_INT_ID")
 );
 
-CREATE TABLE NEXT_COMPACTION_QUEUE_ID (
-  NCQ_NEXT bigint NOT NULL
+CREATE INDEX HL_TXNID_INDEX ON "HIVE_LOCKS" USING hash ("HL_TXNID");
+
+CREATE TABLE "NEXT_LOCK_ID" (
+  "NL_NEXT" bigint NOT NULL
 );
-INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1);
+INSERT INTO "NEXT_LOCK_ID" VALUES(1);
 
-CREATE TABLE COMPLETED_COMPACTIONS (
-  CC_ID bigint PRIMARY KEY,
-  CC_DATABASE varchar(128) NOT NULL,
-  CC_TABLE varchar(128) NOT NULL,
-  CC_PARTITION varchar(767),
-  CC_STATE char(1) NOT NULL,
-  CC_TYPE char(1) NOT NULL,
-  CC_TBLPROPERTIES varchar(2048),
-  CC_WORKER_ID varchar(128),
-  CC_START bigint,
-  CC_END bigint,
-  CC_RUN_AS varchar(128),
-  CC_HIGHEST_WRITE_ID bigint,
-  CC_META_INFO bytea,
-  CC_HADOOP_JOB_ID varchar(32),
-  CC_ERROR_MESSAGE text
-);
-
-CREATE INDEX COMPLETED_COMPACTIONS_RES ON COMPLETED_COMPACTIONS (CC_DATABASE,CC_TABLE,CC_PARTITION);
-
-CREATE TABLE AUX_TABLE (
-  MT_KEY1 varchar(128) NOT NULL,
-  MT_KEY2 bigint NOT NULL,
-  MT_COMMENT varchar(255),
-  PRIMARY KEY(MT_KEY1, MT_KEY2)
+CREATE TABLE "COMPACTION_QUEUE" (
+  "CQ_ID" bigint PRIMARY KEY,
+  "CQ_DATABASE" varchar(128) NOT NULL,
+  "CQ_TABLE" varchar(128) NOT NULL,
+  "CQ_PARTITION" varchar(767),
+  "CQ_STATE" char(1) NOT NULL,
+  "CQ_TYPE" char(1) NOT NULL,
+  "CQ_TBLPROPERTIES" varchar(2048),
+  "CQ_WORKER_ID" varchar(128),
+  "CQ_START" bigint,
+  "CQ_RUN_AS" varchar(128),
+  "CQ_HIGHEST_WRITE_ID" bigint,
+  "CQ_META_INFO" bytea,
+  "CQ_HADOOP_JOB_ID" varchar(32),
+  "CQ_ERROR_MESSAGE" text
 );
 
-CREATE TABLE WRITE_SET (
-  WS_DATABASE varchar(128) NOT NULL,
-  WS_TABLE varchar(128) NOT NULL,
-  WS_PARTITION varchar(767),
-  WS_TXNID bigint NOT NULL,
-  WS_COMMIT_ID bigint NOT NULL,
-  WS_OPERATION_TYPE char(1) NOT NULL
+CREATE TABLE "NEXT_COMPACTION_QUEUE_ID" (
+  "NCQ_NEXT" bigint NOT NULL
+);
+INSERT INTO "NEXT_COMPACTION_QUEUE_ID" VALUES(1);
+
+CREATE TABLE "COMPLETED_COMPACTIONS" (
+  "CC_ID" bigint PRIMARY KEY,
+  "CC_DATABASE" varchar(128) NOT NULL,
+  "CC_TABLE" varchar(128) NOT NULL,
+  "CC_PARTITION" varchar(767),
+  "CC_STATE" char(1) NOT NULL,
+  "CC_TYPE" char(1) NOT NULL,
+  "CC_TBLPROPERTIES" varchar(2048),
+  "CC_WORKER_ID" varchar(128),
+  "CC_START" bigint,
+  "CC_END" bigint,
+  "CC_RUN_AS" varchar(128),
+  "CC_HIGHEST_WRITE_ID" bigint,
+  "CC_META_INFO" bytea,
+  "CC_HADOOP_JOB_ID" varchar(32),
+  "CC_ERROR_MESSAGE" text
 );
 
-CREATE TABLE TXN_TO_WRITE_ID (
-  T2W_TXNID bigint NOT NULL,
-  T2W_DATABASE varchar(128) NOT NULL,
-  T2W_TABLE varchar(256) NOT NULL,
-  T2W_WRITEID bigint NOT NULL
+CREATE INDEX "COMPLETED_COMPACTIONS_RES" ON "COMPLETED_COMPACTIONS" ("CC_DATABASE","CC_TABLE","CC_PARTITION");
+
+CREATE TABLE "AUX_TABLE" (
+  "MT_KEY1" varchar(128) NOT NULL,
+  "MT_KEY2" bigint NOT NULL,
+  "MT_COMMENT" varchar(255),
+  PRIMARY KEY("MT_KEY1", "MT_KEY2")
 );
 
-CREATE UNIQUE INDEX TBL_TO_TXN_ID_IDX ON TXN_TO_WRITE_ID (T2W_DATABASE, T2W_TABLE, T2W_TXNID);
-CREATE UNIQUE INDEX TBL_TO_WRITE_ID_IDX ON TXN_TO_WRITE_ID (T2W_DATABASE, T2W_TABLE, T2W_WRITEID);
-
-CREATE TABLE NEXT_WRITE_ID (
-  NWI_DATABASE varchar(128) NOT NULL,
-  NWI_TABLE varchar(256) NOT NULL,
-  NWI_NEXT bigint NOT NULL
+CREATE TABLE "WRITE_SET" (
+  "WS_DATABASE" varchar(128) NOT NULL,
+  "WS_TABLE" varchar(128) NOT NULL,
+  "WS_PARTITION" varchar(767),
+  "WS_TXNID" bigint NOT NULL,
+  "WS_COMMIT_ID" bigint NOT NULL,
+  "WS_OPERATION_TYPE" char(1) NOT NULL
 );
 
-CREATE UNIQUE INDEX NEXT_WRITE_ID_IDX ON NEXT_WRITE_ID (NWI_DATABASE, NWI_TABLE);
-
-CREATE TABLE MIN_HISTORY_LEVEL (
-  MHL_TXNID bigint NOT NULL,
-  MHL_MIN_OPEN_TXNID bigint NOT NULL,
-  PRIMARY KEY(MHL_TXNID)
+CREATE TABLE "TXN_TO_WRITE_ID" (
+  "T2W_TXNID" bigint NOT NULL,
+  "T2W_DATABASE" varchar(128) NOT NULL,
+  "T2W_TABLE" varchar(256) NOT NULL,
+  "T2W_WRITEID" bigint NOT NULL
 );
 
-CREATE INDEX MIN_HISTORY_LEVEL_IDX ON MIN_HISTORY_LEVEL (MHL_MIN_OPEN_TXNID);
+CREATE UNIQUE INDEX "TBL_TO_TXN_ID_IDX" ON "TXN_TO_WRITE_ID" ("T2W_DATABASE", "T2W_TABLE", "T2W_TXNID");
+CREATE UNIQUE INDEX "TBL_TO_WRITE_ID_IDX" ON "TXN_TO_WRITE_ID" ("T2W_DATABASE", "T2W_TABLE", "T2W_WRITEID");
 
-CREATE TABLE MATERIALIZATION_REBUILD_LOCKS (
-  MRL_TXN_ID bigint NOT NULL,
-  MRL_DB_NAME varchar(128) NOT NULL,
-  MRL_TBL_NAME varchar(256) NOT NULL,
-  MRL_LAST_HEARTBEAT bigint NOT NULL,
-  PRIMARY KEY(MRL_TXN_ID)
+CREATE TABLE "NEXT_WRITE_ID" (
+  "NWI_DATABASE" varchar(128) NOT NULL,
+  "NWI_TABLE" varchar(256) NOT NULL,
+  "NWI_NEXT" bigint NOT NULL
+);
+
+CREATE UNIQUE INDEX "NEXT_WRITE_ID_IDX" ON "NEXT_WRITE_ID" ("NWI_DATABASE", "NWI_TABLE");
+
+CREATE TABLE "MIN_HISTORY_LEVEL" (
+  "MHL_TXNID" bigint NOT NULL,
+  "MHL_MIN_OPEN_TXNID" bigint NOT NULL,
+  PRIMARY KEY("MHL_TXNID")
+);
+
+CREATE INDEX "MIN_HISTORY_LEVEL_IDX" ON "MIN_HISTORY_LEVEL" ("MHL_MIN_OPEN_TXNID");
+
+CREATE TABLE "MATERIALIZATION_REBUILD_LOCKS" (
+  "MRL_TXN_ID" bigint NOT NULL,
+  "MRL_DB_NAME" varchar(128) NOT NULL,
+  "MRL_TBL_NAME" varchar(256) NOT NULL,
+  "MRL_LAST_HEARTBEAT" bigint NOT NULL,
+  PRIMARY KEY("MRL_TXN_ID")
 );
 
 CREATE TABLE "I_SCHEMA" (
@@ -1830,21 +1830,21 @@ CREATE TABLE "SCHEMA_VERSION" (
   "SCHEMA_ID" bigint references "I_SCHEMA" ("SCHEMA_ID"),
   "VERSION" integer not null,
   "CREATED_AT" bigint not null,
-  "CD_ID" bigint references "CDS" ("CD_ID"), 
+  "CD_ID" bigint references "CDS" ("CD_ID"),
   "STATE" integer not null,
   "DESCRIPTION" varchar(4000),
   "SCHEMA_TEXT" text,
   "FINGERPRINT" varchar(256),
   "SCHEMA_VERSION_NAME" varchar(256),
-  "SERDE_ID" bigint references "SERDES" ("SERDE_ID"), 
+  "SERDE_ID" bigint references "SERDES" ("SERDE_ID"),
   unique ("SCHEMA_ID", "VERSION")
 );
 
-CREATE TABLE REPL_TXN_MAP (
-  RTM_REPL_POLICY varchar(256) NOT NULL,
-  RTM_SRC_TXN_ID bigint NOT NULL,
-  RTM_TARGET_TXN_ID bigint NOT NULL,
-  PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID)
+CREATE TABLE "REPL_TXN_MAP" (
+  "RTM_REPL_POLICY" varchar(256) NOT NULL,
+  "RTM_SRC_TXN_ID" bigint NOT NULL,
+  "RTM_TARGET_TXN_ID" bigint NOT NULL,
+  PRIMARY KEY ("RTM_REPL_POLICY", "RTM_SRC_TXN_ID")
 );
 
 
@@ -1870,6 +1870,7 @@ CREATE TABLE "TXN_WRITE_NOTIFICATION_LOG" (
   "WNL_EVENT_TIME" integer NOT NULL,
   PRIMARY KEY ("WNL_TXNID", "WNL_DATABASE", "WNL_TABLE", "WNL_PARTITION")
 );
+
 INSERT INTO "SEQUENCE_TABLE" ("SEQUENCE_NAME", "NEXT_VAL") VALUES ('org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog', 1);
 
 CREATE TABLE "SCHEDULED_QUERIES" (
@@ -1901,6 +1902,176 @@ CREATE TABLE "SCHEDULED_EXECUTIONS" (
 CREATE INDEX IDX_SCHEDULED_EXECUTIONS_LAST_UPDATE_TIME ON "SCHEDULED_EXECUTIONS" ("LAST_UPDATE_TIME");
 CREATE INDEX IDX_SCHEDULED_EXECUTIONS_SCHEDULED_QUERY_ID ON "SCHEDULED_EXECUTIONS" ("SCHEDULED_QUERY_ID");
 CREATE UNIQUE INDEX UNIQUE_SCHEDULED_EXECUTIONS_ID ON "SCHEDULED_EXECUTIONS" ("SCHEDULED_EXECUTION_ID");
+
+-- HIVE-22546 - backwards compatibility addendum
+
+CREATE OR REPLACE VIEW aux_table
+    AS SELECT
+        "MT_KEY1" mt_key1,
+        "MT_KEY2" mt_key2,
+        "MT_COMMENT" mt_comment
+    FROM "AUX_TABLE";
+
+CREATE OR REPLACE VIEW compaction_queue
+    AS SELECT
+        "CQ_ID" cq_id,
+        "CQ_DATABASE" cq_database,
+        "CQ_TABLE" cq_table,
+        "CQ_PARTITION" cq_partition,
+        "CQ_STATE" cq_state,
+        "CQ_TYPE" cq_type,
+        "CQ_TBLPROPERTIES" cq_tblproperties,
+        "CQ_WORKER_ID" cq_worker_id,
+        "CQ_START" cq_start,
+        "CQ_RUN_AS" cq_run_as,
+        "CQ_HIGHEST_WRITE_ID" cq_highest_write_id,
+        "CQ_META_INFO" cq_meta_info,
+        "CQ_HADOOP_JOB_ID" cq_hadoop_job_id,
+        "CQ_ERROR_MESSAGE" cq_error_message
+    FROM "COMPACTION_QUEUE";
+
+CREATE OR REPLACE VIEW completed_compactions
+    AS SELECT
+        "CC_ID" cc_id,
+        "CC_DATABASE" cc_database,
+        "CC_TABLE" cc_table,
+        "CC_PARTITION" cc_partition,
+        "CC_STATE" cc_state,
+        "CC_TYPE" cc_type,
+        "CC_TBLPROPERTIES" cc_tblproperties,
+        "CC_WORKER_ID" cc_worker_id,
+        "CC_START" cc_start,
+        "CC_END" cc_end,
+        "CC_RUN_AS" cc_run_as,
+        "CC_HIGHEST_WRITE_ID" cc_highest_write_id,
+        "CC_META_INFO" cc_meta_info,
+        "CC_HADOOP_JOB_ID" cc_hadoop_job_id,
+        "CC_ERROR_MESSAGE"  cc_error_message
+    FROM "COMPLETED_COMPACTIONS";
+
+CREATE OR REPLACE VIEW completed_txn_components
+    AS SELECT
+        "CTC_TXNID" ctc_txnid,
+        "CTC_DATABASE" ctc_database,
+        "CTC_TABLE" ctc_table,
+        "CTC_PARTITION" ctc_partition,
+        "CTC_TIMESTAMP" ctc_timestamp,
+        "CTC_WRITEID" ctc_writeid,
+        "CTC_UPDATE_DELETE" ctc_update_delete
+    FROM "COMPLETED_TXN_COMPONENTS";
+
+CREATE OR REPLACE VIEW hive_locks
+    AS SELECT
+        "HL_LOCK_EXT_ID" hl_lock_ext_id,
+        "HL_LOCK_INT_ID" hl_lock_int_id,
+        "HL_TXNID" hl_txnid,
+        "HL_DB" hl_db,
+        "HL_TABLE" hl_table,
+        "HL_PARTITION" hl_partition,
+        "HL_LOCK_STATE" hl_lock_state,
+        "HL_LOCK_TYPE" hl_lock_type,
+        "HL_LAST_HEARTBEAT" hl_last_heartbeat,
+        "HL_ACQUIRED_AT" hl_acquired_at,
+        "HL_USER" hl_user,
+        "HL_HOST" hl_host,
+        "HL_HEARTBEAT_COUNT" hl_heartbeat_count,
+        "HL_AGENT_INFO" hl_agent_info,
+        "HL_BLOCKEDBY_EXT_ID" hl_blockedby_ext_id,
+        "HL_BLOCKEDBY_INT_ID" hl_blockedby_int_id
+    FROM "HIVE_LOCKS";
+
+CREATE OR REPLACE VIEW materialization_rebuild_locks
+    AS SELECT
+        "MRL_TXN_ID" mrl_txn_id,
+        "MRL_DB_NAME" mrl_db_name,
+        "MRL_TBL_NAME" mrl_tbl_name,
+        "MRL_LAST_HEARTBEAT" mrl_last_heartbeat
+    FROM "MATERIALIZATION_REBUILD_LOCKS";
+
+CREATE OR REPLACE VIEW min_history_level
+    AS SELECT
+        "MHL_TXNID" mhl_txnid,
+        "MHL_MIN_OPEN_TXNID" mhl_min_open_txnid
+    FROM "MIN_HISTORY_LEVEL";
+
+CREATE OR REPLACE VIEW next_compaction_queue_id
+    AS SELECT
+        "NCQ_NEXT" ncq_next
+    FROM "NEXT_COMPACTION_QUEUE_ID";
+
+CREATE OR REPLACE VIEW next_lock_id
+    AS SELECT
+        "NL_NEXT" nl_next
+    FROM "NEXT_LOCK_ID";
+
+CREATE OR REPLACE VIEW next_txn_id
+    AS SELECT
+        "NTXN_NEXT" ntxn_next
+    FROM "NEXT_TXN_ID";
+
+CREATE OR REPLACE VIEW next_write_id
+    AS SELECT
+        "NWI_DATABASE" nwi_database,
+        "NWI_TABLE" nwi_table,
+        "NWI_NEXT" nwi_next
+    FROM "NEXT_WRITE_ID";
+
+CREATE OR REPLACE VIEW repl_txn_map
+    AS SELECT
+        "RTM_REPL_POLICY" rtm_repl_policy,
+        "RTM_SRC_TXN_ID" rtm_src_txn_id,
+        "RTM_TARGET_TXN_ID" rtm_target_txn_id
+    FROM "REPL_TXN_MAP";
+
+CREATE OR REPLACE VIEW runtime_stats
+    AS SELECT
+        "RS_ID" rs_id,
+        "CREATE_TIME" create_time,
+        "WEIGHT" weight,
+        "PAYLOAD" payload
+    FROM "RUNTIME_STATS";
+
+CREATE OR REPLACE VIEW txn_components
+    AS SELECT
+        "TC_TXNID" tc_txnid,
+        "TC_DATABASE" tc_database,
+        "TC_TABLE" tc_table,
+        "TC_PARTITION" tc_partition,
+        "TC_OPERATION_TYPE" tc_operation_type,
+        "TC_WRITEID" tc_writeid
+    FROM "TXN_COMPONENTS";
+
+CREATE OR REPLACE VIEW txn_to_write_id
+    AS SELECT
+        "T2W_TXNID" t2w_txnid,
+        "T2W_DATABASE" t2w_database,
+        "T2W_TABLE" t2w_table,
+        "T2W_WRITEID" t2w_writeid
+    FROM "TXN_TO_WRITE_ID";
+
+CREATE OR REPLACE VIEW txns
+    AS SELECT
+        "TXN_ID" txn_id,
+        "TXN_STATE" txn_state,
+        "TXN_STARTED" txn_started,
+        "TXN_LAST_HEARTBEAT" txn_last_heartbeat,
+        "TXN_USER" txn_user,
+        "TXN_HOST" txn_host,
+        "TXN_AGENT_INFO" txn_agent_info,
+        "TXN_META_INFO" txn_meta_info,
+        "TXN_HEARTBEAT_COUNT" txn_heartbeat_count,
+        "TXN_TYPE" txn_type
+    FROM "TXNS";
+
+CREATE OR REPLACE VIEW write_set
+    AS SELECT
+        "WS_DATABASE" ws_database,
+        "WS_TABLE" ws_table,
+        "WS_PARTITION" ws_partition,
+        "WS_TXNID" ws_txnid,
+        "WS_COMMIT_ID" ws_commit_id,
+        "WS_OPERATION_TYPE" ws_operation_type
+    FROM "WRITE_SET";
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
