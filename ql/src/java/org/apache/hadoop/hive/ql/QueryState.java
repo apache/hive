@@ -140,6 +140,20 @@ public class QueryState {
   }
 
   /**
+   * Generating the new QueryState object. Making sure, that the new queryId is generated.
+   * @param conf The HiveConf which should be used
+   * @param lineageState a LineageState to be set in the new QueryState object
+   * @return The new QueryState object
+   */
+  public static QueryState getNewQueryState(HiveConf conf, LineageState lineageState) {
+    return new QueryState.Builder()
+        .withGenerateNewQueryId(true)
+        .withHiveConf(conf)
+        .withLineageState(lineageState)
+        .build();
+  }
+
+  /**
    * Builder to instantiate the QueryState object.
    */
   public static class Builder {
