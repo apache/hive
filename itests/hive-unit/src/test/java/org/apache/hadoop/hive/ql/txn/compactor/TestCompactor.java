@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -1575,9 +1576,10 @@ public class TestCompactor {
       Assert.assertEquals(tblName, compacts.get(i).getTablename());
       Assert.assertEquals("initiated", compacts.get(i).getState());
       partNames.add(compacts.get(i).getPartitionname());
-     }
-    Assert.assertEquals("ds=today", partNames.get(1));
-    Assert.assertEquals("ds=yesterday", partNames.get(0));
+    }
+    Collections.sort(partNames);
+    Assert.assertEquals("ds=today", partNames.get(0));
+    Assert.assertEquals("ds=yesterday", partNames.get(1));
     executeStatementOnDriver("drop database if exists " + database + " cascade", driver);
 
     // Finish the scheduled compaction for ttp2
