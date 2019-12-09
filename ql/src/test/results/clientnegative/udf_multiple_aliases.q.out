@@ -1,0 +1,1 @@
+FAILED: SemanticException 1:28 AS clause has an invalid number of aliases. Error encountered near token 'c2'

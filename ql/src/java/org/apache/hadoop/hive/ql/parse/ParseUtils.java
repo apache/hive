@@ -475,7 +475,7 @@ public final class ParseUtils {
           }
           break;
         case HiveParser.Identifier:
-          if (!createChildColumnRef(child, alias, newChildren, aliases, ctx)) {
+          if (!addAliases(selExpr, alias, newChildren, aliases, ctx)) {
             setCols.token.setType(HiveParser.TOK_ALLCOLREF);
             return;
           }
@@ -509,6 +509,24 @@ public final class ParseUtils {
         parent.insertChild(ix++, node);
       }
     }
+
+  /**
+   * In most cases, selExpr has only one alias.
+   * Some UDTFs can accept multiple aliases like `stack(1, 'a', 'b', 'c') AS (c1, c2, c3)`.
+   */
+  private static boolean addAliases(Tree selExpr, String alias, List<ASTNode> newChildren, HashSet<String> aliases,
+      Context ctx) {
+    assert selExpr.getType() == HiveParser.TOK_SELEXPR : selExpr;
+    // Skip the first child since it's an expression tagged by aliases.
+    for (int i = 1; i < selExpr.getChildCount(); ++i) {
+      final Tree child = selExpr.getChild(i);
+      assert child.getType() == HiveParser.Identifier : child;
+      if (!createChildColumnRef(child, alias, newChildren, aliases, ctx)) {
+        return false;
+      }
+    }
+    return true;
+  }
 
     private static boolean createChildColumnRef(Tree child, String alias,
         List<ASTNode> newChildren, HashSet<String> aliases, Context ctx) {
