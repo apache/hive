@@ -139,10 +139,6 @@ public class Driver implements IDriver {
     return driverContext.getSchema();
   }
 
-  public Schema getExplainSchema() {
-    return new Schema(ExplainTask.getResultSchema(), null);
-  }
-
   @Override
   public Context getContext() {
     return context;
@@ -168,7 +164,7 @@ public class Driver implements IDriver {
   // Pass lineageState when a driver instantiates another Driver to run
   // or compile another query
   public Driver(HiveConf conf, Context ctx, LineageState lineageState) {
-    this(getNewQueryState(conf, lineageState), null);
+    this(QueryState.getNewQueryState(conf, lineageState), null);
     context = ctx;
   }
 
@@ -185,18 +181,11 @@ public class Driver implements IDriver {
         txnManager);
   }
 
-  /**
-   * Generating the new QueryState object. Making sure, that the new queryId is generated.
-   * @param conf The HiveConf which should be used
-   * @param lineageState a LineageState to be set in the new QueryState object
-   * @return The new QueryState object
-   */
-  public static QueryState getNewQueryState(HiveConf conf, LineageState lineageState) {
-    return new QueryState.Builder()
-        .withGenerateNewQueryId(true)
-        .withHiveConf(conf)
-        .withLineageState(lineageState)
-        .build();
+  public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager,
+      ValidWriteIdList compactionWriteIds, long compactorTxnId) {
+    this(queryState, queryInfo, txnManager);
+    driverContext.setCompactionWriteIds(compactionWriteIds);
+    driverContext.setCompactorTxnId(compactorTxnId);
   }
 
   /**
@@ -1816,7 +1805,7 @@ public class Driver implements IDriver {
   // Close and release resources within a running query process. Since it runs under
   // driver state COMPILING, EXECUTING or INTERRUPT, it would not have race condition
   // with the releases probably running in the other closing thread.
-  public int closeInProcess(boolean destroyed) {
+  private int closeInProcess(boolean destroyed) {
     releaseTaskQueue();
     releasePlan();
     releaseCachedResult();
@@ -1929,10 +1918,5 @@ public class Driver implements IDriver {
 
     return driverContext.getPlan().getFetchTask() != null && driverContext.getPlan().getResultSchema() != null &&
         driverContext.getPlan().getResultSchema().isSetFieldSchemas();
-  }
-
-  void setCompactionWriteIds(ValidWriteIdList compactionWriteIds, long compactorTxnId) {
-    driverContext.setCompactionWriteIds(compactionWriteIds);
-    driverContext.setCompactorTxnId(compactorTxnId);
   }
 }

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -252,8 +253,8 @@ public class ReExecDriver implements IDriver {
 
   @Override
   public Schema getSchema() {
-    if(explainReOptimization) {
-      return coreDriver.getExplainSchema();
+    if (explainReOptimization) {
+      return new Schema(ExplainTask.getResultSchema(), null);
     }
     return coreDriver.getSchema();
   }
