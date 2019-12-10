@@ -442,6 +442,8 @@ public class MetastoreSchemaTool {
         task = new SchemaToolTaskCreateCatalog();
       } else if (cmdLine.hasOption("alterCatalog")) {
         task = new SchemaToolTaskAlterCatalog();
+      } else if (cmdLine.hasOption("mergeCatalog")) {
+        task = new SchemaToolTaskMergeCatalog();
       } else if (cmdLine.hasOption("moveDatabase")) {
         task = new SchemaToolTaskMoveDatabase();
       } else if (cmdLine.hasOption("moveTable")) {
