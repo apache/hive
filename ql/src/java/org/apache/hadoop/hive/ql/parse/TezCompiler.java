@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,11 +63,13 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
+import org.apache.hadoop.hive.ql.exec.TopNKeyOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.CompositeProcessor;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.ForwardWalker;
@@ -92,6 +95,8 @@ import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
+import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor;
+import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyPushdownProcessor;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkJoinDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
@@ -160,6 +165,10 @@ public class TezCompiler extends TaskCompiler {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     // Create the context for the walker
     OptimizeTezProcContext procCtx = new OptimizeTezProcContext(conf, pCtx, inputs, outputs);
+
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    runTopNKeyOptimization(procCtx);
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run top n key optimization");
 
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     // setup dynamic partition pruning where possible
@@ -587,7 +596,7 @@ public class TezCompiler extends TaskCompiler {
 
   @Override
   protected void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
-      List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
+                                  List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
 
 	PerfLogger perfLogger = SessionState.getPerfLogger();
@@ -1226,6 +1235,30 @@ public class TezCompiler extends TaskCompiler {
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
     GraphWalker ogw = new PreOrderOnceWalker(disp);
+    ogw.startWalking(topNodes, null);
+  }
+
+  private static void runTopNKeyOptimization(OptimizeTezProcContext procCtx)
+      throws SemanticException {
+    if (!procCtx.conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_TOPNKEY)) {
+      return;
+    }
+
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.put(
+        new RuleRegExp("Top n key optimization", ReduceSinkOperator.getOperatorName() + "%"),
+        new TopNKeyProcessor());
+    opRules.put(
+            new RuleRegExp("Top n key pushdown", TopNKeyOperator.getOperatorName() + "%"),
+            new TopNKeyPushdownProcessor());
+
+
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(procCtx.parseContext.getTopOps().values());
+    GraphWalker ogw = new DefaultGraphWalker(disp);
     ogw.startWalking(topNodes, null);
   }
 

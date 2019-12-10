@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[152][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[153][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 6' is a cross product
 PREHOOK: query: explain cbo
 select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  from ( select count(*) amc

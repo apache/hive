@@ -67,6 +67,13 @@ public class KeyWrapperFactory {
   class ListKeyWrapper extends KeyWrapper {
     int hashcode = -1;
     Object[] keys;
+    // true means this instance is a copy of another ListKeyWrapper instance. It was created using the copyKey() and the
+    //   keys array contains StandardObjects created by ObjectInspectorUtils.copyToStandardObject()
+    //   currentStructEqualComparer should be used for equality check
+    // false means this instance was created by the KeyWrapperFactory.getKeyWrapper() method.
+    //   newKeyStructEqualComparer should be used for equality check
+    private final boolean isCopy;
+
     @Override
     public String toString() {
       return "ListKeyWrapper [keys=" + Arrays.toString(keys) + "]";
@@ -86,6 +93,7 @@ public class KeyWrapperFactory {
       this.hashcode = hashcode;
       keys = copiedKeys;
       setEqualComparer(isCopy);
+      this.isCopy = isCopy;
     }
 
     private void setEqualComparer(boolean copy) {
@@ -150,6 +158,11 @@ public class KeyWrapperFactory {
       return keys;
     }
 
+    @Override
+    public boolean isCopy() {
+      return isCopy;
+    }
+
     private Object[] deepCopyElements(Object[] keys,
         ObjectInspector[] keyObjectInspectors,
         ObjectInspectorCopyOption copyOption) {
@@ -168,7 +181,6 @@ public class KeyWrapperFactory {
     }
   }
 
-  transient Object[] singleEleArray = new Object[1];
   transient StringObjectInspector soi_new, soi_copy;
 
   class TextKeyWrapper extends KeyWrapper {
@@ -180,6 +192,7 @@ public class KeyWrapperFactory {
     int hashcode;
     Object key;
     boolean isCopy;
+    transient Object[] singleEleArray = new Object[1];
 
     public TextKeyWrapper(boolean isCopy) {
       this(-1, null, isCopy);
@@ -256,6 +269,11 @@ public class KeyWrapperFactory {
     public Object[] getKeyArray() {
       singleEleArray[0] = key;
       return singleEleArray;
+    }
+
+    @Override
+    public boolean isCopy() {
+      return isCopy;
     }
   }
 }

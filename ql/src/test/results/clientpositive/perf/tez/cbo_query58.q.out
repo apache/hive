@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[404][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 22' is a cross product
+Warning: Shuffle Join MERGEJOIN[405][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 22' is a cross product
 PREHOOK: query: explain cbo
 with ss_items as
  (select i_item_id item_id

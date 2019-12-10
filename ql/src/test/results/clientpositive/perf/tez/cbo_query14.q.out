@@ -1,9 +1,9 @@
-Warning: Shuffle Join MERGEJOIN[1454][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
-Warning: Shuffle Join MERGEJOIN[1466][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 6' is a cross product
-Warning: Shuffle Join MERGEJOIN[1456][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 13' is a cross product
-Warning: Shuffle Join MERGEJOIN[1478][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 14' is a cross product
-Warning: Shuffle Join MERGEJOIN[1458][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 18' is a cross product
-Warning: Shuffle Join MERGEJOIN[1490][tables = [$hdt$_2, $hdt$_3, $hdt$_1]] in Stage 'Reducer 19' is a cross product
+Warning: Shuffle Join MERGEJOIN[1460][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[1472][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[1462][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 13' is a cross product
+Warning: Shuffle Join MERGEJOIN[1485][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 14' is a cross product
+Warning: Shuffle Join MERGEJOIN[1464][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 18' is a cross product
+Warning: Shuffle Join MERGEJOIN[1498][tables = [$hdt$_2, $hdt$_3, $hdt$_1]] in Stage 'Reducer 19' is a cross product
 PREHOOK: query: explain cbo
 with  cross_items as
  (select i_item_sk ss_item_sk

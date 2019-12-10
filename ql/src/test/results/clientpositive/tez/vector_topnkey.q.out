@@ -1,0 +1,170 @@
+PREHOOK: query: CREATE TABLE t_test(
+  cint1 int,
+  cint2 int,
+  cdouble double,
+  cvarchar varchar(50),
+  cdecimal1 decimal(10,2),
+  cdecimal2 decimal(38,5)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_test
+POSTHOOK: query: CREATE TABLE t_test(
+  cint1 int,
+  cint2 int,
+  cdouble double,
+  cvarchar varchar(50),
+  cdecimal1 decimal(10,2),
+  cdecimal2 decimal(38,5)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_test
+PREHOOK: query: INSERT INTO t_test VALUES
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(8, 9, 2.0, 'one', 2.0, 2.0), (8, 9, 2.0, 'one', 2.0, 2.0),
+(4, 2, 3.3, 'two', 3.3, 3.3),
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(6, 2, 1.8, 'three', 1.8, 1.8),
+(7, 8, 4.5, 'four', 4.5, 4.5), (7, 8, 4.5, 'four', 4.5, 4.5), (7, 8, 4.5, 'four', 4.5, 4.5),
+(4, 1, 2.0, 'five', 2.0, 2.0), (4, 1, 2.0, 'five', 2.0, 2.0), (4, 1, 2.0, 'five', 2.0, 2.0),
+(NULL, NULL, NULL, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_test
+POSTHOOK: query: INSERT INTO t_test VALUES
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(8, 9, 2.0, 'one', 2.0, 2.0), (8, 9, 2.0, 'one', 2.0, 2.0),
+(4, 2, 3.3, 'two', 3.3, 3.3),
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(6, 2, 1.8, 'three', 1.8, 1.8),
+(7, 8, 4.5, 'four', 4.5, 4.5), (7, 8, 4.5, 'four', 4.5, 4.5), (7, 8, 4.5, 'four', 4.5, 4.5),
+(4, 1, 2.0, 'five', 2.0, 2.0), (4, 1, 2.0, 'five', 2.0, 2.0), (4, 1, 2.0, 'five', 2.0, 2.0),
+(NULL, NULL, NULL, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_test
+POSTHOOK: Lineage: t_test.cdecimal1 SCRIPT []
+POSTHOOK: Lineage: t_test.cdecimal2 SCRIPT []
+POSTHOOK: Lineage: t_test.cdouble SCRIPT []
+POSTHOOK: Lineage: t_test.cint1 SCRIPT []
+POSTHOOK: Lineage: t_test.cint2 SCRIPT []
+POSTHOOK: Lineage: t_test.cvarchar SCRIPT []
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT cint1 FROM t_test GROUP BY cint1 ORDER BY cint1 LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT cint1 FROM t_test GROUP BY cint1 ORDER BY cint1 LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:3
+    Stage-1
+      Reducer 3 vectorized
+      File Output Operator [FS_24]
+        Limit [LIM_23] (rows=3 width=2)
+          Number of rows:3
+          Select Operator [SEL_22] (rows=5 width=2)
+            Output:["_col0"]
+          <-Reducer 2 [SIMPLE_EDGE] vectorized
+            SHUFFLE [RS_21]
+              Group By Operator [GBY_20] (rows=5 width=2)
+                Output:["_col0"],keys:KEY._col0
+              <-Map 1 [SIMPLE_EDGE] vectorized
+                SHUFFLE [RS_19]
+                  PartitionCols:_col0
+                  Group By Operator [GBY_18] (rows=5 width=2)
+                    Output:["_col0"],keys:cint1
+                    Select Operator [SEL_17] (rows=14 width=3)
+                      Output:["cint1"]
+                      Top N Key Operator [TNK_16] (rows=14 width=3)
+                        keys:cint1,sort order:+,top n:3
+                        TableScan [TS_0] (rows=14 width=3)
+                          default@t_test,t_test,Tbl:COMPLETE,Col:COMPLETE,Output:["cint1"]
+
+PREHOOK: query: SELECT cint1 FROM t_test GROUP BY cint1 ORDER BY cint1 LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT cint1 FROM t_test GROUP BY cint1 ORDER BY cint1 LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4
+6
+7
+PREHOOK: query: SELECT cint1, cint2 FROM t_test GROUP BY cint1, cint2 ORDER BY cint1, cint2 LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT cint1, cint2 FROM t_test GROUP BY cint1, cint2 ORDER BY cint1, cint2 LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4	1
+4	2
+6	2
+PREHOOK: query: SELECT cint1, cint2 FROM t_test GROUP BY cint1, cint2 ORDER BY cint1 DESC, cint2 LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT cint1, cint2 FROM t_test GROUP BY cint1, cint2 ORDER BY cint1 DESC, cint2 LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+8	9
+7	8
+6	2
+PREHOOK: query: SELECT cint1, cdouble FROM t_test GROUP BY cint1, cdouble ORDER BY cint1, cdouble LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT cint1, cdouble FROM t_test GROUP BY cint1, cdouble ORDER BY cint1, cdouble LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4	2.0
+4	3.3
+6	1.8
+PREHOOK: query: SELECT cvarchar, cdouble FROM t_test GROUP BY cvarchar, cdouble ORDER BY cvarchar, cdouble LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT cvarchar, cdouble FROM t_test GROUP BY cvarchar, cdouble ORDER BY cvarchar, cdouble LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+five	2.0
+four	4.5
+one	2.0
+PREHOOK: query: SELECT cdecimal1, cdecimal2 FROM t_test GROUP BY cdecimal1, cdecimal2 ORDER BY cdecimal1, cdecimal2 LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT cdecimal1, cdecimal2 FROM t_test GROUP BY cdecimal1, cdecimal2 ORDER BY cdecimal1, cdecimal2 LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1.80	1.80000
+2.00	2.00000
+3.30	3.30000
+PREHOOK: query: DROP TABLE t_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_test
+PREHOOK: Output: default@t_test
+POSTHOOK: query: DROP TABLE t_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: default@t_test

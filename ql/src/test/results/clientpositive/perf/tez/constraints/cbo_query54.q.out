@@ -1,7 +1,7 @@
-Warning: Shuffle Join MERGEJOIN[275][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[281][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[280][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 15' is a cross product
-Warning: Shuffle Join MERGEJOIN[283][tables = [$hdt$_4, $hdt$_5, $hdt$_6]] in Stage 'Reducer 16' is a cross product
+Warning: Shuffle Join MERGEJOIN[277][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[283][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[282][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 15' is a cross product
+Warning: Shuffle Join MERGEJOIN[285][tables = [$hdt$_4, $hdt$_5, $hdt$_6]] in Stage 'Reducer 16' is a cross product
 PREHOOK: query: explain cbo
 with my_customers as (
  select distinct c_customer_sk
