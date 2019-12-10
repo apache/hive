@@ -1046,6 +1046,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         for (int b = 0; b < numBuckets; ++b) {
           if (!covered[b]) {
             splits.add(new OrcSplit(dir, null, b, 0, new String[0], null, false, false, deltas, -1, -1));
+            covered[b] = true;
           }
         }
       }
