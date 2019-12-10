@@ -240,10 +240,18 @@ sys	global_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	global_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	global_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	global_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	key_constraints			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	key_constraints			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	key_constraints			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	key_constraints			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -368,6 +376,18 @@ sys	tbls			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	tbls			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	tbls			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	tbls			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	version			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	version			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	version			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -613,6 +633,22 @@ global_privs	principal_name
 global_privs	principal_type
 global_privs	user_grant_id
 global_privs	user_priv
+hive_locks	hl_acquired_at
+hive_locks	hl_agent_info
+hive_locks	hl_blockedby_ext_id
+hive_locks	hl_blockedby_int_id
+hive_locks	hl_db
+hive_locks	hl_heartbeat_count
+hive_locks	hl_host
+hive_locks	hl_last_heartbeat
+hive_locks	hl_lock_ext_id
+hive_locks	hl_lock_int_id
+hive_locks	hl_lock_state
+hive_locks	hl_lock_type
+hive_locks	hl_partition
+hive_locks	hl_table
+hive_locks	hl_txnid
+hive_locks	hl_user
 key_constraints	child_cd_id
 key_constraints	child_integer_idx
 key_constraints	child_tbl_id
@@ -642,6 +678,22 @@ lineitem	l_shipinstruct
 lineitem	l_shipmode
 lineitem	l_suppkey
 lineitem	l_tax
+locks	acquired_at
+locks	agent_info
+locks	blockedby_ext_id
+locks	blockedby_int_id
+locks	db
+locks	heartbeat_count
+locks	host
+locks	last_heartbeat
+locks	lock_ext_id
+locks	lock_int_id
+locks	lock_state
+locks	lock_type
+locks	partition
+locks	table
+locks	txnid
+locks	user
 moretypes	a
 moretypes	b
 moretypes	c
@@ -934,6 +986,37 @@ tbls	tbl_name
 tbls	tbl_type
 tbls	view_expanded_text
 tbls	view_original_text
+transactions	agent_info
+transactions	heartbeat_count
+transactions	host
+transactions	last_heartbeat
+transactions	meta_info
+transactions	started
+transactions	state
+transactions	tc_database
+transactions	tc_operation_type
+transactions	tc_partition
+transactions	tc_table
+transactions	tc_writeid
+transactions	txn_id
+transactions	type
+transactions	user
+txn_components	tc_database
+txn_components	tc_operation_type
+txn_components	tc_partition
+txn_components	tc_table
+txn_components	tc_txnid
+txn_components	tc_writeid
+txns	txn_agent_info
+txns	txn_heartbeat_count
+txns	txn_host
+txns	txn_id
+txns	txn_last_heartbeat
+txns	txn_meta_info
+txns	txn_started
+txns	txn_state
+txns	txn_type
+txns	txn_user
 version	schema_version
 version	ver_id
 version	version_comment
@@ -982,10 +1065,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@columns_v2
 #### A masked pattern was here ####
 a	decimal(10,2)	0
+acquired_at	string	9
 action_expression	string	4
 add_time	int	1
-aint	int	0
-alloc_fraction	double	3
+agent_info	string	6
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@database_params
@@ -1235,7 +1318,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-86
+91
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1658,7 +1741,9 @@ default	sys	db_version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	dbs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	funcs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	global_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	hive_locks	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	key_constraints	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	locks	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	mv_creation_metadata	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	mv_tables_used	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1690,6 +1775,9 @@ default	sys	table_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	tbl_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tbl_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tbls	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	transactions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	txn_components	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	txns	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	version	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	wm_mappings	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_pools	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1799,8 +1887,10 @@ information_schema	table_privileges
 information_schema	tables
 information_schema	views
 sys	compactions
+sys	locks
 sys	partition_stats_view
 sys	table_stats_view
+sys	transactions
 sys	version
 PREHOOK: query: select * from compactions
 PREHOOK: type: QUERY
