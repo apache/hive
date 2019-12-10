@@ -206,7 +206,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         launchedJob = true;
         try {
           if (runJobAsSelf(ci.runAs)) {
-            mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc);
+            mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
           } else {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
               UserGroupInformation.getLoginUser());
@@ -214,7 +214,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
             ugi.doAs(new PrivilegedExceptionAction<Object>() {
               @Override
               public Object run() throws Exception {
-                mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, ci, su, msc);
+                mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, ci, su, msc, dir);
                 return null;
               }
             });
