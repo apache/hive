@@ -211,7 +211,7 @@ public class CompactorMR {
    * @throws java.io.IOException if the job fails
    */
   void run(HiveConf conf, String jobName, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
-           CompactionInfo ci, Worker.StatsUpdater su, IMetaStoreClient msc) throws IOException {
+           CompactionInfo ci, Worker.StatsUpdater su, IMetaStoreClient msc, Directory dir) throws IOException {
 
     if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
       throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
@@ -233,13 +233,10 @@ public class CompactorMR {
 
     JobConf job = createBaseJobConf(conf, jobName, t, sd, writeIds, ci);
 
-    // Figure out and encode what files we need to read.  We do this here (rather than in
-    // getSplits below) because as part of this we discover our minimum and maximum transactions,
+    // Figure out and encode what files we need to read.  We do this before getSplits
+    // because as part of this we discover our minimum and maximum transactions,
     // and discovering that in getSplits is too late as we then have no way to pass it to our
     // mapper.
-
-    AcidUtils.Directory dir =
-        AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, Ref.from(false), true, null, false);
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
     int maxDeltastoHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
     if(parsedDeltas.size() > maxDeltastoHandle) {
