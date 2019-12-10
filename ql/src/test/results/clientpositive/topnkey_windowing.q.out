@@ -101,6 +101,7 @@ STAGE PLANS:
             Statistics: Num rows: 26 Data size: 176 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: tw_code (type: string), tw_value (type: double)
+              null sort order: az
               sort order: ++
               Map-reduce partition columns: tw_code (type: string)
               Statistics: Num rows: 26 Data size: 176 Basic stats: COMPLETE Column stats: NONE
@@ -213,6 +214,7 @@ STAGE PLANS:
             Statistics: Num rows: 26 Data size: 176 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: tw_code (type: string), tw_value (type: double)
+              null sort order: az
               sort order: ++
               Map-reduce partition columns: tw_code (type: string)
               Statistics: Num rows: 26 Data size: 176 Basic stats: COMPLETE Column stats: NONE
@@ -746,6 +748,7 @@ STAGE PLANS:
             Statistics: Num rows: 26 Data size: 176 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: tw_code (type: string), tw_value (type: double)
+              null sort order: az
               sort order: ++
               Map-reduce partition columns: tw_code (type: string)
               Statistics: Num rows: 26 Data size: 176 Basic stats: COMPLETE Column stats: NONE

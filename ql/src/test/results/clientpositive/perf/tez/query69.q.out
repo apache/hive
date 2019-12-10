@@ -152,7 +152,7 @@ Stage-0
                       Select Operator [SEL_67] (rows=1 width=363)
                         Output:["_col6","_col7","_col8","_col9","_col10"]
                         Top N Key Operator [TNK_108] (rows=1 width=363)
-                          keys:_col6, _col7, _col8, _col9, _col10,sort order:+++++,top n:100
+                          keys:_col6, _col7, _col8, _col9, _col10,top n:100
                           Filter Operator [FIL_66] (rows=1 width=363)
                             predicate:_col13 is null
                             Merge Join Operator [MERGEJOIN_189] (rows=1401496 width=363)

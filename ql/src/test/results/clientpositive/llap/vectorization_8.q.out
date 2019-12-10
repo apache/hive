@@ -87,6 +87,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: ++++++++++++++
                       keys: ctimestamp1 (type: timestamp), cdouble (type: double), cboolean1 (type: boolean), cstring1 (type: string), cfloat (type: float), (- cdouble) (type: double), (-5638.15D - cdouble) (type: double), (cdouble * -257.0D) (type: double), (UDFToFloat(cint) + cfloat) (type: float), ((- cdouble) + UDFToDouble(cbigint)) (type: double), (- cdouble) (type: double), (-1.389 - cfloat) (type: float), (- cfloat) (type: float), ((-5638.15D - cdouble) + UDFToDouble((UDFToFloat(cint) + cfloat))) (type: double)
+                      null sort order: zzzzzzzzzzzzzz
                       Statistics: Num rows: 3059 Data size: 742850 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 20
                       Top N Key Vectorization:
@@ -104,6 +105,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3059 Data size: 472000 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: boolean), _col3 (type: string), _col4 (type: float), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: float), _col13 (type: double)
+                          null sort order: zzzzzzzzzzzzzz
                           sort order: ++++++++++++++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
@@ -336,6 +338,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: ++++++++++++++
                       keys: ctimestamp1 (type: timestamp), cdouble (type: double), cboolean1 (type: boolean), cstring1 (type: string), cfloat (type: float), (- cdouble) (type: double), (-5638.15D - cdouble) (type: double), (cdouble * -257.0D) (type: double), (UDFToFloat(cint) + cfloat) (type: float), ((- cdouble) + UDFToDouble(cbigint)) (type: double), (- cdouble) (type: double), (-1.389 - cfloat) (type: float), (- cfloat) (type: float), ((-5638.15D - cdouble) + UDFToDouble((UDFToFloat(cint) + cfloat))) (type: double)
+                      null sort order: zzzzzzzzzzzzzz
                       Statistics: Num rows: 3059 Data size: 742850 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 20
                       Top N Key Vectorization:
@@ -353,6 +356,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3059 Data size: 472000 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: boolean), _col3 (type: string), _col4 (type: float), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: float), _col13 (type: double)
+                          null sort order: zzzzzzzzzzzzzz
                           sort order: ++++++++++++++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator

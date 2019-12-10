@@ -57,7 +57,7 @@ Stage-0
               Select Operator [SEL_72] (rows=7333 width=220)
                 Output:["_col1","_col2","_col3"]
                 Top N Key Operator [TNK_71] (rows=7333 width=216)
-                  keys:_col2, _col0,sort order:-+,top n:100
+                  keys:_col2, _col0,top n:100
                   Group By Operator [GBY_70] (rows=7333 width=216)
                     Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1
                   <-Reducer 3 [SIMPLE_EDGE]

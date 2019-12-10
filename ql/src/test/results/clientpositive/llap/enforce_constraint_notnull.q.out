@@ -67,6 +67,7 @@ STAGE PLANS:
                               outputColumnNames: _col0, _col1, _col2
                               Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
                               Reduce Output Operator
+                                null sort order: 
                                 sort order: 
                                 Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
                                 value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -190,6 +191,7 @@ STAGE PLANS:
                               outputColumnNames: _col0, _col1, _col2
                               Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
                               Reduce Output Operator
+                                null sort order: 
                                 sort order: 
                                 Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
                                 value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -296,6 +298,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -912,6 +915,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -1526,6 +1530,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -2175,6 +2180,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -2204,6 +2210,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -2361,6 +2368,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -2390,6 +2398,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -2544,6 +2553,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
+                            null sort order: a
                             sort order: +
                             Map-reduce partition columns: _col0 (type: int)
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2577,6 +2587,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:decimal(5,2),max:decimal(5,2),countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -2682,6 +2693,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 51750 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 250 Data size: 51750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2715,6 +2727,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:decimal(5,2),max:decimal(5,2),countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -2804,6 +2817,7 @@ STAGE PLANS:
                       Number of rows: 2
                       Statistics: Num rows: 2 Data size: 414 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 2 Data size: 414 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
@@ -2825,6 +2839,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 207 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 207 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2856,6 +2871,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:decimal(5,2),max:decimal(5,2),countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -2931,6 +2947,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: +
                     keys: UDFToInteger(key) (type: int)
+                    null sort order: z
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 2
                     Select Operator
@@ -2939,6 +2956,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 103500 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: z
                         sort order: +
                         Statistics: Num rows: 500 Data size: 103500 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
@@ -2960,6 +2978,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 207 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 207 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2991,6 +3010,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:decimal(5,2),max:decimal(5,2),countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -3067,6 +3087,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: ++
                     keys: key (type: string), value (type: string)
+                    null sort order: za
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 2
                     Select Operator
@@ -3081,6 +3102,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
+                          null sort order: za
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3101,6 +3123,7 @@ STAGE PLANS:
                   Statistics: Num rows: 250 Data size: 73500 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col3 (type: string)
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 250 Data size: 73500 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
@@ -3120,6 +3143,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3151,6 +3175,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:decimal(5,2),max:decimal(5,2),countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -3231,6 +3256,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 51750 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 250 Data size: 51750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3264,6 +3290,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:decimal(5,2),max:decimal(5,2),countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -3353,6 +3380,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 903 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 3 Data size: 903 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3451,6 +3479,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 301 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 1 Data size: 301 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3551,6 +3580,7 @@ STAGE PLANS:
                         Statistics: Num rows: 83 Data size: 17181 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
+                          null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 83 Data size: 17181 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3581,6 +3611,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -3613,6 +3644,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1496 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:decimal(5,2),max:decimal(5,2),countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -3760,6 +3792,7 @@ STAGE PLANS:
                               Statistics: Num rows: 1 Data size: 1413 Basic stats: COMPLETE Column stats: COMPLETE
                               Reduce Output Operator
                                 key expressions: _col0 (type: string), _col1 (type: int)
+                                null sort order: aa
                                 sort order: ++
                                 Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                                 Statistics: Num rows: 1 Data size: 1413 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3857,6 +3890,7 @@ STAGE PLANS:
                       Number of rows: 10
                       Statistics: Num rows: 10 Data size: 3600 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 10 Data size: 3600 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
@@ -3897,6 +3931,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2 Data size: 2822 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: int)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                           Statistics: Num rows: 2 Data size: 2822 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4099,6 +4134,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 1417 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: 'yesterday' (type: string), 3 (type: int)
+                            null sort order: aa
                             sort order: ++
                             Map-reduce partition columns: 'yesterday' (type: string), 3 (type: int)
                             Statistics: Num rows: 1 Data size: 1417 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4129,6 +4165,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -4305,6 +4342,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
@@ -4318,6 +4356,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
@@ -4344,6 +4383,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
@@ -4356,6 +4396,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
@@ -4369,6 +4410,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
@@ -4432,6 +4474,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -4557,6 +4600,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
@@ -4570,6 +4614,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
@@ -4596,6 +4641,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
@@ -4608,6 +4654,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
@@ -4628,6 +4675,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
@@ -4641,6 +4689,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
@@ -4728,6 +4777,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -4860,6 +4910,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -4873,6 +4924,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
@@ -4899,6 +4951,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -4918,6 +4971,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -4931,6 +4985,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -5002,6 +5057,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -5119,6 +5175,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
@@ -5132,6 +5189,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
@@ -5158,6 +5216,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
@@ -5178,6 +5237,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
@@ -5191,6 +5251,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
@@ -5262,6 +5323,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -5375,6 +5437,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -5392,6 +5455,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -5417,6 +5481,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -5436,6 +5501,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -5598,6 +5664,7 @@ STAGE PLANS:
                               outputColumnNames: _col0, _col1
                               Statistics: Num rows: 1 Data size: 848 Basic stats: COMPLETE Column stats: COMPLETE
                               Reduce Output Operator
+                                null sort order: 
                                 sort order: 
                                 Statistics: Num rows: 1 Data size: 848 Basic stats: COMPLETE Column stats: COMPLETE
                                 value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -5702,6 +5769,7 @@ STAGE PLANS:
                             outputColumnNames: _col0, _col1
                             Statistics: Num rows: 1 Data size: 848 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
+                              null sort order: 
                               sort order: 
                               Statistics: Num rows: 1 Data size: 848 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -5821,6 +5889,7 @@ STAGE PLANS:
                               outputColumnNames: _col0
                               Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                               Reduce Output Operator
+                                null sort order: 
                                 sort order: 
                                 Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                                 value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -5916,6 +5985,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
@@ -6005,6 +6075,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: +
                     keys: value (type: string)
+                    null sort order: z
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 3
                     Select Operator
@@ -6013,6 +6084,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
+                        null sort order: z
                         sort order: +
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
@@ -6058,6 +6130,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
+                            null sort order: a
                             sort order: +
                             Map-reduce partition columns: _col0 (type: int)
                             Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE

@@ -81,7 +81,7 @@ Stage-0
               Select Operator [SEL_55] (rows=1 width=112)
                 Output:["_col0"]
                 Top N Key Operator [TNK_86] (rows=1 width=16)
-                  keys:(CAST( _col0 AS decimal(15,4)) / CAST( _col1 AS decimal(15,4))),sort order:+,top n:100
+                  keys:(CAST( _col0 AS decimal(15,4)) / CAST( _col1 AS decimal(15,4))),top n:100
                   Merge Join Operator [MERGEJOIN_153] (rows=1 width=16)
                     Conds:(Inner),Output:["_col0","_col1"]
                   <-Reducer 10 [CUSTOM_SIMPLE_EDGE] vectorized

@@ -236,6 +236,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint), _col1 (type: double)
+                        null sort order: zz
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
@@ -462,6 +463,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: double), _col1 (type: double)
+                        null sort order: zz
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator

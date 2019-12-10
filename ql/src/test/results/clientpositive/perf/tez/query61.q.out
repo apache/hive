@@ -138,7 +138,7 @@ Stage-0
               Select Operator [SEL_87] (rows=1 width=336)
                 Output:["_col0","_col1","_col2"]
                 Top N Key Operator [TNK_145] (rows=1 width=224)
-                  keys:_col0, _col1,sort order:++,top n:100
+                  keys:_col0, _col1,top n:100
                   Merge Join Operator [MERGEJOIN_267] (rows=1 width=224)
                     Conds:(Inner),Output:["_col0","_col1"]
                   <-Reducer 4 [CUSTOM_SIMPLE_EDGE] vectorized

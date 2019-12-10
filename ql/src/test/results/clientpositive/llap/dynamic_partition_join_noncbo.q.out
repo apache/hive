@@ -1020,6 +1020,7 @@ STAGE PLANS:
                     Statistics: Num rows: 8146725 Data size: 46331126445 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: phi (type: bigint), 'P30' (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: phi (type: bigint), 'P30' (type: string)
                       Statistics: Num rows: 8146725 Data size: 46331126445 Basic stats: COMPLETE Column stats: NONE
@@ -1037,6 +1038,7 @@ STAGE PLANS:
                     Statistics: Num rows: 15680439 Data size: 56180088521 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: phi (type: bigint), 'P30' (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: phi (type: bigint), 'P30' (type: string)
                       Statistics: Num rows: 15680439 Data size: 56180088521 Basic stats: COMPLETE Column stats: NONE
@@ -1054,6 +1056,7 @@ STAGE PLANS:
                     Statistics: Num rows: 15390381 Data size: 116471238533 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: pli (type: bigint), p1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: pli (type: bigint), p1 (type: string)
                       Statistics: Num rows: 15390381 Data size: 116471238533 Basic stats: COMPLETE Column stats: NONE
@@ -1076,6 +1079,7 @@ STAGE PLANS:
                 DynamicPartitionHashJoin: true
                 Reduce Output Operator
                   key expressions: _col314 (type: bigint), 'P30' (type: string)
+                  null sort order: aa
                   sort order: ++
                   Map-reduce partition columns: _col314 (type: bigint), 'P30' (type: string)
                   Statistics: Num rows: 17248483 Data size: 61798098712 Basic stats: COMPLETE Column stats: NONE
@@ -2546,6 +2550,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: col567 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: col567 (type: string)
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -2579,6 +2584,7 @@ STAGE PLANS:
                         Statistics: Num rows: 139943033 Data size: 26813085279 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                          null sort order: aaa
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                           Statistics: Num rows: 139943033 Data size: 26813085279 Basic stats: COMPLETE Column stats: NONE
@@ -2599,6 +2605,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 279 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 1 Data size: 279 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2626,6 +2633,7 @@ STAGE PLANS:
                       Statistics: Num rows: 15021067 Data size: 124591407923 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: 'P30' (type: string), _col86 (type: bigint)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: 'P30' (type: string), _col86 (type: bigint)
                         Statistics: Num rows: 15021067 Data size: 124591407923 Basic stats: COMPLETE Column stats: NONE
@@ -2643,6 +2651,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: 'P30' (type: string), col5679 (type: bigint)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: 'P30' (type: string), col5679 (type: bigint)
                       Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2662,6 +2671,7 @@ STAGE PLANS:
                   Statistics: Num rows: 69971516 Data size: 13406542543 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col1 (type: string), _col2 (type: bigint)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col1 (type: string), _col2 (type: bigint)
                     Statistics: Num rows: 69971516 Data size: 13406542543 Basic stats: COMPLETE Column stats: NONE

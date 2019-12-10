@@ -83,6 +83,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
@@ -234,6 +235,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: ++
                     keys: p_mfgr (type: string), p_name (type: string)
+                    null sort order: az
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 5694 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 4
@@ -243,6 +245,7 @@ STAGE PLANS:
                         native: true
                     Reduce Output Operator
                       key expressions: p_mfgr (type: string), p_name (type: string)
+                      null sort order: az
                       sort order: ++
                       Map-reduce partition columns: p_mfgr (type: string)
                       Reduce Sink Vectorization:
@@ -456,6 +459,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: ++
                       keys: t (type: tinyint), f (type: float)
+                      null sort order: az
                       Map-reduce partition columns: t (type: tinyint)
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       top n: 6
@@ -465,6 +469,7 @@ STAGE PLANS:
                           native: true
                       Reduce Output Operator
                         key expressions: t (type: tinyint), f (type: float)
+                        null sort order: az
                         sort order: ++
                         Map-reduce partition columns: t (type: tinyint)
                         Reduce Sink Vectorization:
@@ -703,11 +708,13 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: ++
                     keys: ctinyint (type: tinyint), cdouble (type: double)
+                    null sort order: az
                     Map-reduce partition columns: ctinyint (type: tinyint)
                     Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 5
                     Reduce Output Operator
                       key expressions: ctinyint (type: tinyint), cdouble (type: double)
+                      null sort order: az
                       sort order: ++
                       Map-reduce partition columns: ctinyint (type: tinyint)
                       Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
@@ -848,6 +855,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: ++
                     keys: ctinyint (type: tinyint), cdouble (type: double)
+                    null sort order: az
                     Map-reduce partition columns: ctinyint (type: tinyint)
                     Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 5
@@ -857,6 +865,7 @@ STAGE PLANS:
                         native: true
                     Reduce Output Operator
                       key expressions: ctinyint (type: tinyint), cdouble (type: double)
+                      null sort order: az
                       sort order: ++
                       Map-reduce partition columns: ctinyint (type: tinyint)
                       Reduce Sink Vectorization:
@@ -942,6 +951,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 1272 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 1272 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)

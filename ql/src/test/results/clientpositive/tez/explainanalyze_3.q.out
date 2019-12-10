@@ -715,7 +715,7 @@ Stage-0
               Select Operator [SEL_8] (rows=500/36 width=178)
                 Output:["_col0","_col1"]
                 Top N Key Operator [TNK_7] (rows=500/36 width=178)
-                  keys:key,sort order:+,top n:5
+                  keys:key,top n:5
                   TableScan [TS_0] (rows=500/500 width=178)
                     default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 

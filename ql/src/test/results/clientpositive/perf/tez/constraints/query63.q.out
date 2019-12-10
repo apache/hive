@@ -89,7 +89,7 @@ Stage-0
               Select Operator [SEL_24] (rows=338 width=228)
                 Output:["_col0","_col1","_col2"]
                 Top N Key Operator [TNK_41] (rows=338 width=228)
-                  keys:_col0, avg_window_0, _col2,sort order:+++,top n:100
+                  keys:_col0, avg_window_0, _col2,top n:100
                   Filter Operator [FIL_36] (rows=338 width=228)
                     predicate:CASE WHEN ((avg_window_0 > 0)) THEN (((abs((_col2 - avg_window_0)) / avg_window_0) > 0.1)) ELSE (false) END
                     Select Operator [SEL_23] (rows=676 width=116)

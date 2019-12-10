@@ -96,6 +96,7 @@ STAGE PLANS:
                       Statistics: Num rows: 24 Data size: 7344 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        null sort order: aaa
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                         Reduce Sink Vectorization:
@@ -240,6 +241,7 @@ STAGE PLANS:
                       Statistics: Num rows: 24 Data size: 7344 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        null sort order: aaa
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                         Reduce Sink Vectorization:
@@ -410,6 +412,7 @@ STAGE PLANS:
                       Statistics: Num rows: 6 Data size: 1788 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
@@ -469,6 +472,7 @@ STAGE PLANS:
                 Statistics: Num rows: 24 Data size: 7344 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  null sort order: aaa
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Reduce Sink Vectorization:

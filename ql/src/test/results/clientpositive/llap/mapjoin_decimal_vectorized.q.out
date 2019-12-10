@@ -142,6 +142,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1112 Data size: 249088 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(4,2))
+                          null sort order: z
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
@@ -194,6 +195,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(6,2))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: decimal(6,2))
                         Reduce Sink Vectorization:
@@ -566,6 +568,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1112 Data size: 249088 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(4,2))
+                          null sort order: z
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
@@ -618,6 +621,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(6,2))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: decimal(6,2))
                         Reduce Sink Vectorization:
@@ -754,6 +758,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1112 Data size: 249088 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(4,2))
+                          null sort order: z
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
@@ -798,6 +803,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: dec (type: decimal(6,2))
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: dec (type: decimal(6,2))
                       Reduce Sink Vectorization:
@@ -1173,6 +1179,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1112 Data size: 249088 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(4,2))
+                          null sort order: z
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
@@ -1217,6 +1224,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: dec (type: decimal(6,2))
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: dec (type: decimal(6,2))
                       Reduce Sink Vectorization:

@@ -91,7 +91,7 @@ Stage-0
           <-Reducer 9 [SIMPLE_EDGE] vectorized
             SHUFFLE [RS_235]
               Top N Key Operator [TNK_234] (rows=17 width=94)
-                keys:_col1,sort order:+,top n:100
+                keys:_col1,top n:100
                 Filter Operator [FIL_233] (rows=17 width=94)
                   predicate:(_col1 >= 10L)
                   Group By Operator [GBY_232] (rows=51 width=94)

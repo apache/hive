@@ -279,6 +279,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1000 Data size: 241204 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Reduce Sink Vectorization:
@@ -323,6 +324,7 @@ STAGE PLANS:
                 native: true
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Reduce Sink Vectorization:
                   className: VectorReduceSinkOperator
@@ -476,6 +478,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1000 Data size: 241204 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Reduce Sink Vectorization:
@@ -529,6 +532,7 @@ STAGE PLANS:
                 native: true
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Reduce Sink Vectorization:
                   className: VectorReduceSinkOperator
@@ -758,6 +762,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 120602 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Reduce Sink Vectorization:
@@ -814,6 +819,7 @@ STAGE PLANS:
                 native: true
             Reduce Output Operator
               key expressions: _col0 (type: boolean)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: boolean)
               Reduce Sink Vectorization:
@@ -962,6 +968,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1000 Data size: 241204 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int)
+                  null sort order: aa
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                   Reduce Sink Vectorization:
@@ -1021,6 +1028,7 @@ STAGE PLANS:
                 native: true
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: int)
+              null sort order: zz
               sort order: ++
               Reduce Sink Vectorization:
                   className: VectorReduceSinkOperator

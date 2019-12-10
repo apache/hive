@@ -79,7 +79,7 @@ Stage-0
                     Select Operator [SEL_22] (rows=285117831 width=212)
                       Output:["_col3","_col8"]
                       Top N Key Operator [TNK_46] (rows=285117831 width=212)
-                        keys:_col3,sort order:+,top n:100
+                        keys:_col3,top n:100
                         Filter Operator [FIL_21] (rows=285117831 width=212)
                           predicate:(_col9 or _col4 or _col5)
                           Merge Join Operator [MERGEJOIN_81] (rows=285117831 width=212)

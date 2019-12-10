@@ -84,7 +84,7 @@ Stage-0
                     Select Operator [SEL_39] (rows=143930993 width=302)
                       Output:["_col3","_col7","_col8"]
                       Top N Key Operator [TNK_72] (rows=143930993 width=302)
-                        keys:_col8, _col7,sort order:++,top n:100
+                        keys:_col8, _col7,top n:100
                         Filter Operator [FIL_38] (rows=143930993 width=302)
                           predicate:(_col15 is not null or (substr(_col8, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792'))
                           Select Operator [SEL_37] (rows=143930993 width=302)

@@ -44,6 +44,7 @@ STAGE PLANS:
                     Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col2 (type: tinyint), _col4 (type: bigint), _col6 (type: double)
+                      null sort order: zzzz
                       sort order: ++++
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -267,6 +268,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint), _col1 (type: double), _col2 (type: decimal(22,21))
+                        null sort order: zzz
                         sort order: +++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
@@ -489,6 +491,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: double), _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double)
+                        null sort order: zzzzzz
                         sort order: ++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
@@ -711,6 +714,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: tinyint), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: int), _col7 (type: bigint), _col8 (type: tinyint)
+                        null sort order: zzzzzzzzz
                         sort order: +++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator

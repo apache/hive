@@ -98,7 +98,7 @@ Stage-0
                     Select Operator [SEL_27] (rows=51819042 width=302)
                       Output:["_col0","_col1","_col2","_col3"]
                       Top N Key Operator [TNK_58] (rows=51819042 width=302)
-                        keys:_col14, _col12,sort order:++,top n:100
+                        keys:_col14, _col12,top n:100
                         Merge Join Operator [MERGEJOIN_106] (rows=51819042 width=302)
                           Conds:RS_24._col1=RS_126._col0(Inner),Output:["_col4","_col7","_col9","_col10","_col12","_col14"]
                         <-Map 12 [SIMPLE_EDGE] vectorized

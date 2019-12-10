@@ -77,6 +77,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: ++++++++++++++
                       keys: (cdecimal1 + cdecimal2) (type: decimal(25,14)), (cdecimal1 - (2 * cdecimal2)) (type: decimal(26,14)), ((cdecimal1 + 2.34) / cdecimal2) (type: decimal(38,13)), (cdecimal1 * (cdecimal2 / 3.4)) (type: decimal(38,17)), (cdecimal1 % 10) (type: decimal(12,10)), UDFToInteger(cdecimal1) (type: int), UDFToShort(cdecimal2) (type: smallint), UDFToByte(cdecimal2) (type: tinyint), UDFToLong(cdecimal1) (type: bigint), UDFToBoolean(cdecimal1) (type: boolean), UDFToDouble(cdecimal2) (type: double), UDFToFloat(cdecimal1) (type: float), CAST( cdecimal2 AS STRING) (type: string), CAST( cdecimal1 AS TIMESTAMP) (type: timestamp)
+                      null sort order: zzzzzzzzzzzzzz
                       Statistics: Num rows: 751 Data size: 165540 Basic stats: COMPLETE Column stats: NONE
                       top n: 10
                       Top N Key Vectorization:
@@ -94,6 +95,7 @@ STAGE PLANS:
                         Statistics: Num rows: 751 Data size: 165540 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(25,14)), _col1 (type: decimal(26,14)), _col2 (type: decimal(38,13)), _col3 (type: decimal(38,17)), _col4 (type: decimal(12,10)), _col5 (type: int), _col6 (type: smallint), _col7 (type: tinyint), _col8 (type: bigint), _col9 (type: boolean), _col10 (type: double), _col11 (type: float), _col12 (type: string), _col13 (type: timestamp)
+                          null sort order: zzzzzzzzzzzzzz
                           sort order: ++++++++++++++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
@@ -263,6 +265,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: ++++++++++++++
                       keys: (cdecimal1 + cdecimal2) (type: decimal(11,3)), (cdecimal1 - (2 * cdecimal2)) (type: decimal(11,3)), ((cdecimal1 + 2.34) / cdecimal2) (type: decimal(21,11)), (cdecimal1 * (cdecimal2 / 3.4)) (type: decimal(23,9)), (cdecimal1 % 10) (type: decimal(5,3)), UDFToInteger(cdecimal1) (type: int), UDFToShort(cdecimal2) (type: smallint), UDFToByte(cdecimal2) (type: tinyint), UDFToLong(cdecimal1) (type: bigint), UDFToBoolean(cdecimal1) (type: boolean), UDFToDouble(cdecimal2) (type: double), UDFToFloat(cdecimal1) (type: float), CAST( cdecimal2 AS STRING) (type: string), CAST( cdecimal1 AS TIMESTAMP) (type: timestamp)
+                      null sort order: zzzzzzzzzzzzzz
                       Statistics: Num rows: 751 Data size: 165540 Basic stats: COMPLETE Column stats: NONE
                       top n: 10
                       Top N Key Vectorization:
@@ -280,6 +283,7 @@ STAGE PLANS:
                         Statistics: Num rows: 751 Data size: 165540 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(11,3)), _col1 (type: decimal(11,3)), _col2 (type: decimal(21,11)), _col3 (type: decimal(23,9)), _col4 (type: decimal(5,3)), _col5 (type: int), _col6 (type: smallint), _col7 (type: tinyint), _col8 (type: bigint), _col9 (type: boolean), _col10 (type: double), _col11 (type: float), _col12 (type: string), _col13 (type: timestamp)
+                          null sort order: zzzzzzzzzzzzzz
                           sort order: ++++++++++++++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator

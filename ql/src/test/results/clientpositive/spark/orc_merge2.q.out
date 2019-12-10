@@ -67,7 +67,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -113,7 +113,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
 PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge2a_n0 PARTITION (one='1', two, three)
     SELECT key, value, PMOD(HASH(key), 10) as two, 
@@ -189,7 +189,7 @@ POSTHOOK: Lineage: orcfile_merge2a_n0 PARTITION(one=1,two=9,three=1).value SIMPL
 POSTHOOK: Lineage: orcfile_merge2a_n0 PARTITION(one=1,two=9,three=7).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge2a_n0 PARTITION(one=1,two=9,three=7).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        349 ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge2a_n0
@@ -216,7 +216,7 @@ PREHOOK: Input: default@orcfile_merge2a_n0@one=1/two=8/three=0
 PREHOOK: Input: default@orcfile_merge2a_n0@one=1/two=8/three=6
 PREHOOK: Input: default@orcfile_merge2a_n0@one=1/two=9/three=1
 PREHOOK: Input: default@orcfile_merge2a_n0@one=1/two=9/three=7
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge2a_n0
@@ -243,7 +243,7 @@ POSTHOOK: Input: default@orcfile_merge2a_n0@one=1/two=8/three=0
 POSTHOOK: Input: default@orcfile_merge2a_n0@one=1/two=8/three=6
 POSTHOOK: Input: default@orcfile_merge2a_n0@one=1/two=9/three=1
 POSTHOOK: Input: default@orcfile_merge2a_n0@one=1/two=9/three=7
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -4209012844
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value, '1', PMOD(HASH(key), 10), 
@@ -252,7 +252,7 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value, '1', PMOD(HASH(key), 10), 
         PMOD(HASH(value), 10)) USING 'tr \t _' AS (c)
@@ -260,7 +260,7 @@ POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -4209012844
 PREHOOK: query: DROP TABLE orcfile_merge2a_n0
 PREHOOK: type: DROPTABLE

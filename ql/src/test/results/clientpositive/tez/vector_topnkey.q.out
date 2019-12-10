@@ -90,7 +90,7 @@ Stage-0
                     Select Operator [SEL_17] (rows=14 width=3)
                       Output:["cint1"]
                       Top N Key Operator [TNK_16] (rows=14 width=3)
-                        keys:cint1,sort order:+,top n:3
+                        keys:cint1,top n:3
                         TableScan [TS_0] (rows=14 width=3)
                           default@t_test,t_test,Tbl:COMPLETE,Col:COMPLETE,Output:["cint1"]
 

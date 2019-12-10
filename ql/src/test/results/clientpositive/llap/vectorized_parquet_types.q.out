@@ -319,6 +319,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 516 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Reduce Sink Vectorization:
@@ -372,6 +373,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
+                    null sort order: z
                     sort order: +
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
@@ -635,6 +637,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: timestamp), _col1 (type: timestamp)

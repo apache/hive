@@ -127,6 +127,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2730 Data size: 510974 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                          null sort order: aaaaa
                           sort order: +++++
                           Map-reduce partition columns: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
                           Reduce Sink Vectorization:
@@ -173,6 +174,7 @@ STAGE PLANS:
               Top N Key Operator
                 sort order: +++++
                 keys: KEY._col0 (type: boolean), KEY._col1 (type: tinyint), KEY._col2 (type: timestamp), KEY._col3 (type: float), KEY._col4 (type: string)
+                null sort order: zzzzz
                 Statistics: Num rows: 2730 Data size: 510974 Basic stats: COMPLETE Column stats: COMPLETE
                 top n: 40
                 Top N Key Vectorization:
@@ -196,6 +198,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: +++++++++++++++++++++
                     keys: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), (- _col1) (type: tinyint), _col5 (type: tinyint), ((- _col1) + _col5) (type: tinyint), _col6 (type: double), (_col6 * UDFToDouble(((- _col1) + _col5))) (type: double), (- _col6) (type: double), (79.553 * _col3) (type: float), power(((_col7 - ((_col8 * _col8) / _col9)) / _col9), 0.5) (type: double), (- _col6) (type: double), power(((_col10 - ((_col11 * _col11) / _col12)) / _col12), 0.5) (type: double), (CAST( ((- _col1) + _col5) AS decimal(3,0)) - 10.175) (type: decimal(7,3)), (- (- _col6)) (type: double), (-26.28D / (- (- _col6))) (type: double), _col13 (type: float), ((_col6 * UDFToDouble(((- _col1) + _col5))) / UDFToDouble(_col1)) (type: double), _col14 (type: tinyint)
+                    null sort order: zzzzzzzzzzzzzzzzzzzzz
                     Statistics: Num rows: 1365 Data size: 218864 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 40
                     Top N Key Vectorization:
@@ -213,6 +216,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1365 Data size: 336612 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: decimal(7,3)), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
+                        null sort order: zzzzzzzzzzzzzzzzzzzzz
                         sort order: +++++++++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
@@ -504,6 +508,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2730 Data size: 510974 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                          null sort order: aaaaa
                           sort order: +++++
                           Map-reduce partition columns: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
                           Reduce Sink Vectorization:
@@ -535,6 +540,7 @@ STAGE PLANS:
               Top N Key Operator
                 sort order: +++++
                 keys: KEY._col0 (type: boolean), KEY._col1 (type: tinyint), KEY._col2 (type: timestamp), KEY._col3 (type: float), KEY._col4 (type: string)
+                null sort order: zzzzz
                 Statistics: Num rows: 2730 Data size: 510974 Basic stats: COMPLETE Column stats: COMPLETE
                 top n: 40
                 Top N Key Vectorization:
@@ -558,6 +564,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: +++++++++++++++++++++
                     keys: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), (- _col1) (type: tinyint), _col5 (type: tinyint), ((- _col1) + _col5) (type: tinyint), _col6 (type: double), (_col6 * UDFToDouble(((- _col1) + _col5))) (type: double), (- _col6) (type: double), (79.553 * _col3) (type: float), power(((_col7 - ((_col8 * _col8) / _col9)) / _col9), 0.5) (type: double), (- _col6) (type: double), power(((_col10 - ((_col11 * _col11) / _col12)) / _col12), 0.5) (type: double), (CAST( ((- _col1) + _col5) AS decimal(3,0)) - 10.175) (type: decimal(7,3)), (- (- _col6)) (type: double), (-26.28D / (- (- _col6))) (type: double), _col13 (type: float), ((_col6 * UDFToDouble(((- _col1) + _col5))) / UDFToDouble(_col1)) (type: double), _col14 (type: tinyint)
+                    null sort order: zzzzzzzzzzzzzzzzzzzzz
                     Statistics: Num rows: 1365 Data size: 218864 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 40
                     Top N Key Vectorization:
@@ -575,6 +582,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1365 Data size: 336612 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: decimal(7,3)), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
+                        null sort order: zzzzzzzzzzzzzzzzzzzzz
                         sort order: +++++++++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator

@@ -102,6 +102,7 @@ STAGE PLANS:
                     Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
@@ -244,6 +245,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: '2008-12-31' (type: string), _col1 (type: string)
+              null sort order: aa
               sort order: ++
               Map-reduce partition columns: '2008-12-31' (type: string), _col1 (type: string)
               Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE

@@ -83,7 +83,7 @@ Stage-0
               Select Operator [SEL_51] (rows=17457727 width=100)
                 Output:["_col0"]
                 Top N Key Operator [TNK_79] (rows=17457727 width=324)
-                  keys:_col5,sort order:+,top n:100
+                  keys:_col5,top n:100
                   Filter Operator [FIL_50] (rows=17457727 width=324)
                     predicate:(_col3 > _col6)
                     Merge Join Operator [MERGEJOIN_137] (rows=52373181 width=324)

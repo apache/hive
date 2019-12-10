@@ -99,6 +99,7 @@ STAGE PLANS:
                       Statistics: Num rows: 100 Data size: 18816 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: int)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:

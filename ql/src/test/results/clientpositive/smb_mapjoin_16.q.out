@@ -71,6 +71,7 @@ STAGE PLANS:
                   mode: hash
                   outputColumnNames: _col0
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     value expressions: _col0 (type: bigint)
       Reduce Operator Tree:

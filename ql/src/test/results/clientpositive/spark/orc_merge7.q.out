@@ -156,9 +156,9 @@ POSTHOOK: Input: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        603 ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a_n0
@@ -176,7 +176,7 @@ PREHOOK: Input: default@orc_merge5a_n0@st=0.8
 PREHOOK: Input: default@orc_merge5a_n0@st=1.8
 PREHOOK: Input: default@orc_merge5a_n0@st=8.0
 PREHOOK: Input: default@orc_merge5a_n0@st=80.0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from orc_merge5a_n0 where userid<=13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5a_n0
@@ -184,7 +184,7 @@ POSTHOOK: Input: default@orc_merge5a_n0@st=0.8
 POSTHOOK: Input: default@orc_merge5a_n0@st=1.8
 POSTHOOK: Input: default@orc_merge5a_n0@st=8.0
 POSTHOOK: Input: default@orc_merge5a_n0@st=80.0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05	80.0
 2	foo	0.8	1	1969-12-31 16:00:00	0.8
 5	eat	0.8	6	1969-12-31 16:00:20	0.8
@@ -235,7 +235,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -279,7 +279,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
 PREHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 PREHOOK: type: QUERY
@@ -364,9 +364,9 @@ POSTHOOK: Input: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        603 ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a_n0
@@ -384,7 +384,7 @@ PREHOOK: Input: default@orc_merge5a_n0@st=0.8
 PREHOOK: Input: default@orc_merge5a_n0@st=1.8
 PREHOOK: Input: default@orc_merge5a_n0@st=8.0
 PREHOOK: Input: default@orc_merge5a_n0@st=80.0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from orc_merge5a_n0 where userid<=13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5a_n0
@@ -392,7 +392,7 @@ POSTHOOK: Input: default@orc_merge5a_n0@st=0.8
 POSTHOOK: Input: default@orc_merge5a_n0@st=1.8
 POSTHOOK: Input: default@orc_merge5a_n0@st=8.0
 POSTHOOK: Input: default@orc_merge5a_n0@st=80.0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05	80.0
 2	foo	0.8	1	1969-12-31 16:00:00	0.8
 5	eat	0.8	6	1969-12-31 16:00:20	0.8
@@ -479,9 +479,9 @@ POSTHOOK: Input: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        603 ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a_n0
@@ -499,7 +499,7 @@ PREHOOK: Input: default@orc_merge5a_n0@st=0.8
 PREHOOK: Input: default@orc_merge5a_n0@st=1.8
 PREHOOK: Input: default@orc_merge5a_n0@st=8.0
 PREHOOK: Input: default@orc_merge5a_n0@st=80.0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from orc_merge5a_n0 where userid<=13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5a_n0
@@ -507,7 +507,7 @@ POSTHOOK: Input: default@orc_merge5a_n0@st=0.8
 POSTHOOK: Input: default@orc_merge5a_n0@st=1.8
 POSTHOOK: Input: default@orc_merge5a_n0@st=8.0
 POSTHOOK: Input: default@orc_merge5a_n0@st=80.0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05	80.0
 2	foo	0.8	1	1969-12-31 16:00:00	0.8
 5	eat	0.8	6	1969-12-31 16:00:20	0.8
@@ -584,9 +584,9 @@ POSTHOOK: Input: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        603 ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        645 ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@orc_merge5a_n0
@@ -604,7 +604,7 @@ PREHOOK: Input: default@orc_merge5a_n0@st=0.8
 PREHOOK: Input: default@orc_merge5a_n0@st=1.8
 PREHOOK: Input: default@orc_merge5a_n0@st=8.0
 PREHOOK: Input: default@orc_merge5a_n0@st=80.0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from orc_merge5a_n0 where userid<=13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5a_n0
@@ -612,7 +612,7 @@ POSTHOOK: Input: default@orc_merge5a_n0@st=0.8
 POSTHOOK: Input: default@orc_merge5a_n0@st=1.8
 POSTHOOK: Input: default@orc_merge5a_n0@st=8.0
 POSTHOOK: Input: default@orc_merge5a_n0@st=80.0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05	80.0
 2	foo	0.8	1	1969-12-31 16:00:00	0.8
 5	eat	0.8	6	1969-12-31 16:00:20	0.8

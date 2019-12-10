@@ -78,6 +78,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: array<string>)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: array<string>)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -100,6 +101,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: map<string,string>)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: map<string,string>)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -122,6 +124,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<col1:string,col2:string>)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: struct<col1:string,col2:string>)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

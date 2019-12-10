@@ -126,6 +126,7 @@ STAGE PLANS:
                       Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
@@ -146,6 +147,7 @@ STAGE PLANS:
                       Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
@@ -166,6 +168,7 @@ STAGE PLANS:
                       Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
@@ -186,6 +189,7 @@ STAGE PLANS:
                       Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
@@ -225,6 +229,7 @@ STAGE PLANS:
                     Statistics: Num rows: 79201469 Data size: 10769109250 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                       Statistics: Num rows: 79201469 Data size: 10769109250 Basic stats: COMPLETE Column stats: NONE
@@ -248,6 +253,7 @@ STAGE PLANS:
                   Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: string)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
@@ -286,6 +292,7 @@ STAGE PLANS:
                     Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                       Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
@@ -302,6 +309,7 @@ STAGE PLANS:
                 Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: CASE WHEN (_col3 is not null) THEN (_col3) ELSE (_col0) END (type: int), CASE WHEN (_col4 is not null) THEN (_col4) ELSE (_col1) END (type: string)
+                  null sort order: az
                   sort order: ++
                   Map-reduce partition columns: CASE WHEN (_col3 is not null) THEN (_col3) ELSE (_col0) END (type: int)
                   Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
@@ -348,6 +356,7 @@ STAGE PLANS:
                       Statistics: Num rows: 116159124 Data size: 10247591639 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: string)
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 116159124 Data size: 10247591639 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
@@ -388,6 +397,7 @@ STAGE PLANS:
                   Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: string)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE

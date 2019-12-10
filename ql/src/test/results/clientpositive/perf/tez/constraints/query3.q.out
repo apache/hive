@@ -69,11 +69,11 @@ Stage-0
           <-Reducer 4 [SIMPLE_EDGE] vectorized
             SHUFFLE [RS_73]
               Top N Key Operator [TNK_72] (rows=7666836 width=219)
-                keys:_col0, _col3, _col1,sort order:+-+,top n:100
+                keys:_col0, _col3, _col1,top n:100
                 Group By Operator [GBY_71] (rows=7666836 width=219)
                   Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                   Top N Key Operator [TNK_70] (rows=7666836 width=219)
-                    keys:KEY._col0,sort order:+,top n:100
+                    keys:KEY._col0,top n:100
                   <-Reducer 3 [SIMPLE_EDGE]
                     SHUFFLE [RS_17]
                       PartitionCols:_col0, _col1, _col2

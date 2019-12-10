@@ -138,6 +138,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: ++
                       keys: cdecimal1 (type: decimal(10,2)), cdecimal2 (type: decimal(38,5))
+                      null sort order: aa
                       Statistics: Num rows: 12288 Data size: 2752512 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 2
                       Group By Operator
@@ -148,6 +149,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(10,2)), _col1 (type: decimal(38,5))
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: decimal(10,2)), _col1 (type: decimal(38,5))
                           Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
@@ -244,6 +246,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: ++
                       keys: cdecimal1 (type: decimal(10,2)), cdecimal2 (type: decimal(38,5))
+                      null sort order: aa
                       Statistics: Num rows: 12288 Data size: 2752512 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 2
                       Group By Operator
@@ -254,6 +257,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(10,2)), _col1 (type: decimal(38,5))
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: decimal(10,2)), _col1 (type: decimal(38,5))
                           Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE

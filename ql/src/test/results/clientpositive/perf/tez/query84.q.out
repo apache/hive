@@ -77,7 +77,7 @@ Stage-0
               Select Operator [SEL_35] (rows=2645278 width=384)
                 Output:["_col1","_col2"]
                 Top N Key Operator [TNK_63] (rows=2645278 width=284)
-                  keys:_col2,sort order:+,top n:100
+                  keys:_col2,top n:100
                   Merge Join Operator [MERGEJOIN_121] (rows=2645278 width=284)
                     Conds:RS_32._col1=RS_33._col1(Inner),Output:["_col2","_col6"]
                   <-Reducer 2 [SIMPLE_EDGE]

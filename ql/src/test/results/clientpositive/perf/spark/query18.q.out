@@ -128,6 +128,7 @@ STAGE PLANS:
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
 <<<<<<< HEAD
                         Map-reduce partition columns: _col2 (type: int)
@@ -164,6 +165,7 @@ STAGE PLANS:
                       Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col2 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col2 (type: int)
                         Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
@@ -184,6 +186,7 @@ STAGE PLANS:
                       Statistics: Num rows: 465450 Data size: 179296539 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 465450 Data size: 179296539 Basic stats: COMPLETE Column stats: NONE
@@ -204,6 +207,7 @@ STAGE PLANS:
                       Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
@@ -223,6 +227,7 @@ STAGE PLANS:
                       Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
@@ -249,6 +254,7 @@ STAGE PLANS:
                       Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col2 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col2 (type: int)
                         Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
@@ -269,6 +275,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
@@ -337,6 +344,7 @@ STAGE PLANS:
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: a
                   sort order: +
 <<<<<<< HEAD
                   Map-reduce partition columns: _col3 (type: int)
@@ -380,6 +388,7 @@ STAGE PLANS:
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Reduce Output Operator
                     key expressions: _col2 (type: int)
+                    null sort order: a
                     sort order: +
 <<<<<<< HEAD
                     Map-reduce partition columns: _col3 (type: int)
@@ -416,6 +425,7 @@ STAGE PLANS:
                 Statistics: Num rows: 88000001 Data size: 75681779077 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col5 (type: int)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col5 (type: int)
                   Statistics: Num rows: 88000001 Data size: 75681779077 Basic stats: COMPLETE Column stats: NONE
@@ -448,6 +458,7 @@ STAGE PLANS:
                 Statistics: Num rows: 96800003 Data size: 83249958789 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col4 (type: int)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col4 (type: int)
                   Statistics: Num rows: 96800003 Data size: 83249958789 Basic stats: COMPLETE Column stats: NONE
@@ -504,6 +515,7 @@ STAGE PLANS:
                 Statistics: Num rows: 383314495 Data size: 51908482889 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col13 (type: int)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col13 (type: int)
                   Statistics: Num rows: 383314495 Data size: 51908482889 Basic stats: COMPLETE Column stats: NONE
@@ -527,6 +539,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2108229765 Data size: 285496662075 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: bigint)
+                    null sort order: aaaaa
                     sort order: +++++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: bigint)
                     Statistics: Num rows: 2108229765 Data size: 285496662075 Basic stats: COMPLETE Column stats: NONE
@@ -556,6 +569,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1054114882 Data size: 142748330969 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col0 (type: string)
+                    null sort order: zzzz
                     sort order: ++++
                     Statistics: Num rows: 1054114882 Data size: 142748330969 Basic stats: COMPLETE Column stats: NONE
                     TopN Hash Memory Usage: 0.1

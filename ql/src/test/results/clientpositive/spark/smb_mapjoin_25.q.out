@@ -86,6 +86,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
@@ -101,6 +102,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
@@ -116,6 +118,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
@@ -131,6 +134,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
@@ -166,6 +170,7 @@ STAGE PLANS:
                   1 
                 Statistics: Num rows: 1 Data size: 4281 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 4281 Basic stats: COMPLETE Column stats: NONE
 

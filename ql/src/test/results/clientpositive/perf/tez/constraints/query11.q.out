@@ -199,7 +199,7 @@ Stage-0
               Select Operator [SEL_88] (rows=12710774 width=85)
                 Output:["_col0"]
                 Top N Key Operator [TNK_154] (rows=12710774 width=533)
-                  keys:_col5,sort order:+,top n:100
+                  keys:_col5,top n:100
                   Filter Operator [FIL_87] (rows=12710774 width=533)
                     predicate:((_col8 / _col1) > (_col6 / _col3))
                     Merge Join Operator [MERGEJOIN_284] (rows=38132324 width=533)

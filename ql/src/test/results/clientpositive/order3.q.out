@@ -55,6 +55,7 @@ STAGE PLANS:
                 Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
@@ -83,6 +84,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: int)
+              null sort order: z
               sort order: +
               Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
@@ -153,6 +155,7 @@ STAGE PLANS:
                 Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
@@ -183,6 +186,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col2 (type: int)
+              null sort order: z
               sort order: +
               Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
@@ -254,6 +258,7 @@ STAGE PLANS:
                 Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
@@ -284,6 +289,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col2 (type: int)
+              null sort order: z
               sort order: +
               Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
@@ -354,6 +360,7 @@ STAGE PLANS:
                 Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
@@ -378,6 +385,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
@@ -448,6 +456,7 @@ STAGE PLANS:
                 Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
@@ -474,6 +483,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
@@ -545,6 +555,7 @@ STAGE PLANS:
                 Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), 'AAA' (type: string)
+                  null sort order: za
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: int), 'AAA' (type: string)
                   Statistics: Num rows: 15 Data size: 150 Basic stats: COMPLETE Column stats: NONE
@@ -575,6 +586,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
+              null sort order: z
               sort order: +
               Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1

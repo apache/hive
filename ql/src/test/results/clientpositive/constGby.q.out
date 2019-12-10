@@ -54,6 +54,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: boolean)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE

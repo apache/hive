@@ -64,7 +64,7 @@ Stage-0
               Select Operator [SEL_97] (rows=1 width=16)
                 Output:["_col1"]
                 Top N Key Operator [TNK_96] (rows=1 width=8)
-                  keys:_col0,sort order:+,top n:100
+                  keys:_col0,top n:100
                   Group By Operator [GBY_95] (rows=1 width=8)
                     Output:["_col0"],aggregations:["count(VALUE._col0)"]
                   <-Reducer 4 [CUSTOM_SIMPLE_EDGE]

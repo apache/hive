@@ -37,6 +37,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: ++++
                     keys: cint (type: int), ctinyint (type: tinyint), cbigint (type: bigint), cdouble (type: double)
+                    null sort order: zzzz
                     Statistics: Num rows: 12288 Data size: 220184 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 100
                     Top N Key Vectorization:
@@ -54,6 +55,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12288 Data size: 538648 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col2 (type: tinyint), _col4 (type: bigint), _col6 (type: double)
+                        null sort order: zzzz
                         sort order: ++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
@@ -271,6 +273,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: +++
                       keys: (cbigint - 988888L) (type: bigint), (cdouble / UDFToDouble((cbigint - 988888L))) (type: double), (1.2 / CAST( (cbigint - 988888L) AS decimal(19,0))) (type: decimal(22,21))
+                      null sort order: zzz
                       Statistics: Num rows: 1365 Data size: 16320 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 100
                       Top N Key Vectorization:
@@ -288,6 +291,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1365 Data size: 174720 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: bigint), _col1 (type: double), _col2 (type: decimal(22,21))
+                          null sort order: zzz
                           sort order: +++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
@@ -504,6 +508,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: ++++++
                       keys: (cdouble + 200.0D) (type: double), (UDFToDouble(cbigint) / (cdouble + 200.0D)) (type: double), ((cdouble + 200.0D) / (cdouble + 200.0D)) (type: double), (UDFToDouble(cbigint) / (cdouble + 200.0D)) (type: double), (3.0D / (cdouble + 200.0D)) (type: double), (1.2D / (cdouble + 200.0D)) (type: double)
+                      null sort order: zzzzzz
                       Statistics: Num rows: 1365 Data size: 16320 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 100
                       Top N Key Vectorization:
@@ -521,6 +526,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1365 Data size: 65520 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: double), _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double)
+                          null sort order: zzzzzz
                           sort order: ++++++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
@@ -737,6 +743,7 @@ STAGE PLANS:
                     Top N Key Operator
                       sort order: +++++++++
                       keys: cint (type: int), cbigint (type: bigint), ctinyint (type: tinyint), (UDFToDouble(cint) / UDFToDouble((cint - 528534767))) (type: double), (UDFToDouble(cbigint) / UDFToDouble((cbigint - 1018195815L))) (type: double), (UDFToDouble(ctinyint) / UDFToDouble(ctinyint)) (type: double), (cint % (cint - 528534767)) (type: int), (cbigint % (cbigint - 1018195815L)) (type: bigint), (ctinyint % ctinyint) (type: tinyint)
+                      null sort order: zzzzzzzzz
                       Statistics: Num rows: 4191 Data size: 75120 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 100
                       Top N Key Vectorization:
@@ -754,6 +761,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4191 Data size: 200728 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: tinyint), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: int), _col7 (type: bigint), _col8 (type: tinyint)
+                          null sort order: zzzzzzzzz
                           sort order: +++++++++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator

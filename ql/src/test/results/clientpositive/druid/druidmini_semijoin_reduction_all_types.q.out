@@ -150,6 +150,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 6969 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 69 Data size: 6969 Basic stats: COMPLETE Column stats: COMPLETE
@@ -164,6 +165,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -184,6 +186,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: cstring1 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: cstring1 (type: string)
                       Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
@@ -206,6 +209,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -233,6 +237,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -305,6 +310,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
@@ -319,6 +325,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: tinyint), _col1 (type: tinyint), _col2 (type: binary)
@@ -339,6 +346,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ctinyint (type: tinyint)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: ctinyint (type: tinyint)
                       Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
@@ -361,6 +369,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -388,6 +397,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: tinyint), _col1 (type: tinyint), _col2 (type: binary)
@@ -460,6 +470,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: smallint)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: smallint)
                         Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
@@ -474,6 +485,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: smallint), _col1 (type: smallint), _col2 (type: binary)
@@ -494,6 +506,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: csmallint (type: smallint)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: csmallint (type: smallint)
                       Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
@@ -516,6 +529,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -543,6 +557,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: smallint), _col1 (type: smallint), _col2 (type: binary)
@@ -615,6 +630,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
@@ -629,6 +645,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
@@ -649,6 +666,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: cint (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: cint (type: int)
                       Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
@@ -671,6 +689,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -698,6 +717,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
@@ -770,6 +790,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 69 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -784,6 +805,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: binary)
@@ -804,6 +826,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 69728 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: cbigint (type: bigint)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: cbigint (type: bigint)
                       Statistics: Num rows: 9173 Data size: 69728 Basic stats: COMPLETE Column stats: NONE
@@ -826,6 +849,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -853,6 +877,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: binary)
@@ -925,6 +950,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: float)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: float)
                         Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
@@ -939,6 +965,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: float), _col1 (type: float), _col2 (type: binary)
@@ -959,6 +986,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: cfloat (type: float)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: cfloat (type: float)
                       Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
@@ -981,6 +1009,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1008,6 +1037,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: float), _col1 (type: float), _col2 (type: binary)
@@ -1080,6 +1110,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 69 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1094,6 +1125,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: double), _col1 (type: double), _col2 (type: binary)
@@ -1114,6 +1146,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 69728 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: cdouble (type: double)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: cdouble (type: double)
                       Statistics: Num rows: 9173 Data size: 69728 Basic stats: COMPLETE Column stats: NONE
@@ -1136,6 +1169,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1163,6 +1197,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: double), _col1 (type: double), _col2 (type: binary)
@@ -1224,6 +1259,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp with local time zone)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: timestamp with local time zone)
                         Statistics: Num rows: 69 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1238,6 +1274,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: timestamp with local time zone), _col1 (type: timestamp with local time zone), _col2 (type: binary)
@@ -1258,6 +1295,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: vc (type: timestamp with local time zone)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: vc (type: timestamp with local time zone)
                       Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
@@ -1280,6 +1318,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1307,6 +1346,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: timestamp with local time zone), _col1 (type: timestamp with local time zone), _col2 (type: binary)
@@ -1379,6 +1419,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1393,6 +1434,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: boolean), _col1 (type: boolean), _col2 (type: binary)
@@ -1413,6 +1455,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: cboolean1 (type: boolean)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: cboolean1 (type: boolean)
                       Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
@@ -1435,6 +1478,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1462,6 +1506,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: boolean), _col1 (type: boolean), _col2 (type: binary)
@@ -1534,6 +1579,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1548,6 +1594,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -1568,6 +1615,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: cintstring (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: cintstring (type: string)
                       Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
@@ -1590,6 +1638,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1617,6 +1666,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -1689,6 +1739,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1703,6 +1754,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -1723,6 +1775,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: cdoublestring (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: cdoublestring (type: string)
                       Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
@@ -1745,6 +1798,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1772,6 +1826,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -1844,6 +1899,7 @@ STAGE PLANS:
                       Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1858,6 +1914,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -1878,6 +1935,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: cfloatstring (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: cfloatstring (type: string)
                       Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
@@ -1900,6 +1958,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1927,6 +1986,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)

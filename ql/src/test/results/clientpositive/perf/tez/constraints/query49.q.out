@@ -317,7 +317,7 @@ Stage-0
                       Group By Operator [GBY_355] (rows=40436 width=215)
                         Output:["_col0","_col1","_col2","_col3","_col4"],keys:_col0, _col3, _col4, _col1, _col2
                         Top N Key Operator [TNK_354] (rows=40436 width=214)
-                          keys:_col0, _col3, _col4, _col1, _col2,sort order:+++++,top n:100
+                          keys:_col0, _col3, _col4, _col1, _col2,top n:100
                           Select Operator [SEL_353] (rows=14232 width=213)
                             Output:["_col0","_col1","_col2","_col3","_col4"]
                             Filter Operator [FIL_352] (rows=14232 width=248)
@@ -398,7 +398,7 @@ Stage-0
                       Group By Operator [GBY_308] (rows=40436 width=215)
                         Output:["_col0","_col1","_col2","_col3","_col4"],keys:_col0, _col3, _col4, _col1, _col2
                         Top N Key Operator [TNK_307] (rows=40436 width=214)
-                          keys:_col0, _col3, _col4, _col1, _col2,sort order:+++++,top n:100
+                          keys:_col0, _col3, _col4, _col1, _col2,top n:100
                           Select Operator [SEL_306] (rows=26204 width=215)
                             Output:["_col0","_col1","_col2","_col3","_col4"]
                             Group By Operator [GBY_305] (rows=26204 width=215)

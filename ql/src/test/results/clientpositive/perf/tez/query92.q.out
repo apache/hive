@@ -92,7 +92,7 @@ Stage-0
               Select Operator [SEL_133] (rows=1 width=224)
                 Output:["_col1"]
                 Top N Key Operator [TNK_132] (rows=1 width=112)
-                  keys:_col0,sort order:+,top n:100
+                  keys:_col0,top n:100
                   Group By Operator [GBY_131] (rows=1 width=112)
                     Output:["_col0"],aggregations:["sum(VALUE._col0)"]
                   <-Reducer 4 [CUSTOM_SIMPLE_EDGE]

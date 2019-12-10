@@ -82,6 +82,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: +
                     keys: (cdouble + 2.0D) (type: double)
+                    null sort order: z
                     Statistics: Num rows: 200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 10
                     Select Operator
@@ -90,6 +91,7 @@ STAGE PLANS:
                       Statistics: Num rows: 200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
+                        null sort order: z
                         sort order: +
                         Statistics: Num rows: 200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1

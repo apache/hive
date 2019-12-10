@@ -82,6 +82,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -279,6 +280,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -297,6 +299,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -316,6 +319,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -401,6 +405,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -419,6 +424,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -438,6 +444,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -509,42 +516,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart_date_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
+  Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date_n4
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: day(CAST( ds AS DATE)) (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: int)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: int)
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [ds:string (day(CAST( ds AS DATE)))]]
-                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-
   Stage: Stage-1
     Spark
       Edges:
@@ -556,25 +531,29 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
+                  filterExpr: CAST( ds AS DATE) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: day(CAST( ds AS DATE)) (type: int)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: CAST( ds AS DATE) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
+                    Select Operator
+                      expressions: day(CAST( ds AS DATE)) (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: day(CAST( ds AS DATE)) (type: int)
@@ -582,6 +561,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -601,6 +581,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -678,25 +659,29 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
+                  filterExpr: CAST( ds AS DATE) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: day(CAST( ds AS DATE)) (type: int)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: CAST( ds AS DATE) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
+                    Select Operator
+                      expressions: day(CAST( ds AS DATE)) (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: day(CAST( ds AS DATE)) (type: int)
@@ -704,6 +689,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -723,6 +709,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -785,42 +772,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart_date_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
+  Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date_n4
-                  filterExpr: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: bigint)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: bigint)
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [ds:string (abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)))]]
-                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-
   Stage: Stage-1
     Spark
       Edges:
@@ -832,17 +787,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null (type: boolean)
+                  filterExpr: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10L)) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null (type: boolean)
+                    predicate: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10L)) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10L)) (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -850,17 +806,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10L)) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10L)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10L)) (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -880,6 +837,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -942,42 +900,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart_date_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
+  Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date_n4
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: decimal(10,0))
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: decimal(10,0))
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [ds:string (CAST( UDFToShort(day(CAST( ds AS DATE))) AS decimal(10,0)))]]
-                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-
   Stage: Stage-1
     Spark
       Edges:
@@ -989,25 +915,29 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
+                  filterExpr: CAST( UDFToShort(day(CAST( ds AS DATE))) AS decimal(10,0)) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: CAST( UDFToShort(day(CAST( ds AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: CAST( UDFToShort(day(CAST( ds AS DATE))) AS decimal(10,0)) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: decimal(10,0))
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: decimal(10,0))
+                    Select Operator
+                      expressions: CAST( UDFToShort(day(CAST( ds AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(10,0))
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(10,0))
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
@@ -1015,6 +945,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(10,0))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: decimal(10,0))
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -1034,6 +965,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1181,6 +1113,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -1200,6 +1133,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -1218,6 +1152,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
@@ -1233,6 +1168,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
                   Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -1252,6 +1188,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1346,6 +1283,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -1365,6 +1303,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -1383,6 +1322,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
@@ -1398,6 +1338,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
                   Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -1417,6 +1358,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1559,6 +1501,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -1577,6 +1520,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
@@ -1596,6 +1540,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1681,6 +1626,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -1699,6 +1645,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
@@ -1718,6 +1665,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1844,6 +1792,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -1862,6 +1811,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -1881,6 +1831,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -1966,6 +1917,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -1984,6 +1936,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -2003,6 +1956,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -2074,42 +2028,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart_double_hour_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
+  Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_double_hour_n1
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: double)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: double)
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [hr:string (UDFToDouble(hr))]]
-                            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-
   Stage: Stage-1
     Spark
       Edges:
@@ -2121,25 +2043,29 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: UDFToDouble(hr) (type: double)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: double)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: double)
+                    Select Operator
+                      expressions: UDFToDouble(hr) (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour_n1
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
@@ -2147,6 +2073,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
@@ -2166,6 +2093,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -2228,42 +2156,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart_double_hour_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
+  Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_double_hour_n1
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: hr (type: double)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: double)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: double)
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [hr:string ((UDFToDouble(hr) * 2.0D))]]
-                            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-
   Stage: Stage-1
     Spark
       Edges:
@@ -2275,17 +2171,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: double)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: double)
+                    Select Operator
+                      expressions: (UDFToDouble(hr) * 2.0D) (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2301,6 +2201,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
@@ -2320,6 +2221,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -2397,25 +2299,29 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: UDFToDouble(hr) (type: double)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: double)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: double)
+                    Select Operator
+                      expressions: UDFToDouble(hr) (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour_n1
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
@@ -2423,6 +2329,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
@@ -2442,6 +2349,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -2519,17 +2427,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: double)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: double)
+                    Select Operator
+                      expressions: (UDFToDouble(hr) * 2.0D) (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2545,6 +2457,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
@@ -2564,6 +2477,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -2635,42 +2549,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart_double_hour_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
+  Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_double_hour_n1
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: CAST( hr AS STRING) (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [hr:string (CAST( (UDFToDouble(hr) * 2.0D) AS STRING))]]
-                            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-
   Stage: Stage-1
     Spark
       Edges:
@@ -2682,25 +2564,29 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) (type: string)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    Select Operator
+                      expressions: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour_n1
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and CAST( hr AS STRING) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and CAST( hr AS STRING) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: CAST( hr AS STRING) (type: string)
@@ -2708,6 +2594,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
@@ -2727,6 +2614,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -2814,6 +2702,7 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
         Map 4 
@@ -2832,6 +2721,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -2851,6 +2741,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -2878,6 +2769,7 @@ STAGE PLANS:
                 Select Operator
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
 
@@ -2951,6 +2843,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string), _col1 (type: string)
@@ -2968,6 +2861,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string), _col1 (type: string)
@@ -2993,6 +2887,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
@@ -3123,6 +3018,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -3141,6 +3037,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
@@ -3160,6 +3057,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -3277,6 +3175,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -3295,6 +3194,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -3314,6 +3214,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -3415,6 +3316,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -3430,6 +3332,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -3449,6 +3352,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -3547,6 +3451,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -3565,6 +3470,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -3584,6 +3490,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -3708,6 +3615,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -3727,6 +3635,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -3745,6 +3654,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
@@ -3760,6 +3670,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
                   Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
@@ -3779,6 +3690,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -3864,6 +3776,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
@@ -3882,6 +3795,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -3901,6 +3815,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
@@ -3916,6 +3831,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 23 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col2 (type: string)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col2 (type: string)
                   Statistics: Num rows: 1 Data size: 23 Basic stats: PARTIAL Column stats: NONE
@@ -3935,6 +3851,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -4019,6 +3936,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4038,6 +3956,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4121,6 +4040,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -4140,6 +4060,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4159,6 +4080,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4178,6 +4100,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
+                    null sort order: 
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
@@ -4213,6 +4136,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -4234,6 +4158,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -4306,6 +4231,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4325,6 +4251,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4408,6 +4335,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -4427,6 +4355,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4446,6 +4375,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4467,6 +4397,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -4502,6 +4433,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -4523,6 +4455,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -4596,6 +4529,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4615,6 +4549,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4700,6 +4635,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -4719,6 +4655,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4738,6 +4675,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -4750,6 +4688,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -4788,6 +4727,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -4809,6 +4749,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -4932,6 +4873,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
@@ -5018,10 +4960,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: day(CAST( ds AS DATE)) (type: int)
@@ -5031,19 +4973,6 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
-                      Select Operator
-                        expressions: _col0 (type: int)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: int)
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [ds:string (day(CAST( ds AS DATE)))]]
-                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 
@@ -5057,31 +4986,35 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
+                  filterExpr: CAST( ds AS DATE) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: day(CAST( ds AS DATE)) (type: int)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: CAST( ds AS DATE) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
+                    Select Operator
+                      expressions: day(CAST( ds AS DATE)) (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count()
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -5262,6 +5195,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
@@ -5425,6 +5359,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
@@ -5572,6 +5507,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
@@ -5649,10 +5585,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour_n1
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
@@ -5662,19 +5598,6 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: double)
                           1 _col0 (type: double)
-                      Select Operator
-                        expressions: _col0 (type: double)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: double)
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [hr:string (UDFToDouble(hr))]]
-                            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 
@@ -5688,31 +5611,35 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: UDFToDouble(hr) (type: double)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: double)
-                        1 _col0 (type: double)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
+                    Select Operator
+                      expressions: UDFToDouble(hr) (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: double)
+                          1 _col0 (type: double)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count()
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -5800,19 +5727,6 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: double)
                           1 _col0 (type: double)
-                      Select Operator
-                        expressions: _col0 (type: double)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: double)
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [hr:string ((UDFToDouble(hr) * 2.0D))]]
-                            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 
@@ -5826,31 +5740,35 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: double)
-                        1 _col0 (type: double)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
+                    Select Operator
+                      expressions: (UDFToDouble(hr) * 2.0D) (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: double)
+                          1 _col0 (type: double)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count()
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -5943,6 +5861,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -5992,6 +5911,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
@@ -6134,6 +6054,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
@@ -6240,6 +6161,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
@@ -6346,6 +6268,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
@@ -6506,6 +6429,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
+                            null sort order: 
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
@@ -6641,18 +6565,6 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col2
                         input vertices:
-<<<<<<< HEAD
-                          0 Map 1
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-=======
                           1 Map 3
                         Statistics: Num rows: 1 Data size: 23 Basic stats: PARTIAL Column stats: NONE
                         Map Join Operator
@@ -6666,11 +6578,12 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 25 Basic stats: PARTIAL Column stats: NONE
                           Group By Operator
                             aggregations: count()
+                            minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0
->>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
                             Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             Reduce Output Operator
+                              null sort order: 
                               sort order: 
                               Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                               value expressions: _col0 (type: bigint)
@@ -6757,6 +6670,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -6776,6 +6690,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -6859,6 +6774,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -6878,6 +6794,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -6897,6 +6814,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
@@ -6918,6 +6836,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -6953,6 +6872,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -6974,6 +6894,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -7069,14 +6990,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour_n1
-                  filterExpr: ((date) IN ('2008-04-08', '2008-04-09') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
+                  filterExpr: ((date) IN ('2008-04-08', '2008-04-09') and (UDFToDouble(hour) = 11.0D) and ds is not null and UDFToDouble(hr) is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-<<<<<<< HEAD
-                    predicate: ((UDFToDouble(hour) = 11.0D) and (date) IN ('2008-04-08', '2008-04-09') and ds is not null and hr is not null) (type: boolean)
-=======
                     predicate: ((date) IN ('2008-04-08', '2008-04-09') and (UDFToDouble(hour) = 11.0D) and ds is not null and UDFToDouble(hr) is not null) (type: boolean)
->>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                     Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), UDFToDouble(hr) (type: double)
@@ -7099,19 +7016,6 @@ STAGE PLANS:
                           Spark Partition Pruning Sink Operator
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col1 (type: double)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: double)
-                          minReductionHashAggr: 0.99
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [hr:int (UDFToDouble(hr))]]
-                            Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 
@@ -7125,30 +7029,35 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_parquet
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 4000 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ds (type: string), UDFToDouble(hr) (type: double)
-                    outputColumnNames: _col0, _col1
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 4000 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: string), _col1 (type: double)
-                        1 _col0 (type: string), _col1 (type: double)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 2200 Data size: 4400 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
+                    Select Operator
+                      expressions: ds (type: string), UDFToDouble(hr) (type: double)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2000 Data size: 4000 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string), _col1 (type: double)
+                          1 _col0 (type: string), _col1 (type: double)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 2200 Data size: 4400 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count()
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
             Local Work:
               Map Reduce Local Work
         Reducer 2 

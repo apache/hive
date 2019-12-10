@@ -113,6 +113,7 @@ STAGE PLANS:
                       native: true
                   Reduce Output Operator
                     key expressions: value (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: value (type: int)
                     Reduce Sink Vectorization:
@@ -278,6 +279,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: value (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: value (type: int)
                       Reduce Sink Vectorization:
@@ -314,6 +316,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: int)
                       Reduce Sink Vectorization:
@@ -455,6 +458,7 @@ STAGE PLANS:
                       native: true
                   Reduce Output Operator
                     key expressions: value (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: value (type: int)
                     Reduce Sink Vectorization:
@@ -483,6 +487,7 @@ STAGE PLANS:
                       native: true
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
@@ -667,6 +672,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: value (type: int), key (type: int)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: value (type: int), key (type: int)
                       Reduce Sink Vectorization:
@@ -702,6 +708,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: int), value (type: int)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: key (type: int), value (type: int)
                       Reduce Sink Vectorization:
@@ -842,6 +849,7 @@ STAGE PLANS:
                       native: true
                   Reduce Output Operator
                     key expressions: value (type: int), key (type: int)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: value (type: int), key (type: int)
                     Reduce Sink Vectorization:
@@ -869,6 +877,7 @@ STAGE PLANS:
                       native: true
                   Reduce Output Operator
                     key expressions: key (type: int), value (type: int)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: key (type: int), value (type: int)
                     Reduce Sink Vectorization:
@@ -962,6 +971,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:key:int, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     output key column names: KEY.reducesinkkey0
                     output value column names: VALUE._col0
@@ -1211,6 +1221,7 @@ STAGE PLANS:
                       native: true
                   Reduce Output Operator
                     key expressions: value (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: value (type: int)
                     Reduce Sink Vectorization:
@@ -1374,6 +1385,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: value (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: value (type: int)
                       Reduce Sink Vectorization:
@@ -1410,6 +1422,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: key (type: int)
                       Reduce Sink Vectorization:
@@ -1551,6 +1564,7 @@ STAGE PLANS:
                       native: true
                   Reduce Output Operator
                     key expressions: value (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: value (type: int)
                     Reduce Sink Vectorization:
@@ -1579,6 +1593,7 @@ STAGE PLANS:
                       native: true
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
@@ -1763,6 +1778,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: value (type: int), key (type: int)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: value (type: int), key (type: int)
                       Reduce Sink Vectorization:
@@ -1798,6 +1814,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: int), value (type: int)
+                      null sort order: aa
                       sort order: ++
                       Map-reduce partition columns: key (type: int), value (type: int)
                       Reduce Sink Vectorization:
@@ -1938,6 +1955,7 @@ STAGE PLANS:
                       native: true
                   Reduce Output Operator
                     key expressions: value (type: int), key (type: int)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: value (type: int), key (type: int)
                     Reduce Sink Vectorization:
@@ -1965,6 +1983,7 @@ STAGE PLANS:
                       native: true
                   Reduce Output Operator
                     key expressions: key (type: int), value (type: int)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: key (type: int), value (type: int)
                     Reduce Sink Vectorization:
@@ -2058,6 +2077,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:key:int, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: key (type: int)
+                    null sort order: a
                     sort order: +
                     output key column names: KEY.reducesinkkey0
                     output value column names: VALUE._col0
