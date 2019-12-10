@@ -240,10 +240,18 @@ sys	global_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	global_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	global_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	global_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	key_constraints			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	key_constraints			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	key_constraints			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	key_constraints			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -368,6 +376,18 @@ sys	tbls			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	tbls			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	tbls			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	tbls			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	version			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	version			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	version			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -447,7 +467,9 @@ PREHOOK: Output: sys@db_version
 PREHOOK: Output: sys@dbs
 PREHOOK: Output: sys@funcs
 PREHOOK: Output: sys@global_privs
+PREHOOK: Output: sys@hive_locks
 PREHOOK: Output: sys@key_constraints
+PREHOOK: Output: sys@locks
 PREHOOK: Output: sys@mv_creation_metadata
 PREHOOK: Output: sys@mv_tables_used
 PREHOOK: Output: sys@part_col_privs
@@ -479,6 +501,9 @@ PREHOOK: Output: sys@table_stats_view
 PREHOOK: Output: sys@tbl_col_privs
 PREHOOK: Output: sys@tbl_privs
 PREHOOK: Output: sys@tbls
+PREHOOK: Output: sys@transactions
+PREHOOK: Output: sys@txn_components
+PREHOOK: Output: sys@txns
 PREHOOK: Output: sys@version
 PREHOOK: Output: sys@wm_mappings
 PREHOOK: Output: sys@wm_pools
@@ -501,7 +526,9 @@ POSTHOOK: Output: sys@db_version
 POSTHOOK: Output: sys@dbs
 POSTHOOK: Output: sys@funcs
 POSTHOOK: Output: sys@global_privs
+POSTHOOK: Output: sys@hive_locks
 POSTHOOK: Output: sys@key_constraints
+POSTHOOK: Output: sys@locks
 POSTHOOK: Output: sys@mv_creation_metadata
 POSTHOOK: Output: sys@mv_tables_used
 POSTHOOK: Output: sys@part_col_privs
@@ -533,6 +560,9 @@ POSTHOOK: Output: sys@table_stats_view
 POSTHOOK: Output: sys@tbl_col_privs
 POSTHOOK: Output: sys@tbl_privs
 POSTHOOK: Output: sys@tbls
+POSTHOOK: Output: sys@transactions
+POSTHOOK: Output: sys@txn_components
+POSTHOOK: Output: sys@txns
 POSTHOOK: Output: sys@version
 POSTHOOK: Output: sys@wm_mappings
 POSTHOOK: Output: sys@wm_pools
