@@ -4708,14 +4708,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     if (parent.getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.NONE) {
       boolean inputArgsChanged = false;
       DataTypePhysicalVariation[] dataTypePhysicalVariations = parent.getInputDataTypePhysicalVariations();
-      VectorExpression oldExpression = null;
-      VectorExpression newExpression = null;
       for (int i = 0; i < children.length; i++) {
-        oldExpression = children[i];
         // we found at least one children with mismatch
-        if (oldExpression.getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.DECIMAL_64) {
-          newExpression = vContext.wrapWithDecimal64ToDecimalConversion(oldExpression);
-          children[i] = newExpression;
+        if (children[i].getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.DECIMAL_64) {
+          children[i] = vContext.wrapWithDecimal64ToDecimalConversion(children[i]);
           inputArgsChanged = true;
           dataTypePhysicalVariations[i] = DataTypePhysicalVariation.NONE;
         }
@@ -4725,9 +4721,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         if (parent instanceof VectorUDFAdaptor) {
           VectorUDFAdaptor parentAdaptor = (VectorUDFAdaptor) parent;
           VectorUDFArgDesc[] argDescs = parentAdaptor.getArgDescs();
-          for (VectorUDFArgDesc argDesc : argDescs) {
-            if (argDesc.getColumnNum() == oldExpression.getOutputColumnNum()) {
-              argDesc.setColumnNum(newExpression.getOutputColumnNum());
+          for (int i = 0; i < argDescs.length; ++i) {
+            if (argDescs[i].getColumnNum() != children[i].getOutputColumnNum()) {
+              argDescs[i].setColumnNum(children[i].getOutputColumnNum());
               break;
             }
           }
