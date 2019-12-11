@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.junit.Ignore;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import java.util.Map;
 /**
  * Tests statistics replication for ACID tables.
  */
+@Ignore("HIVE-22626 should fix this")
 public class TestStatsReplicationScenariosACIDNoAutogather extends TestStatsReplicationScenarios {
   @Rule
   public final TestName testName = new TestName();
