@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.File;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.fail;
 
@@ -34,6 +36,7 @@ public class TestMTQueries extends BaseTestQueries {
     }
   }
 
+  @Ignore("Disabled due to intermittent failures (HIVE-22616)")
   @Test
   public void testMTQueries1() throws Exception {
     String[] testNames = new String[] {"join2.q", "groupby1.q", "input1.q", "input19.q"};
