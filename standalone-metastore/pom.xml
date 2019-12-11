@@ -27,7 +27,7 @@
   <name>Hive Standalone Metastore</name>
 
   <properties>
-    <hive.version.shortname>3.1.2000</hive.version.shortname>
+    <hive.version.shortname>3.1.3000</hive.version.shortname>
 
     <!-- Build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
