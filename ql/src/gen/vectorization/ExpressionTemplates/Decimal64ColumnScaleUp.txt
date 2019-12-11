@@ -113,20 +113,12 @@ private static final long serialVersionUID = 1L;
             outputIsNull[i] = false;
             final long result = vector[i] <OperatorSymbol> value;
             outputVector[i] = result;
-            if (Math.abs(result) > outputDecimal64AbsMax) {
-              outputColVector.noNulls = false;
-              outputIsNull[i] = true;
-            }
           }
          } else {
            for(int j = 0; j != n; j++) {
              final int i = sel[j];
              final long result = vector[i] <OperatorSymbol> value;
              outputVector[i] = result;
-             if (Math.abs(result) > outputDecimal64AbsMax) {
-               outputColVector.noNulls = false;
-               outputIsNull[i] = true;
-             }
            }
          }
       } else {
@@ -140,10 +132,6 @@ private static final long serialVersionUID = 1L;
         for(int i = 0; i != n; i++) {
           final long result = vector[i] <OperatorSymbol> value;
           outputVector[i] = result;
-          if (Math.abs(result) > outputDecimal64AbsMax) {
-            outputColVector.noNulls = false;
-            outputIsNull[i] = true;
-          }
         }
       }
     } else /* there are NULLs in the inputColVector */ {
@@ -160,10 +148,6 @@ private static final long serialVersionUID = 1L;
             // The following may override a "false" null setting if an error or overflow occurs.
             final long result = vector[i] <OperatorSymbol> value;
             outputVector[i] = result;
-            if (Math.abs(result) > outputDecimal64AbsMax) {
-              outputIsNull[i] = true;
-              outputColVector.noNulls = false;
-            }
           } else {
             outputIsNull[i] = true;
             outputColVector.noNulls = false;
@@ -177,10 +161,6 @@ private static final long serialVersionUID = 1L;
             // The following may override a "false" null setting if an error or overflow occurs.
             final long result = vector[i] <OperatorSymbol> value;
             outputVector[i] = result;
-            if (Math.abs(result) > outputDecimal64AbsMax) {
-              outputIsNull[i] = true;
-              outputColVector.noNulls = false;
-            }
           } else {
             outputIsNull[i] = true;
             outputColVector.noNulls = false;
