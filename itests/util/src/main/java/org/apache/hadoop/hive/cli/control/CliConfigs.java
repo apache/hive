@@ -244,6 +244,8 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minillaplocal.query.files");
         includesFrom(testConfigProps, "minillaplocal.shared.query.files");
+        excludeQuery("results_cache_invalidation.q");// unstable; will be enabled by HIVE-22624
+        excludeQuery("results_cache_lifetime.q"); // unstable; will be enabled by HIVE-22624
         excludeQuery("bucket_map_join_tez1.q"); // Disabled in HIVE-19509
         excludeQuery("special_character_in_tabnames_1.q"); // Disabled in HIVE-19509
         excludeQuery("tez_smb_1.q"); // Disabled in HIVE-19509
