@@ -88,12 +88,7 @@ private static final long serialVersionUID = 1L;
         outputIsNull[0] = false;
         // The following may override a "false" null setting if an error or overflow occurs.
         final long result = vector[0] <OperatorSymbol> value;
-        if (Math.abs(result) > outputDecimal64AbsMax) {
-          outputIsNull[0] = true;
-          outputColVector.noNulls = false;
-        } else {
-          outputVector[0] = result;
-        }
+        outputVector[0] = result;
       } else {
         outputIsNull[0] = true;
         outputColVector.noNulls = false;
