@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -73,6 +74,7 @@ public class TestHiveProtoLoggingHook {
   public void setup() throws Exception {
     conf = new HiveConf();
     conf.set(HiveConf.ConfVars.LLAP_DAEMON_QUEUE_NAME.varname, "llap_queue");
+    conf.set(HiveConf.ConfVars.HIVE_PROTO_EVENTS_QUEUE_CAPACITY.varname, "3");
     conf.set(MRJobConfig.QUEUE_NAME, "mr_queue");
     conf.set(TezConfiguration.TEZ_QUEUE_NAME, "tez_queue");
     tmpFolder = folder.newFolder().getAbsolutePath();
@@ -162,6 +164,26 @@ public class TestHiveProtoLoggingHook {
     Assert.assertNotNull(event);
     Assert.assertEquals(ExecutionMode.LLAP.name(), event.getExecutionMode());
     Assert.assertEquals(event.getQueue(), "llap_queue");
+  }
+
+  @org.junit.Ignore("might fail intermittently")
+  @Test
+  public void testDropsEventWhenQueueIsFull() throws Exception {
+    EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
+    context.setHookType(HookType.PRE_EXEC_HOOK);
+    evtLogger.handle(context);
+    evtLogger.handle(context);
+    evtLogger.handle(context);
+    evtLogger.handle(context);
+    evtLogger.shutdown();
+    ProtoMessageReader<HiveHookEventProto> reader = getTestReader(conf, tmpFolder);
+    reader.readEvent();
+    reader.readEvent();
+    reader.readEvent();
+    try {
+      reader.readEvent();
+      Assert.fail("Expected 3 events due to queue capacity limit, got 4.");
+    } catch (EOFException expected) {}
   }
 
   @Test

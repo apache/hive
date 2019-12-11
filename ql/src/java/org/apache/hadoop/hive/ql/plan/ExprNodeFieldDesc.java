@@ -20,10 +20,11 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
@@ -53,9 +54,7 @@ public class ExprNodeFieldDesc extends ExprNodeDesc implements Serializable {
 
   @Override
   public List<ExprNodeDesc> getChildren() {
-    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
-    children.add(desc);
-    return children;
+    return Collections.singletonList(desc);
   }
 
   public ExprNodeDesc getDesc() {
@@ -94,11 +93,10 @@ public class ExprNodeFieldDesc extends ExprNodeDesc implements Serializable {
 
   @Override
   public List<String> getCols() {
-    List<String> colList = new ArrayList<String>();
-    if (desc != null) {
-      colList = Utilities.mergeUniqElems(colList, desc.getCols());
+    if (desc == null) {
+      return Collections.emptyList();
     }
-    return colList;
+    return new ArrayList<>(new LinkedHashSet<>(desc.getCols()));
   }
 
   @Override

@@ -149,6 +149,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
@@ -212,6 +213,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
@@ -350,6 +352,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
@@ -423,6 +426,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
@@ -631,6 +635,7 @@ STAGE PLANS:
                       Statistics: Num rows: 25 Data size: 2525 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: string)
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 25 Data size: 2525 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
@@ -701,6 +706,7 @@ STAGE PLANS:
                       Statistics: Num rows: 25 Data size: 2525 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: string)
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 25 Data size: 2525 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
@@ -836,6 +842,7 @@ STAGE PLANS:
                       Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
+                        null sort order: z
                         sort order: -
                         Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
@@ -919,6 +926,7 @@ STAGE PLANS:
                       Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
+                        null sort order: z
                         sort order: -
                         Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
@@ -1068,6 +1076,7 @@ STAGE PLANS:
                       Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
+                        null sort order: z
                         sort order: -
                         Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
@@ -1086,6 +1095,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col3 (type: string)
+                    null sort order: z
                     sort order: -
                     Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
@@ -1172,6 +1182,7 @@ STAGE PLANS:
                       Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
+                        null sort order: z
                         sort order: -
                         Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
@@ -1190,6 +1201,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col3 (type: string)
+                    null sort order: z
                     sort order: -
                     Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1

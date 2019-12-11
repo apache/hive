@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -30,7 +31,9 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hive.common.util.Ref;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,6 +185,19 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         jobName.append("-compactor-");
         jobName.append(ci.getFullPartitionName());
 
+        // Don't start compaction or cleaning if not necessary
+        AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
+            tblValidWriteIds, Ref.from(false), true, null, false);
+        if (!QueryCompactor.Util.isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
+          if (QueryCompactor.Util.needsCleaning(dir, sd)) {
+            msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
+          } else {
+            // do nothing
+            msc.markCleaned(CompactionInfo.compactionInfoToStruct(ci));
+          }
+          continue;
+        }
+
         LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in " + JavaUtils.txnIdToString(compactorTxnId));
         final StatsUpdater su = StatsUpdater.init(ci, msc.findColumnsWithStats(
             CompactionInfo.compactionInfoToStruct(ci)), conf,
@@ -190,7 +206,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         launchedJob = true;
         try {
           if (runJobAsSelf(ci.runAs)) {
-            mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc);
+            mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
           } else {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
               UserGroupInformation.getLoginUser());
@@ -198,7 +214,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
             ugi.doAs(new PrivilegedExceptionAction<Object>() {
               @Override
               public Object run() throws Exception {
-                mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, ci, su, msc);
+                mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, ci, su, msc, dir);
                 return null;
               }
             });
@@ -342,7 +358,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         //todo: use DriverUtils.runOnDriver() here
         QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
         SessionState localSession = null;
-        try (Driver d = new Driver(queryState, userName)) {
+        try (Driver d = new Driver(queryState)) {
           if (SessionState.get() == null) {
             localSession = new SessionState(conf);
             SessionState.start(localSession);

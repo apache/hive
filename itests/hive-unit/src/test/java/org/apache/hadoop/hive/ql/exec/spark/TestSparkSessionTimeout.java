@@ -111,7 +111,7 @@ public class TestSparkSessionTimeout {
       driver = new Driver(new QueryState.Builder()
               .withGenerateNewQueryId(true)
               .withHiveConf(conf).build(),
-              null, null);
+              null);
 
       SparkSession sparkSession = SparkUtilities.getSparkSession(conf, SparkSessionManagerImpl
               .getInstance());

@@ -304,6 +304,7 @@ STAGE PLANS:
                 Statistics: Num rows: 55 Data size: 9625 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                  null sort order: zzzzzz
                   sort order: ++++++
                   Statistics: Num rows: 55 Data size: 9625 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
@@ -1134,6 +1135,7 @@ STAGE PLANS:
                 Statistics: Num rows: 21 Data size: 11046 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                  null sort order: zzzzzz
                   sort order: ++++++
                   Statistics: Num rows: 21 Data size: 11046 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized

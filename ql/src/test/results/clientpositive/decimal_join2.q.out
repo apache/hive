@@ -72,6 +72,7 @@ STAGE PLANS:
                 Statistics: Num rows: 37 Data size: 4292 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(38,18))
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(38,18))
                   Statistics: Num rows: 37 Data size: 4292 Basic stats: COMPLETE Column stats: COMPLETE
@@ -89,6 +90,7 @@ STAGE PLANS:
                 Statistics: Num rows: 37 Data size: 4292 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(38,18))
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(38,18))
                   Statistics: Num rows: 37 Data size: 4292 Basic stats: COMPLETE Column stats: COMPLETE
@@ -115,6 +117,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: decimal(38,18)), _col1 (type: int), _col2 (type: decimal(38,18)), _col3 (type: int)
+              null sort order: zzzz
               sort order: ++++
               Statistics: Num rows: 48 Data size: 11136 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
@@ -274,6 +277,7 @@ STAGE PLANS:
                   Statistics: Num rows: 48 Data size: 11136 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: decimal(38,18)), _col1 (type: int), _col2 (type: decimal(38,18)), _col3 (type: int)
+                    null sort order: zzzz
                     sort order: ++++
                     Statistics: Num rows: 48 Data size: 11136 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized

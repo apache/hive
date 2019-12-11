@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
@@ -38,10 +40,12 @@ public class TestParseUtils {
 
   private String query;
   private TxnType txnType;
+  private Configuration conf;
 
   public TestParseUtils(String query, TxnType txnType) {
     this.query = query;
     this.txnType = txnType;
+    this.conf = new HiveConf();
   }
 
   @Parameters
@@ -89,8 +93,18 @@ public class TestParseUtils {
   }
 
   @Test
-  public void testTxnType() throws ParseException {
-    Assert.assertEquals(
-        AcidUtils.getTxnType(ParseUtils.parse(query)), txnType);
+  public void testTxnTypeWithEnabledReadOnlyFeature() throws ParseException {
+    enableReadOnlyTxnFeature(true);
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query)), txnType);
+  }
+
+  @Test
+  public void testTxnTypeWithDisabledReadOnlyFeature() throws ParseException {
+    enableReadOnlyTxnFeature(false);
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query)), TxnType.DEFAULT);
+  }
+
+  private void enableReadOnlyTxnFeature(boolean featureFlag) {
+    conf.setBoolean(HiveConf.ConfVars.HIVE_TXN_READONLY_ENABLED.varname, featureFlag);
   }
 }

@@ -33,6 +33,7 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
@@ -45,6 +46,7 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:

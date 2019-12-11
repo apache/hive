@@ -92,9 +92,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -179,7 +178,8 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     private final Clock clock;
     private final String logFileName;
     private final DatePartitionedLogger<HiveHookEventProto> logger;
-    private final ScheduledExecutorService logWriter;
+    private final ScheduledThreadPoolExecutor logWriter;
+    private final int queueCapacity;
     private int logFileCount = 0;
     private ProtoMessageWriter<HiveHookEventProto> writer;
     private LocalDate writerDate;
@@ -189,6 +189,8 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       this.clock = clock;
       // randomUUID is slow, since its cryptographically secure, only first query will take time.
       this.logFileName = "hive_" + UUID.randomUUID().toString();
+      this.queueCapacity = conf.getInt(ConfVars.HIVE_PROTO_EVENTS_QUEUE_CAPACITY.varname,
+        ConfVars.HIVE_PROTO_EVENTS_QUEUE_CAPACITY.defaultIntVal);
       String baseDir = conf.getVar(ConfVars.HIVE_PROTO_EVENTS_BASE_PATH);
       if (StringUtils.isBlank(baseDir)) {
         baseDir = null;
@@ -214,7 +216,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
 
       ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
           .setNameFormat("Hive Hook Proto Log Writer %d").build();
-      logWriter = Executors.newSingleThreadScheduledExecutor(threadFactory);
+      logWriter = new ScheduledThreadPoolExecutor(1, threadFactory);
 
       long rolloverInterval = conf.getTimeVar(
           HiveConf.ConfVars.HIVE_PROTO_EVENTS_ROLLOVER_CHECK_INTERVAL, TimeUnit.MICROSECONDS);
@@ -267,10 +269,17 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       }
       if (event != null) {
         try {
-          logWriter.execute(() -> writeEvent(event));
+          // ScheduledThreadPoolExecutor uses an unbounded queue which cannot be replaced with a bounded queue.
+          // Therefore checking queue capacity manually here.
+          if (logWriter.getQueue().size() < queueCapacity) {
+            logWriter.execute(() -> writeEvent(event));
+          } else {
+            LOG.warn("Writer queue full ignoring event {} for query {}",
+              hookContext.getHookType(), plan.getQueryId());
+          }
         } catch (RejectedExecutionException e) {
           LOG.warn("Writer queue full ignoring event {} for query {}",
-              hookContext.getHookType(), plan.getQueryId());
+            hookContext.getHookType(), plan.getQueryId());
         }
       }
     }

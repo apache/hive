@@ -78,9 +78,6 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
       // do a one time initialization
       setupUniqueTestPath();
-      qt.newSession();
-      qt.cleanUp();
-      qt.createSources();
 
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
@@ -135,6 +132,11 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
     }
   }
 
+  @Override
+  protected QTestUtil getQt() {
+    return qt;
+  }
+
   private static String debugHint = "\nSee ./itests/hive-blobstore/target/tmp/log/hive.log, "
       + "or check ./itests/hive-blobstore/target/surefire-reports/ for specific test cases logs.";
 
@@ -154,7 +156,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
         }
       } catch (CommandProcessorException e) {
         if (expectSuccess) {
-          qt.failedQuery(e.getException(), e.getResponseCode(), fname, debugHint);
+          qt.failedQuery(e.getCause(), e.getResponseCode(), fname, debugHint);
         }
       }
 

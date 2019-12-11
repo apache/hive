@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.DriverUtils;
-import org.apache.hadoop.hive.ql.ddl.table.creation.ShowCreateTableOperation;
+import org.apache.hadoop.hive.ql.ddl.table.create.show.ShowCreateTableOperation;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -79,10 +79,6 @@ class MmMajorQueryCompactor extends QueryCompactor {
     if (!compactionInfo.isMajorCompaction()) {
       // Not supported for MM tables right now.
       LOG.info("Not compacting " + storageDescriptor.getLocation() + "; not a major compaction");
-      return;
-    }
-
-    if (!Util.isEnoughToCompact(compactionInfo.isMajorCompaction(), dir, storageDescriptor)) {
       return;
     }
 

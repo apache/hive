@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,8 @@ public class ScheduledQueryExecutionService implements Closeable {
   private ScheduledQueryExecutionContext context;
   private ScheduledQueryExecutor worker;
 
-  public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf conf) {
+  public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf conf0) {
+    HiveConf conf = new HiveConf(conf0);
     MetastoreBasedScheduledQueryService qService = new MetastoreBasedScheduledQueryService(conf);
     ExecutorService executor =
         Executors.newCachedThreadPool(
@@ -107,13 +109,16 @@ public class ScheduledQueryExecutionService implements Closeable {
       try {
         HiveConf conf = new HiveConf(context.conf);
         conf.set(Constants.HIVE_QUERY_EXCLUSIVE_LOCK, lockNameFor(q.getScheduleKey()));
-        state = SessionState.start(conf);
+        conf.setVar(HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER, SessionStateUserAuthenticator.class.getName());
+        conf.unset(HiveConf.ConfVars.HIVESESSIONID.varname);
+        state = new SessionState(conf, q.getUser());
+        SessionState.start(state);
         info = new ScheduledQueryProgressInfo();
         info.setScheduledExecutionId(q.getExecutionId());
         info.setState(QueryState.EXECUTING);
         reportQueryProgress();
         try (
-          IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(conf), q.getUser(), null)) {
+          IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(conf), null)) {
           info.setExecutorQueryId(driver.getQueryState().getQueryId());
           driver.run(q.getQuery());
           info.setState(QueryState.FINISHED);
@@ -140,7 +145,7 @@ public class ScheduledQueryExecutionService implements Closeable {
     private String getErrorStringForException(Throwable t) {
       if (t instanceof CommandProcessorException) {
         CommandProcessorException cpr = (CommandProcessorException) t;
-        return String.format("%s", cpr.getErrorMessage());
+        return String.format("%s", cpr.getMessage());
       } else {
         return String.format("%s: %s", t.getClass().getName(), t.getMessage());
       }

@@ -78,6 +78,7 @@ STAGE PLANS:
                     Statistics: Num rows: 12 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 12 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
@@ -97,6 +98,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Statistics: Num rows: 12 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
@@ -167,6 +169,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                    null sort order: zzz
                     sort order: +++
                     Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col3 (type: string), _col4 (type: string)
@@ -239,6 +242,7 @@ STAGE PLANS:
                     Statistics: Num rows: 12 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 12 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: string)
@@ -258,6 +262,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: z
                         sort order: +
                         Statistics: Num rows: 12 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string), _col2 (type: string)
@@ -336,6 +341,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -366,6 +372,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
+                            null sort order: a
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -390,6 +397,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
+              null sort order: z
               sort order: +
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: bigint)

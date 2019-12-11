@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -58,7 +59,6 @@ import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapBufferOrBuffers;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.ReaderOptions;
@@ -173,7 +173,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private final CacheTag cacheTag;
   private final Map<Path, PartitionDesc> parts;
 
-  private Utilities.SupplierWithCheckedException<FileSystem, IOException> fsSupplier;
+  private Supplier<FileSystem> fsSupplier;
 
   /**
    * stripeRgs[stripeIx'] => boolean array (could be a bitmask) of rg-s that need to be read.
@@ -219,7 +219,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, parts) : null;
     // 1. Get file metadata from cache, or create the reader and read it.
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
-    fsSupplier = Utilities.getFsSupplier(split.getPath(), jobConf);
+    fsSupplier = getFsSupplier(split.getPath(), jobConf);
     fileKey = determineFileId(fsSupplier, split,
         HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
         HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID),
@@ -274,6 +274,17 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         return performDataRead();
       }
     });
+  }
+
+  private static Supplier<FileSystem> getFsSupplier(final Path path,
+      final Configuration conf) {
+    return () -> {
+      try {
+        return path.getFileSystem(conf);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    };
   }
 
   protected Void performDataRead() throws IOException, InterruptedException {
@@ -479,7 +490,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     return true;
   }
 
-  private static Object determineFileId(Utilities.SupplierWithCheckedException<FileSystem, IOException> fsSupplier,
+  private static Object determineFileId(Supplier<FileSystem> fsSupplier,
     FileSplit split,
       boolean allowSynthetic, boolean checkDefaultFs, boolean forceSynthetic) throws IOException {
     if (split instanceof OrcSplit) {
@@ -525,7 +536,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     }
     LlapIoImpl.ORC_LOGGER.trace("Creating reader for {} ({})", path, split.getPath());
     long startTime = counters.startTimeCounter();
-    ReaderOptions opts = OrcFile.readerOptions(jobConf).filesystem(fsSupplier.get()).fileMetadata(fileMetadata);
+    ReaderOptions opts = EncodedOrcFile.readerOptions(jobConf).filesystem(fsSupplier).fileMetadata(fileMetadata);
     if (split instanceof OrcSplit) {
       OrcTail orcTail = ((OrcSplit) split).getOrcTail();
       if (orcTail != null) {
@@ -740,7 +751,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     rawDataReader = RecordReaderUtils.createDefaultDataReader(
         DataReaderProperties.builder().withBufferSize(orcReader.getCompressionSize())
         .withCompression(orcReader.getCompressionKind())
-        .withFileSystem(fsSupplier.get()).withPath(path)
+        .withFileSystemSupplier(fsSupplier).withPath(path)
         .withTypeCount(orcReader.getSchema().getMaximumId() + 1)
         .withZeroCopy(useZeroCopy)
         .build());

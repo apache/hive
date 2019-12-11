@@ -210,6 +210,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: float)
+                          null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col0 (type: float)
                           Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -326,6 +327,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: float)
+                          null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col0 (type: float)
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -447,6 +449,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: varchar(256))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: varchar(256))
                         Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
@@ -467,6 +470,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: varchar(256))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: varchar(256))
                         Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
@@ -602,6 +606,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: varchar(256))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: varchar(256))
                         Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
@@ -622,6 +627,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: varchar(256))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: varchar(256))
                         Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -642,6 +648,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: varchar(256))
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: varchar(256))
                         Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
@@ -661,6 +668,7 @@ STAGE PLANS:
                 Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: varchar(256))
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: varchar(256))
                   Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE

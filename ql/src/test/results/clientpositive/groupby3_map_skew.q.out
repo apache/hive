@@ -62,6 +62,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 348000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 250 Data size: 348000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -84,6 +85,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
+              null sort order: 
               sort order: 
               Statistics: Num rows: 1 Data size: 1208 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: double), _col1 (type: struct<count:bigint,sum:double,input:string>), _col2 (type: struct<count:bigint,sum:double,input:string>), _col3 (type: string), _col4 (type: string), _col5 (type: struct<count:bigint,sum:double,variance:double>), _col6 (type: struct<count:bigint,sum:double,variance:double>), _col7 (type: struct<count:bigint,sum:double,variance:double>), _col8 (type: struct<count:bigint,sum:double,variance:double>)

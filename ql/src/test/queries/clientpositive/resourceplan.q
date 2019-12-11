@@ -1,4 +1,6 @@
 --! qt:dataset:alltypesorc,alltypesparquet,cbo_t1,cbo_t2,cbo_t3,lineitem,part,src,src1,src_cbo,src_json,src_sequencefile,src_thrift,srcbucket,srcbucket2,srcpart
+--! qt:sysdb
+
 -- Continue on errors, we do check some error conditions below.
 set hive.cli.errors.ignore=true;
 set hive.test.authz.sstd.hs2.mode=true;
@@ -8,9 +10,6 @@ set hive.cbo.enable=false;
 
 -- Force DN to create db_privs tables.
 show grant user hive_test_user;
-
--- Initialize the hive schema.
-source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
 
 -- SORT_QUERY_RESULTS
 

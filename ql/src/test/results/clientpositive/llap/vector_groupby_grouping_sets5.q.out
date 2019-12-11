@@ -89,6 +89,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
@@ -159,6 +160,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                    null sort order: aaa
                     sort order: +++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                     Reduce Sink Vectorization:
@@ -286,6 +288,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
@@ -356,6 +359,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                    null sort order: aaa
                     sort order: +++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                     Reduce Sink Vectorization:
@@ -510,6 +514,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
@@ -580,6 +585,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
+                    null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                     Reduce Sink Vectorization:
@@ -622,6 +628,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 744 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  null sort order: aaa
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Reduce Sink Vectorization:

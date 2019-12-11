@@ -272,7 +272,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         throw new RuntimeException(e);
       }
       QueryState qs = new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build();
-      try (Driver d = new Driver(qs, null)) {
+      try (Driver d = new Driver(qs)) {
         LOG.info("Ready to run the query: " + query);
         syncThreadStart(cdlIn, cdlOut);
         try {
@@ -533,7 +533,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     CommandProcessorException e2 = runStatementOnDriverNegative("update " + Table.ACIDTBL + " set a = 1 where b != 1");
     Assert.assertEquals("Expected update of bucket column to fail",
         "FAILED: SemanticException [Error 10302]: Updating values of bucketing columns is not supported.  Column a.",
-        e2.getErrorMessage());
+        e2.getMessage());
     Assert.assertEquals("Expected update of bucket column to fail",
         ErrorMsg.UPDATE_CANNOT_UPDATE_BUCKET_VALUE.getErrorCode(), e2.getErrorCode());
     CommandProcessorException e3 = runStatementOnDriverNegative("commit"); //not allowed in w/o tx
@@ -579,7 +579,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     CommandProcessorException e = runStatementOnDriverNegative("select * from no_such_table");
     Assert.assertEquals("Txn didn't fail?",
         "FAILED: SemanticException [Error 10001]: Line 1:14 Table not found 'no_such_table'",
-        e.getErrorMessage());
+        e.getMessage());
     runStatementOnDriver("start transaction");
     List<String> rs1 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     runStatementOnDriver("commit");
@@ -732,8 +732,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     houseKeeperService.run();
     //this should fail because txn aborted due to timeout
     CommandProcessorException e = runStatementOnDriverNegative("delete from " + Table.ACIDTBL + " where a = 5");
-    Assert.assertTrue("Actual: " + e.getErrorMessage(),
-        e.getErrorMessage().contains("Transaction manager has aborted the transaction txnid:1"));
+    Assert.assertTrue("Actual: " + e.getMessage(),
+        e.getMessage().contains("Transaction manager has aborted the transaction txnid:1"));
 
     //now test that we don't timeout locks we should not
     //heartbeater should be running in the background every 1/2 second
@@ -819,7 +819,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         "WHEN MATCHED THEN UPDATE set b = 1\n" +
         "WHEN MATCHED THEN DELETE\n" +
         "WHEN NOT MATCHED AND a < 1 THEN INSERT VALUES(1,2)");
-    Assert.assertEquals(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ((HiveException)e.getException()).getCanonicalErrorMsg());
+    Assert.assertEquals(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ((HiveException)e.getCause()).getCanonicalErrorMsg());
   }
   @Test
   public void testMergeNegative2() throws Exception {
@@ -828,7 +828,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         " target USING " + Table.NONACIDORCTBL + "\n source ON target.pk = source.pk " +
         "\nWHEN MATCHED THEN UPDATE set b = 1 " +
         "\nWHEN MATCHED THEN UPDATE set b=a");
-    Assert.assertEquals(ErrorMsg.MERGE_TOO_MANY_UPDATE, ((HiveException)e.getException()).getCanonicalErrorMsg());
+    Assert.assertEquals(ErrorMsg.MERGE_TOO_MANY_UPDATE, ((HiveException)e.getCause()).getCanonicalErrorMsg());
   }
 
   /**
@@ -1097,11 +1097,11 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         " source ON target.a = source.a\n" +
         "WHEN MATCHED THEN UPDATE set t = 1");
     Assert.assertEquals(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE,
-        ((HiveException)e1.getException()).getCanonicalErrorMsg());
+        ((HiveException)e1.getCause()).getCanonicalErrorMsg());
 
     CommandProcessorException e2 = runStatementOnDriverNegative("update " + Table.ACIDTBL + " set t = 1");
     Assert.assertEquals(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE,
-        ((HiveException)e2.getException()).getCanonicalErrorMsg());
+        ((HiveException)e2.getCause()).getCanonicalErrorMsg());
   }
 
   @Test
@@ -1112,7 +1112,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
             "using (select *\n" +
             "       from " + Table.NONACIDORCTBL + " src) sub on sub.a = target.a\n" +
             "when not matched then insert values (sub.a,sub.b)");
-    Assert.assertTrue("Error didn't match: " + e, e.getErrorMessage().contains(
+    Assert.assertTrue("Error didn't match: " + e, e.getMessage().contains(
         "No columns from target table 'trgt' found in ON clause '`sub`.`a` = `target`.`a`' of MERGE statement."));
   }
 

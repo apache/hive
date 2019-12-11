@@ -1,12 +1,66 @@
-PREHOOK: query: explain vectorization detail
-SELECT key, SUM(CAST(SUBSTR(value,5) AS INT)) FROM src GROUP BY key ORDER BY key LIMIT 5
+PREHOOK: query: CREATE TABLE t_test(
+  cint1 int,
+  cint2 int,
+  cdouble double,
+  cvarchar varchar(50),
+  cdecimal1 decimal(10,2),
+  cdecimal2 decimal(38,5)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_test
+POSTHOOK: query: CREATE TABLE t_test(
+  cint1 int,
+  cint2 int,
+  cdouble double,
+  cvarchar varchar(50),
+  cdecimal1 decimal(10,2),
+  cdecimal2 decimal(38,5)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_test
+PREHOOK: query: INSERT INTO t_test VALUES
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(8, 9, 2.0, 'one', 2.0, 2.0), (8, 9, 2.0, 'one', 2.0, 2.0),
+(4, 2, 3.3, 'two', 3.3, 3.3),
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(6, 2, 1.8, 'three', 1.8, 1.8),
+(7, 8, 4.5, 'four', 4.5, 4.5), (7, 8, 4.5, 'four', 4.5, 4.5), (7, 8, 4.5, 'four', 4.5, 4.5),
+(4, 1, 2.0, 'five', 2.0, 2.0), (4, 1, 2.0, 'five', 2.0, 2.0), (4, 1, 2.0, 'five', 2.0, 2.0),
+(NULL, NULL, NULL, NULL, NULL, NULL)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain vectorization detail
-SELECT key, SUM(CAST(SUBSTR(value,5) AS INT)) FROM src GROUP BY key ORDER BY key LIMIT 5
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_test
+POSTHOOK: query: INSERT INTO t_test VALUES
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(8, 9, 2.0, 'one', 2.0, 2.0), (8, 9, 2.0, 'one', 2.0, 2.0),
+(4, 2, 3.3, 'two', 3.3, 3.3),
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(NULL, NULL, NULL, NULL, NULL, NULL),
+(6, 2, 1.8, 'three', 1.8, 1.8),
+(7, 8, 4.5, 'four', 4.5, 4.5), (7, 8, 4.5, 'four', 4.5, 4.5), (7, 8, 4.5, 'four', 4.5, 4.5),
+(4, 1, 2.0, 'five', 2.0, 2.0), (4, 1, 2.0, 'five', 2.0, 2.0), (4, 1, 2.0, 'five', 2.0, 2.0),
+(NULL, NULL, NULL, NULL, NULL, NULL)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_test
+POSTHOOK: Lineage: t_test.cdecimal1 SCRIPT []
+POSTHOOK: Lineage: t_test.cdecimal2 SCRIPT []
+POSTHOOK: Lineage: t_test.cdouble SCRIPT []
+POSTHOOK: Lineage: t_test.cint1 SCRIPT []
+POSTHOOK: Lineage: t_test.cint2 SCRIPT []
+POSTHOOK: Lineage: t_test.cvarchar SCRIPT []
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT cint1 FROM t_test GROUP BY cint1 ORDER BY cint1 LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT cint1 FROM t_test GROUP BY cint1 ORDER BY cint1 LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
@@ -28,250 +82,53 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: t_test
+                  Statistics: Num rows: 14 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:cint1:int, 1:cint2:int, 2:cdouble:double, 3:cvarchar:varchar(50), 4:cdecimal1:decimal(10,2)/DECIMAL_64, 5:cdecimal2:decimal(38,5), 6:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: key (type: string), UDFToInteger(substr(value, 5)) (type: int)
-                    outputColumnNames: _col0, _col1
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0, 4]
-                        selectExpressions: CastStringToLong(col 3:string)(children: StringSubstrColStart(col 1:string, start 4) -> 3:string) -> 4:int
-                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: _col0 (type: string)
-                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 5
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string
-                          native: true
-                      Group By Operator
-                        aggregations: sum(_col1)
-                        Group By Vectorization:
-                            aggregators: VectorUDAFSumLong(col 4:int) -> bigint
-                            className: VectorGroupByOperator
-                            groupByMode: HASH
-                            keyExpressions: col 0:string
-                            native: false
-                            vectorProcessingMode: HASH
-                            projectedOutputColumnNums: [0]
-                        keys: _col0 (type: string)
-                        minReductionHashAggr: 0.5
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Reduce Sink Vectorization:
-                              className: VectorReduceSinkStringOperator
-                              keyColumns: 0:string
-                              native: true
-                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumns: 1:bigint
-                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
-                          value expressions: _col1 (type: bigint)
-            Execution mode: vectorized
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    includeColumns: [0, 1]
-                    dataColumns: key:string, value:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [string, bigint]
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    dataColumns: KEY._col0:string, VALUE._col0:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: sum(VALUE._col0)
-                Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 1:bigint) -> bigint
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0]
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Reduce Sink Vectorization:
-                      className: VectorReduceSinkObjectHashOperator
-                      keyColumns: 0:string
-                      native: true
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumns: 1:bigint
-                  Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
-                  value expressions: _col1 (type: bigint)
-        Reducer 3 
-            Execution mode: vectorized
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:string, VALUE._col0:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
-                outputColumnNames: _col0, _col1
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [0, 1]
-                Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 5
-                  Limit Vectorization:
-                      className: VectorLimitOperator
-                      native: true
-                  Statistics: Num rows: 5 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
-                    Statistics: Num rows: 5 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: 5
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: SELECT key, SUM(CAST(SUBSTR(value,5) AS INT)) FROM src GROUP BY key ORDER BY key LIMIT 5
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT key, SUM(CAST(SUBSTR(value,5) AS INT)) FROM src GROUP BY key ORDER BY key LIMIT 5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0
-10	10
-100	200
-103	206
-104	208
-PREHOOK: query: explain vectorization detail
-SELECT key FROM src GROUP BY key ORDER BY key LIMIT 5
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain vectorization detail
-SELECT key FROM src GROUP BY key ORDER BY key LIMIT 5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  TableScan Vectorization:
-                      native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
+                    expressions: cint1 (type: int)
+                    outputColumnNames: cint1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 14 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                     Top N Key Operator
                       sort order: +
-                      keys: key (type: string)
-                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 5
+                      keys: cint1 (type: int)
+                      null sort order: z
+                      Statistics: Num rows: 14 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 3
                       Top N Key Vectorization:
                           className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string
+                          keyExpressions: col 0:int
                           native: true
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 0:string
+                            keyExpressions: col 0:int
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
-                        keys: key (type: string)
-                        minReductionHashAggr: 0.5
+                        keys: cint1 (type: int)
+                        minReductionHashAggr: 0.64285713
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 5 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: _col0 (type: string)
+                          key expressions: _col0 (type: int)
+                          null sort order: z
                           sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
+                          Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
-                              className: VectorReduceSinkStringOperator
-                              keyColumns: 0:string
+                              className: VectorReduceSinkLongOperator
+                              keyColumns: 0:int
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 5 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
             Map Vectorization:
@@ -284,9 +141,9 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 2
+                    dataColumnCount: 6
                     includeColumns: [0]
-                    dataColumns: key:string, value:string
+                    dataColumns: cint1:int, cint2:int, cdouble:double, cvarchar:varchar(50), cdecimal1:decimal(10,2)/DECIMAL_64, cdecimal2:decimal(38,5)
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -301,7 +158,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 1
-                    dataColumns: KEY._col0:string
+                    dataColumns: KEY._col0:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -309,23 +166,24 @@ STAGE PLANS:
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string
+                    keyExpressions: col 0:int
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumnNums: []
-                keys: KEY._col0 (type: string)
+                keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string)
+                  key expressions: _col0 (type: int)
+                  null sort order: z
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumns: 0:string
+                      keyColumns: 0:int
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                  Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized
@@ -339,30 +197,30 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 1
-                    dataColumns: KEY.reducesinkkey0:string
+                    dataColumns: KEY.reducesinkkey0:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string)
+                expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
-                  Number of rows: 5
+                  Number of rows: 3
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-                  Statistics: Num rows: 5 Data size: 435 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 5 Data size: 435 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -370,232 +228,81 @@ STAGE PLANS:
 
   Stage: Stage-0
     Fetch Operator
-      limit: 5
+      limit: 3
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key FROM src GROUP BY key ORDER BY key LIMIT 5
+PREHOOK: query: SELECT cint1 FROM t_test GROUP BY cint1 ORDER BY cint1 LIMIT 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: default@t_test
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT key FROM src GROUP BY key ORDER BY key LIMIT 5
+POSTHOOK: query: SELECT cint1 FROM t_test GROUP BY cint1 ORDER BY cint1 LIMIT 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t_test
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0
-10
-100
-103
-104
-PREHOOK: query: explain vectorization detail
-SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key LIMIT 5
+4
+6
+7
+PREHOOK: query: SELECT cint1, cint2 FROM t_test GROUP BY cint1, cint2 ORDER BY cint1, cint2 LIMIT 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: default@t_test
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain vectorization detail
-SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key LIMIT 5
+POSTHOOK: query: SELECT cint1, cint2 FROM t_test GROUP BY cint1, cint2 ORDER BY cint1, cint2 LIMIT 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t_test
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: src1
-                  filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  TableScan Vectorization:
-                      native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:string)
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkStringOperator
-                            keyColumns: 0:string
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    includeColumns: [0]
-                    dataColumns: key:string, value:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: src2
-                  filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  TableScan Vectorization:
-                      native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:string)
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string), value (type: string)
-                      outputColumnNames: _col0, _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkStringOperator
-                            keyColumns: 0:string
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 1:string
-                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    includeColumns: [0, 1]
-                    dataColumns: key:string, value:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-        Reducer 2 
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: string)
-                  1 _col0 (type: string)
-                outputColumnNames: _col0, _col2
-                Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col0 (type: string), _col2 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
-                    value expressions: _col1 (type: string)
-            MergeJoin Vectorization:
-                enabled: false
-                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
-        Reducer 3 
-            Execution mode: vectorized
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:string, VALUE._col0:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-                outputColumnNames: _col0, _col1
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [0, 1]
-                Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 5
-                  Limit Vectorization:
-                      className: VectorLimitOperator
-                      native: true
-                  Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
-                    Statistics: Num rows: 5 Data size: 890 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: 5
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key LIMIT 5
+4	1
+4	2
+6	2
+PREHOOK: query: SELECT cint1, cint2 FROM t_test GROUP BY cint1, cint2 ORDER BY cint1 DESC, cint2 LIMIT 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: default@t_test
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key LIMIT 5
+POSTHOOK: query: SELECT cint1, cint2 FROM t_test GROUP BY cint1, cint2 ORDER BY cint1 DESC, cint2 LIMIT 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t_test
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	val_0
-0	val_0
-0	val_0
-0	val_0
-0	val_0
+8	9
+7	8
+6	2
+PREHOOK: query: SELECT cint1, cdouble FROM t_test GROUP BY cint1, cdouble ORDER BY cint1, cdouble LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT cint1, cdouble FROM t_test GROUP BY cint1, cdouble ORDER BY cint1, cdouble LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4	2.0
+4	3.3
+6	1.8
+PREHOOK: query: SELECT cvarchar, cdouble FROM t_test GROUP BY cvarchar, cdouble ORDER BY cvarchar, cdouble LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT cvarchar, cdouble FROM t_test GROUP BY cvarchar, cdouble ORDER BY cvarchar, cdouble LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+five	2.0
+four	4.5
+one	2.0
+PREHOOK: query: SELECT cdecimal1, cdecimal2 FROM t_test GROUP BY cdecimal1, cdecimal2 ORDER BY cdecimal1, cdecimal2 LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT cdecimal1, cdecimal2 FROM t_test GROUP BY cdecimal1, cdecimal2 ORDER BY cdecimal1, cdecimal2 LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1.80	1.80000
+2.00	2.00000
+3.30	3.30000
+PREHOOK: query: DROP TABLE t_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_test
+PREHOOK: Output: default@t_test
+POSTHOOK: query: DROP TABLE t_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_test
+POSTHOOK: Output: default@t_test

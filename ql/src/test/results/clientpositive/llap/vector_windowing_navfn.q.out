@@ -89,6 +89,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: 0 (type: int)
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: 0 (type: int)
                       Reduce Sink Vectorization:
@@ -236,6 +237,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: d (type: double), dec (type: decimal(4,2))
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: d (type: double)
                     Reduce Sink Vectorization:
@@ -498,6 +500,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: bin (type: binary), d (type: double), i (type: int)
+                    null sort order: azz
                     sort order: ++-
                     Map-reduce partition columns: bin (type: binary)
                     Reduce Sink Vectorization:
@@ -726,6 +729,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: i (type: int), s (type: string), dec (type: decimal(4,2))
+                    null sort order: zzz
                     sort order: +++
                     Map-reduce partition columns: i (type: int)
                     Reduce Sink Vectorization:
@@ -952,6 +956,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: d (type: double), f (type: float)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: d (type: double)
                     Reduce Sink Vectorization:
@@ -1214,6 +1219,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: bo (type: boolean), s (type: string)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: bo (type: boolean)
                     Reduce Sink Vectorization:
@@ -1449,6 +1455,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: 10Y (type: tinyint), s (type: string)
+                      null sort order: az
                       sort order: ++
                       Map-reduce partition columns: 10Y (type: tinyint)
                       Reduce Sink Vectorization:
@@ -1647,6 +1654,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: a (type: int), b (type: int)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: a (type: int)
                     Reduce Sink Vectorization:
@@ -1822,6 +1830,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: a (type: int), b (type: int)
+                    null sort order: az
                     sort order: +-
                     Map-reduce partition columns: a (type: int)
                     Reduce Sink Vectorization:
@@ -1997,6 +2006,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: a (type: int), b (type: int)
+                    null sort order: az
                     sort order: ++
                     Map-reduce partition columns: a (type: int)
                     Reduce Sink Vectorization:
@@ -2172,6 +2182,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: a (type: int), b (type: int)
+                    null sort order: az
                     sort order: +-
                     Map-reduce partition columns: a (type: int)
                     Reduce Sink Vectorization:

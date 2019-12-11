@@ -80,6 +80,7 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: substr(key, 1, 1) (type: string), substr(value, 5) (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: substr(key, 1, 1) (type: string)
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -324,6 +325,7 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: substr(key, 1, 1) (type: string), substr(value, 5) (type: string)
+                null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: substr(key, 1, 1) (type: string)
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -451,6 +453,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: substr(key, 1, 1) (type: string), substr(key, 2, 1) (type: string), substr(value, 5) (type: string)
+              null sort order: aaa
               sort order: +++
               Map-reduce partition columns: substr(key, 1, 1) (type: string), substr(key, 2, 1) (type: string)
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -503,6 +506,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string), _col1 (type: bigint)
+              null sort order: zz
               sort order: ++
               Statistics: Num rows: 500 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
               TopN Hash Memory Usage: 0.1

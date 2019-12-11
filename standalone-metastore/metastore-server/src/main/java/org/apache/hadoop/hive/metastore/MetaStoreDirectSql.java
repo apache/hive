@@ -55,10 +55,14 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -159,8 +163,8 @@ class MetaStoreDirectSql {
   private String DBS, TBLS, PARTITIONS, DATABASE_PARAMS, PARTITION_PARAMS, SORT_COLS, SD_PARAMS,
       SDS, SERDES, SKEWED_STRING_LIST_VALUES, SKEWED_VALUES, BUCKETING_COLS, SKEWED_COL_NAMES,
       SKEWED_COL_VALUE_LOC_MAP, COLUMNS_V2, PARTITION_KEYS, SERDE_PARAMS, PART_COL_STATS, KEY_CONSTRAINTS,
-      TAB_COL_STATS, PARTITION_KEY_VALS, PART_PRIVS, PART_COL_PRIVS, SKEWED_STRING_LIST, CDS;
-
+      TAB_COL_STATS, PARTITION_KEY_VALS, PART_PRIVS, PART_COL_PRIVS, SKEWED_STRING_LIST, CDS,
+      TBL_COL_PRIVS;
 
   public MetaStoreDirectSql(PersistenceManager pm, Configuration conf, String schema) {
     this.pm = pm;
@@ -1277,6 +1281,92 @@ class MetaStoreDirectSql {
     csd.setCatName(catName);
     ColumnStatistics result = makeColumnStats(list, csd, 0, engine);
     b.closeAllQueries();
+    return result;
+  }
+
+  public List<HiveObjectPrivilege> getTableAllColumnGrants(String catName, String dbName,
+                                                           String tableName, String authorizer) throws MetaException {
+    Query query = null;
+
+    // These constants should match the SELECT clause of the query.
+    final int authorizerIndex = 0;
+    final int columnNameIndex = 1;
+    final int createTimeIndex = 2;
+    final int grantOptionIndex = 3;
+    final int grantorIndex = 4;
+    final int grantorTypeIndex = 5;
+    final int principalNameIndex = 6;
+    final int principalTypeIndex = 7;
+    final int privilegeIndex = 8;
+
+    // Retrieve the privileges from the object store. Just grab only the required fields.
+    String queryText = "select " +
+            TBL_COL_PRIVS + ".\"AUTHORIZER\", " +
+            TBL_COL_PRIVS + ".\"COLUMN_NAME\", " +
+            TBL_COL_PRIVS + ".\"CREATE_TIME\", " +
+            TBL_COL_PRIVS + ".\"GRANT_OPTION\", " +
+            TBL_COL_PRIVS + ".\"GRANTOR\", " +
+            TBL_COL_PRIVS + ".\"GRANTOR_TYPE\", " +
+            TBL_COL_PRIVS + ".\"PRINCIPAL_NAME\", " +
+            TBL_COL_PRIVS + ".\"PRINCIPAL_TYPE\", " +
+            TBL_COL_PRIVS + ".\"TBL_COL_PRIV\" " +
+            "FROM " + TBL_COL_PRIVS + " JOIN " + TBLS +
+            " ON " + TBL_COL_PRIVS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\"" +
+            " JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" " +
+            " WHERE " + TBLS + ".\"TBL_NAME\" = ?" +
+            " AND " + DBS + ".\"NAME\" = ?" +
+            " AND " + DBS + ".\"CTLG_NAME\" = ?";
+
+    // Build the parameters, they should match the WHERE clause of the query.
+    int numParams = authorizer != null ? 4 : 3;
+    Object[] params = new Object[numParams];
+    params[0] = tableName;
+    params[1] = dbName;
+    params[2] = catName;
+    if (authorizer != null) {
+      queryText = queryText + " AND " + TBL_COL_PRIVS + ".\"AUTHORIZER\" = ?";
+      params[3] = authorizer;
+    }
+
+    // Collect the results into a list that the caller can consume.
+    List<HiveObjectPrivilege> result = new ArrayList<>();
+    final boolean doTrace = LOG.isDebugEnabled();
+    long start = doTrace ? System.nanoTime() : 0;
+    query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    try {
+      List<Object[]> queryResult = MetastoreDirectSqlUtils.ensureList(
+              executeWithArray(query, params, queryText));
+      long end = doTrace ? System.nanoTime() : 0;
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+
+      // If there is some result convert it into HivePrivilege bag and return.
+      for (Object[] privLine : queryResult) {
+        String privAuthorizer = MetastoreDirectSqlUtils.extractSqlString(privLine[authorizerIndex]);
+        String principalName = MetastoreDirectSqlUtils.extractSqlString(privLine[principalNameIndex]);
+        PrincipalType ptype = PrincipalType.valueOf(
+                MetastoreDirectSqlUtils.extractSqlString(privLine[principalTypeIndex]));
+        String columnName = MetastoreDirectSqlUtils.extractSqlString(privLine[columnNameIndex]);
+        String privilege = MetastoreDirectSqlUtils.extractSqlString(privLine[privilegeIndex]);
+        int createTime = MetastoreDirectSqlUtils.extractSqlInt(privLine[createTimeIndex]);
+        String grantor = MetastoreDirectSqlUtils.extractSqlString(privLine[grantorIndex]);
+        PrincipalType grantorType =
+                PrincipalType.valueOf(
+                        MetastoreDirectSqlUtils.extractSqlString(privLine[grantorTypeIndex]));
+        boolean grantOption = MetastoreDirectSqlUtils.extractSqlBoolean(privLine[grantOptionIndex]);
+
+        HiveObjectRef objectRef = new HiveObjectRef(HiveObjectType.COLUMN, dbName, tableName, null,
+                columnName);
+        objectRef.setCatName(catName);
+        PrivilegeGrantInfo grantInfo = new PrivilegeGrantInfo(privilege, createTime, grantor,
+                grantorType, grantOption);
+
+        result.add(new HiveObjectPrivilege(objectRef, principalName, ptype, grantInfo,
+                privAuthorizer));
+      }
+    } finally {
+      query.closeAll();
+    }
+
     return result;
   }
 

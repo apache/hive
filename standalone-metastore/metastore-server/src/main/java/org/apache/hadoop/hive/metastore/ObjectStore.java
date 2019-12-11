@@ -714,7 +714,8 @@ public class ObjectStore implements RawStore, Configurable {
     if (db == null) {
       LOG.debug("Failed to get database {}.{}, returning NoSuchObjectException",
           catalogName, name, ex);
-      throw new NoSuchObjectException(name + (ex == null ? "" : (": " + ex.getMessage())));
+      final String errorMessage = (ex == null ? "" : (": " + ex.getMessage()));
+      throw new NoSuchObjectException("database " + catalogName + "." + name + errorMessage);
     }
     return db;
   }
@@ -4286,12 +4287,21 @@ public class ObjectStore implements RawStore, Configurable {
    * @param newPart Partition object containing new information
    */
   private Partition alterPartitionNoTxn(String catName, String dbname, String name,
-    List<String> part_vals, Partition newPart, String validWriteIds, Ref<MColumnDescriptor> oldCd)
+      List<String> part_vals, Partition newPart, String validWriteIds, Ref<MColumnDescriptor> oldCd)
+      throws InvalidObjectException, MetaException {
+    MTable table = this.getMTable(newPart.getCatName(), newPart.getDbName(), newPart.getTableName());
+    return alterPartitionNoTxn(catName, dbname, name, part_vals, newPart,
+        validWriteIds, oldCd, table);
+  }
+
+  private Partition alterPartitionNoTxn(String catName, String dbname,
+      String name, List<String> part_vals, Partition newPart,
+      String validWriteIds,
+      Ref<MColumnDescriptor> oldCd, MTable table)
       throws InvalidObjectException, MetaException {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
-    MTable table = this.getMTable(newPart.getCatName(), newPart.getDbName(), newPart.getTableName());
     MPartition oldp = getMPartition(catName, dbname, name, part_vals);
     MPartition newp = convertToMPart(newPart, table, false);
     MColumnDescriptor oldCD = null;
@@ -6452,8 +6462,8 @@ public class ObjectStore implements RawStore, Configurable {
         break;
       case COLUMN:
         Preconditions.checkArgument(objToRefresh.getColumnName()==null, "columnName must be null");
-        grants = convertTableCols(listTableAllColumnGrants(catName,
-            objToRefresh.getDbName(), objToRefresh.getObjectName(), authorizer));
+        grants = getTableAllColumnGrants(catName, objToRefresh.getDbName(),
+                objToRefresh.getObjectName(), authorizer);
         break;
       default:
         throw new MetaException("Unexpected object type " + objToRefresh.getObjectType());
@@ -6471,18 +6481,24 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       if (!revokePrivilegeSet.isEmpty()) {
+        LOG.debug("Found " + revokePrivilegeSet.size() + " new revoke privileges to be synced.");
         PrivilegeBag remainingRevokePrivileges = new PrivilegeBag();
         for (HiveObjectPrivilege revokePrivilege : revokePrivilegeSet) {
           remainingRevokePrivileges.addToPrivileges(revokePrivilege);
         }
         revokePrivileges(remainingRevokePrivileges, false);
+      } else {
+        LOG.debug("No new revoke privileges are required to be synced.");
       }
       if (!grantPrivilegeSet.isEmpty()) {
+        LOG.debug("Found " + grantPrivilegeSet.size() + " new grant privileges to be synced.");
         PrivilegeBag remainingGrantPrivileges = new PrivilegeBag();
         for (HiveObjectPrivilege grantPrivilege : grantPrivilegeSet) {
           remainingGrantPrivileges.addToPrivileges(grantPrivilege);
         }
         grantPrivileges(remainingGrantPrivileges);
+      } else {
+        LOG.debug("No new grant privileges are required to be synced.");
       }
       committed = commitTransaction();
     } finally {
@@ -6491,6 +6507,30 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return committed;
+  }
+
+  private List<HiveObjectPrivilege> getTableAllColumnGrants(String catName, String dbName,
+                                                            String tableName, String authorizer)
+          throws MetaException, NoSuchObjectException {
+    return new GetListHelper<HiveObjectPrivilege>(normalizeIdentifier(catName),
+            normalizeIdentifier(dbName), normalizeIdentifier(tableName), true, true) {
+
+      @Override
+      protected String describeResult() {
+        return "Table column privileges.";
+      }
+
+      @Override
+      protected List<HiveObjectPrivilege> getSqlResult(GetHelper<List<HiveObjectPrivilege>> ctx)
+              throws MetaException {
+        return directSql.getTableAllColumnGrants(catName, dbName, tblName, authorizer);
+      }
+
+      @Override
+      protected List<HiveObjectPrivilege> getJdoResult(GetHelper<List<HiveObjectPrivilege>> ctx) {
+        return convertTableCols(listTableAllColumnGrants(catName, dbName, tblName, authorizer));
+      }
+    }.run(false);
   }
 
   public List<MRoleMap> listMRoleMembers(String roleName) {
@@ -6864,12 +6904,16 @@ public class ObjectStore implements RawStore, Configurable {
         query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
         mPrivs = (List<MTableColumnPrivilege>) query.executeWithArray(tableName, dbName, catName);
       }
+      LOG.debug("Query to obtain objects for listTableAllColumnGrants finished");
       pm.retrieveAll(mPrivs);
+      LOG.debug("RetrieveAll on all the objects for listTableAllColumnGrants finished");
       success = commitTransaction();
+      LOG.debug("Transaction running query to obtain objects for listTableAllColumnGrants " +
+              "committed");
 
       mTblColPrivilegeList.addAll(mPrivs);
 
-      LOG.debug("Done retrieving all objects for listTableAllColumnGrants");
+      LOG.debug("Done retrieving " + mPrivs.size() + " objects for listTableAllColumnGrants");
     } finally {
       rollbackAndCleanup(success, query);
     }
@@ -9636,7 +9680,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private void debugLog(final String message) {
     if (LOG.isDebugEnabled()) {
-      LOG.debug("{}", message, new Exception());
+      LOG.debug("{}", message, new Exception("Debug Dump Stack Trace (Not an Exception)"));
     }
   }
 

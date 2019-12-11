@@ -64,12 +64,6 @@ public class CoreCompareCliDriver extends CliAdapter{
             .withCleanupScript(cleanupScript)
             .withLlapIo(false)
             .build());
-
-      // do a one time initialization
-      qt.newSession();
-      qt.cleanUp();
-      qt.createSources();
-
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -120,6 +114,11 @@ public class CoreCompareCliDriver extends CliAdapter{
   }
 
   @Override
+  protected QTestUtil getQt() {
+    return qt;
+  }
+
+  @Override
   public void runTest(String tname, String fname, String fpath) {
     final String queryDirectory = cliConfig.getQueryDirectory();
 
@@ -148,7 +147,7 @@ public class CoreCompareCliDriver extends CliAdapter{
         try {
           qt.executeClient(versionFile, fname);
         } catch (CommandProcessorException e) {
-          qt.failedQuery(e.getException(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
+          qt.failedQuery(e.getCause(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
         }
       }
 

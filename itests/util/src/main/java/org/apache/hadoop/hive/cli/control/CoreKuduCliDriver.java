@@ -57,11 +57,6 @@ public class CoreKuduCliDriver extends CliAdapter {
           .withLlapIo(true)
           .withQTestSetup(new KuduTestSetup())
           .build());
-
-      // do a one time initialization
-      qt.newSession();
-      qt.cleanUp();
-      qt.createSources();
     } catch (Exception e) {
       throw new RuntimeException("Unexpected exception in setUp", e);
     }
@@ -107,6 +102,11 @@ public class CoreKuduCliDriver extends CliAdapter {
   }
 
   @Override
+  protected QTestUtil getQt() {
+    return qt;
+  }
+
+  @Override
   public void runTest(String tname, String fname, String fpath) {
     long startTime = System.currentTimeMillis();
     try {
@@ -118,7 +118,7 @@ public class CoreKuduCliDriver extends CliAdapter {
       try {
         qt.executeClient(fname);
       } catch (CommandProcessorException e) {
-        qt.failedQuery(e.getException(), e.getResponseCode(), fname, null);
+        qt.failedQuery(e.getCause(), e.getResponseCode(), fname, null);
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);

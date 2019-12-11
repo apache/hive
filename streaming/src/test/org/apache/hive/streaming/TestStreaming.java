@@ -114,7 +114,6 @@ import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class TestStreaming {
   private static final Logger LOG = LoggerFactory.getLogger(TestStreaming.class);
 
@@ -1312,6 +1311,35 @@ public class TestStreaming {
     Assert.assertEquals(HiveStreamingConnection.TxnState.COMMITTED,
         connection.getCurrentTransactionState());
     connection.close();
+  }
+
+  @Test
+  public void testTransactionBatchSizeValidation() throws Exception {
+    final String schemes = conf.get(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES.varname);
+    // the output stream of this FS doesn't support hflush, so the below test will fail
+    conf.setVar(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES, "raw");
+
+    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
+        .withFieldDelimiter(',')
+        .build();
+
+    try {
+      HiveStreamingConnection.newBuilder()
+          .withDatabase(dbName)
+          .withTable(tblName)
+          .withAgentInfo("UT_" + Thread.currentThread().getName())
+          .withRecordWriter(writer)
+          .withTransactionBatchSize(2)
+          .withHiveConf(conf)
+          .connect();
+
+      Assert.fail();
+    } catch (ConnectionError e) {
+      Assert.assertTrue("Expected connection error due to batch sizes",
+          e.getMessage().contains("only supports transaction batch"));
+    } finally {
+      conf.setVar(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES, schemes);
+    }
   }
 
   /**

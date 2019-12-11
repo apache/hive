@@ -71,6 +71,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: decimal(10,0))
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator
@@ -165,6 +166,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: decimal(10,0))
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator

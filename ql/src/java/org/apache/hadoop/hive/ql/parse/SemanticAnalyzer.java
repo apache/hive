@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
@@ -52,7 +50,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -107,8 +104,8 @@ import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.misc.hooks.InsertCommitHookDesc;
-import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableLikeDesc;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableUnsetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
@@ -290,7 +287,10 @@ import org.apache.hadoop.security.UserGroupInformation;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
@@ -12146,9 +12146,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames), null);
           }
         } else {
-          List<String> colNames = new ArrayList<>();
-          List<String> colTypes = new ArrayList<>();
-          extractColumnInfos(table, colNames, colTypes);
+          List<String> colNames;
+          List<String> colTypes;
+          if (isCBOExecuted() && this.columnAccessInfo != null &&
+              (colNames = this.columnAccessInfo.getTableToColumnAllAccessMap().get(table.getCompleteName())) != null) {
+            Map<String, String> colNameToType = table.getAllCols().stream()
+                .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType));
+            colTypes = colNames.stream().map(colNameToType::get).collect(Collectors.toList());
+          } else {
+            colNames = new ArrayList<>();
+            colTypes = new ArrayList<>();
+            extractColumnInfos(table, colNames, colTypes);
+          }
 
           basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames),
               new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode, table.isView(), table.isNonNative()));
@@ -12255,9 +12264,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  boolean genResolvedParseTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
+  boolean genResolvedParseTree(PlannerContext plannerCtx) throws SemanticException {
     ASTNode child = ast;
-    this.ast = ast;
     viewsExpanded = new ArrayList<String>();
     ctesExpanded = new ArrayList<String>();
 
@@ -12360,7 +12368,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
+  Operator genOPTree(PlannerContext plannerCtx) throws SemanticException {
+    // Parameters are not utilized when CBO is disabled.
+    return genOPTree();
+  }
+
+  Operator genOPTree() throws SemanticException {
     // fetch all the hints in qb
     List<ASTNode> hintsList = new ArrayList<>();
     getHintsFromQB(qb, hintsList);
@@ -12414,14 +12427,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("checkstyle:methodlength")
-  void analyzeInternal(ASTNode ast, Supplier<PlannerContext> pcf) throws SemanticException {
+  void analyzeInternal(final ASTNode astToAnalyze, Supplier<PlannerContext> pcf) throws SemanticException {
     LOG.info("Starting Semantic Analysis");
-    // 1. Generate Resolved Parse tree from syntax tree
     boolean needsTransform = needsTransform();
     //change the location of position alias process here
-    processPositionAlias(ast);
+    processPositionAlias(astToAnalyze);
     PlannerContext plannerCtx = pcf.get();
-    if (!genResolvedParseTree(ast, plannerCtx)) {
+    this.setAST(astToAnalyze);
+    // 1. Generate Resolved Parse tree from syntax tree
+    if (!genResolvedParseTree(plannerCtx)) {
       return;
     }
 
@@ -12467,7 +12481,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // 2. Gen OP Tree from resolved Parse Tree
-    Operator sinkOp = genOPTree(ast, plannerCtx);
+    Operator sinkOp = genOPTree(plannerCtx);
 
     boolean usesMasking = false;
     if (!unparseTranslator.isEnabled() &&
@@ -12482,11 +12496,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         init(true);
         //change the location of position alias process here
         processPositionAlias(rewrittenAST);
-        genResolvedParseTree(rewrittenAST, plannerCtx);
+        this.setAST(rewrittenAST);
+        genResolvedParseTree(plannerCtx);
         if (this instanceof CalcitePlanner) {
           ((CalcitePlanner) this).resetCalciteConfiguration();
         }
-        sinkOp = genOPTree(rewrittenAST, plannerCtx);
+        sinkOp = genOPTree(plannerCtx);
       }
     }
 

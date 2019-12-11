@@ -86,6 +86,7 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 112112 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: decimal(4,2))
+                null sort order: z
                 sort order: +
                 Statistics: Num rows: 500 Data size: 112112 Basic stats: COMPLETE Column stats: COMPLETE
                 TopN Hash Memory Usage: 0.1

@@ -1,0 +1,76 @@
+PREHOOK: query: drop table if exists my_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists my_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table my_table (col1 int, col3 int) partitioned by (col2 string) STORED AS TEXTFILE TBLPROPERTIES ("serialization.format" = "1")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@my_table
+POSTHOOK: query: create external table my_table (col1 int, col3 int) partitioned by (col2 string) STORED AS TEXTFILE TBLPROPERTIES ("serialization.format" = "1")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@my_table
+PREHOOK: query: insert into my_table VALUES(11, 201, "F")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@my_table
+POSTHOOK: query: insert into my_table VALUES(11, 201, "F")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@my_table@col2=F
+POSTHOOK: Lineage: my_table PARTITION(col2=F).col1 SCRIPT []
+POSTHOOK: Lineage: my_table PARTITION(col2=F).col3 SCRIPT []
+PREHOOK: query: SELECT * from my_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@my_table
+PREHOOK: Input: default@my_table@col2=F
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from my_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@my_table
+POSTHOOK: Input: default@my_table@col2=F
+#### A masked pattern was here ####
+11	201	F
+PREHOOK: query: describe formatted my_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@my_table
+POSTHOOK: query: describe formatted my_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@my_table
+# col_name            	data_type           	comment             
+col1                	int                 	                    
+col3                	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+col2                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	discover.partitions 	true                
+	numFiles            	1                   
+	numPartitions       	1                   
+	numRows             	1                   
+	rawDataSize         	6                   
+	serialization.format	1                   
+	totalSize           	7                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

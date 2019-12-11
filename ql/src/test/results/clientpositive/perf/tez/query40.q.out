@@ -96,7 +96,7 @@ Stage-0
                   Group By Operator [GBY_29] (rows=51819042 width=410)
                     Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(_col2)","sum(_col3)"],keys:_col0, _col1
                     Top N Key Operator [TNK_55] (rows=51819042 width=302)
-                      keys:_col0, _col1,sort order:++,top n:100
+                      keys:_col0, _col1,top n:100
                       Select Operator [SEL_27] (rows=51819042 width=302)
                         Output:["_col0","_col1","_col2","_col3"]
                         Merge Join Operator [MERGEJOIN_101] (rows=51819042 width=302)

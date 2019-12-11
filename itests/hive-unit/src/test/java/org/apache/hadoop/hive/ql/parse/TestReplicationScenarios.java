@@ -3655,7 +3655,7 @@ public class TestReplicationScenarios {
       myDriver.run(cmd);
       success = true;
     } catch (CommandProcessorException e) {
-      LOG.warn("Error {} : {} running [{}].", e.getErrorCode(), e.getErrorMessage(), cmd);
+      LOG.warn("Error {} : {} running [{}].", e.getErrorCode(), e.getMessage(), cmd);
     }
     return success;
   }

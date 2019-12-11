@@ -139,6 +139,7 @@ STAGE PLANS:
                         Statistics: Num rows: 9173 Data size: 1942190 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: __time_granularity (type: timestamp), __druid_extra_partition_key (type: bigint)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: __time_granularity (type: timestamp), __druid_extra_partition_key (type: bigint)
                           Statistics: Num rows: 9173 Data size: 1942190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -378,6 +379,7 @@ STAGE PLANS:
                         Statistics: Num rows: 9174 Data size: 1942340 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: __time_granularity (type: timestamp), __druid_extra_partition_key (type: bigint)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: __time_granularity (type: timestamp), __druid_extra_partition_key (type: bigint)
                           Statistics: Num rows: 9174 Data size: 1942340 Basic stats: COMPLETE Column stats: COMPLETE
@@ -519,6 +521,7 @@ STAGE PLANS:
                         Statistics: Num rows: 9173 Data size: 1942190 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: __time_granularity (type: timestamp), __druid_extra_partition_key (type: bigint)
+                          null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: __time_granularity (type: timestamp), __druid_extra_partition_key (type: bigint)
                           Statistics: Num rows: 9173 Data size: 1942190 Basic stats: COMPLETE Column stats: COMPLETE

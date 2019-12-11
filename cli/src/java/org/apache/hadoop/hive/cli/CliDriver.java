@@ -310,7 +310,7 @@ public class CliDriver {
           }
           return res;
         } catch (CommandProcessorException e) {
-          ss.out.println("Query returned non-zero code: " + e.getResponseCode() + ", cause: " + e.getErrorMessage());
+          ss.out.println("Query returned non-zero code: " + e.getResponseCode() + ", cause: " + e.getMessage());
           throw e;
         }
       }

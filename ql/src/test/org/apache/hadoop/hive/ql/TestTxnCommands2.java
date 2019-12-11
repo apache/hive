@@ -160,7 +160,7 @@ public class TestTxnCommands2 {
     }
     SessionState ss = SessionState.start(hiveConf);
     ss.applyAuthorizationPolicy();
-    d = new Driver(new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build(), null);
+    d = new Driver(new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build());
     d.setMaxRows(10000);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES (" + tableProperties + ")");
@@ -1323,7 +1323,8 @@ public class TestTxnCommands2 {
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("Unexpected number of compactions in history", 2, resp.getCompactsSize());
     Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
-    Assert.assertEquals("Unexpected 1 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(1).getState());
+    Assert.assertEquals("Unexpected 1 compaction state", TxnStore.SUCCEEDED_RESPONSE,
+        resp.getCompacts().get(1).getState());
   }
 
   /**

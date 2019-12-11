@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
@@ -38,7 +39,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
  * Operation process of compacting a table.
  */
 public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDesc> {
-  private static final int FIVE_MINUTES_IN_MILLIES = 5*60*1000;
 
   public AlterTableCompactOperation(DDLOperationContext context, AlterTableCompactDesc desc) {
     super(context, desc);
@@ -96,10 +96,11 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
   private void waitForCompactionToFinish(CompactionResponse resp) throws HiveException {
     StringBuilder progressDots = new StringBuilder();
     long waitTimeMs = 1000;
+    long waitTimeOut = HiveConf.getLongVar(context.getConf(), HiveConf.ConfVars.HIVE_COMPACTOR_WAIT_TIMEOUT);
     wait: while (true) {
       //double wait time until 5min
       waitTimeMs = waitTimeMs*2;
-      waitTimeMs = Math.max(waitTimeMs, FIVE_MINUTES_IN_MILLIES);
+      waitTimeMs = Math.max(waitTimeMs, waitTimeOut);
       try {
         Thread.sleep(waitTimeMs);
       } catch (InterruptedException ex) {

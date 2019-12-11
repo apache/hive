@@ -58,7 +58,7 @@ public class TestSparkStatistics {
       driver = new Driver(new QueryState.Builder()
               .withGenerateNewQueryId(true)
               .withHiveConf(conf).build(),
-              null, null);
+              null);
 
       driver.run("create table test (col int)");
       Assert.assertEquals(0, driver.compile("select * from test order by col", true));

@@ -71,6 +71,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: 2000.0D (type: double)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: 2000.0D (type: double)
                   Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
@@ -344,6 +345,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: 4000.0D (type: double)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: 4000.0D (type: double)
                   Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
@@ -579,6 +581,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
                   key expressions: 2000.0D (type: double)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: 2000.0D (type: double)
                   Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: PARTIAL
@@ -704,6 +707,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2 Data size: 1744 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
                   key expressions: _col0 (type: double)
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: double)
                   Statistics: Num rows: 2 Data size: 1744 Basic stats: COMPLETE Column stats: PARTIAL
@@ -831,6 +835,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: PARTIAL
                   value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)

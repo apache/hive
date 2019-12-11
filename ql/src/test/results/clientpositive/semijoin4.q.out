@@ -85,6 +85,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: bigint), _col1 (type: decimal(27,9))
+                  null sort order: aa
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: bigint), _col1 (type: decimal(27,9))
                   Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
@@ -101,6 +102,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: bigint), _col0 (type: decimal(27,9))
+                  null sort order: aa
                   sort order: ++
                   Map-reduce partition columns: _col1 (type: bigint), _col0 (type: decimal(27,9))
                   Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
@@ -124,10 +126,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
+              null sort order: 
               sort order: 
               Statistics: Num rows: 1 Data size: 136 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
+              null sort order: 
               sort order: 
               Statistics: Num rows: 1 Data size: 167 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
@@ -166,6 +170,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(19,11)), _col1 (type: timestamp)
+                  null sort order: aa
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: decimal(19,11)), _col1 (type: timestamp)
                   Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: NONE
@@ -182,6 +187,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(19,11)), _col1 (type: timestamp)
+                  null sort order: aa
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: decimal(19,11)), _col1 (type: timestamp)
                   Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: NONE
@@ -212,6 +218,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: boolean)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: _col0 (type: boolean)
               Statistics: Num rows: 1 Data size: 167 Basic stats: COMPLETE Column stats: NONE

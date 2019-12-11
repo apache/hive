@@ -82,7 +82,7 @@ Stage-0
                   Group By Operator [GBY_40] (rows=143930993 width=299)
                     Output:["_col0","_col1","_col2"],aggregations:["sum(_col3)"],keys:_col8, _col7
                     Top N Key Operator [TNK_69] (rows=143930993 width=302)
-                      keys:_col8, _col7,sort order:++,top n:100
+                      keys:_col8, _col7,top n:100
                       Select Operator [SEL_39] (rows=143930993 width=302)
                         Output:["_col3","_col7","_col8"]
                         Filter Operator [FIL_38] (rows=143930993 width=302)

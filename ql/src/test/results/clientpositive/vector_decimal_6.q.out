@@ -144,6 +144,7 @@ STAGE PLANS:
               Statistics: Num rows: 27 Data size: 2684 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: decimal(10,5)), _col1 (type: int)
+                null sort order: zz
                 sort order: ++
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator
@@ -263,6 +264,7 @@ STAGE PLANS:
               Statistics: Num rows: 27 Data size: 3132 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: decimal(17,4)), _col1 (type: int)
+                null sort order: zz
                 sort order: ++
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator
@@ -387,6 +389,7 @@ STAGE PLANS:
                 Statistics: Num rows: 54 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(18,5))
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: 54 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
@@ -400,6 +403,7 @@ STAGE PLANS:
                 Statistics: Num rows: 54 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(18,5))
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: 54 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
       Map Vectorization:
@@ -543,6 +547,7 @@ STAGE PLANS:
               Statistics: Num rows: 27 Data size: 3132 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col1 (type: int)
+                null sort order: z
                 sort order: +
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator

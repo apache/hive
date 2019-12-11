@@ -196,6 +196,11 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
         doProcessBatch(batch, (i == 0), allGroupingSetsOverrideIsNulls[i]);
       }
+
+      if (this instanceof ProcessingModeHashAggregate) {
+        // Check if we should turn into streaming mode
+        ((ProcessingModeHashAggregate)this).checkHashModeEfficiency();
+      }
     }
 
     /**
@@ -443,9 +448,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       sumBatchSize += batch.size;
       lastModeCheckRowCount += batch.size;
-
-      // Check if we should turn into streaming mode
-      checkHashModeEfficiency();
     }
 
     @Override

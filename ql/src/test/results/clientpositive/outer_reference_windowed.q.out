@@ -186,6 +186,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  null sort order: 
                   sort order: 
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: decimal(25,2))
@@ -209,6 +210,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: 0 (type: int)
+              null sort order: a
               sort order: +
               Map-reduce partition columns: 0 (type: int)
               Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
@@ -305,6 +307,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+                  null sort order: aa
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
                   Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -330,6 +333,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: decimal(15,2)), _col0 (type: decimal(15,2))
+              null sort order: az
               sort order: ++
               Map-reduce partition columns: _col1 (type: decimal(15,2))
               Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -437,6 +441,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(15,2))
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(15,2))
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
@@ -454,6 +459,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(15,2))
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(15,2))
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
@@ -486,6 +492,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+              null sort order: aa
               sort order: ++
               Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
               Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -511,6 +518,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: decimal(15,2)), _col0 (type: decimal(15,2))
+              null sort order: az
               sort order: ++
               Map-reduce partition columns: _col1 (type: decimal(15,2))
               Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -622,6 +630,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(15,2))
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(15,2))
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
@@ -638,6 +647,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(15,2))
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(15,2))
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
@@ -671,6 +681,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+              null sort order: aa
               sort order: ++
               Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
               Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -696,6 +707,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: decimal(15,2)), _col0 (type: decimal(15,2))
+              null sort order: az
               sort order: ++
               Map-reduce partition columns: _col1 (type: decimal(15,2))
               Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -806,6 +818,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(15,2))
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(15,2))
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
@@ -823,6 +836,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(15,2))
+                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(15,2))
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
@@ -856,6 +870,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+              null sort order: az
               sort order: ++
               Map-reduce partition columns: _col0 (type: decimal(15,2))
               Statistics: Num rows: 2 Data size: 704 Basic stats: COMPLETE Column stats: COMPLETE

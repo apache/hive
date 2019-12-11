@@ -63,11 +63,6 @@ public class CoreParseNegative extends CliAdapter{
             .withCleanupScript(cleanupScript)
             .withLlapIo(false)
             .build());
-
-      qt.newSession();
-      qt.cleanUp();
-      qt.createSources();
-
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -100,6 +95,15 @@ public class CoreParseNegative extends CliAdapter{
       System.err.flush();
       throw new RuntimeException("Unexpected exception in " + reason, e);
     }
+  }
+
+  protected boolean shouldRunCreateScriptBeforeEveryTest() {
+    return true;
+  }
+
+  @Override
+  protected QTestUtil getQt() {
+    return qt;
   }
 
   @Override

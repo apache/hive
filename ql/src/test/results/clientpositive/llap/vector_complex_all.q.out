@@ -756,6 +756,7 @@ STAGE PLANS:
                           1 Map 3
                         Statistics: Num rows: 1 Data size: 3450 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
+                          null sort order: 
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
@@ -795,6 +796,7 @@ STAGE PLANS:
                         projectedOutputColumnNums: []
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkEmptyKeyOperator
@@ -832,6 +834,7 @@ STAGE PLANS:
                         projectedOutputColumnNums: []
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      null sort order: 
                       sort order: 
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkEmptyKeyOperator
@@ -1019,6 +1022,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
+                        null sort order: 
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
@@ -1142,6 +1146,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13503 Data size: 29968544 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: array<string>), _col1 (type: struct<a:string,b:string>)
+                        null sort order: aa
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: array<string>), _col1 (type: struct<a:string,b:string>)
                         Statistics: Num rows: 13503 Data size: 29968544 Basic stats: COMPLETE Column stats: NONE
@@ -1252,6 +1257,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13503 Data size: 4721072 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
@@ -1400,6 +1406,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13503 Data size: 7697400 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
+                        null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
@@ -1531,6 +1538,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13503 Data size: 46492296 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: map<string,string>), _col2 (type: array<string>), _col3 (type: struct<a:string,b:string>)
+                        null sort order: aaaa
                         sort order: ++++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: map<string,string>), _col2 (type: array<string>), _col3 (type: struct<a:string,b:string>)
                         Statistics: Num rows: 13503 Data size: 46492296 Basic stats: COMPLETE Column stats: NONE

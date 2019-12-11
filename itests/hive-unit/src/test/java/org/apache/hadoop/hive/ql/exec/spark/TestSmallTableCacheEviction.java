@@ -104,7 +104,7 @@ public class TestSmallTableCacheEviction {
     return new Driver(new QueryState.Builder()
             .withGenerateNewQueryId(true)
             .withHiveConf(conf).build(),
-            null, null);
+            null);
   }
 
   /**

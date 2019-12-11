@@ -1505,7 +1505,7 @@ public class SessionState {
         Set<String> downloadedValues = new HashSet<String>();
 
         for (URI uri : downloadedURLs) {
-          String resourceValue = uri.toString();
+          String resourceValue = uri.getPath();
           downloadedValues.add(resourceValue);
           localized.add(resourceValue);
           if (reverseResourcePathMap.containsKey(resourceValue)) {

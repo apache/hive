@@ -117,6 +117,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
+                      null sort order: zz
                       sort order: ++
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -242,6 +243,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
+                      null sort order: zz
                       sort order: -+
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -367,6 +369,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: string), _col0 (type: int)
+                      null sort order: zz
                       sort order: ++
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -492,6 +495,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: string), _col0 (type: int)
+                      null sort order: zz
                       sort order: -+
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -617,6 +621,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
+                      null sort order: az
                       sort order: ++
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -742,6 +747,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
+                      null sort order: az
                       sort order: -+
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -867,6 +873,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: string), _col0 (type: int)
+                      null sort order: zz
                       sort order: ++
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -992,6 +999,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: string), _col0 (type: int)
+                      null sort order: zz
                       sort order: -+
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -1117,6 +1125,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
+                      null sort order: zz
                       sort order: +-
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -1242,6 +1251,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: string), _col0 (type: int)
+                      null sort order: zz
                       sort order: --
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -1367,6 +1377,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: string), _col0 (type: int)
+                      null sort order: az
                       sort order: ++
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator

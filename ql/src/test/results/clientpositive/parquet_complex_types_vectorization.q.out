@@ -229,6 +229,7 @@ STAGE PLANS:
                   Statistics: Num rows: 341 Data size: 38920 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Reduce Sink Vectorization:
@@ -279,6 +280,7 @@ STAGE PLANS:
                 native: true
             Reduce Output Operator
               key expressions: _col2 (type: int)
+              null sort order: z
               sort order: +
               Reduce Sink Vectorization:
                   className: VectorReduceSinkOperator
@@ -511,6 +513,7 @@ STAGE PLANS:
                   Statistics: Num rows: 341 Data size: 38921 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Reduce Sink Vectorization:
@@ -561,6 +564,7 @@ STAGE PLANS:
                 native: true
             Reduce Output Operator
               key expressions: _col2 (type: int)
+              null sort order: z
               sort order: +
               Reduce Sink Vectorization:
                   className: VectorReduceSinkOperator
@@ -793,6 +797,7 @@ STAGE PLANS:
                   Statistics: Num rows: 341 Data size: 38923 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Reduce Sink Vectorization:
@@ -843,6 +848,7 @@ STAGE PLANS:
                 native: true
             Reduce Output Operator
               key expressions: _col2 (type: int)
+              null sort order: z
               sort order: +
               Reduce Sink Vectorization:
                   className: VectorReduceSinkOperator
