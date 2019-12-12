@@ -184,7 +184,7 @@ public class PartitionPruner extends Transform {
       return getAllPartsFromCacheOrServer(tab, key, false, prunedPartitionsMap);
     }
 
-    if (!hasColumnExpr(prunerExpr)) {
+    if (!hasColumnExpr(prunerExpr) && !isFalseExpr(prunerExpr)) {
       // If the "strict" mode is on, we have to provide partition pruner for each table.
       String error = StrictChecks.checkNoPartitionFilter(conf);
       if (error != null) {
