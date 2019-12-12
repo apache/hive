@@ -129,7 +129,7 @@ import org.slf4j.LoggerFactory;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.SCHEDULE_KEY, new org.apache.thrift.meta_data.FieldMetaData("scheduleKey", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "ScheduledQueryKey")));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ScheduledQueryKey.class)));
     tmpMap.put(_Fields.EXECUTION_ID, new org.apache.thrift.meta_data.FieldMetaData("executionId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -149,7 +149,7 @@ import org.slf4j.LoggerFactory;
   public ScheduledQueryPollResponse(ScheduledQueryPollResponse other) {
     __isset_bitfield = other.__isset_bitfield;
     if (other.isSetScheduleKey()) {
-      this.scheduleKey = other.scheduleKey;
+      this.scheduleKey = new ScheduledQueryKey(other.scheduleKey);
     }
     this.executionId = other.executionId;
     if (other.isSetQuery()) {
@@ -527,6 +527,9 @@ import org.slf4j.LoggerFactory;
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
+    if (scheduleKey != null) {
+      scheduleKey.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {

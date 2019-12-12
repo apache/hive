@@ -731,9 +731,9 @@ class CreateTableRequest;
 
 class ScheduledQueryPollRequest;
 
-class ScheduledQueryPollResponse;
-
 class ScheduledQueryKey;
+
+class ScheduledQueryPollResponse;
 
 class ScheduledQuery;
 
@@ -14719,6 +14719,51 @@ inline std::ostream& operator<<(std::ostream& out, const ScheduledQueryPollReque
   return out;
 }
 
+
+class ScheduledQueryKey {
+ public:
+
+  ScheduledQueryKey(const ScheduledQueryKey&);
+  ScheduledQueryKey& operator=(const ScheduledQueryKey&);
+  ScheduledQueryKey() : scheduleName(), clusterNamespace() {
+  }
+
+  virtual ~ScheduledQueryKey() throw();
+  std::string scheduleName;
+  std::string clusterNamespace;
+
+  void __set_scheduleName(const std::string& val);
+
+  void __set_clusterNamespace(const std::string& val);
+
+  bool operator == (const ScheduledQueryKey & rhs) const
+  {
+    if (!(scheduleName == rhs.scheduleName))
+      return false;
+    if (!(clusterNamespace == rhs.clusterNamespace))
+      return false;
+    return true;
+  }
+  bool operator != (const ScheduledQueryKey &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ScheduledQueryKey & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ScheduledQueryKey &a, ScheduledQueryKey &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ScheduledQueryKey& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _ScheduledQueryPollResponse__isset {
   _ScheduledQueryPollResponse__isset() : scheduleKey(false), executionId(false), query(false), user(false) {}
   bool scheduleKey :1;
@@ -14786,51 +14831,6 @@ class ScheduledQueryPollResponse {
 void swap(ScheduledQueryPollResponse &a, ScheduledQueryPollResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const ScheduledQueryPollResponse& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-
-class ScheduledQueryKey {
- public:
-
-  ScheduledQueryKey(const ScheduledQueryKey&);
-  ScheduledQueryKey& operator=(const ScheduledQueryKey&);
-  ScheduledQueryKey() : scheduleName(), clusterNamespace() {
-  }
-
-  virtual ~ScheduledQueryKey() throw();
-  std::string scheduleName;
-  std::string clusterNamespace;
-
-  void __set_scheduleName(const std::string& val);
-
-  void __set_clusterNamespace(const std::string& val);
-
-  bool operator == (const ScheduledQueryKey & rhs) const
-  {
-    if (!(scheduleName == rhs.scheduleName))
-      return false;
-    if (!(clusterNamespace == rhs.clusterNamespace))
-      return false;
-    return true;
-  }
-  bool operator != (const ScheduledQueryKey &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ScheduledQueryKey & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(ScheduledQueryKey &a, ScheduledQueryKey &b);
-
-inline std::ostream& operator<<(std::ostream& out, const ScheduledQueryKey& obj)
 {
   obj.printTo(out);
   return out;

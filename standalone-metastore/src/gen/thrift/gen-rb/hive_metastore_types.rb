@@ -5427,6 +5427,26 @@ class ScheduledQueryPollRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class ScheduledQueryKey
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEDULENAME = 1
+  CLUSTERNAMESPACE = 2
+
+  FIELDS = {
+    SCHEDULENAME => {:type => ::Thrift::Types::STRING, :name => 'scheduleName'},
+    CLUSTERNAMESPACE => {:type => ::Thrift::Types::STRING, :name => 'clusterNamespace'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleName is unset!') unless @scheduleName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field clusterNamespace is unset!') unless @clusterNamespace
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class ScheduledQueryPollResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   SCHEDULEKEY = 1
@@ -5444,26 +5464,6 @@ class ScheduledQueryPollResponse
   def struct_fields; FIELDS; end
 
   def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class ScheduledQueryKey
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  SCHEDULENAME = 1
-  CLUSTERNAMESPACE = 2
-
-  FIELDS = {
-    SCHEDULENAME => {:type => ::Thrift::Types::STRING, :name => 'scheduleName'},
-    CLUSTERNAMESPACE => {:type => ::Thrift::Types::STRING, :name => 'clusterNamespace'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleName is unset!') unless @scheduleName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field clusterNamespace is unset!') unless @clusterNamespace
   end
 
   ::Thrift::Struct.generate_accessors self

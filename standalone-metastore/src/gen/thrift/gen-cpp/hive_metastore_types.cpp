@@ -35191,6 +35191,115 @@ void ScheduledQueryPollRequest::printTo(std::ostream& out) const {
 }
 
 
+ScheduledQueryKey::~ScheduledQueryKey() throw() {
+}
+
+
+void ScheduledQueryKey::__set_scheduleName(const std::string& val) {
+  this->scheduleName = val;
+}
+
+void ScheduledQueryKey::__set_clusterNamespace(const std::string& val) {
+  this->clusterNamespace = val;
+}
+
+uint32_t ScheduledQueryKey::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_scheduleName = false;
+  bool isset_clusterNamespace = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->scheduleName);
+          isset_scheduleName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->clusterNamespace);
+          isset_clusterNamespace = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_scheduleName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_clusterNamespace)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t ScheduledQueryKey::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ScheduledQueryKey");
+
+  xfer += oprot->writeFieldBegin("scheduleName", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->scheduleName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("clusterNamespace", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->clusterNamespace);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ScheduledQueryKey &a, ScheduledQueryKey &b) {
+  using ::std::swap;
+  swap(a.scheduleName, b.scheduleName);
+  swap(a.clusterNamespace, b.clusterNamespace);
+}
+
+ScheduledQueryKey::ScheduledQueryKey(const ScheduledQueryKey& other1342) {
+  scheduleName = other1342.scheduleName;
+  clusterNamespace = other1342.clusterNamespace;
+}
+ScheduledQueryKey& ScheduledQueryKey::operator=(const ScheduledQueryKey& other1343) {
+  scheduleName = other1343.scheduleName;
+  clusterNamespace = other1343.clusterNamespace;
+  return *this;
+}
+void ScheduledQueryKey::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ScheduledQueryKey(";
+  out << "scheduleName=" << to_string(scheduleName);
+  out << ", " << "clusterNamespace=" << to_string(clusterNamespace);
+  out << ")";
+}
+
+
 ScheduledQueryPollResponse::~ScheduledQueryPollResponse() throw() {
 }
 
@@ -35319,19 +35428,19 @@ void swap(ScheduledQueryPollResponse &a, ScheduledQueryPollResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
-ScheduledQueryPollResponse::ScheduledQueryPollResponse(const ScheduledQueryPollResponse& other1342) {
-  scheduleKey = other1342.scheduleKey;
-  executionId = other1342.executionId;
-  query = other1342.query;
-  user = other1342.user;
-  __isset = other1342.__isset;
+ScheduledQueryPollResponse::ScheduledQueryPollResponse(const ScheduledQueryPollResponse& other1344) {
+  scheduleKey = other1344.scheduleKey;
+  executionId = other1344.executionId;
+  query = other1344.query;
+  user = other1344.user;
+  __isset = other1344.__isset;
 }
-ScheduledQueryPollResponse& ScheduledQueryPollResponse::operator=(const ScheduledQueryPollResponse& other1343) {
-  scheduleKey = other1343.scheduleKey;
-  executionId = other1343.executionId;
-  query = other1343.query;
-  user = other1343.user;
-  __isset = other1343.__isset;
+ScheduledQueryPollResponse& ScheduledQueryPollResponse::operator=(const ScheduledQueryPollResponse& other1345) {
+  scheduleKey = other1345.scheduleKey;
+  executionId = other1345.executionId;
+  query = other1345.query;
+  user = other1345.user;
+  __isset = other1345.__isset;
   return *this;
 }
 void ScheduledQueryPollResponse::printTo(std::ostream& out) const {
@@ -35341,115 +35450,6 @@ void ScheduledQueryPollResponse::printTo(std::ostream& out) const {
   out << ", " << "executionId="; (__isset.executionId ? (out << to_string(executionId)) : (out << "<null>"));
   out << ", " << "query="; (__isset.query ? (out << to_string(query)) : (out << "<null>"));
   out << ", " << "user="; (__isset.user ? (out << to_string(user)) : (out << "<null>"));
-  out << ")";
-}
-
-
-ScheduledQueryKey::~ScheduledQueryKey() throw() {
-}
-
-
-void ScheduledQueryKey::__set_scheduleName(const std::string& val) {
-  this->scheduleName = val;
-}
-
-void ScheduledQueryKey::__set_clusterNamespace(const std::string& val) {
-  this->clusterNamespace = val;
-}
-
-uint32_t ScheduledQueryKey::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-  bool isset_scheduleName = false;
-  bool isset_clusterNamespace = false;
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->scheduleName);
-          isset_scheduleName = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->clusterNamespace);
-          isset_clusterNamespace = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  if (!isset_scheduleName)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_clusterNamespace)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  return xfer;
-}
-
-uint32_t ScheduledQueryKey::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ScheduledQueryKey");
-
-  xfer += oprot->writeFieldBegin("scheduleName", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString(this->scheduleName);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("clusterNamespace", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->clusterNamespace);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-void swap(ScheduledQueryKey &a, ScheduledQueryKey &b) {
-  using ::std::swap;
-  swap(a.scheduleName, b.scheduleName);
-  swap(a.clusterNamespace, b.clusterNamespace);
-}
-
-ScheduledQueryKey::ScheduledQueryKey(const ScheduledQueryKey& other1344) {
-  scheduleName = other1344.scheduleName;
-  clusterNamespace = other1344.clusterNamespace;
-}
-ScheduledQueryKey& ScheduledQueryKey::operator=(const ScheduledQueryKey& other1345) {
-  scheduleName = other1345.scheduleName;
-  clusterNamespace = other1345.clusterNamespace;
-  return *this;
-}
-void ScheduledQueryKey::printTo(std::ostream& out) const {
-  using ::apache::thrift::to_string;
-  out << "ScheduledQueryKey(";
-  out << "scheduleName=" << to_string(scheduleName);
-  out << ", " << "clusterNamespace=" << to_string(clusterNamespace);
   out << ")";
 }
 

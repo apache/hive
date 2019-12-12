@@ -24241,6 +24241,88 @@ class ScheduledQueryPollRequest:
   def __ne__(self, other):
     return not (self == other)
 
+class ScheduledQueryKey:
+  """
+  Attributes:
+   - scheduleName
+   - clusterNamespace
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'scheduleName', None, None, ), # 1
+    (2, TType.STRING, 'clusterNamespace', None, None, ), # 2
+  )
+
+  def __init__(self, scheduleName=None, clusterNamespace=None,):
+    self.scheduleName = scheduleName
+    self.clusterNamespace = clusterNamespace
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.scheduleName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.clusterNamespace = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ScheduledQueryKey')
+    if self.scheduleName is not None:
+      oprot.writeFieldBegin('scheduleName', TType.STRING, 1)
+      oprot.writeString(self.scheduleName)
+      oprot.writeFieldEnd()
+    if self.clusterNamespace is not None:
+      oprot.writeFieldBegin('clusterNamespace', TType.STRING, 2)
+      oprot.writeString(self.clusterNamespace)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.scheduleName is None:
+      raise TProtocol.TProtocolException(message='Required field scheduleName is unset!')
+    if self.clusterNamespace is None:
+      raise TProtocol.TProtocolException(message='Required field clusterNamespace is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.scheduleName)
+    value = (value * 31) ^ hash(self.clusterNamespace)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class ScheduledQueryPollResponse:
   """
   Attributes:
@@ -24333,88 +24415,6 @@ class ScheduledQueryPollResponse:
     value = (value * 31) ^ hash(self.executionId)
     value = (value * 31) ^ hash(self.query)
     value = (value * 31) ^ hash(self.user)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class ScheduledQueryKey:
-  """
-  Attributes:
-   - scheduleName
-   - clusterNamespace
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'scheduleName', None, None, ), # 1
-    (2, TType.STRING, 'clusterNamespace', None, None, ), # 2
-  )
-
-  def __init__(self, scheduleName=None, clusterNamespace=None,):
-    self.scheduleName = scheduleName
-    self.clusterNamespace = clusterNamespace
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.scheduleName = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.clusterNamespace = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('ScheduledQueryKey')
-    if self.scheduleName is not None:
-      oprot.writeFieldBegin('scheduleName', TType.STRING, 1)
-      oprot.writeString(self.scheduleName)
-      oprot.writeFieldEnd()
-    if self.clusterNamespace is not None:
-      oprot.writeFieldBegin('clusterNamespace', TType.STRING, 2)
-      oprot.writeString(self.clusterNamespace)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.scheduleName is None:
-      raise TProtocol.TProtocolException(message='Required field scheduleName is unset!')
-    if self.clusterNamespace is None:
-      raise TProtocol.TProtocolException(message='Required field clusterNamespace is unset!')
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.scheduleName)
-    value = (value * 31) ^ hash(self.clusterNamespace)
     return value
 
   def __repr__(self):
