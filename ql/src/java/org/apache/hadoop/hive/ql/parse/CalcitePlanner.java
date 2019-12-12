@@ -111,7 +111,6 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
@@ -1571,8 +1570,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     RowResolver hiveRootRR = genRowResolver(hiveRoot, getQB());
     opParseCtx.put(hiveRoot, new OpParseContext(hiveRootRR));
     String dest = getQB().getParseInfo().getClauseNames().iterator().next();
-    if (getQB().getParseInfo().getDestSchemaForClause(dest) != null
-        && this.getQB().getTableDesc() == null) {
+    if (isInsertInto(getQB().getParseInfo(), dest)) {
       Operator<?> selOp = handleInsertStatement(dest, hiveRoot, hiveRootRR, getQB());
       return genFileSinkPlan(dest, getQB(), selOp);
     } else {
@@ -1592,7 +1590,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
     ASTNode selExprList = qb.getParseInfo().getSelForClause(dest);
 
-    RowResolver out_rwsch = handleInsertStatementSpec(colList, dest, inputRR, qb, selExprList);
+    RowResolver rowResolver = createRowResolver(columns);
+    rowResolver = handleInsertStatementSpec(colList, dest, rowResolver, qb, selExprList);
 
     List<String> columnNames = new ArrayList<String>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
@@ -1602,9 +1601,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
       columnNames.add(outputCol);
     }
     Operator<?> output = putOpInsertMap(OperatorFactory.getAndMakeChild(new SelectDesc(colList,
-        columnNames), new RowSchema(out_rwsch.getColumnInfos()), input), out_rwsch);
+        columnNames), new RowSchema(rowResolver.getColumnInfos()), input), rowResolver);
     output.setColumnExprMap(colExprMap);
     return output;
+  }
+
+  private RowResolver createRowResolver(List<ColumnInfo> columnInfos) {
+    RowResolver rowResolver = new RowResolver();
+    int pos = 0;
+    for (ColumnInfo columnInfo : columnInfos) {
+      ColumnInfo newColumnInfo = new ColumnInfo(columnInfo);
+      newColumnInfo.setInternalName(HiveConf.getColumnInternalName(pos++));
+      rowResolver.put(newColumnInfo.getTabAlias(), newColumnInfo.getAlias(), newColumnInfo);
+    }
+
+    return rowResolver;
   }
 
   /***
