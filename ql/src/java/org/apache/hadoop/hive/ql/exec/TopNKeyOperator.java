@@ -24,16 +24,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 import java.io.Serializable;
-import java.util.Comparator;
-import java.util.List;
 
 import static org.apache.hadoop.hive.ql.plan.api.OperatorType.TOPNKEY;
-import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.NullValueOption;
 
 /**
  * TopNKeyOperator passes rows that contains top N keys only.
@@ -53,27 +49,6 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
 
   public TopNKeyOperator(CompilationOpContext ctx) {
     super(ctx);
-  }
-
-  public static class KeyWrapperComparator implements Comparator<KeyWrapper> {
-
-    private final List<Comparator<Object>> comparatorList;
-
-    KeyWrapperComparator(ObjectInspector[] keyObjectInspectors, String columnSortOrder, String nullSortOrder) {
-      boolean[] columnSortOrderIsDesc = new boolean[columnSortOrder.length()];
-      NullValueOption[] nullSortOrderArray = new NullValueOption[nullSortOrder.length()];
-      for (int i = 0; i < columnSortOrder.length(); ++i) {
-        columnSortOrderIsDesc[i] = columnSortOrder.charAt(i) == '-';
-        nullSortOrderArray[i] = NullOrdering.fromSign(nullSortOrder.charAt(i)).getNullValueOption();
-      }
-      comparatorList = ObjectInspectorUtils.getComparator(
-              keyObjectInspectors, keyObjectInspectors, columnSortOrderIsDesc, nullSortOrderArray);
-    }
-
-    @Override
-    public int compare(KeyWrapper key1, KeyWrapper key2) {
-      return ObjectInspectorUtils.compare(comparatorList, key1.getKeyArray(), key2.getKeyArray());
-    }
   }
 
   @Override
@@ -102,8 +77,8 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
       standardKeyObjectInspectors[i] = standardKeyFields[i].initialize(standardObjInspector);
     }
 
-    this.topNKeyFilter = new TopNKeyFilter<>(conf.getTopN(), new TopNKeyOperator.KeyWrapperComparator(
-        standardKeyObjectInspectors, columnSortOrder, nullSortOrder));
+    this.topNKeyFilter = new TopNKeyFilter<>(conf.getTopN(), new KeyWrapperComparator(
+            keyObjectInspectors, standardKeyObjectInspectors, columnSortOrder, nullSortOrder));
 
     KeyWrapperFactory keyWrapperFactory = new KeyWrapperFactory(keyFields, keyObjectInspectors,
         standardKeyObjectInspectors);

@@ -46,6 +46,14 @@ rank(8) WITHIN GROUP (ORDER BY col1)
 from t_test;
 
 select
+rank(4) WITHIN GROUP (ORDER BY col1 nulls first),
+rank(4) WITHIN GROUP (ORDER BY col1 nulls last),
+rank(4) WITHIN GROUP (ORDER BY col1 desc),
+rank(4) WITHIN GROUP (ORDER BY col1 desc nulls first),
+rank(4) WITHIN GROUP (ORDER BY col1 desc nulls last)
+from t_test;
+
+select
 rank(1, 3) WITHIN GROUP (ORDER BY col1, col2),
 rank(2, 3) WITHIN GROUP (ORDER BY col1, col2),
 rank(3, 3) WITHIN GROUP (ORDER BY col1, col2),
