@@ -121,6 +121,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -1775,6 +1776,12 @@ public class TezCompiler extends TaskCompiler {
         } else {
           // This semijoin qualifies, add it to the result set
           if (filterStats != null) {
+            // tsExpr might actually be a ExprNodeFieldDesc and we need to extract the column expression
+            if (tsExpr instanceof ExprNodeFieldDesc) {
+              LOG.info("Unwrapped column expression from ExprNodeFieldDesc");
+              tsExpr = ((ExprNodeFieldDesc)tsExpr).getDesc();
+            }
+
             String colName = ExprNodeDescUtils.getColumnExpr(tsExpr).getColumn();
             // We check whether there was already another SJ over this TS that was selected
             // in previous iteration
