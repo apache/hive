@@ -18,16 +18,12 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
-import static java.util.Comparator.nullsFirst;
-import static java.util.Comparator.nullsLast;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -948,40 +944,37 @@ public final class ObjectInspectorUtils {
     return 0;
   }
 
-  public static List<Comparator<Object>> getComparator(
-          ObjectInspector[] oi1, ObjectInspector[] oi2,
-          boolean[] columnSortOrderIsDesc, NullValueOption[] nullSortOrder) {
-    assert (oi1.length == oi2.length);
-    assert (columnSortOrderIsDesc.length == oi1.length);
-    assert (nullSortOrder.length == oi1.length);
+  public static int compare(Object[] o1, ObjectInspector[] oi1, Object[] o2,
+      ObjectInspector[] oi2, boolean[] columnSortOrderIsDesc, NullValueOption[] nullSortOrder) {
+    assert (o1.length == oi1.length);
+    assert (o2.length == oi2.length);
+    assert (o1.length == o2.length);
+    assert (o1.length == columnSortOrderIsDesc.length);
+    assert (o1.length == nullSortOrder.length);
 
-    List<Comparator<Object>> comparators = new ArrayList<>(oi1.length);
-    for (int i = 0; i < oi1.length; i++) {
-      final int keyIndex = i;
-
-      Comparator<Object> comparator = (o1, o2) -> compare(
-              o1, oi1[keyIndex], o2, oi2[keyIndex]);
+    for (int i = 0; i < o1.length; i++) {
+      int r = compareNull(o1[i], o2[i]);
+      if (r != 0) {
+        return nullSortOrder[i] == NullValueOption.MINVALUE ? -r : r;
+      }
 
       if (columnSortOrderIsDesc[i]) {
-        comparator = comparator.reversed();
-      }
-
-      if (nullSortOrder[i] == NullValueOption.MAXVALUE) {
-        comparators.add(nullsFirst(comparator));
+        r = compare(o2[i], oi2[i], o1[i], oi1[i]);
       } else {
-        comparators.add(nullsLast(comparator));
+        r = compare(o1[i], oi1[i], o2[i], oi2[i]);
+      }
+      if (r != 0) {
+        return r;
       }
     }
-
-    return comparators;
+    return 0;
   }
 
-  public static <T> int compare(List<Comparator<T>> comparatorList, T[] o1, T[] o2) {
-    for (int i = 0; i < comparatorList.size(); ++i) {
-      int c = comparatorList.get(i).compare(o1[i], o2[i]);
-      if (c != 0) {
-        return c;
-      }
+  public static int compareNull(Object o1, Object o2) {
+    if (o1 == null) {
+      return o2 == null ? 0 : 1;
+    } else if (o2 == null) {
+      return -1;
     }
     return 0;
   }

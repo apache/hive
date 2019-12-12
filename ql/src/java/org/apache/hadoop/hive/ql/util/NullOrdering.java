@@ -24,8 +24,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.NullVa
  * Enum for converting different Null ordering description types.
  */
 public enum NullOrdering {
-  NULLS_FIRST(1, HiveParser.TOK_NULLS_FIRST, NullValueOption.MAXVALUE, 'a'),
-  NULLS_LAST(0, HiveParser.TOK_NULLS_LAST, NullValueOption.MINVALUE, 'z');
+  NULLS_FIRST(1, HiveParser.TOK_NULLS_FIRST, NullValueOption.MINVALUE, 'a'),
+  NULLS_LAST(0, HiveParser.TOK_NULLS_LAST, NullValueOption.MAXVALUE, 'z');
 
   NullOrdering(int code, int token, NullValueOption nullValueOption, char sign) {
     this.code = code;
