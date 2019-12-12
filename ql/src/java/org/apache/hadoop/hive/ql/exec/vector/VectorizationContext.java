@@ -637,6 +637,28 @@ import com.google.common.annotations.VisibleForTesting;
     udfsNeedingImplicitDecimalCast.add(UDFOPLongDivide.class);
   }
 
+  private static final long[] POWEROFTENTABLE = {
+      1L,                   // 0
+      10L,
+      100L,
+      1000L,
+      10000L,
+      100000L,
+      1000000L,
+      10000000L,
+      100000000L,           // 8
+      1000000000L,
+      10000000000L,
+      100000000000L,
+      1000000000000L,
+      10000000000000L,
+      100000000000000L,
+      1000000000000000L,
+      10000000000000000L,   // 16
+      100000000000000000L,
+      1000000000000000000L, // 18
+  };
+
   protected boolean needsImplicitCastForDecimal(GenericUDF udf) {
     Class<?> udfClass = udf.getClass();
     if (udf instanceof GenericUDFBridge) {
@@ -1663,7 +1685,6 @@ import com.google.common.annotations.VisibleForTesting;
 
       GenericUDF udf = ((ExprNodeGenericFuncDesc) exprNodeDesc).getGenericUDF();
       Class<?> udfClass = udf.getClass();
-
       // We have a class-level annotation that says whether the UDF's vectorization expressions
       // support Decimal64.
       VectorizedExpressionsSupportDecimal64 annotation =
@@ -1724,6 +1745,7 @@ import com.google.common.annotations.VisibleForTesting;
     boolean isDecimal64ScaleEstablished = false;
     int decimal64ColumnScale = 0;
     boolean hasConstants = false;
+    boolean scaleMismatch = false;
 
     for (int i = 0; i < numChildren; i++) {
       ExprNodeDesc childExpr = childExprs.get(i);
@@ -1742,11 +1764,12 @@ import com.google.common.annotations.VisibleForTesting;
           childExpr instanceof ExprNodeColumnDesc) {
         if (isExprDecimal64) {
           DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
-          if (!isDecimal64ScaleEstablished) {
+          if (decimalTypeInfo.getScale() != decimal64ColumnScale && i > 0) {
+            scaleMismatch = true;
+          }
+          if (decimalTypeInfo.getScale() >= decimal64ColumnScale) {
             decimal64ColumnScale = decimalTypeInfo.getScale();
             isDecimal64ScaleEstablished = true;
-          } else if (decimalTypeInfo.getScale() != decimal64ColumnScale) {
-            return null;
           }
         }
         builder.setInputExpressionType(i, InputExpressionType.COLUMN);
@@ -1805,7 +1828,7 @@ import com.google.common.annotations.VisibleForTesting;
       returnDataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
     }
 
-    if(dontRescaleArguments && hasConstants) {
+    if (dontRescaleArguments && hasConstants) {
       builder.setUnscaled(true);
     }
     VectorExpressionDescriptor.Descriptor descriptor = builder.build();
@@ -1816,6 +1839,45 @@ import com.google.common.annotations.VisibleForTesting;
     }
 
     VectorExpressionDescriptor.Mode childrenMode = getChildrenMode(mode, udfClass);
+
+    // Rewrite the operand with smaller scale, so we can process Decimal64 operations
+    // on all the arithmetic and comparison operations.
+    if (scaleMismatch && !hasConstants &&
+        (genericUdf instanceof GenericUDFBaseArithmetic
+        || genericUdf instanceof GenericUDFBaseCompare)) {
+      ExprNodeDesc left = childExprs.get(0);
+      ExprNodeDesc right = childExprs.get(1);
+      DecimalTypeInfo leftTypeInfo = (DecimalTypeInfo)left.getTypeInfo();
+      DecimalTypeInfo rightTypeInfo = (DecimalTypeInfo)right.getTypeInfo();
+      int leftScale = leftTypeInfo.getScale();
+      int rightScale = rightTypeInfo.getScale();
+      int leftPrecision = leftTypeInfo.precision();
+      int rightPrecision = rightTypeInfo.precision();
+      ExprNodeDesc newConstant;
+      List<ExprNodeDesc> children = new ArrayList<>();
+      DecimalTypeInfo resultTypeInfo;
+      int childIndexToRewrite = -1;
+      if (leftScale < rightScale) {
+        newConstant = new ExprNodeConstantDesc(new DecimalTypeInfo(rightScale - leftScale, 0),
+            HiveDecimal.create(POWEROFTENTABLE[rightScale - leftScale]));
+        children.add(childExprs.get(0));
+        childIndexToRewrite = 0;
+        resultTypeInfo = new DecimalTypeInfo(leftPrecision + rightScale - leftScale,
+            rightScale);
+      } else {
+        newConstant = new ExprNodeConstantDesc(new DecimalTypeInfo(leftScale - rightScale, 0),
+            HiveDecimal.create(POWEROFTENTABLE[leftScale - rightScale]));
+        childIndexToRewrite = 1;
+        resultTypeInfo = new DecimalTypeInfo(rightPrecision + leftScale - rightScale,
+            leftScale);
+      }
+      children.add(childExprs.get(childIndexToRewrite));
+      children.add(newConstant);
+      ExprNodeGenericFuncDesc newScaledExpr = new ExprNodeGenericFuncDesc(resultTypeInfo,
+          new GenericUDFOPScaleUpDecimal64(), " ScaleUp ", children);
+      childExprs.remove(childIndexToRewrite);
+      childExprs.add(childIndexToRewrite, newScaledExpr);
+    }
 
     return createDecimal64VectorExpression(
         vectorClass, childExprs, childrenMode,
