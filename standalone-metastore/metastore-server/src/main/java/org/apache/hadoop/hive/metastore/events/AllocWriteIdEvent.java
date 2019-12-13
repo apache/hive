@@ -36,6 +36,10 @@ public class AllocWriteIdEvent extends ListenerEvent {
   private final String tableName;
   private final String dbName;
 
+  public AllocWriteIdEvent(List<TxnToWriteId> txnToWriteIdList, String dbName, String tableName) {
+    this(txnToWriteIdList, dbName, tableName, null);
+  }
+
   public AllocWriteIdEvent(List<TxnToWriteId> txnToWriteIdList, String dbName, String tableName, IHMSHandler handler) {
     super(true, handler);
     this.txnToWriteIdList = txnToWriteIdList;
