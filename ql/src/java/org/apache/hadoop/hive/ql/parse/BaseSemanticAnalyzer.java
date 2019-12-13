@@ -64,9 +64,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -85,7 +83,6 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
@@ -689,108 +686,6 @@ public abstract class BaseSemanticAnalyzer {
       throws SemanticException {
     return getColumns(ast, lowerCase, null, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
             new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), conf);
-  }
-
-  // given an ast node this method recursively goes over checkExpr ast. If it finds a node of type TOK_SUBQUERY_EXPR
-  // it throws an error.
-  // This method is used to validate check expression since check expression isn't allowed to have subquery
-  private static void validateCheckExprAST(ASTNode checkExpr) throws SemanticException {
-    if(checkExpr == null) {
-      return;
-    }
-    if(checkExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
-      throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Subqueries are not allowed "
-                                                                          + "in Check Constraints"));
-    }
-    for(int i=0; i<checkExpr.getChildCount(); i++) {
-      validateCheckExprAST((ASTNode)checkExpr.getChild(i));
-    }
-  }
-  // recursively go through expression and make sure the following:
-  // * If expression is UDF it is not permanent UDF
-  private static void validateCheckExpr(ExprNodeDesc checkExpr) throws SemanticException {
-    if(checkExpr instanceof ExprNodeGenericFuncDesc){
-      ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc)checkExpr;
-      boolean isBuiltIn = FunctionRegistry.isBuiltInFuncExpr(funcDesc);
-      boolean isPermanent = FunctionRegistry.isPermanentFunction(funcDesc);
-      if(!isBuiltIn && !isPermanent) {
-        throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Temporary UDFs are not allowed "
-                                                                            + "in Check Constraints"));
-      }
-
-      if(FunctionRegistry.impliesOrder(funcDesc.getFuncText())) {
-        throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Window functions are not allowed "
-                                                                            + "in Check Constraints"));
-      }
-    }
-    if(checkExpr.getChildren() == null) {
-      return;
-    }
-    for(ExprNodeDesc childExpr:checkExpr.getChildren()){
-      validateCheckExpr(childExpr);
-    }
-  }
-
-  public static void validateCheckConstraint(List<FieldSchema> cols, List<SQLCheckConstraint> checkConstraints,
-                                             Configuration conf)
-  throws SemanticException{
-
-    // create colinfo and then row resolver
-    RowResolver rr = new RowResolver();
-    for(FieldSchema col: cols) {
-      ColumnInfo ci = new ColumnInfo(col.getName(),TypeInfoUtils.getTypeInfoFromTypeString(col.getType()),
-                                     null, false);
-      rr.put(null, col.getName(), ci);
-    }
-
-    TypeCheckCtx typeCheckCtx = new TypeCheckCtx(rr);
-    // TypeCheckProcFactor expects typecheckctx to have unparse translator
-    UnparseTranslator unparseTranslator = new UnparseTranslator(conf);
-    typeCheckCtx.setUnparseTranslator(unparseTranslator);
-    for(SQLCheckConstraint cc:checkConstraints) {
-      try {
-        ParseDriver parseDriver = new ParseDriver();
-        ASTNode checkExprAST = parseDriver.parseExpression(cc.getCheck_expression());
-        validateCheckExprAST(checkExprAST);
-        Map<ASTNode, ExprNodeDesc> genExprs = TypeCheckProcFactory
-            .genExprNode(checkExprAST, typeCheckCtx);
-        ExprNodeDesc checkExpr = genExprs.get(checkExprAST);
-        if(checkExpr == null) {
-          throw new SemanticException(
-              ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid type for CHECK constraint: ")
-                  + cc.getCheck_expression());
-        }
-        if(checkExpr.getTypeInfo().getTypeName() != serdeConstants.BOOLEAN_TYPE_NAME) {
-          throw new SemanticException(
-              ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Only boolean type is supported for CHECK constraint: ")
-                  + cc.getCheck_expression() + ". Found: " + checkExpr.getTypeInfo().getTypeName());
-        }
-        validateCheckExpr(checkExpr);
-      } catch(Exception e) {
-        throw new SemanticException(
-            ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid CHECK constraint expression: ")
-                + cc.getCheck_expression() + ". " + e.getMessage(), e);
-      }
-    }
-  }
-
-  protected boolean hasEnabledOrValidatedConstraints(List<SQLNotNullConstraint> notNullConstraints,
-                                                     List<SQLDefaultConstraint> defaultConstraints,
-                                                     List<SQLCheckConstraint> checkConstraints){
-    if(notNullConstraints != null) {
-      for (SQLNotNullConstraint nnC : notNullConstraints) {
-        if (nnC.isEnable_cstr() || nnC.isValidate_cstr()) {
-          return true;
-        }
-      }
-    }
-    if(defaultConstraints!= null && !defaultConstraints.isEmpty()) {
-          return true;
-    }
-    if(checkConstraints!= null && !checkConstraints.isEmpty()) {
-          return true;
-    }
-    return false;
   }
 
   public static void checkColumnName(String columnName) throws SemanticException {

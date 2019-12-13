@@ -16,5 +16,5 @@
  * limitations under the License.
  */
 
-/** Table column related DDL operation descriptions and operations. */
-package org.apache.hadoop.hive.ql.ddl.table.column;
+/** Add columns DDL operation. */
+package org.apache.hadoop.hive.ql.ddl.table.column.add;

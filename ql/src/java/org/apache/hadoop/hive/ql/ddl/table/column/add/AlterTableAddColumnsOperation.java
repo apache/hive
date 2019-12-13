@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.column;
+package org.apache.hadoop.hive.ql.ddl.table.column.add;
 
 import java.util.List;
 
