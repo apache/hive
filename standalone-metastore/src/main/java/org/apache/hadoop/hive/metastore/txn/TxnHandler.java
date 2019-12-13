@@ -3822,13 +3822,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         break;
       case MYSQL:
       case POSTGRES:
-        condition = expr + " => current_timestamp - interval '" + interval + "' second";
+        condition = expr + " >= current_timestamp - interval '" + interval + "' second";
         break;
       case SQLSERVER:
         condition = "DATEDIFF(second, " + expr + ", current_timestamp) <= " + interval;
         break;
       case ORACLE:
-        condition = expr + " => current_timestamp - numtodsinterval(" + interval + " , 'second')";
+        condition = expr + " >= current_timestamp - numtodsinterval(" + interval + " , 'second')";
         break;
       default:
         String msg = "Unknown database product: " + dbProduct.toString();
