@@ -7,7 +7,7 @@ set hive.explain.user=false;
 set hive.merge.cardinality.check=true;
 
 drop table if exists srcpart_acid;
-CREATE TABLE srcpart_acid (key STRING, value STRING) PARTITIONED BY (ds STRING, hr STRING) stored as ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default');
+CREATE TABLE srcpart_acid (key STRING, value STRING) PARTITIONED BY (ds STRING, hr STRING) clustered by (key) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default');
 insert into srcpart_acid PARTITION (ds, hr) select * from srcpart;
 insert into srcpart_acid PARTITION (ds, hr) select * from srcpart;
 
