@@ -16,27 +16,43 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.column;
+package org.apache.hadoop.hive.ql.ddl.table.column.add;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for ALTER TABLE ... UPDATE COLUMNS ... commands.
+ * DDL task description for ALTER TABLE ... ADD COLUMNS ... commands.
  */
-@Explain(displayName = "Update Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableUpdateColumnsDesc extends AbstractAlterTableDesc {
+@Explain(displayName = "Add Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterTableAddColumnsDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
-  public AlterTableUpdateColumnsDesc(TableName tableName, Map<String, String> partitionSpec, boolean isCascade)
-      throws SemanticException {
-    super(AlterTableType.UPDATE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
+  private final List<FieldSchema> newColumns;
+
+  public AlterTableAddColumnsDesc(TableName tableName, Map<String, String> partitionSpec, boolean isCascade,
+      List<FieldSchema> newColumns) throws SemanticException {
+    super(AlterTableType.ADDCOLS, tableName, partitionSpec, null, isCascade, false, null);
+    this.newColumns = newColumns;
+  }
+
+  public List<FieldSchema> getNewColumns() {
+    return newColumns;
+  }
+
+  // Only for explain
+  @Explain(displayName = "new columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public List<String> getNewColsString() {
+    return Utilities.getFieldSchemaString(newColumns);
   }
 
   @Override
