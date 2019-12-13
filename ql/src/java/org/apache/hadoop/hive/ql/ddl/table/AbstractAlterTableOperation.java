@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -88,7 +87,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
       throws HiveException {
     List<Partition> partitions = null;
     if (partSpec != null) {
-      if (DDLSemanticAnalyzer.isFullSpec(tbl, partSpec)) {
+      if (AlterTableUtils.isFullPartitionSpec(tbl, partSpec)) {
         partitions = new ArrayList<Partition>();
         Partition part = context.getDb().getPartition(tbl, partSpec, false);
         if (part == null) {
