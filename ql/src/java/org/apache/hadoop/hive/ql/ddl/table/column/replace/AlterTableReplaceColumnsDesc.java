@@ -15,8 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.hadoop.hive.ql.ddl.table.column;
+package org.apache.hadoop.hive.ql.ddl.table.column.replace;
 
 import java.util.List;
 import java.util.Map;
@@ -31,17 +30,17 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for ALTER TABLE ... ADD COLUMNS ... commands.
+ * DDL task description for ALTER TABLE ... REPLACE COLUMNS ... commands.
  */
-@Explain(displayName = "Add Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableAddColumnsDesc extends AbstractAlterTableDesc {
+@Explain(displayName = "Replace Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterTableReplaceColumnsDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
   private final List<FieldSchema> newColumns;
 
-  public AlterTableAddColumnsDesc(TableName tableName, Map<String, String> partitionSpec, boolean isCascade,
+  public AlterTableReplaceColumnsDesc(TableName tableName, Map<String, String> partitionSpec, boolean isCascade,
       List<FieldSchema> newColumns) throws SemanticException {
-    super(AlterTableType.ADDCOLS, tableName, partitionSpec, null, isCascade, false, null);
+    super(AlterTableType.REPLACE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
     this.newColumns = newColumns;
   }
 

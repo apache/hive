@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.column;
+package org.apache.hadoop.hive.ql.ddl.table.column.show;
 
 import java.io.Serializable;
 
@@ -37,10 +37,6 @@ public class ShowColumnsDesc implements DDLDesc, Serializable {
   private final String resFile;
   private final String tableName;
   private final String pattern;
-
-  public ShowColumnsDesc(Path resFile, String tableName) {
-    this(resFile, tableName, null);
-  }
 
   public ShowColumnsDesc(Path resFile, String tableName, String pattern) {
     this.resFile = resFile.toString();
