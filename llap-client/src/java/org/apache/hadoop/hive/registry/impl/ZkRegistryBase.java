@@ -456,7 +456,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       byte[] data = getWorkerData(childData, workerNodePrefix);
       if (data == null) continue;
       String nodeName = extractNodeName(childData);
-      if (!nodeName.startsWith(workerNodePrefix)) continue;
+      if (!isLlapWorker(nodeName, workerNodePrefix)) continue;
       int ephSeqVersion = extractSeqNum(nodeName);
       try {
         ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
@@ -474,13 +474,17 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     }
   }
 
+  private static boolean isLlapWorker(String nodeName, String workerNodePrefix) {
+    return nodeName.startsWith(workerNodePrefix) && nodeName.length() > workerNodePrefix.length();
+  }
+
   protected abstract InstanceType createServiceInstance(ServiceRecord srv) throws IOException;
 
   protected static byte[] getWorkerData(ChildData childData, String workerNodePrefix) {
     if (childData == null) return null;
     byte[] data = childData.getData();
     if (data == null) return null;
-    if (!extractNodeName(childData).startsWith(workerNodePrefix)) return null;
+    if (!isLlapWorker(extractNodeName(childData), workerNodePrefix)) return null;
     return data;
   }
 
@@ -496,7 +500,10 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         ChildData childData = event.getData();
         if (childData == null) return;
         String nodeName = extractNodeName(childData);
-        if (!nodeName.startsWith(workerNodePrefix)) return;
+        if (nodeName.equals(workerNodePrefix)) {
+          LOG.warn("Invalid LLAP worker node name: {} was {}", childData.getPath(), event.getType());
+        }
+        if (!isLlapWorker(nodeName, workerNodePrefix)) return;
         LOG.info("{} for zknode {}", event.getType(), childData.getPath());
         InstanceType instance = extractServiceInstance(event, childData);
         if (instance != null) {
@@ -656,7 +663,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
   private int extractSeqNum(String nodeName) {
     // Extract the sequence number of this ephemeral-sequential znode.
-    String ephSeqVersionStr = nodeName.substring(workerNodePrefix.length() + 1);
+    String ephSeqVersionStr = nodeName.substring(workerNodePrefix.length());
     try {
       return Integer.parseInt(ephSeqVersionStr);
     } catch (NumberFormatException e) {
