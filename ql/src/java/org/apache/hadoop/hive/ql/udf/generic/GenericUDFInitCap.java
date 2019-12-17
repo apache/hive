@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.WordUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;

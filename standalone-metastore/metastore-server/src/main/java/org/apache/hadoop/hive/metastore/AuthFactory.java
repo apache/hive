@@ -24,7 +24,7 @@ import java.util.HashMap;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.AuthenticationException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;

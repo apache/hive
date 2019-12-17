@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2.teradata;
 
 import org.apache.commons.io.EndianUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;

@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -65,9 +65,9 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -153,7 +153,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     HOSTNAME = hostname;
     String user = System.getenv("USER");
-    USER = org.apache.commons.lang.StringUtils.defaultString(user, "UNKNOWN");
+    USER = org.apache.commons.lang3.StringUtils.defaultString(user, "UNKNOWN");
   }
 
 
@@ -270,7 +270,7 @@ public class ObjectStore implements RawStore, Configurable {
       expressionProxy = createExpressionProxy(conf);
       if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
         String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
-        schema = org.apache.commons.lang.StringUtils.defaultIfBlank(schema, null);
+        schema = org.apache.commons.lang3.StringUtils.defaultIfBlank(schema, null);
         directSql = new MetaStoreDirectSql(pm, conf, schema);
       }
     }
@@ -386,7 +386,7 @@ public class ObjectStore implements RawStore, Configurable {
   private static void configureSSLDeprecated(Configuration conf) {
     // SSL support
     String sslPropString = MetastoreConf.getVar(conf, ConfVars.DBACCESS_SSL_PROPS);
-    if (org.apache.commons.lang.StringUtils.isNotEmpty(sslPropString)) {
+    if (org.apache.commons.lang3.StringUtils.isNotEmpty(sslPropString)) {
       LOG.warn("Configuring SSL using a deprecated key " + ConfVars.DBACCESS_SSL_PROPS.toString() +
               ". This may be removed in the future. See HIVE-20992 for more details.");
       LOG.info("Metastore setting SSL properties of the connection to backend DB");
@@ -542,10 +542,10 @@ public class ObjectStore implements RawStore, Configurable {
     boolean committed = false;
     try {
       MCatalog mCat = getMCatalog(catName);
-      if (org.apache.commons.lang.StringUtils.isNotBlank(cat.getLocationUri())) {
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(cat.getLocationUri())) {
         mCat.setLocationUri(cat.getLocationUri());
       }
-      if (org.apache.commons.lang.StringUtils.isNotBlank(cat.getDescription())) {
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(cat.getDescription())) {
         mCat.setDescription(cat.getDescription());
       }
       openTransaction();
@@ -753,7 +753,7 @@ public class ObjectStore implements RawStore, Configurable {
     db.setLocationUri(mdb.getLocationUri());
     db.setParameters(convertMap(mdb.getParameters()));
     db.setOwnerName(mdb.getOwnerName());
-    String type = org.apache.commons.lang.StringUtils.defaultIfBlank(mdb.getOwnerType(), null);
+    String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getOwnerType(), null);
     PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
     db.setOwnerType(principalType);
     db.setCatalogName(catName);
@@ -780,10 +780,10 @@ public class ObjectStore implements RawStore, Configurable {
       if (db.getOwnerType() != null) {
         mdb.setOwnerType(db.getOwnerType().name());
       }
-      if (org.apache.commons.lang.StringUtils.isNotBlank(db.getDescription())) {
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(db.getDescription())) {
         mdb.setDescription(db.getDescription());
       }
-      if (org.apache.commons.lang.StringUtils.isNotBlank(db.getLocationUri())) {
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(db.getLocationUri())) {
         mdb.setLocationUri(db.getLocationUri());
       }
       openTransaction();
@@ -1713,7 +1713,7 @@ public class ObjectStore implements RawStore, Configurable {
         dbExistsQuery.setUnique(true);
         dbExistsQuery.setResult("name");
         String dbNameIfExists = (String) dbExistsQuery.execute(db, catName);
-        if (org.apache.commons.lang.StringUtils.isEmpty(dbNameIfExists)) {
+        if (org.apache.commons.lang3.StringUtils.isEmpty(dbNameIfExists)) {
           throw new UnknownDBException("Could not find database " +
               DatabaseName.getQualified(catName, db));
         }
@@ -3780,7 +3780,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public int getNumPartitionsByFilter(String catName, String dbName, String tblName,
                                       String filter) throws MetaException, NoSuchObjectException {
-    final ExpressionTree exprTree = org.apache.commons.lang.StringUtils.isNotEmpty(filter)
+    final ExpressionTree exprTree = org.apache.commons.lang3.StringUtils.isNotEmpty(filter)
         ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
 
     return new GetHelper<Integer>(catName, dbName, tblName, true, true) {
@@ -9122,7 +9122,7 @@ public class ObjectStore implements RawStore, Configurable {
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean ret = false;
     Query query = null;
-    dbName = org.apache.commons.lang.StringUtils.defaultString(dbName,
+    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
       Warehouse.DEFAULT_DATABASE_NAME);
     catName = normalizeIdentifier(catName);
     if (tableName == null) {
@@ -9225,7 +9225,7 @@ public class ObjectStore implements RawStore, Configurable {
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean ret = false;
     Query query = null;
-    dbName = org.apache.commons.lang.StringUtils.defaultString(dbName,
+    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
       Warehouse.DEFAULT_DATABASE_NAME);
     if (tableName == null) {
       throw new InvalidInputException("Table name is null.");

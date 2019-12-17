@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
 import java.sql.SQLException;
