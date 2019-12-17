@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
 
 public class ReplicationState implements Serializable {
 
