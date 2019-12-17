@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.partition;
+package org.apache.hadoop.hive.ql.ddl.table.partition.drop;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,8 +101,10 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
 
   private void dropPartitions() throws HiveException {
     // ifExists is currently verified in DDLSemanticAnalyzer
+    PartitionDropOptions options =
+        PartitionDropOptions.instance().deleteData(true).ifExists(true).purgeData(desc.getIfPurge());
     List<Partition> droppedParts = context.getDb().dropPartitions(desc.getTableName(), desc.getPartSpecs(),
-        PartitionDropOptions.instance().deleteData(true).ifExists(true).purgeData(desc.getIfPurge()));
+        options);
     for (Partition partition : droppedParts) {
       context.getConsole().printInfo("Dropped the partition " + partition.getName());
       // We have already locked the table, don't lock the partitions.

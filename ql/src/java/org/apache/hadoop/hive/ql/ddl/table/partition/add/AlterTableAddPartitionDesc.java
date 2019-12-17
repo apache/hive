@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.partition;
+package org.apache.hadoop.hive.ql.ddl.table.partition.add;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -209,7 +209,7 @@ public class AlterTableAddPartitionDesc implements DDLDesc, Serializable {
     addPartition(partSpec, location, null);
   }
 
-  private void addPartition(
+  public void addPartition(
       Map<String, String> partSpec, String location, Map<String, String> params) {
     if (this.partitions == null) {
       this.partitions = new ArrayList<PartitionDesc>();

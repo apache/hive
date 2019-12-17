@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.function.AbstractFunctionAnalyzer;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -50,7 +51,7 @@ public class CacheMetadataAnalyzer extends AbstractFunctionAnalyzer {
     // In 2 cases out of 3, we could pass the path and type directly to metastore...
     if (AnalyzeCommandUtils.isPartitionLevelStats(root)) {
       Map<String, String> partSpec = AnalyzeCommandUtils.getPartKeyValuePairsFromAST(table, root, conf);
-      Partition part = getPartition(table, partSpec, true);
+      Partition part = PartitionUtils.getPartition(db, table, partSpec, true);
       desc = new CacheMetadataDesc(table.getDbName(), table.getTableName(), part.getName());
       inputs.add(new ReadEntity(part));
     } else {

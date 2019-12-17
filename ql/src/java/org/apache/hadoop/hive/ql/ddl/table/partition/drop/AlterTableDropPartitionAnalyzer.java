@@ -16,21 +16,24 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table;
+package org.apache.hadoop.hive.ql.ddl.table.partition.drop;
 
-import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLSemanticAnalyzerCategory;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Alter Table category helper. It derives the actual type of the command from the root element, by selecting the type
- * of the second child, as the Alter Table commands have this structure: tableName command partitionSpec?
+ * Analyzer for drop partition commands for tables.
  */
-@DDLType(type=HiveParser.TOK_ALTERTABLE)
-public class AlterTableAnalyzerCategory implements DDLSemanticAnalyzerCategory {
+@DDLType(type=HiveParser.TOK_ALTERTABLE_DROPPARTS)
+public class AlterTableDropPartitionAnalyzer extends AbstractDropPartitionAnalyzer {
+  public AlterTableDropPartitionAnalyzer(QueryState queryState) throws SemanticException {
+    super(queryState);
+  }
+
   @Override
-  public int getType(ASTNode root) {
-    return root.getChild(1).getType();
+  protected boolean expectView() {
+    return false;
   }
 }

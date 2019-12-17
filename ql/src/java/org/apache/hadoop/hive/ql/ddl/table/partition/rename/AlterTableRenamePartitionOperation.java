@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.partition;
+package org.apache.hadoop.hive.ql.ddl.table.partition.rename;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -26,13 +26,13 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 
@@ -58,8 +58,7 @@ public class AlterTableRenamePartitionOperation extends DDLOperation<AlterTableR
       return 0;
     }
 
-    String[] names = Utilities.getDbTableName(tableName);
-    if (Utils.isBootstrapDumpInProgress(context.getDb(), names[0])) {
+    if (Utils.isBootstrapDumpInProgress(context.getDb(), HiveTableName.of(tableName).getDb())) {
       LOG.error("DDLTask: Rename Partition not allowed as bootstrap dump in progress");
       throw new HiveException("Rename Partition: Not allowed as bootstrap dump in progress");
     }
