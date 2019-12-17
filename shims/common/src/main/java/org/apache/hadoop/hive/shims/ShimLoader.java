@@ -70,9 +70,9 @@ public abstract class ShimLoader {
 
   static {
     HADOOP_THRIFT_AUTH_BRIDGE_CLASSES.put(HADOOP3VERSIONNAME,
-        "org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge23");
+        "org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge23");
     HADOOP_THRIFT_AUTH_BRIDGE_CLASSES.put(HADOOP2VERSIONNAME,
-            "org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge23");
+        "org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge23");
   }
 
 
