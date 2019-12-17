@@ -22,10 +22,8 @@ import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,7 +32,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.antlr.runtime.tree.CommonTree;
-import org.antlr.runtime.tree.Tree;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -50,7 +47,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
@@ -72,12 +68,7 @@ import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableTouchDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableUnsetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.TruncateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAlterPartitionDesc;
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableDropPartitionDesc;
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableExchangePartitionsDesc;
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableRenamePartitionDesc;
-import org.apache.hadoop.hive.ql.ddl.table.partition.ShowPartitionsDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableArchiveDesc;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableClusteredByDesc;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableCompactDesc;
@@ -95,7 +86,6 @@ import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSkewedByDesc;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableUnarchiveDesc;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsUpdateTask;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -112,7 +102,6 @@ import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -120,10 +109,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -133,23 +118,15 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.ValidationUtility;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 
 /**
  * DDLSemanticAnalyzer.
@@ -159,7 +136,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Logger LOG = LoggerFactory.getLogger(DDLSemanticAnalyzer.class);
   private static final Map<Integer, String> TokenToTypeName = new HashMap<Integer, String>();
 
-  private final Set<String> reservedPartitionValues;
   // Equivalent to acidSinks, but for DDL operations that change data.
   private DDLDescWithWriteId ddlDescWithWriteId;
 
@@ -223,14 +199,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public DDLSemanticAnalyzer(QueryState queryState, Hive db) throws SemanticException {
     super(queryState, db);
-    reservedPartitionValues = new HashSet<String>();
-    // Partition can't have this name
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
-    // Partition value can't end in this suffix
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
   }
 
   @Override
@@ -265,12 +233,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableArchive(tName, ast, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_UNARCHIVE) {
         analyzeAlterTableArchive(tName, ast, true);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_ADDPARTS) {
-        analyzeAlterTableAddParts(tName, ast, false);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS) {
-        analyzeAlterTableDropParts(tName, ast, false);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_PARTCOLTYPE) {
-        analyzeAlterTablePartColType(tName, ast);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_PROPERTIES) {
         analyzeAlterTableProps(tName, null, ast, false, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_DROPPROPERTIES) {
@@ -280,8 +242,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableProps(tName, partSpec, ast, false, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_SKEWED) {
         analyzeAlterTableSkewedby(tName, ast);
-      } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_EXCHANGEPARTITION) {
-        analyzeExchangePartition(tName, ast);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT ||
           ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_FILEFORMAT) {
         analyzeAlterTableFileFormat(ast, tName, partSpec);
@@ -297,8 +257,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES ||
           ast.getToken().getType() == HiveParser.TOK_ALTERPARTITION_SERDEPROPERTIES) {
         analyzeAlterTableSerdeProps(ast, tName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAMEPART) {
-        analyzeAlterTableRenamePart(ast, tName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SKEWED_LOCATION) {
         analyzeAlterTableSkewedLocation(ast, tName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_BUCKETS ||
@@ -358,19 +316,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableProps(tName, null, ast, true, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_DROPPROPERTIES) {
         analyzeAlterTableProps(tName, null, ast, true, true);
-      } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_ADDPARTS) {
-        analyzeAlterTableAddParts(tName, ast, true);
-      } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_DROPPARTS) {
-        analyzeAlterTableDropParts(tName, ast, true);
       } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_RENAME) {
         analyzeAlterTableRename(tName, ast, true);
       }
       break;
     }
-    case HiveParser.TOK_SHOWPARTITIONS:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowPartitions(ast);
-      break;
     case HiveParser.TOK_LOCKTABLE:
       analyzeLockTable(ast);
       break;
@@ -426,81 +376,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(cStatsUpdateTask);
   }
 
-  private void analyzeExchangePartition(TableName tName, ASTNode ast) throws SemanticException {
-    Table destTable = getTable(tName);
-    Table sourceTable = getTable(getUnescapedName((ASTNode)ast.getChild(1)));
-
-    // Get the partition specs
-    Map<String, String> partSpecs = getValidatedPartSpec(sourceTable, (ASTNode)ast.getChild(0), conf, false);
-    validatePartitionValues(partSpecs);
-    boolean sameColumns = MetaStoreUtils.compareFieldColumns(
-        destTable.getAllCols(), sourceTable.getAllCols());
-    boolean samePartitions = MetaStoreUtils.compareFieldColumns(
-        destTable.getPartitionKeys(), sourceTable.getPartitionKeys());
-    if (!sameColumns || !samePartitions) {
-      throw new SemanticException(ErrorMsg.TABLES_INCOMPATIBLE_SCHEMAS.getMsg());
-    }
-
-    // Exchange partition is not allowed with transactional tables.
-    // If only source is transactional table, then target will see deleted rows too as no snapshot
-    // isolation applicable for non-acid tables.
-    // If only target is transactional table, then data would be visible to all ongoing transactions
-    // affecting the snapshot isolation.
-    // If both source and targets are transactional tables, then target partition may have delta/base
-    // files with write IDs may not be valid. It may affect snapshot isolation for on-going txns as well.
-    if (AcidUtils.isTransactionalTable(sourceTable) || AcidUtils.isTransactionalTable(destTable)) {
-      throw new SemanticException(ErrorMsg.EXCHANGE_PARTITION_NOT_ALLOWED_WITH_TRANSACTIONAL_TABLES.getMsg());
-    }
-
-    // check if source partition exists
-    getPartitions(sourceTable, partSpecs, true);
-
-    // Verify that the partitions specified are continuous
-    // If a subpartition value is specified without specifying a partition's value
-    // then we throw an exception
-    int counter = isPartitionValueContinuous(sourceTable.getPartitionKeys(), partSpecs);
-    if (counter < 0) {
-      throw new SemanticException(
-          ErrorMsg.PARTITION_VALUE_NOT_CONTINUOUS.getMsg(partSpecs.toString()));
-    }
-    List<Partition> destPartitions = null;
-    try {
-      destPartitions = getPartitions(destTable, partSpecs, true);
-    } catch (SemanticException ex) {
-      // We should expect a semantic exception being throw as this partition
-      // should not be present.
-    }
-    if (destPartitions != null) {
-      // If any destination partition is present then throw a Semantic Exception.
-      throw new SemanticException(ErrorMsg.PARTITION_EXISTS.getMsg(destPartitions.toString()));
-    }
-    AlterTableExchangePartitionsDesc alterTableExchangePartition =
-        new AlterTableExchangePartitionsDesc(sourceTable, destTable, partSpecs);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTableExchangePartition)));
-
-    inputs.add(new ReadEntity(sourceTable));
-    outputs.add(new WriteEntity(destTable, WriteType.DDL_SHARED));
-  }
-
-  /**
-   * @param partitionKeys the list of partition keys of the table
-   * @param partSpecs the partition specs given by the user
-   * @return >=0 if no subpartition value is specified without a partition's
-   *         value being specified else it returns -1
-   */
-  private int isPartitionValueContinuous(List<FieldSchema> partitionKeys,
-      Map<String, String> partSpecs) {
-    int counter = 0;
-    for (FieldSchema partitionKey : partitionKeys) {
-      if (partSpecs.containsKey(partitionKey.getName())) {
-        counter++;
-        continue;
-      }
-      return partSpecs.size() == counter ? counter : -1;
-    }
-    return counter;
-  }
-
   private void analyzeTruncateTable(ASTNode ast) throws SemanticException {
     ASTNode root = (ASTNode) ast.getChild(0); // TOK_TABLE_PARTITION
     final String tableName = getUnescapedName((ASTNode) root.getChild(0));
@@ -549,18 +424,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!table.isPartitioned()) {
         outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_EXCLUSIVE));
       } else {
-        for (Partition partition : getPartitions(table, null, false)) {
+        for (Partition partition : PartitionUtils.getPartitions(db, table, null, false)) {
           outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
         }
       }
     } else {
       if (isFullSpec(table, partSpec)) {
         validatePartSpec(table, partSpec, (ASTNode) root.getChild(1), conf, true);
-        Partition partition = getPartition(table, partSpec, true);
+        Partition partition = PartitionUtils.getPartition(db, table, partSpec, true);
         outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
       } else {
         validatePartSpec(table, partSpec, (ASTNode) root.getChild(1), conf, false);
-        for (Partition partition : getPartitions(table, partSpec, false)) {
+        for (Partition partition : PartitionUtils.getPartitions(db, table, partSpec, false)) {
           outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
         }
       }
@@ -961,7 +836,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       outputs.add(alterTableOutput);
       //do not need the lock for partitions since they are covered by the table lock
       if (isCascade) {
-        for (Partition part : getPartitions(tab, partSpec, false)) {
+        for (Partition part : PartitionUtils.getPartitions(db, tab, partSpec, false)) {
           outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL_NO_LOCK));
         }
       }
@@ -975,7 +850,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (isFullSpec(tab, partSpec)) {
         // Fully specified partition spec
-        Partition part = getPartition(tab, partSpec, true);
+        Partition part = PartitionUtils.getPartition(db, tab, partSpec, true);
         outputs.add(new WriteEntity(part, writeType));
       } else {
         // Partial partition spec supplied. Make sure this is allowed.
@@ -986,7 +861,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_DISABLED);
         }
 
-        for (Partition part : getPartitions(tab, partSpec, true)) {
+        for (Partition part : PartitionUtils.getPartitions(db, tab, partSpec, true)) {
           outputs.add(new WriteEntity(part, writeType));
         }
       }
@@ -1067,7 +942,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException("source table " + tableName
             + " is partitioned but no partition desc found.");
       } else {
-        Partition part = getPartition(tblObj, partSpec, false);
+        Partition part = PartitionUtils.getPartition(db, tblObj, partSpec, false);
         if (part == null) {
           throw new SemanticException("source table " + tableName
               + " is partitioned but partition not found.");
@@ -1392,7 +1267,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     Table tab = getTable(tableName);
     if (partSpec != null) {
-      getPartition(tab, partSpec, true);
+      PartitionUtils.getPartition(db, tab, partSpec, true);
     }
   }
 
@@ -1472,25 +1347,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String schema = showColStats ? DescTableDesc.COLUMN_STATISTICS_SCHEMA : DescTableDesc.SCHEMA;
     setFetchTask(createFetchTask(schema));
     LOG.info("analyzeDescribeTable done");
-  }
-
-  private void analyzeShowPartitions(ASTNode ast) throws SemanticException {
-    ShowPartitionsDesc showPartsDesc;
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    List<Map<String, String>> partSpecs = getPartitionSpecs(getTable(tableName), ast);
-    // We only can have a single partition spec
-    assert (partSpecs.size() <= 1);
-    Map<String, String> partSpec = null;
-    if (partSpecs.size() > 0) {
-      partSpec = partSpecs.get(0);
-    }
-
-    validateTable(HiveTableName.ofNullableWithNoDefault(tableName), null);
-
-    showPartsDesc = new ShowPartitionsDesc(tableName, ctx.getResFile(), partSpec);
-    inputs.add(new ReadEntity(getTable(tableName)));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), showPartsDesc)));
-    setFetchTask(createFetchTask(ShowPartitionsDesc.SCHEMA));
   }
 
   private void analyzeShowTables(ASTNode ast) throws SemanticException {
@@ -1798,31 +1654,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
 
-  private void analyzeAlterTableRenamePart(ASTNode ast, TableName tblName,
-      Map<String, String> oldPartSpec) throws SemanticException {
-    Table tab = getTable(tblName, true);
-    validateAlterTableType(tab, AlterTableType.RENAMEPARTITION);
-    Map<String, String> newPartSpec =
-        getValidatedPartSpec(tab, (ASTNode)ast.getChild(0), conf, false);
-    if (newPartSpec == null) {
-      throw new SemanticException("RENAME PARTITION Missing Destination" + ast);
-    }
-    ReadEntity re = new ReadEntity(tab);
-    re.noLockNeeded();
-    inputs.add(re);
-
-    List<Map<String, String>> partSpecs = new ArrayList<Map<String, String>>();
-    partSpecs.add(oldPartSpec);
-    partSpecs.add(newPartSpec);
-    addTablePartsOutputs(tab, partSpecs, WriteEntity.WriteType.DDL_EXCLUSIVE);
-    AlterTableRenamePartitionDesc renamePartitionDesc = new AlterTableRenamePartitionDesc(tblName, oldPartSpec,
-        newPartSpec, null, tab);
-    if (AcidUtils.isTransactionalTable(tab)) {
-      setAcidDdlDesc(renamePartitionDesc);
-    }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), renamePartitionDesc)));
-  }
-
   private void analyzeAlterTableBucketNum(ASTNode ast, TableName tblName, Map<String, String> partSpec)
       throws SemanticException {
     Table tab = getTable(tblName, true);
@@ -1838,299 +1669,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterBucketNum)));
   }
 
-  private void analyzeAlterTableDropParts(TableName tName, ASTNode ast, boolean expectView) throws SemanticException {
-
-    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null)
-        || HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
-    // If the drop has to fail on non-existent partitions, we cannot batch expressions.
-    // That is because we actually have to check each separate expression for existence.
-    // We could do a small optimization for the case where expr has all columns and all
-    // operators are equality, if we assume those would always match one partition (which
-    // may not be true with legacy, non-normalized column values). This is probably a
-    // popular case but that's kinda hacky. Let's not do it for now.
-    boolean canGroupExprs = ifExists;
-
-    boolean mustPurge = (ast.getFirstChildWithType(HiveParser.KW_PURGE) != null);
-    ReplicationSpec replicationSpec = new ReplicationSpec(ast);
-
-    Table tab = null;
-    try {
-      tab = getTable(tName);
-    } catch (SemanticException se){
-      if (replicationSpec.isInReplicationScope() &&
-            (
-                (se.getCause() instanceof InvalidTableException)
-                ||  (se.getMessage().contains(ErrorMsg.INVALID_TABLE.getMsg()))
-            )){
-        // If we're inside a replication scope, then the table not existing is not an error.
-        // We just return in that case, no drop needed.
-        return;
-        // TODO : the contains message check is fragile, we should refactor SemanticException to be
-        // queriable for error code, and not simply have a message
-        // NOTE : IF_EXISTS might also want to invoke this, but there's a good possibility
-        // that IF_EXISTS is stricter about table existence, and applies only to the ptn.
-        // Therefore, ignoring IF_EXISTS here.
-      } else {
-        throw se;
-      }
-    }
-    Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
-        getFullPartitionSpecs(ast, tab, canGroupExprs);
-    if (partSpecs.isEmpty())
-     {
-      return; // nothing to do
-    }
-
-    validateAlterTableType(tab, AlterTableType.DROPPARTITION, expectView);
-    ReadEntity re = new ReadEntity(tab);
-    re.noLockNeeded();
-    inputs.add(re);
-
-    addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists);
-
-    AlterTableDropPartitionDesc dropTblDesc =
-        new AlterTableDropPartitionDesc(tName, partSpecs, mustPurge, replicationSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc)));
-  }
-
-  private void analyzeAlterTablePartColType(TableName tableName, ASTNode ast)
-      throws SemanticException {
-
-
-    // check if table exists.
-    Table tab = getTable(tableName);
-    inputs.add(new ReadEntity(tab));
-
-    // validate the DDL is a valid operation on the table.
-    validateAlterTableType(tab, AlterTableType.ALTERPARTITION, false);
-
-    // Alter table ... partition column ( column newtype) only takes one column at a time.
-    // It must have a column name followed with type.
-    ASTNode colAst = (ASTNode) ast.getChild(0);
-
-    FieldSchema newCol = new FieldSchema();
-
-    // get column name
-    String name = colAst.getChild(0).getText().toLowerCase();
-    newCol.setName(unescapeIdentifier(name));
-
-    // get column type
-    ASTNode typeChild = (ASTNode) (colAst.getChild(1));
-    newCol.setType(getTypeStringFromAST(typeChild));
-
-    if (colAst.getChildCount() == 3) {
-      newCol.setComment(unescapeSQLString(colAst.getChild(2).getText()));
-    }
-
-    // check if column is defined or not
-    boolean fFoundColumn = false;
-    for( FieldSchema col : tab.getTTable().getPartitionKeys()) {
-      if (col.getName().compareTo(newCol.getName()) == 0) {
-        fFoundColumn = true;
-      }
-    }
-
-    // raise error if we could not find the column
-    if (!fFoundColumn) {
-      throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(newCol.getName()));
-    }
-
-    AlterTableAlterPartitionDesc alterTblAlterPartDesc =
-            new AlterTableAlterPartitionDesc(tableName.getDbTable(), newCol);
-    if (AcidUtils.isTransactionalTable(tab)) {
-      setAcidDdlDesc(alterTblAlterPartDesc);
-    }
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblAlterPartDesc)));
-  }
-
-  /**
-   * Add one or more partitions to a table. Useful when the data has been copied
-   * to the right location by some other process.
-   *
-   * @param ast
-   *          The parsed command tree.
-   *
-   * @param expectView
-   *          True for ALTER VIEW, false for ALTER TABLE.
-   *
-   * @throws SemanticException
-   *           Parsing failed
-   */
-  private void analyzeAlterTableAddParts(TableName tName, CommonTree ast, boolean expectView) throws SemanticException {
-
-    // ^(TOK_ALTERTABLE_ADDPARTS identifier ifNotExists? alterStatementSuffixAddPartitionsElement+)
-    boolean ifNotExists = ast.getChild(0).getType() == HiveParser.TOK_IFNOTEXISTS;
-
-    Table table = getTable(tName);
-    boolean isView = table.isView();
-    validateAlterTableType(table, AlterTableType.ADDPARTITION, expectView);
-    outputs.add(new WriteEntity(table,
-        /*use DDL_EXCLUSIVE to cause X lock to prevent races between concurrent add partition calls
-        with IF NOT EXISTS.  w/o this 2 concurrent calls to add the same partition may both add
-        data since for transactional tables creating partition metadata and moving data there are
-        2 separate actions. */
-        ifNotExists && AcidUtils.isTransactionalTable(table) ? WriteType.DDL_EXCLUSIVE
-        : WriteEntity.WriteType.DDL_SHARED));
-
-    int numCh = ast.getChildCount();
-    int start = ifNotExists ? 1 : 0;
-
-    String currentLocation = null;
-    Map<String, String> currentPart = null;
-    // Parser has done some verification, so the order of tokens doesn't need to be verified here.
-
-    List<AlterTableAddPartitionDesc.PartitionDesc> partitions = new ArrayList<>();
-    for (int num = start; num < numCh; num++) {
-      ASTNode child = (ASTNode) ast.getChild(num);
-      switch (child.getToken().getType()) {
-      case HiveParser.TOK_PARTSPEC:
-        if (currentPart != null) {
-          partitions.add(createPartitionDesc(table, currentLocation, currentPart));
-          currentLocation = null;
-        }
-        currentPart = getValidatedPartSpec(table, child, conf, true);
-        validatePartitionValues(currentPart); // validate reserved values
-        break;
-      case HiveParser.TOK_PARTITIONLOCATION:
-        // if location specified, set in partition
-        if (isView) {
-          throw new SemanticException("LOCATION clause illegal for view partition");
-        }
-        currentLocation = unescapeSQLString(child.getChild(0).getText());
-        inputs.add(toReadEntity(currentLocation));
-        break;
-      default:
-        throw new SemanticException("Unknown child: " + child);
-      }
-    }
-
-    // add the last one
-    if (currentPart != null) {
-      partitions.add(createPartitionDesc(table, currentLocation, currentPart));
-    }
-
-    if (partitions.isEmpty()) {
-      // nothing to do
-      return;
-    }
-
-    AlterTableAddPartitionDesc addPartitionDesc = new AlterTableAddPartitionDesc(table.getDbName(),
-        table.getTableName(), ifNotExists, partitions);
-
-    Task<DDLWork> ddlTask =
-        TaskFactory.get(new DDLWork(getInputs(), getOutputs(), addPartitionDesc));
-    rootTasks.add(ddlTask);
-    handleTransactionalTable(table, addPartitionDesc, ddlTask);
-
-    if (isView) {
-      // Compile internal query to capture underlying table partition dependencies
-      StringBuilder cmd = new StringBuilder();
-      cmd.append("SELECT * FROM ");
-      cmd.append(HiveUtils.unparseIdentifier(tName.getDb()));
-      cmd.append(".");
-      cmd.append(HiveUtils.unparseIdentifier(tName.getTable()));
-      cmd.append(" WHERE ");
-      boolean firstOr = true;
-      for (AlterTableAddPartitionDesc.PartitionDesc partitionDesc : partitions) {
-        if (firstOr) {
-          firstOr = false;
-        } else {
-          cmd.append(" OR ");
-        }
-        boolean firstAnd = true;
-        cmd.append("(");
-        for (Map.Entry<String, String> entry : partitionDesc.getPartSpec().entrySet()) {
-          if (firstAnd) {
-            firstAnd = false;
-          } else {
-            cmd.append(" AND ");
-          }
-          cmd.append(HiveUtils.unparseIdentifier(entry.getKey()));
-          cmd.append(" = '");
-          cmd.append(HiveUtils.escapeString(entry.getValue()));
-          cmd.append("'");
-        }
-        cmd.append(")");
-      }
-      // FIXME: is it ok to have a completely new querystate?
-      QueryState newQueryState = QueryState.getNewQueryState(conf, queryState.getLineageState());
-      // FIXME: this driver instance is never closed
-      Driver driver = new Driver(newQueryState);
-      int rc = driver.compile(cmd.toString(), false);
-      if (rc != 0) {
-        throw new SemanticException(ErrorMsg.NO_VALID_PARTN.getMsg());
-      }
-      inputs.addAll(driver.getPlan().getInputs());
-    }
-  }
-
-  private AlterTableAddPartitionDesc.PartitionDesc createPartitionDesc(Table table, String currentLocation,
-      Map<String, String> currentPart) {
-    Map<String, String> params = null;
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER) && currentLocation == null) {
-      params = new HashMap<String, String>();
-      StatsSetupConst.setStatsStateForCreateTable(params,
-          MetaStoreUtils.getColumnNames(table.getCols()), StatsSetupConst.TRUE);
-    }
-    return new AlterTableAddPartitionDesc.PartitionDesc(currentPart, currentLocation, params);
-  }
-
-  /**
-   * Add partition for Transactional tables needs to add (copy/rename) the data so that it lands
-   * in a delta_x_x/ folder in the partition dir.
-   */
-  private void handleTransactionalTable(Table tab, AlterTableAddPartitionDesc addPartitionDesc,
-      Task ddlTask) throws SemanticException {
-    if(!AcidUtils.isTransactionalTable(tab)) {
-      return;
-    }
-    Long writeId = null;
-    int stmtId = 0;
-
-    for (AlterTableAddPartitionDesc.PartitionDesc partitonDesc : addPartitionDesc.getPartitions()) {
-      if (partitonDesc.getLocation() != null) {
-        AcidUtils.validateAcidPartitionLocation(partitonDesc.getLocation(), conf);
-        if(addPartitionDesc.isIfNotExists()) {
-          //Don't add partition data if it already exists
-          Partition oldPart = getPartition(tab, partitonDesc.getPartSpec(), false);
-          if(oldPart != null) {
-            continue;
-          }
-        }
-        if(writeId == null) {
-          //so that we only allocate a writeId only if actually adding data
-          // (vs. adding a partition w/o data)
-          try {
-            writeId = getTxnMgr().getTableWriteId(tab.getDbName(),
-                tab.getTableName());
-          } catch (LockException ex) {
-            throw new SemanticException("Failed to allocate the write id", ex);
-          }
-          stmtId = getTxnMgr().getStmtIdAndIncrement();
-        }
-        LoadTableDesc loadTableWork = new LoadTableDesc(new Path(partitonDesc.getLocation()),
-            Utilities.getTableDesc(tab), partitonDesc.getPartSpec(),
-            LoadTableDesc.LoadFileType.KEEP_EXISTING, //not relevant - creating new partition
-            writeId);
-        loadTableWork.setStmtId(stmtId);
-        loadTableWork.setInheritTableSpecs(true);
-        try {
-          partitonDesc.setLocation(new Path(tab.getDataLocation(),
-              Warehouse.makePartPath(partitonDesc.getPartSpec())).toString());
-        }
-        catch (MetaException ex) {
-          throw new SemanticException("Could not determine partition path due to: "
-              + ex.getMessage(), ex);
-        }
-        Task<MoveWork> moveTask = TaskFactory.get(
-            new MoveWork(getInputs(), getOutputs(), loadTableWork, null,
-                true,//make sure to check format
-                false));//is this right?
-        ddlTask.addDependentTask(moveTask);
-      }
-    }
-  }
   /**
    * Rewrite the metadata for one or more partitions in a table. Useful when
    * an external process modifies files on HDFS and you want the pre/post
@@ -2155,7 +1693,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_NO_LOCK));
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), touchDesc)));
     } else {
-      addTablePartsOutputs(tab, partSpecs, WriteEntity.WriteType.DDL_NO_LOCK);
+      PartitionUtils.addTablePartsOutputs(db, outputs, tab, partSpecs, false, WriteEntity.WriteType.DDL_NO_LOCK);
       for (Map<String, String> partSpec : partSpecs) {
         AlterTableTouchDesc touchDesc = new AlterTableTouchDesc(tName.getDbTable(), partSpec);
         rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), touchDesc)));
@@ -2173,7 +1711,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // partition name to value
     List<Map<String, String>> partSpecs = getPartitionSpecs(tab, ast);
 
-    addTablePartsOutputs(tab, partSpecs, true, WriteEntity.WriteType.DDL_NO_LOCK);
+    PartitionUtils.addTablePartsOutputs(db, outputs, tab, partSpecs, true, WriteEntity.WriteType.DDL_NO_LOCK);
     validateAlterTableType(tab, AlterTableType.ARCHIVE);
     inputs.add(new ReadEntity(tab));
 
@@ -2199,257 +1737,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       archiveDesc = new AlterTableArchiveDesc(tName.getDbTable(), partSpec);
     }
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), archiveDesc)));
-  }
-
-  /**
-   * Get the partition specs from the tree. This stores the full specification
-   * with the comparator operator into the output list.
-   *
-   * @param ast Tree to extract partitions from.
-   * @param tab Table.
-   * @return    Map of partitions by prefix length. Most of the time prefix length will
-   *            be the same for all partition specs, so we can just OR the expressions.
-   */
-  private Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
-      CommonTree ast, Table tab, boolean canGroupExprs) throws SemanticException {
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
-    Map<String, String> colTypes = new HashMap<String, String>();
-    for (FieldSchema fs : tab.getPartitionKeys()) {
-      colTypes.put(fs.getName().toLowerCase(), fs.getType());
-    }
-
-    Map<Integer, List<ExprNodeGenericFuncDesc>> result =
-        new HashMap<Integer, List<ExprNodeGenericFuncDesc>>();
-    for (int childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
-      Tree partSpecTree = ast.getChild(childIndex);
-      if (partSpecTree.getType() != HiveParser.TOK_PARTSPEC) {
-        continue;
-      }
-      ExprNodeGenericFuncDesc expr = null;
-      HashSet<String> names = new HashSet<String>(partSpecTree.getChildCount());
-      for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
-        CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
-        assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
-        String key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getText()).toLowerCase();
-        String operator = partSpecSingleKey.getChild(1).getText();
-        ASTNode partValNode = (ASTNode)partSpecSingleKey.getChild(2);
-        TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
-        ExprNodeConstantDesc valExpr = (ExprNodeConstantDesc)TypeCheckProcFactory
-            .genExprNode(partValNode, typeCheckCtx).get(partValNode);
-        Object val = valExpr.getValue();
-
-        boolean isDefaultPartitionName =  val.equals(defaultPartitionName);
-
-        String type = colTypes.get(key);
-        PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
-        if (type == null) {
-          throw new SemanticException("Column " + key + " not found");
-        }
-        // Create the corresponding hive expression to filter on partition columns.
-        if (!isDefaultPartitionName) {
-          if (!valExpr.getTypeString().equals(type)) {
-            Converter converter = ObjectInspectorConverters.getConverter(
-              TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(valExpr.getTypeInfo()),
-              TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(pti));
-            val = converter.convert(valExpr.getValue());
-          }
-        }
-
-        ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, key, null, true);
-        ExprNodeGenericFuncDesc op;
-        if (!isDefaultPartitionName) {
-          op = makeBinaryPredicate(operator, column, new ExprNodeConstantDesc(pti, val));
-        } else {
-          GenericUDF originalOp = FunctionRegistry.getFunctionInfo(operator).getGenericUDF();
-          String fnName;
-          if (FunctionRegistry.isEq(originalOp)) {
-            fnName = "isnull";
-          } else if (FunctionRegistry.isNeq(originalOp)) {
-            fnName = "isnotnull";
-          } else {
-            throw new SemanticException("Cannot use " + operator
-                + " in a default partition spec; only '=' and '!=' are allowed.");
-          }
-          op = makeUnaryPredicate(fnName, column);
-        }
-        // If it's multi-expr filter (e.g. a='5', b='2012-01-02'), AND with previous exprs.
-        expr = (expr == null) ? op : makeBinaryPredicate("and", expr, op);
-        names.add(key);
-      }
-      if (expr == null) {
-        continue;
-      }
-      // We got the expr for one full partition spec. Determine the prefix length.
-      int prefixLength = calculatePartPrefix(tab, names);
-      List<ExprNodeGenericFuncDesc> orExpr = result.get(prefixLength);
-      // We have to tell apart partitions resulting from spec with different prefix lengths.
-      // So, if we already have smth for the same prefix length, we can OR the two.
-      // If we don't, create a new separate filter. In most cases there will only be one.
-      if (orExpr == null) {
-        result.put(prefixLength, Lists.newArrayList(expr));
-      } else if (canGroupExprs) {
-        orExpr.set(0, makeBinaryPredicate("or", expr, orExpr.get(0)));
-      } else {
-        orExpr.add(expr);
-      }
-    }
-    return result;
-  }
-
-  public static ExprNodeGenericFuncDesc makeBinaryPredicate(
-      String fn, ExprNodeDesc left, ExprNodeDesc right) throws SemanticException {
-      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-          FunctionRegistry.getFunctionInfo(fn).getGenericUDF(), Lists.newArrayList(left, right));
-  }
-  public static ExprNodeGenericFuncDesc makeUnaryPredicate(
-      String fn, ExprNodeDesc arg) throws SemanticException {
-      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-          FunctionRegistry.getFunctionInfo(fn).getGenericUDF(), Lists.newArrayList(arg));
-  }
-  /**
-   * Calculates the partition prefix length based on the drop spec.
-   * This is used to avoid deleting archived partitions with lower level.
-   * For example, if, for A and B key cols, drop spec is A=5, B=6, we shouldn't drop
-   * archived A=5/, because it can contain B-s other than 6.
-   * @param tbl Table
-   * @param partSpecKeys Keys present in drop partition spec.
-   */
-  private int calculatePartPrefix(Table tbl, HashSet<String> partSpecKeys) {
-    int partPrefixToDrop = 0;
-    for (FieldSchema fs : tbl.getPartCols()) {
-      if (!partSpecKeys.contains(fs.getName())) {
-        break;
-      }
-      ++partPrefixToDrop;
-    }
-    return partPrefixToDrop;
-  }
-
-  /**
-   * Certain partition values are are used by hive. e.g. the default partition
-   * in dynamic partitioning and the intermediate partition values used in the
-   * archiving process. Naturally, prohibit the user from creating partitions
-   * with these reserved values. The check that this function is more
-   * restrictive than the actual limitation, but it's simpler. Should be okay
-   * since the reserved names are fairly long and uncommon.
-   */
-  private void validatePartitionValues(Map<String, String> partSpec)
-      throws SemanticException {
-
-    for (Entry<String, String> e : partSpec.entrySet()) {
-      for (String s : reservedPartitionValues) {
-        String value = e.getValue();
-        if (value != null && value.contains(s)) {
-          throw new SemanticException(ErrorMsg.RESERVED_PART_VAL.getMsg(
-              "(User value: " + e.getValue() + " Reserved substring: " + s + ")"));
-        }
-      }
-    }
-  }
-
-  /**
-   * Add the table partitions to be modified in the output, so that it is available for the
-   * pre-execution hook. If the partition does not exist, no error is thrown.
-   */
-  private void addTablePartsOutputs(Table table, List<Map<String, String>> partSpecs,
-                                    WriteEntity.WriteType writeType)
-      throws SemanticException {
-    addTablePartsOutputs(table, partSpecs, false, false, null, writeType);
-  }
-
-  /**
-   * Add the table partitions to be modified in the output, so that it is available for the
-   * pre-execution hook. If the partition does not exist, no error is thrown.
-   */
-  private void addTablePartsOutputs(Table table, List<Map<String, String>> partSpecs,
-      boolean allowMany, WriteEntity.WriteType writeType)
-      throws SemanticException {
-    addTablePartsOutputs(table, partSpecs, false, allowMany, null, writeType);
-  }
-
-  /**
-   * Add the table partitions to be modified in the output, so that it is available for the
-   * pre-execution hook. If the partition does not exist, throw an error if
-   * throwIfNonExistent is true, otherwise ignore it.
-   */
-  private void addTablePartsOutputs(Table table, List<Map<String, String>> partSpecs,
-      boolean throwIfNonExistent, boolean allowMany, ASTNode ast, WriteEntity.WriteType writeType)
-      throws SemanticException {
-
-    Iterator<Map<String, String>> i;
-    int index;
-    for (i = partSpecs.iterator(), index = 1; i.hasNext(); ++index) {
-      Map<String, String> partSpec = i.next();
-      List<Partition> parts = null;
-      if (allowMany) {
-        try {
-          parts = db.getPartitions(table, partSpec);
-        } catch (HiveException e) {
-          LOG.error("Got HiveException during obtaining list of partitions"
-              + StringUtils.stringifyException(e));
-          throw new SemanticException(e.getMessage(), e);
-        }
-      } else {
-        parts = new ArrayList<Partition>();
-        try {
-          Partition p = db.getPartition(table, partSpec, false);
-          if (p != null) {
-            parts.add(p);
-          }
-        } catch (HiveException e) {
-          LOG.debug("Wrong specification" + StringUtils.stringifyException(e));
-          throw new SemanticException(e.getMessage(), e);
-        }
-      }
-      if (parts.isEmpty()) {
-        if (throwIfNonExistent) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(index)));
-        }
-      }
-      for (Partition p : parts) {
-        // Don't request any locks here, as the table has already been locked.
-        outputs.add(new WriteEntity(p, writeType));
-      }
-    }
-  }
-
-  /**
-   * Add the table partitions to be modified in the output, so that it is available for the
-   * pre-execution hook. If the partition does not exist, throw an error if
-   * throwIfNonExistent is true, otherwise ignore it.
-   */
-  private void addTableDropPartsOutputs(Table tab,
-                                        Collection<List<ExprNodeGenericFuncDesc>> partSpecs,
-                                        boolean throwIfNonExistent) throws SemanticException {
-    for (List<ExprNodeGenericFuncDesc> specs : partSpecs) {
-      for (ExprNodeGenericFuncDesc partSpec : specs) {
-        List<Partition> parts = new ArrayList<Partition>();
-        boolean hasUnknown = false;
-        try {
-          hasUnknown = db.getPartitionsByExpr(tab, partSpec, conf, parts);
-        } catch (Exception e) {
-          throw new SemanticException(
-              ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()), e);
-        }
-        if (hasUnknown) {
-          throw new SemanticException(
-              "Unexpected unknown partitions for " + partSpec.getExprString());
-        }
-
-        // TODO: ifExists could be moved to metastore. In fact it already supports that. Check it
-        //       for now since we get parts for output anyway, so we can get the error message
-        //       earlier... If we get rid of output, we can get rid of this.
-        if (parts.isEmpty()) {
-          if (throwIfNonExistent) {
-            throw new SemanticException(
-                ErrorMsg.INVALID_PARTITION.getMsg(partSpec.getExprString()));
-          }
-        }
-        for (Partition p : parts) {
-          outputs.add(new WriteEntity(p, WriteEntity.WriteType.DDL_EXCLUSIVE));
-        }
-      }
-    }
   }
 
   /**

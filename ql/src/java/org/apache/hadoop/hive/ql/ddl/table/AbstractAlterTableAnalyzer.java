@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
@@ -112,7 +113,7 @@ public abstract class AbstractAlterTableAnalyzer extends BaseSemanticAnalyzer {
       outputs.add(alterTableOutput);
       //do not need the lock for partitions since they are covered by the table lock
       if (isCascade) {
-        for (Partition part : getPartitions(table, partitionSpec, false)) {
+        for (Partition part : PartitionUtils.getPartitions(db, table, partitionSpec, false)) {
           outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL_NO_LOCK));
         }
       }
@@ -126,7 +127,7 @@ public abstract class AbstractAlterTableAnalyzer extends BaseSemanticAnalyzer {
 
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
         // Fully specified partition spec
-        Partition part = getPartition(table, partitionSpec, true);
+        Partition part = PartitionUtils.getPartition(db, table, partitionSpec, true);
         outputs.add(new WriteEntity(part, writeType));
       } else {
         // Partial partition spec supplied. Make sure this is allowed.
@@ -137,7 +138,7 @@ public abstract class AbstractAlterTableAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_DISABLED);
         }
 
-        for (Partition part : getPartitions(table, partitionSpec, true)) {
+        for (Partition part : PartitionUtils.getPartitions(db, table, partitionSpec, true)) {
           outputs.add(new WriteEntity(part, writeType));
         }
       }
@@ -163,7 +164,7 @@ public abstract class AbstractAlterTableAnalyzer extends BaseSemanticAnalyzer {
     return WriteEntity.determineAlterTableWriteType(op);
   }
 
-  private void validateAlterTableType(Table tbl, AlterTableType op, boolean expectView)
+  protected void validateAlterTableType(Table tbl, AlterTableType op, boolean expectView)
       throws SemanticException {
     if (tbl.isView()) {
       if (!expectView) {

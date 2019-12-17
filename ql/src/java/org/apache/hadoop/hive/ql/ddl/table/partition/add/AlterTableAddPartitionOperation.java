@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.partition;
+package org.apache.hadoop.hive.ql.ddl.table.partition.add;
 
 import java.util.ArrayList;
 import java.util.BitSet;
