@@ -80,7 +80,6 @@ import java.util.zip.InflaterInputStream;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.WordUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -865,7 +864,7 @@ public final class Utilities {
     String rev = StringUtils.reverse(str);
 
     // get the last few words
-    String suffix = WordUtils.abbreviate(rev, 0, suffixlength, StringUtils.EMPTY);
+    String suffix = StringUtils.abbreviate(rev, 0, suffixlength, StringUtils.EMPTY);
     suffix = StringUtils.reverse(suffix);
 
     // first few ..
