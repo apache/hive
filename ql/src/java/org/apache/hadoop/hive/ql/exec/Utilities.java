@@ -864,7 +864,7 @@ public final class Utilities {
     String rev = StringUtils.reverse(str);
 
     // get the last few words
-    String suffix = StringUtils.abbreviate(rev, 0, suffixlength, StringUtils.EMPTY);
+    String suffix = StringUtils.abbreviate(rev, suffixlength);
     suffix = StringUtils.reverse(suffix);
 
     // first few ..
