@@ -84,8 +84,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
               colStats.getStatsDesc().getTableName());
       return colStats;
     }
-    String dbName = work.dbName();
-    String tableName = work.getTableName();
+    TableName tableName = work.getTableName();
     String partName = work.getPartName();
     String colName = work.getColName();
     String columnType = work.getColType();
@@ -291,7 +290,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     } else {
       throw new SemanticException("Unsupported type");
     }
-    ColumnStatisticsDesc statsDesc = getColumnStatsDesc(dbName, tableName,
+    ColumnStatisticsDesc statsDesc = getColumnStatsDesc(tableName,
         partName, partName == null);
     ColumnStatistics colStat = new ColumnStatistics();
     colStat.setStatsDesc(statsDesc);
@@ -300,11 +299,10 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     return colStat;
   }
 
-  private ColumnStatisticsDesc getColumnStatsDesc(String dbName,
-      String tableName, String partName, boolean isTblLevel) {
+  private ColumnStatisticsDesc getColumnStatsDesc(TableName tableName, String partName, boolean isTblLevel) {
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
-    statsDesc.setDbName(dbName);
-    statsDesc.setTableName(tableName);
+    statsDesc.setDbName(tableName.getDb());
+    statsDesc.setTableName(tableName.getTable());
     statsDesc.setIsTblLevel(isTblLevel);
     if (!isTblLevel) {
       statsDesc.setPartName(partName);

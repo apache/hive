@@ -154,6 +154,7 @@ public class HiveMetaStoreUtils {
     ObjectInspector oi = deserializer.getObjectInspector();
     String[] names = tableName.split("\\.");
     String last_name = names[names.length - 1];
+    // 0 = db, 1 = table
     for (int i = 2; i < names.length; i++) {
 
       if (oi instanceof StructObjectInspector) {

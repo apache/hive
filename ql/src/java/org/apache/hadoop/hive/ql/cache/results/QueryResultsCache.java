@@ -52,6 +52,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -631,13 +632,13 @@ public final class QueryResultsCache {
     }
   }
 
-  public void notifyTableChanged(String dbName, String tableName, long updateTime) {
-    LOG.debug("Table changed: {}.{}, at {}", dbName, tableName, updateTime);
+  public void notifyTableChanged(TableName tableName, long updateTime) {
+    LOG.debug("Table changed: {}, at {}", tableName.getNotEmptyDbTable(), updateTime);
     // Invalidate all cache entries using this table.
     List<CacheEntry> entriesToInvalidate = null;
     rwLock.writeLock().lock();
     try {
-      String key = (dbName.toLowerCase() + "." + tableName.toLowerCase());
+      String key = (tableName.getNotEmptyDbTable().toLowerCase());
       Set<CacheEntry> entriesForTable = tableToEntryMap.get(key);
       if (entriesForTable != null) {
         // Possible concurrent modification issues if we try to remove cache entries while
@@ -989,7 +990,7 @@ public final class QueryResultsCache {
       QueryResultsCache cache = QueryResultsCache.getInstance();
       if (cache != null) {
         long eventTime = event.getEventTime() * 1000L;
-        cache.notifyTableChanged(dbName, tableName, eventTime);
+        cache.notifyTableChanged(TableName.fromString(tableName, null, dbName), eventTime);
       } else {
         LOG.debug("Cache not instantiated, skipping event on {}.{}", dbName, tableName);
       }

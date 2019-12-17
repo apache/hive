@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -39,8 +40,7 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
   private static final long serialVersionUID = 1L;
   private final String partName;
   private final Map<String, String> mapProp;
-  private final String dbName;
-  private final String tableName;
+  private final TableName tableName;
   private final String colName;
   private final String colType;
   private final ColumnStatistics colStats;
@@ -50,13 +50,11 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
 
   public ColumnStatsUpdateWork(String partName,
       Map<String, String> mapProp,
-      String dbName,
-      String tableName,
+      TableName tableName,
       String colName,
       String colType) {
     this.partName = partName;
     this.mapProp = mapProp;
-    this.dbName = dbName;
     this.tableName = tableName;
     this.colName = colName;
     this.colType = colType;
@@ -69,8 +67,7 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
     this.isMigratingToTxn = isMigratingToTxn;
     this.partName = null;
     this.mapProp = null;
-    this.dbName = null;
-    this.tableName = null;
+    this.tableName = null; // FIXME: This won't do
     this.colName = null;
     this.colType = null;
   }
@@ -88,11 +85,7 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
     return mapProp;
   }
 
-  public String dbName() {
-    return dbName;
-  }
-
-  public String getTableName() {
+  public TableName getTableName() {
     return tableName;
   }
 
@@ -117,7 +110,7 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
 
   @Override
   public String getFullTableName() {
-    return dbName + "." + tableName;
+    return tableName.getNotEmptyDbTable();
   }
 
   @Override
