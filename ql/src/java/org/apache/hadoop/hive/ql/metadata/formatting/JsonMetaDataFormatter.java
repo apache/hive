@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -172,7 +172,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       final String refreshMode = "Manual refresh";
       final String timeWindowString = mv.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
       final String mode;
-      if (!org.apache.commons.lang.StringUtils.isEmpty(timeWindowString)) {
+      if (!org.apache.commons.lang3.StringUtils.isEmpty(timeWindowString)) {
         long time = HiveConf.toTime(timeWindowString,
             HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
             TimeUnit.MINUTES);

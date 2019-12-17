@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.WordUtils;
 import org.apache.hadoop.io.Text;
 
 /**

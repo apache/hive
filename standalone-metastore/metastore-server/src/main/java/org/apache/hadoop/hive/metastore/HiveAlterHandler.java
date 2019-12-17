@@ -22,7 +22,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 
 import com.google.common.collect.Multimap;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -1160,7 +1160,7 @@ public class HiveAlterHandler implements AlterHandler {
       throw new InvalidOperationException(
           "The following columns have types incompatible with the existing " +
               "columns in their respective positions :\n" +
-              org.apache.commons.lang.StringUtils.join(incompatibleCols, ',')
+              org.apache.commons.lang3.StringUtils.join(incompatibleCols, ',')
       );
     }
   }
