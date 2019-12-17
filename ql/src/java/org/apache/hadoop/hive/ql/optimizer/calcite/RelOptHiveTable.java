@@ -690,6 +690,8 @@ public class RelOptHiveTable implements RelOptTable {
         }
       }
       if (!projIndxSet.isEmpty()) {
+        LOG.info("Calculating column statistics for {}, projIndxSet was not empty: {}, allowMissingStats: {}", name,
+            projIndxLst, allowMissingStats);
         updateColStats(projIndxSet, allowMissingStats);
         for (Integer i : projIndxSet) {
           colStatsBldr.add(hiveColStatsMap.get(i));
@@ -703,6 +705,8 @@ public class RelOptHiveTable implements RelOptTable {
         }
       }
       if (!pILst.isEmpty()) {
+        LOG.info("Calculating column statistics for {}, projIndxSet was empty, calculated: {}, allowMissingStats: {}",
+            name, pILst, allowMissingStats);
         updateColStats(new HashSet<Integer>(pILst), allowMissingStats);
         for (Integer pi : pILst) {
           colStatsBldr.add(hiveColStatsMap.get(pi));
