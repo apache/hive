@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.partition;
+package org.apache.hadoop.hive.ql.ddl.table.partition.show;
 
 import java.io.DataOutputStream;
 import java.util.List;

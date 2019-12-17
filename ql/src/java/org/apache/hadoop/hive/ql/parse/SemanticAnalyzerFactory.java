@@ -93,8 +93,6 @@ public final class SemanticAnalyzerFactory {
         switch (child.getType()) {
         case HiveParser.TOK_ALTERVIEW_PROPERTIES:
         case HiveParser.TOK_ALTERVIEW_DROPPROPERTIES:
-        case HiveParser.TOK_ALTERVIEW_ADDPARTS:
-        case HiveParser.TOK_ALTERVIEW_DROPPARTS:
         case HiveParser.TOK_ALTERVIEW_RENAME:
           opType = HiveOperation.operationForToken(child.getType());
           queryState.setCommandType(opType);
@@ -110,7 +108,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOWTABLES:
       case HiveParser.TOK_SHOW_TABLESTATUS:
       case HiveParser.TOK_SHOW_TBLPROPERTIES:
-      case HiveParser.TOK_SHOWPARTITIONS:
       case HiveParser.TOK_SHOWLOCKS:
       case HiveParser.TOK_SHOWDBLOCKS:
       case HiveParser.TOK_SHOWCONF:

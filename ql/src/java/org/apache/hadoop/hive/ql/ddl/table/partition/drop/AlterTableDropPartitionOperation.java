@@ -16,24 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.partition;
+package org.apache.hadoop.hive.ql.ddl.table.partition.drop;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
 import com.google.common.collect.Iterables;
@@ -104,7 +105,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
 
   private void dropPartitions() throws HiveException {
     // ifExists is currently verified in DDLSemanticAnalyzer
-    String[] names = Utilities.getDbTableName(desc.getTableName());
+    TableName tablenName = HiveTableName.of(desc.getTableName());
 
     List<Pair<Integer, byte[]>> partitionExpressions = new ArrayList<>(desc.getPartSpecs().size());
     for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()) {
@@ -112,8 +113,10 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
           SerializationUtilities.serializeExpressionToKryo(partSpec.getPartSpec())));
     }
 
-    List<Partition> droppedPartitions = context.getDb().dropPartitions(names[0], names[1], partitionExpressions,
-        PartitionDropOptions.instance().deleteData(true).ifExists(true).purgeData(desc.getIfPurge()));
+    PartitionDropOptions options =
+        PartitionDropOptions.instance().deleteData(true).ifExists(true).purgeData(desc.getIfPurge());
+    List<Partition> droppedPartitions = context.getDb().dropPartitions(tablenName.getDb(), tablenName.getTable(),
+        partitionExpressions, options);
     for (Partition partition : droppedPartitions) {
       context.getConsole().printInfo("Dropped the partition " + partition.getName());
       // We have already locked the table, don't lock the partitions.
