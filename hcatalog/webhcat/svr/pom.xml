@@ -35,6 +35,7 @@
 
   <properties>
     <hive.path.to.root>../../..</hive.path.to.root>
+    <maven.test.skip>true</maven.test.skip>
   </properties>
 
   <dependencies>
