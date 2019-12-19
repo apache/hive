@@ -226,94 +226,96 @@ Stage-0
     limit:100
     Stage-1
       Reducer 6 vectorized, llap
-      File Output Operator [FS_143]
-        Limit [LIM_142] (rows=2 width=8)
+      File Output Operator [FS_145]
+        Limit [LIM_144] (rows=2 width=8)
           Number of rows:100
-          Select Operator [SEL_141] (rows=2 width=8)
+          Select Operator [SEL_143] (rows=2 width=8)
             Output:["_col0"]
           <-Reducer 5 [SIMPLE_EDGE] vectorized, llap
-            SHUFFLE [RS_140]
-              Select Operator [SEL_139] (rows=2 width=8)
+            SHUFFLE [RS_142]
+              Select Operator [SEL_141] (rows=2 width=8)
                 Output:["_col0"]
-                Group By Operator [GBY_138] (rows=2 width=12)
-                  Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
-                <-Map 4 [SIMPLE_EDGE] vectorized, llap
-                  SHUFFLE [RS_137]
-                    PartitionCols:_col0
-                    Group By Operator [GBY_136] (rows=2 width=12)
-                      Output:["_col0","_col1"],aggregations:["count()"],keys:_col8
-                      Map Join Operator [MAPJOIN_135] (rows=5185194 width=4)
-                        Conds:MAPJOIN_134._col6=RS_128._col0(Inner),Output:["_col8"]
-                      <-Map 7 [BROADCAST_EDGE] vectorized, llap
-                        BROADCAST [RS_128]
-                          PartitionCols:_col0
-                          Map Join Operator [MAPJOIN_127] (rows=28 width=8)
-                            Conds:SEL_126._col1=RS_124._col0(Inner),Output:["_col0","_col1"]
-                          <-Reducer 9 [BROADCAST_EDGE] vectorized, llap
-                            BROADCAST [RS_124]
-                              PartitionCols:_col0
-                              Group By Operator [GBY_123] (rows=2 width=4)
-                                Output:["_col0"],keys:KEY._col0
-                              <-Map 8 [SIMPLE_EDGE] vectorized, llap
-                                SHUFFLE [RS_122]
-                                  PartitionCols:_col0
-                                  Group By Operator [GBY_121] (rows=2 width=4)
-                                    Output:["_col0"],keys:d_month_seq
-                                    Select Operator [SEL_120] (rows=4 width=12)
-                                      Output:["d_month_seq"]
-                                      Filter Operator [FIL_119] (rows=4 width=12)
-                                        predicate:((d_year = 2000) and ((d_year * d_moy) > 200000) and (d_moy = 2) and d_month_seq is not null)
-                                        TableScan [TS_17] (rows=28 width=12)
-                                          default@x1_date_dim,x1_date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_month_seq","d_year","d_moy"]
-                          <-Select Operator [SEL_126] (rows=28 width=8)
-                              Output:["_col0","_col1"]
-                              Filter Operator [FIL_125] (rows=28 width=8)
-                                predicate:(d_date_sk is not null and d_month_seq is not null)
-                                TableScan [TS_14] (rows=28 width=8)
-                                  default@x1_date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_month_seq"]
-                        Dynamic Partitioning Event Operator [EVENT_131] (rows=1 width=4)
-                          Group By Operator [GBY_130] (rows=1 width=4)
-                            Output:["_col0"],keys:_col0
-                            Select Operator [SEL_129] (rows=28 width=8)
-                              Output:["_col0"]
-                               Please refer to the previous Map Join Operator [MAPJOIN_127]
-                      <-Map Join Operator [MAPJOIN_134] (rows=370371 width=4)
-                          Conds:RS_31._col0=SEL_133._col0(Inner),Output:["_col6"]
-                        <-Map 1 [BROADCAST_EDGE] llap
-                          BROADCAST [RS_31]
+                Top N Key Operator [TNK_140] (rows=2 width=12)
+                  keys:_col1,top n:100
+                  Group By Operator [GBY_139] (rows=2 width=12)
+                    Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
+                  <-Map 4 [SIMPLE_EDGE] vectorized, llap
+                    SHUFFLE [RS_138]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_137] (rows=2 width=12)
+                        Output:["_col0","_col1"],aggregations:["count()"],keys:_col8
+                        Map Join Operator [MAPJOIN_136] (rows=5185194 width=4)
+                          Conds:MAPJOIN_135._col6=RS_129._col0(Inner),Output:["_col8"]
+                        <-Map 7 [BROADCAST_EDGE] vectorized, llap
+                          BROADCAST [RS_129]
                             PartitionCols:_col0
-                            Map Join Operator [MAPJOIN_102] (rows=6 width=228)
-                              Conds:SEL_2._col1=RS_116._col1(Inner),Output:["_col0","_col2","_col3"],residual filter predicates:{(_col2 > _col3)}
-                            <-Reducer 3 [BROADCAST_EDGE] vectorized, llap
-                              BROADCAST [RS_116]
-                                PartitionCols:_col1
-                                Select Operator [SEL_115] (rows=1 width=197)
-                                  Output:["_col0","_col1"]
-                                  Filter Operator [FIL_114] (rows=1 width=197)
-                                    predicate:_col1 is not null
-                                    Group By Operator [GBY_113] (rows=1 width=197)
-                                      Output:["_col0","_col1"],aggregations:["min(VALUE._col0)"],keys:KEY._col0
-                                    <-Map 2 [SIMPLE_EDGE] vectorized, llap
-                                      SHUFFLE [RS_112]
-                                        PartitionCols:_col0
-                                        Group By Operator [GBY_111] (rows=1 width=197)
-                                          Output:["_col0","_col1"],aggregations:["min(i_current_price)"],keys:i_category
-                                          Filter Operator [FIL_110] (rows=18 width=197)
-                                            predicate:i_category is not null
-                                            TableScan [TS_3] (rows=18 width=197)
-                                              default@x1_item,j,Tbl:COMPLETE,Col:COMPLETE,Output:["i_category","i_current_price"]
-                            <-Select Operator [SEL_2] (rows=18 width=201)
-                                Output:["_col0","_col1","_col2"]
-                                Filter Operator [FIL_58] (rows=18 width=201)
-                                  predicate:(i_item_sk is not null and i_category is not null and i_current_price is not null)
-                                  TableScan [TS_0] (rows=18 width=201)
-                                    default@x1_item,i,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_category","i_current_price"]
-                        <-Select Operator [SEL_133] (rows=123457 width=8)
-                            Output:["_col0","_col1"]
-                            Filter Operator [FIL_132] (rows=123457 width=8)
-                              predicate:ss_item_sk is not null
-                              TableScan [TS_11] (rows=123457 width=8)
-                                default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_item_sk"]
+                            Map Join Operator [MAPJOIN_128] (rows=28 width=8)
+                              Conds:SEL_127._col1=RS_125._col0(Inner),Output:["_col0","_col1"]
+                            <-Reducer 9 [BROADCAST_EDGE] vectorized, llap
+                              BROADCAST [RS_125]
+                                PartitionCols:_col0
+                                Group By Operator [GBY_124] (rows=2 width=4)
+                                  Output:["_col0"],keys:KEY._col0
+                                <-Map 8 [SIMPLE_EDGE] vectorized, llap
+                                  SHUFFLE [RS_123]
+                                    PartitionCols:_col0
+                                    Group By Operator [GBY_122] (rows=2 width=4)
+                                      Output:["_col0"],keys:d_month_seq
+                                      Select Operator [SEL_121] (rows=4 width=12)
+                                        Output:["d_month_seq"]
+                                        Filter Operator [FIL_120] (rows=4 width=12)
+                                          predicate:((d_year = 2000) and ((d_year * d_moy) > 200000) and (d_moy = 2) and d_month_seq is not null)
+                                          TableScan [TS_17] (rows=28 width=12)
+                                            default@x1_date_dim,x1_date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_month_seq","d_year","d_moy"]
+                            <-Select Operator [SEL_127] (rows=28 width=8)
+                                Output:["_col0","_col1"]
+                                Filter Operator [FIL_126] (rows=28 width=8)
+                                  predicate:(d_date_sk is not null and d_month_seq is not null)
+                                  TableScan [TS_14] (rows=28 width=8)
+                                    default@x1_date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_month_seq"]
+                          Dynamic Partitioning Event Operator [EVENT_132] (rows=1 width=4)
+                            Group By Operator [GBY_131] (rows=1 width=4)
+                              Output:["_col0"],keys:_col0
+                              Select Operator [SEL_130] (rows=28 width=8)
+                                Output:["_col0"]
+                                 Please refer to the previous Map Join Operator [MAPJOIN_128]
+                        <-Map Join Operator [MAPJOIN_135] (rows=370371 width=4)
+                            Conds:RS_31._col0=SEL_134._col0(Inner),Output:["_col6"]
+                          <-Map 1 [BROADCAST_EDGE] llap
+                            BROADCAST [RS_31]
+                              PartitionCols:_col0
+                              Map Join Operator [MAPJOIN_103] (rows=6 width=228)
+                                Conds:SEL_2._col1=RS_117._col1(Inner),Output:["_col0","_col2","_col3"],residual filter predicates:{(_col2 > _col3)}
+                              <-Reducer 3 [BROADCAST_EDGE] vectorized, llap
+                                BROADCAST [RS_117]
+                                  PartitionCols:_col1
+                                  Select Operator [SEL_116] (rows=1 width=197)
+                                    Output:["_col0","_col1"]
+                                    Filter Operator [FIL_115] (rows=1 width=197)
+                                      predicate:_col1 is not null
+                                      Group By Operator [GBY_114] (rows=1 width=197)
+                                        Output:["_col0","_col1"],aggregations:["min(VALUE._col0)"],keys:KEY._col0
+                                      <-Map 2 [SIMPLE_EDGE] vectorized, llap
+                                        SHUFFLE [RS_113]
+                                          PartitionCols:_col0
+                                          Group By Operator [GBY_112] (rows=1 width=197)
+                                            Output:["_col0","_col1"],aggregations:["min(i_current_price)"],keys:i_category
+                                            Filter Operator [FIL_111] (rows=18 width=197)
+                                              predicate:i_category is not null
+                                              TableScan [TS_3] (rows=18 width=197)
+                                                default@x1_item,j,Tbl:COMPLETE,Col:COMPLETE,Output:["i_category","i_current_price"]
+                              <-Select Operator [SEL_2] (rows=18 width=201)
+                                  Output:["_col0","_col1","_col2"]
+                                  Filter Operator [FIL_58] (rows=18 width=201)
+                                    predicate:(i_item_sk is not null and i_category is not null and i_current_price is not null)
+                                    TableScan [TS_0] (rows=18 width=201)
+                                      default@x1_item,i,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_category","i_current_price"]
+                          <-Select Operator [SEL_134] (rows=123457 width=8)
+                              Output:["_col0","_col1"]
+                              Filter Operator [FIL_133] (rows=123457 width=8)
+                                predicate:ss_item_sk is not null
+                                TableScan [TS_11] (rows=123457 width=8)
+                                  default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_item_sk"]
 
 PREHOOK: query: select   count(*) cnt
  from

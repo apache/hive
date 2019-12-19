@@ -70,16 +70,16 @@ STAGE PLANS:
                   alias: clustergroupby
                   filterExpr: (ds = '100') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: key (type: string)
-                      null sort order: z
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: key
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
                       Group By Operator
                         aggregations: count()
                         keys: key (type: string)
@@ -213,16 +213,16 @@ STAGE PLANS:
                   alias: clustergroupby
                   filterExpr: (ds = '101') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: key (type: string)
-                      null sort order: z
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: key
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
                       Group By Operator
                         aggregations: count()
                         keys: key (type: string)
@@ -330,16 +330,16 @@ STAGE PLANS:
                   alias: clustergroupby
                   filterExpr: (ds = '101') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: length(key) (type: int)
-                    outputColumnNames: _col0
+                  Top N Key Operator
+                    sort order: +
+                    keys: length(key) (type: int)
+                    null sort order: a
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: _col0 (type: int)
-                      null sort order: a
+                    top n: 10
+                    Select Operator
+                      expressions: length(key) (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
                       Group By Operator
                         aggregations: count()
                         keys: _col0 (type: int)
@@ -426,16 +426,16 @@ STAGE PLANS:
                   alias: clustergroupby
                   filterExpr: (ds = '101') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: abs(length(key)) (type: int)
-                    outputColumnNames: _col0
+                  Top N Key Operator
+                    sort order: +
+                    keys: abs(length(key)) (type: int)
+                    null sort order: a
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: _col0 (type: int)
-                      null sort order: a
+                    top n: 10
+                    Select Operator
+                      expressions: abs(length(key)) (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
                       Group By Operator
                         aggregations: count()
                         keys: _col0 (type: int)
@@ -523,16 +523,16 @@ STAGE PLANS:
                   alias: clustergroupby
                   filterExpr: (ds = '101') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: key (type: string)
-                      null sort order: z
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: key
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
                       Group By Operator
                         aggregations: count()
                         keys: key (type: string)
@@ -641,16 +641,16 @@ STAGE PLANS:
                   alias: clustergroupby
                   filterExpr: (ds = '101') (type: boolean)
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: value (type: string)
-                    outputColumnNames: value
+                  Top N Key Operator
+                    sort order: +
+                    keys: value (type: string)
+                    null sort order: z
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: value (type: string)
-                      null sort order: z
+                    top n: 10
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: value
                       Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
                       Group By Operator
                         aggregations: count()
                         keys: value (type: string)
@@ -1277,16 +1277,16 @@ STAGE PLANS:
                   alias: clustergroupby
                   filterExpr: (ds = '102') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: key (type: string)
-                      null sort order: z
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: key
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
                       Group By Operator
                         aggregations: count()
                         bucketGroup: true
@@ -1396,16 +1396,16 @@ STAGE PLANS:
                   alias: clustergroupby
                   filterExpr: (ds = '102') (type: boolean)
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: value (type: string)
-                    outputColumnNames: value
+                  Top N Key Operator
+                    sort order: +
+                    keys: value (type: string)
+                    null sort order: z
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: value (type: string)
-                      null sort order: z
+                    top n: 10
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: value
                       Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
                       Group By Operator
                         aggregations: count()
                         keys: value (type: string)
@@ -1621,16 +1621,16 @@ STAGE PLANS:
                   alias: clustergroupby
                   filterExpr: (ds = '103') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: key (type: string)
-                      null sort order: z
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: key
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
                       Group By Operator
                         aggregations: count()
                         bucketGroup: true
@@ -1740,16 +1740,16 @@ STAGE PLANS:
                   alias: clustergroupby
                   filterExpr: (ds = '103') (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: key, value
+                  Top N Key Operator
+                    sort order: ++
+                    keys: key (type: string), value (type: string)
+                    null sort order: za
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: ++
-                      keys: key (type: string), value (type: string)
-                      null sort order: za
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: key, value
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
                       Group By Operator
                         aggregations: count()
                         keys: key (type: string), value (type: string)

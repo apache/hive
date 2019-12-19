@@ -26,16 +26,16 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string), substr(value, 5) (type: string)
-                    outputColumnNames: _col0, _col1
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: _col0 (type: string)
-                      null sort order: z
+                    top n: 20
+                    Select Operator
+                      expressions: key (type: string), substr(value, 5) (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 20
                       Group By Operator
                         aggregations: sum(_col1)
                         keys: _col0 (type: string)

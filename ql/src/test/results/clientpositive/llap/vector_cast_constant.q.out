@@ -137,24 +137,24 @@ STAGE PLANS:
                   Statistics: Num rows: 1049 Data size: 4196 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                  Select Operator
-                    expressions: i (type: int)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [2]
+                  Top N Key Operator
+                    sort order: +
+                    keys: i (type: int)
+                    null sort order: z
                     Statistics: Num rows: 1049 Data size: 4196 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: _col0 (type: int)
-                      null sort order: z
-                      Statistics: Num rows: 1049 Data size: 4196 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 2:int
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 2:int
+                        native: true
+                    Select Operator
+                      expressions: i (type: int)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [2]
+                      Statistics: Num rows: 1049 Data size: 4196 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(50), count(), sum(50.0D), count(50.0D), sum(50), count(50)
                         Group By Vectorization:

@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -63,6 +62,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
+import org.apache.hadoop.hive.ql.exec.TopNKeyOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -93,9 +93,10 @@ import org.apache.hadoop.hive.ql.optimizer.SetHashGroupByMinReduction;
 import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
-import org.apache.hadoop.hive.ql.optimizer.TopNKeyProcessor;
+import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
+import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyPushdownProcessor;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkJoinDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
@@ -1288,9 +1289,12 @@ public class TezCompiler extends TaskCompiler {
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(
-        new RuleRegExp("Top n key optimization", GroupByOperator.getOperatorName() + "%" +
-            ReduceSinkOperator.getOperatorName() + "%"),
+        new RuleRegExp("Top n key optimization", ReduceSinkOperator.getOperatorName() + "%"),
         new TopNKeyProcessor());
+    opRules.put(
+            new RuleRegExp("Top n key pushdown", TopNKeyOperator.getOperatorName() + "%"),
+            new TopNKeyPushdownProcessor());
+
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

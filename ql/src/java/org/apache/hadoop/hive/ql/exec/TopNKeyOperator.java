@@ -59,29 +59,27 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
     String nullSortOrder = conf.getNullOrder();
 
     ObjectInspector rowInspector = inputObjInspectors[0];
-    ObjectInspector standardObjInspector = ObjectInspectorUtils.getStandardObjectInspector(rowInspector);
     outputObjInspector = rowInspector;
 
     // init keyFields
     int numKeys = conf.getKeyColumns().size();
     ExprNodeEvaluator[] keyFields = new ExprNodeEvaluator[numKeys];
     ObjectInspector[] keyObjectInspectors = new ObjectInspector[numKeys];
-    ExprNodeEvaluator[] standardKeyFields = new ExprNodeEvaluator[numKeys];
-    ObjectInspector[] standardKeyObjectInspectors = new ObjectInspector[numKeys];
+    ObjectInspector[] currentKeyObjectInspectors = new ObjectInspector[numKeys];
 
     for (int i = 0; i < numKeys; i++) {
       ExprNodeDesc key = conf.getKeyColumns().get(i);
       keyFields[i] = ExprNodeEvaluatorFactory.get(key, hconf);
       keyObjectInspectors[i] = keyFields[i].initialize(rowInspector);
-      standardKeyFields[i] = ExprNodeEvaluatorFactory.get(key, hconf);
-      standardKeyObjectInspectors[i] = standardKeyFields[i].initialize(standardObjInspector);
+      currentKeyObjectInspectors[i] = ObjectInspectorUtils.getStandardObjectInspector(keyObjectInspectors[i],
+                      ObjectInspectorUtils.ObjectInspectorCopyOption.WRITABLE);
     }
 
     this.topNKeyFilter = new TopNKeyFilter<>(conf.getTopN(), new KeyWrapperComparator(
-            keyObjectInspectors, standardKeyObjectInspectors, columnSortOrder, nullSortOrder));
+            keyObjectInspectors, currentKeyObjectInspectors, columnSortOrder, nullSortOrder));
 
     KeyWrapperFactory keyWrapperFactory = new KeyWrapperFactory(keyFields, keyObjectInspectors,
-        standardKeyObjectInspectors);
+            currentKeyObjectInspectors);
     keyWrapper = keyWrapperFactory.getKeyWrapper();
   }
 
