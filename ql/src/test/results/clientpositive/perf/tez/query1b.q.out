@@ -307,16 +307,22 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (_col3 > _col6) (type: boolean)
                     Statistics: Num rows: 17457727 Data size: 5656303548 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: _col5 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 17457727 Data size: 1745772700 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
+                    Top N Key Operator
+                      sort order: +
+                      keys: _col5 (type: string)
+                      null sort order: z
+                      Statistics: Num rows: 17457727 Data size: 5656303548 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 100
+                      Select Operator
+                        expressions: _col5 (type: string)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 17457727 Data size: 1745772700 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Statistics: Num rows: 17457727 Data size: 1745772700 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
         Reducer 6 
             Execution mode: vectorized
             Reduce Operator Tree:

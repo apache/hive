@@ -836,17 +836,23 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((t > 0Y) and (d >= 10.0D) and (d < 12.0D) and UDFToInteger(si) BETWEEN 300 AND 400 and (s like '%son') and (not (s like '%car%'))) (type: boolean)
                     Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                    Top N Key Operator
+                      sort order: -
+                      keys: s (type: string)
+                      null sort order: z
                       Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col3 (type: string)
-                        null sort order: z
-                        sort order: -
+                      top n: 3
+                      Select Operator
+                        expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
+                        Reduce Output Operator
+                          key expressions: _col3 (type: string)
+                          null sort order: z
+                          sort order: -
+                          Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -920,17 +926,23 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((t > 0Y) and (d >= 10.0D) and (d < 12.0D) and UDFToInteger(si) BETWEEN 300 AND 400 and (s like '%son') and (not (s like '%car%'))) (type: boolean)
                     Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                    Top N Key Operator
+                      sort order: -
+                      keys: s (type: string)
+                      null sort order: z
                       Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col3 (type: string)
-                        null sort order: z
-                        sort order: -
+                      top n: 3
+                      Select Operator
+                        expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
+                        Reduce Output Operator
+                          key expressions: _col3 (type: string)
+                          null sort order: z
+                          sort order: -
+                          Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1070,17 +1082,23 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((t > 10Y) and (t <> 101Y) and (d >= 10) and (d < 12.0D) and (s like '%son') and (not (s like '%car%')) and (t > 0Y) and si BETWEEN 300 AND 400) (type: boolean)
                     Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                    Top N Key Operator
+                      sort order: -
+                      keys: s (type: string)
+                      null sort order: z
                       Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col3 (type: string)
-                        null sort order: z
-                        sort order: -
+                      top n: 3
+                      Select Operator
+                        expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
+                        Reduce Output Operator
+                          key expressions: _col3 (type: string)
+                          null sort order: z
+                          sort order: -
+                          Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1093,13 +1111,19 @@ STAGE PLANS:
                 Limit
                   Number of rows: 3
                   Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col3 (type: string)
-                    null sort order: z
+                  Top N Key Operator
                     sort order: -
+                    keys: _col3 (type: string)
+                    null sort order: z
                     Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
-                    value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
+                    top n: 3
+                    Reduce Output Operator
+                      key expressions: _col3 (type: string)
+                      null sort order: z
+                      sort order: -
+                      Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1176,17 +1200,23 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((t > 10Y) and (t <> 101Y) and (d >= 10) and (d < 12.0D) and (s like '%son') and (not (s like '%car%')) and (t > 0Y) and si BETWEEN 300 AND 400) (type: boolean)
                     Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                    Top N Key Operator
+                      sort order: -
+                      keys: s (type: string)
+                      null sort order: z
                       Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col3 (type: string)
-                        null sort order: z
-                        sort order: -
+                      top n: 3
+                      Select Operator
+                        expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
+                        Reduce Output Operator
+                          key expressions: _col3 (type: string)
+                          null sort order: z
+                          sort order: -
+                          Statistics: Num rows: 44 Data size: 4972 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1199,13 +1229,19 @@ STAGE PLANS:
                 Limit
                   Number of rows: 3
                   Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col3 (type: string)
-                    null sort order: z
+                  Top N Key Operator
                     sort order: -
+                    keys: _col3 (type: string)
+                    null sort order: z
                     Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
-                    value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
+                    top n: 3
+                    Reduce Output Operator
+                      key expressions: _col3 (type: string)
+                      null sort order: z
+                      sort order: -
+                      Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:

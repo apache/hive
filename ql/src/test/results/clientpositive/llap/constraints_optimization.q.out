@@ -187,16 +187,22 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: d_datekey (type: bigint)
-                      outputColumnNames: _col0
+                    Top N Key Operator
+                      sort order: +
+                      keys: d_datekey (type: bigint)
+                      null sort order: z
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: bigint)
-                        null sort order: z
-                        sort order: +
+                      top n: 10
+                      Select Operator
+                        expressions: d_datekey (type: bigint)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
+                        Reduce Output Operator
+                          key expressions: _col0 (type: bigint)
+                          null sort order: z
+                          sort order: +
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -256,16 +262,22 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: d_datekey (type: bigint)
-                      outputColumnNames: _col0
+                    Top N Key Operator
+                      sort order: +
+                      keys: d_datekey (type: bigint)
+                      null sort order: z
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: bigint)
-                        null sort order: z
-                        sort order: +
+                      top n: 10
+                      Select Operator
+                        expressions: d_datekey (type: bigint)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
+                        Reduce Output Operator
+                          key expressions: _col0 (type: bigint)
+                          null sort order: z
+                          sort order: +
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -326,16 +338,16 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
                     Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: d_datekey (type: bigint), d_id (type: bigint)
-                      outputColumnNames: d_datekey, d_id
+                    Top N Key Operator
+                      sort order: ++
+                      keys: d_datekey (type: bigint), d_id (type: bigint)
+                      null sort order: za
                       Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
-                      Top N Key Operator
-                        sort order: ++
-                        keys: d_datekey (type: bigint), d_id (type: bigint)
-                        null sort order: za
+                      top n: 10
+                      Select Operator
+                        expressions: d_datekey (type: bigint), d_id (type: bigint)
+                        outputColumnNames: d_datekey, d_id
                         Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
-                        top n: 10
                         Group By Operator
                           aggregations: count()
                           keys: d_datekey (type: bigint), d_id (type: bigint)
@@ -594,16 +606,16 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
                     Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: d_datekey (type: bigint), d_sellingseason (type: string)
-                      outputColumnNames: d_datekey, d_sellingseason
+                    Top N Key Operator
+                      sort order: ++
+                      keys: d_datekey (type: bigint), d_sellingseason (type: string)
+                      null sort order: za
                       Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-                      Top N Key Operator
-                        sort order: ++
-                        keys: d_datekey (type: bigint), d_sellingseason (type: string)
-                        null sort order: za
+                      top n: 10
+                      Select Operator
+                        expressions: d_datekey (type: bigint), d_sellingseason (type: string)
+                        outputColumnNames: d_datekey, d_sellingseason
                         Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-                        top n: 10
                         Group By Operator
                           keys: d_datekey (type: bigint), d_sellingseason (type: string)
                           minReductionHashAggr: 0.0
