@@ -1585,6 +1585,117 @@ public class TestCompactor {
     runCleaner(conf);
   }
 
+  /**
+   * Tests compaction of tables that were populated by LOAD DATA INPATH statements.
+   *
+   * In this scenario original ORC files are a structured in the following way:
+   * comp3
+   * |--delta_0000001_0000001_0000
+   *    |--000000_0
+   * |--delta_0000002_0000002_0000
+   *    |--000000_0
+   *    |--000001_0
+   *
+   * ..where comp3 table is not bucketed.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testCompactionOnDataLoadedInPath() throws Exception {
+    // Setup of LOAD INPATH scenario.
+    executeStatementOnDriver("drop table if exists comp0", driver);
+    executeStatementOnDriver("drop table if exists comp1", driver);
+    executeStatementOnDriver("drop table if exists comp3", driver);
+
+    executeStatementOnDriver("create external table comp0 (a string)", driver);
+    executeStatementOnDriver("insert into comp0 values ('1111111111111')", driver);
+    executeStatementOnDriver("insert into comp0 values ('2222222222222')", driver);
+    executeStatementOnDriver("insert into comp0 values ('3333333333333')", driver);
+    executeStatementOnDriver("create external table comp1 stored as orc as select * from comp0", driver);
+
+    executeStatementOnDriver("create table comp3 (a string) stored as orc " +
+        "TBLPROPERTIES ('transactional'='true')", driver);
+
+    IMetaStoreClient hmsClient = new HiveMetaStoreClient(conf);
+    Table table = hmsClient.getTable("default", "comp1");
+    FileSystem fs = FileSystem.get(conf);
+    Path path000 = fs.listStatus(new Path(table.getSd().getLocation()))[0].getPath();
+    Path path001 = new Path(path000.toString().replace("000000", "000001"));
+    Path path002 = new Path(path000.toString().replace("000000", "000002"));
+    fs.copyFromLocalFile(path000, path001);
+    fs.copyFromLocalFile(path000, path002);
+
+    executeStatementOnDriver("load data inpath '" + path002.toString() + "' into table comp3", driver);
+    executeStatementOnDriver("load data inpath '" + path002.getParent().toString() + "' into table comp3", driver);
+
+    // Run compaction.
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    CompactionRequest rqst = new CompactionRequest("default", "comp3", CompactionType.MAJOR);
+    txnHandler.compact(rqst);
+    runWorker(conf);
+    ShowCompactRequest scRqst = new ShowCompactRequest();
+    List<ShowCompactResponseElement> compacts = txnHandler.showCompact(scRqst).getCompacts();
+    assertEquals(1, compacts.size());
+    assertEquals(TxnStore.CLEANING_RESPONSE, compacts.get(0).getState());
+
+    runCleaner(conf);
+    compacts = txnHandler.showCompact(scRqst).getCompacts();
+    assertEquals(1, compacts.size());
+    assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(0).getState());
+
+    // Check compacted content and file structure.
+    table = hmsClient.getTable("default", "comp3");
+    List<String> rs = execSelectAndDumpData("select * from comp3", driver, "select");
+    assertEquals(9, rs.size());
+    assertEquals(3, rs.stream().filter(p -> "1111111111111".equals(p)).count());
+    assertEquals(3, rs.stream().filter(p -> "2222222222222".equals(p)).count());
+    assertEquals(3, rs.stream().filter(p -> "3333333333333".equals(p)).count());
+
+    FileStatus[] files = fs.listStatus(new Path(table.getSd().getLocation()));
+    // base dir
+    assertEquals(1, files.length);
+    assertEquals("base_0000002_v0000012", files[0].getPath().getName());
+    files = fs.listStatus(files[0].getPath(), AcidUtils.bucketFileFilter);
+    // files
+    assertEquals(2, files.length);
+    Arrays.stream(files).filter(p->"bucket_00000".equals(p.getPath().getName())).count();
+    Arrays.stream(files).filter(p->"bucket_00001".equals(p.getPath().getName())).count();
+
+    // Another insert into the newly compacted table.
+    executeStatementOnDriver("insert into comp3 values ('4444444444444')", driver);
+
+    // Compact with extra row too.
+    txnHandler.compact(rqst);
+    runWorker(conf);
+    compacts = txnHandler.showCompact(scRqst).getCompacts();
+    assertEquals(2, compacts.size());
+    assertEquals(TxnStore.CLEANING_RESPONSE, compacts.get(0).getState());
+
+    runCleaner(conf);
+    compacts = txnHandler.showCompact(scRqst).getCompacts();
+    assertEquals(2, compacts.size());
+    assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(0).getState());
+
+    // Check compacted content and file structure.
+    rs = execSelectAndDumpData("select * from comp3", driver, "select");
+    assertEquals(10, rs.size());
+    assertEquals(3, rs.stream().filter(p -> "1111111111111".equals(p)).count());
+    assertEquals(3, rs.stream().filter(p -> "2222222222222".equals(p)).count());
+    assertEquals(3, rs.stream().filter(p -> "3333333333333".equals(p)).count());
+    assertEquals(1, rs.stream().filter(p -> "4444444444444".equals(p)).count());
+
+    files = fs.listStatus(new Path(table.getSd().getLocation()));
+    // base dir
+    assertEquals(1, files.length);
+    assertEquals("base_0000003_v0000015", files[0].getPath().getName());
+    files = fs.listStatus(files[0].getPath(), AcidUtils.bucketFileFilter);
+    // files
+    assertEquals(2, files.length);
+    Arrays.stream(files).filter(p->"bucket_00000".equals(p.getPath().getName())).count();
+    Arrays.stream(files).filter(p->"bucket_00001".equals(p.getPath().getName())).count();
+
+  }
+
   private List<ShowCompactResponseElement> getCompactionList() throws Exception {
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
     runInitiator(conf);
