@@ -843,16 +843,34 @@ public class CompactorMR {
         }
       }
 
+      boolean isTableBucketed = entries.getInt(NUM_BUCKETS, -1) != -1;
 
       List<InputSplit> splits = new ArrayList<InputSplit>(splitToBucketMap.size());
       for (Map.Entry<Integer, BucketTracker> e : splitToBucketMap.entrySet()) {
         BucketTracker bt = e.getValue();
+        // For non-bucketed tables we might not have a 00000x_0 in all the delta dirs e.g. after
+        // multiple ingestions of various sizes.
+        Path[] deltasForSplit = isTableBucketed ? deltaDirs : getDeltaDirsFromBucketTracker(bt);
         splits.add(new CompactorInputSplit(entries, e.getKey(), bt.buckets,
-            bt.sawBase ? baseDir : null, deltaDirs));
+            bt.sawBase ? baseDir : null, deltasForSplit));
       }
 
       LOG.debug("Returning " + splits.size() + " splits");
       return splits.toArray(new InputSplit[splits.size()]);
+    }
+
+    private static Path[] getDeltaDirsFromBucketTracker(BucketTracker bucketTracker) {
+      List<Path> resultList = new ArrayList<>(bucketTracker.buckets.size());
+
+      for (int i = 0; i < bucketTracker.buckets.size(); ++i) {
+        Path p = bucketTracker.buckets.get(i).getParent();
+        if (p.getName().startsWith(AcidUtils.DELTA_PREFIX) ||
+            p.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
+          resultList.add(p);
+        }
+      }
+
+      return resultList.toArray(new Path[0]);
     }
 
     @Override
