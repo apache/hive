@@ -689,6 +689,8 @@ public class RelOptHiveTable implements RelOptTable {
       }
     }
     if (!projIndxSet.isEmpty()) {
+      LOG.info("Calculating column statistics for {}, projIndxSet: {}, allowMissingStats: {}", name,
+          projIndxLst, allowMissingStats);
       updateColStats(projIndxSet, allowMissingStats);
       for (Integer i : projIndxSet) {
         colStatsBldr.add(hiveColStatsMap.get(i));
