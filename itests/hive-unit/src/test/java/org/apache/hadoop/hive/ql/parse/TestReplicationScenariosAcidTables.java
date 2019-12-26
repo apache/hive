@@ -23,8 +23,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -679,10 +682,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.run("drop database " + dbName2 + " cascade");
   }
 
-  private void runCompaction(String dbName, String tblName, CompactionType compactionType) throws Throwable {
+  private void runCompaction(String dbName, String tblName, String partName, CompactionType compactionType)
+          throws Throwable {
     HiveConf hiveConf = new HiveConf(primary.getConf());
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
-    txnHandler.compact(new CompactionRequest(dbName, tblName, compactionType));
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, compactionType);
+    rqst.setPartitionname(partName);
+    txnHandler.compact(rqst);
     hiveConf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, false);
     runWorker(hiveConf);
     runCleaner(hiveConf);
@@ -694,47 +700,145 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     return fs.listStatus(tblLoc, EximUtil.getDirectoryFilter(fs));
   }
 
+  private FileStatus[] getDirsInPartitionLoc(WarehouseInstance wh, Partition partition)
+          throws Throwable {
+    Path tblLoc = new Path(partition.getSd().getLocation());
+    FileSystem fs = tblLoc.getFileSystem(wh.getConf());
+    return fs.listStatus(tblLoc, EximUtil.getDirectoryFilter(fs));
+  }
+
+  private long getMinorCompactedTxnId(FileStatus[] fileStatuses) {
+    for (FileStatus fileStatus : fileStatuses) {
+      if (fileStatus.getPath().getName().startsWith(AcidUtils.DELTA_PREFIX)) {
+        AcidUtils.ParsedDeltaLight delta = AcidUtils.ParsedDelta.parse(fileStatus.getPath());
+        if (delta.getVisibilityTxnId() != 0) {
+          return delta.getVisibilityTxnId();
+        }
+      }
+    }
+    return -1;
+  }
+
+  private long getMajorCompactedWriteId(FileStatus[] fileStatuses, boolean replica) {
+    for (FileStatus fileStatus : fileStatuses) {
+      if (fileStatus.getPath().getName().startsWith(AcidUtils.BASE_PREFIX)) {
+        long writeId = AcidUtils.ParsedBase.parseBase(fileStatus.getPath()).getWriteId();
+        if (replica) {
+          // for replica database, visibility txn id should be removed during repl copy.
+          assertTrue(AcidUtils.getVisibilityTxnId(fileStatus.getPath().getName()) == -1);
+        } else {
+          assertTrue(AcidUtils.getVisibilityTxnId(fileStatus.getPath().getName()) != -1);
+        }
+        return writeId;
+      }
+    }
+    return -1;
+  }
+
   @Test
-  public void testAcidTablesBootstrapWithCompaction() throws Throwable {
+  public void testAcidTablesBootstrapWithMajorCompaction() throws Throwable {
      String tableName = testName.getMethodName();
+     String tableNamepart = testName.getMethodName() + "_part";
      primary.run("use " + primaryDbName)
             .run("create table " + tableName + " (id int) clustered by(id) into 3 buckets stored as orc " +
                     "tblproperties (\"transactional\"=\"true\")")
             .run("insert into " + tableName + " values(1)")
-            .run("insert into " + tableName + " values(2)");
-    runCompaction(primaryDbName, tableName, CompactionType.MAJOR);
-    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName, null);
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+            .run("insert into " + tableName + " values(2)")
+            .run("create table " + tableNamepart + " (id int) partitioned by (part int) clustered by(id) " +
+                    "into 3 buckets stored as orc " +
+                     "tblproperties (\"transactional\"=\"true\") ")
+            .run("insert into " + tableNamepart + " values(1, 2)")
+            .run("insert into " + tableNamepart + " values(2, 2)");
+
+    runCompaction(primaryDbName, tableName, null, CompactionType.MAJOR);
+
+    List<Partition> partList = primary.getAllPartitions(primaryDbName, tableNamepart);
+    for (Partition part : partList) {
+      Table tbl = primary.getTable(primaryDbName, tableNamepart);
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues());
+      runCompaction(primaryDbName, tableNamepart, partName, CompactionType.MAJOR);
+    }
+
+    WarehouseInstance.Tuple dump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, dump.dumpLocation);
     replica.run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] {tableName})
+            .verifyResults(new String[] {tableName, tableNamepart})
             .run("repl status " + replicatedDbName)
-            .verifyResult(bootstrapDump.lastReplicationId)
+            .verifyResult(dump.lastReplicationId)
             .run("select id from " + tableName + " order by id")
+            .verifyResults(new String[]{"1", "2"})
+            .run("select id from " + tableNamepart + " order by id")
             .verifyResults(new String[]{"1", "2"});
 
-    FileStatus[] dirsInLoadPath = getDirsInTableLoc(primary, primaryDbName, tableName);
-    long writeId = -1;
-    for (FileStatus fileStatus : dirsInLoadPath) {
-      if (fileStatus.getPath().getName().startsWith(AcidUtils.BASE_PREFIX)) {
-        writeId = AcidUtils.ParsedBase.parseBase(fileStatus.getPath()).getWriteId();
-        assertTrue(AcidUtils.getVisibilityTxnId(fileStatus.getPath().getName()) != -1);
-        break;
-      }
-    }
-    //compaction is done so there should be a base directory.
+    FileStatus[] fileStatuses = getDirsInTableLoc(primary, primaryDbName, tableName);
+    long writeId = getMajorCompactedWriteId(fileStatuses, false);
     assertTrue(writeId != -1);
 
-    dirsInLoadPath = getDirsInTableLoc(replica, replicatedDbName, tableName);
-    for (FileStatus fileStatus : dirsInLoadPath) {
-      if (fileStatus.getPath().getName().startsWith(AcidUtils.BASE_PREFIX)) {
-        assertTrue(writeId == AcidUtils.ParsedBase.parseBase(fileStatus.getPath()).getWriteId());
-        assertTrue(AcidUtils.getVisibilityTxnId(fileStatus.getPath().getName()) == -1);
-        writeId = -1;
-        break;
-      }
+    fileStatuses = getDirsInTableLoc(replica, replicatedDbName, tableName);
+    // replica write id should be same as source write id.
+    assertTrue(writeId == getMajorCompactedWriteId(fileStatuses, true));
+
+    // check for partitioned table.
+    for (Partition part : partList) {
+      fileStatuses = getDirsInPartitionLoc(primary, part);
+      writeId = getMajorCompactedWriteId(fileStatuses, false);
+      assertTrue(writeId != -1);
+      Partition partReplica = replica.getPartition(replicatedDbName, tableNamepart, part.getValues());
+      fileStatuses = getDirsInPartitionLoc(replica, partReplica);
+      assertTrue(writeId == getMajorCompactedWriteId(fileStatuses, true));
     }
-    //make sure that it has done the verification.
-    assertTrue(writeId == -1);
+  }
+
+  @Test
+  public void testAcidTablesBootstrapWithMinorCompaction() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNamepart = testName.getMethodName() + "_part";
+    primary.run("use " + primaryDbName)
+            .run("create table " + tableName + " (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into " + tableName + " values(1)")
+            .run("insert into " + tableName + " values(2)")
+            .run("create table " + tableNamepart + " (id int) partitioned by (part int) clustered by(id) " +
+                    "into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\") ")
+            .run("insert into " + tableNamepart + " values(1, 2)")
+            .run("insert into " + tableNamepart + " values(2, 2)");
+
+    runCompaction(primaryDbName, tableName, null, CompactionType.MINOR);
+
+    List<Partition> partList = primary.getAllPartitions(primaryDbName, tableNamepart);
+    for (Partition part : partList) {
+      Table tbl = primary.getTable(primaryDbName, tableNamepart);
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues());
+      runCompaction(primaryDbName, tableNamepart, partName, CompactionType.MINOR);
+    }
+
+    WarehouseInstance.Tuple dump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, dump.dumpLocation);
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {tableName, tableNamepart})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(dump.lastReplicationId)
+            .run("select id from " + tableName + " order by id")
+            .verifyResults(new String[]{"1", "2"})
+            .run("select id from " + tableNamepart + " order by id")
+            .verifyResults(new String[]{"1", "2"});
+
+    FileStatus[] fileStatuses = getDirsInTableLoc(primary, primaryDbName, tableName);
+    assertTrue(-1 != getMinorCompactedTxnId(fileStatuses));
+
+    fileStatuses = getDirsInTableLoc(replica, replicatedDbName, tableName);
+    Assert.assertEquals(-1, getMinorCompactedTxnId(fileStatuses));
+
+    // check for partitioned table.
+    for (Partition part : partList) {
+      fileStatuses = getDirsInPartitionLoc(primary, part);
+      assertTrue(-1 != getMinorCompactedTxnId(fileStatuses));
+      Partition partReplica = replica.getPartition(replicatedDbName, tableNamepart, part.getValues());
+      fileStatuses = getDirsInPartitionLoc(replica, partReplica);
+      assertTrue(-1 == getMinorCompactedTxnId(fileStatuses));
+    }
   }
 }

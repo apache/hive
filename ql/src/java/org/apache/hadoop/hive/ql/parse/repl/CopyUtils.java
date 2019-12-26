@@ -469,7 +469,8 @@ public class CopyUtils {
       // aborted or live txn at target.
       // In case of bootstrap load, we copy only the committed data, so the directory with only write id
       // can be created. The validity txn id can be removed from the directory name.
-      // TODO : Support for incremental load flow. This can be done once replication of compaction is decided.
+      // TODO : As of now compaction is not replicated so this logic will work. Need to revisit the logic once
+      // we start replicating the compaction in incremental load.
       if (AcidUtils.getVisibilityTxnId(subDir) > 0) {
         if (subDir.startsWith(AcidUtils.BASE_PREFIX)) {
           AcidUtils.ParsedBase pb = AcidUtils.ParsedBase.parseBase(new Path(subDir));
