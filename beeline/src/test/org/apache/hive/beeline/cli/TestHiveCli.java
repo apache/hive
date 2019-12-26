@@ -18,12 +18,14 @@
 package org.apache.hive.beeline.cli;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -33,9 +35,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 
 public class TestHiveCli {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveCli.class.getName());
+
   private static final int ERRNO_OK = 0;
   private static final int ERRNO_ARGS = 1;
   private static final int ERRNO_OTHER = 2;
@@ -48,15 +52,171 @@ public class TestHiveCli {
       "create table if not exists test.testSrcTbl3(sc3 string);";
   private final static String SOURCE_CONTEXT4 = "show tables;!ls;show tables;\nquit;";
   private final static String SOURCE_CONTEXT5 = "-- test;\n;show tables;\nquit;";
-  final static String CMD =
-      "create database if not exists test;\ncreate table if not exists test.testTbl(a string, b "
-          + "string);\n";
+
+  private final static String CMD = "create database if not exists test;\n" +
+      "create table if not exists test.testTbl(a string, b string);\n";
   private HiveCli cli;
-  private OutputStream os;
-  private PrintStream ps;
-  private OutputStream errS;
-  private PrintStream errPs;
+
+  private OutputStream out, err;
+  private PrintStream origOut, origErr;
+
   private File tmp = null;
+
+  @Test
+  public void testInValidCmd() {
+    verifyCMD("!lss\n", "Failed to execute lss", err, null, ERRNO_OTHER, true);
+  }
+
+  @Test
+  public void testCmd() {
+    verifyCMD("show tables;!ls;show tables;\n", "src", out, null, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testCommentStripping() {
+    // this should work as comments are stripped by HiveCli
+    verifyCMD("!ls --abcdefghijklmnopqrstuvwxyz\n", "src", out, null, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testSetPromptValue() {
+    verifyCMD("set hive.cli.prompt=MYCLI;SHOW\nTABLES;", "MYCLI> ", err, null,
+        ERRNO_OK, true);
+  }
+
+  @Test
+  public void testSetHeaderValue() {
+    verifyCMD(
+        "create database if not exists test;\ncreate table if not exists test.testTbl(a string, b string);\nset hive.cli.print.header=true;\n select * from test.testTbl;\n",
+        "testtbl.a testtbl.b", out, null, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testHelp() {
+    verifyCMD(null, "usage: hive", out, new String[] { "-H" }, ERRNO_ARGS, true);
+  }
+
+  @Test
+  public void testInvalidDatabaseOptions() {
+    verifyCMD("\nshow tables;\nquit;\n", "Database does not exist: invalidDB",
+        err, new String[] { "--database", "invalidDB" }, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testDatabaseOptions() {
+    verifyCMD("\nshow tables;\nquit;", "testtbl", out,
+        new String[] { "--database", "test" }, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testSourceCmd() {
+    File f = generateTmpFile(SOURCE_CONTEXT);
+    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl;\nquit;\n",
+        "sc1", out, new String[] { "--database", "test" }, ERRNO_OK, true);
+    f.delete();
+  }
+
+  @Test
+  public void testSourceCmd2() {
+    File f = generateTmpFile(SOURCE_CONTEXT3);
+    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl3;\nquit;\n",
+        "sc3", out, new String[] { "--database", "test" }, ERRNO_OK, true);
+    f.delete();
+  }
+
+  @Test
+  public void testSourceCmd3() {
+    File f = generateTmpFile(SOURCE_CONTEXT4);
+    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl4;\nquit;\n", "src", out,
+        new String[] { "--database", "test" }, ERRNO_OTHER, true);
+    f.delete();
+  }
+
+  @Test
+  public void testSourceCmd4() {
+    File f = generateTmpFile(SOURCE_CONTEXT5);
+    verifyCMD("source " + f.getPath() + ";", "testtbl", out,
+      new String[] { "--database", "test" }, ERRNO_OK, true);
+    f.delete();
+  }
+
+  @Test
+  public void testSqlFromCmd() {
+    verifyCMD(null, "", out, new String[] { "-e", "show databases;" }, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testSqlFromCmdWithDBName() {
+    verifyCMD(null, "testtbl", out,
+        new String[] { "-e", "show tables;", "--database", "test" }, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testInvalidOptions() {
+    verifyCMD(null,
+        "The '-e' and '-f' options cannot be specified simultaneously", err,
+        new String[] { "-e", "show tables;", "-f", "path/to/file" }, ERRNO_ARGS, true);
+  }
+
+  @Test
+  public void testInvalidOptions2() {
+    verifyCMD(null, "Unrecognized option: -k", err, new String[] { "-k" },
+        ERRNO_ARGS, true);
+  }
+
+  @Test
+  public void testVariables() {
+    verifyCMD(
+        "set system:xxx=5;\nset system:yyy=${system:xxx};\nset system:yyy;", "", out, null, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testVariablesForSource() {
+    File f = generateTmpFile(SOURCE_CONTEXT2);
+    verifyCMD(
+        "set hiveconf:zzz=" + f.getAbsolutePath() + ";\nsource ${hiveconf:zzz};\ndesc testSrcTbl2;",
+        "sc2", out, new String[] { "--database", "test" }, ERRNO_OK, true);
+    f.delete();
+  }
+
+  @Test
+  public void testErrOutput() {
+    verifyCMD("show tables;set system:xxx=5;set system:yyy=${system:xxx};\nlss;",
+        "cannot recognize input near 'lss' '<EOF>' '<EOF>'", err, null, ERRNO_OTHER, true);
+  }
+
+  @Test
+  public void testUseCurrentDB1() {
+    verifyCMD(
+        "create database if not exists testDB; set hive.cli.print.current.db=true;use testDB;\n"
+            + "use default;drop if exists testDB;", "hive (testDB)>", err, null, ERRNO_OTHER, true);
+  }
+
+  @Test
+  public void testUseCurrentDB2() {
+    verifyCMD(
+        "create database if not exists testDB; set hive.cli.print.current.db=true;use\ntestDB;\nuse default;drop if exists testDB;",
+        "hive (testDB)>", err, null, ERRNO_OTHER, true);
+  }
+
+  @Test
+  public void testUseCurrentDB3() {
+    verifyCMD(
+        "create database if not exists testDB; set hive.cli.print.current.db=true;use  testDB;\n"
+            + "use default;drop if exists testDB;", "hive (testDB)>", err, null, ERRNO_OTHER, true);
+  }
+
+  @Test
+  public void testUseInvalidDB() {
+    verifyCMD("set hive.cli.print.current.db=true;use invalidDB;",
+        "hive (invalidDB)>", out, null, ERRNO_OTHER, false);
+  }
+
+  @Test
+  public void testNoErrorDB() {
+    verifyCMD(null, "Error: Method not supported (state=,code=0)", err, new String[] { "-e", "show tables;" },
+        ERRNO_OK, false);
+  }
 
   private void executeCMD(String[] args, String input, int retCode) {
     InputStream inputStream = null;
@@ -70,7 +230,7 @@ public class TestHiveCli {
       LOG.error("Failed to execute command due to the error: " + e);
     } finally {
       if (retCode != ret) {
-        LOG.error("Failed due to the error:" + errS.toString());
+        LOG.error("Failed due to the error:" + err.toString());
         Assert.fail("Supported return code is " + retCode + " while the actual is " + ret);
       }
     }
@@ -78,13 +238,6 @@ public class TestHiveCli {
 
   /**
    * This method is used for verifying CMD to see whether the output contains the keywords provided.
-   *
-   * @param CMD
-   * @param keywords
-   * @param os
-   * @param options
-   * @param retCode
-   * @param contains
    */
   private void verifyCMD(String CMD, String keywords, OutputStream os, String[] options, int retCode,
       boolean contains) {
@@ -101,171 +254,41 @@ public class TestHiveCli {
     }
   }
 
-  @Test
-  public void testInValidCmd() {
-    verifyCMD("!lss\n", "Failed to execute lss", errS, null, ERRNO_OTHER, true);
+  @BeforeClass
+  public static void init(){
+    // something changed scratch dir permissions, so test can't execute
+    HiveConf hiveConf = new HiveConf();
+    String scratchDir = hiveConf.get(HiveConf.ConfVars.SCRATCHDIR.varname);
+    File file = new File(scratchDir);
+    if (file.exists()) {
+      file.setWritable(true, false);
+    }
   }
 
-  @Test
-  public void testCmd() {
-    verifyCMD("show tables;!ls;show tables;\n", "src", os, null, ERRNO_OK, true);
-  }
-
-  @Test
-  public void testCommentStripping() {
-    // this should work as comments are stripped by HiveCli
-    verifyCMD("!ls --abcdefghijklmnopqrstuvwxyz\n", "src", os, null, ERRNO_OK, true);
-  }
-
-
-  @Test
-  public void testSetPromptValue() {
-    verifyCMD("set hive.cli.prompt=MYCLI;SHOW\nTABLES;", "MYCLI> ", errS, null,
-        ERRNO_OK, true);
-  }
-
-  @Test
-  public void testSetHeaderValue() {
-    verifyCMD(
-        "create database if not exists test;\ncreate table if not exists test.testTbl(a string, b string);\nset hive.cli.print.header=true;\n select * from test.testTbl;\n",
-        "testtbl.a testtbl.b", os, null, ERRNO_OK, true);
-  }
-
-  @Test
-  public void testHelp() {
-    verifyCMD(null, "usage: hive", os, new String[] { "-H" }, ERRNO_ARGS, true);
-  }
-
-  @Test
-  public void testInvalidDatabaseOptions() {
-    verifyCMD("\nshow tables;\nquit;\n", "Database does not exist: invalidDB",
-        errS, new String[] { "--database", "invalidDB" }, ERRNO_OK, true);
-  }
-
-  @Test
-  public void testDatabaseOptions() {
-    verifyCMD("\nshow tables;\nquit;", "testtbl", os,
-        new String[] { "--database", "test" }, ERRNO_OK, true);
-  }
-
-  @Test
-  public void testSourceCmd() {
-    File f = generateTmpFile(SOURCE_CONTEXT);
-    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl;\nquit;\n",
-        "sc1", os, new String[] { "--database", "test" }, ERRNO_OK, true);
-    f.delete();
-  }
-
-  @Test
-  public void testSourceCmd2() {
-    File f = generateTmpFile(SOURCE_CONTEXT3);
-    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl3;\nquit;\n",
-        "sc3", os, new String[] { "--database", "test" }, ERRNO_OK, true);
-    f.delete();
-  }
-
-  @Test
-  public void testSourceCmd3() {
-    File f = generateTmpFile(SOURCE_CONTEXT4);
-    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl4;\nquit;\n", "src", os,
-        new String[] { "--database", "test" }, ERRNO_OTHER, true);
-    f.delete();
-  }
-
-  @Test
-  public void testSourceCmd4() {
-    File f = generateTmpFile(SOURCE_CONTEXT5);
-    verifyCMD("source " + f.getPath() + ";", "testtbl", os,
-      new String[] { "--database", "test" }, ERRNO_OK, true);
-    f.delete();
-  }
-
-  @Test
-  public void testSqlFromCmd() {
-    verifyCMD(null, "", os, new String[] { "-e", "show databases;" }, ERRNO_OK, true);
-  }
-
-  @Test
-  public void testSqlFromCmdWithDBName() {
-    verifyCMD(null, "testtbl", os,
-        new String[] { "-e", "show tables;", "--database", "test" }, ERRNO_OK, true);
-  }
-
-  @Test
-  public void testInvalidOptions() {
-    verifyCMD(null,
-        "The '-e' and '-f' options cannot be specified simultaneously", errS,
-        new String[] { "-e", "show tables;", "-f", "path/to/file" }, ERRNO_ARGS, true);
-  }
-
-  @Test
-  public void testInvalidOptions2() {
-    verifyCMD(null, "Unrecognized option: -k", errS, new String[] { "-k" },
-        ERRNO_ARGS, true);
-  }
-
-  @Test
-  public void testVariables() {
-    verifyCMD(
-        "set system:xxx=5;\nset system:yyy=${system:xxx};\nset system:yyy;", "", os, null, ERRNO_OK, true);
-  }
-
-  @Test
-  public void testVariablesForSource() {
-    File f = generateTmpFile(SOURCE_CONTEXT2);
-    verifyCMD(
-        "set hiveconf:zzz=" + f.getAbsolutePath() + ";\nsource ${hiveconf:zzz};\ndesc testSrcTbl2;",
-        "sc2", os, new String[] { "--database", "test" }, ERRNO_OK, true);
-    f.delete();
-  }
-
-  @Test
-  public void testErrOutput() {
-    verifyCMD("show tables;set system:xxx=5;set system:yyy=${system:xxx};\nlss;",
-        "cannot recognize input near 'lss' '<EOF>' '<EOF>'", errS, null, ERRNO_OTHER, true);
-  }
-
-  @Test
-  public void testUseCurrentDB1() {
-    verifyCMD(
-        "create database if not exists testDB; set hive.cli.print.current.db=true;use testDB;\n"
-            + "use default;drop if exists testDB;", "hive (testDB)>", errS, null, ERRNO_OTHER, true);
-  }
-
-  @Test
-  public void testUseCurrentDB2() {
-    verifyCMD(
-        "create database if not exists testDB; set hive.cli.print.current.db=true;use\ntestDB;\nuse default;drop if exists testDB;",
-        "hive (testDB)>", errS, null, ERRNO_OTHER, true);
-  }
-
-  @Test
-  public void testUseCurrentDB3() {
-    verifyCMD(
-        "create database if not exists testDB; set hive.cli.print.current.db=true;use  testDB;\n"
-            + "use default;drop if exists testDB;", "hive (testDB)>", errS, null, ERRNO_OTHER, true);
-  }
-
-  @Test
-  public void testUseInvalidDB() {
-    verifyCMD("set hive.cli.print.current.db=true;use invalidDB;",
-        "hive (invalidDB)>", os, null, ERRNO_OTHER, false);
-  }
-
-  @Test
-  public void testNoErrorDB() {
-    verifyCMD(null, "Error: Method not supported (state=,code=0)", errS, new String[] { "-e", "show tables;" },
-        ERRNO_OK, false);
+  @Before
+  public void setup() throws IOException, URISyntaxException {
+    System.setProperty("datanucleus.schema.autoCreateAll", "true");
+    cli = new HiveCli();
+    initFromFile();
+    redirectOutputStream();
   }
 
   private void redirectOutputStream() {
-    // Setup output stream to redirect output to
-    os = new ByteArrayOutputStream();
-    ps = new PrintStream(os);
-    errS = new ByteArrayOutputStream();
-    errPs = new PrintStream(errS);
-    System.setOut(ps);
-    System.setErr(errPs);
+    out = new ByteArrayOutputStream();
+    origOut = System.out;
+    System.setOut(new PrintStream(out));
+
+    err = new ByteArrayOutputStream();
+    origErr = System.err;
+    System.setErr(new PrintStream(err));
+  }
+
+  private void restoreOutputStream() {
+    System.out.flush();
+    System.setOut(origOut);
+
+    System.err.flush();
+    System.setErr(origErr);
   }
 
   private void initFromFile() {
@@ -291,16 +314,9 @@ public class TestHiveCli {
     return file;
   }
 
-  @Before
-  public void setup() {
-    System.setProperty("datanucleus.schema.autoCreateAll", "true");
-    cli = new HiveCli();
-    redirectOutputStream();
-    initFromFile();
-  }
-
   @After
   public void tearDown() {
     tmp.delete();
+    restoreOutputStream();
   }
 }
