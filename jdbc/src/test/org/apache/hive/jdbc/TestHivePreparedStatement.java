@@ -177,16 +177,22 @@ public class TestHivePreparedStatement {
         ArgumentCaptor.forClass(TExecuteStatementReq.class);
     HivePreparedStatement ps = new HivePreparedStatement(connection, client, sessHandle, sql);
 
-    ps.setString(1, "anyValue\\' or 1=1 --");
+    ps.setString(1, "anyValue' or 1=1 --");
     ps.execute();
     verify(client).ExecuteStatement(argument.capture());
     assertEquals("select * from table where value='anyValue\\' or 1=1 --'",
         argument.getValue().getStatement());
 
-    ps.setString(1, "anyValue\\\\' or 1=1 --");
+    ps.setString(1, "anyValue\\' or 1=1 --");
     ps.execute();
     verify(client, times(2)).ExecuteStatement(argument.capture());
     assertEquals("select * from table where value='anyValue\\\\\\' or 1=1 --'",
+        argument.getValue().getStatement());
+
+    ps.setString(1, "anyValue\\");
+    ps.execute();
+    verify(client, times(3)).ExecuteStatement(argument.capture());
+    assertEquals("select * from table where value='anyValue\\\\'",
         argument.getValue().getStatement());
   }
 
@@ -206,7 +212,7 @@ public class TestHivePreparedStatement {
     ps.setBinaryStream(1, new ByteArrayInputStream("\\'anyValue\\' or 1=1".getBytes()));
     ps.execute();
     verify(client, times(2)).ExecuteStatement(argument.capture());
-    assertEquals("select * from table where value='\\'anyValue\\' or 1=1'",
+    assertEquals("select * from table where value='\\\\\\'anyValue\\\\\\' or 1=1'",
         argument.getValue().getStatement());
   }
 }
