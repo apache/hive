@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.accumulo.predicate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +29,6 @@ import java.util.Set;
 
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.data.Range;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapper;
@@ -362,8 +362,7 @@ public class AccumuloPredicateHandler {
     is.addOption(PrimitiveComparisonFilter.P_COMPARE_CLASS, tuple.getpCompare().getClass()
         .getName());
     is.addOption(PrimitiveComparisonFilter.COMPARE_OPT_CLASS, tuple.getcOpt().getClass().getName());
-    is.addOption(PrimitiveComparisonFilter.CONST_VAL,
-        new String(Base64.encodeBase64(tuple.getConstVal())));
+    is.addOption(PrimitiveComparisonFilter.CONST_VAL, Base64.getEncoder().encodeToString(tuple.getConstVal()));
     is.addOption(PrimitiveComparisonFilter.COLUMN, accumuloColumnMapping.serialize());
 
     return is;

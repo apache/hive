@@ -47,6 +47,7 @@ import java.sql.SQLTransientException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,7 +77,6 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -474,7 +474,7 @@ public final class Utilities {
         }
         serializedSize = planString.length();
         planMode = "RPC";
-        byte[] planBytes = Base64.decodeBase64(planString);
+        byte[] planBytes = Base64.getDecoder().decode(planString);
         in = new ByteArrayInputStream(planBytes);
         in = new InflaterInputStream(in);
       } else {
@@ -617,7 +617,7 @@ public final class Utilities {
         } finally {
           IOUtils.closeStream(out);
         }
-        final String serializedPlan = Base64.encodeBase64String(byteOut.toByteArray());
+        final String serializedPlan = Base64.getEncoder().encodeToString(byteOut.toByteArray());
         serializedSize = serializedPlan.length();
         planMode = "RPC";
         conf.set(planPath.toUri().getPath(), serializedPlan);
