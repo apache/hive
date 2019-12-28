@@ -18,7 +18,6 @@
 
 package org.apache.hive.jdbc;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
@@ -50,6 +49,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLTimeoutException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -992,9 +992,7 @@ public class HiveStatement implements java.sql.Statement {
     if (stmtHandle != null) {
       // Set on the server side.
       // @see org.apache.hive.service.cli.operation.SQLOperation#prepare
-      String guid64 =
-          Base64.encodeBase64URLSafeString(stmtHandle.getOperationId().getGuid()).trim();
-      return guid64;
+      return Base64.getUrlEncoder().encodeToString(stmtHandle.getOperationId().getGuid()).trim();
     }
     return null;
   }
