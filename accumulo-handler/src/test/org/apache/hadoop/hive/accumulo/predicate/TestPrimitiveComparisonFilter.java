@@ -21,10 +21,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.io.IntWritable;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class TestPrimitiveComparisonFilter {
 
     for (int i = 0; i < 500; i++) {
       String constant = Integer.toString(i);
-      options.put(PrimitiveComparisonFilter.CONST_VAL, new String(Base64.encodeBase64(constant.getBytes())));
+      options.put(PrimitiveComparisonFilter.CONST_VAL, Base64.getEncoder().encodeToString(constant.getBytes()));
 
       Assert.assertEquals(constant, new String(filter.getConstant(options)));
     }
@@ -60,7 +60,7 @@ public class TestPrimitiveComparisonFilter {
       writable.set(i);
       writable.write(out);
 
-      options.put(PrimitiveComparisonFilter.CONST_VAL, new String(Base64.encodeBase64(baos.toByteArray())));
+      options.put(PrimitiveComparisonFilter.CONST_VAL, Base64.getEncoder().encodeToString(baos.toByteArray()));
 
       byte[] bytes = filter.getConstant(options);
 

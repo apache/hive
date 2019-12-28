@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.accumulo.predicate;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +31,6 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMappingFactory;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloColumnMapping;
@@ -136,6 +136,6 @@ public class PrimitiveComparisonFilter extends WholeRowIterator {
 
   protected byte[] getConstant(Map<String, String> options) {
     String b64Const = options.get(CONST_VAL);
-    return Base64.decodeBase64(b64Const.getBytes());
+    return Base64.getDecoder().decode(b64Const.getBytes());
   }
 }
