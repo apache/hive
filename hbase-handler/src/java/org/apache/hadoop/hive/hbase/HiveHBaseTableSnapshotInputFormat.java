@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.hbase;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
@@ -36,6 +35,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 
 public class HiveHBaseTableSnapshotInputFormat
@@ -54,7 +54,7 @@ public class HiveHBaseTableSnapshotInputFormat
   // Copied from HBase's TableMapreduceUtil since it is not public API
   static String convertScanToString(Scan scan) throws IOException {
     ClientProtos.Scan proto = ProtobufUtil.toScan(scan);
-    return Base64.encodeBase64String(proto.toByteArray());
+    return Base64.getEncoder().encodeToString(proto.toByteArray());
   }
 
   @Override
