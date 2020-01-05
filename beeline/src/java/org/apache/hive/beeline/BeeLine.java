@@ -1878,7 +1878,7 @@ public class BeeLine implements Closeable {
    */
   int getSize(ResultSet rs) {
     try {
-      if (rs.getType() == rs.TYPE_FORWARD_ONLY) {
+      if (rs.getType() == ResultSet.TYPE_FORWARD_ONLY) {
         return -1;
       }
       rs.last();
