@@ -236,6 +236,7 @@ final class ColorBuffer implements Comparable<Object> {
     }
   }
 
+  @Override
   public int compareTo(Object other) {
     return getMono().compareTo(((ColorBuffer) other).getMono());
   }
