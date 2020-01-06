@@ -429,11 +429,6 @@ public class TaskExecutorService extends AbstractService
             nextSanityCheck = null; // We are going to do something useful now.
             try {
               tryScheduleUnderLock(task);
-              // Wait queue could have been re-ordered in the mean time because of concurrent task
-              // submission. So remove the specific task instead of the head task.
-              if (waitQueue.remove(task)) {
-                metrics.setExecutorNumQueuedRequests(waitQueue.size());
-              }
               lastKillTimeMs = null; // We have filled the spot we may have killed for (if any).
             } catch (RejectedExecutionException e) {
               rejectedException = e;
@@ -762,6 +757,11 @@ public class TaskExecutorService extends AbstractService
     }
     numSlotsAvailable.decrementAndGet();
     metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
+    // Wait queue could have been re-ordered in the mean time because of concurrent task
+    // submission. So remove the specific task instead of the head task.
+    if (waitQueue.remove(taskWrapper)) {
+      metrics.setExecutorNumQueuedRequests(waitQueue.size());
+    }
   }
 
   private boolean handleScheduleAttemptedRejection(TaskWrapper rejected) {
