@@ -1,0 +1,66 @@
+PREHOOK: query: create temporary table partition_schema1_temp(key string, value string) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_schema1_temp
+POSTHOOK: query: create temporary table partition_schema1_temp(key string, value string) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_schema1_temp
+PREHOOK: query: insert overwrite table partition_schema1_temp partition(dt='100') select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@partition_schema1_temp@dt=100
+POSTHOOK: query: insert overwrite table partition_schema1_temp partition(dt='100') select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@partition_schema1_temp@dt=100
+POSTHOOK: Lineage: partition_schema1_temp PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_schema1_temp PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc partition_schema1_temp partition(dt='100')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partition_schema1_temp
+POSTHOOK: query: desc partition_schema1_temp partition(dt='100')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partition_schema1_temp
+key                 	string              	                    
+value               	string              	                    
+dt                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dt                  	string              	                    
+PREHOOK: query: alter table partition_schema1_temp add columns (x string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@partition_schema1_temp
+PREHOOK: Output: default@partition_schema1_temp
+POSTHOOK: query: alter table partition_schema1_temp add columns (x string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@partition_schema1_temp
+POSTHOOK: Output: default@partition_schema1_temp
+PREHOOK: query: desc partition_schema1_temp
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partition_schema1_temp
+POSTHOOK: query: desc partition_schema1_temp
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partition_schema1_temp
+key                 	string              	                    
+value               	string              	                    
+x                   	string              	                    
+dt                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dt                  	string              	                    
+PREHOOK: query: desc partition_schema1_temp partition (dt='100')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partition_schema1_temp
+POSTHOOK: query: desc partition_schema1_temp partition (dt='100')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partition_schema1_temp
+key                 	string              	                    
+value               	string              	                    
+dt                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dt                  	string              	                    

@@ -1,0 +1,171 @@
+PREHOOK: query: DROP TABLE parquet_partitioned_staging_temp
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_partitioned_staging_temp
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE parquet_partitioned_temp
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_partitioned_temp
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TEMPORARY TABLE parquet_partitioned_staging_temp (
+  id int,
+  str string,
+  part string
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_partitioned_staging_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE parquet_partitioned_staging_temp (
+  id int,
+  str string,
+  part string
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_partitioned_staging_temp
+PREHOOK: query: CREATE TEMPORARY TABLE parquet_partitioned_temp (
+  id int,
+  str string
+) PARTITIONED BY (part string)
+STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_partitioned_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE parquet_partitioned_temp (
+  id int,
+  str string
+) PARTITIONED BY (part string)
+STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_partitioned_temp
+PREHOOK: query: DESCRIBE FORMATTED parquet_partitioned_temp
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_partitioned_temp
+POSTHOOK: query: DESCRIBE FORMATTED parquet_partitioned_temp
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_partitioned_temp
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+str                 	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+part                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"str\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partitioned.txt' OVERWRITE INTO TABLE parquet_partitioned_staging_temp
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_partitioned_staging_temp
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partitioned.txt' OVERWRITE INTO TABLE parquet_partitioned_staging_temp
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_partitioned_staging_temp
+PREHOOK: query: SELECT * FROM parquet_partitioned_staging_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_partitioned_staging_temp
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_partitioned_staging_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_partitioned_staging_temp
+#### A masked pattern was here ####
+1	foo	part1
+2	bar	part2
+3	baz	part2
+PREHOOK: query: INSERT OVERWRITE TABLE parquet_partitioned_temp PARTITION (part) SELECT * FROM parquet_partitioned_staging_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_partitioned_staging_temp
+PREHOOK: Output: default@parquet_partitioned_temp
+POSTHOOK: query: INSERT OVERWRITE TABLE parquet_partitioned_temp PARTITION (part) SELECT * FROM parquet_partitioned_staging_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_partitioned_staging_temp
+POSTHOOK: Output: default@parquet_partitioned_temp@part=part1
+POSTHOOK: Output: default@parquet_partitioned_temp@part=part2
+POSTHOOK: Lineage: parquet_partitioned_temp PARTITION(part=part1).id SIMPLE [(parquet_partitioned_staging_temp)parquet_partitioned_staging_temp.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_partitioned_temp PARTITION(part=part1).str SIMPLE [(parquet_partitioned_staging_temp)parquet_partitioned_staging_temp.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_partitioned_temp PARTITION(part=part2).id SIMPLE [(parquet_partitioned_staging_temp)parquet_partitioned_staging_temp.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_partitioned_temp PARTITION(part=part2).str SIMPLE [(parquet_partitioned_staging_temp)parquet_partitioned_staging_temp.FieldSchema(name:str, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM parquet_partitioned_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_partitioned_temp
+PREHOOK: Input: default@parquet_partitioned_temp@part=part1
+PREHOOK: Input: default@parquet_partitioned_temp@part=part2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_partitioned_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_partitioned_temp
+POSTHOOK: Input: default@parquet_partitioned_temp@part=part1
+POSTHOOK: Input: default@parquet_partitioned_temp@part=part2
+#### A masked pattern was here ####
+1	foo	part1
+2	bar	part2
+3	baz	part2
+PREHOOK: query: SELECT part, COUNT(0) FROM parquet_partitioned_temp GROUP BY part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_partitioned_temp
+PREHOOK: Input: default@parquet_partitioned_temp@part=part1
+PREHOOK: Input: default@parquet_partitioned_temp@part=part2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT part, COUNT(0) FROM parquet_partitioned_temp GROUP BY part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_partitioned_temp
+POSTHOOK: Input: default@parquet_partitioned_temp@part=part1
+POSTHOOK: Input: default@parquet_partitioned_temp@part=part2
+#### A masked pattern was here ####
+part1	1
+part2	2
+PREHOOK: query: SELECT * FROM parquet_partitioned_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_partitioned_temp
+PREHOOK: Input: default@parquet_partitioned_temp@part=part1
+PREHOOK: Input: default@parquet_partitioned_temp@part=part2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_partitioned_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_partitioned_temp
+POSTHOOK: Input: default@parquet_partitioned_temp@part=part1
+POSTHOOK: Input: default@parquet_partitioned_temp@part=part2
+#### A masked pattern was here ####
+1	foo	part1
+2	bar	part2
+3	baz	part2
+PREHOOK: query: SELECT part, COUNT(0) FROM parquet_partitioned_temp GROUP BY part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_partitioned_temp
+PREHOOK: Input: default@parquet_partitioned_temp@part=part1
+PREHOOK: Input: default@parquet_partitioned_temp@part=part2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT part, COUNT(0) FROM parquet_partitioned_temp GROUP BY part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_partitioned_temp
+POSTHOOK: Input: default@parquet_partitioned_temp@part=part1
+POSTHOOK: Input: default@parquet_partitioned_temp@part=part2
+#### A masked pattern was here ####
+part1	1
+part2	2
