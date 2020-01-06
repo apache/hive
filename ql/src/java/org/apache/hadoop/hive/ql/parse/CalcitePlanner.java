@@ -1843,7 +1843,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // We disable it for CTAS and MV creation queries (trying to avoid any problem
       // due to data freshness)
       if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING) &&
-              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS()) {
+              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
+               getQB().hasTableDefined()) {
         calcitePreCboPlan = applyMaterializedViewRewriting(planner,
             calcitePreCboPlan, mdProvider.getMetadataProvider(), executorProvider);
       }
