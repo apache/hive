@@ -192,6 +192,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMaterializationRule;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
@@ -2091,6 +2092,19 @@ public class Hive {
       return getMSC().revoke_privileges(privileges, grantOption);
     } catch (Exception e) {
       throw new HiveException(e);
+    }
+  }
+
+  public void validateDatabaseExists(String databaseName) throws SemanticException {
+    boolean exists;
+    try {
+      exists = databaseExists(databaseName);
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(databaseName), e);
+    }
+
+    if (!exists) {
+      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(databaseName));
     }
   }
 

@@ -103,18 +103,9 @@ public final class SemanticAnalyzerFactory {
         queryState.setCommandType(HiveOperation.ALTERVIEW_AS);
         return new SemanticAnalyzer(queryState);
       }
-      case HiveParser.TOK_DESCTABLE:
       case HiveParser.TOK_MSCK:
-      case HiveParser.TOK_SHOWTABLES:
-      case HiveParser.TOK_SHOW_TABLESTATUS:
-      case HiveParser.TOK_SHOW_TBLPROPERTIES:
-      case HiveParser.TOK_SHOWLOCKS:
       case HiveParser.TOK_SHOWDBLOCKS:
       case HiveParser.TOK_SHOWCONF:
-      case HiveParser.TOK_SHOWVIEWS:
-      case HiveParser.TOK_SHOWMATERIALIZEDVIEWS:
-      case HiveParser.TOK_LOCKTABLE:
-      case HiveParser.TOK_UNLOCKTABLE:
       case HiveParser.TOK_TRUNCATETABLE:
         return new DDLSemanticAnalyzer(queryState);
 
