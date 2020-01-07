@@ -3692,7 +3692,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    assertEquals(9, readOpsDelta);
+    assertEquals(8, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3766,7 +3766,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    assertEquals(7, readOpsDelta);
+    assertEquals(6, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
