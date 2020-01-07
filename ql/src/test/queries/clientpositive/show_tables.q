@@ -21,13 +21,21 @@ CREATE VIEW test_view_n100 AS SELECT * FROM foo_n4;
 
 -- SHOW TABLES basic syntax tests
 USE default;
+EXPLAIN SHOW TABLES FROM test_db;
 SHOW TABLES FROM test_db;
+EXPLAIN SHOW EXTENDED TABLES FROM test_db;
 SHOW EXTENDED TABLES FROM test_db;
+EXPLAIN SHOW TABLES IN test_db;
 SHOW TABLES IN test_db;
+EXPLAIN SHOW EXTENDED TABLES IN test_db;
 SHOW EXTENDED TABLES IN test_db;
+EXPLAIN SHOW TABLES IN test_db "test*";
 SHOW TABLES IN test_db "test*";
+EXPLAIN SHOW TABLES IN test_db LIKE "nomatch";
 SHOW TABLES IN test_db LIKE "nomatch";
+EXPLAIN SHOW TABLES IN test_db WHERE `table_type` = "MANAGED_TABLE";
 SHOW TABLES IN test_db WHERE `table_type` = "MANAGED_TABLE";
+EXPLAIN SHOW EXTENDED TABLES IN test_db WHERE `table_type` = "VIRTUAL_VIEW";
 SHOW EXTENDED TABLES IN test_db WHERE `table_type` = "VIRTUAL_VIEW";
 
 -- SHOW TABLE EXTENDED basic syntax tests and wildcard

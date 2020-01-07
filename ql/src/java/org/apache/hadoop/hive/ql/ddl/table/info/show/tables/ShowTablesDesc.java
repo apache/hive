@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.info;
+package org.apache.hadoop.hive.ql.ddl.table.info.show.tables;
 
 import java.io.Serializable;
 
@@ -35,42 +35,17 @@ public class ShowTablesDesc implements DDLDesc, Serializable {
 
   private static final String TABLES_VIEWS_SCHEMA = "tab_name#string";
   private static final String EXTENDED_TABLES_SCHEMA = "tab_name,table_type#string,string";
-  private static final String MATERIALIZED_VIEWS_SCHEMA = "mv_name,rewrite_enabled,mode#string:string:string";
 
   private final String resFile;
   private final String dbName;
   private final String pattern;
-  private final TableType type;
   private final TableType typeFilter;
   private final boolean isExtended;
 
-  public ShowTablesDesc(Path resFile) {
-    this(resFile, null, null, null, null, false);
-  }
-
-  public ShowTablesDesc(Path resFile, String dbName) {
-    this(resFile, dbName, null, null, null, false);
-  }
-
-  public ShowTablesDesc(Path resFile, String dbName, TableType type) {
-    this(resFile, dbName, null, type, null, false);
-  }
-
   public ShowTablesDesc(Path resFile, String dbName, String pattern, TableType typeFilter, boolean isExtended) {
-    this(resFile, dbName, pattern, null, typeFilter, isExtended);
-  }
-
-  public ShowTablesDesc(Path resFile, String dbName, String pattern, TableType type) {
-    this(resFile, dbName, pattern, type, null, false);
-  }
-
-
-  public ShowTablesDesc(Path resFile, String dbName, String pattern, TableType type, TableType typeFilter,
-      boolean isExtended) {
     this.resFile = resFile.toString();
     this.dbName = dbName;
     this.pattern = pattern;
-    this.type = type;
     this.typeFilter = typeFilter;
     this.isExtended = isExtended;
   }
@@ -78,11 +53,6 @@ public class ShowTablesDesc implements DDLDesc, Serializable {
   @Explain(displayName = "pattern")
   public String getPattern() {
     return pattern;
-  }
-
-  @Explain(displayName = "type")
-  public TableType getType() {
-    return type;
   }
 
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
@@ -101,15 +71,17 @@ public class ShowTablesDesc implements DDLDesc, Serializable {
     return isExtended;
   }
 
+  /** For explain only. */
   @Explain(displayName = "table type filter", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getTypeFilterString() {
+    return typeFilter.name();
+  }
+
   public TableType getTypeFilter() {
     return typeFilter;
   }
 
   public String getSchema() {
-    if (type != null && type == TableType.MATERIALIZED_VIEW) {
-      return MATERIALIZED_VIEWS_SCHEMA;
-    }
     return isExtended ? EXTENDED_TABLES_SCHEMA : TABLES_VIEWS_SCHEMA;
   }
 }
