@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.info;
+package org.apache.hadoop.hive.ql.ddl.table.info.desc;
 
 import java.io.DataOutputStream;
 import java.sql.SQLException;
@@ -66,7 +66,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import com.google.common.collect.Lists;
 
 /**
- * Operation process of dropping a table.
+ * Operation process of describing a table.
  */
 public class DescTableOperation extends DDLOperation<DescTableDesc> {
   public DescTableOperation(DDLOperationContext context, DescTableDesc desc) {

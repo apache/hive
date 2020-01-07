@@ -122,6 +122,25 @@ PREHOOK: Input: database:test1
 POSTHOOK: query: USE test1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:test1
+PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Materialized Views
+      database name: test1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW MATERIALIZED VIEWS
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS
@@ -131,6 +150,26 @@ shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
 shtb_test1_view1    	No                  	Manual refresh      
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
 	 	 
+PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '*test*'
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '*test*'
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Materialized Views
+      database name: test1
+      pattern: *test*
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW MATERIALIZED VIEWS '*test*'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS '*test*'
@@ -147,6 +186,26 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
 	 	 
+PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS LIKE 'shtb_test1_view1|shtb_test1_view2'
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS LIKE 'shtb_test1_view1|shtb_test1_view2'
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Materialized Views
+      database name: test1
+      pattern: shtb_test1_view1|shtb_test1_view2
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW MATERIALIZED VIEWS LIKE 'shtb_test1_view1|shtb_test1_view2'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS LIKE 'shtb_test1_view1|shtb_test1_view2'
@@ -175,6 +234,25 @@ PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
+PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS FROM test1
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS FROM test1
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Materialized Views
+      database name: test1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW MATERIALIZED VIEWS FROM test1
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM test1
@@ -192,6 +270,25 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 shtb_test1_view1    	No                  	Manual refresh      
 shtb_test2_view2    	No                  	Manual refresh      
 	 	 
+PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Materialized Views
+      database name: test1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW MATERIALIZED VIEWS IN test1
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test1
@@ -205,6 +302,26 @@ PREHOOK: query: SHOW MATERIALIZED VIEWS IN default
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN default
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1 "shtb_test*"
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1 "shtb_test*"
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Materialized Views
+      database name: test1
+      pattern: shtb_test*
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW MATERIALIZED VIEWS IN test1 "shtb_test*"
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test1 "shtb_test*"
