@@ -16,38 +16,32 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.info;
+package org.apache.hadoop.hive.ql.ddl.view.materialized.show;
 
 import java.io.Serializable;
-import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for SHOW TABLE STATUS commands.
+ * DDL task description for SHOW MATERIALIZED VIEWS commands.
  */
-@Explain(displayName = "Show Table Status", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ShowTableStatusDesc implements DDLDesc, Serializable {
+@Explain(displayName = "Show Materialized Views", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ShowMaterializedViewsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  public static final String SCHEMA = "tab_name#string";
+  public static final String SCHEMA = "mv_name,rewrite_enabled,mode#string:string:string";
 
   private final String resFile;
   private final String dbName;
   private final String pattern;
-  private final Map<String, String> partSpec;
 
-  public ShowTableStatusDesc(String resFile, String dbName, String pattern) {
-    this(resFile, dbName, pattern, null);
-  }
-
-  public ShowTableStatusDesc(String resFile, String dbName, String pattern, Map<String, String> partSpec) {
-    this.resFile = resFile;
+  public ShowMaterializedViewsDesc(Path resFile, String dbName, String pattern) {
+    this.resFile = resFile.toString();
     this.dbName = dbName;
     this.pattern = pattern;
-    this.partSpec = partSpec;
   }
 
   @Explain(displayName = "pattern")
@@ -55,22 +49,13 @@ public class ShowTableStatusDesc implements DDLDesc, Serializable {
     return pattern;
   }
 
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
   }
 
-  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
-  public String getResFileString() {
-    return getResFile();
-  }
-
-  @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "database name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDbName() {
     return dbName;
-  }
-
-  @Explain(displayName = "partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public Map<String, String> getPartSpec() {
-    return partSpec;
   }
 }

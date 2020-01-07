@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.info;
+package org.apache.hadoop.hive.ql.ddl.table.info.desc;
 
 import java.io.Serializable;
 import java.util.List;
