@@ -153,11 +153,6 @@ public class TopNKeyPushdownProcessor implements NodeProcessor {
     final GroupByDesc groupByDesc = groupBy.getConf();
     final TopNKeyDesc topNKeyDesc = topNKey.getConf();
 
-    // Check grouping sets
-    if (groupByDesc.isGroupingSetsPresent()) {
-      return;
-    }
-
     CommonKeyPrefix commonKeyPrefix = CommonKeyPrefix.map(topNKeyDesc, groupByDesc);
     if (commonKeyPrefix.isEmpty()) {
       return;
