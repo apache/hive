@@ -702,15 +702,12 @@ public abstract class TaskCompiler {
         !HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
       new SortedDynPartitionOptimizer().transform(parseContext);
 
-      if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)
-          || parseContext.hasAcidWrite()) {
-
+      if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
         // Dynamic sort partition adds an extra RS therefore need to de-dup
         new ReduceSinkDeDuplication().transform(parseContext);
         // there is an issue with dedup logic wherein SELECT is created with wrong columns
         // NonBlockingOpDeDupProc fixes that
         new NonBlockingOpDeDupProc().transform(parseContext);
-
       }
     }
   }
@@ -732,8 +729,7 @@ public abstract class TaskCompiler {
         pCtx.getReduceSinkOperatorsAddedByEnforceBucketingSorting(),
         pCtx.getAnalyzeRewrite(), pCtx.getCreateTable(),
         pCtx.getCreateViewDesc(), pCtx.getMaterializedViewUpdateDesc(),
-        pCtx.getQueryProperties(), pCtx.getViewProjectToTableSchema(),
-        pCtx.getAcidSinks());
+        pCtx.getQueryProperties(), pCtx.getViewProjectToTableSchema());
     clone.setFetchTask(pCtx.getFetchTask());
     clone.setLineageInfo(pCtx.getLineageInfo());
     clone.setMapJoinOps(pCtx.getMapJoinOps());
