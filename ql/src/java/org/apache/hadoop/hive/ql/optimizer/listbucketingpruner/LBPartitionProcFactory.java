@@ -62,7 +62,7 @@ public class LBPartitionProcFactory extends PrunerOperatorFactory {
           prunedPartList = PartitionPruner.prune(top, parseCtx, alias);
         } catch (HiveException e) {
           // Has to use full name to make sure it does not conflict with
-          // org.apache.commons.lang.StringUtils
+          // org.apache.commons.lang3.StringUtils
           throw new SemanticException(e.getMessage(), e);
         }
 

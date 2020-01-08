@@ -56,7 +56,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
@@ -121,7 +121,7 @@ public class MetaStoreServerUtils {
       = new com.google.common.base.Function<String, String>() {
     @Override
     public String apply(@Nullable String string) {
-      return org.apache.commons.lang.StringUtils.defaultString(string);
+      return org.apache.commons.lang3.StringUtils.defaultString(string);
     }
   };
 
@@ -340,7 +340,7 @@ public class MetaStoreServerUtils {
         SortedSet<String> sortedOuterList = new TreeSet<>();
         for (List<String> innerList : skewed.getSkewedColValues()) {
           SortedSet<String> sortedInnerList = new TreeSet<>(innerList);
-          sortedOuterList.add(org.apache.commons.lang.StringUtils.join(sortedInnerList, "."));
+          sortedOuterList.add(org.apache.commons.lang3.StringUtils.join(sortedInnerList, "."));
         }
         for (String colval : sortedOuterList) {
           md.update(colval.getBytes(ENCODING));
@@ -350,7 +350,7 @@ public class MetaStoreServerUtils {
         SortedMap<String, String> sortedMap = new TreeMap<>();
         for (Map.Entry<List<String>, String> smap : skewed.getSkewedColValueLocationMaps().entrySet()) {
           SortedSet<String> sortedKey = new TreeSet<>(smap.getKey());
-          sortedMap.put(org.apache.commons.lang.StringUtils.join(sortedKey, "."), smap.getValue());
+          sortedMap.put(org.apache.commons.lang3.StringUtils.join(sortedKey, "."), smap.getValue());
         }
         for (Map.Entry<String, String> e : sortedMap.entrySet()) {
           md.update(e.getKey().getBytes(ENCODING));
