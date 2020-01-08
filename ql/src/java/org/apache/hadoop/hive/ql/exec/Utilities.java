@@ -259,6 +259,10 @@ public final class Utilities {
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
 
+  // all common whitespaces as defined in Character.isWhitespace(char)
+  public static final char[] COMMON_WHITESPACE_CHARS =
+      { '\t', '\n', '\u000B', '\f', '\r', '\u001C', '\u001D', '\u001E', '\u001F', ' ' };
+
   private static final Object INPUT_SUMMARY_LOCK = new Object();
   private static final Object ROOT_HDFS_DIR_LOCK  = new Object();
 
