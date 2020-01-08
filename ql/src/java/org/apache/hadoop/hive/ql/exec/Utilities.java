@@ -260,6 +260,7 @@ public final class Utilities {
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
 
   // all common whitespaces as defined in Character.isWhitespace(char)
+  // Used primarily as a workaround until TEXT-175 is released
   public static final char[] COMMON_WHITESPACE_CHARS =
       { '\t', '\n', '\u000B', '\f', '\r', '\u001C', '\u001D', '\u001E', '\u001F', ' ' };
 
