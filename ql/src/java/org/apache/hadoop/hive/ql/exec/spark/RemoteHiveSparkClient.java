@@ -32,7 +32,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.io.NullScanFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
@@ -438,7 +438,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       }
 
       // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang.StringUtils
+      // org.apache.commons.lang3.StringUtils
       console.printError(mesg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
 
       success = false;

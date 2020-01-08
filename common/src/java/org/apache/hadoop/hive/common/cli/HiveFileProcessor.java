@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.common.cli;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.io.IOUtils;
 
 /**

@@ -20,8 +20,7 @@ package org.apache.hadoop.hive.common.format.datetime;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 
@@ -1383,6 +1382,6 @@ public class HiveSqlDateTimeFormatter implements Serializable {
   }
 
   private static String capitalize(String substring) {
-    return WordUtils.capitalize(substring.toLowerCase());
+    return StringUtils.capitalize(substring.toLowerCase());
   }
 }

@@ -33,7 +33,7 @@ import java.util.Random;
 
 import org.apache.commons.dbcp.DelegatingConnection;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.text.StrTokenizer;
+import org.apache.commons.lang3.text.StrTokenizer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;

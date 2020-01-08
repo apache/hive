@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.common.log;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import jline.TerminalFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.fusesource.jansi.Ansi;
 

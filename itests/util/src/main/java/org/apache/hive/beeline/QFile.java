@@ -271,7 +271,7 @@ public final class QFile {
     diffCommandArgs.add(getQuotedString(expectedOutputFile));
     diffCommandArgs.add(getQuotedString(outputFile));
 
-    System.out.println("Running: " + org.apache.commons.lang.StringUtils.join(diffCommandArgs,
+    System.out.println("Running: " + org.apache.commons.lang3.StringUtils.join(diffCommandArgs,
         ' '));
     Process executor = Runtime.getRuntime().exec(diffCommandArgs.toArray(
         new String[diffCommandArgs.size()]));
