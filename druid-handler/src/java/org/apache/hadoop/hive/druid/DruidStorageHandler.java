@@ -831,6 +831,17 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     return Suppliers.memoize(this::buildConnector).get();
   }
 
+  private static String getPassword(Configuration conf, HiveConf.ConfVars var) {
+    try {
+      final char[] password = conf.getPassword(var.varname);
+      return password == null ? null : String.valueOf(password);
+    } catch (IOException e) {
+      // Reading password from configuration for backwards compatibility.
+      LOG.warn("Unable to retrieve password from credential providers. Trying to read it from config..", e);
+      return conf.get(var.varname);
+    }
+  }
+
   private SQLMetadataConnector buildConnector() {
 
     if (connector != null) {
@@ -839,7 +850,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
     final String dbType = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_TYPE);
     final String username = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_USERNAME);
-    final String password = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_PASSWORD);
+    final String password = getPassword(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_PASSWORD);
     final String uri = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_URI);
     LOG.debug("Supplying SQL Connector with DB type {}, URI {}, User {}", dbType, uri, username);
     @SuppressWarnings("Guava") final Supplier<MetadataStorageConnectorConfig>
