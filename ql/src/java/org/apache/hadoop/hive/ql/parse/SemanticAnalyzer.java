@@ -6859,9 +6859,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (enforceBucketing) {
+      Operation acidOp = AcidUtils.isFullAcidTable(dest_tab) ? getAcidType(table_desc.getOutputFileFormatClass(),
+              dest, AcidUtils.isInsertOnlyTable(dest_tab)) : Operation.NOT_ACID;
       int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
       if (conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS) > 0) {
         maxReducers = conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
+      }
+      if (acidOp != Operation.NOT_ACID) {
+        maxReducers = 1;
       }
       int numBuckets = dest_tab.getNumBuckets();
       if (numBuckets > maxReducers) {
@@ -6889,8 +6894,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
           maxReducers,
-          (AcidUtils.isFullAcidTable(dest_tab) ? getAcidType(table_desc.getOutputFileFormatClass(),
-              dest, AcidUtils.isInsertOnlyTable(dest_tab)) : AcidUtils.Operation.NOT_ACID));
+              acidOp);
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
       ctx.setNumFiles(numFiles);
