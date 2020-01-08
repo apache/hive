@@ -1303,6 +1303,13 @@
                   </bannedImports>
                   <includeTestCode>true</includeTestCode>
                 </restrictImports>
+                <restrictImports implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                  <reason>Do not use commons-lang</reason>
+                  <bannedImports>
+                    <bannedImport>org.apache.commons.lang.**</bannedImport>
+                  </bannedImports>
+                  <includeTestCode>true</includeTestCode>
+                </restrictImports>
               </rules>
             </configuration>
           </execution>
