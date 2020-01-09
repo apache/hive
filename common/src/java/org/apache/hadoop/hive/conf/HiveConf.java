@@ -4120,6 +4120,8 @@ public class HiveConf extends Configuration {
         "Value is an integer. Default value is -1, which means that we will estimate this value from operators in the plan."),
     // The default is different on the client and server, so it's null here.
     LLAP_IO_ENABLED("hive.llap.io.enabled", null, "Whether the LLAP IO layer is enabled."),
+    LLAP_IO_CACHE_ONLY("hive.llap.io.cache.only", false, "Whether the query should read from cache only. If set to " +
+        "true and a cache miss happens during the read an exception will occur. Primarily used for testing."),
     LLAP_IO_ROW_WRAPPER_ENABLED("hive.llap.io.row.wrapper.enabled", true, "Whether the LLAP IO row wrapper is enabled for non-vectorized queries."),
     LLAP_IO_ACID_ENABLED("hive.llap.io.acid", true, "Whether the LLAP IO layer is enabled for ACID."),
     LLAP_IO_TRACE_SIZE("hive.llap.io.trace.size", "2Mb",

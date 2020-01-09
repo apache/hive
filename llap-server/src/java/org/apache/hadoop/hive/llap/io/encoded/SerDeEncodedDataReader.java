@@ -105,6 +105,8 @@ import org.apache.tez.common.counters.TezCounters;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
+
 public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     implements ConsumerFeedback<OrcEncodedColumnBatch>, TezCounterSource {
 
@@ -165,6 +167,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
   private final boolean[] writerIncludes;
   private FileReaderYieldReturn currentFileRead = null;
+  private final boolean isReadCacheOnly;
 
   /**
    * Data from cache currently being processed. We store it here so that we could decref
@@ -232,6 +235,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     SchemaEvolution evolution = new SchemaEvolution(schema, null,
         new Reader.Options(jobConf).include(writerIncludes));
     consumer.setSchemaEvolution(evolution);
+    isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
   }
 
   private static int determineAllocSize(BufferUsageManager bufferManager, Configuration conf) {
@@ -810,6 +814,9 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     long endOfSplit = split.getStart() + split.getLength();
     this.cachedData = cache.getFileData(fileKey, split.getStart(),
         endOfSplit, writerIncludes, CC_FACTORY, counters, gotAllData);
+    if (!gotAllData.value) {
+      throwIfCacheOnlyRead(isReadCacheOnly);
+    }
     if (cachedData == null) {
       if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
         LlapIoImpl.CACHE_LOGGER.trace("No data for the split found in cache");

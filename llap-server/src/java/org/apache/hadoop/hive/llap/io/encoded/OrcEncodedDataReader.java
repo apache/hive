@@ -106,6 +106,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
+
 /**
  * This produces EncodedColumnBatch via ORC EncodedDataImpl.
  * It serves as Consumer for EncodedColumnBatch too, for the high-level cache scenario where
@@ -173,6 +175,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private Object fileKey;
   private final CacheTag cacheTag;
   private final Map<Path, PartitionDesc> parts;
+  private final boolean isReadCacheOnly;
 
   private Supplier<FileSystem> fsSupplier;
 
@@ -247,6 +250,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64"));
     consumer.setFileMetadata(fileMetadata);
     consumer.setSchemaEvolution(evolution);
+    isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
   }
 
   @Override
@@ -463,7 +467,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // Reader creation updates HDFS counters, don't do it here.
     DataWrapperForOrc dw = new DataWrapperForOrc();
     stripeReader = orcReader.encodedReader(
-        fileKey, dw, dw, useObjectPools ? POOL_FACTORY : null, trace, useCodecPool, cacheTag);
+        fileKey, dw, dw, useObjectPools ? POOL_FACTORY : null, trace, useCodecPool, cacheTag, isReadCacheOnly);
     stripeReader.setTracing(LlapIoImpl.ORC_LOGGER.isTraceEnabled());
     stripeReader.setStopped(isStopped);
   }
@@ -611,6 +615,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         }
       }
       counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
+      throwIfCacheOnlyRead(isReadCacheOnly);
     }
     ensureOrcReader();
     ByteBuffer tailBufferBb = orcReader.getSerializedFileFooter();
@@ -692,6 +697,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         }
       }
       counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
+      throwIfCacheOnlyRead(isReadCacheOnly);
     }
     long offset = si.getOffset() + si.getIndexLength() + si.getDataLength();
     long startTime = counters.startTimeCounter();
