@@ -12464,7 +12464,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isCacheEnabled = isResultsCacheEnabled();
     QueryResultsCache.LookupInfo lookupInfo = null;
     if (isCacheEnabled && !needsTransform && queryTypeCanUseCache()) {
-      lookupInfo = createLookupInfoForQuery(ast);
+      lookupInfo = createLookupInfoForQuery(astToAnalyze);
       if (checkResultsCache(lookupInfo, false)) {
         return;
       }
@@ -12476,9 +12476,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // If we use CBO and we may apply masking/filtering policies, we create a copy of the ast.
       // The reason is that the generation of the operator tree may modify the initial ast,
       // but if we need to parse for a second time, we would like to parse the unmodified ast.
-      astForMasking = (ASTNode) ParseDriver.adaptor.dupTree(ast);
+      astForMasking = (ASTNode) ParseDriver.adaptor.dupTree(astToAnalyze);
     } else {
-      astForMasking = ast;
+      astForMasking = astToAnalyze;
     }
 
     // 2. Gen OP Tree from resolved Parse Tree
@@ -12510,7 +12510,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // In the case that row or column masking/filtering was required, we do not support caching.
     // TODO: Enable caching for queries with masking/filtering
     if (isCacheEnabled && needsTransform && !usesMasking && queryTypeCanUseCache()) {
-      lookupInfo = createLookupInfoForQuery(ast);
+      lookupInfo = createLookupInfoForQuery(astToAnalyze);
       if (checkResultsCache(lookupInfo, false)) {
         return;
       }
