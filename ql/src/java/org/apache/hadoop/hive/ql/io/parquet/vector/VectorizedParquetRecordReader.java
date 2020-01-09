@@ -86,6 +86,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 import static org.apache.parquet.filter2.compat.RowGroupFilter.filterRowGroups;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.NO_FILTER;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.range;
@@ -110,6 +111,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private Path cacheFsPath;
   private static final int MAP_DEFINITION_LEVEL_MAX = 3;
   private Map<Path, PartitionDesc> parts;
+  private final boolean isReadCacheOnly;
 
   /**
    * For each request column, the reader to read this column. This is NULL if this column
@@ -151,6 +153,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
       //initialize the rowbatchContext
       jobConf = conf;
+      isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
       rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
       ParquetInputSplit inputSplit = getSplit(oldInputSplit, conf);
       if (inputSplit != null) {
@@ -316,6 +319,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       } finally {
         metadataCache.decRefBuffer(footerData);
       }
+    } else {
+      throwIfCacheOnlyRead(isReadCacheOnly);
     }
     final FileSystem fs = file.getFileSystem(configuration);
     final FileStatus stat = fs.getFileStatus(file);
