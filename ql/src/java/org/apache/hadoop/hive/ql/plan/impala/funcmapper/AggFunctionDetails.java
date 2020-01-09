@@ -1,0 +1,145 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
+
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.impala.thrift.TPrimitiveType;
+
+public class AggFunctionDetails {
+
+  // Map containing an Impala signature to the details associated with the signature.
+  // A signature consists of the function name, the operand types and the return type.
+  static public Map<ImpalaFunctionSignature, AggFunctionDetails> AGG_BUILTINS_INSTANCE = Maps.newHashMap();
+
+  // populate all functions from the resource file.
+  static {
+    Reader reader =
+        new InputStreamReader(ImpalaFunctionSignature.class.getResourceAsStream("/impala_aggs.json"));
+    Gson gson = new Gson();
+    Type aggFuncDetailsType = new TypeToken<ArrayList<AggFunctionDetails>>(){}.getType();
+    List<AggFunctionDetails> aggDetails = gson.fromJson(reader, aggFuncDetailsType);
+
+    try {
+      for (AggFunctionDetails afd : aggDetails) {
+        List<SqlTypeName> argTypes = Lists.newArrayList();
+        if (afd.argTypes != null) {
+          argTypes = ImpalaTypeConverter.getSqlTypeNames(afd.argTypes);
+        }
+        SqlTypeName retType = ImpalaTypeConverter.getSqlTypeName(afd.retType);
+        ImpalaFunctionSignature ifs = new ImpalaFunctionSignature(afd.impalaFnName, argTypes, retType,
+            false);
+        AGG_BUILTINS_INSTANCE.put(ifs, afd);
+      }
+    } catch (HiveException e) {
+      // if an exception is hit here, we have a problem in our resource file.
+      throw new RuntimeException("Problem processing resource file impala_aggs.json:" + e);
+    }
+  }
+
+  public String fnName;
+  public String impalaFnName;
+  public TPrimitiveType retType;
+  public TPrimitiveType[] argTypes;
+  public TPrimitiveType intermediateType;
+  public boolean isAnalyticOnlyFn;
+  public String updateFnSymbol;
+  public String initFnSymbol;
+  public String mergeFnSymbol;
+  public String finalizeFnSymbol;
+  public String getValueFnSymbol;
+  public String removeFnSymbol;
+  public String serializeFnSymbol;
+  public boolean ignoresDistinct;
+  public boolean isAgg;
+
+  public void setFnName(String fnName) {
+    this.fnName = fnName;
+  }
+
+  public void setImpalaFnName(String impalaFnName) {
+    this.impalaFnName = impalaFnName;
+  }
+
+  public void setRetType(TPrimitiveType retType) {
+    this.retType = retType;
+  }
+
+  public void setArgTypes(TPrimitiveType[] argTypes) {
+    this.argTypes = argTypes;
+  }
+
+  public void setIntermediateType(TPrimitiveType intermediateType) {
+    this.intermediateType = intermediateType;
+  }
+
+  public void setIsAnalyticOnlyFn(boolean isAnalyticOnlyFn) {
+    this.isAnalyticOnlyFn = isAnalyticOnlyFn;
+  }
+
+  public void setUpdateFnSymbol(String updateFnSymbol) {
+    this.updateFnSymbol = updateFnSymbol;
+  }
+
+  public void setInitFnSymbol(String initFnSymbol) {
+    this.initFnSymbol = initFnSymbol;
+  }
+
+  public void setMergeFnSymbol(String mergeFnSymbol) {
+    this.mergeFnSymbol = mergeFnSymbol;
+  }
+
+  public void setFinalizeFnSymbol(String finalizeFnSymbol) {
+    this.finalizeFnSymbol = finalizeFnSymbol;
+  }
+
+  public void setGetValueFnSymbol(String getValueFnSymbol) {
+    this.getValueFnSymbol = getValueFnSymbol;
+  }
+
+  public void setRemoveFnSymbol(String removeFnSymbol) {
+    this.removeFnSymbol = removeFnSymbol;
+  }
+
+  public void setIgnoresDistinct(boolean ignoresDistinct) {
+    this.ignoresDistinct = ignoresDistinct;
+  }
+
+  public void setIsAgg(boolean isAgg) {
+    this.isAgg= isAgg;
+  }
+
+  static public AggFunctionDetails get(String name, SqlTypeName retType,
+      List<SqlTypeName> operandTypes) {
+    ImpalaFunctionSignature sig = new ImpalaFunctionSignature(name, operandTypes, retType);
+    return AGG_BUILTINS_INSTANCE.get(sig);
+  }
+}
