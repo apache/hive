@@ -3520,6 +3520,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_mm
+          Write Type: INSERT
           micromanaged table: true
 
 PREHOOK: query: insert into table part_mm partition(key_mm=455) select key from src order by value desc limit 3
@@ -3737,6 +3738,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.tbl1_n1
+          Write Type: INSERT
           micromanaged table: true
 
 PREHOOK: query: insert into tbl1_n1 values('a', 69)
@@ -3869,6 +3871,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.tbl1_n1
+          Write Type: INSERT
           micromanaged table: true
 
 PREHOOK: query: drop table tbl1_n1

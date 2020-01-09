@@ -2997,9 +2997,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
                       .collect(Collectors.toList()), tableSnapshot);
 
     } catch (InterruptedException | ExecutionException e) {
-      throw new HiveException("Exception when loading " + validPartitions.size()
+      throw new HiveException("Exception when loading " + validPartitions.size() + " partitions"
               + " in table " + tbl.getTableName()
-              + " with loadPath=" + loadPath);
+              + " with loadPath=" + loadPath, e);
     } catch (TException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -3024,7 +3024,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     try {
-      if (isAcid) {
+      if (isTxnTable) {
         List<String> partNames =
                 result.values().stream().map(Partition::getName).collect(Collectors.toList());
         getMSC().addDynamicPartitions(parentSession.getTxnMgr().getCurrentTxnId(), writeId,
