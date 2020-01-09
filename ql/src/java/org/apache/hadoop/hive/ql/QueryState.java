@@ -58,6 +58,7 @@ public class QueryState {
   private long numModifiedRows = 0;
 
   static public final String USERID_TAG = "userid";
+
   /**
    * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
@@ -138,6 +139,20 @@ public class QueryState {
     }
     queryConf.set(MRJobConfig.JOB_TAGS, jobTag);
     queryConf.set(TezConfiguration.TEZ_APPLICATION_TAGS, jobTag);
+  }
+
+  /**
+   * Generating the new QueryState object. Making sure, that the new queryId is generated.
+   * @param conf The HiveConf which should be used
+   * @param lineageState a LineageState to be set in the new QueryState object
+   * @return The new QueryState object
+   */
+  public static QueryState getNewQueryState(HiveConf conf, LineageState lineageState) {
+    return new QueryState.Builder()
+        .withGenerateNewQueryId(true)
+        .withHiveConf(conf)
+        .withLineageState(lineageState)
+        .build();
   }
 
   /**

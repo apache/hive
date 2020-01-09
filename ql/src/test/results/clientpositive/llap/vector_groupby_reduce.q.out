@@ -262,24 +262,24 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                  Select Operator
-                    expressions: ss_ticket_number (type: int)
-                    outputColumnNames: ss_ticket_number
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [9]
+                  Top N Key Operator
+                    sort order: +
+                    keys: ss_ticket_number (type: int)
+                    null sort order: z
                     Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: ss_ticket_number (type: int)
-                      null sort order: z
-                      Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 20
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 9:int
+                    top n: 20
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 9:int
+                        native: true
+                    Select Operator
+                      expressions: ss_ticket_number (type: int)
+                      outputColumnNames: ss_ticket_number
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [9]
+                      Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator

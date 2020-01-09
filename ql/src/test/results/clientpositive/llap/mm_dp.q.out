@@ -185,6 +185,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.dp_mm
+          Write Type: INSERT
           micromanaged table: true
 
   Stage: Stage-3

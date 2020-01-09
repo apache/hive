@@ -356,12 +356,18 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 285117845 Data size: 34670330027 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: decimal(28,2)), _col0 (type: int)
-                  null sort order: zz
+                Top N Key Operator
                   sort order: ++
+                  keys: _col1 (type: decimal(28,2)), _col0 (type: int)
+                  null sort order: zz
                   Statistics: Num rows: 285117845 Data size: 34670330027 Basic stats: COMPLETE Column stats: NONE
-                  TopN Hash Memory Usage: 0.1
+                  top n: 100
+                  Reduce Output Operator
+                    key expressions: _col1 (type: decimal(28,2)), _col0 (type: int)
+                    null sort order: zz
+                    sort order: ++
+                    Statistics: Num rows: 285117845 Data size: 34670330027 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 0.1
         Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

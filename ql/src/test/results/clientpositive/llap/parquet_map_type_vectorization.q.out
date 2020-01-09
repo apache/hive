@@ -229,32 +229,32 @@ STAGE PLANS:
                         predicateExpression: FilterStringColLikeStringScalar(col 8:string, pattern v100%)(children: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 8:string)
                     predicate: (stringmap['k1'] like 'v100%') (type: boolean)
                     Statistics: Num rows: 511 Data size: 995378 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: stringmap['k1'] (type: string), intmap[123] (type: int), doublemap[123.123] (type: double)
-                      outputColumnNames: _col0, _col1, _col2
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [9, 10, 11]
-                          selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 9:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 123) -> 10:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 11:double
+                    Top N Key Operator
+                      sort order: +
+                      keys: stringmap['k1'] (type: string)
+                      null sort order: z
                       Statistics: Num rows: 511 Data size: 995378 Basic stats: COMPLETE Column stats: NONE
-                      Top N Key Operator
-                        sort order: +
-                        keys: _col0 (type: string)
-                        null sort order: z
-                        Statistics: Num rows: 511 Data size: 995378 Basic stats: COMPLETE Column stats: NONE
-                        top n: 10
-                        Top N Key Vectorization:
-                            className: VectorTopNKeyOperator
-                            keyExpressions: col 9:string
+                      top n: 10
+                      Top N Key Vectorization:
+                          className: VectorTopNKeyOperator
+                          keyExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 9:string
+                          native: true
+                      Select Operator
+                        expressions: stringmap['k1'] (type: string), intmap[123] (type: int), doublemap[123.123] (type: double)
+                        outputColumnNames: _col0, _col1, _col2
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
+                            projectedOutputColumnNums: [8, 10, 11]
+                            selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 8:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 123) -> 10:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 11:double
+                        Statistics: Num rows: 511 Data size: 995378 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: sum(_col1), sum(_col2)
                           Group By Vectorization:
                               aggregators: VectorUDAFSumLong(col 10:int) -> bigint, VectorUDAFSumDouble(col 11:double) -> double
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 9:string
+                              keyExpressions: col 8:string
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0, 1]

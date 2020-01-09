@@ -244,8 +244,6 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minillaplocal.query.files");
         includesFrom(testConfigProps, "minillaplocal.shared.query.files");
-        excludeQuery("results_cache_invalidation.q");// unstable; will be enabled by HIVE-22624
-        excludeQuery("results_cache_lifetime.q"); // unstable; will be enabled by HIVE-22624
         excludeQuery("bucket_map_join_tez1.q"); // Disabled in HIVE-19509
         excludeQuery("special_character_in_tabnames_1.q"); // Disabled in HIVE-19509
         excludeQuery("tez_smb_1.q"); // Disabled in HIVE-19509
@@ -253,9 +251,7 @@ public class CliConfigs {
         excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
         excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
         excludeQuery("load_dyn_part3.q"); // Disabled in HIVE-20662. Enable in HIVE-20663.
-        excludeQuery("cbo_limit.q"); //Disabled in HIVE-20860. Enable in HIVE-20972
         excludeQuery("rfc5424_parser_file_pruning.q"); // Disabled in HIVE-21427
-        excludeQuery("cbo_rp_limit.q"); // Disabled in HIVE-21657
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");

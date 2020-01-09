@@ -47,15 +47,13 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.CostLessRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.SubqueryExpressionWalker;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
-import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.lib.SubqueryExpressionWalker;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
@@ -108,8 +106,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-
+import com.google.common.collect.SetMultimap;
 
 /**
  * The Factory for creating typecheck processors. The typecheck processors are
@@ -172,7 +171,7 @@ public class TypeCheckProcFactory {
     // try outer row resolver
     RowResolver outerRR = ctx.getOuterRR();
     if(colInfo == null && outerRR != null) {
-        colInfo = outerRR.getExpression(expr);
+      colInfo = outerRR.getExpression(expr);
     }
     if (colInfo != null) {
       desc = new ExprNodeColumnDesc(colInfo);
@@ -196,46 +195,52 @@ public class TypeCheckProcFactory {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
-    opRules.put(new RuleRegExp("R1", HiveParser.TOK_NULL + "%"),
-        tf.getNullExprProcessor());
-    opRules.put(new RuleRegExp("R2", HiveParser.Number + "%|" +
-        HiveParser.IntegralLiteral + "%|" +
-        HiveParser.NumberLiteral + "%"),
-        tf.getNumExprProcessor());
-    opRules
-        .put(new RuleRegExp("R3", HiveParser.Identifier + "%|"
-        + HiveParser.StringLiteral + "%|" + HiveParser.TOK_CHARSETLITERAL + "%|"
-        + HiveParser.TOK_STRINGLITERALSEQUENCE + "%|"
-        + "%|" + HiveParser.KW_IF + "%|" + HiveParser.KW_CASE + "%|"
-        + HiveParser.KW_WHEN + "%|" + HiveParser.KW_IN + "%|"
-        + HiveParser.KW_ARRAY + "%|" + HiveParser.KW_MAP + "%|"
-        + HiveParser.KW_STRUCT + "%|" + HiveParser.KW_EXISTS + "%|"
-        + HiveParser.TOK_SUBQUERY_OP_NOTIN + "%"),
-        tf.getStrExprProcessor());
-    opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|"
-        + HiveParser.KW_FALSE + "%"), tf.getBoolExprProcessor());
-    opRules.put(new RuleRegExp("R5", HiveParser.TOK_DATELITERAL + "%|"
-        + HiveParser.TOK_TIMESTAMPLITERAL + "%|"
-        + HiveParser.TOK_TIMESTAMPLOCALTZLITERAL + "%"), tf.getDateTimeExprProcessor());
-    opRules.put(new RuleRegExp("R6", HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL + "%|"
-        + HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL + "%|"
-        + HiveParser.TOK_INTERVAL_YEAR_LITERAL + "%|"
-        + HiveParser.TOK_INTERVAL_MONTH_LITERAL + "%|"
-        + HiveParser.TOK_INTERVAL_DAY_LITERAL + "%|"
-        + HiveParser.TOK_INTERVAL_HOUR_LITERAL + "%|"
-        + HiveParser.TOK_INTERVAL_MINUTE_LITERAL + "%|"
-        + HiveParser.TOK_INTERVAL_SECOND_LITERAL + "%"), tf.getIntervalExprProcessor());
-    opRules.put(new RuleRegExp("R7", HiveParser.TOK_TABLE_OR_COL + "%"),
-        tf.getColumnExprProcessor());
-    opRules.put(new RuleRegExp("R8", HiveParser.TOK_SUBQUERY_EXPR + "%"),
-        tf.getSubQueryExprProcessor());
+    SetMultimap<Integer, NodeProcessor> astNodeToProcessor = HashMultimap.create();
+    astNodeToProcessor.put(HiveParser.TOK_NULL, tf.getNullExprProcessor());
+
+    astNodeToProcessor.put(HiveParser.Number, tf.getNumExprProcessor());
+    astNodeToProcessor.put(HiveParser.IntegralLiteral, tf.getNumExprProcessor());
+    astNodeToProcessor.put(HiveParser.NumberLiteral, tf.getNumExprProcessor());
+
+    astNodeToProcessor.put(HiveParser.Identifier, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.StringLiteral, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_CHARSETLITERAL, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_STRINGLITERALSEQUENCE, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.KW_IF, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.KW_CASE, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.KW_WHEN, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.KW_IN, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.KW_ARRAY, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.KW_MAP, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.KW_STRUCT, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.KW_EXISTS, tf.getStrExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_SUBQUERY_OP_NOTIN, tf.getStrExprProcessor());
+
+    astNodeToProcessor.put(HiveParser.KW_TRUE, tf.getBoolExprProcessor());
+    astNodeToProcessor.put(HiveParser.KW_FALSE, tf.getBoolExprProcessor());
+
+    astNodeToProcessor.put(HiveParser.TOK_DATELITERAL, tf.getDateTimeExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_TIMESTAMPLITERAL, tf.getDateTimeExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_TIMESTAMPLOCALTZLITERAL, tf.getDateTimeExprProcessor());
+
+    astNodeToProcessor.put(HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL, tf.getIntervalExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL, tf.getIntervalExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_INTERVAL_YEAR_LITERAL, tf.getIntervalExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_INTERVAL_MONTH_LITERAL, tf.getIntervalExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_INTERVAL_DAY_LITERAL, tf.getIntervalExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_INTERVAL_HOUR_LITERAL, tf.getIntervalExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_INTERVAL_MINUTE_LITERAL, tf.getIntervalExprProcessor());
+    astNodeToProcessor.put(HiveParser.TOK_INTERVAL_SECOND_LITERAL, tf.getIntervalExprProcessor());
+
+    astNodeToProcessor.put(HiveParser.TOK_TABLE_OR_COL, tf.getColumnExprProcessor());
+
+    astNodeToProcessor.put(HiveParser.TOK_SUBQUERY_EXPR, tf.getSubQueryExprProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(tf.getDefaultExprProcessor(),
-        opRules, tcCtx);
+    Dispatcher disp = new CostLessRuleDispatcher(tf.getDefaultExprProcessor(),
+        astNodeToProcessor, tcCtx);
     GraphWalker ogw = new SubqueryExpressionWalker(disp);
 
     // Create a list of top nodes
@@ -279,7 +284,8 @@ public class TypeCheckProcFactory {
         return desc;
       }
 
-      return new ExprNodeConstantDesc(TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(NullWritable.class), null);
+      return new ExprNodeConstantDesc(TypeInfoFactory.
+          getPrimitiveTypeInfoFromPrimitiveWritable(NullWritable.class), null);
     }
 
   }
@@ -574,36 +580,36 @@ public class TypeCheckProcFactory {
       // Get the string value and convert to a Interval value.
       try {
         switch (expr.getType()) {
-          case HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL:
-            return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
-                HiveIntervalYearMonth.valueOf(intervalString));
-          case HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL:
-            return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-                HiveIntervalDayTime.valueOf(intervalString));
-          case HiveParser.TOK_INTERVAL_YEAR_LITERAL:
-            return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
-                new HiveIntervalYearMonth(Integer.parseInt(intervalString), 0));
-          case HiveParser.TOK_INTERVAL_MONTH_LITERAL:
-            return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
-                new HiveIntervalYearMonth(0, Integer.parseInt(intervalString)));
-          case HiveParser.TOK_INTERVAL_DAY_LITERAL:
-            return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-                new HiveIntervalDayTime(Integer.parseInt(intervalString), 0, 0, 0, 0));
-          case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
-            return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-                new HiveIntervalDayTime(0, Integer.parseInt(intervalString), 0, 0, 0));
-          case HiveParser.TOK_INTERVAL_MINUTE_LITERAL:
-            return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-                new HiveIntervalDayTime(0, 0, Integer.parseInt(intervalString), 0, 0));
-          case HiveParser.TOK_INTERVAL_SECOND_LITERAL:
-            BigDecimal bd = new BigDecimal(intervalString);
-            BigDecimal bdSeconds = new BigDecimal(bd.toBigInteger());
-            BigDecimal bdNanos = bd.subtract(bdSeconds);
-            return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-                new HiveIntervalDayTime(0, 0, 0, bdSeconds.intValueExact(),
-                    bdNanos.multiply(NANOS_PER_SEC_BD).intValue()));
-          default:
-            throw new IllegalArgumentException("Invalid time literal type " + expr.getType());
+        case HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL:
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+              HiveIntervalYearMonth.valueOf(intervalString));
+        case HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL:
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+              HiveIntervalDayTime.valueOf(intervalString));
+        case HiveParser.TOK_INTERVAL_YEAR_LITERAL:
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+              new HiveIntervalYearMonth(Integer.parseInt(intervalString), 0));
+        case HiveParser.TOK_INTERVAL_MONTH_LITERAL:
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+              new HiveIntervalYearMonth(0, Integer.parseInt(intervalString)));
+        case HiveParser.TOK_INTERVAL_DAY_LITERAL:
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+              new HiveIntervalDayTime(Integer.parseInt(intervalString), 0, 0, 0, 0));
+        case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+              new HiveIntervalDayTime(0, Integer.parseInt(intervalString), 0, 0, 0));
+        case HiveParser.TOK_INTERVAL_MINUTE_LITERAL:
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+              new HiveIntervalDayTime(0, 0, Integer.parseInt(intervalString), 0, 0));
+        case HiveParser.TOK_INTERVAL_SECOND_LITERAL:
+          BigDecimal bd = new BigDecimal(intervalString);
+          BigDecimal bdSeconds = new BigDecimal(bd.toBigInteger());
+          BigDecimal bdNanos = bd.subtract(bdSeconds);
+          return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+              new HiveIntervalDayTime(0, 0, 0, bdSeconds.intValueExact(),
+                  bdNanos.multiply(NANOS_PER_SEC_BD).intValue()));
+        default:
+          throw new IllegalArgumentException("Invalid time literal type " + expr.getType());
         }
       } catch (Exception err) {
         throw new SemanticException(
@@ -792,7 +798,7 @@ public class TypeCheckProcFactory {
       ObjectInspector keyOI, ObjectInspector valueOI) {
     PrimitiveObjectInspector keyPoi = (PrimitiveObjectInspector)keyOI;
     PrimitiveObjectInspector valuePoi = (PrimitiveObjectInspector)valueOI;
-    Map<?,?> values = (Map<?,?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
+    Map<?, ?> values = (Map<?, ?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
     Map<Object, Object> constant = new LinkedHashMap<Object, Object>();
     for (Map.Entry<?, ?> e : values.entrySet()) {
       constant.put(keyPoi.getPrimitiveJavaObject(e.getKey()), valuePoi.getPrimitiveJavaObject(e.getValue()));
@@ -813,7 +819,6 @@ public class TypeCheckProcFactory {
       PrimitiveObjectInspector fieldPoi = (PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector();
       constant.add(fieldPoi.getPrimitiveJavaObject(value));
     }
-
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
     constantExpr.setFoldedFromTab(colInfo.getTabAlias());
@@ -1017,8 +1022,8 @@ public class TypeCheckProcFactory {
       // to cast the first operand to string
       if (funcText.equals("substring") || funcText.equals("concat")){
         if(children.size() > 0 && !ExprNodeDescUtils.isStringType(children.get(0))) {
-            ExprNodeDesc newColumn = ParseUtils.createConversionCast(children.get(0), TypeInfoFactory.stringTypeInfo);
-            children.set(0, newColumn);
+          ExprNodeDesc newColumn = ParseUtils.createConversionCast(children.get(0), TypeInfoFactory.stringTypeInfo);
+          children.set(0, newColumn);
         }
       }
     }
@@ -1078,7 +1083,7 @@ public class TypeCheckProcFactory {
           if (!TypeInfoUtils.implicitConvertible(children.get(1).getTypeInfo(),
               TypeInfoFactory.intTypeInfo)) {
             throw new SemanticException(SemanticAnalyzer.generateErrorMessage(
-                  expr, ErrorMsg.INVALID_ARRAYINDEX_TYPE.getMsg()));
+                expr, ErrorMsg.INVALID_ARRAYINDEX_TYPE.getMsg()));
           }
 
           // Calculate TypeInfo
@@ -1121,41 +1126,41 @@ public class TypeCheckProcFactory {
         if (isFunction) {
           ASTNode funcNameNode = (ASTNode)expr.getChild(0);
           switch (funcNameNode.getType()) {
-            case HiveParser.TOK_CHAR:
-              // Add type params
-              CharTypeInfo charTypeInfo = ParseUtils.getCharTypeInfo(funcNameNode);
-              if (genericUDF != null) {
-                ((SettableUDF)genericUDF).setTypeInfo(charTypeInfo);
-              }
-              break;
-            case HiveParser.TOK_VARCHAR:
-              VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(funcNameNode);
-              if (genericUDF != null) {
-                ((SettableUDF)genericUDF).setTypeInfo(varcharTypeInfo);
-              }
-              break;
-            case HiveParser.TOK_TIMESTAMPLOCALTZ:
-              TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = new TimestampLocalTZTypeInfo();
-              HiveConf conf;
-              try {
-                conf = Hive.get().getConf();
-              } catch (HiveException e) {
-                throw new SemanticException(e);
-              }
-              timestampLocalTZTypeInfo.setTimeZone(conf.getLocalTimeZone());
-              if (genericUDF != null) {
-                ((SettableUDF)genericUDF).setTypeInfo(timestampLocalTZTypeInfo);
-              }
-              break;
-            case HiveParser.TOK_DECIMAL:
-              DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(funcNameNode);
-              if (genericUDF != null) {
-                ((SettableUDF)genericUDF).setTypeInfo(decTypeInfo);
-              }
-              break;
-            default:
-              // Do nothing
-              break;
+          case HiveParser.TOK_CHAR:
+            // Add type params
+            CharTypeInfo charTypeInfo = ParseUtils.getCharTypeInfo(funcNameNode);
+            if (genericUDF != null) {
+              ((SettableUDF)genericUDF).setTypeInfo(charTypeInfo);
+            }
+            break;
+          case HiveParser.TOK_VARCHAR:
+            VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(funcNameNode);
+            if (genericUDF != null) {
+              ((SettableUDF)genericUDF).setTypeInfo(varcharTypeInfo);
+            }
+            break;
+          case HiveParser.TOK_TIMESTAMPLOCALTZ:
+            TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = new TimestampLocalTZTypeInfo();
+            HiveConf conf;
+            try {
+              conf = Hive.get().getConf();
+            } catch (HiveException e) {
+              throw new SemanticException(e);
+            }
+            timestampLocalTZTypeInfo.setTimeZone(conf.getLocalTimeZone());
+            if (genericUDF != null) {
+              ((SettableUDF)genericUDF).setTypeInfo(timestampLocalTZTypeInfo);
+            }
+            break;
+          case HiveParser.TOK_DECIMAL:
+            DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(funcNameNode);
+            if (genericUDF != null) {
+              ((SettableUDF)genericUDF).setTypeInfo(decTypeInfo);
+            }
+            break;
+          default:
+            // Do nothing
+            break;
           }
         }
 
@@ -1168,9 +1173,9 @@ public class TypeCheckProcFactory {
         if (genericUDF instanceof GenericUDFBaseCompare
             && children.size() == 2
             && ((children.get(0) instanceof ExprNodeConstantDesc
-                && children.get(1) instanceof ExprNodeColumnDesc)
-                || (children.get(0) instanceof ExprNodeColumnDesc
-                    && children.get(1) instanceof ExprNodeConstantDesc))) {
+            && children.get(1) instanceof ExprNodeColumnDesc)
+            || (children.get(0) instanceof ExprNodeColumnDesc
+            && children.get(1) instanceof ExprNodeConstantDesc))) {
 
           int constIdx = children.get(0) instanceof ExprNodeConstantDesc ? 0 : 1;
 
@@ -1229,7 +1234,7 @@ public class TypeCheckProcFactory {
             } catch (HiveException e) {
               throw new SemanticException(e);
             }
-            if( children.size() <= HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES)) {
+            if(children.size() <= HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES)) {
               ArrayList<ExprNodeDesc> orOperands = TypeCheckProcFactoryUtils.rewriteInToOR(children);
               if (orOperands != null) {
                 if (orOperands.size() == 1) {
@@ -1278,10 +1283,10 @@ public class TypeCheckProcFactory {
         } else if (ctx.isFoldExpr() && canConvertIntoCoalesce(genericUDF, children)) {
           // Rewrite CASE into COALESCE
           desc = ExprNodeGenericFuncDesc.newInstance(new GenericUDFCoalesce(),
-                  Lists.newArrayList(children.get(0), new ExprNodeConstantDesc(false)));
+              Lists.newArrayList(children.get(0), new ExprNodeConstantDesc(false)));
           if (Boolean.FALSE.equals(((ExprNodeConstantDesc) children.get(1)).getValue())) {
             desc = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(),
-                    Lists.newArrayList(desc));
+                Lists.newArrayList(desc));
           }
         } else {
           desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
@@ -1291,8 +1296,8 @@ public class TypeCheckProcFactory {
         // If the function is deterministic and the children are constants,
         // we try to fold the expression to remove e.g. cast on constant
         if (ctx.isFoldExpr() && desc instanceof ExprNodeGenericFuncDesc &&
-                FunctionRegistry.isConsistentWithinQuery(genericUDF) &&
-                ExprNodeDescUtils.isAllConstants(children)) {
+            FunctionRegistry.isConsistentWithinQuery(genericUDF) &&
+            ExprNodeDescUtils.isAllConstants(children)) {
           ExprNodeDesc constantExpr = ConstantPropagateProcFactory.foldExpr((ExprNodeGenericFuncDesc)desc);
           if (constantExpr != null) {
             desc = constantExpr;
@@ -1474,8 +1479,8 @@ public class TypeCheckProcFactory {
 
     private boolean canConvertIntoCoalesce(GenericUDF genericUDF, ArrayList<ExprNodeDesc> children) {
       if (genericUDF instanceof GenericUDFWhen && children.size() == 3 &&
-              children.get(1) instanceof ExprNodeConstantDesc &&
-              children.get(2) instanceof ExprNodeConstantDesc) {
+          children.get(1) instanceof ExprNodeConstantDesc &&
+          children.get(2) instanceof ExprNodeConstantDesc) {
         ExprNodeConstantDesc constThen = (ExprNodeConstantDesc) children.get(1);
         ExprNodeConstantDesc constElse = (ExprNodeConstantDesc) children.get(2);
         Object thenVal = constThen.getValue();
@@ -1749,7 +1754,7 @@ public class TypeCheckProcFactory {
       if (!ctx.getallowSubQueryExpr()) {
         throw new CalciteSubquerySemanticException(SemanticAnalyzer.generateErrorMessage(sqNode,
             ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg("Currently SubQuery expressions are only allowed as " +
-                    "Where and Having Clause predicates")));
+                "Where and Having Clause predicates")));
       }
 
       ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
@@ -1765,12 +1770,12 @@ public class TypeCheckProcFactory {
       ASTNode subqueryOp = (ASTNode) expr.getChild(0);
 
       boolean isIN = (subqueryOp.getChildCount() > 0) && (subqueryOp.getChild(0).getType() == HiveParser.KW_IN
-              || subqueryOp.getChild(0).getType() == HiveParser.TOK_SUBQUERY_OP_NOTIN);
+          || subqueryOp.getChild(0).getType() == HiveParser.TOK_SUBQUERY_OP_NOTIN);
       boolean isEXISTS = (subqueryOp.getChildCount() > 0) && (subqueryOp.getChild(0).getType() == HiveParser.KW_EXISTS
-              || subqueryOp.getChild(0).getType() == HiveParser.TOK_SUBQUERY_OP_NOTEXISTS);
+          || subqueryOp.getChild(0).getType() == HiveParser.TOK_SUBQUERY_OP_NOTEXISTS);
       boolean isSOME = (subqueryOp.getChildCount() > 0) && (subqueryOp.getChild(0).getType() == HiveParser.KW_SOME);
       boolean isALL = (subqueryOp.getChildCount() > 0) && (subqueryOp.getChild(0).getType() == HiveParser.KW_ALL);
-      boolean isScalar = subqueryOp.getChildCount() == 0 ;
+      boolean isScalar = subqueryOp.getChildCount() == 0;
 
       // subqueryToRelNode might be null if subquery expression anywhere other than
       //  as expected in filter (where/having). We should throw an appropriate error
@@ -1779,8 +1784,8 @@ public class TypeCheckProcFactory {
       Map<ASTNode, RelNode> subqueryToRelNode = ctx.getSubqueryToRelNode();
       if(subqueryToRelNode == null) {
         throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-                        " Currently SubQuery expressions are only allowed as " +
-                                "Where and Having Clause predicates"));
+            " Currently SubQuery expressions are only allowed as " +
+                "Where and Having Clause predicates"));
       }
 
       RelNode subqueryRel = subqueryToRelNode.get(expr);
@@ -1789,29 +1794,27 @@ public class TypeCheckProcFactory {
       // we will create subquery expression of boolean type
       if(isEXISTS) {
         return new ExprNodeSubQueryDesc(TypeInfoFactory.booleanTypeInfo, subqueryRel,
-                ExprNodeSubQueryDesc.SubqueryType.EXISTS);
-      }
-      else if(isIN) {
+            ExprNodeSubQueryDesc.SubqueryType.EXISTS);
+      } else if(isIN) {
         assert(nodeOutputs[2] != null);
         ExprNodeDesc lhs = (ExprNodeDesc)nodeOutputs[2];
         return new ExprNodeSubQueryDesc(TypeInfoFactory.booleanTypeInfo, subqueryRel,
-                ExprNodeSubQueryDesc.SubqueryType.IN, lhs);
-      }
-      else if(isScalar){
+            ExprNodeSubQueryDesc.SubqueryType.IN, lhs);
+      } else if(isScalar){
         // only single subquery expr is supported
         if(subqueryRel.getRowType().getFieldCount() != 1) {
-            throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
-                    "More than one column expression in subquery"));
+          throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+              "More than one column expression in subquery"));
         }
         // figure out subquery expression column's type
         TypeInfo subExprType = TypeConverter.convert(subqueryRel.getRowType().getFieldList().get(0).getType());
         return new ExprNodeSubQueryDesc(subExprType, subqueryRel,
-                ExprNodeSubQueryDesc.SubqueryType.SCALAR);
+            ExprNodeSubQueryDesc.SubqueryType.SCALAR);
       } else if(isSOME) {
         assert(nodeOutputs[2] != null);
         ExprNodeDesc lhs = (ExprNodeDesc)nodeOutputs[2];
         return new ExprNodeSubQueryDesc(TypeInfoFactory.booleanTypeInfo, subqueryRel,
-            ExprNodeSubQueryDesc.SubqueryType.SOME, lhs, (ASTNode)subqueryOp.getChild(1) );
+            ExprNodeSubQueryDesc.SubqueryType.SOME, lhs, (ASTNode)subqueryOp.getChild(1));
       } else if(isALL) {
         assert(nodeOutputs[2] != null);
         ExprNodeDesc lhs = (ExprNodeDesc)nodeOutputs[2];
@@ -1823,8 +1826,8 @@ public class TypeCheckProcFactory {
        * Restriction.1.h :: SubQueries only supported in the SQL Where Clause.
        */
       ctx.setError(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(sqNode,
-              "Currently only IN & EXISTS SubQuery expressions are allowed"),
-              sqNode);
+          "Currently only IN & EXISTS SubQuery expressions are allowed"),
+          sqNode);
       return null;
     }
   }

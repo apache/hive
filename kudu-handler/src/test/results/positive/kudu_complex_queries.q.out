@@ -130,16 +130,22 @@ STAGE PLANS:
                   1 UDFToDouble(_col0) (type: double)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 488 Data size: 86864 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col1 (type: string), _col2 (type: string)
-                  outputColumnNames: _col0, _col1
+                Top N Key Operator
+                  sort order: ++
+                  keys: _col1 (type: string), _col2 (type: string)
+                  null sort order: zz
                   Statistics: Num rows: 488 Data size: 86864 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string), _col1 (type: string)
-                    null sort order: zz
-                    sort order: ++
+                  top n: 10
+                  Select Operator
+                    expressions: _col1 (type: string), _col2 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 488 Data size: 86864 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      null sort order: zz
+                      sort order: ++
+                      Statistics: Num rows: 488 Data size: 86864 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -306,17 +312,23 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 121 Data size: 23232 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col1 (type: int), _col2 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 121 Data size: 22748 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col1 (type: string)
-                    null sort order: z
-                    sort order: +
+                Top N Key Operator
+                  sort order: +
+                  keys: _col2 (type: string)
+                  null sort order: z
+                  Statistics: Num rows: 121 Data size: 23232 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 10
+                  Select Operator
+                    expressions: _col1 (type: int), _col2 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 121 Data size: 22748 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.1
-                    value expressions: _col0 (type: int)
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Statistics: Num rows: 121 Data size: 22748 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col0 (type: int)
         Reducer 4 
             Execution mode: vectorized
             Reduce Operator Tree:

@@ -51,7 +51,7 @@ public class QTestDatasetHandler implements QTestOptionHandler {
 
   private File datasetDir;
   private static Set<String> srcTables;
-  private Set<String> missingTables = new HashSet<>();
+  private static Set<String> missingTables = new HashSet<>();
 
   public QTestDatasetHandler(HiveConf conf) {
     // Use path relative to dataDir directory if it is not specified
@@ -134,13 +134,15 @@ public class QTestDatasetHandler implements QTestOptionHandler {
   @Override
   public void processArguments(String arguments) {
     String[] tables = arguments.split(",");
-    for (String string : tables) {
-      string = string.trim();
-      if (string.length() == 0) {
-        continue;
-      }
-      if (srcTables == null || !srcTables.contains(string)) {
-        missingTables.add(string);
+    synchronized (QTestUtil.class) {
+      for (String string : tables) {
+        string = string.trim();
+        if (string.length() == 0) {
+          continue;
+        }
+        if (srcTables == null || !srcTables.contains(string)) {
+          missingTables.add(string);
+        }
       }
     }
   }

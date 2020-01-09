@@ -62,7 +62,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -365,7 +364,6 @@ public final class QueryResultsCache {
     // Set up cache directory
     Path rootCacheDir = new Path(conf.getVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_DIRECTORY));
     LOG.info("Initializing query results cache at {}", rootCacheDir);
-    Utilities.ensurePathIsWritable(rootCacheDir, conf);
 
     String currentCacheDirName = "results-" + UUID.randomUUID().toString();
     cacheDirPath = new Path(rootCacheDir, currentCacheDirName);

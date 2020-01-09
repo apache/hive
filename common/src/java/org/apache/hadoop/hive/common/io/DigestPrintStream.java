@@ -18,10 +18,9 @@
 
 package org.apache.hadoop.hive.common.io;
 
-import org.apache.commons.codec.binary.Base64;
-
 import java.io.OutputStream;
 import java.security.MessageDigest;
+import java.util.Base64;
 
 public class DigestPrintStream extends FetchConverter {
 
@@ -39,7 +38,7 @@ public class DigestPrintStream extends FetchConverter {
 
   @Override
   public void processFinal() {
-    printDirect(new String(Base64.encodeBase64(digest.digest())));
+    printDirect(Base64.getEncoder().encodeToString(digest.digest()));
     digest.reset();
   }
 }

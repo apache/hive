@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[172][bigTable=?] in task 'Reducer 15' is a cross product
+Warning: Map Join MAPJOIN[173][bigTable=?] in task 'Reducer 15' is a cross product
 PREHOOK: query: explain cbo
 select  a.ca_state state, count(*) cnt
  from customer_address a

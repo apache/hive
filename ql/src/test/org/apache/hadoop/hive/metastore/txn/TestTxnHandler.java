@@ -210,7 +210,7 @@ public class TestTxnHandler {
       Assert.assertEquals("Transaction " + JavaUtils.txnIdToString(3) + " is already committed.", ex.getMessage());
     }
     Assert.assertTrue(gotException);
-    
+
     gotException = false;
     try {
       txnHandler.abortTxn(new AbortTxnRequest(4));
@@ -220,6 +220,19 @@ public class TestTxnHandler {
       Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(4), ex.getMessage());
     }
     Assert.assertTrue(gotException);
+  }
+
+  @Test
+  public void testAbortTxns() throws Exception {
+    OpenTxnsResponse openedTxns = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
+    List<Long> txnList = openedTxns.getTxn_ids();
+    txnHandler.abortTxns(new AbortTxnsRequest(txnList));
+
+    GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
+    assertEquals(3, txnsInfo.getOpen_txns().size());
+    txnsInfo.getOpen_txns().forEach(txn ->
+      assertEquals(TxnState.ABORTED, txn.getState())
+    );
   }
 
   @Test

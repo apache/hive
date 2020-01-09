@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.rex.RexCall;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -66,7 +67,7 @@ class HiveTableFunctionScanVisitor extends HiveRelNodeVisitor<HiveTableFunctionS
 
     RowResolver rowResolver = new RowResolver();
     List<String> fieldNames = new ArrayList<>(scanRel.getRowType().getFieldNames());
-    List<String> exprNames = new ArrayList<>(fieldNames);
+    List<String> functionFieldNames = new ArrayList<>();
     List<ExprNodeDesc> exprCols = new ArrayList<>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
     for (int pos = 0; pos < call.getOperands().size(); pos++) {
@@ -74,22 +75,25 @@ class HiveTableFunctionScanVisitor extends HiveRelNodeVisitor<HiveTableFunctionS
           scanRel.getRowType(), scanRel.getRowType(), ((HiveTableScan)scanRel.getInput(0)).getPartOrVirtualCols(),
           scanRel.getCluster().getTypeFactory(), true);
       ExprNodeDesc exprCol = call.getOperands().get(pos).accept(converter);
-      colExprMap.put(exprNames.get(pos), exprCol);
+      colExprMap.put(HiveConf.getColumnInternalName(pos), exprCol);
       exprCols.add(exprCol);
 
-      ColumnInfo columnInfo = new ColumnInfo(fieldNames.get(pos), exprCol.getWritableObjectInspector(), null, false);
+      ColumnInfo columnInfo = new ColumnInfo(HiveConf.getColumnInternalName(pos),
+          exprCol.getWritableObjectInspector(), SemanticAnalyzer.DUMMY_TABLE, false);
       rowResolver.put(columnInfo.getTabAlias(), columnInfo.getAlias(), columnInfo);
+
+      functionFieldNames.add(HiveConf.getColumnInternalName(pos));
     }
 
     OpAttr inputOpAf = hiveOpConverter.dispatch(scanRel.getInputs().get(0));
     TableScanOperator op = (TableScanOperator)inputOpAf.inputs.get(0);
     op.getConf().setRowLimit(1);
 
-    Operator<?> output = OperatorFactory.getAndMakeChild(new SelectDesc(exprCols, fieldNames, false),
+    Operator<?> output = OperatorFactory.getAndMakeChild(new SelectDesc(exprCols, functionFieldNames, false),
         new RowSchema(rowResolver.getRowSchema()), op);
     output.setColumnExprMap(colExprMap);
 
-    Operator<?> funcOp = genUDTFPlan(call, fieldNames, output, rowResolver);
+    Operator<?> funcOp = genUDTFPlan(call, functionFieldNames, output, rowResolver);
 
     return new OpAttr(null, new HashSet<Integer>(), funcOp);
   }
@@ -133,6 +137,7 @@ class HiveTableFunctionScanVisitor extends HiveRelNodeVisitor<HiveTableFunctionS
       // field name from the UDTF's OI as the internal name
       ColumnInfo col = new ColumnInfo(sf.getFieldName(),
           TypeInfoUtils.getTypeInfoFromObjectInspector(sf.getFieldObjectInspector()), null, false);
+      col.setAlias(sf.getFieldName());
       columnInfos.add(col);
     }
     return columnInfos;

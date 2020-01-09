@@ -87,24 +87,24 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:cint1:int, 1:cint2:int, 2:cdouble:double, 3:cvarchar:varchar(50), 4:cdecimal1:decimal(10,2)/DECIMAL_64, 5:cdecimal2:decimal(38,5), 6:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: cint1 (type: int)
-                    outputColumnNames: cint1
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0]
+                  Top N Key Operator
+                    sort order: +
+                    keys: cint1 (type: int)
+                    null sort order: z
                     Statistics: Num rows: 14 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: cint1 (type: int)
-                      null sort order: z
-                      Statistics: Num rows: 14 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 3
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:int
+                    top n: 3
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 0:int
+                        native: true
+                    Select Operator
+                      expressions: cint1 (type: int)
+                      outputColumnNames: cint1
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 14 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator

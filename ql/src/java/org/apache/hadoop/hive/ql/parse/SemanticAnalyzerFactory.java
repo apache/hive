@@ -59,7 +59,7 @@ public final class SemanticAnalyzerFactory {
       HiveOperation opType = HiveOperation.operationForToken(tree.getType());
       queryState.setCommandType(opType);
 
-      if (DDLSemanticAnalyzerFactory.handles(tree.getType())) {
+      if (DDLSemanticAnalyzerFactory.handles(tree)) {
         return DDLSemanticAnalyzerFactory.getAnalyzer(tree, queryState);
       }
 
@@ -108,7 +108,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_DESCTABLE:
       case HiveParser.TOK_MSCK:
       case HiveParser.TOK_SHOWTABLES:
-      case HiveParser.TOK_SHOWCOLUMNS:
       case HiveParser.TOK_SHOW_TABLESTATUS:
       case HiveParser.TOK_SHOW_TBLPROPERTIES:
       case HiveParser.TOK_SHOWPARTITIONS:

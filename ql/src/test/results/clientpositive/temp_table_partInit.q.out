@@ -1,0 +1,55 @@
+PREHOOK: query: CREATE TABLE empty_n1 (c INT) PARTITIONED BY (p INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empty_n1
+POSTHOOK: query: CREATE TABLE empty_n1 (c INT) PARTITIONED BY (p INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@empty_n1
+PREHOOK: query: SELECT MAX(c) FROM empty_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_n1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(c) FROM empty_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_n1
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT MAX(p) FROM empty_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_n1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(p) FROM empty_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_n1
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: ALTER TABLE empty_n1 ADD PARTITION (p=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@empty_n1
+POSTHOOK: query: ALTER TABLE empty_n1 ADD PARTITION (p=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@empty_n1
+POSTHOOK: Output: default@empty_n1@p=1
+PREHOOK: query: SELECT MAX(p) FROM empty_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_n1
+PREHOOK: Input: default@empty_n1@p=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(p) FROM empty_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_n1
+POSTHOOK: Input: default@empty_n1@p=1
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT MAX(p) FROM empty_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_n1
+PREHOOK: Input: default@empty_n1@p=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(p) FROM empty_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_n1
+POSTHOOK: Input: default@empty_n1@p=1
+#### A masked pattern was here ####
+NULL

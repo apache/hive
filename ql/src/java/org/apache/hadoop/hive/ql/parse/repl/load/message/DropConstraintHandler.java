@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.table.constaint.AlterTableDropConstraintDesc;
+import org.apache.hadoop.hive.ql.ddl.table.constraint.drop.AlterTableDropConstraintDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;

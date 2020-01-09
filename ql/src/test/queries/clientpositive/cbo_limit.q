@@ -9,7 +9,7 @@ set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
 
 -- 7. Test Select + TS + Join + Fil + GB + GB Having + Limit
-select key, (c_int+1)+2 as x, sum(c_int) from cbo_t1 group by c_float, cbo_t1.c_int, key order by x limit 1;
+select key, (c_int+1)+2 as x, sum(c_int) from cbo_t1 group by c_float, cbo_t1.c_int, key order by x, key limit 1;
 select x, y, count(*) from (select key, (c_int+c_float+1+2) as x, sum(c_int) as y from cbo_t1 group by c_float, cbo_t1.c_int, key) R group by y, x order by x,y limit 1;
 select key from(select key from (select key from cbo_t1 limit 5)cbo_t2  limit 5)cbo_t3  limit 5;
 select key, c_int from(select key, c_int from (select key, c_int from cbo_t1 order by c_int limit 5)cbo_t1  order by c_int limit 5)cbo_t2  order by c_int limit 5;
@@ -33,6 +33,9 @@ select count(*) cs from cbo_t1 where c_int > 1 LIMIT 100;
 -- LIMIT 1
 explain cbo select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int;
 select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int;
+
+explain cbo select count(*) from cbo_t1 where c_float > 1.0 group by true limit 0;
+select count(*) from cbo_t1 where c_float > 1.0 group by true limit 0;
 
 -- prune un-necessary aggregates
 explain cbo select count(*) from cbo_t1 order by sum(c_int), count(*);

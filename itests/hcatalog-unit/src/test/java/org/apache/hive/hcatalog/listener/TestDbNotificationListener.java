@@ -25,10 +25,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.util.concurrent.TimeUnit;
-import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -1055,6 +1056,88 @@ public class TestDbNotificationListener {
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
     testEventCounts(defaultDbName, firstEventId, null, null, 3);
+  }
+
+  @Test
+  public void openTxn() throws Exception {
+    msClient.openTxn("me", TxnType.READ_ONLY);
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(0, rsp.getEventsSize());
+
+    msClient.openTxn("me", TxnType.DEFAULT);
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 1, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.OPEN_TXN.toString(), event.getEventType());
+  }
+
+  @Test
+  public void abortTxn() throws Exception {
+    long txnId1 = msClient.openTxn("me", TxnType.READ_ONLY);
+    long txnId2 = msClient.openTxn("me", TxnType.DEFAULT);
+
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    msClient.abortTxns(Collections.singletonList(txnId1));
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(0, rsp.getEventsSize());
+
+    msClient.abortTxns(Collections.singletonList(txnId2));
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 2, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.ABORT_TXN.toString(), event.getEventType());
+  }
+
+  @Test
+  public void rollbackTxn() throws Exception {
+    long txnId1 = msClient.openTxn("me", TxnType.READ_ONLY);
+    long txnId2 = msClient.openTxn("me", TxnType.DEFAULT);
+
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    msClient.rollbackTxn(txnId1);
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(0, rsp.getEventsSize());
+
+    msClient.rollbackTxn(txnId2);
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 2, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.ABORT_TXN.toString(), event.getEventType());
+  }
+
+  @Test
+  public void commitTxn() throws Exception {
+    long txnId1 = msClient.openTxn("me", TxnType.READ_ONLY);
+    long txnId2 = msClient.openTxn("me", TxnType.DEFAULT);
+
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    msClient.commitTxn(txnId1);
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(0, rsp.getEventsSize());
+
+    msClient.commitTxn(txnId2);
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 2, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.COMMIT_TXN.toString(), event.getEventType());
   }
 
   @Test

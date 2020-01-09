@@ -526,16 +526,16 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: a
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Top N Key Operator
-                      sort order: +
-                      keys: key (type: string)
-                      null sort order: a
+                    top n: 0
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: key
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      top n: 0
                       Group By Operator
                         aggregations: count(key)
                         keys: key (type: string)
