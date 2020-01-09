@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.llap;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -105,6 +107,13 @@ public final class LlapHiveUtils {
       work = Utilities.getMapWork(job);
     }
     return (MapWork) work;
+  }
+
+  public static void throwIfCacheOnlyRead(boolean isCacheOnlyRead) throws IOException {
+    if (isCacheOnlyRead) {
+      throw new IOException("LLAP cache miss happened while reading. Aborting query as cache only reading is set. " +
+          "Set " + HiveConf.ConfVars.LLAP_IO_CACHE_ONLY.varname + " to false and repeat query if this was unintended.");
+    }
   }
 
 }
