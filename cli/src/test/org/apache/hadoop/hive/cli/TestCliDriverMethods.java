@@ -205,10 +205,9 @@ public class TestCliDriverMethods {
     assertTrue(completors[0] instanceof ArgumentCompleter);
     assertTrue(completors[1] instanceof Completer);
 
-    //comletor add space after last delimeter
-   List<CharSequence>testList=new ArrayList<CharSequence>(Arrays.asList(new String[]{")"}));
+    List<CharSequence> testList = Arrays.asList(")");
     completors[1].complete("fdsdfsdf", 0, testList);
-    assertEquals(") ", testList.get(0));
+    assertEquals(")", testList.get(0));
     testList=new ArrayList<CharSequence>();
     completors[1].complete("len", 0, testList);
     assertTrue(testList.get(0).toString().endsWith("length("));
