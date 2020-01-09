@@ -25,12 +25,12 @@ clustered by (key) into 2 buckets
 tblproperties("transactional"="true", "transactional_properties"="insert_only");
 insert into table bucket0_mm select key, key from intermediate_n2;
 select * from bucket0_mm order by key, id;
-select * from bucket0_mm tablesample (bucket 1 out of 2) s;
-select * from bucket0_mm tablesample (bucket 2 out of 2) s;
+select * from bucket0_mm tablesample (bucket 1 out of 2) s order by key, id;
+select * from bucket0_mm tablesample (bucket 2 out of 2) s order by key, id;
 insert into table bucket0_mm select key, key from intermediate_n2;
 select * from bucket0_mm order by key, id;
-select * from bucket0_mm tablesample (bucket 1 out of 2) s;
-select * from bucket0_mm tablesample (bucket 2 out of 2) s;
+select * from bucket0_mm tablesample (bucket 1 out of 2) s order by key, id;
+select * from bucket0_mm tablesample (bucket 2 out of 2) s order by key, id;
 drop table bucket0_mm;
 
 
