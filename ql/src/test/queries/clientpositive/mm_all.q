@@ -2,6 +2,7 @@
 --! qt:dataset:src
 
 -- MASK_LINEAGE
+-- SORT_QUERY_RESULTS
 
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;

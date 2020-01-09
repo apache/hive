@@ -2414,10 +2414,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     final SessionState parentSession = SessionState.get();
 
     final List<Future<Void>> futures = Lists.newLinkedList();
+    // for each dynamically created DP directory, construct a full partition spec
+    // and load the partition based on that
+    boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
+    final Map<Long, RawStore> rawStoreMap = new ConcurrentHashMap<>();
     try {
-      // for each dynamically created DP directory, construct a full partition spec
-      // and load the partition based on that
-      final Map<Long, RawStore> rawStoreMap = new ConcurrentHashMap<>();
       for(final Path partPath : validPartitions) {
         // generate a full partition specification
         final LinkedHashMap<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
@@ -2489,7 +2490,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     try {
-      if (isAcid) {
+      if (isTxnTable) {
         List<String> partNames = new ArrayList<>(partitionsMap.size());
         for (Partition p : partitionsMap.values()) {
           partNames.add(p.getName());

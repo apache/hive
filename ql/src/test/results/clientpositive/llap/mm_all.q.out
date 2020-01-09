@@ -148,6 +148,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.part_mm_n0
+          Write Type: INSERT
           micromanaged table: true
 
   Stage: Stage-3
@@ -221,18 +222,18 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 10	455
 10	455
 10	456
-97	455
-97	455
-97	456
-98	455
-98	455
-98	456
 100	455
 100	455
 100	456
 103	455
 103	455
 103	456
+97	455
+97	455
+97	456
+98	455
+98	455
+98	456
 PREHOOK: query: select * from part_mm_n0 order by key, key_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_mm_n0
@@ -251,18 +252,18 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 10	455
 10	455
 10	456
-97	455
-97	455
-97	456
-98	455
-98	455
-98	456
 100	455
 100	455
 100	456
 103	455
 103	455
 103	456
+97	455
+97	455
+97	456
+98	455
+98	455
+98	456
 PREHOOK: query: truncate table part_mm_n0
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@part_mm_n0@key_mm=455
@@ -328,10 +329,10 @@ POSTHOOK: Input: default@simple_mm
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 10
-97
-98
 100
 103
+97
+98
 PREHOOK: query: insert into table simple_mm select key from intermediate_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate_n0
@@ -359,14 +360,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 10
 10
-97
-97
-98
-98
 100
 100
 103
 103
+97
+97
+98
+98
 PREHOOK: query: truncate table simple_mm
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@simple_mm
@@ -450,10 +451,10 @@ POSTHOOK: Input: default@dp_mm@key1=123/key2=98
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	123	0
 10	123	10
-97	123	97
-98	123	98
 100	123	100
 103	123	103
+97	123	97
+98	123	98
 PREHOOK: query: drop table dp_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dp_mm
@@ -504,15 +505,15 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 1
 10
+100
+101
+103
+104
 11
 97
 98
 98
 99
-100
-101
-103
-104
 PREHOOK: query: insert into table union_mm 
 select p from
 (
@@ -556,20 +557,8 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 1
 1
-2
 10
 10
-11
-11
-12
-97
-97
-98
-98
-98
-99
-99
-99
 100
 100
 100
@@ -581,6 +570,18 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 104
 104
 105
+11
+11
+12
+2
+97
+97
+98
+98
+98
+99
+99
+99
 PREHOOK: query: insert into table union_mm
 SELECT p FROM
 (
@@ -640,27 +641,9 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 1
 1
-2
-2
 10
 10
 10
-11
-11
-11
-12
-12
-97
-97
-97
-98
-98
-98
-98
-99
-99
-99
-99
 100
 100
 100
@@ -678,6 +661,24 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 104
 105
 105
+11
+11
+11
+12
+12
+2
+2
+97
+97
+97
+98
+98
+98
+98
+99
+99
+99
+99
 PREHOOK: query: drop table union_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@union_mm
@@ -770,15 +771,15 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	0
 1	1
 10	10
+100	100
+101	101
+103	103
+104	104
 11	11
 97	97
 98	98
 98	98
 99	99
-100	100
-101	101
-103	103
-104	104
 PREHOOK: query: drop table partunion_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partunion_mm
@@ -826,10 +827,10 @@ POSTHOOK: Input: default@skew_mm
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	0	0
 10	10	10
-97	97	97
-98	98	98
 100	100	100
 103	103	103
+97	97	97
+98	98	98
 PREHOOK: query: drop table skew_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@skew_mm
@@ -950,15 +951,15 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	0	0	0
 1	2	3	4
 10	10	10	10
+100	100	100	100
+101	102	103	104
+103	103	103	103
+104	105	106	107
 11	12	13	14
 97	97	97	97
 98	98	98	98
 98	99	100	101
 99	100	101	102
-100	100	100	100
-101	102	103	104
-103	103	103	103
-104	105	106	107
 PREHOOK: query: drop table skew_dp_union_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@skew_dp_union_mm
@@ -998,12 +999,12 @@ POSTHOOK: query: select * from merge0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge0_mm
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-98
-97
-100
-103
 0
 10
+100
+103
+97
+98
 PREHOOK: query: insert into table merge0_mm select key from intermediate_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate_n0
@@ -1027,18 +1028,18 @@ POSTHOOK: query: select * from merge0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge0_mm
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-98
-97
-100
-103
+0
 0
 10
-98
-97
+10
+100
 100
 103
-0
-10
+103
+97
+97
+98
+98
 PREHOOK: query: drop table merge0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge0_mm
@@ -1078,12 +1079,12 @@ POSTHOOK: query: select * from merge2_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge2_mm
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-98
-97
-100
-103
 0
 10
+100
+103
+97
+98
 PREHOOK: query: insert into table merge2_mm select key from intermediate_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate_n0
@@ -1107,18 +1108,18 @@ POSTHOOK: query: select * from merge2_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge2_mm
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-98
-97
-100
-103
+0
 0
 10
-98
-97
+10
+100
 100
 103
-0
-10
+103
+97
+97
+98
+98
 PREHOOK: query: drop table merge2_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge2_mm
@@ -1182,10 +1183,10 @@ POSTHOOK: Input: default@merge1_mm@key=98
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	0
 10	10
-97	97
-98	98
 100	100
 103	103
+97	97
+98	98
 PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate_n0
@@ -1235,14 +1236,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	0
 10	10
 10	10
-97	97
-97	97
-98	98
-98	98
 100	100
 100	100
 103	103
 103	103
+97	97
+97	97
+98	98
+98	98
 PREHOOK: query: drop table merge1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge1_mm
@@ -1281,12 +1282,12 @@ POSTHOOK: query: select * from ctas0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ctas0_mm
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-98	455
-97	455
-100	457
-103	457
 0	456
 10	456
+100	457
+103	457
+97	455
+98	455
 PREHOOK: query: drop table ctas0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ctas0_mm
@@ -1327,18 +1328,18 @@ POSTHOOK: query: select * from ctas1_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ctas1_mm
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-98	455
-97	455
-100	457
-103	457
+0	456
 0	456
 10	456
-98	455
-97	455
+10	456
+100	457
 100	457
 103	457
-0	456
-10	456
+103	457
+97	455
+97	455
+98	455
+98	455
 PREHOOK: query: drop table ctas1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ctas1_mm
@@ -1405,10 +1406,10 @@ POSTHOOK: Input: default@multi0_1_mm
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456
 10	456
-97	455
-98	455
 100	457
 103	457
+97	455
+98	455
 PREHOOK: query: select * from multi0_2_mm order by key, key2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multi0_2_mm
@@ -1457,8 +1458,6 @@ POSTHOOK: Input: default@multi0_1_mm
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456
 10	456
-97	455
-98	455
 100	457
 103	457
 455	97
@@ -1467,6 +1466,8 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 456	10
 457	100
 457	103
+97	455
+98	455
 PREHOOK: query: select * from multi0_2_mm order by key, key2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multi0_2_mm
@@ -1477,10 +1478,10 @@ POSTHOOK: Input: default@multi0_2_mm
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456
 10	456
-97	455
-98	455
 100	457
 103	457
+97	455
+98	455
 PREHOOK: query: drop table multi0_1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multi0_1_mm
@@ -1547,8 +1548,6 @@ POSTHOOK: Input: default@multi1_mm@p=2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456	2
 10	456	2
-97	455	2
-98	455	2
 100	457	2
 103	457	2
 455	97	1
@@ -1557,6 +1556,8 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 456	10	1
 457	100	1
 457	103	1
+97	455	2
+98	455	2
 PREHOOK: query: from intermediate_n0
 insert into table multi1_mm partition(p=2) select p, key
 insert overwrite table multi1_mm partition(p=1) select key, p
@@ -1597,10 +1598,6 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456	2
 10	456	1
 10	456	2
-97	455	1
-97	455	2
-98	455	1
-98	455	2
 100	457	1
 100	457	2
 103	457	1
@@ -1611,6 +1608,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 456	10	2
 457	100	2
 457	103	2
+97	455	1
+97	455	2
+98	455	1
+98	455	2
 PREHOOK: query: from intermediate_n0
 insert into table multi1_mm partition(p) select p, key, p
 insert into table multi1_mm partition(p=1) select key, p
@@ -1667,12 +1668,6 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 10	456	1
 10	456	1
 10	456	2
-97	455	1
-97	455	1
-97	455	2
-98	455	1
-98	455	1
-98	455	2
 100	457	1
 100	457	1
 100	457	2
@@ -1691,6 +1686,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 457	100	457
 457	103	2
 457	103	457
+97	455	1
+97	455	1
+97	455	2
+98	455	1
+98	455	1
+98	455	2
 PREHOOK: query: from intermediate_n0
 insert into table multi1_mm partition(p) select p, key, 1
 insert into table multi1_mm partition(p=1) select key, p
@@ -1740,14 +1741,6 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 10	456	1
 10	456	1
 10	456	2
-97	455	1
-97	455	1
-97	455	1
-97	455	2
-98	455	1
-98	455	1
-98	455	1
-98	455	2
 100	457	1
 100	457	1
 100	457	1
@@ -1774,6 +1767,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 457	103	1
 457	103	2
 457	103	457
+97	455	1
+97	455	1
+97	455	1
+97	455	2
+98	455	1
+98	455	1
+98	455	1
+98	455	2
 PREHOOK: query: drop table multi1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multi1_mm
@@ -2120,12 +2121,12 @@ POSTHOOK: query: SELECT * FROM temp1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-98
-97
-100
-103
 0
 10
+100
+103
+97
+98
 PREHOOK: query: drop table intermediate_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate_n0

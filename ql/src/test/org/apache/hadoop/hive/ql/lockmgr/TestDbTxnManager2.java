@@ -1640,6 +1640,34 @@ public class TestDbTxnManager2 {
   }
   //todo: Concurrent insert/update of same partition - should pass
 
+  @Test public void testMultiInsertOnDynamicallyPartitionedMmTable() throws Exception {
+    dropTable(new String[] {"tabMmDp", "tab_not_acid"});
+
+    driver.run("create table if not exists tabMmDp (a int, b int) partitioned by (p string) "
+        + "stored as orc "
+        + "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')");
+    driver.run("create table if not exists tab_not_acid (a int, b int, p string)");
+    driver.run("insert into tab_not_acid values (1 ,1, 'one'), (2, 2, 'two')");
+    // insert 2 rows twice into the MM table
+    driver.run("from tab_not_acid "
+        + "insert into tabMmDp select a,b,p "
+        + "insert into tabMmDp select a,b,p"); //txnid: 6 (2 drops, 2 creates, 2 inserts)
+
+    final String completedTxnComponentsContents =
+        TxnDbUtil.queryToString(conf, "select * from COMPLETED_TXN_COMPONENTS");
+    Assert.assertEquals(completedTxnComponentsContents,
+        2, TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_TXN_COMPONENTS"));
+    Assert.assertEquals(completedTxnComponentsContents,
+        2, TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_TXN_COMPONENTS where ctc_txnid=6"));
+    Assert.assertEquals(completedTxnComponentsContents,
+        2, TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_TXN_COMPONENTS where ctc_txnid=6 "
+            + "and ctc_table='tabmmdp'"));
+    // ctc_update_delete value should be "N" for both partitions since these are inserts
+    Assert.assertEquals(completedTxnComponentsContents,
+        2, TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_TXN_COMPONENTS where ctc_txnid=6 "
+            + "and ctc_table='tabmmdp' and ctc_update_delete='N'"));
+  }
+
   private List<ShowLocksResponseElement> getLocksWithFilterOptions(HiveTxnManager txnMgr,
       String dbName, String tblName, Map<String, String> partSpec) throws Exception {
     if (dbName == null && tblName != null) {
