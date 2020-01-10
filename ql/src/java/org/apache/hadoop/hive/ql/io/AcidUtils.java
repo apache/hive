@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
+import org.apache.hadoop.hive.ql.io.orc.RecordReader;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -79,9 +81,11 @@ import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.FileFormatException;
 import org.apache.orc.impl.OrcAcidUtils;
@@ -420,6 +424,27 @@ public class AcidUtils {
       return Integer.parseInt(filename.substring(filename.indexOf('_') + 1));
     }
     return -1;
+  }
+
+  /**
+   * Read the first row of an ORC file and determine the bucket ID based on the bucket column. This only works with
+   * files with ACID schema.
+   * @param fs the resolved file system
+   * @param orcFile path to ORC file
+   * @return resolved bucket number
+   * @throws IOException during the parsing of the ORC file
+   */
+  public static Optional<Integer> parseBucketIdFromRow(FileSystem fs, Path orcFile) throws IOException {
+    Reader reader = OrcFile.createReader(fs, orcFile);
+    StructObjectInspector objectInspector = (StructObjectInspector)reader.getObjectInspector();
+    RecordReader records = reader.rows();
+    while(records.hasNext()) {
+      Object row = records.next(null);
+      List<Object> fields = objectInspector.getStructFieldsDataAsList(row);
+      int bucketProperty = ((IntWritable) fields.get(2)).get();
+      return Optional.of(BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty));
+    }
+    return Optional.empty();
   }
 
   /**
