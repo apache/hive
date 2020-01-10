@@ -2139,6 +2139,13 @@ public final class Utilities {
     return names;
   }
 
+  /**
+   * Note: This will not return the correct number of columns in the case of
+   * Avro serde using an external schema URL, unless these properties have been
+   * used to initialize the Avro SerDe (which updates these properties).
+   * @param props TableDesc properties
+   * @return list of column names based on the table properties
+   */
   public static List<String> getColumnNames(Properties props) {
     List<String> names = new ArrayList<String>();
     String colNames = props.getProperty(serdeConstants.LIST_COLUMNS);
