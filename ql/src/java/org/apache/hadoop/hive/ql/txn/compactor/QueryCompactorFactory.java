@@ -27,11 +27,22 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
  */
 final class QueryCompactorFactory {
 
+  /**
+   * Factory class, no need to expose constructor.
+   */
   private QueryCompactorFactory() {
   }
 
   /**
-   * Get an instance of {@link QueryCompactor}.
+   * Get an instance of {@link QueryCompactor}. At the moment the following implementors can be fetched:
+   * <p>
+   * {@link MajorQueryCompactor} - handles query based major compaction
+   * <br>
+   * {@link MinorQueryCompactor} - handles query based minor compaction
+   * <br>
+   * {@link MmMajorQueryCompactor} - handles query based minor compaction for micro-managed tables
+   * <br>
+   * </p>
    * @param table the table, on which the compaction should be running, must be not null.
    * @param configuration the hive configuration, must be not null.
    * @param compactionInfo provides insight about the type of compaction, must be not null.
@@ -42,8 +53,10 @@ final class QueryCompactorFactory {
         .getBoolVar(configuration, HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
       if (compactionInfo.isMajorCompaction()) {
         return new MajorQueryCompactor();
-      } else {
-        throw new RuntimeException("Query based compaction is not currently supported for minor compactions");
+      } else if (!compactionInfo.isMajorCompaction() && "tez"
+          .equalsIgnoreCase(HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
+        // query based minor compaction is only supported on tez
+        return new MinorQueryCompactor();
       }
     }
 

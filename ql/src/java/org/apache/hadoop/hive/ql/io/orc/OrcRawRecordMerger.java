@@ -1224,7 +1224,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       }
       while(parent != null && !rootPath.equals(parent)) {
         boolean isBase = parent.getName().startsWith(AcidUtils.BASE_PREFIX);
-        boolean isDelta = parent.getName().startsWith(AcidUtils.DELTA_PREFIX);
+        boolean isDelta = parent.getName().startsWith(AcidUtils.DELTA_PREFIX)
+            || parent.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX);
         if(isBase || isDelta) {
           if(isBase) {
             return new TransactionMetaData(AcidUtils.ParsedBase.parseBase(parent).getWriteId(),

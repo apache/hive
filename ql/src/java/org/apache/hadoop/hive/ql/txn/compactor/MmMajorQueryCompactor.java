@@ -17,15 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
+import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -35,14 +32,12 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.show.ShowCreateTableOperation;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.Ref;
@@ -52,7 +47,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -61,12 +55,11 @@ import java.util.Set;
 /**
  * Class responsible to run query based major compaction on insert only tables.
  */
-class MmMajorQueryCompactor extends QueryCompactor {
+final class MmMajorQueryCompactor extends QueryCompactor {
 
   private static final Logger LOG = LoggerFactory.getLogger(MmMajorQueryCompactor.class.getName());
 
-  @Override
-  void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+  @Override void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
       ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException {
     LOG.debug("Going to delete directories for aborted transactions for MM table " + table.getDbName() + "." + table
         .getTableName());
@@ -82,52 +75,58 @@ class MmMajorQueryCompactor extends QueryCompactor {
       return;
     }
 
-    try {
-      String tmpLocation = Util.generateTmpPath(storageDescriptor);
-      Path baseLocation = new Path(tmpLocation, "_base");
-
-      // Set up the session for driver.
-      HiveConf driverConf = new HiveConf(hiveConf);
-      driverConf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
-      driverConf.unset(ValidTxnList.VALID_TXNS_KEY); //so Driver doesn't get confused
-      //thinking it already has a txn opened
-
-      String user = UserGroupInformation.getCurrentUser().getShortUserName();
-      SessionState sessionState = DriverUtils.setUpSessionState(driverConf, user, true);
-
-      // Note: we could skip creating the table and just add table type stuff directly to the
-      //       "insert overwrite directory" command if there were no bucketing or list bucketing.
-      String tmpPrefix = table.getDbName() + ".tmp_compactor_" + table.getTableName() + "_";
-      String tmpTableName;
-      while (true) {
-        tmpTableName = tmpPrefix + System.currentTimeMillis();
-        String query =
-            buildMmCompactionCtQuery(tmpTableName, table, partition == null ? table.getSd() : partition.getSd(),
-                baseLocation.toString());
-        LOG.info("Compacting a MM table into " + query);
-        try {
-          DriverUtils.runOnDriver(driverConf, user, sessionState, query);
-          break;
-        } catch (Exception ex) {
-          Throwable cause = ex;
-          while (cause != null && !(cause instanceof AlreadyExistsException)) {
-            cause = cause.getCause();
-          }
-          if (cause == null) {
-            throw new IOException(ex);
-          }
-        }
-      }
-      String query = buildMmCompactionQuery(table, partition, tmpTableName);
-      LOG.info("Compacting a MM table via " + query);
-      long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(hiveConf);
-      DriverUtils.runOnDriver(driverConf, user, sessionState, query, writeIds, compactorTxnId);
-      commitMmCompaction(tmpLocation, storageDescriptor.getLocation(), hiveConf, writeIds, compactorTxnId);
-      DriverUtils.runOnDriver(driverConf, user, sessionState, "drop table if exists " + tmpTableName);
-    } catch (HiveException e) {
-      LOG.error("Error compacting a MM table", e);
-      throw new IOException(e);
+    if (!Util.isEnoughToCompact(compactionInfo.isMajorCompaction(), dir, storageDescriptor)) {
+      return;
     }
+
+    String tmpLocation = Util.generateTmpPath(storageDescriptor);
+    Path baseLocation = new Path(tmpLocation, "_base");
+
+    // Set up the session for driver.
+    HiveConf driverConf = new HiveConf(hiveConf);
+    driverConf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
+
+    // Note: we could skip creating the table and just add table type stuff directly to the
+    //       "insert overwrite directory" command if there were no bucketing or list bucketing.
+    String tmpPrefix = table.getDbName() + ".tmp_compactor_" + table.getTableName() + "_";
+    String tmpTableName = tmpPrefix + System.currentTimeMillis();
+    List<String> createTableQueries =
+        getCreateQueries(tmpTableName, table, partition == null ? table.getSd() : partition.getSd(),
+            baseLocation.toString());
+    List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
+    List<String> dropQueries = getDropQueries(tmpTableName);
+    runCompactionQueries(driverConf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
+        createTableQueries, compactionQueries, dropQueries);
+  }
+
+  /**
+   * Note: similar logic to the main committer; however, no ORC versions and stuff like that.
+   * @param dest The final directory; basically a SD directory. Not the actual base/delta.
+   * @param compactorTxnId txn that the compactor started
+   */
+  @Override
+  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
+      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
+    org.apache.hadoop.hive.ql.metadata.Table tempTable = Hive.get().getTable(tmpTableName);
+    String from = tempTable.getSd().getLocation();
+    Path fromPath = new Path(from), toPath = new Path(dest);
+    FileSystem fs = fromPath.getFileSystem(conf);
+    // Assume the high watermark can be used as maximum transaction ID.
+    //todo: is that true?  can it be aborted? does it matter for compaction? probably OK since
+    //getAcidState() doesn't check if X is valid in base_X_vY for compacted base dirs.
+    long maxTxn = actualWriteIds.getHighWatermark();
+    AcidOutputFormat.Options options =
+        new AcidOutputFormat.Options(conf).writingBase(true).isCompressed(false).maximumWriteId(maxTxn).bucket(0)
+            .statementId(-1).visibilityTxnId(compactorTxnId);
+    Path newBaseDir = AcidUtils.createFilename(toPath, options).getParent();
+    if (!fs.exists(fromPath)) {
+      LOG.info(from + " not found.  Assuming 0 splits. Creating " + newBaseDir);
+      fs.mkdirs(newBaseDir);
+      return;
+    }
+    LOG.info("Moving contents of " + from + " to " + dest);
+    fs.rename(fromPath, newBaseDir);
+    fs.delete(fromPath, true);
   }
 
   // Remove the directories for aborted transactions only
@@ -145,7 +144,7 @@ class MmMajorQueryCompactor extends QueryCompactor {
     }
   }
 
-  private String buildMmCompactionCtQuery(String fullName, Table t, StorageDescriptor sd, String location) {
+  private List<String> getCreateQueries(String fullName, Table t, StorageDescriptor sd, String location) {
     StringBuilder query = new StringBuilder("create temporary table ").append(fullName).append("(");
     List<FieldSchema> cols = t.getSd().getCols();
     boolean isFirst = true;
@@ -229,11 +228,11 @@ class MmMajorQueryCompactor extends QueryCompactor {
       query.append(", ");
     }
     query.append("'transactional'='false')");
-    return query.toString();
+    return Lists.newArrayList(query.toString());
 
   }
 
-  private String buildMmCompactionQuery(Table t, Partition p, String tmpName) {
+  private List<String> getCompactionQueries(Table t, Partition p, String tmpName) {
     String fullName = t.getDbName() + "." + t.getTableName();
     // ideally we should make a special form of insert overwrite so that we:
     // 1) Could use fast merge path for ORC and RC.
@@ -260,40 +259,11 @@ class MmMajorQueryCompactor extends QueryCompactor {
       query.append("select *");
     }
     query.append(" from ").append(fullName).append(filter);
-    return query.toString();
+    return Lists.newArrayList(query.toString());
   }
 
-  /**
-   * Note: similar logic to the main committer; however, no ORC versions and stuff like that.
-   * @param from The temp directory used for compactor output. Not the actual base/delta.
-   * @param to The final directory; basically a SD directory. Not the actual base/delta.
-   * @param compactorTxnId txn that the compactor started
-   */
-  private void commitMmCompaction(String from, String to, Configuration conf, ValidWriteIdList actualWriteIds,
-      long compactorTxnId) throws IOException {
-    Path fromPath = new Path(from), toPath = new Path(to);
-    FileSystem fs = fromPath.getFileSystem(conf);
-    // Assume the high watermark can be used as maximum transaction ID.
-    //todo: is that true?  can it be aborted? does it matter for compaction? probably OK since
-    //getAcidState() doesn't check if X is valid in base_X_vY for compacted base dirs.
-    long maxTxn = actualWriteIds.getHighWatermark();
-    AcidOutputFormat.Options options =
-        new AcidOutputFormat.Options(conf).writingBase(true).isCompressed(false).maximumWriteId(maxTxn).bucket(0)
-            .statementId(-1).visibilityTxnId(compactorTxnId);
-    Path newBaseDir = AcidUtils.createFilename(toPath, options).getParent();
-    if (!fs.exists(fromPath)) {
-      LOG.info(from + " not found.  Assuming 0 splits. Creating " + newBaseDir);
-      fs.mkdirs(newBaseDir);
-      return;
-    }
-    LOG.info("Moving contents of " + from + " to " + to);
-    FileStatus[] children = fs.listStatus(fromPath);
-    if (children.length != 1) {
-      throw new IOException("Unexpected files in the source: " + Arrays.toString(children));
-    }
-    FileStatus dirPath = children[0];
-    fs.rename(dirPath.getPath(), newBaseDir);
-    fs.delete(fromPath, true);
+  private List<String> getDropQueries(String tmpTableName) {
+    return Lists.newArrayList("drop table if exists " + tmpTableName);
   }
 
   private static Set<String> getHiveMetastoreConstants() {
