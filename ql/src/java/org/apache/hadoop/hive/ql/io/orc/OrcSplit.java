@@ -338,8 +338,12 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   }
 
   public void parse(Configuration conf) throws IOException {
+    parse(conf, rootDir);
+  }
+
+  public void parse(Configuration conf, Path rootPath) throws IOException {
     OrcRawRecordMerger.TransactionMetaData tmd =
-        OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(getPath(), rootDir, conf);
+        OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(getPath(), rootPath, conf);
     writeId = tmd.syntheticWriteId;
     stmtId = tmd.statementId;
     AcidOutputFormat.Options opt = AcidUtils.parseBaseOrDeltaBucketFilename(getPath(), conf);

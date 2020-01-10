@@ -2223,12 +2223,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     String type = unescapeSQLString(ast.getChild(0).getText()).toLowerCase();
 
-    if (type.equalsIgnoreCase("minor") && HiveConf.getBoolVar(conf, ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
-      throw new SemanticException(
-          "Minor compaction is not currently supported for query based compaction (enabled by setting: "
-              + ConfVars.COMPACTOR_CRUD_QUERY_BASED + " to true).");
-    }
-
     if (!type.equals("minor") && !type.equals("major")) {
       throw new SemanticException(ErrorMsg.INVALID_COMPACTION_TYPE.getMsg());
     }

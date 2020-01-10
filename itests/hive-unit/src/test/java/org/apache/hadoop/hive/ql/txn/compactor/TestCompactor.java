@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runInitiator;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker;
+import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriver;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -40,14 +40,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.curator.shaded.com.google.common.collect.Lists;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -64,21 +62,15 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -102,6 +94,10 @@ import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Compaction related unit tests.
+ */
+@SuppressWarnings("deprecation")
 public class TestCompactor {
   private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
   private static final Logger LOG = LoggerFactory.getLogger(TestCompactor.class);
@@ -624,11 +620,11 @@ public class TestCompactor {
     try {
       // Write a couple of batches
       for (int i = 0; i < 2; i++) {
-        writeBatch(dbName, tblName, false);
+        CompactorTestUtil.writeBatch(conf, dbName, tblName, false, false);
       }
 
       // Start a third batch, but don't close it.
-      connection = writeBatch(dbName, tblName, true);
+      connection = CompactorTestUtil.writeBatch(conf, dbName, tblName, false, true);
 
       // Now, compact
       TxnStore txnHandler = TxnUtils.getTxnStore(conf);
@@ -653,10 +649,12 @@ public class TestCompactor {
       String[] expected = new String[]{"delta_0000001_0000002",
         "delta_0000001_0000004_v0000009", "delta_0000003_0000004", "delta_0000005_0000006"};
       if (!Arrays.deepEquals(expected, names)) {
-        Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names) + ",stat=" + toString(stat));
+        Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names) + ",stat="
+            + CompactorTestUtil.printFileStatus(stat));
       }
-      checkExpectedTxnsPresent(null, new Path[]{resultFile}, columnNamesProperty, columnTypesProperty,
-        0, 1L, 4L, 1);
+      CompactorTestUtil
+          .checkExpectedTxnsPresent(null, new Path[] {resultFile}, columnNamesProperty, columnTypesProperty, 0, 1L,
+              4L, null, 1);
 
     } finally {
       if (connection != null) {
@@ -680,12 +678,12 @@ public class TestCompactor {
     try {
       // Write a couple of batches
       for (int i = 0; i < 2; i++) {
-        writeBatch(dbName, tblName, false);
+        CompactorTestUtil.writeBatch(conf, dbName, tblName, false, false);
       }
 
       // Start a third batch, but don't close it.  this delta will be ignored by compaction since
       // it has an open txn in it
-      connection = writeBatch(dbName, tblName, true);
+      connection = CompactorTestUtil.writeBatch(conf, dbName, tblName, false, true);
 
       runMajorCompaction(dbName, tblName);
 
@@ -700,7 +698,9 @@ public class TestCompactor {
       }
       String name = stat[0].getPath().getName();
       Assert.assertEquals("base_0000004_v0000009", name);
-      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, 1);
+      CompactorTestUtil
+          .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, null,
+              1);
     } finally {
       if (connection != null) {
         connection.close();
@@ -752,7 +752,9 @@ public class TestCompactor {
     if (!Arrays.deepEquals(expected, names)) {
       Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
     }
-    checkExpectedTxnsPresent(null, new Path[]{resultDelta}, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, 1);
+    CompactorTestUtil
+        .checkExpectedTxnsPresent(null, new Path[] {resultDelta}, columnNamesProperty, columnTypesProperty, 0, 1L, 4L,
+            Lists.newArrayList(5, 6), 1);
   }
 
   @Test
@@ -783,16 +785,15 @@ public class TestCompactor {
     FileStatus[] stat =
       fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.baseFileFilter);
     if (1 != stat.length) {
-      Assert.fail("majorCompactAfterAbort FileStatus[] stat " + Arrays.toString(stat));
-    }
-    if (1 != stat.length) {
       Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
     }
     String name = stat[0].getPath().getName();
     if (!name.equals("base_0000004_v0000009")) {
       Assert.fail("majorCompactAfterAbort name " + name + " not equals to base_0000004");
     }
-    checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, 1);
+    CompactorTestUtil
+        .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L,
+            Lists.newArrayList(5, 6), 1);
   }
 
 
@@ -1131,11 +1132,11 @@ public class TestCompactor {
     if (newStreamingAPI) {
       // Write a couple of batches
       for (int i = 0; i < 2; i++) {
-        writeBatch(dbName, tblName, false);
+        CompactorTestUtil.writeBatch(conf, dbName, tblName, false, false);
       }
 
       // Start a third batch, but don't close it.
-      connection1 = writeBatch(dbName, tblName, true);
+      connection1 = CompactorTestUtil.writeBatch(conf, dbName, tblName, false, true);
     } else {
       HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
       DelimitedInputWriter writer = new DelimitedInputWriter(new String[]{"a", "b"}, ",", endPt);
@@ -1143,11 +1144,11 @@ public class TestCompactor {
         .newConnection(false, "UT_" + Thread.currentThread().getName());
       // Write a couple of batches
       for (int i = 0; i < 2; i++) {
-        writeBatch(connection2, writer, false);
+        CompactorTestUtil.writeBatch(connection2, writer, false);
       }
 
       // Start a third batch, but don't close it.
-      writeBatch(connection2, writer, true);
+      CompactorTestUtil.writeBatch(connection2, writer, true);
     }
     runMajorCompaction(dbName, tblName);
 
@@ -1162,7 +1163,9 @@ public class TestCompactor {
     }
     String name = stat[0].getPath().getName();
     Assert.assertEquals("base_0000004_v0000009", name);
-    checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 1, 1L, 4L, 2);
+    CompactorTestUtil
+        .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 1, 1L, 4L, null,
+            2);
     if (connection1 != null) {
       connection1.close();
     }
@@ -1221,8 +1224,9 @@ public class TestCompactor {
     if (!Arrays.deepEquals(expectedDeltas, deltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeltas) + ", found: " + Arrays.toString(deltas));
     }
-    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDelta}, columnNamesProperty, columnTypesProperty,
-      0, 1L, 2L, 1);
+    CompactorTestUtil
+        .checkExpectedTxnsPresent(null, new Path[] {minorCompactedDelta}, columnNamesProperty, columnTypesProperty, 0,
+            1L, 2L, null, 1);
 
     // Verify that we have got correct set of delete_deltas.
     FileStatus[] deleteDeltaStat =
@@ -1240,8 +1244,8 @@ public class TestCompactor {
     if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
     }
-    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDeleteDelta}, columnNamesProperty, columnTypesProperty,
-      0, 2L, 2L, 1);
+    CompactorTestUtil.checkExpectedTxnsPresent(null, new Path[] {minorCompactedDeleteDelta}, columnNamesProperty,
+        columnTypesProperty, 0, 2L, 2L, null, 1);
   }
 
   @Test
@@ -1293,8 +1297,9 @@ public class TestCompactor {
     if (!Arrays.deepEquals(expectedDeltas, deltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeltas) + ", found: " + Arrays.toString(deltas));
     }
-    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDelta}, columnNamesProperty, columnTypesProperty,
-      0, 1L, 2L, 1);
+    CompactorTestUtil
+        .checkExpectedTxnsPresent(null, new Path[] {minorCompactedDelta}, columnNamesProperty, columnTypesProperty, 0,
+            1L, 2L, null, 1);
 
     //Assert that we have no delete deltas if there are no input delete events.
     FileStatus[] deleteDeltaStat =
@@ -1304,7 +1309,7 @@ public class TestCompactor {
 
   @Test
   public void minorCompactWhileStreamingWithSplitUpdate() throws Exception {
-    minorCompactWhileStreamingWithSplitUpdate(true);
+    minorCompactWhileStreamingWithSplitUpdate(false);
   }
   @Test
   public void minorCompactWhileStreamingWithSplitUpdateNew() throws Exception {
@@ -1327,11 +1332,11 @@ public class TestCompactor {
 
       // Write a couple of batches
       for (int i = 0; i < 2; i++) {
-        writeBatch(dbName, tblName, false);
+        CompactorTestUtil.writeBatch(conf, dbName, tblName, false, false);
       }
 
       // Start a third batch, but don't close it.
-      connection1 = writeBatch(dbName, tblName, true);
+      connection1 = CompactorTestUtil.writeBatch(conf, dbName, tblName, false, true);
     } else {
       HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
       DelimitedInputWriter writer = new DelimitedInputWriter(new String[]{"a", "b"}, ",", endPt);
@@ -1339,11 +1344,11 @@ public class TestCompactor {
         .newConnection(false, "UT_" + Thread.currentThread().getName());
       // Write a couple of batches
       for (int i = 0; i < 2; i++) {
-        writeBatch(connection2, writer, false);
+        CompactorTestUtil.writeBatch(connection2, writer, false);
       }
 
       // Start a third batch, but don't close it.
-      writeBatch(connection2, writer, true);
+      CompactorTestUtil.writeBatch(connection2, writer, true);
     }
     // Now, compact
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
@@ -1370,8 +1375,9 @@ public class TestCompactor {
     if (!Arrays.deepEquals(expected, names)) {
       Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
     }
-    checkExpectedTxnsPresent(null, new Path[]{resultFile}, columnNamesProperty, columnTypesProperty,
-      0, 1L, 4L, 1);
+    CompactorTestUtil
+        .checkExpectedTxnsPresent(null, new Path[] {resultFile}, columnNamesProperty, columnTypesProperty, 0, 1L, 4L,
+            null, 1);
 
     //Assert that we have no delete deltas if there are no input delete events.
     FileStatus[] deleteDeltaStat =
@@ -1596,122 +1602,6 @@ public class TestCompactor {
     return rsp.getCompacts();
   }
 
-  private StreamingConnection writeBatch(String dbName, String tblName, boolean closeEarly) throws StreamingException {
-    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
-      .withFieldDelimiter(',')
-      .build();
-    StreamingConnection connection = HiveStreamingConnection.newBuilder()
-      .withDatabase(dbName)
-      .withTable(tblName)
-      .withAgentInfo("UT_" + Thread.currentThread().getName())
-      .withHiveConf(conf)
-      .withRecordWriter(writer)
-      .withTransactionBatchSize(2)
-      .connect();
-    connection.beginTransaction();
-    connection.write("50,Kiev".getBytes());
-    connection.write("51,St. Petersburg".getBytes());
-    connection.write("44,Boston".getBytes());
-    connection.commitTransaction();
-
-    if (!closeEarly) {
-      connection.beginTransaction();
-      connection.write("52,Tel Aviv".getBytes());
-      connection.write("53,Atlantis".getBytes());
-      connection.write("53,Boston".getBytes());
-      connection.commitTransaction();
-      connection.close();
-      return null;
-    }
-    return connection;
-  }
-
-  private void checkExpectedTxnsPresent(Path base, Path[] deltas, String columnNamesProperty,
-    String columnTypesProperty, int bucket, long min, long max, int numBuckets)
-    throws IOException {
-    ValidWriteIdList writeIdList = new ValidWriteIdList() {
-      @Override
-      public String getTableName() {
-        return "AcidTable";
-      }
-
-      @Override
-      public boolean isWriteIdValid(long writeid) {
-        return true;
-      }
-
-      @Override
-      public RangeResponse isWriteIdRangeValid(long minWriteId, long maxWriteId) {
-        return RangeResponse.ALL;
-      }
-
-      @Override
-      public String writeToString() {
-        return "";
-      }
-
-      @Override
-      public void readFromString(String src) {
-
-      }
-
-      @Override
-      public Long getMinOpenWriteId() {
-        return null;
-      }
-
-      @Override
-      public long getHighWatermark() {
-        return Long.MAX_VALUE;
-      }
-
-      @Override
-      public long[] getInvalidWriteIds() {
-        return new long[0];
-      }
-
-      @Override
-      public boolean isValidBase(long writeid) {
-        return true;
-      }
-
-      @Override
-      public boolean isWriteIdAborted(long writeid) {
-        return true;
-      }
-
-      @Override
-      public RangeResponse isWriteIdRangeAborted(long minWriteId, long maxWriteId) {
-        return RangeResponse.ALL;
-      }
-    };
-
-    OrcInputFormat aif = new OrcInputFormat();
-
-    Configuration conf = new Configuration();
-    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, columnNamesProperty);
-    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, columnTypesProperty);
-    conf.set(hive_metastoreConstants.BUCKET_COUNT, Integer.toString(numBuckets));
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
-    AcidInputFormat.RawReader<OrcStruct> reader =
-      aif.getRawReader(conf, true, bucket, writeIdList, base, deltas);
-    RecordIdentifier identifier = reader.createKey();
-    OrcStruct value = reader.createValue();
-    long currentTxn = min;
-    boolean seenCurrentTxn = false;
-    while (reader.next(identifier, value)) {
-      if (!seenCurrentTxn) {
-        Assert.assertEquals(currentTxn, identifier.getWriteId());
-        seenCurrentTxn = true;
-      }
-      if (currentTxn != identifier.getWriteId()) {
-        Assert.assertEquals(currentTxn + 1, identifier.getWriteId());
-        currentTxn++;
-      }
-    }
-    Assert.assertEquals(max, currentTxn);
-  }
-
   /**
    * convenience method to execute a select stmt and dump results to log file
    */
@@ -1728,18 +1618,6 @@ public class TestCompactor {
     return valuesReadFromHiveDriver;
   }
 
-  /**
-   * Execute Hive CLI statement
-   *
-   * @param cmd arbitrary statement to execute
-   */
-  static void executeStatementOnDriver(String cmd, IDriver driver) throws Exception {
-    LOG.debug("Executing: " + cmd);
-    CommandProcessorResponse cpr = driver.run(cmd);
-    if (cpr.getResponseCode() != 0) {
-      throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + cpr);
-    }
-  }
 
   static void createTestDataFile(String filename, String[] lines) throws IOException {
     FileWriter writer = null;
@@ -1758,47 +1636,6 @@ public class TestCompactor {
 
   }
 
-  static void runInitiator(HiveConf hiveConf) throws Exception {
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Initiator t = new Initiator();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-  }
-
-  static void runWorker(HiveConf hiveConf) throws Exception {
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-  }
-
-  static void runCleaner(HiveConf hiveConf) throws Exception {
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Cleaner t = new Cleaner();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-  }
-  private static String toString(FileStatus[] stat) {
-    StringBuilder sb = new StringBuilder("stat{");
-    if(stat == null) {
-      return sb.toString();
-    }
-    for(FileStatus f : stat) {
-      sb.append(f.getPath()).append(",");
-    }
-    sb.setCharAt(sb.length() - 1, '}');
-    return sb.toString();
-  }
-
   private void verifyCompactions(List<ShowCompactResponseElement> compacts, SortedSet<String> partNames, String tblName) {
     for (ShowCompactResponseElement compact : compacts) {
       Assert.assertEquals("default", compact.getDbname());
@@ -1813,34 +1650,11 @@ public class TestCompactor {
       throws StreamingException, ClassNotFoundException,
       org.apache.hive.hcatalog.streaming.StreamingException, InterruptedException {
     if (newStreamingAPI) {
-      StreamingConnection connection = null;
-      try {
-        // Write a couple of batches
-        for (int i = 0; i < 2; i++) {
-          connection = writeBatch(dbName, tblName, false);
-          assertNull(connection);
-        }
-
-        StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
-            .withFieldDelimiter(',')
-            .build();
-        StreamingConnection connection2 = HiveStreamingConnection.newBuilder()
-            .withDatabase(dbName)
-            .withTable(tblName)
-            .withAgentInfo("UT_" + Thread.currentThread().getName())
-            .withHiveConf(conf)
-            .withRecordWriter(writer)
-            .withTransactionBatchSize(2)
-            .connect();
-        // Start a third batch, but don't close it.
-        connection2.beginTransaction();
-        connection2.abortTransaction();
-        connection2.close();
-      } finally {
-        if (connection != null) {
-          connection.close();
-        }
-      }
+      List<CompactorTestUtil.StreamingConnectionOption> options = Lists
+          .newArrayList(new CompactorTestUtil.StreamingConnectionOption(false, false),
+              new CompactorTestUtil.StreamingConnectionOption(false, false),
+              new CompactorTestUtil.StreamingConnectionOption(true, false));
+      CompactorTestUtil.runStreamingAPI(conf, dbName, tblName, options);
     } else {
       HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
       DelimitedInputWriter writer = new DelimitedInputWriter(new String[]{"a", "b"}, ",", endPt);
@@ -1849,7 +1663,7 @@ public class TestCompactor {
       try {
         // Write a couple of batches
         for (int i = 0; i < 2; i++) {
-          writeBatch(connection, writer, false);
+          CompactorTestUtil.writeBatch(connection, writer, false);
         }
 
         // Start a third batch, abort everything, don't properly close it

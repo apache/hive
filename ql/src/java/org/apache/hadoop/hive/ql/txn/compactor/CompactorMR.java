@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Matcher;
 
 import org.apache.hadoop.conf.Configuration;
@@ -132,7 +131,7 @@ public class CompactorMR {
     job.setOutputCommitter(CompactorOutputCommitter.class);
 
     job.set(FINAL_LOCATION, sd.getLocation());
-    job.set(TMP_LOCATION, generateTmpPath(sd));
+    job.set(TMP_LOCATION, QueryCompactor.Util.generateTmpPath(sd));
     job.set(INPUT_FORMAT_CLASS_NAME, sd.getInputFormat());
     job.set(OUTPUT_FORMAT_CLASS_NAME, sd.getOutputFormat());
     job.setBoolean(IS_COMPRESSED, sd.isCompressed());
@@ -232,11 +231,10 @@ public class CompactorMR {
     }
 
     JobConf job = createBaseJobConf(conf, jobName, t, sd, writeIds, ci);
+    if (!QueryCompactor.Util.isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
+      return;
+    }
 
-    // Figure out and encode what files we need to read.  We do this before getSplits
-    // because as part of this we discover our minimum and maximum transactions,
-    // and discovering that in getSplits is too late as we then have no way to pass it to our
-    // mapper.
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
     int maxDeltastoHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
     if(parsedDeltas.size() > maxDeltastoHandle) {
@@ -305,11 +303,6 @@ public class CompactorMR {
       dir.getCurrentDirectories().size(), dir.getObsolete().size(), conf, msc, ci.id, jobName);
 
     su.gatherStats();
-  }
-
-
-  private String generateTmpPath(StorageDescriptor sd) {
-    return sd.getLocation() + "/" + TMPDIR + "_" + UUID.randomUUID().toString();
   }
 
   /**
