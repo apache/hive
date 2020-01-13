@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -55,6 +54,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
@@ -224,7 +224,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     return " id=" + ci.id;
   }
   private void removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
-          throws IOException, NoSuchObjectException {
+      throws IOException, NoSuchObjectException, MetaException {
     Path locPath = new Path(location);
     AcidUtils.Directory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, writeIdList, Ref.from(
         false), false, null, false);
@@ -258,8 +258,8 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
 
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
-    Database db = rs.getDatabase(getDefaultCatalog(conf), ci.dbname);
-    Boolean isSourceOfRepl = ReplChangeManager.isSourceOfReplication(db);
+    Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
+    boolean isSourceOfRepl = ReplChangeManager.isSourceOfReplication(db);
 
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
