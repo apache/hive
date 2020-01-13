@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.exec.impala.ImpalaTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.exec.repl.AtlasDumpTask;
@@ -66,6 +67,7 @@ import org.apache.hadoop.hive.ql.exec.repl.RangerDumpTask;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.impala.work.ImpalaWork;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintenanceWork;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -118,6 +120,7 @@ public final class TaskFactory {
         DependencyCollectionTask.class));
     taskvec.add(new TaskTuple<TezWork>(TezWork.class, TezTask.class));
     taskvec.add(new TaskTuple<SparkWork>(SparkWork.class, SparkTask.class));
+    taskvec.add(new TaskTuple<ImpalaWork>(ImpalaWork.class, ImpalaTask.class));
     taskvec.add(new TaskTuple<>(ReplDumpWork.class, ReplDumpTask.class));
     taskvec.add(new TaskTuple<>(ReplLoadWork.class, ReplLoadTask.class));
     taskvec.add(new TaskTuple<>(ReplStateLogWork.class, ReplStateLogTask.class));

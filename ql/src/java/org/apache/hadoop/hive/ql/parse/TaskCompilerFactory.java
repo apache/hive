@@ -36,12 +36,19 @@ public class TaskCompilerFactory {
    * into executable units.
    */
   public static TaskCompiler getCompiler(HiveConf conf, ParseContext parseContext) {
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      return new TezCompiler();
-    } else if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      return new SparkCompiler();
-    } else {
-      return new MapReduceCompiler();
+    switch (conf.getExecutionEngine()) {
+      case MR:
+        return new MapReduceCompiler();
+      case TEZ:
+        return new TezCompiler();
+      case SPARK:
+        return new SparkCompiler();
+      case IMPALA:
+        return new ImpalaCompiler(conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_EXECUTION_MODE).equals("plan"));
+      case INVALID_ENGINE:
+        throw new UnsupportedOperationException("Invalid execution engine specified.");
     }
+
+    throw new UnsupportedOperationException("Invalid execution engine specified.");
   }
 }

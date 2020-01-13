@@ -24,15 +24,21 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.TaskQueue;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.TaskQueue;
+import org.apache.hadoop.hive.ql.exec.impala.ImpalaStreamingFetchOperator;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -87,7 +93,15 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
             ts.getConf().getAcidOperationalProperties());
       }
       sink = work.getSink();
-      fetch = new FetchOperator(work, job, source, getVirtualColumns(source));
+      if (conf.getExecutionEngine() == HiveConf.ExecutionEngine.IMPALA &&
+              queryPlan.getOperation() == HiveOperation.QUERY) {
+        // Currently we only support streaming from Impala execution engine
+        fetch = new ImpalaStreamingFetchOperator(work, job, source, getVirtualColumns(source),
+                queryPlan.getResultSchema());
+      } else {
+        fetch = new FetchOperator(work, job, source, getVirtualColumns(source));
+      }
+
       source.initialize(conf, new ObjectInspector[]{fetch.getOutputObjectInspector()});
       totalRows = 0;
       ExecMapper.setDone(false);
@@ -198,4 +212,9 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   public boolean canExecuteInParallel() {
     return false;
   }
+
+  public FetchOperator getFetchOp() {
+    return fetch;
+  }
+
 }

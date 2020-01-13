@@ -109,6 +109,42 @@ public class HiveConf extends Configuration {
     this.isSparkConfigUpdated = isSparkConfigUpdated;
   }
 
+  /**
+   * Supported execution engines for Hive
+   */
+  public enum ExecutionEngine {
+    INVALID_ENGINE {
+      @Override
+      public String toString() {
+        return "invalid engine";
+      }
+    },
+    MR  {
+      @Override
+      public String toString() {
+        return "mr";
+      }
+    },
+    TEZ  {
+      @Override
+      public String toString() {
+        return "tez";
+      }
+    },
+    SPARK  {
+      @Override
+      public String toString() {
+        return "spark";
+      }
+    },
+    IMPALA {
+      @Override
+      public String toString() {
+        return "impala";
+      }
+    }
+  }
+
   public interface EncoderDecoder<K, V> {
     V encode(K key);
     K decode(V value);
@@ -3998,13 +4034,20 @@ public class HiveConf extends Configuration {
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false,
         "Whether to show the unquoted partition names in query results."),
 
-    HIVE_EXECUTION_ENGINE("hive.execution.engine", "tez", new StringSet(true, "tez", "spark", "mr"),
-        "Chooses execution engine. Options are: mr (Map reduce, default), tez, spark. While MR\n" +
+    HIVE_EXECUTION_ENGINE("hive.execution.engine", ExecutionEngine.TEZ.toString(),
+            new StringSet(true,  ExecutionEngine.MR.toString(), ExecutionEngine.TEZ.toString(),
+                    ExecutionEngine.SPARK.toString(), ExecutionEngine.IMPALA.toString()),
+        "Chooses execution engine. Options are: mr (Map reduce, default), tez, spark, and impala. While MR\n" +
         "remains the default engine for historical reasons, it is itself a historical engine\n" +
         "and is deprecated in Hive 2 line. It may be removed without further warning."),
 
     HIVE_EXECUTION_MODE("hive.execution.mode", "container", new StringSet("container", "llap"),
         "Chooses whether query fragments will run in container or in llap"),
+
+    // Impala specific configuration properties
+    HIVE_IMPALA_ADDRESS("hive.impala.address", "localhost:21050", "Address for Impala execution engine."),
+    HIVE_IMPALA_EXECUTION_MODE("hive.impala.execution.mode", "query", new StringSet("query"),
+            "Chooses whether Impala will execute a provided plan or a query string"),
 
     HIVE_JAR_DIRECTORY("hive.jar.directory", null,
         "This is the location hive in tez mode will look for to find a site wide \n" +
@@ -6059,6 +6102,19 @@ public class HiveConf extends Configuration {
     String confVarPatternStr = Joiner.on("|").join(convertVarsToRegex(SQL_STD_AUTH_SAFE_VAR_NAMES));
     String regexPatternStr = Joiner.on("|").join(sqlStdAuthSafeVarNameRegexes);
     return regexPatternStr + "|" + confVarPatternStr;
+  }
+
+  /**
+   * @return Currently configured hive execution engine.
+   */
+  public ExecutionEngine getExecutionEngine() {
+    ExecutionEngine engine;
+    try {
+      engine = ExecutionEngine.valueOf(this.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).toUpperCase());
+    } catch (Exception e) {
+      return ExecutionEngine.INVALID_ENGINE;
+    }
+    return engine;
   }
 
   /**
