@@ -53,7 +53,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   protected HiveConf conf;
-  protected RawStore rs;
+
   protected AtomicBoolean stop;
   protected AtomicBoolean looped;
 
