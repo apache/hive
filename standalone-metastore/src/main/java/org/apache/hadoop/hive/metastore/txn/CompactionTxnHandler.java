@@ -53,14 +53,19 @@ class CompactionTxnHandler extends TxnHandler {
    * This will look through the completed_txn_components table and look for partitions or tables
    * that may be ready for compaction.  Also, look through txns and txn_components tables for
    * aborted transactions that we should add to the list.
-   * @param maxAborted Maximum number of aborted queries to allow before marking this as a
-   *                   potential compaction.
+   * @param abortedThreshold  number of aborted queries forming a potential compaction request.
    * @return list of CompactionInfo structs.  These will not have id, type,
    * or runAs set since these are only potential compactions not actual ones.
    */
   @Override
   @RetrySemantics.ReadOnly
-  public Set<CompactionInfo> findPotentialCompactions(int maxAborted) throws MetaException {
+  public Set<CompactionInfo> findPotentialCompactions(int abortedThreshold) throws MetaException {
+    return findPotentialCompactions(abortedThreshold, -1);
+  }
+
+  @Override
+  @RetrySemantics.ReadOnly
+  public Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long checkInterval) throws MetaException {
     Connection dbConn = null;
     Set<CompactionInfo> response = new HashSet<>();
     Statement stmt = null;
@@ -70,8 +75,21 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         // Check for completed transactions
-        String s = "select distinct ctc_database, ctc_table, " +
-          "ctc_partition from COMPLETED_TXN_COMPONENTS";
+        String s = "select distinct tc.ctc_database, tc.ctc_table, tc.ctc_partition " +
+          "from COMPLETED_TXN_COMPONENTS tc " + (checkInterval > 0 ?
+          "left join ( " +
+          "  select c1.* from COMPLETED_COMPACTIONS c1 " +
+          "  inner join ( " +
+          "    select max(cc_id) cc_id from COMPLETED_COMPACTIONS " +
+          "    group by cc_database, cc_table, cc_partition" +
+          "  ) c2 " +
+          "  on c1.cc_id = c2.cc_id " +
+          "  where c1.cc_state IN (" + quoteChar(ATTEMPTED_STATE) + "," + quoteChar(FAILED_STATE) + ")" +
+          ") c " +
+          "on tc.ctc_database = c.cc_database and tc.ctc_table = c.cc_table " +
+          "  and (tc.ctc_partition = c.cc_partition or (tc.ctc_partition is null and c.cc_partition is null)) " +
+          "where c.cc_id is not null or " + isWithinCheckInterval("tc.ctc_timestamp", checkInterval) : "");
+
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -88,7 +106,7 @@ class CompactionTxnHandler extends TxnHandler {
           "from TXNS, TXN_COMPONENTS " +
           "where txn_id = tc_txnid and txn_state = '" + TXN_ABORTED + "' " +
           "group by tc_database, tc_table, tc_partition " +
-          "having count(*) > " + maxAborted;
+          "having count(*) > " + abortedThreshold;
 
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
@@ -105,14 +123,14 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn.rollback();
       } catch (SQLException e) {
         LOG.error("Unable to connect to transaction database " + e.getMessage());
-        checkRetryable(dbConn, e, "findPotentialCompactions(maxAborted:" + maxAborted + ")");
+        checkRetryable(dbConn, e, "findPotentialCompactions(maxAborted:" + abortedThreshold + ")");
       } finally {
         close(rs, stmt, dbConn);
       }
       return response;
     }
     catch (RetryException e) {
-      return findPotentialCompactions(maxAborted);
+      return findPotentialCompactions(abortedThreshold, checkInterval);
     }
   }
   /**
