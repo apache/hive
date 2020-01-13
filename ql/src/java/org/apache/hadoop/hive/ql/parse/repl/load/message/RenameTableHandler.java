@@ -62,7 +62,7 @@ public class RenameTableHandler extends AbstractMessageHandler {
         replicationSpec.setMigratingToTxnTable();
       }
       AlterTableRenameDesc renameTableDesc =
-          new AlterTableRenameDesc(oldName, replicationSpec, false, newName.getNotEmptyDbTable());
+          new AlterTableRenameDesc(oldName, replicationSpec, false, newName);
       renameTableDesc.setWriteId(msg.getWriteId());
       Task<DDLWork> renameTableTask = TaskFactory.get(
           new DDLWork(readEntitySet, writeEntitySet, renameTableDesc), context.hiveConf);

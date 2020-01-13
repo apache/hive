@@ -42,16 +42,15 @@ public final class HiveTableName extends TableName {
   }
 
   /**
-   * Set a @{@link Table} object's table and db names based on the provided string.
-   * @param dbTable the dbtable string
+   * Set a @{@link Table} object's table and db names based on the provided tableName object.
+   * @param tableName the tableName object
    * @param table the table to update
    * @return the table
    * @throws SemanticException
    */
-  public static Table setFrom(String dbTable, Table table) throws SemanticException{
-    TableName name = ofNullable(dbTable);
-    table.setTableName(name.getTable());
-    table.setDbName(name.getDb());
+  public static Table setFrom(TableName tableName, Table table) throws SemanticException{
+    table.setTableName(tableName.getTable());
+    table.setDbName(tableName.getDb());
     return table;
   }
 
