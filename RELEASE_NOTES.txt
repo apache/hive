@@ -1,33 +1,10 @@
-Release Notes - Hive - Version 3.1.2
+Release Notes - Hive - Version 3.1.3
 
-** Sub-task
-    * [HIVE-21290] - Restore historical way of handling timestamps in Parquet while keeping the new semantics at the same time
-    * [HIVE-21291] - Restore historical way of handling timestamps in Avro while keeping the new semantics at the same time
 ** Bug
-    * [HIVE-18624] - Parsing time is extremely high (~10 min) for queries with complex select expressions
-    * [HIVE-18874] - JDBC: HiveConnection shades log4j interfaces
-    * [HIVE-20010] - Fix create view over literals
-    * [HIVE-20057] - For ALTER TABLE t SET TBLPROPERTIES ('EXTERNAL'='TRUE'); `TBL_TYPE` attribute change not reflecting for non-CAPS
-    * [HIVE-20126] - OrcInputFormat does not pass conf to orc reader options
-    * [HIVE-20555] - HiveServer2: Preauthenticated subject for http transport is not retained for entire duration of http communication in some cases
-    * [HIVE-20593] - Load Data for partitioned ACID tables fails with bucketId out of range: -1
-    * [HIVE-21039] - CURRENT_TIMESTAMP returns value in UTC time zone
-    * [HIVE-21156] - SharedWorkOptimizer may preserve filter in TS incorrectly
-    * [HIVE-21236] - SharedWorkOptimizer should check table properties
-    * [HIVE-21342] - Analyze compute stats for column leave behind staging dir on hdfs
-    * [HIVE-21376] - Incompatible change in Hive bucket computation
-    * [HIVE-21540] - Query with join condition having date literal throws SemanticException.
-    * [HIVE-21564] - Load data into a bucketed table is ignoring partitions specs and loads data into default partition.
-    * [HIVE-21600] - GenTezUtils.removeSemiJoinOperator may throw out of bounds exception for TS with multiple children
-    * [HIVE-21613] - Queries with join condition having timestamp or timestamp with local time zone literal throw SemanticException
-    * [HIVE-21755] - Backport HIVE-21462 to branch-3: Upgrading SQL server backed metastore when changing data type of a column with constraints
-    * [HIVE-21756] - Backport HIVE-21404 to branch-3: MSSQL upgrade script alters the wrong column
-    * [HIVE-21758] - DBInstall tests broken on master and branch-3.1
-    * [HIVE-21808] - Backport HIVE-21786 to branch-3.1
-    * [HIVE-21821] - Backport HIVE-21739 to branch-3.1
-    * [HIVE-22105] - Update ORC to 1.5.6.
+    * [HIVE-22405] - Add ColumnVector support for ProlepticCalendar
+    * [HIVE-22407] - Hive metastore upgrade scripts have incorrect (or outdated) comment syntax
+    * [HIVE-22410] - CachedStore Prewarm Failure NPE
+    * [HIVE-22589] - Add storage support for ProlepticCalendar
 ** Improvement
-    * [HIVE-21980] - Parsing time can be high in case of deeply nested subqueries
-** Task
-    * [HIVE-19667] - Remove distribution management tag from pom.xml
-
+    * [HIVE-22241] - Implement UDF to interpret date/timestamp using its internal representation and Gregorian-Julian hybrid calendar
+    * [HIVE-22384] - Hive MetaStore CachedStore Funcion Cache Dev
