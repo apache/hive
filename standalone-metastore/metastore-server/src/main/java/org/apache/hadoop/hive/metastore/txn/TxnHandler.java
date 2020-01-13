@@ -1627,13 +1627,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                 quoteString(names[0]), quoteString(names[1]));
         rs = pst.executeQuery();
         if (rs.next()) {
-          long maxWriteId = rs.getLong(1);
-          if (maxWriteId > 0) {
-            writeIdHwm = (writeIdHwm > 0) ? Math.min(maxWriteId, writeIdHwm) : maxWriteId;
-          }
+          writeIdHwm = rs.getLong(1);
         }
       }
-
+      boolean foundValidUncompactedWrite = false;
       // As writeIdHwm is known, query all writeIds under the writeId HWM.
       // If any writeId under HWM is allocated by txn > txnId HWM or belongs to open/aborted txns,
       // then will be added to invalid list. The results should be sorted in ascending order based
@@ -1651,9 +1648,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         long writeId = rs.getLong(2);
         if (validTxnList.isTxnValid(txnId)) {
           // Skip if the transaction under evaluation is already committed.
+          foundValidUncompactedWrite = true;
           continue;
         }
-
         // The current txn is either in open or aborted state.
         // Mark the write ids state as per the txn state.
         invalidWriteIdList.add(writeId);
@@ -1663,7 +1660,21 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           minOpenWriteId = Math.min(minOpenWriteId, writeId);
         }
       }
+      // If we have compacted writes and some invalid writes on the table,
+      // return the lowest invalid write as a writeIdHwm and set it as invalid.
+      if (!foundValidUncompactedWrite) {
+        long writeId = invalidWriteIdList.isEmpty() ? -1 : invalidWriteIdList.get(0);
+        invalidWriteIdList = new ArrayList<>();
+        abortedBits = new BitSet();
 
+        if (writeId != -1) {
+          invalidWriteIdList.add(writeId);
+          writeIdHwm = writeId;
+          if (writeId != minOpenWriteId) {
+            abortedBits.set(0);
+          }
+        }
+      }
       ByteBuffer byteBuffer = ByteBuffer.wrap(abortedBits.toByteArray());
       TableValidWriteIds owi = new TableValidWriteIds(fullTableName, writeIdHwm, invalidWriteIdList, byteBuffer);
       if (minOpenWriteId < Long.MAX_VALUE) {
@@ -1679,7 +1690,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent
   public AllocateTableWriteIdsResponse allocateTableWriteIds(AllocateTableWriteIdsRequest rqst)
-          throws NoSuchTxnException, TxnAbortedException, MetaException {
+          throws MetaException {
     List<Long> txnIds;
     String dbName = rqst.getDbName().toLowerCase();
     String tblName = rqst.getTableName().toLowerCase();
