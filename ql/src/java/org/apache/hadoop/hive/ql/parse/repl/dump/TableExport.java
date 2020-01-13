@@ -168,7 +168,7 @@ public class TableExport {
       if (tableSpec.tableHandle.isPartitioned()) {
         if (partitions == null) {
           throw new IllegalStateException("partitions cannot be null for partitionTable :"
-              + tableSpec.getTableName().getTable());
+              + tableSpec.getTableName().getNotEmptyDbTable());
         }
         managedTableCopyPaths = new PartitionExport(
                 paths, partitions, distCpDoAsUser, conf, mmCtx).write(replicationSpec, isExportTask);
@@ -386,7 +386,7 @@ public class TableExport {
         if (tableSpec.tableHandle.isPartitioned()) {
           if (partitions == null) {
             throw new IllegalStateException("partitions cannot be null for partitionTable :"
-                + tableSpec.getTableName().getTable());
+                + tableSpec.getTableName().getNotEmptyDbTable());
           }
           for (Partition partition : partitions) {
             authEntities.inputs.add(new ReadEntity(partition));

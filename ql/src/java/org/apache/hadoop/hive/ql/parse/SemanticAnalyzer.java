@@ -13729,7 +13729,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case ctt: // CREATE TRANSACTIONAL TABLE
       if (isExt) {
         throw new SemanticException(
-            qualifiedTabName.getTable() + " cannot be declared transactional because it's an external table");
+            qualifiedTabName.getNotEmptyDbTable() + " cannot be declared transactional because it's an external table");
       }
       tblProps = validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
           isTemporary, isTransactional);
