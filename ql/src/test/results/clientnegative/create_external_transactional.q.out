@@ -1,1 +1,1 @@
-FAILED: SemanticException transactional_external cannot be declared transactional because it's an external table
+FAILED: SemanticException default.transactional_external cannot be declared transactional because it's an external table
