@@ -168,4 +168,42 @@ public class TimestampUtils {
     }
   }
 
+  private static final int DATE_LENGTH = "YYYY-MM-DD".length();
+
+  /**
+   * Convert (parse) a String into a Timestamp.
+   *
+   * @param text The text to parse
+   * @return The Timestamp parsed from the string
+   * @throws IllegalArgumentException if {@code text} cannot be parsed
+   * @throws NullPointerException if {@code text} is null
+   */
+  public static Timestamp stringToTimestamp(final String text) {
+    final String s = Objects.requireNonNull(text).trim();
+    // Handle simpler cases directly avoiding exceptions
+    if (s.length() == DATE_LENGTH) {
+      Date d = DateParser.parseDate(s);
+      if (d == null) {
+        throw new IllegalArgumentException("Cannot parse date: " + text);
+      }
+      return Timestamp.ofEpochMilli(d.toEpochMilli());
+    }
+    try {
+      return Timestamp.valueOf(s);
+    } catch (IllegalArgumentException eT) {
+      // Try zoned timestamp
+      try {
+        return Timestamp.valueOf(
+            TimestampTZUtil.parse(s).getZonedDateTime().toLocalDateTime().toString());
+      } catch (IllegalArgumentException | DateTimeParseException eTZ) {
+        try {
+          // Try HH:mm:ss format (For Hour, Minute & Second UDF).
+          return Timestamp.getTimestampFromTime(s);
+        } catch(DateTimeParseException e) {
+          // Last attempt
+          return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
+        }
+      }
+    }
+  }
 }
