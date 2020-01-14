@@ -27,11 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.service.rpc.thrift.TRowSet;
@@ -39,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -59,33 +55,15 @@ public class ImpalaStreamingFetchOperator extends FetchOperator {
                                         List<VirtualColumn> vcCols, Schema resultSchema) throws HiveException {
         super(work, job, operator, vcCols);
 
-        ObjectInspector[] impalaInspectors = new ObjectInspector[resultSchema.getFieldSchemasSize()];
-        String[] names = new String[resultSchema.getFieldSchemasSize()];
-
-        int schemaIndex = 0;
+        List<ObjectInspector> columnOIs = new ArrayList<>(resultSchema.getFieldSchemasSize());
+        List<String> columnNames =  new ArrayList<>(resultSchema.getFieldSchemasSize());
         // iterate over the result schema and create the appropriate primitive inspectors
         for (FieldSchema schema : resultSchema.getFieldSchemas()) {
-            names[schemaIndex] = schema.getName();
-            // CDPD-6961: Create ImpalaThriftInspectorFactory
-            // CDPD-6962: Support all Impala primitive types
-            PrimitiveTypeInfo primitiveType = TypeInfoFactory.getPrimitiveTypeInfo(schema.getType());
-            switch (primitiveType.getPrimitiveCategory()) {
-                case LONG:
-                    impalaInspectors[schemaIndex] = new ImpalaThriftLongInspector();
-                    break;
-                case INT:
-                    impalaInspectors[schemaIndex] = new ImpalaThriftIntInspector();
-                    break;
-                case STRING:
-                    impalaInspectors[schemaIndex] = new ImpalaThriftStringInspector();
-                    break;
-                default:
-                    throw new HiveException("Unhandled primitive type " + primitiveType.getPrimitiveCategory());
-            }
-            schemaIndex++;
+            columnNames.add(schema.getName());
+            columnOIs.add(ImpalaThriftInspectorFactory.getImpalaThriftObjectInspector(
+                    TypeInfoFactory.getPrimitiveTypeInfo(schema.getType())));
         }
-
-        outputInspector = new ImpalaResultInspector(Arrays.asList(names), Arrays.asList(impalaInspectors));
+        outputInspector = ImpalaResultInspector.getImpalaResultInspector(columnNames, columnOIs);
     }
 
     /// CDPD-6964: Investigate ACID support in Impala streaming

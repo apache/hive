@@ -49,6 +49,12 @@ class ImpalaResultInspector extends BaseStructObjectInspector {
         super(structFieldNames, structFieldObjectInspectors, structFieldComments);
     }
 
+    // CDPD-7084: Investigate caching of Object inspectors for Impala Thrift
+    public static ImpalaResultInspector getImpalaResultInspector(List<String> structFieldNames,
+                                                                 List<ObjectInspector> structFieldObjectInspectors) {
+        return new ImpalaResultInspector(structFieldNames, structFieldObjectInspectors);
+    }
+
     private static Boolean getBooleanValue(TBoolValue tBoolValue) {
         if (tBoolValue.isSetValue()) {
             return tBoolValue.isValue();
