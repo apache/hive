@@ -184,9 +184,14 @@ public class TimestampUtils {
       try {
         return Timestamp.valueOf(
             TimestampTZUtil.parse(s).getZonedDateTime().toLocalDateTime().toString());
-      } catch (IllegalArgumentException | DateTimeException eTZ) {
-        // Last attempt
-        return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
+      } catch (IllegalArgumentException | DateTimeParseException eTZ) {
+        try {
+          // Try HH:mm:ss format (For Hour, Minute & Second UDF).
+          return Timestamp.getTimestampFromTime(s);
+        } catch(DateTimeParseException e) {
+          // Last attempt
+          return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
+        }
       }
     }
   }
