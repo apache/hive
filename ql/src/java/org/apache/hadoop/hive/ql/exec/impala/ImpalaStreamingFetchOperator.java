@@ -52,8 +52,6 @@ public class ImpalaStreamingFetchOperator extends FetchOperator {
     private transient final InspectableObject inspectable = new InspectableObject();
     /* Inspector for output of this operator */
     private final StructObjectInspector outputInspector;
-    /* Inspector for the input rows from Impala executor */
-    private final StructObjectInspector impalaResultInspector;
     /* Holds context required to communicate with Impala */
     private ImpalaFetchContext context;
 
@@ -62,37 +60,32 @@ public class ImpalaStreamingFetchOperator extends FetchOperator {
         super(work, job, operator, vcCols);
 
         ObjectInspector[] impalaInspectors = new ObjectInspector[resultSchema.getFieldSchemasSize()];
-        ObjectInspector[] inspectors = new ObjectInspector[resultSchema.getFieldSchemasSize()];
         String[] names = new String[resultSchema.getFieldSchemasSize()];
 
-        int i = 0;
+        int schemaIndex = 0;
         // iterate over the result schema and create the appropriate primitive inspectors
         for (FieldSchema schema : resultSchema.getFieldSchemas()) {
-            names[i] = schema.getName();
+            names[schemaIndex] = schema.getName();
             // CDPD-6961: Create ImpalaThriftInspectorFactory
             // CDPD-6962: Support all Impala primitive types
             PrimitiveTypeInfo primitiveType = TypeInfoFactory.getPrimitiveTypeInfo(schema.getType());
             switch (primitiveType.getPrimitiveCategory()) {
                 case LONG:
-                    impalaInspectors[i] = new ImpalaThriftLongInspector();
+                    impalaInspectors[schemaIndex] = new ImpalaThriftLongInspector();
                     break;
                 case INT:
-                    impalaInspectors[i] = new ImpalaThriftIntInspector();
+                    impalaInspectors[schemaIndex] = new ImpalaThriftIntInspector();
                     break;
                 case STRING:
-                    impalaInspectors[i] = new ImpalaThriftStringInspector();
+                    impalaInspectors[schemaIndex] = new ImpalaThriftStringInspector();
                     break;
                 default:
                     throw new HiveException("Unhandled primitive type " + primitiveType.getPrimitiveCategory());
             }
-            inspectors[i++] = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-                    TypeInfoFactory.getPrimitiveTypeInfo(schema.getType()));
+            schemaIndex++;
         }
 
-        //
-        impalaResultInspector = new ImpalaResultInspector(Arrays.asList(names), Arrays.asList(impalaInspectors));
-        outputInspector = ObjectInspectorFactory.getStandardStructObjectInspector(Arrays.asList(names),
-                Arrays.asList(inspectors));
+        outputInspector = new ImpalaResultInspector(Arrays.asList(names), Arrays.asList(impalaInspectors));
     }
 
     /// CDPD-6964: Investigate ACID support in Impala streaming
@@ -145,11 +138,8 @@ public class ImpalaStreamingFetchOperator extends FetchOperator {
             if (rowSet.getRows().size() <= 0) {
                 return null;
             }
-            // CDPD-6965: Investigate making result conversion more efficient when streaming from Impala
-            Object convertedValue = ObjectInspectorConverters.getConverter(impalaResultInspector,
-                    outputInspector).convert(rowSet.getRows().get(0));
             inspectable.oi = outputInspector;
-            inspectable.o = convertedValue;
+            inspectable.o = rowSet.getRows().get(0);
         } else {
             return null;
         }
