@@ -68,7 +68,7 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesparquet
                   filterExpr: ((UDFToInteger(csmallint) >= cint) or ((cbigint <> -563L) and ((UDFToLong(ctinyint) <> cbigint) or (cdouble <= -3728.0D))) or ((UDFToInteger(ctinyint) <= -89010) and (cdouble > 79.553D))) (type: boolean)
-                  Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 593563 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -77,7 +77,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterLongColGreaterEqualLongColumn(col 1:int, col 2:int)(children: col 1:smallint), FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 3:bigint, val -563), FilterExprOrExpr(children: FilterLongColNotEqualLongColumn(col 0:bigint, col 3:bigint)(children: col 0:tinyint), FilterDoubleColLessEqualDoubleScalar(col 5:double, val -3728.0))), FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 0:int, val -89010)(children: col 0:tinyint), FilterDoubleColGreaterDoubleScalar(col 5:double, val 79.553)))
                     predicate: ((UDFToInteger(csmallint) >= cint) or ((cbigint <> -563L) and ((UDFToLong(ctinyint) <> cbigint) or (cdouble <= -3728.0D))) or ((UDFToInteger(ctinyint) <= -89010) and (cdouble > 79.553D))) (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 593563 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int), cdouble (type: double), ctinyint (type: tinyint), (cdouble * cdouble) (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -86,7 +86,7 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [2, 5, 0, 13]
                           selectExpressions: DoubleColMultiplyDoubleColumn(col 5:double, col 5:double) -> 13:double
-                      Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 593563 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: sum(_col0), sum(_col3), sum(_col1), count(_col1), min(_col2)
                         Group By Vectorization:

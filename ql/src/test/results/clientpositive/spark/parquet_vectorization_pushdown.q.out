@@ -27,14 +27,14 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesparquet
                   filterExpr: (UDFToDouble(cbigint) < cdouble) (type: boolean)
-                  Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 593563 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(cbigint) < cdouble) (type: boolean)
-                    Statistics: Num rows: 4096 Data size: 197917 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4096 Data size: 197854 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cbigint (type: bigint)
                       outputColumnNames: cbigint
-                      Statistics: Num rows: 4096 Data size: 197917 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4096 Data size: 197854 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: sum(cbigint), count(cbigint)
                         minReductionHashAggr: 0.99
