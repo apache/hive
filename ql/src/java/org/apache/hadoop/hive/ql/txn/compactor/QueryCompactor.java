@@ -96,6 +96,7 @@ abstract class QueryCompactor {
   protected void runCompactionQueries(HiveConf conf, String tmpTableName, StorageDescriptor storageDescriptor,
       ValidWriteIdList writeIds, CompactionInfo compactionInfo, List<String> createQueries,
       List<String> compactionQueries, List<String> dropQueries) throws IOException {
+    Util.disableLlapCaching(conf);
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
     long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
@@ -274,6 +275,20 @@ abstract class QueryCompactor {
         }
       }
       fs.delete(sourcePath, true);
+    }
+
+    /**
+     * Unless caching is explicitly required for ETL queries this method disables it.
+     * LLAP cache content lookup is file based, and since compaction alters the file structure it is not beneficial to
+     * cache anything here, as it won't (and actually can't) ever be looked up later.
+     * @param conf the Hive configuration
+     */
+    static void disableLlapCaching(HiveConf conf) {
+      String llapIOETLSkipFormat = conf.getVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT);
+      if (!"none".equals(llapIOETLSkipFormat)) {
+        // Unless caching is explicitly required for ETL queries - disable it.
+        conf.setVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT, "all");
+      }
     }
 
   }
