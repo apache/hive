@@ -93,6 +93,7 @@ abstract class QueryCompactor {
       ValidWriteIdList writeIds, CompactionInfo compactionInfo, List<Path> resultDirs,
       List<String> createQueries, List<String> compactionQueries, List<String> dropQueries)
       throws IOException {
+    Util.disableLlapCaching(conf);
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
     long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
