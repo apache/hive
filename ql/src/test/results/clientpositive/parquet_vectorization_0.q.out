@@ -946,7 +946,7 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprOrExpr(children: FilterDecimalColNotEqualDecimalScalar(col 13:decimal(13,3), val 79.553)(children: CastLongToDecimal(col 2:int) -> 13:decimal(13,3)), FilterDoubleColLessDoubleColumn(col 14:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 14:double), FilterStringColLikeStringScalar(col 7:string, pattern %b%))
+                  predicateExpression: FilterExprOrExpr(children: FilterDecimal64ColNotEqualDecimal64Scalar(col 13:decimal(13,3)/DECIMAL_64, val 79553)(children: CastLongToDecimal64(col 2:int) -> 13:decimal(13,3)/DECIMAL_64), FilterDoubleColLessDoubleColumn(col 14:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 14:double), FilterStringColLikeStringScalar(col 7:string, pattern %b%))
               predicate: ((CAST( cint AS decimal(13,3)) <> 79.553) or (UDFToDouble(cbigint) < cdouble) or (cstring2 like '%b%')) (type: boolean)
               Statistics: Num rows: 12288 Data size: 1137584 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator

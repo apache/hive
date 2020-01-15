@@ -4342,7 +4342,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                        selectExpressions: DecimalColAddDecimalColumn(col 3:decimal(15,3), col 4:decimal(10,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3), CastLongToDecimal(col 1:int) -> 4:decimal(10,0)) -> 5:decimal(16,3)
+                        selectExpressions: Decimal64ColAddDecimal64Column(col 0:decimal(15,3)/DECIMAL_64, col 4:decimal(13,3)/DECIMAL_64)(children: Decimal64ColScaleUp(col 3:decimal(10,0)/DECIMAL_64, decimal64Val 1000, decimalVal 1000)(children: CastLongToDecimal64(col 1:int) -> 3:decimal(10,0)/DECIMAL_64) -> 4:decimal(13,3)/DECIMAL_64) -> 5:decimal(16,3)/DECIMAL_64
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -4370,7 +4370,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(15,3)/DECIMAL_64, value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,3), decimal(10,0), decimal(16,3)]
+                    scratchColumnTypeNames: [decimal(10,0)/DECIMAL_64, decimal(13,3)/DECIMAL_64, decimal(16,3)/DECIMAL_64]
 
   Stage: Stage-0
     Fetch Operator
@@ -4826,7 +4826,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                        selectExpressions: DecimalColSubtractDecimalColumn(col 3:decimal(15,3), col 4:decimal(10,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3), CastLongToDecimal(col 1:int) -> 4:decimal(10,0)) -> 5:decimal(16,3)
+                        selectExpressions: Decimal64ColSubtractDecimal64Column(col 0:decimal(15,3)/DECIMAL_64, col 4:decimal(13,3)/DECIMAL_64)(children: Decimal64ColScaleUp(col 3:decimal(10,0)/DECIMAL_64, decimal64Val 1000, decimalVal 1000)(children: CastLongToDecimal64(col 1:int) -> 3:decimal(10,0)/DECIMAL_64) -> 4:decimal(13,3)/DECIMAL_64) -> 5:decimal(16,3)/DECIMAL_64
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -4854,7 +4854,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(15,3)/DECIMAL_64, value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,3), decimal(10,0), decimal(16,3)]
+                    scratchColumnTypeNames: [decimal(10,0)/DECIMAL_64, decimal(13,3)/DECIMAL_64, decimal(16,3)/DECIMAL_64]
 
   Stage: Stage-0
     Fetch Operator
