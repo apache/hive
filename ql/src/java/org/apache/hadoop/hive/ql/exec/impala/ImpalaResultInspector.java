@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.impala;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.BaseStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -30,6 +32,7 @@ import org.apache.hive.service.rpc.thrift.TRow;
 import org.apache.hive.service.rpc.thrift.TStringValue;
 import org.apache.hive.service.rpc.thrift.TColumnValue;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -97,9 +100,23 @@ class ImpalaResultInspector extends BaseStructObjectInspector {
         return null;
     }
 
-    private static String getStringValue(TStringValue tStringValue) {
+    public static String getStringValue(TStringValue tStringValue) {
         if (tStringValue.isSetValue()) {
             return tStringValue.getValue();
+        }
+        return null;
+    }
+
+    public static Timestamp getTimestampValue(TStringValue tStringValue) {
+        if (tStringValue.isSetValue()) {
+            return Timestamp.valueOf(tStringValue.getValue());
+        }
+        return null;
+    }
+
+    public static Date getDateValue(TStringValue tStringValue) {
+        if (tStringValue.isSetValue()) {
+            return Date.valueOf(tStringValue.getValue());
         }
         return null;
     }

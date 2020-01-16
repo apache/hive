@@ -25,7 +25,6 @@ public class ImpalaThriftInspectorFactory {
     // CDPD-7084: Investigate caching of Object inspectors for Impala Thrift
     static public AbstractPrimitiveObjectInspector getImpalaThriftObjectInspector(PrimitiveTypeInfo typeInfo)
             throws HiveException {
-        // CDPD-6962: Support all Impala primitive types
         switch (typeInfo.getPrimitiveCategory()) {
             case LONG:
                 return new ImpalaThriftLongInspector();
@@ -33,6 +32,32 @@ public class ImpalaThriftInspectorFactory {
                 return new ImpalaThriftIntInspector();
             case STRING:
                 return new ImpalaThriftStringInspector();
+            case TIMESTAMP:
+                return new ImpalaThriftTimestampInspector();
+            case DECIMAL:
+                return new ImpalaThriftDecimalInspector();
+            case BOOLEAN:
+                return new ImpalaThriftBooleanInspector();
+            case SHORT:
+                return new ImpalaThriftShortInspector();
+            case FLOAT:
+                return new ImpalaThriftFloatInspector();
+            case DOUBLE:
+                return new ImpalaThriftDoubleInspector();
+            case DATE:
+                return new ImpalaThriftDateInspector();
+            case VARCHAR:
+                return new ImpalaThriftVarcharInspector();
+            case CHAR:
+                return new ImpalaThriftCharInspector();
+            case BYTE: // tinyint
+                return new ImpalaThriftByteInspector();
+            case UNKNOWN: // Not transmitted
+            case VOID: // Not transmitted
+            case INTERVAL_YEAR_MONTH: // Not transmitted
+            case INTERVAL_DAY_TIME: // Not transmitted
+            case TIMESTAMPLOCALTZ: // Impala does not support timestamp with local timezone
+            case BINARY: // Impala does not support binary type
             default:
                 throw new HiveException("Unhandled primitive type " + typeInfo.getPrimitiveCategory());
         }
