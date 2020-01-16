@@ -226,8 +226,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
    * @throws UDFArgumentException
    */
   public static ExprNodeGenericFuncDesc newInstance(GenericUDF genericUDF,
-      String funcText,
-      List<ExprNodeDesc> children) throws UDFArgumentException {
+      String funcText, List<ExprNodeDesc> children) throws UDFArgumentException {
     ObjectInspector[] childrenOIs = new ObjectInspector[children.size()];
     for (int i = 0; i < childrenOIs.length; i++) {
       childrenOIs[i] = children.get(i).getWritableObjectInspector();

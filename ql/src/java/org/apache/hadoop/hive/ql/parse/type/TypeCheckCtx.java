@@ -16,10 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.parse.type;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

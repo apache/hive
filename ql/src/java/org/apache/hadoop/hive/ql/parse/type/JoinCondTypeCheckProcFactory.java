@@ -15,11 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
+package org.apache.hadoop.hive.ql.parse.type;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -31,11 +30,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.TypeCheckCtx;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+
 
 /**
  * JoinCondTypeCheckProcFactory is used by Calcite planner(CBO) to generate Join Conditions from Join Condition AST.
@@ -51,17 +46,17 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
  * 2. Use Column Processing from TypeCheckProcFactory<br>
  * 3. Why not use GB expr ?
  */
-public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
+public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
 
-  public static Map<ASTNode, ExprNodeDesc> genExprNode(ASTNode expr, TypeCheckCtx tcCtx)
-      throws SemanticException {
-    return TypeCheckProcFactory.genExprNode(expr, tcCtx, new JoinCondTypeCheckProcFactory());
+  protected JoinCondTypeCheckProcFactory(ExprFactory<T> factory) {
+    // prevent instantiation
+    super(factory);
   }
 
   /**
    * Processor for table columns.
    */
-  public static class JoinCondColumnExprProcessor extends ColumnExprProcessor {
+  public class JoinCondColumnExprProcessor extends ColumnExprProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -89,7 +84,7 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
       if (!qualifiedAccess) {
         colInfo = getColInfo(ctx, null, tableOrCol, expr);
         // It's a column.
-        return new ExprNodeColumnDesc(colInfo);
+        return exprFactory.createColumnRefExpr(colInfo);
       } else if (hasTableAlias(ctx, tableOrCol, expr)) {
         return null;
       } else {
@@ -98,7 +93,7 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
       }
     }
 
-    private static boolean hasTableAlias(JoinTypeCheckCtx ctx, String tabName, ASTNode expr)
+    private boolean hasTableAlias(JoinTypeCheckCtx ctx, String tabName, ASTNode expr)
         throws SemanticException {
       int tblAliasCnt = 0;
       for (RowResolver rr : ctx.getInputRRList()) {
@@ -113,7 +108,7 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
       return (tblAliasCnt == 1) ? true : false;
     }
 
-    private static ColumnInfo getColInfo(JoinTypeCheckCtx ctx, String tabName, String colAlias,
+    private ColumnInfo getColInfo(JoinTypeCheckCtx ctx, String tabName, String colAlias,
         ASTNode expr) throws SemanticException {
       ColumnInfo tmp;
       ColumnInfo cInfoToRet = null;
@@ -138,14 +133,14 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
    * @return ColumnExprProcessor.
    */
   @Override
-  public ColumnExprProcessor getColumnExprProcessor() {
+  protected ColumnExprProcessor getColumnExprProcessor() {
     return new JoinCondColumnExprProcessor();
   }
 
   /**
    * The default processor for typechecking.
    */
-  public static class JoinCondDefaultExprProcessor extends DefaultExprProcessor {
+  protected class JoinCondDefaultExprProcessor extends DefaultExprProcessor {
     @Override
     protected List<String> getReferenceableColumnAliases(TypeCheckCtx ctx) {
       JoinTypeCheckCtx jCtx = (JoinTypeCheckCtx) ctx;
@@ -158,24 +153,25 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
     }
 
     @Override
-    protected ExprNodeColumnDesc processQualifiedColRef(TypeCheckCtx ctx, ASTNode expr,
+    protected T processQualifiedColRef(TypeCheckCtx ctx, ASTNode expr,
         Object... nodeOutputs) throws SemanticException {
       String tableAlias = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getChild(0)
           .getText());
       // NOTE: tableAlias must be a valid non-ambiguous table alias,
       // because we've checked that in TOK_TABLE_OR_COL's process method.
       ColumnInfo colInfo = getColInfo((JoinTypeCheckCtx) ctx, tableAlias,
-          ((ExprNodeConstantDesc) nodeOutputs[1]).getValue().toString(), expr);
+          exprFactory.getConstantValue((T) nodeOutputs[1]).toString(), expr);
 
       if (colInfo == null) {
         ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)), expr);
         return null;
       }
-      return new ExprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName(), tableAlias,
-          colInfo.getIsVirtualCol());
+      ColumnInfo newColumnInfo = new ColumnInfo(colInfo);
+      newColumnInfo.setTabAlias(tableAlias);
+      return exprFactory.createColumnRefExpr(newColumnInfo);
     }
 
-    private static ColumnInfo getColInfo(JoinTypeCheckCtx ctx, String tabName, String colAlias,
+    private ColumnInfo getColInfo(JoinTypeCheckCtx ctx, String tabName, String colAlias,
         ASTNode expr) throws SemanticException {
       ColumnInfo tmp;
       ColumnInfo cInfoToRet = null;
@@ -200,7 +196,7 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
    * @return DefaultExprProcessor.
    */
   @Override
-  public DefaultExprProcessor getDefaultExprProcessor() {
+  protected DefaultExprProcessor getDefaultExprProcessor() {
     return new JoinCondDefaultExprProcessor();
   }
 }

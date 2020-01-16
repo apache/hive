@@ -15,28 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.when;
+package org.apache.hadoop.hive.ql.parse.type;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory.DefaultExprProcessor;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory.DefaultExprProcessor;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /**
@@ -78,26 +75,26 @@ public class TestTypeCheckProcFactory {
   @Before
   public void init() {
     MockitoAnnotations.initMocks(this);
-    testSubject = new DefaultExprProcessor();
+    testSubject = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor();
   }
 
   public void testOneCase(Object constValue) {
-    when(nodeDesc.getValue()).thenReturn(constValue);
-    when(typeInfo.getPrimitiveTypeEntry()).thenReturn(constType);
+    Mockito.when(nodeDesc.getValue()).thenReturn(constValue);
+    Mockito.when(typeInfo.getPrimitiveTypeEntry()).thenReturn(constType);
 
     ExprNodeConstantDesc result = (ExprNodeConstantDesc) testSubject.interpretNodeAs(typeInfo, nodeDesc);
 
-    assertNotNull(result);
-    assertEquals(expectedValue, result.getValue());
+    Assert.assertNotNull(result);
+    Assert.assertEquals(expectedValue, result.getValue());
   }
 
   public void testNullCase(Object constValue) {
-    when(nodeDesc.getValue()).thenReturn(constValue);
-    when(typeInfo.getPrimitiveTypeEntry()).thenReturn(constType);
+    Mockito.when(nodeDesc.getValue()).thenReturn(constValue);
+    Mockito.when(typeInfo.getPrimitiveTypeEntry()).thenReturn(constType);
 
     ExprNodeConstantDesc result = (ExprNodeConstantDesc) testSubject.interpretNodeAs(typeInfo, nodeDesc);
 
-    assertNull(result);
+    Assert.assertNull(result);
   }
 
   @Test

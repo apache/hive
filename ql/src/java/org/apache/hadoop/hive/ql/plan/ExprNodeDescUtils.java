@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import com.google.common.collect.Multimap;
 import java.util.Collection;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -998,20 +999,7 @@ public class ExprNodeDescUtils {
     return true;
   }
 
-  // Given an expression this method figures out if the type for the expression belongs to string group
-  // e.g. (String, Char, Varchar etc)
-  public static boolean isStringType(ExprNodeDesc expr) {
-    TypeInfo typeInfo = expr.getTypeInfo();
-    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
-      PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
-      if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitiveCategory) ==
-          PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP) {
-        return true;
-      }
-    }
-    return false;
-  }
-    // Given an expression this method figures out if the type for the expression is integer
+  // Given an expression this method figures out if the type for the expression is integer
   // i.e. INT, SHORT, TINYINT (BYTE) or LONG
   public static boolean isIntegerType(ExprNodeDesc expr) {
     TypeInfo typeInfo = expr.getTypeInfo();

@@ -29,9 +29,8 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.serde2.SerDeException;
 
 /**
  * Operator factory for pruning processing of operator graph We find
@@ -117,8 +116,8 @@ public abstract class PrunerOperatorFactory {
       ExprNodeDesc pruner_pred = null;
       if (old_pruner_pred != null) {
         // or the old_pruner_pred and the new_ppr_pred
-        pruner_pred = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("OR",
-            old_pruner_pred, new_pruner_pred);
+        pruner_pred = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor().getFuncExprNodeDesc(
+            "OR", old_pruner_pred, new_pruner_pred);
       } else {
         pruner_pred = new_pruner_pred;
       }
@@ -153,8 +152,8 @@ public abstract class PrunerOperatorFactory {
         ExprNodeDesc old_pruner_pred = oldPartToPruner.get(part.getName());
         if (old_pruner_pred != null) {
           // or the old_pruner_pred and the new_ppr_pred
-          pruner_pred = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("OR",
-              old_pruner_pred, new_pruner_pred);
+          pruner_pred = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor().getFuncExprNodeDesc(
+              "OR", old_pruner_pred, new_pruner_pred);
         } else {
           pruner_pred = new_pruner_pred;
         }
