@@ -676,9 +676,6 @@ public interface IMetaStoreClient {
   Table getTable(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
       TException, NoSuchObjectException;
 
-  Table getTableV2(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
-      TException, NoSuchObjectException;
-
   /**
    * Get a table object.
    * @param catName catalog the table is in.
@@ -716,9 +713,6 @@ public interface IMetaStoreClient {
    * @throws TException general thrift error.
    */
   Table getTable(String catName, String dbName, String tableName,
-         String validWriteIdList, boolean getColumnStats, String engine) throws TException;
-
-  Table getTableV2(String catName, String dbName, String tableName,
          String validWriteIdList, boolean getColumnStats, String engine) throws TException;
 
   /**
@@ -1432,9 +1426,6 @@ public interface IMetaStoreClient {
   List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
       boolean getColStats, String engine) throws NoSuchObjectException, MetaException, TException;
 
-  List<Partition> getPartitionsByNamesV2(String db_name, String tbl_name, List<String> part_names,
-      boolean getColStats, String engine) throws NoSuchObjectException, MetaException, TException;
-
   /**
    * Get partitions by a list of partition names.
    * @param catName catalog name
@@ -1466,10 +1457,6 @@ public interface IMetaStoreClient {
   List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine)
           throws NoSuchObjectException, MetaException, TException;
-
-  List<Partition> getPartitionsByNamesV2(String catName, String db_name, String tbl_name,
-      List<String> part_names, boolean getColStats, String engine)
-      throws NoSuchObjectException, MetaException, TException;
 
   /**
    * List partitions along with privilege information for a user or groups
@@ -2417,14 +2404,7 @@ public interface IMetaStoreClient {
   List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
       List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
 
-  List<ColumnStatisticsObj> getTableColumnStatisticsV2(String dbName, String tableName,
-      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
-
   List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-      List<String> colNames, String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException;
-
-  List<ColumnStatisticsObj> getTableColumnStatisticsV2(String dbName, String tableName,
       List<String> colNames, String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
@@ -2445,14 +2425,7 @@ public interface IMetaStoreClient {
   List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
       List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
 
-  List<ColumnStatisticsObj> getTableColumnStatisticsV2(String catName, String dbName, String tableName,
-      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
-
   List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
-      List<String> colNames, String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException;
-
-  List<ColumnStatisticsObj> getTableColumnStatisticsV2(String catName, String dbName, String tableName,
       List<String> colNames, String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
@@ -2473,16 +2446,7 @@ public interface IMetaStoreClient {
       String tableName,  List<String> partNames, List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, TException;
 
-  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(String dbName,
-      String tableName,  List<String> partNames, List<String> colNames, String engine)
-      throws NoSuchObjectException, MetaException, TException;
-
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
-      String tableName,  List<String> partNames, List<String> colNames,
-      String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException;
-
-  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(String dbName,
       String tableName,  List<String> partNames, List<String> colNames,
       String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
@@ -2505,17 +2469,7 @@ public interface IMetaStoreClient {
       String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames,
       String engine) throws NoSuchObjectException, MetaException, TException;
 
-  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(
-      String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames,
-      String engine) throws NoSuchObjectException, MetaException, TException;
-
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
-      String catName, String dbName, String tableName,
-      List<String> partNames, List<String> colNames,
-      String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException;
-
-  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatisticsV2(
       String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames,
       String engine, String validWriteIdList)
@@ -2540,10 +2494,6 @@ public interface IMetaStoreClient {
       String partName, String colName, String engine) throws NoSuchObjectException, MetaException,
       InvalidObjectException, TException, InvalidInputException;
 
-  boolean deletePartitionColumnStatisticsV2(String dbName, String tableName,
-    String partName, String colName, String engine) throws NoSuchObjectException, MetaException,
-    InvalidObjectException, TException, InvalidInputException;
-
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName, or
    * all columns in a partition.
@@ -2564,10 +2514,6 @@ public interface IMetaStoreClient {
       String partName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
-  boolean deletePartitionColumnStatisticsV2(String catName, String dbName, String tableName,
-      String partName, String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
-
   /**
    * Delete table level column statistics given dbName, tableName and colName, or all columns in
    * a table.  This should be used for non-partitioned tables.
@@ -2583,9 +2529,6 @@ public interface IMetaStoreClient {
    * @throws InvalidInputException bad input, like a null table name.
    */
   boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine) throws
-      NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
-
-  boolean deleteTableColumnStatisticsV2(String dbName, String tableName, String colName, String engine) throws
       NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
@@ -2604,9 +2547,6 @@ public interface IMetaStoreClient {
    * @throws InvalidInputException bad input, like a null table name.
    */
   boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
-
-  boolean deleteTableColumnStatisticsV2(String catName, String dbName, String tableName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
@@ -3398,14 +3338,7 @@ public interface IMetaStoreClient {
   AggrStats getAggrColStatsFor(String dbName, String tblName,
       List<String> colNames, List<String> partName, String engine)  throws NoSuchObjectException, MetaException, TException;
 
-  AggrStats getAggrColStatsForV2(String dbName, String tblName,
-      List<String> colNames, List<String> partName, String engine)  throws NoSuchObjectException, MetaException, TException;
-
   AggrStats getAggrColStatsFor(String dbName, String tblName,
-      List<String> colNames, List<String> partName,
-      String engine, String writeIdList)  throws NoSuchObjectException, MetaException, TException;
-
-  AggrStats getAggrColStatsForV2(String dbName, String tblName,
       List<String> colNames, List<String> partName,
       String engine, String writeIdList)  throws NoSuchObjectException, MetaException, TException;
 
@@ -3427,17 +3360,7 @@ public interface IMetaStoreClient {
       String engine)
       throws NoSuchObjectException, MetaException, TException;
 
-  AggrStats getAggrColStatsForV2(String catName, String dbName, String tblName,
-      List<String> colNames, List<String> partNames,
-      String engine)
-      throws NoSuchObjectException, MetaException, TException;
-
   AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
-      List<String> colNames, List<String> partNames,
-      String engine, String writeIdList)
-      throws NoSuchObjectException, MetaException, TException;
-
-  AggrStats getAggrColStatsForV2(String catName, String dbName, String tblName,
       List<String> colNames, List<String> partNames,
       String engine, String writeIdList)
       throws NoSuchObjectException, MetaException, TException;
