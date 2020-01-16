@@ -58,8 +58,8 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -235,7 +235,8 @@ public class SortedDynPartitionOptimizer extends Transform {
         if (numBuckets > 0) {
           bucketColumns = new ArrayList<>();
           //add a cast(ROW__ID as int) to wrap in UDFToInteger()
-          bucketColumns.add(ParseUtils.createConversionCast(new ExprNodeColumnDesc(ci), TypeInfoFactory.intTypeInfo));
+          bucketColumns.add(ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+              .createConversionCast(new ExprNodeColumnDesc(ci), TypeInfoFactory.intTypeInfo));
         }
       } else {
         if (!destTable.getSortCols().isEmpty()) {

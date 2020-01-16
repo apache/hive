@@ -22,10 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.testutil.BaseScalarUdfTest;
@@ -107,7 +107,8 @@ public class TestGenericUDFRound extends BaseScalarUdfTest {
 
     List<ExprNodeDesc> earr = new ArrayList<ExprNodeDesc>();
     for (int j = 0; j < cols.length; j++) {
-      ExprNodeDesc r = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("round", exprs.get(j), scales[j]);
+      ExprNodeDesc r = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+          .getFuncExprNodeDesc("round", exprs.get(j), scales[j]);
       earr.add(r);
     }
 

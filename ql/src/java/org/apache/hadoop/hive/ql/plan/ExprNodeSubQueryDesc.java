@@ -33,14 +33,6 @@ import org.apache.calcite.rel.RelNode;
 public class ExprNodeSubQueryDesc extends ExprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  public static enum SubqueryType{
-    IN,
-    EXISTS,
-    SCALAR,
-    SOME,
-    ALL
-  };
-
   /**
    * RexNode corresponding to subquery.
    */
@@ -65,7 +57,7 @@ public class ExprNodeSubQueryDesc extends ExprNodeDesc implements Serializable {
     this.comparisonOp = null;
   }
   public ExprNodeSubQueryDesc(TypeInfo typeInfo, RelNode subQuery,
-      SubqueryType type, ExprNodeDesc lhs, ASTNode comparisonOp) {
+                              SubqueryType type, ExprNodeDesc lhs, ASTNode comparisonOp) {
     super(typeInfo);
     this.rexSubQuery = subQuery;
     this.subQueryLhs = lhs;

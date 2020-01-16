@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -1070,7 +1071,8 @@ public class ExprNodeDescUtils {
     }
     return false;
   }
-    // Given an expression this method figures out if the type for the expression is integer
+
+  // Given an expression this method figures out if the type for the expression is integer
   // i.e. INT, SHORT, TINYINT (BYTE) or LONG
   public static boolean isIntegerType(ExprNodeDesc expr) {
     TypeInfo typeInfo = expr.getTypeInfo();

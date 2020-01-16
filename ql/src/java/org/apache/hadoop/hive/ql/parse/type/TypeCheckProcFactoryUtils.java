@@ -16,13 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.parse.type;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -39,7 +40,7 @@ import com.google.common.collect.Lists;
 
 public class TypeCheckProcFactoryUtils {
 
-  static ArrayList<ExprNodeDesc> rewriteInToOR(ArrayList<ExprNodeDesc> inOperands) throws SemanticException {
+  static List<ExprNodeDesc> rewriteInToOR(List<ExprNodeDesc> inOperands) throws SemanticException {
     ExprNodeDesc columnDesc = inOperands.get(0);
 
     ArrayList<ExprNodeDesc> orOperands = new ArrayList<>();

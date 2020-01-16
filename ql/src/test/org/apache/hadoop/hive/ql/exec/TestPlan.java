@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
@@ -57,7 +57,7 @@ public class TestPlan extends TestCase {
           TypeInfoFactory.stringTypeInfo, F1, "", false);
       ExprNodeDesc expr2 = new ExprNodeColumnDesc(
           TypeInfoFactory.stringTypeInfo, F2, "", false);
-      ExprNodeDesc filterExpr = TypeCheckProcFactory.DefaultExprProcessor
+      ExprNodeDesc filterExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
           .getFuncExprNodeDesc("==", expr1, expr2);
 
       FilterDesc filterCtx = new FilterDesc(filterExpr, false);

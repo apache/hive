@@ -35,8 +35,8 @@ import org.apache.hadoop.hive.ql.parse.PTFTranslator;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.TypeCheckCtx;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -815,7 +815,7 @@ public class MatchPath extends TableFunctionEvaluator
     {
       // todo: use SemanticAnalyzer::genExprNodeDesc
       // currently SA not available to PTFTranslator.
-      Map<ASTNode, ExprNodeDesc> map = TypeCheckProcFactory
+      Map<ASTNode, ExprNodeDesc> map = ExprNodeTypeCheck
           .genExprNode(expr, typeCheckCtx);
       ExprNodeDesc desc = map.get(expr);
       if (desc == null) {
