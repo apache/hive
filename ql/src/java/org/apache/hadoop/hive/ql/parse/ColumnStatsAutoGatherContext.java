@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -276,7 +277,7 @@ public class ColumnStatsAutoGatherContext {
         TypeInfo destType = selRS.getSignature().get(this.columns.size() + i).getType();
         if (!srcType.equals(destType)) {
           // This may be possible when srcType is string but destType is integer
-          exprNodeDesc = ParseUtils
+          exprNodeDesc = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
               .createConversionCast(exprNodeDesc, (PrimitiveTypeInfo) destType);
         }
       }
@@ -288,7 +289,7 @@ public class ColumnStatsAutoGatherContext {
         TypeInfo destType = selRS.getSignature().get(this.columns.size() + i).getType();
         exprNodeDesc = new ExprNodeColumnDesc(col);
         if (!srcType.equals(destType)) {
-          exprNodeDesc = ParseUtils
+          exprNodeDesc = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
               .createConversionCast(exprNodeDesc, (PrimitiveTypeInfo) destType);
         }
       }

@@ -81,6 +81,9 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -1497,7 +1500,7 @@ public abstract class BaseSemanticAnalyzer {
           ASTNode partVal = (ASTNode)childASTNode.getChildren().get(1);
           if (!defaultPartitionName.equalsIgnoreCase(unescapeSQLString(partVal.getText()))) {
             astExprNodeMap.put((ASTNode)childASTNode.getChildren().get(0),
-                TypeCheckProcFactory.genExprNode(partVal, typeCheckCtx).get(partVal));
+                ExprNodeTypeCheck.genExprNode(partVal, typeCheckCtx).get(partVal));
           }
         }
       }

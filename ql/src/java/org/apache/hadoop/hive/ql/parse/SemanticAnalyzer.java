@@ -200,6 +200,9 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -1001,7 +1004,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return exprs;
   }
 
-  static String generateErrorMessage(ASTNode ast, String message) {
+  public static String generateErrorMessage(ASTNode ast, String message) {
     StringBuilder sb = new StringBuilder();
     if (ast == null) {
       sb.append(message).append(". Cannot tell the position of null AST.");
@@ -4443,8 +4446,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int udtfExprType = udtfExpr.getType();
     if (udtfExprType == HiveParser.TOK_FUNCTION
         || udtfExprType == HiveParser.TOK_FUNCTIONSTAR) {
-      String funcName = TypeCheckProcFactory.DefaultExprProcessor
-          .getFunctionText(udtfExpr, true);
+      String funcName = TypeCheckProcFactory.getFunctionText(udtfExpr, true);
       FunctionInfo fi = FunctionRegistry.getFunctionInfo(funcName);
       if (fi != null) {
         genericUDTF = fi.getGenericUDTF();
@@ -4691,7 +4693,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           try {
             ASTNode defValAst = parseDriver.parseExpression(defaultValue);
 
-            exp = TypeCheckProcFactory.genExprNode(defValAst, new TypeCheckCtx(null)).get(defValAst);
+            exp = ExprNodeTypeCheck.genExprNode(defValAst, new TypeCheckCtx(null)).get(defValAst);
           } catch(Exception e) {
             throw new SemanticException("Error while parsing default value: " + defaultValue
               + ". Error message: " + e.getMessage());
@@ -7124,17 +7126,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode checkExprAST = parseDriver.parseExpression(checkExprStr);
         //replace column references in checkExprAST with corresponding columns in input
         replaceColumnReference(checkExprAST, col2Cols, inputRR);
-        Map<ASTNode, ExprNodeDesc> genExprs = TypeCheckProcFactory
+        Map<ASTNode, ExprNodeDesc> genExprs = ExprNodeTypeCheck
             .genExprNode(checkExprAST, typeCheckCtx);
         ExprNodeDesc checkExpr = genExprs.get(checkExprAST);
         // Check constraint fails only if it evaluates to false, NULL/UNKNOWN should evaluate to TRUE
-        ExprNodeDesc notFalseCheckExpr = TypeCheckProcFactory.DefaultExprProcessor.
+        ExprNodeDesc notFalseCheckExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor().
             getFuncExprNodeDesc("isnotfalse", checkExpr);
         if(checkAndExprs == null) {
           checkAndExprs = notFalseCheckExpr;
         }
         else {
-          checkAndExprs = TypeCheckProcFactory.DefaultExprProcessor.
+          checkAndExprs = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor().
               getFuncExprNodeDesc("and", checkAndExprs, notFalseCheckExpr);
         }
       } catch(Exception e) {
@@ -7215,8 +7217,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ExprNodeDesc combinedConstraintExpr = null;
     if(nullConstraintExpr != null && checkConstraintExpr != null) {
       assert (input.getParentOperators().size() == 1);
-      combinedConstraintExpr = TypeCheckProcFactory.DefaultExprProcessor.
-          getFuncExprNodeDesc("and", nullConstraintExpr, checkConstraintExpr);
+      combinedConstraintExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+          .getFuncExprNodeDesc("and", nullConstraintExpr, checkConstraintExpr);
 
     }
     else if(nullConstraintExpr != null) {
@@ -7227,8 +7229,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (combinedConstraintExpr != null) {
-      ExprNodeDesc constraintUDF = TypeCheckProcFactory.DefaultExprProcessor.
-          getFuncExprNodeDesc("enforce_constraint", combinedConstraintExpr);
+      ExprNodeDesc constraintUDF = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+          .getFuncExprNodeDesc("enforce_constraint", combinedConstraintExpr);
       return putOpInsertMap(OperatorFactory.getAndMakeChild(
           new FilterDesc(constraintUDF, false), new RowSchema(
               inputRR.getColumnInfos()), input), inputRR);
@@ -7267,12 +7269,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         continue;
       }
       if (nullConstraintBitSet.indexOf(constraintIdx) != -1) {
-        ExprNodeDesc currExpr = TypeCheckProcFactory.toExprNodeDesc(colInfos.get(colExprIdx));
-        ExprNodeDesc isNotNullUDF = TypeCheckProcFactory.DefaultExprProcessor.
-            getFuncExprNodeDesc("isnotnull", currExpr);
+        ExprNodeDesc currExpr = ExprNodeTypeCheck.toExprNodeDesc(colInfos.get(colExprIdx));
+        ExprNodeDesc isNotNullUDF = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+            .getFuncExprNodeDesc("isnotnull", currExpr);
         if (currUDF != null) {
-          currUDF = TypeCheckProcFactory.DefaultExprProcessor.
-              getFuncExprNodeDesc("and", currUDF, isNotNullUDF);
+          currUDF = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+              .getFuncExprNodeDesc("and", currUDF, isNotNullUDF);
         } else {
           currUDF = isNotNullUDF;
         }
@@ -8446,8 +8448,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // cannot convert to complex types
             column = null;
           } else {
-            column = ParseUtils.createConversionCast(
-                column, (PrimitiveTypeInfo)tableFieldTypeInfo);
+            column = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+                .createConversionCast(column, (PrimitiveTypeInfo)tableFieldTypeInfo);
           }
           if (column == null) {
             String reason = "Cannot convert column " + i + " from "
@@ -8664,7 +8666,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ExprNodeDesc column = new ExprNodeColumnDesc(rowFieldTypeInfo, rowField.getInternalName(),
         rowField.getTabAlias(), true);
     if (convert) {
-      column = ParseUtils.createConversionCast(column, TypeInfoFactory.intTypeInfo);
+      column = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+          .createConversionCast(column, TypeInfoFactory.intTypeInfo);
     }
     List<ExprNodeDesc> rlist = new ArrayList<ExprNodeDesc>(1);
     rlist.add(column);
@@ -8704,8 +8707,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // cannot convert to complex types
           column = null;
         } else {
-          column = ParseUtils.createConversionCast(
-              column, (PrimitiveTypeInfo)tableFieldTypeInfo);
+          column = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+              .createConversionCast(column, (PrimitiveTypeInfo)tableFieldTypeInfo);
         }
         if (column == null) {
           String reason = "Cannot convert column " + posn + " from "
@@ -9543,8 +9546,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int i = 0; i < keys.length; i++) {
         if (TypeInfoUtils.isConversionRequiredForComparison(
             keys[i][k].getTypeInfo(), commonType)) {
-          keys[i][k] = ParseUtils.createConversionCast(
-              keys[i][k], (PrimitiveTypeInfo)commonType);
+          keys[i][k] = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+              .createConversionCast(keys[i][k], (PrimitiveTypeInfo)commonType);
         } else {
           // For the case no implicit type conversion, e.g., varchar(5) and varchar(10),
           // pick the common type for all the keys since during run-time, same key type is assumed.
@@ -11133,7 +11136,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Iterator<ColumnInfo> oIter = origInputFieldMap.values().iterator();
     Iterator<ColumnInfo> uIter = fieldMap.values().iterator();
 
-    List<ExprNodeDesc> columns = new ArrayList<ExprNodeDesc>();
+    List<ExprNodeDesc> columns = new ArrayList<>();
     boolean needsCast = false;
     while (oIter.hasNext()) {
       ColumnInfo oInfo = oIter.next();
@@ -11142,8 +11145,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           oInfo.getTabAlias(), oInfo.getIsVirtualCol(), oInfo.isSkewedCol());
       if (!oInfo.getType().equals(uInfo.getType())) {
         needsCast = true;
-        column = ParseUtils.createConversionCast(
-            column, (PrimitiveTypeInfo)uInfo.getType());
+        column = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+            .createConversionCast(column, (PrimitiveTypeInfo)uInfo.getType());
       }
       columns.add(column);
     }
@@ -11236,14 +11239,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           TypeInfoFactory.intTypeInfo,
               bucketingVersion == 2 ? new GenericUDFMurmurHash() : new GenericUDFHash(), args);
       LOG.info("hashfnExpr = " + hashfnExpr);
-      ExprNodeDesc andExpr = TypeCheckProcFactory.DefaultExprProcessor
+      ExprNodeDesc andExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
           .getFuncExprNodeDesc("&", hashfnExpr, intMaxExpr);
       LOG.info("andExpr = " + andExpr);
-      ExprNodeDesc modExpr = TypeCheckProcFactory.DefaultExprProcessor
+      ExprNodeDesc modExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
           .getFuncExprNodeDesc("%", andExpr, denominatorExpr);
       LOG.info("modExpr = " + modExpr);
       LOG.info("numeratorExpr = " + numeratorExpr);
-      equalsExpr = TypeCheckProcFactory.DefaultExprProcessor
+      equalsExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
           .getFuncExprNodeDesc("==", modExpr, numeratorExpr);
       LOG.info("equalsExpr = " + equalsExpr);
     }
@@ -11436,13 +11439,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             new RowSchema(rwsch.getColumnInfos()), top);
       }
     } else {
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
+      boolean testMode = conf.getBoolVar(ConfVars.HIVETESTMODE);
       if (testMode) {
         String tabName = tab.getTableName();
 
         // has the user explicitly asked not to sample this table
         String unSampleTblList = conf
-            .getVar(HiveConf.ConfVars.HIVETESTMODENOSAMPLE);
+            .getVar(ConfVars.HIVETESTMODENOSAMPLE);
         String[] unSampleTbls = unSampleTblList.split(",");
         boolean unsample = false;
         for (String unSampleTbl : unSampleTbls) {
@@ -11471,14 +11474,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             LOG.info("No need for sample filter");
           } else {
             // The table is not bucketed, add a dummy filter :: rand()
-            int freq = conf.getIntVar(HiveConf.ConfVars.HIVETESTMODESAMPLEFREQ);
+            int freq = conf.getIntVar(ConfVars.HIVETESTMODESAMPLEFREQ);
             TableSample tsSample = new TableSample(1, freq);
             tsSample.setInputPruning(false);
             qb.getParseInfo().setTabSample(alias, tsSample);
             LOG.info("Need sample filter");
-            ExprNodeDesc randFunc = TypeCheckProcFactory.DefaultExprProcessor
-                .getFuncExprNodeDesc("rand", new ExprNodeConstantDesc(Integer
-                    .valueOf(460476415)));
+            ExprNodeDesc randFunc = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+                .getFuncExprNodeDesc("rand",
+                    new ExprNodeConstantDesc(Integer.valueOf(460476415)));
             ExprNodeDesc samplePred = genSamplePredicate(tsSample, null, false,
                 alias, rwsch, randFunc, tab.getBucketingVersion());
             FilterDesc filterDesc = new FilterDesc(samplePred, true);
@@ -13014,7 +13017,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     tcCtx.setUnparseTranslator(unparseTranslator);
 
     Map<ASTNode, ExprNodeDesc> nodeOutputs =
-        TypeCheckProcFactory.genExprNode(expr, tcCtx);
+        ExprNodeTypeCheck.genExprNode(expr, tcCtx);
     ExprNodeDesc desc = nodeOutputs.get(expr);
     if (desc == null) {
       String tableOrCol = BaseSemanticAnalyzer.unescapeIdentifier(expr
@@ -13079,7 +13082,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return nodeOutputs;
   }
 
-  private Map<ASTNode, String> translateFieldDesc(ASTNode node) {
+  protected final Map<ASTNode, String> translateFieldDesc(ASTNode node) {
     Map<ASTNode, String> map = new HashMap<>();
     if (node.getType() == HiveParser.DOT) {
       for (Node child : node.getChildren()) {

@@ -42,8 +42,8 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.TypeCheckCtx;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -293,7 +293,7 @@ public final class ConstraintsUtils {
       throws SemanticException{
     // first create expression from defaultValueAST
     TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
-    ExprNodeDesc defaultValExpr = TypeCheckProcFactory.genExprNode(node, typeCheckCtx).get(node);
+    ExprNodeDesc defaultValExpr = ExprNodeTypeCheck.genExprNode(node, typeCheckCtx).get(node);
 
     if (defaultValExpr == null) {
       throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid Default value!"));
@@ -445,7 +445,7 @@ public final class ConstraintsUtils {
         ParseDriver parseDriver = new ParseDriver();
         ASTNode checkExprAST = parseDriver.parseExpression(cc.getCheck_expression());
         validateCheckExprAST(checkExprAST);
-        Map<ASTNode, ExprNodeDesc> genExprs = TypeCheckProcFactory.genExprNode(checkExprAST, typeCheckCtx);
+        Map<ASTNode, ExprNodeDesc> genExprs = ExprNodeTypeCheck.genExprNode(checkExprAST, typeCheckCtx);
         ExprNodeDesc checkExpr = genExprs.get(checkExprAST);
         if (checkExpr == null) {
           throw new SemanticException(

@@ -32,7 +32,8 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.parse.SubQueryDiagnostic.QBSubQueryRewrite;
 import org.apache.hadoop.hive.ql.parse.SubQueryUtils.ISubQueryJoinInfo;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory.DefaultExprProcessor;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -264,7 +265,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         boolean forHavingClause,
         String parentQueryNewAlias) {
       this.parentQueryRR = parentQueryRR;
-      defaultExprProcessor = new DefaultExprProcessor();
+      defaultExprProcessor = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor();
       this.forHavingClause = forHavingClause;
       this.parentQueryNewAlias = parentQueryNewAlias;
       stack = new Stack<Node>();

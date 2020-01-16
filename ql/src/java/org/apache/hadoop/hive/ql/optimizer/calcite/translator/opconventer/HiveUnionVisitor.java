@@ -31,8 +31,8 @@ import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer.HiveOpConverter.OpAttr;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -128,7 +128,8 @@ class HiveUnionVisitor extends HiveRelNodeVisitor<HiveUnion> {
       ExprNodeDesc column = new ExprNodeColumnDesc(oInfo.getType(), oInfo.getInternalName(),
           oInfo.getTabAlias(), oInfo.getIsVirtualCol(), oInfo.isSkewedCol());
       if (!oInfo.getType().equals(uInfo.getType())) {
-        column = ParseUtils.createConversionCast(column, (PrimitiveTypeInfo) uInfo.getType());
+        column = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+            .createConversionCast(column, (PrimitiveTypeInfo) uInfo.getType());
       }
       columns.add(column);
       colName.add(uInfo.getInternalName());
