@@ -2844,7 +2844,7 @@ public class AcidUtils {
     List<LockComponent> lockComponents = new ArrayList<>();
     // For each source to read, get a shared lock
     for (ReadEntity input : inputs) {
-      if (!input.needsLock() || input.isUpdateOrDelete() || !AcidUtils.needsLock(input)) {
+      if (input.isDummy() || !input.needsLock() || input.isUpdateOrDelete() || !AcidUtils.needsLock(input)) {
         // We don't want to acquire read locks during update or delete as we'll be acquiring write
         // locks instead. Also, there's no need to lock temp tables since they're session wide
         continue;
