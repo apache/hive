@@ -12149,7 +12149,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } else {
           List<String> colNames;
           List<String> colTypes;
-          if (isCBOExecuted() && this.columnAccessInfo != null &&
+          if (this.ctx.isCboSucceeded() && this.columnAccessInfo != null &&
               (colNames = this.columnAccessInfo.getTableToColumnAllAccessMap().get(table.getCompleteName())) != null) {
             Map<String, String> colNameToType = table.getAllCols().stream()
                 .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType));
