@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import com.google.common.base.Supplier;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
@@ -30,18 +31,23 @@ import org.apache.hadoop.hive.metastore.api.Table;
 @InterfaceStability.Stable
 public class PreReadTableEvent extends PreEventContext {
 
-  private final Table table;
+  private final Supplier<Table> tableSupplier;
 
   public PreReadTableEvent(Table table, IHMSHandler handler) {
     super(PreEventType.READ_TABLE, handler);
-    this.table = table;
+    this.tableSupplier = () -> table;
+  }
+
+  public PreReadTableEvent(Supplier<Table> tableSupplier, IHMSHandler handler) {
+    super(PreEventType.READ_TABLE, handler);
+    this.tableSupplier = tableSupplier;
   }
 
   /**
    * @return the table
    */
   public Table getTable() {
-    return table;
+    return tableSupplier.get();
   }
 
 }

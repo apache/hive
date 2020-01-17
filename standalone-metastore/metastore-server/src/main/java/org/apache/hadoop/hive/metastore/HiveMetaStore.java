@@ -71,6 +71,8 @@ import java.util.regex.Pattern;
 import javax.jdo.JDOException;
 
 import com.codahale.metrics.Counter;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.cli.OptionBuilder;
@@ -4979,14 +4981,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void fireReadTablePreEvent(String catName, String dbName, String tblName)
         throws MetaException, NoSuchObjectException {
       if(preListeners.size() > 0) {
-        // do this only if there is a pre event listener registered (avoid unnecessary
-        // metastore api call)
-        Table t = getMS().getTable(catName, dbName, tblName);
-        if (t == null) {
-          throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName)
-              + " table not found");
-        }
-        firePreEvent(new PreReadTableEvent(t, this));
+        Supplier<Table> tableSupplier = Suppliers.memoize(new Supplier<Table>() {
+          @Override public Table get() {
+            try {
+              Table t = getMS().getTable(catName, dbName, tblName);
+              if (t == null) {
+                throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName)
+                    + " table not found");
+              }
+              return t;
+            } catch(MetaException | NoSuchObjectException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        });
+        firePreEvent(new PreReadTableEvent(tableSupplier, this));
       }
     }
 
