@@ -386,12 +386,12 @@ public class TestGetPartitions extends MetaStoreClientTest {
     client.getPartitionsByNames(DB_NAME, "", Lists.newArrayList("yyyy=2000/mm=01/dd=02"));
   }
 
-  @Test(expected = NoSuchObjectException.class)
+  @Test(expected = TException.class)
   public void testGetPartitionsByNamesNoTable() throws Exception {
     client.getPartitionsByNames(DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy=2000/mm=01/dd=02"));
   }
 
-  @Test(expected = NoSuchObjectException.class)
+  @Test(expected = TException.class)
   public void testGetPartitionsByNamesNoDb() throws Exception {
     client.dropDatabase(DB_NAME);
     client.getPartitionsByNames(DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy=2000/mm=01/dd=02"));
@@ -486,7 +486,8 @@ public class TestGetPartitions extends MetaStoreClientTest {
         Lists.newArrayList("1997", "05"), "user0", Lists.newArrayList("group0"));
   }
 
-  @Test
+  @Test(expected = MetaException.class)
+  // null DB would throw NPE wrapped up in MetaException
   public void testGetPartitionWithAuthInfoNullDbName() throws Exception {
     try {
       createTable3PartCols1PartAuthOn(client);
@@ -498,7 +499,8 @@ public class TestGetPartitions extends MetaStoreClientTest {
     }
   }
 
-  @Test
+  @Test(expected = MetaException.class)
+  // null table would throw NPE wrapped up in MetaException
   public void testGetPartitionWithAuthInfoNullTblName() throws Exception {
     try {
       createTable3PartCols1PartAuthOn(client);
@@ -607,7 +609,7 @@ public class TestGetPartitions extends MetaStoreClientTest {
         Lists.newArrayList("1997", "05", "16"), "user0", Lists.newArrayList("group0"));
   }
 
-  @Test(expected = NoSuchObjectException.class)
+  @Test(expected = TException.class)
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void getPartitionsByNamesBogusCatalog() throws TException {
     createTable3PartCols1Part(client);
