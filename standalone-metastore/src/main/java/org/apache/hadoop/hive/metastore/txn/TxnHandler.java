@@ -2379,6 +2379,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         List<String> rows = new ArrayList<>();
         List<List<String>> paramsList = new ArrayList<>();
         long intLockId = 0;
+        long lastHB = (isValidTxn(txnid) ? 0 : getDbTime(dbConn));
         for (LockComponent lc : rqst.getComponent()) {
           if(lc.isSetOperationType() && lc.getOperationType() == DataOperationType.UNSET &&
             (MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) || MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEZ_TEST))) {
@@ -2408,13 +2409,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               lockChar = LOCK_SEMI_SHARED;
               break;
           }
-          long now = getDbTime(dbConn);
           rows.add(extLockId + ", " + intLockId + "," + txnid + ", ?, " +
                   ((tblName == null) ? "null" : "?") + ", " +
                   ((partName == null) ? "null" : "?") + ", " +
             quoteChar(LOCK_WAITING) + ", " + quoteChar(lockChar) + ", " +
             //for locks associated with a txn, we always heartbeat txn and timeout based on that
-            (isValidTxn(txnid) ? 0 : now) + ", " +
+            lastHB + ", " +
                   ((rqst.getUser() == null) ? "null" : "?")  + ", " +
                   ((rqst.getHostname() == null) ? "null" : "?") + ", " +
                   ((rqst.getAgentInfo() == null) ? "null" : "?"));// + ")";
