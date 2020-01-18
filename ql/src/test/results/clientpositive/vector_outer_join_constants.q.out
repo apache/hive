@@ -392,7 +392,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: boolean)
                         Reduce Sink Vectorization:
@@ -660,7 +660,7 @@ STAGE PLANS:
                 vectorizationSchemaColumns: [0:_col0:boolean]
             Reduce Output Operator
               key expressions: _col0 (type: boolean)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: boolean)
               Reduce Sink Vectorization:
@@ -787,14 +787,14 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: timestamp)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col1 (type: timestamp)
               Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: timestamp)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col1 (type: timestamp)
               Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE

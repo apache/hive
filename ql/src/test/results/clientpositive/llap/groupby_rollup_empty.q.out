@@ -123,8 +123,8 @@ group by rollup (b)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
-1	1	1,1 and 1,0
 1	0	1,1 and 1,0
+1	1	1,1 and 1,0
 PREHOOK: query: create table tx2_n1 (a integer,b integer,c integer,d double,u string,bi binary) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -187,7 +187,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                          null sort order: aaa
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                           Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE

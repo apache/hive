@@ -71,7 +71,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: 2000.0D (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: 2000.0D (type: double)
                   Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
@@ -146,7 +146,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: 2000.0D (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: 2000.0D (type: double)
                   Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
@@ -345,7 +345,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: 4000.0D (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: 4000.0D (type: double)
                   Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
@@ -420,7 +420,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: 4000.0D (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: 4000.0D (type: double)
                   Statistics: Num rows: 3 Data size: 1062 Basic stats: PARTIAL Column stats: NONE
@@ -581,7 +581,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
                   key expressions: 2000.0D (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: 2000.0D (type: double)
                   Statistics: Num rows: 1 Data size: 872 Basic stats: COMPLETE Column stats: PARTIAL
@@ -707,7 +707,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2 Data size: 1744 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
                   key expressions: _col0 (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: double)
                   Statistics: Num rows: 2 Data size: 1744 Basic stats: COMPLETE Column stats: PARTIAL

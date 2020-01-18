@@ -1500,7 +1500,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float)
-                        null sort order: aaaaa
+                        null sort order: zzzzz
                         sort order: +++++
                         Map-reduce partition columns: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float)
                         Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
@@ -1577,7 +1577,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float)
-                        null sort order: aaaaa
+                        null sort order: azzzz
                         sort order: +++++
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE

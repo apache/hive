@@ -419,7 +419,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: varchar(256))
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: varchar(256))
                         Statistics: Num rows: 4 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
@@ -440,7 +440,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: varchar(256))
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: varchar(256))
                         Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE

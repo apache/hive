@@ -169,7 +169,7 @@ STAGE PLANS:
                     Statistics: Num rows: 136672296 Data size: 146239357800 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: datediff(CURRENT_TIMESTAMP(), _col0) (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: datediff(CURRENT_TIMESTAMP(), _col0) (type: int)
                       Statistics: Num rows: 136672296 Data size: 146239357800 Basic stats: COMPLETE Column stats: NONE
@@ -185,7 +185,7 @@ STAGE PLANS:
                     Statistics: Num rows: 145704825 Data size: 1957749112255 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: c00 (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: c00 (type: int)
                       Statistics: Num rows: 145704825 Data size: 1957749112255 Basic stats: COMPLETE Column stats: NONE
@@ -202,7 +202,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1187500 Data size: 2578537511 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: c10 (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: c10 (type: int)
                       Statistics: Num rows: 1187500 Data size: 2578537511 Basic stats: COMPLETE Column stats: NONE
@@ -231,7 +231,7 @@ STAGE PLANS:
                   Statistics: Num rows: 475011 Data size: 684263810 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: c21 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: c21 (type: string)
                     Statistics: Num rows: 475011 Data size: 684263810 Basic stats: COMPLETE Column stats: COMPLETE
@@ -270,7 +270,7 @@ STAGE PLANS:
                   Statistics: Num rows: 17808367 Data size: 239280441789 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col10 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col10 (type: string)
                     Statistics: Num rows: 17808367 Data size: 239280441789 Basic stats: COMPLETE Column stats: NONE
@@ -288,7 +288,7 @@ STAGE PLANS:
                 Statistics: Num rows: 19589204 Data size: 263208491672 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: datediff(CURRENT_TIMESTAMP(), _col2) (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: datediff(CURRENT_TIMESTAMP(), _col2) (type: int)
                   Statistics: Num rows: 19589204 Data size: 263208491672 Basic stats: COMPLETE Column stats: NONE

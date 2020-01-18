@@ -261,7 +261,7 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: '1' (type: string)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: '1' (type: string)
               tag: -1

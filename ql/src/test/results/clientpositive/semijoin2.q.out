@@ -73,7 +73,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: bigint_col_22 (type: bigint), decimal1709_col_26 (type: decimal(38,23)), tinyint_col_8 (type: tinyint)
-                null sort order: aaa
+                null sort order: zzz
                 sort order: +++
                 Map-reduce partition columns: bigint_col_22 (type: bigint), decimal1709_col_26 (type: decimal(38,23)), tinyint_col_8 (type: tinyint)
                 Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: NONE
@@ -87,7 +87,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 128 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: UDFToLong(tinyint_col_6) (type: bigint), decimal0504_col_37 (type: decimal(38,23)), tinyint_col_33 (type: tinyint)
-                null sort order: aaa
+                null sort order: zzz
                 sort order: +++
                 Map-reduce partition columns: UDFToLong(tinyint_col_6) (type: bigint), decimal0504_col_37 (type: decimal(38,23)), tinyint_col_33 (type: tinyint)
                 Statistics: Num rows: 1 Data size: 128 Basic stats: COMPLETE Column stats: NONE
@@ -114,7 +114,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: UDFToInteger(_col105) (type: int), _col72 (type: timestamp)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Map-reduce partition columns: UDFToInteger(_col105) (type: int), _col72 (type: timestamp)
               Statistics: Num rows: 1 Data size: 193 Basic stats: COMPLETE Column stats: NONE
@@ -122,7 +122,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: -92 (type: int), _col1 (type: timestamp)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Map-reduce partition columns: -92 (type: int), _col1 (type: timestamp)
               Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
@@ -251,7 +251,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: decimal1208_col_20 (type: decimal(38,6))
-                null sort order: a
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: decimal1208_col_20 (type: decimal(38,6))
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
@@ -264,7 +264,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: decimal1611_col_22 (type: decimal(38,6))
-                null sort order: a
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: decimal1611_col_22 (type: decimal(38,6))
                 Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: NONE

@@ -72,7 +72,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: 'a' (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: 'a' (type: string)
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -88,7 +88,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: 'a' (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: 'a' (type: string)
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE

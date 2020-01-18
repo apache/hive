@@ -120,7 +120,18 @@ public final class ObjectInspectorUtils {
    *
    */
   public enum NullValueOption {
-	MINVALUE, MAXVALUE
+    MINVALUE(-1),
+    MAXVALUE(1);
+
+    private final int cmpReturnValue;
+
+    NullValueOption(int cmpReturnValue) {
+      this.cmpReturnValue = cmpReturnValue;
+    }
+
+    public int getCmpReturnValue() {
+      return cmpReturnValue;
+    }
   }
 
   /**
@@ -1042,20 +1053,10 @@ public final class ObjectInspectorUtils {
       return oi1.getCategory().compareTo(oi2.getCategory());
     }
 
-    int nullCmpRtn = -1;
-    switch (nullValueOpt) {
-    case MAXVALUE:
-      nullCmpRtn = 1;
-      break;
-    case MINVALUE:
-      nullCmpRtn = -1;
-      break;
-    }
-
     if (o1 == null) {
-      return o2 == null ? 0 : nullCmpRtn;
+      return o2 == null ? 0 : nullValueOpt.getCmpReturnValue();
     } else if (o2 == null) {
-      return -nullCmpRtn;
+      return -nullValueOpt.getCmpReturnValue();
     }
 
     switch (oi1.getCategory()) {

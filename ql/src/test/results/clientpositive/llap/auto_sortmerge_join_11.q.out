@@ -154,7 +154,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
@@ -234,7 +234,7 @@ STAGE PLANS:
                       Statistics: Num rows: 211 Data size: 34294 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 211 Data size: 34294 Basic stats: PARTIAL Column stats: NONE
@@ -1126,7 +1126,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 165502 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 250 Data size: 165502 Basic stats: PARTIAL Column stats: NONE
@@ -1250,7 +1250,7 @@ STAGE PLANS:
                     Statistics: Num rows: 228 Data size: 150457 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 228 Data size: 150457 Basic stats: PARTIAL Column stats: NONE

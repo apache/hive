@@ -48,7 +48,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
@@ -97,11 +97,11 @@ POSTHOOK: Input: default@t1_n141
 2	2	1
 2	3	1
 2	NULL	2
+3	2	1
 3	NULL	1
-NULL	1	2
-NULL	2	3
-NULL	3	1
-NULL	NULL	6
+5	2	1
+5	NULL	1
+8	1	1
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
 PREHOOK: type: QUERY
@@ -136,7 +136,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
@@ -185,11 +185,11 @@ POSTHOOK: Input: default@t1_n141
 2	2	1
 2	3	1
 2	NULL	2
+3	2	1
 3	NULL	1
-NULL	1	2
-NULL	2	3
-NULL	3	1
-NULL	NULL	6
+5	2	1
+5	NULL	1
+8	1	1
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
 PREHOOK: type: QUERY
@@ -224,7 +224,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
@@ -277,7 +277,7 @@ POSTHOOK: Input: default@t1_n141
 3	NULL	1
 5	2	1
 5	NULL	1
-8	NULL	1
+8	1	1
 PREHOOK: query: EXPLAIN
 SELECT a FROM T1_n141 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
 PREHOOK: type: QUERY
@@ -311,7 +311,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: bigint)
-                  null sort order: aaaa
+                  null sort order: zzzz
                   sort order: ++++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: bigint)
                   Statistics: Num rows: 3 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
@@ -354,10 +354,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 1
-NULL
-NULL
-NULL
-NULL
+2
+3
+5
+8
 NULL
 NULL
 NULL
@@ -396,7 +396,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
@@ -472,7 +472,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: double)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE

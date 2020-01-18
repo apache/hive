@@ -125,7 +125,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2730 Data size: 131870 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
-                          null sort order: aaaaa
+                          null sort order: zzzzz
                           sort order: +++++
                           Map-reduce partition columns: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
                           Reduce Sink Vectorization:
@@ -461,7 +461,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2730 Data size: 131870 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
-                          null sort order: aaaaa
+                          null sort order: zzzzz
                           sort order: +++++
                           Map-reduce partition columns: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
                           Reduce Sink Vectorization:

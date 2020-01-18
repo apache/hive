@@ -78,7 +78,7 @@ STAGE PLANS:
                 Statistics: Num rows: 26 Data size: 568 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                   Statistics: Num rows: 26 Data size: 568 Basic stats: COMPLETE Column stats: COMPLETE
@@ -143,13 +143,13 @@ POSTHOOK: query: SELECT a, b, sum(c) FROM t_test_grouping_sets GROUP BY a,b GROU
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-5	1	6
 NULL	1	6
+5	1	6
 6	2	1
 NULL	2	4
 5	2	3
-NULL	8	12
 7	8	12
+NULL	8	12
 PREHOOK: query: SELECT a, b, sum(c) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
@@ -158,13 +158,13 @@ POSTHOOK: query: SELECT a, b, sum(c) FROM t_test_grouping_sets GROUP BY a,b GROU
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-5	1	6
 NULL	1	6
+5	1	6
 6	2	1
 NULL	2	4
 5	2	3
-NULL	8	12
 7	8	12
+NULL	8	12
 PREHOOK: query: EXPLAIN
 SELECT a, b, min(c) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((b,a), (a), (b), ()) ORDER BY b LIMIT 7
 PREHOOK: type: QUERY
@@ -200,7 +200,7 @@ STAGE PLANS:
                 Statistics: Num rows: 26 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                   Statistics: Num rows: 26 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
@@ -265,13 +265,13 @@ POSTHOOK: query: SELECT a, b, min(c) FROM t_test_grouping_sets GROUP BY a,b GROU
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-5	1	2
 NULL	1	2
+5	1	2
 6	2	1
 NULL	2	1
 5	2	3
-NULL	8	4
 7	8	4
+NULL	8	4
 PREHOOK: query: SELECT a, b, min(c) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((b,a), (a), (b), ()) ORDER BY b LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
@@ -280,13 +280,13 @@ POSTHOOK: query: SELECT a, b, min(c) FROM t_test_grouping_sets GROUP BY a,b GROU
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-5	1	2
 NULL	1	2
+5	1	2
 6	2	1
 NULL	2	1
 5	2	3
-NULL	8	4
 7	8	4
+NULL	8	4
 PREHOOK: query: EXPLAIN
 SELECT a, b, max(c) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 7
 PREHOOK: type: QUERY
@@ -322,7 +322,7 @@ STAGE PLANS:
                 Statistics: Num rows: 26 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                   Statistics: Num rows: 26 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
@@ -387,13 +387,13 @@ POSTHOOK: query: SELECT a, b, max(c) FROM t_test_grouping_sets GROUP BY a,b GROU
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-5	1	2
 NULL	1	2
+5	1	2
 6	2	1
 NULL	2	3
 5	2	3
-NULL	8	4
 7	8	4
+NULL	8	4
 PREHOOK: query: SELECT a, b, max(c) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
@@ -402,13 +402,13 @@ POSTHOOK: query: SELECT a, b, max(c) FROM t_test_grouping_sets GROUP BY a,b GROU
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-5	1	2
 NULL	1	2
+5	1	2
 6	2	1
 NULL	2	3
 5	2	3
-NULL	8	4
 7	8	4
+NULL	8	4
 PREHOOK: query: DROP TABLE IF EXISTS t_test_grouping_sets
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_test_grouping_sets
