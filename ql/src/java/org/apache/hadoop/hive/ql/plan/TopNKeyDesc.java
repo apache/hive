@@ -46,9 +46,23 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
       final List<ExprNodeDesc> keyColumns) {
 
     this.topN = topN;
-    this.columnSortOrder = columnSortOrder;
-    this.nullOrder = nullOrder;
-    this.keyColumns = keyColumns;
+
+    this.keyColumns = new ArrayList<>(keyColumns.size());
+    StringBuilder sortOrder = new StringBuilder(columnSortOrder.length());
+    StringBuilder nullSortOrder = new StringBuilder(nullOrder.length());
+
+    for (int i = 0; i < keyColumns.size(); ++i) {
+      ExprNodeDesc keyExpression = keyColumns.get(i);
+      if (keyExpression instanceof ExprNodeConstantDesc) {
+        continue;
+      }
+      this.keyColumns.add(keyExpression);
+      sortOrder.append(columnSortOrder.charAt(i));
+      nullSortOrder.append(nullOrder.charAt(i));
+    }
+
+    this.columnSortOrder = sortOrder.toString();
+    this.nullOrder = nullSortOrder.toString();
   }
 
   @Explain(displayName = "top n", explainLevels = { Level.DEFAULT, Level.EXTENDED, Level.USER })
