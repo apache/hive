@@ -183,7 +183,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: bigint)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                         Reduce Sink Vectorization:
@@ -255,11 +255,11 @@ POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 NULL
 AAAAAAAABAAAAAAA
+AAAAAAAACAAAAAAA
 AAAAAAAAEAAAAAAA
 AAAAAAAAHAAAAAAA
 AAAAAAAAIAAAAAAA
 AAAAAAAAKAAAAAAA
-AAAAAAAACAAAAAAA
 PREHOOK: query: explain vectorization expression
 select s_store_id, GROUPING__ID
  from store_n1
@@ -320,7 +320,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: bigint)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                         Reduce Sink Vectorization:
@@ -399,11 +399,11 @@ POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 NULL	1
 AAAAAAAABAAAAAAA	0
+AAAAAAAACAAAAAAA	0
 AAAAAAAAEAAAAAAA	0
 AAAAAAAAHAAAAAAA	0
 AAAAAAAAIAAAAAAA	0
 AAAAAAAAKAAAAAAA	0
-AAAAAAAACAAAAAAA	0
 PREHOOK: query: explain
 select s_store_id, GROUPING__ID
  from store_n1
@@ -447,7 +447,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: bigint)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                         Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE

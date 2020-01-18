@@ -51,9 +51,9 @@ POSTHOOK: query: select count(*), x from vectorization_sum_if_when_b group by x
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectorization_sum_if_when_b
 #### A masked pattern was here ####
-9919	NULL
 16	0
 65	1
+9919	NULL
 PREHOOK: query: select sum(IF(x is null, 1, 0)), count(1) from vectorization_sum_if_when_b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vectorization_sum_if_when_b

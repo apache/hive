@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.util;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.NullValueOption;
 
@@ -64,6 +66,11 @@ public enum NullOrdering {
       }
     }
     throw new EnumConstantNotPresentException(NullOrdering.class, "No enum constant present with sign " + sign);
+  }
+
+  public static NullOrdering defaultNullOrder(Configuration hiveConf) {
+    return HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST) ?
+            NullOrdering.NULLS_LAST : NullOrdering.NULLS_FIRST;
   }
 
   public int getCode() {

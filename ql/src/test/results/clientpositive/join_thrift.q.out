@@ -47,7 +47,7 @@ STAGE PLANS:
               Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: aint (type: int)
-                null sort order: a
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: aint (type: int)
                 Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
@@ -60,7 +60,7 @@ STAGE PLANS:
               Statistics: Num rows: 11 Data size: 28204 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: aint (type: int)
-                null sort order: a
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: aint (type: int)
                 Statistics: Num rows: 11 Data size: 28204 Basic stats: COMPLETE Column stats: NONE

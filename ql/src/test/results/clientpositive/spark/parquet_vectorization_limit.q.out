@@ -429,7 +429,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12288 Data size: 593563 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Reduce Sink Vectorization:
@@ -500,6 +500,7 @@ POSTHOOK: query: select distinct(ctinyint) from alltypesparquet limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
+-45
 -46
 -47
 -48
@@ -519,7 +520,6 @@ POSTHOOK: Input: default@alltypesparquet
 -62
 -63
 -64
-NULL
 PREHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint, count(distinct(cdouble)) from alltypesparquet group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
@@ -575,7 +575,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12288 Data size: 593563 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: double)
-                        null sort order: za
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Reduce Sink Vectorization:
@@ -769,7 +769,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12288 Data size: 593563 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Reduce Sink Vectorization:

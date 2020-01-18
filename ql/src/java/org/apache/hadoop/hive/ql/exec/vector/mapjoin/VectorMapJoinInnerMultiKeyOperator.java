@@ -113,8 +113,8 @@ public class VectorMapJoinInnerMultiKeyOperator extends VectorMapJoinInnerGenera
      * Initialize Multi-Key members for this specialized class.
      */
 
-    keyVectorSerializeWrite = new VectorSerializeRow(
-                                    new BinarySortableSerializeWrite(bigTableKeyColumnMap.length));
+    keyVectorSerializeWrite = new VectorSerializeRow(BinarySortableSerializeWrite.with(
+            this.getConf().getKeyTblDesc().getProperties(), bigTableKeyColumnMap.length));
     keyVectorSerializeWrite.init(bigTableKeyTypeInfos, bigTableKeyColumnMap);
 
     currentKeyOutput = new Output();

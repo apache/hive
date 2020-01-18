@@ -84,7 +84,7 @@ STAGE PLANS:
                       Top N Key Operator
                         sort order: +++
                         keys: _col0 (type: int), _col1 (type: int), 0L (type: bigint)
-                        null sort order: zaa
+                        null sort order: zzz
                         Statistics: Num rows: 13 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         top n: 3
                         Group By Operator
@@ -95,7 +95,7 @@ STAGE PLANS:
                           Statistics: Num rows: 26 Data size: 216 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                            null sort order: zaa
+                            null sort order: zzz
                             sort order: +++
                             Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                             Statistics: Num rows: 26 Data size: 216 Basic stats: COMPLETE Column stats: COMPLETE
@@ -153,9 +153,9 @@ POSTHOOK: query: SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_te
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
+5	1	0	0	0
 5	2	0	0	0
 5	NULL	0	1	1
-5	1	0	0	0
 PREHOOK: query: SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
@@ -164,9 +164,9 @@ POSTHOOK: query: SELECT a, b, grouping(a), grouping(b), grouping(a, b) FROM t_te
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
+5	1	0	0	0
 5	2	0	0	0
 5	NULL	0	1	1
-5	1	0	0	0
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 10
 PREHOOK: type: QUERY
@@ -208,7 +208,7 @@ STAGE PLANS:
                       Top N Key Operator
                         sort order: +++
                         keys: a (type: int), b (type: int), 0L (type: bigint)
-                        null sort order: zaa
+                        null sort order: zzz
                         Statistics: Num rows: 13 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         top n: 10
                         Group By Operator
@@ -219,7 +219,7 @@ STAGE PLANS:
                           Statistics: Num rows: 26 Data size: 216 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                            null sort order: zaa
+                            null sort order: zzz
                             sort order: +++
                             Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                             Statistics: Num rows: 26 Data size: 216 Basic stats: COMPLETE Column stats: COMPLETE
@@ -274,16 +274,16 @@ POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SET
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-5	NULL
 5	1
 5	2
+5	NULL
 6	NULL
 6	2
 7	NULL
 7	8
 10	11
 10	NULL
-NULL	NULL
+NULL	1
 PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
@@ -292,16 +292,16 @@ POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SET
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-5	NULL
 5	1
 5	2
+5	NULL
 6	NULL
 6	2
 7	NULL
 7	8
 10	11
 10	NULL
-NULL	NULL
+NULL	1
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 3
 PREHOOK: type: QUERY
@@ -342,7 +342,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                         Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
@@ -402,8 +402,8 @@ POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SET
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-NULL	1
 5	1
+NULL	1
 5	2
 PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 3
 PREHOOK: type: QUERY
@@ -413,8 +413,8 @@ POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SET
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-NULL	1
 5	1
+NULL	1
 5	2
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 1
@@ -456,7 +456,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                         Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
@@ -516,7 +516,7 @@ POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SET
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-NULL	1
+5	1
 PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
@@ -525,7 +525,7 @@ POSTHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SET
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
-NULL	1
+5	1
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b LIMIT 7
 PREHOOK: type: QUERY
@@ -566,7 +566,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                         Statistics: Num rows: 13 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -630,9 +630,9 @@ NULL	1
 NULL	2
 NULL	8
 NULL	11
+10	NULL
 NULL	NULL
-NULL	NULL
-5	NULL
+6	NULL
 PREHOOK: query: SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a), (b)) ORDER BY b LIMIT 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_test_grouping_sets
@@ -645,9 +645,9 @@ NULL	1
 NULL	2
 NULL	8
 NULL	11
+10	NULL
 NULL	NULL
-NULL	NULL
-5	NULL
+6	NULL
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a)) ORDER BY a DESC, b ASC LIMIT 7
 PREHOOK: type: QUERY
@@ -689,7 +689,7 @@ STAGE PLANS:
                       Top N Key Operator
                         sort order: -++
                         keys: a (type: int), b (type: int), 0L (type: bigint)
-                        null sort order: zza
+                        null sort order: zzz
                         Statistics: Num rows: 13 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         top n: 7
                         Group By Operator
@@ -700,7 +700,7 @@ STAGE PLANS:
                           Statistics: Num rows: 13 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                            null sort order: zza
+                            null sort order: zzz
                             sort order: -++
                             Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                             Statistics: Num rows: 13 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
@@ -817,7 +817,7 @@ STAGE PLANS:
                       Top N Key Operator
                         sort order: -++
                         keys: a (type: int), b (type: int), 0L (type: bigint)
-                        null sort order: zza
+                        null sort order: zzz
                         Statistics: Num rows: 13 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         top n: 7
                         Group By Operator
@@ -828,7 +828,7 @@ STAGE PLANS:
                           Statistics: Num rows: 13 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                            null sort order: zza
+                            null sort order: zzz
                             sort order: -++
                             Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                             Statistics: Num rows: 13 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
@@ -945,7 +945,7 @@ STAGE PLANS:
                       Top N Key Operator
                         sort order: -++
                         keys: a (type: int), b (type: int), 0L (type: bigint)
-                        null sort order: zza
+                        null sort order: zzz
                         Statistics: Num rows: 13 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         top n: 7
                         Group By Operator
@@ -956,7 +956,7 @@ STAGE PLANS:
                           Statistics: Num rows: 13 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                            null sort order: zza
+                            null sort order: zzz
                             sort order: -++
                             Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                             Statistics: Num rows: 13 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1073,7 +1073,7 @@ STAGE PLANS:
                       Top N Key Operator
                         sort order: -++
                         keys: a (type: int), b (type: int), 0L (type: bigint)
-                        null sort order: zza
+                        null sort order: zzz
                         Statistics: Num rows: 13 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         top n: 7
                         Group By Operator
@@ -1084,7 +1084,7 @@ STAGE PLANS:
                           Statistics: Num rows: 13 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                            null sort order: zza
+                            null sort order: zzz
                             sort order: -++
                             Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                             Statistics: Num rows: 13 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1205,7 +1205,7 @@ STAGE PLANS:
                       Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
                         Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1228,7 +1228,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: -++
                     keys: _col0 (type: int), _col1 (type: int), 0L (type: bigint)
-                    null sort order: zza
+                    null sort order: zzz
                     Statistics: Num rows: 6 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 7
                     Group By Operator
@@ -1240,7 +1240,7 @@ STAGE PLANS:
                       Statistics: Num rows: 6 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
-                        null sort order: zza
+                        null sort order: zzz
                         sort order: -++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                         Statistics: Num rows: 6 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE

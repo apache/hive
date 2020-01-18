@@ -164,7 +164,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
@@ -376,7 +376,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)

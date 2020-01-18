@@ -126,7 +126,7 @@ STAGE PLANS:
                         Statistics: Num rows: 606 Data size: 143411 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: float), _col2 (type: double), _col3 (type: timestamp), _col4 (type: boolean)
-                          null sort order: aaaaa
+                          null sort order: zzzzz
                           sort order: +++++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: float), _col2 (type: double), _col3 (type: timestamp), _col4 (type: boolean)
                           Reduce Sink Vectorization:
@@ -158,7 +158,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: aaaaa
+                reduceColumnNullOrder: zzzzz
                 reduceColumnSortOrder: +++++
                 allNative: false
                 usesVectorUDFAdaptor: false

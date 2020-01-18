@@ -49,7 +49,7 @@ STAGE PLANS:
                 Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: key (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: key (type: string)
                   Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
@@ -71,7 +71,7 @@ STAGE PLANS:
                 Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: key (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: key (type: string)
                   Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE
@@ -363,7 +363,7 @@ STAGE PLANS:
                 Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: key (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: key (type: string)
                   Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
@@ -385,7 +385,7 @@ STAGE PLANS:
                 Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: key (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: key (type: string)
                   Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE

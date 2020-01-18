@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
@@ -714,7 +715,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     // Create the reduce sink operator
     ReduceSinkDesc rsDesc = PlanUtils.getReduceSinkDesc(
             new ArrayList<ExprNodeDesc>(), rsValueCols, gbOutputNames, false,
-            -1, 0, 1, Operation.NOT_ACID);
+            -1, 0, 1, Operation.NOT_ACID, NullOrdering.defaultNullOrder(parseContext.getConf()));
     ReduceSinkOperator rsOp = (ReduceSinkOperator)OperatorFactory.getAndMakeChild(
             rsDesc, new RowSchema(groupByOp.getSchema()), groupByOp);
     Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
@@ -821,7 +822,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     // Create the final Reduce Sink Operator
     ReduceSinkDesc rsDescFinal = PlanUtils.getReduceSinkDesc(
             new ArrayList<ExprNodeDesc>(), rsValueCols, gbOutputNames, false,
-            -1, 0, 1, Operation.NOT_ACID);
+            -1, 0, 1, Operation.NOT_ACID, NullOrdering.defaultNullOrder(parseContext.getConf()));
     ReduceSinkOperator rsOpFinal = (ReduceSinkOperator)OperatorFactory.getAndMakeChild(
             rsDescFinal, new RowSchema(gb.getSchema()), gb);
     Map<String, ExprNodeDesc> columnExprMap = new HashMap<>();

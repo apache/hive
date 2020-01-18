@@ -98,7 +98,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4 Data size: 744 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                         Reduce Sink Vectorization:
@@ -111,7 +111,7 @@ STAGE PLANS:
                         value expressions: _col3 (type: bigint)
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                         Reduce Sink Vectorization:
@@ -144,7 +144,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -187,7 +187,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Reduce Sink Vectorization:
@@ -224,7 +224,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -267,7 +267,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Reduce Sink Vectorization:
@@ -355,7 +355,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4 Data size: 744 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                         Reduce Sink Vectorization:
@@ -368,7 +368,7 @@ STAGE PLANS:
                         value expressions: _col3 (type: bigint)
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                         Reduce Sink Vectorization:
@@ -401,7 +401,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -444,7 +444,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Reduce Sink Vectorization:
@@ -481,7 +481,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -524,7 +524,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Reduce Sink Vectorization:
@@ -643,7 +643,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
@@ -676,7 +676,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -703,7 +703,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 744 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Reduce Sink Vectorization:
@@ -716,7 +716,7 @@ STAGE PLANS:
                   value expressions: _col3 (type: bigint)
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Reduce Sink Vectorization:
@@ -732,7 +732,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -775,7 +775,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Reduce Sink Vectorization:
@@ -812,7 +812,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -855,7 +855,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Reduce Sink Vectorization:

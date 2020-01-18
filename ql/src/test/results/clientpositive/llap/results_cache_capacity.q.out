@@ -166,7 +166,7 @@ STAGE PLANS:
                       Statistics: Num rows: 125 Data size: 11875 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 125 Data size: 11875 Basic stats: COMPLETE Column stats: COMPLETE
@@ -204,12 +204,12 @@ POSTHOOK: query: select key, count(*) from src where key < 10 group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-5	3
-9	1
+4	1
 0	3
 2	1
-4	1
+5	3
 8	1
+9	1
 PREHOOK: query: explain
 select key, count(*) from src where key < 10 group by key
 PREHOOK: type: QUERY
@@ -250,7 +250,7 @@ STAGE PLANS:
                       Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE

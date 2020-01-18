@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMultiSetResult;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMultiSet;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 
 /*
@@ -75,9 +76,9 @@ public class VectorMapJoinOptimizedLongHashMultiSet
   }
 
   public VectorMapJoinOptimizedLongHashMultiSet(
-        boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
-        MapJoinTableContainer originalTableContainer, ReusableGetAdaptor hashMapRowGetter) {
+          boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
+          MapJoinTableContainer originalTableContainer, ReusableGetAdaptor hashMapRowGetter, TableDesc tableDesc) {
     super(originalTableContainer, hashMapRowGetter);
-    longCommon =  new VectorMapJoinOptimizedLongCommon(minMaxEnabled, isOuterJoin, hashTableKeyType);
+    longCommon =  new VectorMapJoinOptimizedLongCommon(minMaxEnabled, isOuterJoin, hashTableKeyType, tableDesc);
   }
 }

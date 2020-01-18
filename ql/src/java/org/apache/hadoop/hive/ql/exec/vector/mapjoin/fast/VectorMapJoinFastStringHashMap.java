@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.io.BytesWritable;
 
 /*
@@ -44,12 +45,12 @@ public class VectorMapJoinFastStringHashMap extends VectorMapJoinFastBytesHashMa
   }
 
   public VectorMapJoinFastStringHashMap(
-      boolean isFullOuter,
-      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+          boolean isFullOuter,
+          int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount, TableDesc tableDesc) {
     super(
         isFullOuter,
         initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
-    stringCommon = new VectorMapJoinFastStringCommon();
+    stringCommon = new VectorMapJoinFastStringCommon(tableDesc);
   }
 
   @Override

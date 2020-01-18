@@ -45,7 +45,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -83,7 +83,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: double)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -91,7 +91,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: double)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col1 (type: double)
               Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -138,7 +138,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col0) (type: double), _col0 (type: int)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -146,7 +146,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double), _col1 (type: int)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col1 (type: int)
               Statistics: Num rows: 197 Data size: 17927 Basic stats: COMPLETE Column stats: COMPLETE
@@ -718,7 +718,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -756,7 +756,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: double)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -764,7 +764,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: double)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col1 (type: double)
               Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -811,7 +811,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col0) (type: double), _col0 (type: int)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -819,7 +819,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double), _col1 (type: int)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col1 (type: int)
               Statistics: Num rows: 197 Data size: 17927 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1388,7 +1388,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1426,7 +1426,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: double)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1434,7 +1434,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: double)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col1 (type: double)
               Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1481,14 +1481,14 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col0) (type: double), _col0 (type: int)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double), _col1 (type: int)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col1 (type: int)
               Statistics: Num rows: 197 Data size: 17927 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2057,7 +2057,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2095,7 +2095,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: double)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2103,7 +2103,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: double)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col1 (type: double)
               Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2150,7 +2150,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col0) (type: double), _col0 (type: int)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2158,7 +2158,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double), _col1 (type: int)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col1 (type: int)
               Statistics: Num rows: 197 Data size: 17927 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2742,7 +2742,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2780,7 +2780,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: double)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2788,7 +2788,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: double)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col1 (type: double)
               Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2835,7 +2835,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col0) (type: double), _col0 (type: int)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2843,7 +2843,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double), _col1 (type: int)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col1 (type: int)
               Statistics: Num rows: 197 Data size: 17927 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2883,7 +2883,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2000 Data size: 1108000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col4 (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col4 (type: double)
                   Statistics: Num rows: 2000 Data size: 1108000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2891,7 +2891,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col2 (type: double)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col2 (type: double)
               Statistics: Num rows: 325 Data size: 33475 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7090,7 +7090,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7128,7 +7128,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: double)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7136,7 +7136,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: double)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col1 (type: double)
               Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7183,7 +7183,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col0) (type: double), _col0 (type: int)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7191,7 +7191,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double), _col1 (type: int)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col1 (type: int)
               Statistics: Num rows: 197 Data size: 17927 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7760,7 +7760,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7798,7 +7798,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: double)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col1 (type: double)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7806,7 +7806,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: _col1 (type: double)
-              null sort order: a
+              null sort order: z
               sort order: +
               Map-reduce partition columns: _col1 (type: double)
               Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7853,7 +7853,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col0) (type: double), _col0 (type: int)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7861,7 +7861,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double), _col1 (type: int)
-              null sort order: aa
+              null sort order: zz
               sort order: ++
               Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col1 (type: int)
               Statistics: Num rows: 197 Data size: 17927 Basic stats: COMPLETE Column stats: COMPLETE

@@ -114,7 +114,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: boolean)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: boolean)
                           Reduce Sink Vectorization:
@@ -164,7 +164,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: boolean)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: boolean)
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
@@ -180,7 +180,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
