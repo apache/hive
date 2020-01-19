@@ -35,7 +35,6 @@ import org.apache.hive.service.rpc.thrift.TOperationHandle;
  * or plan and passes the context required for the ImpalaStreamingFetchOperator to retrieve the execution results.
  */
 public class ImpalaTask extends Task<ImpalaWork> {
-    ImpalaConnection connection = null;
     ImpalaSession session = null;
 
     @Override
@@ -73,7 +72,7 @@ public class ImpalaTask extends Task<ImpalaWork> {
             FetchOperator fetchOp = fetch.getFetchOp();
             if (fetchOp instanceof ImpalaStreamingFetchOperator) {
                 ImpalaStreamingFetchOperator impFetchOp = (ImpalaStreamingFetchOperator) fetchOp;
-                impFetchOp.setImpalaFetchContext(new ImpalaFetchContext(session, opHandle));
+                impFetchOp.setImpalaFetchContext(new ImpalaFetchContext(session, opHandle, work.getFetchSize()));
             } else {
                 throw new HiveException("Unexpected Fetch operator");
             }

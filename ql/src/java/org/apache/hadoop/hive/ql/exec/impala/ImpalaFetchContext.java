@@ -27,14 +27,21 @@ public class ImpalaFetchContext {
     private final ImpalaSession session;
     /* Operation handled associated with requested execution mode */
     private TOperationHandle operationHandle;
+    /* Desired fetch size */
+    private final int fetchSize;
 
-    ImpalaFetchContext(ImpalaSession session, TOperationHandle operationHandle) {
+    ImpalaFetchContext(ImpalaSession session, TOperationHandle operationHandle, int fetchSize) {
         this.session = session;
         this.operationHandle = operationHandle;
+        this.fetchSize = fetchSize;
     }
 
     public ImpalaSession getSession() {
         return session;
+    }
+
+    public int getFetchSize() {
+        return fetchSize;
     }
 
     public TOperationHandle getOperationHandle() {

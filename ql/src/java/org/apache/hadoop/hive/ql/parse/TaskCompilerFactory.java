@@ -44,7 +44,9 @@ public class TaskCompilerFactory {
       case SPARK:
         return new SparkCompiler();
       case IMPALA:
-        return new ImpalaCompiler(conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_EXECUTION_MODE).equals("plan"));
+        return new ImpalaCompiler(
+                conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_EXECUTION_MODE).equals("plan"),
+                conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_FETCH_SIZE));
       case INVALID_ENGINE:
         throw new UnsupportedOperationException("Invalid execution engine specified.");
     }

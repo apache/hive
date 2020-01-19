@@ -50,6 +50,10 @@ public class ImpalaStreamingFetchOperator extends FetchOperator {
     private final StructObjectInspector outputInspector;
     /* Holds context required to communicate with Impala */
     private ImpalaFetchContext context;
+    /* Last returned rowSet */
+    private TRowSet rowSet = null;
+    /* Next position in rowSet */
+    private int rowSetPosition = 0;
 
     public ImpalaStreamingFetchOperator(FetchWork work, JobConf job, Operator<?> operator,
                                         List<VirtualColumn> vcCols, Schema resultSchema) throws HiveException {
@@ -105,23 +109,22 @@ public class ImpalaStreamingFetchOperator extends FetchOperator {
 
     @Override
     public InspectableObject getNextRow() throws IOException {
-        TRowSet rowSet = null;
         try {
-            rowSet = context.getSession().fetch(context.getOperationHandle());
+            if (rowSet == null || rowSetPosition >= rowSet.getRowsSize()) {
+                rowSetPosition = 0;
+                rowSet = context.getSession().fetch(context.getOperationHandle(), context.getFetchSize());
+            }
         } catch (Exception e) {
             return null;
         }
 
-        if (rowSet != null) {
-            if (rowSet.getRows().size() <= 0) {
-                return null;
-            }
-            inspectable.oi = outputInspector;
-            inspectable.o = rowSet.getRows().get(0);
-        } else {
+        if (rowSet == null || rowSet.getRowsSize() <= 0) {
             return null;
         }
 
+        inspectable.oi = outputInspector;
+        inspectable.o = rowSet.getRows().get(rowSetPosition);
+        rowSetPosition++;
         return inspectable;
     }
 

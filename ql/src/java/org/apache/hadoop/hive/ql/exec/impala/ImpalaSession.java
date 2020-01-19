@@ -75,16 +75,14 @@ public class ImpalaSession {
     }
 
     /* Given a valid TOperationHandle attempts to retrieve rows from Impala. */
-    public TRowSet fetch(TOperationHandle opHandle) throws HiveException {
+    public TRowSet fetch(TOperationHandle opHandle, int fetchSize) throws HiveException {
         Preconditions.checkNotNull(client);
         Preconditions.checkNotNull(sessionHandle);
+        Preconditions.checkArgument(fetchSize > 0);
 
         TFetchResultsReq req = new TFetchResultsReq();
         req.setOperationHandle(opHandle);
-
-        // CDPD-6957: Support batched row streaming.
-        // Currently doing row at a time retrieval, which is inefficient.
-        req.setMaxRows(1);
+        req.setMaxRows(fetchSize);
 
         TFetchResultsResp resp;
         try {

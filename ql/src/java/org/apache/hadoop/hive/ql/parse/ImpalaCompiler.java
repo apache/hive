@@ -38,9 +38,12 @@ public class ImpalaCompiler extends TaskCompiler {
 
     /* When isPlanned is true, a fully planned ExecRequest is expected, otherwise we expect only a query string */
     private boolean isPlanned;
+    /* Number of rows fetch from Impala per fetch when streaming */
+    private int requestedFetchSize;
 
-    ImpalaCompiler(boolean isPlanned) {
+    ImpalaCompiler(boolean isPlanned, int requestedFetchSize) {
         this.isPlanned = isPlanned;
+        this.requestedFetchSize = requestedFetchSize;
     }
 
     @Override
@@ -57,7 +60,7 @@ public class ImpalaCompiler extends TaskCompiler {
             */
         } else {
             // CDPD-7172: Investigate security implications of Impala query execution mode
-            work = new ImpalaWork(pCtx.getQueryState().getQueryString(), pCtx.getFetchTask());
+            work = new ImpalaWork(pCtx.getQueryState().getQueryString(), pCtx.getFetchTask(), requestedFetchSize);
         }
         rootTasks.add(TaskFactory.get(work));
     }
