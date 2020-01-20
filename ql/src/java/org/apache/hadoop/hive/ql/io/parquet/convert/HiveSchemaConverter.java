@@ -26,8 +26,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.parquet.schema.ConversionPatterns;
 import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Type.Repetition;
@@ -60,16 +60,16 @@ public class HiveSchemaConverter {
                                   final Repetition repetition) {
     if (typeInfo.getCategory().equals(Category.PRIMITIVE)) {
       if (typeInfo.equals(TypeInfoFactory.stringTypeInfo)) {
-        return Types.primitive(PrimitiveTypeName.BINARY, repetition).as(OriginalType.UTF8)
-          .named(name);
+        return Types.primitive(PrimitiveTypeName.BINARY, repetition)
+            .as(LogicalTypeAnnotation.stringType()).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.intTypeInfo)) {
         return Types.primitive(PrimitiveTypeName.INT32, repetition).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.shortTypeInfo)) {
         return Types.primitive(PrimitiveTypeName.INT32, repetition)
-            .as(OriginalType.INT_16).named(name);
+            .as(LogicalTypeAnnotation.intType(16, true)).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.byteTypeInfo)) {
         return Types.primitive(PrimitiveTypeName.INT32, repetition)
-            .as(OriginalType.INT_8).named(name);
+            .as(LogicalTypeAnnotation.intType(8, true)).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.longTypeInfo)) {
         return Types.primitive(PrimitiveTypeName.INT64, repetition).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.doubleTypeInfo)) {
@@ -86,22 +86,22 @@ public class HiveSchemaConverter {
         throw new UnsupportedOperationException("Void type not implemented");
       } else if (typeInfo.getTypeName().toLowerCase().startsWith(
           serdeConstants.CHAR_TYPE_NAME)) {
-        return Types.optional(PrimitiveTypeName.BINARY).as(OriginalType.UTF8)
+        return Types.optional(PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType())
             .named(name);
       } else if (typeInfo.getTypeName().toLowerCase().startsWith(
           serdeConstants.VARCHAR_TYPE_NAME)) {
-        return Types.optional(PrimitiveTypeName.BINARY).as(OriginalType.UTF8)
+        return Types.optional(PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType())
             .named(name);
       } else if (typeInfo instanceof DecimalTypeInfo) {
         DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
         int prec = decimalTypeInfo.precision();
         int scale = decimalTypeInfo.scale();
         int bytes = ParquetHiveSerDe.PRECISION_TO_BYTE_COUNT[prec - 1];
-        return Types.optional(PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY).length(bytes).as(OriginalType.DECIMAL).
-            scale(scale).precision(prec).named(name);
+        return Types.optional(PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY).length(bytes)
+            .as(LogicalTypeAnnotation.decimalType(scale, prec)).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.dateTypeInfo)) {
-        return Types.primitive(PrimitiveTypeName.INT32, repetition).as(OriginalType.DATE).named
-            (name);
+        return Types.primitive(PrimitiveTypeName.INT32, repetition)
+            .as(LogicalTypeAnnotation.dateType()).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.unknownTypeInfo)) {
         throw new UnsupportedOperationException("Unknown type not implemented");
       } else {
@@ -122,19 +122,21 @@ public class HiveSchemaConverter {
 
   // An optional group containing a repeated anonymous group "bag", containing
   // 1 anonymous element "array_element"
-  @SuppressWarnings("deprecation")
   private static GroupType convertArrayType(final String name, final ListTypeInfo typeInfo) {
     final TypeInfo subType = typeInfo.getListElementTypeInfo();
-    return new GroupType(Repetition.OPTIONAL, name, OriginalType.LIST, new GroupType(Repetition.REPEATED,
-        ParquetHiveSerDe.ARRAY.toString(), convertType("array_element", subType)));
+    GroupType groupType = Types.optionalGroup().as(LogicalTypeAnnotation.listType())
+        .addField(Types.repeatedGroup().addField(convertType("array_element", subType))
+            .named(ParquetHiveSerDe.ARRAY.toString()))
+        .named(name);
+    return groupType;
   }
 
   // An optional group containing multiple elements
   private static GroupType convertStructType(final String name, final StructTypeInfo typeInfo) {
     final List<String> columnNames = typeInfo.getAllStructFieldNames();
     final List<TypeInfo> columnTypes = typeInfo.getAllStructFieldTypeInfos();
-    return new GroupType(Repetition.OPTIONAL, name, convertTypes(columnNames, columnTypes));
-
+    GroupType groupType = Types.optionalGroup().addFields(convertTypes(columnNames, columnTypes)).named(name);
+    return groupType;
   }
 
   // An optional group containing a repeated anonymous group "map", containing

@@ -46,8 +46,8 @@ import org.apache.parquet.hadoop.api.InitContext;
 import org.apache.parquet.hadoop.api.ReadSupport;
 import org.apache.parquet.io.api.RecordMaterializer;
 import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Type.Repetition;
@@ -160,8 +160,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
             } else {
               subFieldType = getProjectedType(elemType, subFieldType);
             }
-            return Types.buildGroup(Repetition.OPTIONAL).as(OriginalType.LIST).addFields(
-              subFieldType).named(fieldType.getName());
+          return Types.buildGroup(Repetition.OPTIONAL).as(LogicalTypeAnnotation.listType())
+              .addFields(subFieldType).named(fieldType.getName());
           }
         }
         break;
