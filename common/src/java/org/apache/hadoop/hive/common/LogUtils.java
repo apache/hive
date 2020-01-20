@@ -238,9 +238,6 @@ public class LogUtils {
     MDC.remove(QUERYID_LOG_KEY);
     MDC.remove(OPERATIONLOG_LEVEL_KEY);
     l4j.info("Unregistered logging context.");
-    if (MDC.get(OPERATIONLOG_LEVEL_KEY) != null) {
-      throw new RuntimeException("Keys removal failed from thread context MDC");
-    }
   }
 
   /**
