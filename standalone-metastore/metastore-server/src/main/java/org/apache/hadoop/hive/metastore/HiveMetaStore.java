@@ -10110,6 +10110,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         + maxWorkerThreads);
     HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
     HMSHandler.LOG.info("Enable SSL = " + useSSL);
+    logCompactionParameters(conf);
 
     boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
     HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
@@ -10137,6 +10138,39 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     tServer.serve();
+  }
+
+  private static void logCompactionParameters(Configuration conf) {
+    HMSHandler.LOG.info("Compaction HMS parameters:");
+    HMSHandler.LOG
+        .info("metastore.compactor.initiator.on = {}", MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON));
+    HMSHandler.LOG.info("metastore.compactor.worker.threads = {}",
+        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_WORKER_THREADS));
+    HMSHandler.LOG
+        .info("hive.metastore.runworker.in = {}", MetastoreConf.getVar(conf, ConfVars.HIVE_METASTORE_RUNWORKER_IN));
+    HMSHandler.LOG.info("metastore.compactor.history.reaper.interval = {}",
+        MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL, TimeUnit.MINUTES));
+    HMSHandler.LOG.info("metastore.compactor.history.retention.attempted = {}",
+        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED));
+    HMSHandler.LOG.info("metastore.compactor.history.retention.failed = {}",
+        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED));
+    HMSHandler.LOG.info("metastore.compactor.history.retention.succeeded = {}",
+        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
+    HMSHandler.LOG.info("metastore.compactor.initiator.failed.compacts.threshold = {}",
+        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD));
+    HMSHandler.LOG.info("metastore.compactor.enable.stats.compression",
+        MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_MINOR_STATS_COMPRESSION));
+
+    if (!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)) {
+      LOG.warn("Compactor Initiator is turned Off. Automatic compaction will not be triggered.");
+    }
+
+    if (MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("metastore")) {
+      int numThreads = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_WORKER_THREADS);
+      if (numThreads < 1) {
+        LOG.warn("Invalid number of Compactor Worker threads({}) on HMS", numThreads);
+      }
+    }
   }
 
   private static boolean isMetastoreHousekeepingLeader(Configuration conf, String serverHost) {
@@ -10304,6 +10338,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       MetaStoreThread initiator =
           instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Initiator");
       initializeAndStartThread(initiator, conf);
+      LOG.info("This HMS instance will act as a Compactor Initiator.");
     }
   }
 
@@ -10314,6 +10349,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Worker");
       initializeAndStartThread(worker, conf);
     }
+    LOG.info("This HMS instance will act as a Compactor Worker with {} threads", numWorkers);
   }
 
   private static void startCompactorCleaner(Configuration conf) throws Exception {
@@ -10321,6 +10357,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       MetaStoreThread cleaner =
           instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Cleaner");
       initializeAndStartThread(cleaner, conf);
+      LOG.info("This HMS instance will act as a Compactor Cleaner.");
     }
   }
 
@@ -10421,4 +10458,5 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     try {return "" + InetAddress.getLocalHost();}
     catch(UnknownHostException uhe) {return "" + uhe;}
   }
+
 }
