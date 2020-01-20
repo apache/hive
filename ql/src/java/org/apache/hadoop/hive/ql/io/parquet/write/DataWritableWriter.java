@@ -44,7 +44,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.GroupType;
-import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.ListLogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.MapLogicalTypeAnnotation;
 import org.apache.parquet.schema.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,12 +143,12 @@ public class DataWritableWriter {
       }
     } else {
       GroupType groupType = type.asGroupType();
-      OriginalType originalType = type.getOriginalType();
+      LogicalTypeAnnotation logicalType = type.getLogicalTypeAnnotation();
 
-      if (originalType != null && originalType.equals(OriginalType.LIST)) {
+      if (logicalType != null && logicalType instanceof ListLogicalTypeAnnotation) {
         checkInspectorCategory(inspector, ObjectInspector.Category.LIST);
         return new ListDataWriter((ListObjectInspector)inspector, groupType);
-      } else if (originalType != null && originalType.equals(OriginalType.MAP)) {
+      } else if (logicalType != null && logicalType instanceof MapLogicalTypeAnnotation) {
         checkInspectorCategory(inspector, ObjectInspector.Category.MAP);
         return new MapDataWriter((MapObjectInspector)inspector, groupType);
       } else {

@@ -32,8 +32,8 @@ import org.apache.parquet.column.page.PageReader;
 import org.apache.parquet.column.values.ValuesReader;
 import org.apache.parquet.column.values.rle.RunLengthBitPackingHybridDecoder;
 import org.apache.parquet.io.ParquetDecodingException;
-import org.apache.parquet.schema.DecimalMetadata;
 import org.apache.parquet.schema.Type;
+import org.apache.parquet.schema.LogicalTypeAnnotation.DecimalLogicalTypeAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -254,8 +254,7 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
    * @param type
    */
   protected void decimalTypeCheck(Type type) {
-    DecimalMetadata decimalMetadata = type.asPrimitiveType().getDecimalMetadata();
-    if (decimalMetadata == null) {
+    if (!(type.getLogicalTypeAnnotation() instanceof DecimalLogicalTypeAnnotation)) {
       throw new UnsupportedOperationException("The underlying Parquet type cannot be able to " +
           "converted to Hive Decimal type: " + type);
     }

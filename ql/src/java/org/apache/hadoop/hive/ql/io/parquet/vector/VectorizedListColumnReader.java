@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReader;
+import org.apache.parquet.schema.LogicalTypeAnnotation.DecimalLogicalTypeAnnotation;
 import org.apache.parquet.schema.Type;
 import java.io.IOException;
 import java.time.ZoneId;
@@ -316,8 +317,9 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
       break;
     case DECIMAL:
       decimalTypeCheck(type);
-      int precision = type.asPrimitiveType().getDecimalMetadata().getPrecision();
-      int scale = type.asPrimitiveType().getDecimalMetadata().getScale();
+      DecimalLogicalTypeAnnotation logicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+      int precision = logicalType.getPrecision();
+      int scale = logicalType.getScale();
       lcv.child = new DecimalColumnVector(total, precision, scale);
       for (int i = 0; i < valueList.size(); i++) {
         ((DecimalColumnVector) lcv.child).vector[i].set(((List<byte[]>) valueList).get(i), scale);
