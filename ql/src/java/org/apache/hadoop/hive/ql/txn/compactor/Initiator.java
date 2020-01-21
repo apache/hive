@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -50,11 +53,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -68,7 +75,7 @@ public class Initiator extends MetaStoreCompactorThread {
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
-  private Map<String, String> tblNameOwnersCache = new HashMap<>();
+  private Executor compactionExecutor;
 
   private long checkInterval;
   private long prevStart = -1;
@@ -101,72 +108,43 @@ public class Initiator extends MetaStoreCompactorThread {
 
           //todo: add method to only get current i.e. skip history - more efficient
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
+
           Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold, compactionInterval)
-                  .stream().filter(ci -> checkCompactionElig(ci)).collect(Collectors.toSet());
+              .stream().filter(ci -> checkCompactionElig(ci, currentCompactions)).collect(Collectors.toSet());
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
+
+          Map<String, String> tblNameOwners = new HashMap<>();
+          List<CompletableFuture> compactionList = new ArrayList<>();
+
+          if (!potentials.isEmpty()) {
+            ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(
+                txnHandler.getOpenTxns(), 0);
+            conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+          }
+
           for (CompactionInfo ci : potentials) {
-            LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
             try {
-
               Table t = resolveTable(ci);
-
-              // Check if we already have initiated or are working on a compaction for this partition
-              // or table.  If so, skip it.  If we are just waiting on cleaning we can still check,
-              // as it may be time to compact again even though we haven't cleaned.
-              //todo: this is not robust.  You can easily run Alter Table to start a compaction between
-              //the time currentCompactions is generated and now
-              if (lookForCurrentCompactions(currentCompactions, ci)) {
-                LOG.debug("Found currently initiated or working compaction for " +
-                    ci.getFullPartitionName() + " so we will not initiate another compaction");
-                continue;
-              }
-              if(txnHandler.checkFailedCompactions(ci)) {
-                LOG.warn("Will not initiate compaction for " + ci.getFullPartitionName() + " since last "
-                  + HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " attempts to compact it failed.");
-                txnHandler.markFailed(ci);
-                continue;
-              }
-
-              // Figure out who we should run the file operations as
               Partition p = resolvePartition(ci);
               if (p == null && ci.partName != null) {
                 LOG.info("Can't find partition " + ci.getFullPartitionName() +
                     ", assuming it has been dropped and moving on.");
                 continue;
               }
-              ValidTxnList validTxnList = TxnCommonUtils
-                  .createValidReadTxnList(txnHandler.getOpenTxns(), 0);
-              conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
-              // The response will have one entry per table and hence we get only one ValidWriteIdList
-              String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
-              GetValidWriteIdsRequest rqst
-                      = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName));
-              rqst.setValidTxnList(validTxnList.writeToString());
-              final ValidWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
-                      txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
-
-              StorageDescriptor sd = resolveStorageDescriptor(t, p);
-              String runAs = tblNameOwnersCache.get(fullTableName);
-              if (runAs == null) {
-                LOG.debug("unable to find the table owner in the cache for table "+ fullTableName + " " +
-                            "will determine user based on table location");
-                runAs = findUserToRunAs(sd.getLocation(), t);
-                tblNameOwnersCache.put(fullTableName, runAs);
-              }
-              /*Future thought: checkForCompaction will check a lot of file metadata and may be expensive.
-              * Long term we should consider having a thread pool here and running checkForCompactionS
-              * in parallel*/
-              CompactionType compactionNeeded
-                      = checkForCompaction(ci, tblValidWriteIds, sd, t.getParameters(), runAs);
-              if (compactionNeeded != null) requestCompaction(ci, runAs, compactionNeeded);
+              String runAs = resolveUserToRunAs(tblNameOwners, t, p);
+              /* checkForCompaction includes many file metadata checks and may be expensive.
+               * Therefore, using a thread pool here and running checkForCompactions in parallel */
+              compactionList.add(CompletableFuture.runAsync(ThrowingRunnable.unchecked(() ->
+                  scheduleCompactionIfRequired(ci, t, p, runAs)), compactionExecutor));
             } catch (Throwable t) {
-              LOG.error("Caught exception while trying to determine if we should compact " +
-                  ci + ".  Marking failed to avoid repeated failures, " +
-                  "" + StringUtils.stringifyException(t));
+              LOG.error("Caught exception while trying to determine if we should compact {}. " +
+                  "Marking failed to avoid repeated failures, {}", ci, t);
               txnHandler.markFailed(ci);
             }
           }
+          CompletableFuture.allOf(compactionList.toArray(new CompletableFuture[0]))
+            .join();
 
           // Check for timed out remote workers.
           recoverFailedCompactions(true);
@@ -187,8 +165,9 @@ public class Initiator extends MetaStoreCompactorThread {
         }
 
         long elapsedTime = System.currentTimeMillis() - startedAt;
-        if (elapsedTime >= checkInterval || stop.get())  continue;
-        else Thread.sleep(checkInterval - elapsedTime);
+        if (elapsedTime < checkInterval && !stop.get()) {
+          Thread.sleep(checkInterval - elapsedTime);
+        }
 
       } while (!stop.get());
     } catch (Throwable t) {
@@ -197,12 +176,62 @@ public class Initiator extends MetaStoreCompactorThread {
     }
   }
 
+  private void scheduleCompactionIfRequired(CompactionInfo ci, Table t, Partition p, String runAs)
+      throws MetaException {
+    StorageDescriptor sd = resolveStorageDescriptor(t, p);
+    try {
+      ValidWriteIdList validWriteIds = resolveValidWriteIds(t);
+      CompactionType type = checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs);
+      if (type != null) {
+        requestCompaction(ci, runAs, type);
+      }
+    } catch (Throwable ex) {
+      LOG.error("Caught exception while trying to determine if we should compact {}. " +
+          "Marking failed to avoid repeated failures, {}", ci, ex);
+      txnHandler.markFailed(ci);
+    }
+  }
+
+  private ValidWriteIdList resolveValidWriteIds(Table t) throws NoSuchTxnException, MetaException {
+    ValidTxnList validTxnList = new ValidReadTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
+    // The response will have one entry per table and hence we get only one ValidWriteIdList
+    String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
+    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName));
+    rqst.setValidTxnList(validTxnList.writeToString());
+
+    return TxnUtils.createValidCompactWriteIdList(
+        txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
+  }
+
+  private String resolveUserToRunAs(Map<String, String> cache, Table t, Partition p)
+      throws IOException, InterruptedException {
+    //Figure out who we should run the file operations as
+    String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
+    StorageDescriptor sd = resolveStorageDescriptor(t, p);
+
+    cache.putIfAbsent(fullTableName, findUserToRunAs(sd.getLocation(), t));
+    return cache.get(fullTableName);
+  }
+
+  private interface ThrowingRunnable<E extends Exception> {
+    void run() throws E;
+
+    static Runnable unchecked(ThrowingRunnable<?> r) {
+      return () -> {
+        try {
+          r.run();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      };
+    }
+  }
 
   @Override
   public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
     super.init(stop, looped);
-    checkInterval =
-        conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS) ;
+    checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
+    compactionExecutor = Executors.newFixedThreadPool(conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE));
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
@@ -393,13 +422,25 @@ public class Initiator extends MetaStoreCompactorThread {
     return false;
   }
 
-  private boolean checkCompactionElig(CompactionInfo ci){
-    Table t = null;
+  private boolean checkCompactionElig(CompactionInfo ci, ShowCompactResponse currentCompactions) {
+    LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
+
+    // Check if we already have initiated or are working on a compaction for this partition
+    // or table. If so, skip it. If we are just waiting on cleaning we can still check,
+    // as it may be time to compact again even though we haven't cleaned.
+    // todo: this is not robust. You can easily run `alter table` to start a compaction between
+    // the time currentCompactions is generated and now
+    if (lookForCurrentCompactions(currentCompactions, ci)) {
+      LOG.debug("Found currently initiated or working compaction for " +
+          ci.getFullPartitionName() + " so we will not initiate another compaction");
+      return false;
+    }
+
     try {
-      t = resolveTable(ci);
+      Table t = resolveTable(ci);
       if (t == null) {
         LOG.info("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
-                "table or has been dropped and moving on.");
+            "table or has been dropped and moving on.");
         return false;
       }
 
@@ -409,17 +450,21 @@ public class Initiator extends MetaStoreCompactorThread {
 
       if (noAutoCompactSet(t)) {
         LOG.info("Table " + tableName(t) + " marked " + hive_metastoreConstants.TABLE_NO_AUTO_COMPACT +
-                "=true so we will not compact it.");
+            "=true so we will not compact it.");
         return false;
-      } else if (replIsCompactionDisabledForTable(t)) {
-        return false;
-      } else if (checkDynPartitioning(t, ci)) {
+      } else if (replIsCompactionDisabledForTable(t) || checkDynPartitioning(t, ci)) {
         return false;
       }
 
+      if (txnHandler.checkFailedCompactions(ci)) {
+        LOG.warn("Will not initiate compaction for " + ci.getFullPartitionName() + " since last " +
+            MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " attempts to compact it failed.");
+        txnHandler.markFailed(ci);
+        return false;
+      }
     } catch (Throwable e) {
-      LOG.error("Caught Exception while checking compactiton eligibility " +
-              StringUtils.stringifyException(e));
+      LOG.error("Caught exception while checking compaction eligibility " +
+          StringUtils.stringifyException(e));
     }
     return true;
   }
