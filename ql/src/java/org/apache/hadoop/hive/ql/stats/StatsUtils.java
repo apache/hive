@@ -1024,7 +1024,7 @@ public class StatsUtils {
       // This table is dummy and has no stats
       return stats;
     }
-    if (fetchColStats) {
+    if (fetchColStats && !colStatsToRetrieve.isEmpty()) {
       try {
         List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
             dbName, tabName, colStatsToRetrieve, false);

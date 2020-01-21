@@ -2565,6 +2565,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames, String engine) throws TException {
+    if(colNames.isEmpty()) {
+      return Collections.emptyList();
+    }
     TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
     rqst.setCatName(catName);
     rqst.setEngine(engine);
@@ -2581,6 +2584,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames, String engine, String validWriteIdList) throws TException {
+    if(colNames.isEmpty()) {
+      return Collections.emptyList();
+    }
     TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
     rqst.setCatName(catName);
     rqst.setEngine(engine);
