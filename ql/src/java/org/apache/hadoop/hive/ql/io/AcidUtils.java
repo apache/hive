@@ -2837,8 +2837,13 @@ public class AcidUtils {
                                                        HiveConf conf) {
     List<LockComponent> lockComponents = new ArrayList<>();
     // For each source to read, get a shared lock
+    boolean skipReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_READ_LOCKS);
     for (ReadEntity input : inputs) {
-      if (input.isDummy() || !input.needsLock() || input.isUpdateOrDelete() || !AcidUtils.needsLock(input)) {
+      if (input.isDummy()
+          || !input.needsLock()
+          || input.isUpdateOrDelete()
+          || !AcidUtils.needsLock(input)
+          || skipReadLock) {
         // We don't want to acquire read locks during update or delete as we'll be acquiring write
         // locks instead. Also, there's no need to lock temp tables since they're session wide
         continue;
