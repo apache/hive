@@ -111,7 +111,7 @@ POSTHOOK: Input: default@table_19
 POSTHOOK: Input: default@table_6
 #### A masked pattern was here ####
 418.9
-Warning: Map Join MAPJOIN[25][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[30][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: SELECT
   t1.t_id,
   null
@@ -120,6 +120,7 @@ PREHOOK: query: SELECT
   JOIN
   (SELECT 'TEST-1' id, 'TEST' r_type UNION ALL SELECT 'TEST-2' id, 'TEST' r_type) t3
   ON (t3.r_type = t1.type and t3.id in ('TEST-1', 'TEST-2'))
+  ORDER BY t1.t_id ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@table_27
@@ -132,6 +133,7 @@ POSTHOOK: query: SELECT
   JOIN
   (SELECT 'TEST-1' id, 'TEST' r_type UNION ALL SELECT 'TEST-2' id, 'TEST' r_type) t3
   ON (t3.r_type = t1.type and t3.id in ('TEST-1', 'TEST-2'))
+  ORDER BY t1.t_id ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@table_27
