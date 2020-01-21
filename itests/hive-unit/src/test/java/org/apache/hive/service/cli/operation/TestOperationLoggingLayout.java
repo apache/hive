@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.log.HushableRandomAccessFileAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppender;
@@ -132,20 +133,45 @@ public class TestOperationLoggingLayout {
     }
   }
 
-  @Test
-  public void testSwitchLogLayout() throws Exception {
+  private void executeWithOperationLog(String query, boolean queryLogEnabled) throws Exception {
     // verify whether the sql operation log is generated and fetch correctly.
-    OperationHandle operationHandle = client.executeStatement(sessionHandle, sqlCntStar, null);
+    OperationHandle operationHandle = client.executeStatement(sessionHandle, query, null);
     RowSet rowSetLog = client.fetchResults(operationHandle, FetchOrientation.FETCH_FIRST, 1000,
-        FetchType.LOG);
-    String queryId = getQueryId(rowSetLog);
-    Assert.assertNotNull("Could not find query id, perhaps a logging message changed", queryId);
+            FetchType.LOG);
+    String queryId = "";
+    boolean expectedStopped = true;
+    if (queryLogEnabled) {
+      queryId = getQueryId(rowSetLog);
+      expectedStopped = false;
+      Assert.assertNotNull("Could not find query id, perhaps a logging message changed", queryId);
+    } else {
+      Assert.assertEquals("Operation log is generated even if query logging is disabled", rowSetLog.numRows(), 0);
+      Assert.assertNull("Query id present even if logging is disabled.", getQueryId(rowSetLog));
+    }
 
-    checkAppenderState("before operation close ", LogDivertAppender.QUERY_ROUTING_APPENDER, queryId, false);
-    checkAppenderState("before operation close ", LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId, false);
+    checkAppenderState("before operation close ", LogDivertAppender.QUERY_ROUTING_APPENDER, queryId, expectedStopped);
+    checkAppenderState("before operation close ", LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId, expectedStopped);
     client.closeOperation(operationHandle);
     checkAppenderState("after operation close ", LogDivertAppender.QUERY_ROUTING_APPENDER, queryId, true);
     checkAppenderState("after operation close ", LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId, true);
+  }
+
+  @Test
+  public void testSwitchLogLayout() throws Exception {
+    executeWithOperationLog(sqlCntStar, true);
+  }
+
+  @Test
+  public void testQueryLogDisabled() throws Exception {
+    OperationHandle operationHandle = client.executeStatement(sessionHandle,
+            "set hive.server2.logging.operation.enabled=false", null);
+    client.closeOperation(operationHandle);
+
+    executeWithOperationLog(sqlCntStar, false);
+
+    operationHandle = client.executeStatement(sessionHandle,
+            "set hive.server2.logging.operation.enabled=true", null);
+    client.closeOperation(operationHandle);
   }
 
   @Test

@@ -219,10 +219,13 @@ public class LogUtils {
    * Register logging context so that log system can print QueryId, SessionId, etc for each message
    */
   public static void registerLoggingContext(Configuration conf) {
-    MDC.put(SESSIONID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVESESSIONID));
-    MDC.put(QUERYID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
+      MDC.put(SESSIONID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVESESSIONID));
+      MDC.put(QUERYID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
       MDC.put(OPERATIONLOG_LEVEL_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL));
+      l4j.info("Thread context registration is done.");
+    } else {
+      l4j.info("Thread context registration is skipped.");
     }
   }
 
@@ -230,7 +233,11 @@ public class LogUtils {
    * Unregister logging context
    */
   public static void unregisterLoggingContext() {
-    MDC.clear();
+    // Remove the keys added, don't use clear, as it may clear all other things which are not intended to be removed.
+    MDC.remove(SESSIONID_LOG_KEY);
+    MDC.remove(QUERYID_LOG_KEY);
+    MDC.remove(OPERATIONLOG_LEVEL_KEY);
+    l4j.info("Unregistered logging context.");
   }
 
   /**
