@@ -579,6 +579,7 @@ public class OrcRecordUpdater implements RecordUpdater {
 
             OrcFile.WriterOptions wo = OrcFile.writerOptions(this.options.getConfiguration())
                 .inspector(rowInspector)
+                .setSchema(createEventSchemaFromTableProperties(this.options.getTableProperties()))
                 .callback(new OrcRecordUpdater.KeyIndexBuilder("testEmpty"));
             OrcFile.createWriter(path, wo).close();
           } else {
