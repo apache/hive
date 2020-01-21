@@ -1545,13 +1545,15 @@ public class ObjectStore implements RawStore, Configurable {
       // performance of this function when called with dbNames="*" and tableNames="*" (fetch all
       // tables in all databases, essentially a full dump)
       pm.getFetchPlan().addGroup(FetchGroups.FETCH_DATABASE_ON_MTABLE);
-      query = pm.newQuery(MTable.class, filterBuilder.toString());
-      Collection<MTable> tables = (Collection<MTable>) query.executeWithArray(parameterVals.toArray(new String[0]));
-      for (MTable table : tables) {
-        TableMeta metaData = new TableMeta(
-            table.getDatabase().getName(), table.getTableName(), table.getTableType());
+      query = pm.newQuery(MTable.class, filterBuilder.toString()) ;
+      query.setResult("database.name, tableName, tableType, parameters.get(\"comment\")");
+      List<Object[]> tables = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[0]));
+      for (Object[] table : tables) {
+        TableMeta metaData = new TableMeta(table[0].toString(), table[1].toString(), table[2].toString());
         metaData.setCatName(catName);
-        metaData.setComments(table.getParameters().get("comment"));
+        if (table[3] != null) {
+          metaData.setComments(table[3].toString());
+        }
         metas.add(metaData);
       }
       commited = commitTransaction();
