@@ -2751,6 +2751,10 @@ public class HiveConf extends Configuration {
         "has had a transaction done on it since the last major compaction. So decreasing this\n" +
         "value will increase the load on the NameNode."),
 
+    HIVE_COMPACTOR_REQUEST_QUEUE("hive.compactor.request.queue", 1,
+        "Enables parallelization of the checkForCompaction operation, that includes many file metadata checks\n" +
+        "and may be expensive"),
+
     HIVE_COMPACTOR_DELTA_NUM_THRESHOLD("hive.compactor.delta.num.threshold", 10,
         "Number of delta directories in a table or partition that will trigger a minor\n" +
         "compaction."),
