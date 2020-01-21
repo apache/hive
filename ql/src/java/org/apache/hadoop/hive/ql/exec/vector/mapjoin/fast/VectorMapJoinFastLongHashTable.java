@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
+import com.google.common.primitives.Longs;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -213,6 +215,41 @@ public abstract class VectorMapJoinFastLongHashTable
     largestNumberOfSteps = newLargestNumberOfSteps;
     resizeThreshold = (int)(logicalHashBucketCount * loadFactor);
     metricExpands++;
+  }
+
+  public void printHastTableKeys() {
+    for (int slot = 0; slot < logicalHashBucketCount; slot++) {
+      int pairIndex = slot * 2;
+      long valueRef = slotPairs[pairIndex];
+      int found = 1;
+      if (valueRef != 0) {
+        long tableKey = slotPairs[pairIndex + 1];
+        LOG.debug("SlotCount: "+ found++ +" HS key: "+ tableKey + " with valueRef: " + valueRef);
+      }
+    }
+  }
+
+  public ArrayList<Long> getHashTablekeys(){
+    ArrayList<Long> toReturn = new ArrayList<>(keysAssigned);
+    for (int slot = 0; slot < logicalHashBucketCount; slot++) {
+      int pairIndex = slot * 2;
+      long valueRef = slotPairs[pairIndex];
+      if (valueRef != 0) {
+        long tableKey = slotPairs[pairIndex + 1];
+        toReturn.add(tableKey);
+      }
+    }
+    return toReturn;
+  }
+
+  public boolean adaptContainsKey(byte[] currentKey) {
+    long key = Longs.fromByteArray(currentKey);
+    return containsKey(key);
+  }
+
+  protected boolean containsKey(long key) {
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
+    return findReadSlot(key, hashCode) != -1;
   }
 
   protected int findReadSlot(long key, long hashCode) {

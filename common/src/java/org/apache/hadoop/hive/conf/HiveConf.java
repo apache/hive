@@ -1756,6 +1756,11 @@ public class HiveConf extends Configuration {
         "use BloomFilter in Hybrid grace hash join to minimize unnecessary spilling."),
     HIVEMAPJOINFULLOUTER("hive.mapjoin.full.outer", true,
         "Whether to use MapJoin for FULL OUTER JOINs."),
+    HIVE_MAPJOIN_PROBEDECODE_ENABLED("hive.mapjoin.probedecode.enabled", false,
+        "Use cached MapJoin hashtable created on the small table side to filter out row columns that are not going\n "+
+            "to be used when reading the large table data. This will result less CPU cycles spent for decoding unused data. "),
+    HIVE_MAPJOIN_PROBEDECODE_COLKEY("hive.mapjoin.probedecode.cachekey", 0, ""
+        + "The Column Key the RecordReader will use to read the hastTable. Operator specific."),
     HIVE_TEST_MAPJOINFULLOUTER_OVERRIDE(
         "hive.test.mapjoin.full.outer.override",
         "none", new StringSet("none", "enable", "disable"),

@@ -270,6 +270,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   protected transient boolean needHashTableSetup;
 
   // The small table hash table for the native vectorized map join operator.
+  // PASS a reference to this!!
   protected transient VectorMapJoinHashTable vectorMapJoinHashTable;
 
   protected transient long batchCounter;
@@ -625,16 +626,18 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   @Override
   protected void completeInitializationOp(Object[] os) throws HiveException {
-    // setup mapJoinTables and serdes
+    // setup mapJoinTables and serdes -- Async Load from cache or Disk if spilled
     super.completeInitializationOp(os);
 
     if (isTestingNoHashTableLoad) {
       return;
     }
 
+    // Probably not needed
     MapJoinTableContainer mapJoinTableContainer =
         mapJoinTables[posSingleVectorMapJoinSmallTable];
 
+    // setup small hashTable here
     setUpHashTable();
   }
 
@@ -844,6 +847,10 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     for (int column = 0; column < batch.numCols; column++) {
       LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator commonSetup " + batchName + "     column " + column + " type " + (batch.cols[column] == null ? "NULL" : batch.cols[column].getClass().getSimpleName()));
     }
+  }
+
+  public VectorMapJoinHashTable getVectorMapJoinHashTable() {
+    return this.vectorMapJoinHashTable;
   }
 
   @Override
