@@ -493,7 +493,7 @@ STAGE PLANS:
                       Statistics: Num rows: 68 Data size: 4352 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
@@ -1532,7 +1532,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
@@ -2595,7 +2595,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: timestamp)
                         Reduce Sink Vectorization:
@@ -3166,7 +3166,7 @@ STAGE PLANS:
                       Statistics: Num rows: 68 Data size: 4352 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
@@ -4205,7 +4205,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
@@ -5268,7 +5268,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: timestamp)
                         Reduce Sink Vectorization:

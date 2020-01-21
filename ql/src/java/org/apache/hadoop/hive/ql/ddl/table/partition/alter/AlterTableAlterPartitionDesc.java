@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.partition;
+package org.apache.hadoop.hive.ql.ddl.table.partition.alter;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;

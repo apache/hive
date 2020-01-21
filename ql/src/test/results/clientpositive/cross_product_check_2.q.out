@@ -282,7 +282,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
@@ -415,7 +415,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
@@ -532,7 +532,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -713,7 +713,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE

@@ -79,7 +79,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 108 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 3 Data size: 108 Basic stats: COMPLETE Column stats: COMPLETE
@@ -163,7 +163,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
-                  null sort order: aaaa
+                  null sort order: zzzz
                   sort order: ++++
                   Statistics: Num rows: 3 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint)
@@ -245,7 +245,7 @@ STAGE PLANS:
               Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: a (type: int), b (type: int), c (type: int)
-                null sort order: aaa
+                null sort order: zzz
                 sort order: +++
                 Map-reduce partition columns: a (type: int)
                 Reduce Sink Vectorization:
@@ -337,7 +337,7 @@ STAGE PLANS:
               Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: a (type: int), b (type: int), c (type: int), d (type: int)
-                null sort order: aaaa
+                null sort order: zzzz
                 sort order: ++++
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator

@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -349,7 +350,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     StringBuilder keyNullOrder = new StringBuilder();
     for (ExprNodeDesc k: keyCols) {
       keyOrder.append("+");
-      keyNullOrder.append("a");
+      keyNullOrder.append(NullOrdering.defaultNullOrder(context.conf).getSign());
     }
     TableDesc keyTableDesc = PlanUtils.getReduceKeyTableDesc(PlanUtils
         .getFieldSchemasFromColumnList(keyCols, "mapjoinkey"), keyOrder.toString(),

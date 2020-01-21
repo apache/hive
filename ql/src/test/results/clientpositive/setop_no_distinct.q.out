@@ -192,12 +192,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n1
 POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-NULL
-NULL
 0
 0
 2
 2
+NULL
+NULL
 PREHOOK: query: select * from a_n1 minus select * from b_n1 minus (select * from a_n1 minus select * from b_n1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n1

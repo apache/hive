@@ -389,7 +389,6 @@ POSTHOOK: query: SELECT test_tinyint, MAX(test_decimal) FROM teradata_binary_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@teradata_binary_table_1mb
 #### A masked pattern was here ####
-NULL	12.00
 -127	3.14
 -6	0.00
 -4	3.14
@@ -399,6 +398,7 @@ NULL	12.00
 5	314000000.00
 7	NULL
 127	0.04
+NULL	12.00
 PREHOOK: query: INSERT OVERWRITE TABLE teradata_binary_table_64kb_insert
 SELECT test_tinyint, test_decimal, test_date, test_timestamp FROM teradata_binary_table_64kb
 PREHOOK: type: QUERY

@@ -687,7 +687,7 @@ STAGE PLANS:
                       Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
@@ -763,16 +763,16 @@ LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
 #### A masked pattern was here ####
+["val_10"]	val_10
 ["val_100"]	val_100
+["val_111"]	val_111
+["val_0"]	val_0
 ["val_103"]	val_103
 ["val_104"]	val_104
 ["val_105"]	val_105
 ["val_11"]	val_11
-["val_114"]	val_114
-["val_118"]	val_118
-["val_0"]	val_0
-["val_10"]	val_10
-["val_111"]	val_111
 ["val_113"]	val_113
+["val_114"]	val_114
 ["val_116"]	val_116
+["val_118"]	val_118
 ["val_119"]	val_119

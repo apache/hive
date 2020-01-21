@@ -272,7 +272,7 @@ STAGE PLANS:
                       Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
@@ -332,9 +332,9 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-5
 0
 2
+5
 PREHOOK: query: select key from srcpartbucket tablesample (bucket 3 out of 4 on key) group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpartbucket
@@ -351,8 +351,8 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-9
 8
+9
 PREHOOK: query: select key from srcpartbucket tablesample (bucket 4 out of 4 on key) group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpartbucket

@@ -541,10 +541,8 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
         outputKeysSize > 0) {
 
       smallTableKeyOuterVectorDeserializeRow =
-          new VectorDeserializeRow<BinarySortableDeserializeRead>(
-              new BinarySortableDeserializeRead(
-                  smallTableKeyTypeInfos,
-                  /* useExternalBuffer */ true));
+          new VectorDeserializeRow<BinarySortableDeserializeRead>(BinarySortableDeserializeRead.with(
+                          smallTableKeyTypeInfos, true, getConf().getKeyTblDesc().getProperties()));
       smallTableKeyOuterVectorDeserializeRow.init(
           allSmallTableKeyColumnNums, allSmallTableKeyColumnIncluded);
     }

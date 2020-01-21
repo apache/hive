@@ -1754,39 +1754,6 @@ public abstract class BaseSemanticAnalyzer {
     return tab;
   }
 
-  protected Partition getPartition(Table table, Map<String, String> partSpec,
-      boolean throwException) throws SemanticException {
-    Partition partition;
-    try {
-      partition = db.getPartition(table, partSpec, false);
-    } catch (Exception e) {
-      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec), e);
-    }
-    if (partition == null && throwException) {
-      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec));
-    }
-    return partition;
-  }
-
-  protected List<Partition> getPartitions(Table table, Map<String, String> partSpec,
-      boolean throwException) throws SemanticException {
-    List<Partition> partitions;
-    try {
-      partitions = partSpec == null ? db.getPartitions(table) :
-          db.getPartitions(table, partSpec);
-    } catch (Exception e) {
-      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec), e);
-    }
-    if (partitions.isEmpty() && throwException) {
-      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec));
-    }
-    return partitions;
-  }
-
-  protected String toMessage(ErrorMsg message, Object detail) {
-    return detail == null ? message.getMsg() : message.getMsg(detail.toString());
-  }
-
   public List<Task<?>> getAllRootTasks() {
     return rootTasks;
   }

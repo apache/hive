@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
+import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -769,6 +770,44 @@ public class TestInitiator extends CompactorTest {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(0, compacts.size());
   }
+
+  @Test
+  public void processCompactionCandidatesInParallel() throws Exception {
+    Table t = newTable("default", "dp", true);
+    List<LockComponent> components = new ArrayList<>();
+
+    for (int i = 0; i < 10; i++) {
+      Partition p = newPartition(t, "part" + (i + 1));
+      addBaseFile(t, p, 20L, 20);
+      addDeltaFile(t, p, 21L, 22L, 2);
+      addDeltaFile(t, p, 23L, 24L, 2);
+
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
+      comp.setTablename("dp");
+      comp.setPartitionname("ds=part" + (i + 1));
+      comp.setOperationType(DataOperationType.UPDATE);
+      components.add(comp);
+    }
+    burnThroughTransactions("default", "dp", 23);
+    long txnid = openTxn();
+
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    Assert.assertEquals(LockState.ACQUIRED, res.getState());
+
+    long writeid = allocateWriteId("default", "dp", txnid);
+    Assert.assertEquals(24, writeid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE, 3);
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(10, compacts.size());
+  }
+
   @Override
   boolean useHive130DeltaDirName() {
     return false;

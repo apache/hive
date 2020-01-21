@@ -117,7 +117,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6144 Data size: 1216372 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: float), _col1 (type: boolean), _col2 (type: double), _col3 (type: string), _col4 (type: tinyint), _col5 (type: int), _col6 (type: timestamp)
-                    null sort order: aaaaaaa
+                    null sort order: zzzzzzz
                     sort order: +++++++
                     Map-reduce partition columns: _col0 (type: float), _col1 (type: boolean), _col2 (type: double), _col3 (type: string), _col4 (type: tinyint), _col5 (type: int), _col6 (type: timestamp)
                     Reduce Sink Vectorization:

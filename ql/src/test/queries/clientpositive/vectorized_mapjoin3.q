@@ -43,7 +43,8 @@ SELECT
   JOIN table_27 t2 ON (t1.t_id = t2.t_id and t1.f_id = t2.f_id)
   JOIN
   (SELECT 'TEST-1' id, 'TEST' r_type UNION ALL SELECT 'TEST-2' id, 'TEST' r_type) t3
-  ON (t3.r_type = t1.type and t3.id in ('TEST-1', 'TEST-2'));
+  ON (t3.r_type = t1.type and t3.id in ('TEST-1', 'TEST-2'))
+  ORDER BY t1.t_id ASC;
 
 set hive.explain.user=false;
 

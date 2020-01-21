@@ -1146,7 +1146,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13503 Data size: 29968544 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: array<string>), _col1 (type: struct<a:string,b:string>)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: array<string>), _col1 (type: struct<a:string,b:string>)
                         Statistics: Num rows: 13503 Data size: 29968544 Basic stats: COMPLETE Column stats: NONE
@@ -1257,7 +1257,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13503 Data size: 4721072 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
@@ -1290,7 +1290,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1341,9 +1341,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 str	_c1
+line3	4501
 line1	4501
 line2	4501
-line3	4501
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct.B, count(val) FROM orc_create_complex_n0 GROUP BY strct.B
 PREHOOK: type: QUERY
@@ -1406,7 +1406,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13503 Data size: 7697400 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
@@ -1439,7 +1439,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1538,7 +1538,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13503 Data size: 46492296 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: map<string,string>), _col2 (type: array<string>), _col3 (type: struct<a:string,b:string>)
-                        null sort order: aaaa
+                        null sort order: zzzz
                         sort order: ++++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: map<string,string>), _col2 (type: array<string>), _col3 (type: struct<a:string,b:string>)
                         Statistics: Num rows: 13503 Data size: 46492296 Basic stats: COMPLETE Column stats: NONE

@@ -212,6 +212,18 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     super.testListPartitionValuesNullTblName();
   }
 
+  @Test(expected = NoSuchObjectException.class)
+  @Override
+  public void testListPartitionNamesNoDb() throws Exception {
+    super.testListPartitionNamesNoDb();
+  }
+
+  @Test
+  @Override
+  public void testListPartitionsAllNoTable() throws Exception {
+    super.testListPartitionsAllNoTable();
+  }
+
   @Test
   public void testListPartitionsByExpr() throws Exception {
     createTable4PartColsParts(getClient());
@@ -262,19 +274,19 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
         null, (short)-1, new ArrayList<>());
   }
 
-  @Test(expected = NoSuchObjectException.class)
+  @Test(expected = MetaException.class)
   public void testListPartitionsByExprNoTbl() throws Exception {
     getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, new byte[] {'f', 'o', 'o'},
         null, (short)-1, new ArrayList<>());
   }
 
-  @Test(expected = NoSuchObjectException.class)
+  @Test(expected = MetaException.class)
   public void testListPartitionsByExprEmptyDbName() throws Exception {
     getClient().listPartitionsByExpr("", TABLE_NAME, new byte[] {'f', 'o', 'o'},
         null, (short)-1, new ArrayList<>());
   }
 
-  @Test(expected = NoSuchObjectException.class)
+  @Test(expected = MetaException.class)
   public void testListPartitionsByExprEmptyTblName() throws Exception {
     createTable3PartCols1Part(getClient());
     getClient().listPartitionsByExpr(DB_NAME, "", new byte[] {'f', 'o', 'o'},

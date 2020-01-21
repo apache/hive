@@ -366,7 +366,7 @@ STAGE PLANS:
                       Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
@@ -791,7 +791,7 @@ STAGE PLANS:
                       Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 196 Data size: 313792 Basic stats: PARTIAL Column stats: PARTIAL
@@ -1213,7 +1213,7 @@ STAGE PLANS:
                       Statistics: Num rows: 117 Data size: 166072 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string), '11' (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), '11' (type: string)
                         Statistics: Num rows: 117 Data size: 166072 Basic stats: PARTIAL Column stats: PARTIAL

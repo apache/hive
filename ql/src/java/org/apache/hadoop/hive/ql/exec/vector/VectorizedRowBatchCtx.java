@@ -348,7 +348,7 @@ public class VectorizedRowBatchCtx {
       final int partitionEndColumnNum = dataColumnCount + partitionColumnCount;
       for (int partitionColumnNum = dataColumnCount; partitionColumnNum < partitionEndColumnNum; partitionColumnNum++) {
         result.cols[partitionColumnNum] =
-            VectorizedBatchUtil.createColumnVector(rowColumnTypeInfos[partitionColumnNum]);
+          createColumnVectorFromRowColumnTypeInfos(partitionColumnNum);
       }
       final int virtualEndColumnNum = partitionEndColumnNum + virtualColumnCount;
       for (int virtualColumnNum = partitionEndColumnNum; virtualColumnNum < virtualEndColumnNum; virtualColumnNum++) {
@@ -527,13 +527,27 @@ public class VectorizedRowBatchCtx {
         break;
 
         case DECIMAL: {
-          DecimalColumnVector dv = (DecimalColumnVector) cols[colIndex];
-          if (value == null) {
-            dv.noNulls = false;
-            dv.isNull[0] = true;
-            dv.isRepeating = true;
+          DataTypePhysicalVariation dataTypePhysicalVariation = rowDataTypePhysicalVariations != null ?
+            rowDataTypePhysicalVariations[colIndex] : DataTypePhysicalVariation.NONE;
+
+          if (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+            Decimal64ColumnVector dv = (Decimal64ColumnVector) cols[colIndex];
+            if (value == null) {
+              dv.noNulls = false;
+              dv.isNull[0] = true;
+              dv.isRepeating = true;
+            } else {
+              dv.fill(((HiveDecimal) value).longValue());
+            }
           } else {
-            dv.fill((HiveDecimal) value);
+            DecimalColumnVector dv = (DecimalColumnVector) cols[colIndex];
+            if (value == null) {
+              dv.noNulls = false;
+              dv.isNull[0] = true;
+              dv.isRepeating = true;
+            } else {
+              dv.fill((HiveDecimal) value);
+            }
           }
         }
         break;

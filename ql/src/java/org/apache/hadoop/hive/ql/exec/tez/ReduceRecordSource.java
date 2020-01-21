@@ -237,6 +237,10 @@ public class ReduceRecordSource implements RecordSource {
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
   }
 
+  public TableDesc getKeyTableDesc() {
+    return keyTableDesc;
+  }
+
   @Override
   public final boolean isGrouped() {
     return vectorized;

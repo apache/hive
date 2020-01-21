@@ -1735,7 +1735,7 @@ STAGE PLANS:
               Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col1 (type: int)
-                null sort order: a
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: _col1 (type: int)
                 Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1749,7 +1749,7 @@ STAGE PLANS:
               Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col1 (type: int)
-                null sort order: a
+                null sort order: z
                 sort order: +
                 Map-reduce partition columns: _col1 (type: int)
                 Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1796,12 +1796,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1_n5
 POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
-NULL	NULL	None	NULL	NULL	NULL
-98	NULL	None	NULL	NULL	NULL
-NULL	NULL	NULL	105	NULL	None
 99	0	Alice	NULL	NULL	NULL
 100	1	Bob	NULL	NULL	NULL
 99	2	Mat	102	2	Del
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
 NULL	NULL	NULL	104	3	Fli
+NULL	NULL	None	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+NULL	NULL	NULL	105	NULL	None

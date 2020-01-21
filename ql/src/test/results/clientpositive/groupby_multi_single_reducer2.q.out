@@ -52,7 +52,7 @@ STAGE PLANS:
               Statistics: Num rows: 332 Data size: 59096 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: substr(key, 1, 1) (type: string), key (type: string)
-                null sort order: aa
+                null sort order: zz
                 sort order: ++
                 Map-reduce partition columns: substr(key, 1, 1) (type: string)
                 Statistics: Num rows: 332 Data size: 59096 Basic stats: COMPLETE Column stats: COMPLETE

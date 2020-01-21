@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import com.google.common.primitives.Longs;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -301,16 +302,14 @@ public abstract class VectorMapJoinFastLongHashTable
         boolean isFullOuter,
         boolean minMaxEnabled,
         HashTableKeyType hashTableKeyType,
-        int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+        int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount, TableDesc tableDesc) {
     super(
         isFullOuter,
         initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     this.hashTableKeyType = hashTableKeyType;
     PrimitiveTypeInfo[] primitiveTypeInfos = { hashTableKeyType.getPrimitiveTypeInfo() };
     keyBinarySortableDeserializeRead =
-        new BinarySortableDeserializeRead(
-            primitiveTypeInfos,
-            /* useExternalBuffer */ false);
+        BinarySortableDeserializeRead.with(primitiveTypeInfos, false, tableDesc.getProperties());
     allocateBucketArray();
     useMinMax = minMaxEnabled;
     min = Long.MAX_VALUE;

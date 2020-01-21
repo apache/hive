@@ -150,7 +150,7 @@ STAGE PLANS:
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
@@ -178,7 +178,7 @@ STAGE PLANS:
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
@@ -206,7 +206,7 @@ STAGE PLANS:
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
@@ -234,7 +234,7 @@ STAGE PLANS:
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
@@ -262,7 +262,7 @@ STAGE PLANS:
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
@@ -503,7 +503,7 @@ STAGE PLANS:
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE

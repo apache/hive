@@ -27,6 +27,7 @@ import java.util.List;
 
 
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -252,7 +253,7 @@ public class TestExecDriver {
     Operator<ReduceSinkDesc> op1 = OperatorFactory.get(ctx, PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("key")),
         Utilities.makeList(getStringColumn("value")), outputColumns, true,
-        -1, 1, -1, AcidUtils.Operation.NOT_ACID));
+        -1, 1, -1, AcidUtils.Operation.NOT_ACID, NullOrdering.NULLS_LAST));
 
     addMapWork(mr, src, "a", op1);
     ReduceWork rWork = new ReduceWork();
@@ -285,7 +286,7 @@ public class TestExecDriver {
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("key")),
         Utilities
         .makeList(getStringColumn("key"), getStringColumn("value")),
-        outputColumns, false, -1, 1, -1, AcidUtils.Operation.NOT_ACID));
+        outputColumns, false, -1, 1, -1, AcidUtils.Operation.NOT_ACID, NullOrdering.NULLS_LAST));
 
     addMapWork(mr, src, "a", op1);
     ReduceWork rWork = new ReduceWork();
@@ -321,14 +322,14 @@ public class TestExecDriver {
     Operator<ReduceSinkDesc> op1 = OperatorFactory.get(ctx, PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("key")),
         Utilities.makeList(getStringColumn("value")), outputColumns, true,
-        Byte.valueOf((byte) 0), 1, -1, AcidUtils.Operation.NOT_ACID));
+        Byte.valueOf((byte) 0), 1, -1, AcidUtils.Operation.NOT_ACID, NullOrdering.NULLS_LAST));
 
     addMapWork(mr, src, "a", op1);
 
     Operator<ReduceSinkDesc> op2 = OperatorFactory.get(ctx, PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("key")),
         Utilities.makeList(getStringColumn("key")), outputColumns, true,
-        Byte.valueOf((byte) 1), Integer.MAX_VALUE, -1, AcidUtils.Operation.NOT_ACID));
+        Byte.valueOf((byte) 1), Integer.MAX_VALUE, -1, AcidUtils.Operation.NOT_ACID, NullOrdering.NULLS_LAST));
 
     addMapWork(mr, src2, "b", op2);
     ReduceWork rWork = new ReduceWork();
@@ -364,7 +365,8 @@ public class TestExecDriver {
     Operator<ReduceSinkDesc> op1 = OperatorFactory.get(ctx, PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("tkey")),
         Utilities.makeList(getStringColumn("tkey"),
-        getStringColumn("tvalue")), outputColumns, false, -1, 1, -1, AcidUtils.Operation.NOT_ACID));
+        getStringColumn("tvalue")), outputColumns, false, -1, 1, -1,
+                AcidUtils.Operation.NOT_ACID, NullOrdering.NULLS_LAST));
 
     Operator<ScriptDesc> op0 = OperatorFactory.get(new ScriptDesc("cat",
         PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
@@ -409,7 +411,7 @@ public class TestExecDriver {
     Operator<ReduceSinkDesc> op0 = OperatorFactory.get(ctx, PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("0")), Utilities
         .makeList(getStringColumn("0"), getStringColumn("1")),
-        outputColumns, false, -1, 1, -1, AcidUtils.Operation.NOT_ACID));
+        outputColumns, false, -1, 1, -1, AcidUtils.Operation.NOT_ACID, NullOrdering.NULLS_LAST));
 
     Operator<SelectDesc> op4 = OperatorFactory.get(new SelectDesc(Utilities
         .makeList(getStringColumn("key"), getStringColumn("value")),
@@ -444,7 +446,8 @@ public class TestExecDriver {
     Operator<ReduceSinkDesc> op1 = OperatorFactory.get(ctx, PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("tkey")),
         Utilities.makeList(getStringColumn("tkey"),
-        getStringColumn("tvalue")), outputColumns, false, -1, 1, -1, AcidUtils.Operation.NOT_ACID));
+        getStringColumn("tvalue")), outputColumns, false, -1, 1, -1,
+                AcidUtils.Operation.NOT_ACID, NullOrdering.NULLS_LAST));
 
     Operator<ScriptDesc> op0 = OperatorFactory.get(new ScriptDesc(
         "\'cat\'", PlanUtils.getDefaultTableDesc("" + Utilities.tabCode,

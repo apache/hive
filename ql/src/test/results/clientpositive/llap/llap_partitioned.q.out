@@ -1986,7 +1986,7 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:csmallint:smallint, 1:cint:int, 2:cbigint:bigint, 3:cfloat:float, 4:cdouble:double, 5:cstring1:string, 6:cchar1:char(255), 7:cvchar1:varchar(255), 8:cboolean1:boolean, 9:cboolean2:boolean, 10:ctinyint:tinyint, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: ctinyint (type: tinyint)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: ctinyint (type: tinyint)
                     Reduce Sink Vectorization:

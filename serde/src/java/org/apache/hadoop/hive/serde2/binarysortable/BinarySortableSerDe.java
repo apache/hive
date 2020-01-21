@@ -180,45 +180,10 @@ public class BinarySortableSerDe extends AbstractSerDe {
       row.add(null);
     }
 
-    // Get the sort order
-    String columnSortOrder = tbl
-        .getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
     columnSortOrderIsDesc = new boolean[columnNames.size()];
-    for (int i = 0; i < columnSortOrderIsDesc.length; i++) {
-      columnSortOrderIsDesc[i] = (columnSortOrder != null && columnSortOrder
-          .charAt(i) == '-');
-    }
-
-    // Null first/last
-    String columnNullOrder = tbl
-        .getProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER);
     columnNullMarker = new byte[columnNames.size()];
     columnNotNullMarker = new byte[columnNames.size()];
-    for (int i = 0; i < columnSortOrderIsDesc.length; i++) {
-      if (columnSortOrderIsDesc[i]) {
-        // Descending
-        if (columnNullOrder != null && columnNullOrder.charAt(i) == 'a') {
-          // Null first
-          columnNullMarker[i] = ONE;
-          columnNotNullMarker[i] = ZERO;
-        } else {
-          // Null last (default for descending order)
-          columnNullMarker[i] = ZERO;
-          columnNotNullMarker[i] = ONE;
-        }
-      } else {
-        // Ascending
-        if (columnNullOrder != null && columnNullOrder.charAt(i) == 'z') {
-          // Null last
-          columnNullMarker[i] = ONE;
-          columnNotNullMarker[i] = ZERO;
-        } else {
-          // Null first (default for ascending order)
-          columnNullMarker[i] = ZERO;
-          columnNotNullMarker[i] = ONE;
-        }
-      }
-    }
+    BinarySortableUtils.fillOrderArrays(tbl, columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
   }
 
   @Override
