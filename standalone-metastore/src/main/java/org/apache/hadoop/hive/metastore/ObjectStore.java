@@ -254,6 +254,7 @@ import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -281,6 +282,8 @@ public class ObjectStore implements RawStore, Configurable {
   */
   private final static AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
   private static final Logger LOG = LoggerFactory.getLogger(ObjectStore.class);
+
+  private static com.google.common.base.Supplier<String> passwordProvider;
 
   private enum TXN_STATUS {
     NO_STATE, OPEN, COMMITED, ROLLBACK
@@ -636,16 +639,18 @@ public class ObjectStore implements RawStore, Configurable {
     */
 
     // Password may no longer be in the conf, use getPassword()
-    try {
-      String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
-      if (org.apache.commons.lang.StringUtils.isNotEmpty(passwd)) {
-        // We can get away with the use of varname here because varname == hiveName for PWD
-        prop.setProperty(ConfVars.PWD.getVarname(), passwd);
+    passwordProvider = passwordProvider != null ? passwordProvider : Suppliers.memoize(() -> {
+      try {
+        return MetastoreConf.getPassword(conf, ConfVars.PWD);
+      } catch (IOException err) {
+        throw new RuntimeException("Error getting metastore password: " + err.getMessage(), err);
       }
-    } catch (IOException err) {
-      throw new RuntimeException("Error getting metastore password: " + err.getMessage(), err);
+    });
+    String passwd = passwordProvider.get();
+    if (org.apache.commons.lang.StringUtils.isNotEmpty(passwd)) {
+      // We can get away with the use of varname here because varname == hiveName for PWD
+      prop.setProperty(ConfVars.PWD.getVarname(), passwd);
     }
-
     if (LOG.isDebugEnabled()) {
       for (Entry<Object, Object> e : prop.entrySet()) {
         if (MetastoreConf.isPrintable(e.getKey().toString())) {
