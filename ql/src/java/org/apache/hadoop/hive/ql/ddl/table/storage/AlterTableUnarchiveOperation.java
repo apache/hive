@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage;
 
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
@@ -282,8 +283,9 @@ public class AlterTableUnarchiveOperation extends DDLOperation<AlterTableUnarchi
 
   private void deleteIntermediateArchivedDir(Table table, Path intermediateArchivedDir) throws HiveException {
     if (HdfsUtils.pathExists(intermediateArchivedDir, context.getConf())) {
-      AlterTableArchiveUtils.deleteDir(intermediateArchivedDir, context.getDb().getDatabase(table.getDbName()),
-          context.getConf());
+      AlterTableArchiveUtils.deleteDir(intermediateArchivedDir,
+              ReplChangeManager.shouldEnableCm(context.getDb().getDatabase(table.getDbName()), table.getTTable()),
+              context.getConf());
     }
   }
 }

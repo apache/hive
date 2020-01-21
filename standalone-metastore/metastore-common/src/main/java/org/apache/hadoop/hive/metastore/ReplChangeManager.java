@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,13 +35,20 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.hdfs.protocol.EncryptionZone;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsEncryptionShim;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +58,8 @@ public class ReplChangeManager {
 
   private static boolean inited = false;
   private static boolean enabled = false;
-  private static Path cmroot;
+  private static Map<String, Path> cmRootForEncryptionZone = new HashMap<>();
+  private static HadoopShims hadoopShims = ShimLoader.getHadoopShims();
   private static Configuration conf;
   private String msUser;
   private String msGroup;
@@ -61,6 +70,7 @@ public class ReplChangeManager {
   public static final String SOURCE_OF_REPLICATION = "repl.source.for";
   private static final String TXN_WRITE_EVENT_FILE_SEPARATOR = "]";
   static final String CM_THREAD_NAME_PREFIX = "cmclearer-";
+  private static final String NO_ENCRYPTION = "noEncryption";
 
   public enum RecycleType {
     MOVE,
@@ -138,15 +148,18 @@ public class ReplChangeManager {
       if (!inited) {
         if (MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED)) {
           ReplChangeManager.enabled = true;
-          ReplChangeManager.cmroot = new Path(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR));
           ReplChangeManager.conf = conf;
 
+          //Create default cm root
+          Path cmroot = new Path(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR));
           FileSystem cmFs = cmroot.getFileSystem(conf);
           // Create cmroot with permission 700 if not exist
           if (!cmFs.exists(cmroot)) {
             cmFs.mkdirs(cmroot);
             cmFs.setPermission(cmroot, new FsPermission("700"));
           }
+          cmRootForEncryptionZone.put(NO_ENCRYPTION, cmroot);
+
           UserGroupInformation usergroupInfo = UserGroupInformation.getCurrentUser();
           msUser = usergroupInfo.getShortUserName();
           msGroup = usergroupInfo.getPrimaryGroupName();
@@ -194,7 +207,7 @@ public class ReplChangeManager {
       }
     } else {
       String fileCheckSum = checksumFor(path, fs);
-      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum, cmroot.toString());
+      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum, getCmRoot(path).toString());
 
       // set timestamp before moving to cmroot, so we can
       // avoid race condition CM remove the file before setting
@@ -361,9 +374,10 @@ public class ReplChangeManager {
       throw new IllegalStateException("Uninitialized ReplChangeManager instance.");
     }
     String encodedUri = fileUriStr;
-    if ((fileChecksum != null) && (cmroot != null)) {
+    Path cmRoot = getCmRoot(new Path(fileUriStr));
+    if ((fileChecksum != null) && (cmRoot != null)) {
       encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum
-              + URI_FRAGMENT_SEPARATOR + FileUtils.makeQualified(cmroot, conf);
+              + URI_FRAGMENT_SEPARATOR + FileUtils.makeQualified(cmRoot, conf);
     } else {
       encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + URI_FRAGMENT_SEPARATOR;
     }
@@ -467,6 +481,11 @@ public class ReplChangeManager {
     }
   }
 
+  public static boolean shouldEnableCm(Database db, Table table) {
+    assert (table != null);
+    return isSourceOfReplication(db) && !MetaStoreUtils.isExternalTable(table);
+  }
+
   public static boolean isSourceOfReplication(Database db) {
     assert (db != null);
     String replPolicyIds = getReplPolicyIdString(db);
@@ -492,5 +511,28 @@ public class ReplChangeManager {
 
   public static String[] getListFromSeparatedString(String commaSeparatedString) {
     return commaSeparatedString.split("\\s*" + TXN_WRITE_EVENT_FILE_SEPARATOR + "\\s*");
+  }
+
+  private static Path getCmRoot(Path path) throws IOException {
+    Path cmroot = null;
+    HdfsEncryptionShim pathEncryptionShim = hadoopShims.createHdfsEncryptionShim(path.getFileSystem(conf), conf);
+    if (!pathEncryptionShim.isPathEncrypted(path)) {
+      cmroot = cmRootForEncryptionZone.get(NO_ENCRYPTION);
+    } else {
+      EncryptionZone encryptionZone = pathEncryptionShim.getEncryptionZoneForPath(path);
+      cmroot = cmRootForEncryptionZone.get(encryptionZone.getPath());
+      if (cmroot == null) {
+        cmroot = new Path(path.getFileSystem(conf).getUri() + encryptionZone.getPath()
+                + new Path(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR)).toUri().getPath());
+        FileSystem cmFs = cmroot.getFileSystem(conf);
+        // Create cmroot with permission 700 if not exist
+        if (!cmFs.exists(cmroot)) {
+          cmFs.mkdirs(cmroot);
+          cmFs.setPermission(cmroot, new FsPermission("700"));
+        }
+        cmRootForEncryptionZone.put(encryptionZone.getPath(), cmroot);
+      }
+    }
+    return cmroot;
   }
 }

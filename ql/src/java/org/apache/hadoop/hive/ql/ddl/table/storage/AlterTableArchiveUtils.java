@@ -95,10 +95,10 @@ final class AlterTableArchiveUtils {
     return new Path(dir.getParent(), dir.getName() + intermediateDirSuffix);
   }
 
-  static void deleteDir(Path dir, Database db, Configuration conf) throws HiveException {
+  static void deleteDir(Path dir, boolean shouldEnableCm, Configuration conf) throws HiveException {
     try {
       Warehouse wh = new Warehouse(conf);
-      wh.deleteDir(dir, true, db);
+      wh.deleteDir(dir, true, false, shouldEnableCm);
     } catch (MetaException e) {
       throw new HiveException(e);
     }
