@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.llap.io.api.impl;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -41,8 +42,12 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.SchemaEvolutionFactory;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
+import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinCommonOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
@@ -53,7 +58,10 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.Reader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -104,6 +112,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final ExecutorService executor;
   private final boolean isAcidScan;
   private final boolean isAcidFormat;
+  private final boolean probeDecodeEnabled;
 
   /**
    * Creates the record reader and checks the input-specific compatibility.
@@ -173,6 +182,9 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     LOG.info("Queue limit for LlapRecordReader is " + limit);
     this.queue = new ArrayBlockingQueue<>(limit);
 
+    this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_MAPJOIN_PROBEDECODE_ENABLED);
+    LOG.info("LlapRecordReader ProbeDecode enabled is {}", this.probeDecodeEnabled);
+
 
     int partitionColumnCount = rbCtx.getPartitionColumnCount();
     if (partitionColumnCount > 0) {
@@ -195,9 +207,62 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     this.includes = new IncludesImpl(tableIncludedCols, isAcidFormat, rbCtx,
         schema, job, isAcidScan && acidReader.includeAcidColumns());
 
+    if (this.probeDecodeEnabled) {
+      this.includes.setProbeDecodeCacheKey(getProbeDecodeHashTable(mapWork, job));
+    }
+
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     feedback = rp = cvp.createReadPipeline(this, split, includes, sarg, counters, includes,
         sourceInputFormat, sourceSerDe, reporter, job, mapWork.getPathToPartitionInfo());
+  }
+
+  private static String getProbeDecodeHashTable(MapWork mapWork, JobConf job) {
+    Stack<Operator<?>> opStack = new Stack<>();
+    // Children BFS
+    opStack.addAll(mapWork.getWorks());
+    String mjCacheKey = null;
+    while (!opStack.empty()) {
+      Operator<?> op = opStack.pop();
+      if (op instanceof MapJoinOperator && noDynamicPruningMapJoin(op) && validProbeDecodeMapJoin(op)) {
+        VectorMapJoinCommonOperator vop = (VectorMapJoinCommonOperator) op;
+        // Following MapJoinOperator cache key definition
+        mjCacheKey = vop.getCacheKey() != null ? vop.getCacheKey(): MapJoinDesc.generateCacheKey(op.getOperatorId());
+        int colIndex = ((VectorMapJoinDesc)((VectorMapJoinCommonOperator) op).getVectorDesc()).getVectorMapJoinInfo().getBigTableKeyColumnMap()[0];
+        job.setInt(ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLKEY.varname, colIndex);
+        LOG.info("ProbeDecode found MapJoin op {}  with CacheKey {} MapJoin ColID {} and ColName {}", op.getName(), mjCacheKey,
+            colIndex, vop.getInputVectorizationContext().getInitialColumnNames().get(colIndex));
+        break;
+      }
+      if (op.getChildOperators() != null) {
+        opStack.addAll(op.getChildOperators());
+      }
+    }
+    return mjCacheKey;
+  }
+
+  // Is Single Key MapJoin
+  private static boolean validProbeDecodeMapJoin(Operator mapJoinOp) {
+    return mapJoinOp instanceof VectorMapJoinCommonOperator &&
+        ((VectorMapJoinDesc)((VectorMapJoinCommonOperator) mapJoinOp).getVectorDesc()).getVectorMapJoinInfo().getBigTableKeyColumnMap().length == 1;
+
+  }
+  // Is NOT a MapJoin with Dynamic Pruning
+  private static boolean noDynamicPruningMapJoin(Operator mapJoinOp) {
+    Stack<Operator<?>> opStack = new Stack<>();
+    // Children BFS
+    opStack.addAll(mapJoinOp.getChildOperators());
+    while (!opStack.empty()) {
+      Operator<?> op = opStack.pop();
+      // Check if there is a Dynamic Partitioning Event involved
+      if (op instanceof AppMasterEventOperator && op.getConf() instanceof DynamicPruningEventDesc) {
+        // found dynamic partition pruning operator
+        return false;
+      }
+      if (op.getChildOperators() != null) {
+        opStack.addAll(op.getChildOperators());
+      }
+    }
+    return true;
   }
 
   private static int getQueueVar(ConfVars var, JobConf jobConf, Configuration daemonConf) {
@@ -627,6 +692,9 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     private TypeDescription readerSchema;
     private JobConf jobConf;
 
+    // ProbeDecode HashTable ref
+    private String probeDecodeOpCacheKey;
+
     public IncludesImpl(List<Integer> tableIncludedCols, boolean isAcidScan,
         VectorizedRowBatchCtx rbCtx, TypeDescription readerSchema,
         JobConf jobConf, boolean includeAcidColumns) {
@@ -644,7 +712,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           tableIncludedCols.add(i);
         }
       }
-      LOG.debug("Logical table includes: {}", tableIncludedCols);
       this.readerLogicalColumnIds = tableIncludedCols;
       // Note: schema evolution currently does not support column index changes.
       //       So, the indices should line up... to be fixed in SE v2?
@@ -681,6 +748,20 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
  
       this.filePhysicalColumnIds = filePhysicalColumnIds;
       this.includeAcidColumns = includeAcidColumns;
+    }
+
+    public void setProbeDecodeCacheKey(String probeDecodeOpCacheKey) {
+      this.probeDecodeOpCacheKey = probeDecodeOpCacheKey;
+    }
+
+    @Override
+    public String getProbeDecodeCacheKey() {
+      return this.probeDecodeOpCacheKey;
+    }
+
+    @Override
+    public JobConf getJobConf() {
+      return jobConf;
     }
 
     @Override
