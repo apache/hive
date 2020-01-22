@@ -87,7 +87,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   // SELECT count(*) FROM t).
   private List<Integer> neededColumnIDs;
   private List<String> neededColumns;
-  private List<String> neededNestedColumnPaths;
+  private List<String> neededNestedColumnPaths = new ArrayList<String>();
 
   // all column names referenced including virtual columns. used in ColumnAccessAnalyzer
   private transient List<String> referencedColumns;
