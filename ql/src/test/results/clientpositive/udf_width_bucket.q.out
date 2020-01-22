@@ -627,13 +627,13 @@ POSTHOOK: query: select c1, c2, width_bucket(5, c1, 10, case when grouping(c2) =
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testgroupingsets
 #### A masked pattern was here ####
-NULL	NULL	NULL
+1	1	5
+1	NULL	3
+2	2	4
+2	NULL	2
 NULL	1	NULL
 NULL	2	NULL
-1	NULL	3
-1	1	5
-2	NULL	2
-2	2	4
+NULL	NULL	NULL
 PREHOOK: query: drop table alldecimaltype
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table alldecimaltype

@@ -100,7 +100,7 @@ STAGE PLANS:
                     Statistics: Num rows: 66 Data size: 26560 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 66 Data size: 26560 Basic stats: PARTIAL Column stats: NONE
@@ -176,7 +176,7 @@ STAGE PLANS:
                     Statistics: Num rows: 66 Data size: 38352 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 66 Data size: 38352 Basic stats: PARTIAL Column stats: NONE

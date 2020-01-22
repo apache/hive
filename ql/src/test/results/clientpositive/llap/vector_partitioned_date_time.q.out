@@ -493,7 +493,7 @@ STAGE PLANS:
                       Statistics: Num rows: 68 Data size: 4352 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
@@ -1532,7 +1532,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
@@ -2595,7 +2595,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: timestamp)
                         Reduce Sink Vectorization:
@@ -3166,7 +3166,7 @@ STAGE PLANS:
                       Statistics: Num rows: 68 Data size: 4352 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
@@ -4177,7 +4177,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_parquet_partitioned_date
-                  Statistics: Num rows: 137 Data size: 13861 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 137 Data size: 12198 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -4187,7 +4187,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                    Statistics: Num rows: 137 Data size: 13861 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 137 Data size: 12198 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -4205,7 +4205,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: date)
                         Reduce Sink Vectorization:
@@ -5240,7 +5240,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_parquet_partitioned_timestamp
-                  Statistics: Num rows: 137 Data size: 11189 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 137 Data size: 9911 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -5250,7 +5250,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                    Statistics: Num rows: 137 Data size: 11189 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 137 Data size: 9911 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -5268,7 +5268,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: timestamp)
                         Reduce Sink Vectorization:

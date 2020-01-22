@@ -57,7 +57,7 @@ STAGE PLANS:
                       Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
@@ -78,7 +78,7 @@ STAGE PLANS:
                       Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
@@ -99,7 +99,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -128,7 +128,7 @@ STAGE PLANS:
                   Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -142,7 +142,7 @@ STAGE PLANS:
                 Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -202,47 +202,47 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
+val_273	273	val_273
+val_401	401	val_401
+val_401	401	val_401
+val_409	409	val_409
+val_401	401	val_401
+val_401	401	val_401
+val_273	273	val_273
+val_409	409	val_409
+val_165	165	val_165
+val_311	311	val_311
+val_311	311	val_311
+val_273	273	val_273
+val_401	401	val_401
+val_484	484	val_484
+val_409	409	val_409
+val_165	165	val_165
+val_27	27	val_27
+val_311	311	val_311
 val_146	146	val_146
 val_406	406	val_406
+val_265	265	val_265
+val_255	255	val_255
 val_406	406	val_406
-val_409	409	val_409
 val_406	406	val_406
+val_193	193	val_193
 val_238	238	val_238
-val_409	409	val_409
+val_98	98	val_98
 val_278	278	val_278
 val_213	213	val_213
+val_193	193	val_193
 val_406	406	val_406
 val_146	146	val_146
 val_213	213	val_213
 val_66	66	val_66
 val_150	150	val_150
+val_193	193	val_193
+val_265	265	val_265
+val_98	98	val_98
 val_278	278	val_278
-val_409	409	val_409
+val_255	255	val_255
 val_238	238	val_238
-val_273	273	val_273
-val_401	401	val_401
-val_265	265	val_265
-val_255	255	val_255
-val_401	401	val_401
-val_193	193	val_193
-val_401	401	val_401
-val_401	401	val_401
-val_273	273	val_273
-val_98	98	val_98
-val_165	165	val_165
-val_311	311	val_311
-val_311	311	val_311
-val_193	193	val_193
-val_273	273	val_273
-val_401	401	val_401
-val_193	193	val_193
-val_265	265	val_265
-val_484	484	val_484
-val_98	98	val_98
-val_255	255	val_255
-val_165	165	val_165
-val_27	27	val_27
-val_311	311	val_311
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM src
@@ -302,7 +302,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -324,7 +324,7 @@ STAGE PLANS:
                       Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
@@ -345,7 +345,7 @@ STAGE PLANS:
                       Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
@@ -394,7 +394,7 @@ STAGE PLANS:
                   Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -408,7 +408,7 @@ STAGE PLANS:
                 Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -447,44 +447,44 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
+273	val_273	val_273
+401	val_401	val_401
+401	val_401	val_401
+409	val_409	val_409
+401	val_401	val_401
+401	val_401	val_401
+273	val_273	val_273
+409	val_409	val_409
+165	val_165	val_165
+311	val_311	val_311
+311	val_311	val_311
+273	val_273	val_273
+401	val_401	val_401
+484	val_484	val_484
+409	val_409	val_409
+165	val_165	val_165
+27	val_27	val_27
+311	val_311	val_311
 146	val_146	val_146
 406	val_406	val_406
+265	val_265	val_265
+255	val_255	val_255
 406	val_406	val_406
-409	val_409	val_409
 406	val_406	val_406
+193	val_193	val_193
 238	val_238	val_238
-409	val_409	val_409
+98	val_98	val_98
 278	val_278	val_278
 213	val_213	val_213
+193	val_193	val_193
 406	val_406	val_406
 146	val_146	val_146
 213	val_213	val_213
 66	val_66	val_66
 150	val_150	val_150
+193	val_193	val_193
+265	val_265	val_265
+98	val_98	val_98
 278	val_278	val_278
-409	val_409	val_409
+255	val_255	val_255
 238	val_238	val_238
-273	val_273	val_273
-401	val_401	val_401
-265	val_265	val_265
-255	val_255	val_255
-401	val_401	val_401
-193	val_193	val_193
-401	val_401	val_401
-401	val_401	val_401
-273	val_273	val_273
-98	val_98	val_98
-165	val_165	val_165
-311	val_311	val_311
-311	val_311	val_311
-193	val_193	val_193
-273	val_273	val_273
-401	val_401	val_401
-193	val_193	val_193
-265	val_265	val_265
-484	val_484	val_484
-98	val_98	val_98
-255	val_255	val_255
-165	val_165	val_165
-27	val_27	val_27
-311	val_311	val_311

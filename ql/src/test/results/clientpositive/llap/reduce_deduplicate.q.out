@@ -430,7 +430,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 3142 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: '2010-03-29' (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: '2010-03-29' (type: string)
                         Statistics: Num rows: 1 Data size: 3142 Basic stats: COMPLETE Column stats: PARTIAL

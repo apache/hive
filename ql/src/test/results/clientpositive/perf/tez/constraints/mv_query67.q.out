@@ -488,3 +488,506 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=
               HiveProject(i_item_sk=[$0], i_brand=[$8], i_class=[$10], i_category=[$12], i_product_name=[$21])
                 HiveTableScan(table=[[default, item]], table:alias=[item])
 
+PREHOOK: query: DROP MATERIALIZED VIEW `my_materialized_view_n100`
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@my_materialized_view_n100
+PREHOOK: Output: default@my_materialized_view_n100
+POSTHOOK: query: DROP MATERIALIZED VIEW `my_materialized_view_n100`
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@my_materialized_view_n100
+POSTHOOK: Output: default@my_materialized_view_n100
+PREHOOK: query: CREATE MATERIALIZED VIEW `my_materialized_view_n101` AS
+select i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy, s_store_id, coalesce(ss_sales_price*ss_quantity,0) sumsales
+from store_sales, date_dim, store, item
+where  ss_sold_date_sk=d_date_sk
+    and ss_item_sk=i_item_sk
+    and ss_store_sk = s_store_sk
+    and d_month_seq between 1212 and 1212+11
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: database:default
+PREHOOK: Output: default@my_materialized_view_n101
+POSTHOOK: query: CREATE MATERIALIZED VIEW `my_materialized_view_n101` AS
+select i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy, s_store_id, coalesce(ss_sales_price*ss_quantity,0) sumsales
+from store_sales, date_dim, store, item
+where  ss_sold_date_sk=d_date_sk
+    and ss_item_sk=i_item_sk
+    and ss_store_sk = s_store_sk
+    and d_month_seq between 1212 and 1212+11
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@my_materialized_view_n101
+PREHOOK: query: explain cbo
+select  *
+from
+(select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,coalesce(ss_sales_price*ss_quantity,0) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11) dw1
+) dw2
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@my_materialized_view_n101
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  *
+from
+(select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,coalesce(ss_sales_price*ss_quantity,0) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11) dw1
+) dw2
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@my_materialized_view_n101
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
+  HiveProject(i_category=[$0], i_class=[$1], i_brand=[$2], i_product_name=[$3], d_year=[$4], d_qoy=[$5], d_moy=[$6], s_store_id=[CAST($7):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" NOT NULL], sumsales=[$8], $f9=[rank() OVER (PARTITION BY $0 ORDER BY $8 DESC NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)])
+    HiveTableScan(table=[[default, my_materialized_view_n101]], table:alias=[default.my_materialized_view_n101])
+
+PREHOOK: query: DROP MATERIALIZED VIEW `my_materialized_view_n101`
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@my_materialized_view_n101
+PREHOOK: Output: default@my_materialized_view_n101
+POSTHOOK: query: DROP MATERIALIZED VIEW `my_materialized_view_n101`
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@my_materialized_view_n101
+POSTHOOK: Output: default@my_materialized_view_n101
+PREHOOK: query: CREATE MATERIALIZED VIEW `my_materialized_view_n102` AS
+select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,coalesce(ss_sales_price*ss_quantity,0) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11) dw1
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: database:default
+PREHOOK: Output: default@my_materialized_view_n102
+POSTHOOK: query: CREATE MATERIALIZED VIEW `my_materialized_view_n102` AS
+select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,coalesce(ss_sales_price*ss_quantity,0) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11) dw1
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@my_materialized_view_n102
+PREHOOK: query: explain cbo
+select  *
+from
+(select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,coalesce(ss_sales_price*ss_quantity,0) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11) dw1
+) dw2
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@my_materialized_view_n102
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  *
+from
+(select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,coalesce(ss_sales_price*ss_quantity,0) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11) dw1
+) dw2
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@my_materialized_view_n102
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
+  HiveProject(i_category=[$0], i_class=[$1], i_brand=[$2], i_product_name=[$3], d_year=[$4], d_qoy=[$5], d_moy=[$6], s_store_id=[CAST($7):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" NOT NULL], sumsales=[$8], $f9=[rank() OVER (PARTITION BY $0 ORDER BY $8 DESC NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)])
+    HiveTableScan(table=[[default, my_materialized_view_n102]], table:alias=[default.my_materialized_view_n102])
+
+PREHOOK: query: DROP MATERIALIZED VIEW `my_materialized_view_n102`
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@my_materialized_view_n102
+PREHOOK: Output: default@my_materialized_view_n102
+POSTHOOK: query: DROP MATERIALIZED VIEW `my_materialized_view_n102`
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@my_materialized_view_n102
+POSTHOOK: Output: default@my_materialized_view_n102
+PREHOOK: query: CREATE MATERIALIZED VIEW `my_materialized_view_n103` AS
+select  *
+from (select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11
+       group by i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id)dw1) dw2
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: database:default
+PREHOOK: Output: default@my_materialized_view_n103
+POSTHOOK: query: CREATE MATERIALIZED VIEW `my_materialized_view_n103` AS
+select  *
+from (select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11
+       group by i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id)dw1) dw2
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@my_materialized_view_n103
+PREHOOK: query: explain cbo
+select  *
+from (select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11
+       group by i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id)dw1) dw2
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@my_materialized_view_n103
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  *
+from (select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11
+       group by i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id)dw1) dw2
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@my_materialized_view_n103
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
+  HiveProject(i_category=[$0], i_class=[$1], i_brand=[$2], i_product_name=[$3], d_year=[$4], d_qoy=[$5], d_moy=[$6], s_store_id=[CAST($7):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" NOT NULL], sumsales=[$8], $f9=[rank() OVER (PARTITION BY $0 ORDER BY $8 DESC NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)])
+    HiveTableScan(table=[[default, my_materialized_view_n103]], table:alias=[default.my_materialized_view_n103])
+

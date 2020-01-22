@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -1267,8 +1268,11 @@ public final class ConstantPropagateProcFactory {
       }
       FileSinkDesc fsdesc = op.getConf();
       DynamicPartitionCtx dpCtx = fsdesc.getDynPartCtx();
-      if (dpCtx != null) {
 
+      // HIVE-22595: For Avro tables with external schema URL, Utilities.getDPColOffset() gives
+      // wrong results unless AvroSerDe.initialize() is called to update the table properties.
+      // To be safe just disable this check for Avro tables.
+      if (dpCtx != null && fsdesc.getTableInfo().getSerdeClassName().equals(AvroSerDe.class.getName())) {
         // Assume only 1 parent for FS operator
         Operator<? extends Serializable> parent = op.getParentOperators().get(0);
         Map<ColumnInfo, ExprNodeDesc> parentConstants = cppCtx.getPropagatedConstants(parent);
@@ -1448,11 +1452,16 @@ public final class ConstantPropagateProcFactory {
       // Note: the following code (removing folded constants in exprs) is deeply coupled with
       //    ColumnPruner optimizer.
       // Assuming ColumnPrunner will remove constant columns so we don't deal with output columns.
-      //    Except one case that the join operator is followed by a redistribution (RS operator).
-      if (op.getChildOperators().size() == 1
-          && op.getChildOperators().get(0) instanceof ReduceSinkOperator) {
-        LOG.debug("Skip JOIN-RS structure.");
-        return null;
+      //    Except one case that the join operator is followed by a redistribution (RS operator) -- skipping filter ops
+      if (op.getChildOperators().size() == 1) {
+        Node ndRecursive = op;
+        while (ndRecursive.getChildren().size() == 1 && ndRecursive.getChildren().get(0) instanceof FilterOperator) {
+          ndRecursive = ndRecursive.getChildren().get(0);
+        }
+        if (ndRecursive.getChildren().get(0) instanceof ReduceSinkOperator) {
+          LOG.debug("Skip JOIN-FIL(*)-RS structure.");
+          return null;
+        }
       }
       if (LOG.isInfoEnabled()) {
         LOG.info("Old exprs " + conf.getExprs());

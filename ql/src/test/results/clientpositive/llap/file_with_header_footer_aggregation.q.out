@@ -102,8 +102,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 8.0
-16.5
 4.333333333333333
+16.5
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM header_footer_table_4 A, header_footer_table_4 B ORDER BY A.header_int, B.header_int
 PREHOOK: type: QUERY
@@ -205,7 +205,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-NULL	NULL
 faith	1
 NULL	NULL
 barry	3
@@ -218,6 +217,7 @@ derek	9
 NULL	NULL
 ethan	11
 alex	12
+NULL	NULL
 PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 INNER JOIN numbrs ON numbr = header_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -245,7 +245,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-NULL	NULL
 faith	1
 NULL	NULL
 barry	3
@@ -259,6 +258,7 @@ NULL	NULL
 ethan	11
 alex	12
 yves	21
+NULL	NULL
 PREHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -268,8 +268,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 monthly	24
-daily	33
 yearly	13
+daily	33
 PREHOOK: query: SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -279,8 +279,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 monthly	24
-daily	33
 yearly	13
+daily	33
 PREHOOK: query: SELECT header_name, header_choice FROM header_footer_table_4 ORDER BY header_int LIMIT 8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -521,8 +521,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 8.0
-16.5
 4.333333333333333
+16.5
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM header_footer_table_4 A, header_footer_table_4 B ORDER BY A.header_int, B.header_int
 PREHOOK: type: QUERY
@@ -624,7 +624,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-NULL	NULL
 faith	1
 NULL	NULL
 barry	3
@@ -637,6 +636,7 @@ derek	9
 NULL	NULL
 ethan	11
 alex	12
+NULL	NULL
 PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 INNER JOIN numbrs ON numbr = header_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -664,7 +664,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-NULL	NULL
 faith	1
 NULL	NULL
 barry	3
@@ -678,6 +677,7 @@ NULL	NULL
 ethan	11
 alex	12
 yves	21
+NULL	NULL
 PREHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -687,8 +687,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 monthly	24
-daily	33
 yearly	13
+daily	33
 PREHOOK: query: SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -698,8 +698,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 monthly	24
-daily	33
 yearly	13
+daily	33
 PREHOOK: query: SELECT header_name, header_choice FROM header_footer_table_4 ORDER BY header_int LIMIT 8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4

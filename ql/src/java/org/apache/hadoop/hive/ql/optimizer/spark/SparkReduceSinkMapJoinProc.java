@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -212,7 +213,7 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
     StringBuilder keyNullOrder = new StringBuilder();
     for (int i = 0; i < keyCols.size(); i++) {
       keyOrder.append("+");
-      keyNullOrder.append("a");
+      keyNullOrder.append(NullOrdering.defaultNullOrder(context.conf));
     }
     TableDesc keyTableDesc = PlanUtils.getReduceKeyTableDesc(PlanUtils
         .getFieldSchemasFromColumnList(keyCols, "mapjoinkey"), keyOrder.toString(),

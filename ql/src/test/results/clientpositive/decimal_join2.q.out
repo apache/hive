@@ -72,7 +72,7 @@ STAGE PLANS:
                 Statistics: Num rows: 37 Data size: 4292 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(38,18))
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(38,18))
                   Statistics: Num rows: 37 Data size: 4292 Basic stats: COMPLETE Column stats: COMPLETE
@@ -90,7 +90,7 @@ STAGE PLANS:
                 Statistics: Num rows: 37 Data size: 4292 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(38,18))
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(38,18))
                   Statistics: Num rows: 37 Data size: 4292 Basic stats: COMPLETE Column stats: COMPLETE

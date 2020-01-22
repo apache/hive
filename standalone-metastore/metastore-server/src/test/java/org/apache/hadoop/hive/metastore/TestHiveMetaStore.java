@@ -2352,7 +2352,7 @@ public abstract class TestHiveMetaStore {
     }
     assertNotNull(me);
     assertTrue("NoSuchObject exception", me.getMessage().contains(
-          "invDBName.invTableName table not found"));
+          "Specified catalog.database.table does not exist : hive.invdbname.invtablename"));
 
     client.dropTable(dbName, tblName);
     client.dropDatabase(dbName);

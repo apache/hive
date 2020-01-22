@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.type.HiveBaseChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
+import org.apache.hadoop.hive.ql.io.parquet.convert.ETypeConverter;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -38,7 +39,10 @@ import org.apache.parquet.bytes.ByteBufferInputStream;
 import org.apache.parquet.column.Dictionary;
 import org.apache.parquet.column.values.ValuesReader;
 import org.apache.parquet.io.api.Binary;
-import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.DecimalLogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.LogicalTypeAnnotationVisitor;
+import org.apache.parquet.schema.LogicalTypeAnnotation.StringLogicalTypeAnnotation;
 import org.apache.parquet.schema.PrimitiveType;
 
 import java.io.IOException;
@@ -47,6 +51,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Parquet file has self-describing schema which may differ from the user required schema (e.g.
@@ -1824,15 +1829,13 @@ public final class ParquetDataColumnReaderFactory {
 
     switch (parquetType.getPrimitiveTypeName()) {
     case INT32:
-      if (OriginalType.UINT_8 == parquetType.getOriginalType() ||
-          OriginalType.UINT_16 == parquetType.getOriginalType() ||
-          OriginalType.UINT_32 == parquetType.getOriginalType() ||
-          OriginalType.UINT_64 == parquetType.getOriginalType()) {
+      if (ETypeConverter.isUnsignedInteger(parquetType)) {
         return isDictionary ? new TypesFromUInt32PageReader(dictionary, length, hivePrecision,
             hiveScale) : new TypesFromUInt32PageReader(valuesReader, length, hivePrecision,
             hiveScale);
-      } else if (OriginalType.DECIMAL == parquetType.getOriginalType()) {
-        final short scale = (short) parquetType.asPrimitiveType().getDecimalMetadata().getScale();
+      } else if (parquetType.getLogicalTypeAnnotation() instanceof DecimalLogicalTypeAnnotation) {
+        DecimalLogicalTypeAnnotation logicalType = (DecimalLogicalTypeAnnotation) parquetType.getLogicalTypeAnnotation();
+        final short scale = (short) logicalType.getScale();
         return isDictionary ? new TypesFromInt32DecimalPageReader(dictionary, length, scale, hivePrecision, hiveScale)
           : new TypesFromInt32DecimalPageReader(valuesReader, length, scale, hivePrecision, hiveScale);
       } else {
@@ -1841,15 +1844,13 @@ public final class ParquetDataColumnReaderFactory {
             hiveScale);
       }
     case INT64:
-      if (OriginalType.UINT_8 == parquetType.getOriginalType() ||
-          OriginalType.UINT_16 == parquetType.getOriginalType() ||
-          OriginalType.UINT_32 == parquetType.getOriginalType() ||
-          OriginalType.UINT_64 == parquetType.getOriginalType()) {
+      if (ETypeConverter.isUnsignedInteger(parquetType)) {
         return isDictionary ? new TypesFromUInt64PageReader(dictionary, length, hivePrecision,
             hiveScale) : new TypesFromUInt64PageReader(valuesReader, length, hivePrecision,
             hiveScale);
-      } else if (OriginalType.DECIMAL == parquetType.getOriginalType()) {
-        final short scale = (short) parquetType.asPrimitiveType().getDecimalMetadata().getScale();
+      } else if (parquetType.getLogicalTypeAnnotation() instanceof DecimalLogicalTypeAnnotation) {
+        DecimalLogicalTypeAnnotation logicalType = (DecimalLogicalTypeAnnotation) parquetType.getLogicalTypeAnnotation();
+        final short scale = (short) logicalType.getScale();
         return isDictionary ? new TypesFromInt64DecimalPageReader(dictionary, length, scale, hivePrecision, hiveScale)
           : new TypesFromInt64DecimalPageReader(valuesReader, length, scale, hivePrecision, hiveScale);
       } else {
@@ -1886,7 +1887,7 @@ public final class ParquetDataColumnReaderFactory {
                                                                 TypeInfo hiveType,
                                                                 ValuesReader valuesReader,
                                                                 Dictionary dictionary) {
-    OriginalType originalType = parquetType.getOriginalType();
+    LogicalTypeAnnotation logicalType = parquetType.getLogicalTypeAnnotation();
 
     // max length for varchar and char cases
     int length = getVarcharLength(hiveType);
@@ -1902,22 +1903,37 @@ public final class ParquetDataColumnReaderFactory {
     int hiveScale = (typeName.equalsIgnoreCase(serdeConstants.DECIMAL_TYPE_NAME)) ?
         ((DecimalTypeInfo) realHiveType).getScale() : 0;
 
-    if (originalType == null) {
+    if (logicalType == null) {
       return isDict ? new DefaultParquetDataColumnReader(dictionary, length) : new
           DefaultParquetDataColumnReader(valuesReader, length);
     }
-    switch (originalType) {
-    case DECIMAL:
-      final short scale = (short) parquetType.asPrimitiveType().getDecimalMetadata().getScale();
-      return isDict ? new TypesFromDecimalPageReader(dictionary, length, scale, hivePrecision, hiveScale) : new
-          TypesFromDecimalPageReader(valuesReader, length, scale, hivePrecision, hiveScale);
-    case UTF8:
-      return isDict ? new TypesFromStringPageReader(dictionary, length) : new
-          TypesFromStringPageReader(valuesReader, length);
-    default:
-      return isDict ? new DefaultParquetDataColumnReader(dictionary, length) : new
-          DefaultParquetDataColumnReader(valuesReader, length);
+
+    Optional<ParquetDataColumnReader> reader = parquetType.getLogicalTypeAnnotation()
+        .accept(new LogicalTypeAnnotationVisitor<ParquetDataColumnReader>() {
+          @Override public Optional<ParquetDataColumnReader> visit(
+              DecimalLogicalTypeAnnotation logicalTypeAnnotation) {
+            final short scale = (short) logicalTypeAnnotation.getScale();
+            return isDict ? Optional
+                .of(new TypesFromDecimalPageReader(dictionary, length, scale, hivePrecision,
+                    hiveScale)) : Optional
+                .of(new TypesFromDecimalPageReader(valuesReader, length, scale, hivePrecision,
+                    hiveScale));
+          }
+
+          @Override public Optional<ParquetDataColumnReader> visit(
+              StringLogicalTypeAnnotation logicalTypeAnnotation) {
+            return isDict ? Optional
+                .of(new TypesFromStringPageReader(dictionary, length)) : Optional
+                .of(new TypesFromStringPageReader(valuesReader, length));
+          }
+        });
+
+    if (reader.isPresent()) {
+      return reader.get();
     }
+
+    return isDict ? new DefaultParquetDataColumnReader(dictionary, length) : new
+      DefaultParquetDataColumnReader(valuesReader, length);
   }
 
   public static ParquetDataColumnReader getDataColumnReaderByTypeOnDictionary(

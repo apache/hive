@@ -26,12 +26,14 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
@@ -58,20 +60,25 @@ public class TopNKeyProcessor implements NodeProcessor {
       return null;
     }
 
-    // Currently, per partitioning top n key is not supported
-    // in TopNKey operator
-    if (reduceSinkDesc.isPTFReduceSink()) {
-      return null;
-    }
-
     // Check whether there already is a top n key operator
     Operator<? extends OperatorDesc> parentOperator = reduceSinkOperator.getParentOperators().get(0);
     if (parentOperator instanceof TopNKeyOperator) {
       return null;
     }
 
+    List<ExprNodeDesc> partitionCols = Collections.emptyList();
+    if (reduceSinkDesc.isPTFReduceSink()) {
+      // All keys are partition keys or no keys at all
+      // Note: partition cols are prefix of key cols
+      if (reduceSinkDesc.getPartitionCols().size() >= reduceSinkDesc.getKeyCols().size()) {
+        return null;
+      }
+
+      partitionCols = reduceSinkDesc.getPartitionCols();
+    }
+
     TopNKeyDesc topNKeyDesc = new TopNKeyDesc(reduceSinkDesc.getTopN(), reduceSinkDesc.getOrder(),
-            reduceSinkDesc.getNullOrder(), reduceSinkDesc.getKeyCols());
+            reduceSinkDesc.getNullOrder(), reduceSinkDesc.getKeyCols(), partitionCols);
 
     copyDown(reduceSinkOperator, topNKeyDesc);
     return null;

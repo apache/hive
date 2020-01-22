@@ -173,7 +173,7 @@ public class TestVectorSerDeRow {
     SerializeWrite serializeWrite;
     switch (serializationType) {
     case BINARY_SORTABLE:
-      deserializeRead = new BinarySortableDeserializeRead(source.typeInfos(), /* useExternalBuffer */ false);
+      deserializeRead = BinarySortableDeserializeRead.ascendingNullsFirst(source.typeInfos(), false);
       serializeWrite = new BinarySortableSerializeWrite(fieldCount);
       break;
     case LAZY_BINARY:
@@ -432,7 +432,7 @@ public class TestVectorSerDeRow {
     case BINARY_SORTABLE:
       boolean useColumnSortOrderIsDesc = alternate1;
       if (!useColumnSortOrderIsDesc) {
-        deserializeRead = new BinarySortableDeserializeRead(source.typeInfos(), useExternalBuffer);
+        deserializeRead = BinarySortableDeserializeRead.ascendingNullsFirst(source.typeInfos(), useExternalBuffer);
         serializeWrite = new BinarySortableSerializeWrite(fieldCount);
       } else {
         boolean[] columnSortOrderIsDesc = new boolean[fieldCount];

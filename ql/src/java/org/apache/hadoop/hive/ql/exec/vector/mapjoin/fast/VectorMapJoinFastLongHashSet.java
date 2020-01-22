@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -109,11 +110,11 @@ public class VectorMapJoinFastLongHashSet
       boolean isFullOuter,
       boolean minMaxEnabled,
       HashTableKeyType hashTableKeyType,
-      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount, TableDesc tableDesc) {
     super(
         isFullOuter,
         minMaxEnabled, hashTableKeyType,
-        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount, tableDesc);
   }
 
   @Override

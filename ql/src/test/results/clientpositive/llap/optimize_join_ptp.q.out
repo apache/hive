@@ -73,7 +73,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: UDFToDouble(_col1) (type: double)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToDouble(_col1) (type: double)
                         Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
@@ -101,7 +101,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: double)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: double)
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

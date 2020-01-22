@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.optimizer.topnkey.CommonKeyPrefix;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.util.ArrayList;
@@ -29,12 +30,14 @@ import java.util.Objects;
  */
 @Explain(displayName = "Top N Key Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class TopNKeyDesc extends AbstractOperatorDesc {
+
   private static final long serialVersionUID = 1L;
 
   private int topN;
   private String columnSortOrder;
   private String nullOrder;
   private List<ExprNodeDesc> keyColumns;
+  private List<ExprNodeDesc> partitionKeyColumns;
 
   public TopNKeyDesc() {
   }
@@ -43,12 +46,34 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
       final int topN,
       final String columnSortOrder,
       final String nullOrder,
-      final List<ExprNodeDesc> keyColumns) {
+      final List<ExprNodeDesc> keyColumns,
+      final List<ExprNodeDesc> partitionKeyColumns) {
 
     this.topN = topN;
-    this.columnSortOrder = columnSortOrder;
-    this.nullOrder = nullOrder;
-    this.keyColumns = keyColumns;
+    this.keyColumns = new ArrayList<>(keyColumns.size());
+    StringBuilder sortOrder = new StringBuilder(columnSortOrder.length());
+    StringBuilder nullSortOrder = new StringBuilder(nullOrder.length());
+    this.partitionKeyColumns = new ArrayList<>(partitionKeyColumns.size());
+
+    for (int i = 0; i < keyColumns.size(); ++i) {
+      ExprNodeDesc keyExpression = keyColumns.get(i);
+      if (keyExpression instanceof ExprNodeConstantDesc) {
+        continue;
+      }
+      this.keyColumns.add(keyExpression);
+      sortOrder.append(columnSortOrder.charAt(i));
+      nullSortOrder.append(nullOrder.charAt(i));
+    }
+
+    this.columnSortOrder = sortOrder.toString();
+    this.nullOrder = nullSortOrder.toString();
+
+    for (ExprNodeDesc keyExpression : partitionKeyColumns) {
+      if (keyExpression instanceof ExprNodeConstantDesc) {
+        continue;
+      }
+      this.partitionKeyColumns.add(keyExpression);
+    }
   }
 
   @Explain(displayName = "top n", explainLevels = { Level.DEFAULT, Level.EXTENDED, Level.USER })
@@ -104,6 +129,25 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
     return ret;
   }
 
+  public List<ExprNodeDesc> getPartitionKeyColumns() {
+    return partitionKeyColumns;
+  }
+
+  public void setPartitionKeyColumns(List<ExprNodeDesc> partitionKeyColumns) {
+    this.partitionKeyColumns = partitionKeyColumns;
+  }
+
+  @Explain(displayName = "Map-reduce partition columns")
+  public String getPartitionKeyString() {
+    return PlanUtils.getExprListString(partitionKeyColumns);
+  }
+
+  @Explain(displayName = "PartitionCols", explainLevels = { Level.USER })
+  public String getUserLevelExplainPartitionKeyString() {
+    return PlanUtils.getExprListString(partitionKeyColumns, true);
+  }
+
+
   @Override
   public boolean isSame(OperatorDesc other) {
     if (getClass().getName().equals(other.getClass().getName())) {
@@ -150,4 +194,11 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
     }
     return new TopNKeyDescExplainVectorization(this, vectorTopNKeyDesc);
   }
+
+  public TopNKeyDesc combine(CommonKeyPrefix commonKeyPrefix) {
+    return new TopNKeyDesc(topN, commonKeyPrefix.getMappedOrder(),
+            commonKeyPrefix.getMappedNullOrder(), commonKeyPrefix.getMappedColumns(),
+            commonKeyPrefix.getMappedColumns().subList(0, partitionKeyColumns.size()));
+  }
+
 }

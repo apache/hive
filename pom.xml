@@ -195,7 +195,7 @@
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.17.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
-    <parquet.version>1.10.0</parquet.version>
+    <parquet.version>1.11.0</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>2.5.0</protobuf.version>

@@ -267,7 +267,7 @@ STAGE PLANS:
                       Statistics: Num rows: 894 Data size: 92824 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: decimal(9,2))
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: decimal(9,2))
                         Reduce Sink Vectorization:
@@ -489,7 +489,7 @@ STAGE PLANS:
                       Statistics: Num rows: 894 Data size: 92824 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: decimal(9,2))
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: decimal(9,2))
                         Reduce Sink Vectorization:

@@ -698,7 +698,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1049 Data size: 88116 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         Statistics: Num rows: 1049 Data size: 88116 Basic stats: COMPLETE Column stats: COMPLETE

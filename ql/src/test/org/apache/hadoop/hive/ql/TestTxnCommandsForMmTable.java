@@ -506,11 +506,12 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
             0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
 
-    // Initiate a minor compaction request on the table.
+    // Initiate a major compaction request on the table.
     runStatementOnDriver("alter table " + TableExtended.MMTBL  + " compact 'MAJOR'");
 
     // Run worker.
     runWorker(hiveConf);
+    verifyDirAndResult(2, true);
 
     // Run Cleaner.
     runCleaner(hiveConf);
@@ -519,6 +520,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
             TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPLETED_TXN_COMPONENTS"));
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
             0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
+    verifyDirAndResult(0, true);
   }
 
   @Test
@@ -612,19 +614,32 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
   }
 
   private void verifyDirAndResult(int expectedDeltas) throws Exception {
+    verifyDirAndResult(expectedDeltas, false);
+  }
+  private void verifyDirAndResult(int expectedDeltas, boolean expectBaseDir) throws Exception {
     FileSystem fs = FileSystem.get(hiveConf);
     // Verify the content of subdirs
     FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
         (TableExtended.MMTBL).toString().toLowerCase()), FileUtils.HIDDEN_FILES_PATH_FILTER);
     int sawDeltaTimes = 0;
+    int sawBaseTimes = 0;
     for (int i = 0; i < status.length; i++) {
-      Assert.assertTrue(status[i].getPath().getName().matches("delta_.*"));
-      sawDeltaTimes++;
-      FileStatus[] files = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
-      Assert.assertEquals(1, files.length);
-      Assert.assertTrue(files[0].getPath().getName().equals("000000_0"));
+      if (status[i].getPath().getName().matches("delta_.*")) {
+        sawDeltaTimes++;
+        FileStatus[] files = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
+        Assert.assertEquals(1, files.length);
+        Assert.assertEquals("000000_0", files[0].getPath().getName());
+      } else {
+        sawBaseTimes++;
+      }
     }
+
     Assert.assertEquals(expectedDeltas, sawDeltaTimes);
+    if (expectBaseDir) {
+      Assert.assertEquals("1 base directory expected", 1, sawBaseTimes);
+    } else {
+      Assert.assertEquals("0 base directories expected", 0, sawBaseTimes);
+    }
 
     // Verify query result
     int [][] resultData = new int[][] {{1,2}, {3,4}};

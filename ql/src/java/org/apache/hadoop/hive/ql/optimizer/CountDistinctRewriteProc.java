@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -286,7 +287,7 @@ public class CountDistinctRewriteProc extends Transform {
       List<List<Integer>> distinctColIndices = new ArrayList<>();
       rs1.setConf(PlanUtils.getReduceSinkDesc(reduceKeys, 1, reduceValues, distinctColIndices,
           outputKeyColumnNames, outputValueColumnNames, true, -1, 1, -1,
-          AcidUtils.Operation.NOT_ACID));
+          AcidUtils.Operation.NOT_ACID, NullOrdering.defaultNullOrder(pGraphContext.getConf())));
       rs1.setColumnExprMap(colExprMap);
       
       rs1.setSchema(new RowSchema(rowSchema));
@@ -449,7 +450,7 @@ public class CountDistinctRewriteProc extends Transform {
       ArrayList<ExprNodeDesc> reduceKeys = new ArrayList<>();
       rs2.setConf(PlanUtils.getReduceSinkDesc(reduceKeys, 0, reduceValues, distinctColIndices,
           outputKeyColumnNames, outputValueColumnNames, false, -1, 0, 1,
-          AcidUtils.Operation.NOT_ACID));
+          AcidUtils.Operation.NOT_ACID, NullOrdering.defaultNullOrder(pGraphContext.getConf())));
       rs2.setColumnExprMap(colExprMap);
       rs2.setSchema(new RowSchema(rowSchema));
       return rs2;

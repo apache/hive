@@ -19,17 +19,28 @@
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.Random;
 
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.CheckFastHashTable.VerifyFastLongHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastLongHashMap;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class TestVectorMapJoinFastLongHashMapNonMatched extends CommonFastHashTable {
+
+  public static final Properties ANY_TABLE_PROPERTIES = new Properties();
+  private static TableDesc tableDesc = new TableDesc();
+
+  @Before
+  public void setUp() throws Exception {
+    tableDesc.setProperties(ANY_TABLE_PROPERTIES);
+  }
 
   @Test
   public void testOneKey() throws Exception {
@@ -37,7 +48,7 @@ public class TestVectorMapJoinFastLongHashMapNonMatched extends CommonFastHashTa
 
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
-            false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE, -1);
+            false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE, -1, tableDesc);
 
     VerifyFastLongHashMap verifyTable = new VerifyFastLongHashMap();
 
@@ -69,7 +80,7 @@ public class TestVectorMapJoinFastLongHashMapNonMatched extends CommonFastHashTa
 
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
-            false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE, -1);
+            false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE, -1, tableDesc);
 
     VerifyFastLongHashMap verifyTable = new VerifyFastLongHashMap();
 
@@ -100,7 +111,7 @@ public class TestVectorMapJoinFastLongHashMapNonMatched extends CommonFastHashTa
     // Start with capacity 1; make sure we expand on every put.
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
-            false, false, HashTableKeyType.LONG, 1, 0.0000001f, WB_SIZE, -1);
+            false, false, HashTableKeyType.LONG, 1, 0.0000001f, WB_SIZE, -1, tableDesc);
 
     VerifyFastLongHashMap verifyTable = new VerifyFastLongHashMap();
 
@@ -171,7 +182,7 @@ public class TestVectorMapJoinFastLongHashMapNonMatched extends CommonFastHashTa
     // Use a large capacity that doesn't require expansion, yet.
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
-            false, false, HashTableKeyType.LONG, LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            false, false, HashTableKeyType.LONG, LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1, tableDesc);
 
     VerifyFastLongHashMap verifyTable = new VerifyFastLongHashMap();
 
@@ -186,7 +197,7 @@ public class TestVectorMapJoinFastLongHashMapNonMatched extends CommonFastHashTa
     // Use a large capacity that doesn't require expansion, yet.
     VectorMapJoinFastLongHashMap map =
         new VectorMapJoinFastLongHashMap(
-            false, false, HashTableKeyType.LONG, MODERATE_CAPACITY, LOAD_FACTOR, MODERATE_WB_SIZE, -1);
+            false, false, HashTableKeyType.LONG, MODERATE_CAPACITY, LOAD_FACTOR, MODERATE_WB_SIZE, -1, tableDesc);
 
     VerifyFastLongHashMap verifyTable = new VerifyFastLongHashMap();
 

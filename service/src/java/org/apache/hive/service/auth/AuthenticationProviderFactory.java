@@ -34,12 +34,18 @@ public final class AuthenticationProviderFactory {
 
     private final String authMethod;
 
+    private final HiveConf conf = new HiveConf();
+
     AuthMethods(String authMethod) {
       this.authMethod = authMethod;
     }
 
     public String getAuthMethod() {
       return authMethod;
+    }
+
+    public HiveConf getConf() {
+      return conf;
     }
 
     public static AuthMethods getValidAuthMethod(String authMethodStr)
@@ -58,16 +64,16 @@ public final class AuthenticationProviderFactory {
 
   public static PasswdAuthenticationProvider getAuthenticationProvider(AuthMethods authMethod)
     throws AuthenticationException {
-    return getAuthenticationProvider(authMethod, new HiveConf());
+    return getAuthenticationProvider(authMethod, null);
   }
   public static PasswdAuthenticationProvider getAuthenticationProvider(AuthMethods authMethod, HiveConf conf)
     throws AuthenticationException {
     if (authMethod == AuthMethods.LDAP) {
-      return new LdapAuthenticationProviderImpl(conf);
+      return new LdapAuthenticationProviderImpl((conf == null) ? AuthMethods.LDAP.getConf() : conf);
     } else if (authMethod == AuthMethods.PAM) {
-      return new PamAuthenticationProviderImpl(conf);
+      return new PamAuthenticationProviderImpl((conf == null) ? AuthMethods.PAM.getConf() : conf);
     } else if (authMethod == AuthMethods.CUSTOM) {
-      return new CustomAuthenticationProviderImpl(conf);
+      return new CustomAuthenticationProviderImpl((conf == null) ? AuthMethods.CUSTOM.getConf() : conf);
     } else if (authMethod == AuthMethods.NONE) {
       return new AnonymousAuthenticationProviderImpl();
     } else {

@@ -18,14 +18,11 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
-import org.apache.hadoop.hive.metastore.RawStore;
-import org.apache.hadoop.hive.metastore.RawStoreProxy;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -36,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
@@ -45,7 +43,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 public class MetaStoreCompactorThread extends CompactorThread implements MetaStoreThread {
 
   protected TxnStore txnHandler;
-  protected RawStore rs;
   protected int threadId;
 
   @Override
@@ -59,15 +56,11 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
     // Get our own instance of the transaction handler
     txnHandler = TxnUtils.getTxnStore(conf);
-
-    // Get our own connection to the database so we can get table and partition information.
-    rs = RawStoreProxy.getProxy(conf, conf,
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL), threadId);
   }
 
   @Override Table resolveTable(CompactionInfo ci) throws MetaException {
     try {
-      return rs.getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
+      return getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
     } catch (MetaException e) {
       LOG.error("Unable to find table " + ci.getFullTableName() + ", " + e.getMessage());
       throw e;
@@ -76,7 +69,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
   @Override boolean replIsCompactionDisabledForDatabase(String dbName) throws TException {
     try {
-      Database database = rs.getDatabase(getDefaultCatalog(conf), dbName);
+      Database database = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), dbName);
       // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
       boolean isReplCompactDisabled = ReplUtils.isFirstIncPending(database.getParameters());
       if (isReplCompactDisabled) {
@@ -91,7 +84,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
   @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
     try {
-      return rs.getPartitionsByNames(getDefaultCatalog(conf), ci.dbname, ci.tableName,
+      return getMSForConf(conf).getPartitionsByNames(getDefaultCatalog(conf), ci.dbname, ci.tableName,
           Collections.singletonList(ci.partName));
     } catch (MetaException e) {
       LOG.error("Unable to get partitions by name for CompactionInfo=" + ci);

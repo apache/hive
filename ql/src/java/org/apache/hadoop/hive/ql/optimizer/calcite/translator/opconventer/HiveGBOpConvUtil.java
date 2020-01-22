@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -124,6 +125,8 @@ final class HiveGBOpConvUtil {
     float                             minReductionHashAggr;
 
     private HIVEGBPHYSICALMODE        gbPhysicalPipelineMode;
+
+    private NullOrdering defaultNullOrder = NullOrdering.NULLS_LAST;
   };
 
   private static HIVEGBPHYSICALMODE getAggOPMode(HiveConf hc, GBInfo gbInfo) {
@@ -285,6 +288,7 @@ final class HiveGBOpConvUtil {
 
     // 5. Gather GB Physical pipeline (based on user config & Grping Sets size)
     gbInfo.gbPhysicalPipelineMode = getAggOPMode(hc, gbInfo);
+    gbInfo.defaultNullOrder = NullOrdering.defaultNullOrder(hc);
 
     return gbInfo;
   }
@@ -654,7 +658,7 @@ final class HiveGBOpConvUtil {
     ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(PlanUtils
         .getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, true, -1,
             getNumPartFieldsForReduceSideRS(gbInfo), getParallelismForReduceSideRS(gbInfo),
-            AcidUtils.Operation.NOT_ACID), new RowSchema(colInfoLst), reduceSideGB1);
+            AcidUtils.Operation.NOT_ACID, gbInfo.defaultNullOrder), new RowSchema(colInfoLst), reduceSideGB1);
 
     rsOp.setColumnExprMap(colExprMap);
 
@@ -693,7 +697,7 @@ final class HiveGBOpConvUtil {
     ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(PlanUtils
         .getReduceSinkDesc(reduceKeys, keyLength, reduceValues, gbInfo.distColIndices,
         outputKeyColumnNames, outputValueColumnNames, true, -1, getNumPartFieldsForMapSideRS(
-        gbInfo), getParallelismForMapSideRS(gbInfo), AcidUtils.Operation.NOT_ACID),
+        gbInfo), getParallelismForMapSideRS(gbInfo), AcidUtils.Operation.NOT_ACID, gbInfo.defaultNullOrder),
         new RowSchema(colInfoLst), mapGB);
 
     rsOp.setColumnExprMap(colExprMap);
@@ -760,7 +764,7 @@ final class HiveGBOpConvUtil {
         .getReduceSinkDesc(reduceKeys, keyLength, reduceValues,
             gbInfo.distColIndices, outputKeyColumnNames,
             outputValueColumnNames, true, -1, getNumPartFieldsForMapSideRS(gbInfo),
-            getParallelismForMapSideRS(gbInfo), AcidUtils.Operation.NOT_ACID), new RowSchema(
+            getParallelismForMapSideRS(gbInfo), AcidUtils.Operation.NOT_ACID, gbInfo.defaultNullOrder), new RowSchema(
         colInfoLst), inputOpAf.inputs.get(0));
 
     rsOp.setColumnExprMap(colExprMap);

@@ -213,9 +213,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: parquet_project_test
-            Statistics: Num rows: 22 Data size: 709 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 22 Data size: 553 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 22 Data size: 709 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 22 Data size: 553 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 minReductionHashAggr: 0.99
@@ -308,7 +308,7 @@ STAGE PLANS:
                 Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
@@ -399,7 +399,7 @@ STAGE PLANS:
                 Statistics: Num rows: 22 Data size: 20240 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 22 Data size: 20240 Basic stats: COMPLETE Column stats: NONE
@@ -495,9 +495,9 @@ STAGE PLANS:
           TableScan
             alias: parquet_nullsplit
             filterExpr: (len = '1') (type: boolean)
-            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 minReductionHashAggr: 0.99

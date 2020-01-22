@@ -38,7 +38,7 @@ STAGE PLANS:
                 TableScan
                   alias: date_decimal_test_parquet
                   filterExpr: (cint is not null and cdouble is not null) (type: boolean)
-                  Statistics: Num rows: 12288 Data size: 176614 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 176526 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -47,7 +47,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:double))
                     predicate: (cint is not null and cdouble is not null) (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 176614 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 176526 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date), cdecimal (type: decimal(20,10))
                       outputColumnNames: _col0, _col1
@@ -55,7 +55,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [2, 3]
-                      Statistics: Num rows: 12288 Data size: 176614 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 176526 Basic stats: COMPLETE Column stats: NONE
                       Limit
                         Number of rows: 10
                         Limit Vectorization:

@@ -639,7 +639,7 @@ STAGE PLANS:
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -796,7 +796,7 @@ STAGE PLANS:
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -953,7 +953,7 @@ STAGE PLANS:
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -1110,7 +1110,7 @@ STAGE PLANS:
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE

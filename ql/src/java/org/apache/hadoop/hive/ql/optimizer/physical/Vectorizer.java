@@ -43,6 +43,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ConvertDecimal64ToDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
@@ -4713,17 +4714,14 @@ public class Vectorizer implements PhysicalPlanResolver {
         children[i] = newChild;
       }
     }
-    if (parent.getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.NONE) {
+    if (parent.getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.NONE &&
+      !(parent instanceof ConvertDecimal64ToDecimal)) {
       boolean inputArgsChanged = false;
       DataTypePhysicalVariation[] dataTypePhysicalVariations = parent.getInputDataTypePhysicalVariations();
-      VectorExpression oldExpression = null;
-      VectorExpression newExpression = null;
       for (int i = 0; i < children.length; i++) {
-        oldExpression = children[i];
         // we found at least one children with mismatch
-        if (oldExpression.getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.DECIMAL_64) {
-          newExpression = vContext.wrapWithDecimal64ToDecimalConversion(oldExpression);
-          children[i] = newExpression;
+        if (children[i].getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.DECIMAL_64) {
+          children[i] = vContext.wrapWithDecimal64ToDecimalConversion(children[i]);
           inputArgsChanged = true;
           dataTypePhysicalVariations[i] = DataTypePhysicalVariation.NONE;
         }
@@ -4733,9 +4731,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         if (parent instanceof VectorUDFAdaptor) {
           VectorUDFAdaptor parentAdaptor = (VectorUDFAdaptor) parent;
           VectorUDFArgDesc[] argDescs = parentAdaptor.getArgDescs();
-          for (VectorUDFArgDesc argDesc : argDescs) {
-            if (argDesc.getColumnNum() == oldExpression.getOutputColumnNum()) {
-              argDesc.setColumnNum(newExpression.getOutputColumnNum());
+          for (int i = 0; i < argDescs.length; ++i) {
+            if (argDescs[i].getColumnNum() != children[i].getOutputColumnNum()) {
+              argDescs[i].setColumnNum(children[i].getOutputColumnNum());
               break;
             }
           }

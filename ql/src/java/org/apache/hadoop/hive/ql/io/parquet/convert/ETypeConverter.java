@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -43,7 +44,11 @@ import org.apache.hadoop.io.Writable;
 import org.apache.parquet.column.Dictionary;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.PrimitiveConverter;
-import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.DecimalLogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.LogicalTypeAnnotationVisitor;
+import org.apache.parquet.schema.LogicalTypeAnnotation.StringLogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.DateLogicalTypeAnnotation;
 import org.apache.parquet.schema.PrimitiveType;
 
 /**
@@ -339,10 +344,7 @@ public enum ETypeConverter {
       return new PrimitiveConverter() {
         @Override
         public void addInt(final int value) {
-          if (value >= ((OriginalType.UINT_8 == type.getOriginalType() ||
-                          OriginalType.UINT_16 == type.getOriginalType() ||
-                          OriginalType.UINT_32 == type.getOriginalType() ||
-                          OriginalType.UINT_64 == type.getOriginalType()) ? 0 :
+          if (value >= ((ETypeConverter.isUnsignedInteger(type)) ? 0 :
               Integer.MIN_VALUE)) {
             parent.set(index, new IntWritable(value));
           } else {
@@ -446,10 +448,7 @@ public enum ETypeConverter {
       return new PrimitiveConverter() {
         @Override
         public void addLong(final long value) {
-          if (value >= ((OriginalType.UINT_8 == type.getOriginalType() ||
-                         OriginalType.UINT_16 == type.getOriginalType() ||
-                         OriginalType.UINT_32 == type.getOriginalType() ||
-                         OriginalType.UINT_64 == type.getOriginalType()) ? 0 : Long.MIN_VALUE)) {
+          if (value >= ((ETypeConverter.isUnsignedInteger(type)) ? 0 : Long.MIN_VALUE)) {
             parent.set(index, new LongWritable(value));
           } else {
             parent.set(index, null);
@@ -494,19 +493,19 @@ public enum ETypeConverter {
             @Override
             public void addBinary(Binary value) {
               HiveDecimalWritable decimalWritable =
-                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
+                  new HiveDecimalWritable(value.getBytes(), getScale(type));
               setValue(decimalWritable.doubleValue(), decimalWritable.floatValue());
             }
 
             @Override
             public void addInt(final int value) {
-              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, getScale(type));
               setValue(hiveDecimal.doubleValue(), hiveDecimal.floatValue());
             }
 
             @Override
             public void addLong(final long value) {
-              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, getScale(type));
               setValue(hiveDecimal.doubleValue(), hiveDecimal.floatValue());
             }
 
@@ -518,26 +517,36 @@ public enum ETypeConverter {
                 parent.set(index, null);
               }
             }
+
+            private int getScale(PrimitiveType type) {
+              DecimalLogicalTypeAnnotation logicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+              return logicalType.getScale();
+            }
           };
         case serdeConstants.DOUBLE_TYPE_NAME:
           return new PrimitiveConverter() {
             @Override
             public void addBinary(Binary value) {
               HiveDecimalWritable decimalWritable =
-                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
+                  new HiveDecimalWritable(value.getBytes(), getScale(type));
               parent.set(index, new DoubleWritable(decimalWritable.doubleValue()));
             }
 
             @Override
             public void addInt(final int value) {
-              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, getScale(type));
               parent.set(index, new DoubleWritable(hiveDecimal.doubleValue()));
             }
 
             @Override
             public void addLong(final long value) {
-              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, getScale(type));
               parent.set(index, new DoubleWritable(hiveDecimal.doubleValue()));
+            }
+
+            private int getScale(PrimitiveType type) {
+              DecimalLogicalTypeAnnotation logicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+              return logicalType.getScale();
             }
           };
         case serdeConstants.BIGINT_TYPE_NAME:
@@ -545,19 +554,19 @@ public enum ETypeConverter {
             @Override
             public void addBinary(Binary value) {
               HiveDecimalWritable decimalWritable =
-                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
+                  new HiveDecimalWritable(value.getBytes(), getScale(type));
               setValue(decimalWritable.doubleValue(), decimalWritable.longValue());
             }
 
             @Override
             public void addInt(final int value) {
-              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, getScale(type));
               setValue(hiveDecimal.doubleValue(), hiveDecimal.longValue());
             }
 
             @Override
             public void addLong(final long value) {
-              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, getScale(type));
               setValue(hiveDecimal.doubleValue(), hiveDecimal.longValue());
             }
 
@@ -568,6 +577,11 @@ public enum ETypeConverter {
                 parent.set(index, null);
               }
             }
+
+            private int getScale(PrimitiveType type) {
+              DecimalLogicalTypeAnnotation logicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+              return logicalType.getScale();
+            }
           };
         case serdeConstants.INT_TYPE_NAME:
         case serdeConstants.SMALLINT_TYPE_NAME:
@@ -576,19 +590,19 @@ public enum ETypeConverter {
             @Override
             public void addBinary(Binary value) {
               HiveDecimalWritable decimalWritable =
-                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
+                  new HiveDecimalWritable(value.getBytes(), getScale(type));
               setValue(decimalWritable.doubleValue(), decimalWritable.intValue());
             }
 
             @Override
             public void addInt(final int value) {
-              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, getScale(type));
               setValue(hiveDecimal.doubleValue(), hiveDecimal.intValue());
             }
 
             @Override
             public void addLong(final long value) {
-              HiveDecimal hiveDecimal = HiveDecimal.create(value, type.getDecimalMetadata().getScale());
+              HiveDecimal hiveDecimal = HiveDecimal.create(value, getScale(type));
               setValue(hiveDecimal.doubleValue(), hiveDecimal.intValue());
             }
 
@@ -599,13 +613,19 @@ public enum ETypeConverter {
                 parent.set(index, null);
               }
             }
+
+            private int getScale(PrimitiveType type) {
+              DecimalLogicalTypeAnnotation logicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+              return logicalType.getScale();
+            }
           };
         default:
           return new BinaryConverter<HiveDecimalWritable>(type, parent, index, hiveTypeInfo) {
             @Override
             protected HiveDecimalWritable convert(Binary binary) {
+              DecimalLogicalTypeAnnotation logicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
               return HiveDecimalUtils.enforcePrecisionScale(
-                  new HiveDecimalWritable(binary.getBytes(), type.getDecimalMetadata().getScale()),
+                  new HiveDecimalWritable(binary.getBytes(), logicalType.getScale()),
                   (DecimalTypeInfo) hiveTypeInfo);
             }
 
@@ -632,7 +652,9 @@ public enum ETypeConverter {
       return new BinaryConverter<HiveDecimalWritable>(type, parent, index) {
         @Override
         protected HiveDecimalWritable convert(Binary binary) {
-          return new HiveDecimalWritable(binary.getBytes(), type.getDecimalMetadata().getScale());
+          DecimalLogicalTypeAnnotation logicalType =
+              (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+          return new HiveDecimalWritable(binary.getBytes(), logicalType.getScale());
         }
       };
     }
@@ -686,17 +708,33 @@ public enum ETypeConverter {
   abstract PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo);
 
   public static PrimitiveConverter getNewConverter(final PrimitiveType type, final int index,
-                                                   final ConverterParent parent, TypeInfo hiveTypeInfo) {
+                                                   final ConverterParent parent, final TypeInfo hiveTypeInfo) {
     if (type.isPrimitive() && (type.asPrimitiveType().getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT96))) {
       //TODO- cleanup once parquet support Timestamp type annotation.
       return ETypeConverter.ETIMESTAMP_CONVERTER.getConverter(type, index, parent, hiveTypeInfo);
     }
-    if (OriginalType.DECIMAL == type.getOriginalType()) {
-      return EDECIMAL_CONVERTER.getConverter(type, index, parent, hiveTypeInfo);
-    } else if (OriginalType.UTF8 == type.getOriginalType()) {
-      return ESTRING_CONVERTER.getConverter(type, index, parent, hiveTypeInfo);
-    } else if (OriginalType.DATE == type.getOriginalType()) {
-      return EDATE_CONVERTER.getConverter(type, index, parent, hiveTypeInfo);
+    if (type.getLogicalTypeAnnotation() != null) {
+      Optional<PrimitiveConverter> converter = type.getLogicalTypeAnnotation()
+          .accept(new LogicalTypeAnnotationVisitor<PrimitiveConverter>() {
+            @Override
+            public Optional<PrimitiveConverter> visit(DecimalLogicalTypeAnnotation logicalTypeAnnotation) {
+              return Optional.of(EDECIMAL_CONVERTER.getConverter(type, index, parent, hiveTypeInfo));
+            }
+
+            @Override
+            public Optional<PrimitiveConverter> visit(StringLogicalTypeAnnotation logicalTypeAnnotation) {
+              return Optional.of(ESTRING_CONVERTER.getConverter(type, index, parent, hiveTypeInfo));
+            }
+
+            @Override
+            public Optional<PrimitiveConverter> visit(DateLogicalTypeAnnotation logicalTypeAnnotation) {
+              return Optional.of(EDATE_CONVERTER.getConverter(type, index, parent, hiveTypeInfo));
+            }
+          });
+
+      if (converter.isPresent()) {
+        return converter.get();
+      }
     }
 
     Class<?> javaType = type.getPrimitiveTypeName().javaType;
@@ -709,11 +747,24 @@ public enum ETypeConverter {
     throw new IllegalArgumentException("Converter not found ... for type : " + type);
   }
 
+  public static boolean isUnsignedInteger(final PrimitiveType type) {
+    if (type.getLogicalTypeAnnotation() != null) {
+      Optional<Boolean> isUnsignedInteger = type.getLogicalTypeAnnotation()
+          .accept(new LogicalTypeAnnotationVisitor<Boolean>() {
+            @Override public Optional<Boolean> visit(
+                LogicalTypeAnnotation.IntLogicalTypeAnnotation intLogicalType) {
+              return Optional.of(!intLogicalType.isSigned());
+            }
+          });
+      if (isUnsignedInteger.isPresent()) {
+        return isUnsignedInteger.get();
+      }
+    }
+    return false;
+  }
+
   private static long getMinValue(final PrimitiveType type, String typeName, long defaultValue) {
-    if (OriginalType.UINT_8 == type.getOriginalType() ||
-        OriginalType.UINT_16 == type.getOriginalType() ||
-        OriginalType.UINT_32 == type.getOriginalType() ||
-        OriginalType.UINT_64 == type.getOriginalType()) {
+    if(isUnsignedInteger(type)) {
       return 0;
     } else {
       switch (typeName) {

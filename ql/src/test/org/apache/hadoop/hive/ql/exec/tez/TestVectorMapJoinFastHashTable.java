@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
@@ -66,6 +68,9 @@ public class TestVectorMapJoinFastHashTable {
     vectorDesc.setHashTableImplementationType(HashTableImplementationType.FAST);
     vectorDesc.setHashTableKind(HashTableKind.HASH_MAP);
     desc.setVectorDesc(vectorDesc);
+    TableDesc keyTblDesc = new TableDesc();
+    keyTblDesc.setProperties(new Properties());
+    desc.setKeyTblDesc(keyTblDesc);
     Configuration hconf = new HiveConf();
     VectorMapJoinFastTableContainer container = new VectorMapJoinFastTableContainer(desc, hconf, keyCount);
 

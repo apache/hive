@@ -2644,6 +2644,8 @@ public class HiveConf extends Configuration {
         "In nonstrict mode, for non-ACID resources, INSERT will only acquire shared lock, which\n" +
         "allows two concurrent writes to the same partition but still lets lock manager prevent\n" +
         "DROP TABLE etc. when the table is being written to"),
+    HIVE_TXN_READ_LOCKS("hive.txn.read.locks", true,
+        "flag to turn off the strict read lock when set to false"),
     TXN_OVERWRITE_X_LOCK("hive.txn.xlock.iow", true,
         "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\n" +
             "transactional tables.  This ensures that inserts (w/o overwrite) running concurrently\n" +
@@ -2750,6 +2752,10 @@ public class HiveConf extends Configuration {
         "is needed requires several calls to the NameNode for each table or partition that\n" +
         "has had a transaction done on it since the last major compaction. So decreasing this\n" +
         "value will increase the load on the NameNode."),
+
+    HIVE_COMPACTOR_REQUEST_QUEUE("hive.compactor.request.queue", 1,
+        "Enables parallelization of the checkForCompaction operation, that includes many file metadata checks\n" +
+        "and may be expensive"),
 
     HIVE_COMPACTOR_DELTA_NUM_THRESHOLD("hive.compactor.delta.num.threshold", 10,
         "Number of delta directories in a table or partition that will trigger a minor\n" +
@@ -5480,7 +5486,9 @@ public class HiveConf extends Configuration {
   public String getLogIdVar(String defaultValue) {
     String retval = getVar(ConfVars.HIVE_LOG_TRACE_ID);
     if (StringUtils.EMPTY.equals(retval)) {
-      LOG.info("Using the default value passed in for log id: {}", defaultValue);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Using the default value passed in for log id: {}", defaultValue);
+      }
       retval = defaultValue;
     }
     if (retval.length() > LOG_PREFIX_LENGTH) {

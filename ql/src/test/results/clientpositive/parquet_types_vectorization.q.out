@@ -201,7 +201,7 @@ STAGE PLANS:
                 Statistics: Num rows: 22 Data size: 4576 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: tinyint)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: tinyint)
                   Statistics: Num rows: 22 Data size: 4576 Basic stats: COMPLETE Column stats: NONE
@@ -315,7 +315,7 @@ STAGE PLANS:
                 Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: float)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: float)
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
@@ -411,7 +411,7 @@ STAGE PLANS:
                 Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: char(5))
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: char(5))
                   Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: NONE
@@ -520,7 +520,7 @@ STAGE PLANS:
                 Statistics: Num rows: 22 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: varchar(10))
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: varchar(10))
                   Statistics: Num rows: 22 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
@@ -625,7 +625,7 @@ STAGE PLANS:
                 Statistics: Num rows: 22 Data size: 4048 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 22 Data size: 4048 Basic stats: COMPLETE Column stats: NONE
@@ -737,7 +737,7 @@ STAGE PLANS:
                 Statistics: Num rows: 22 Data size: 880 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: timestamp)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: timestamp)
                   Statistics: Num rows: 22 Data size: 880 Basic stats: COMPLETE Column stats: NONE
@@ -849,7 +849,7 @@ STAGE PLANS:
                 Statistics: Num rows: 22 Data size: 3168 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: binary)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: binary)
                   Statistics: Num rows: 22 Data size: 3168 Basic stats: COMPLETE Column stats: NONE

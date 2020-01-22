@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Suppliers;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -88,6 +89,7 @@ public class PersistenceManagerProvider {
   private static boolean forTwoMetastoreTesting;
   private static int retryLimit;
   private static long retryInterval;
+  private static com.google.common.base.Supplier<String> passwordProvider;
 
   static {
     Map<String, Class<?>> map = new HashMap<>();
@@ -450,16 +452,18 @@ public class PersistenceManagerProvider {
     */
 
     // Password may no longer be in the conf, use getPassword()
-    try {
-      String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
-      if (org.apache.commons.lang.StringUtils.isNotEmpty(passwd)) {
-        // We can get away with the use of varname here because varname == hiveName for PWD
-        prop.setProperty(ConfVars.PWD.getVarname(), passwd);
+    passwordProvider = passwordProvider != null ? passwordProvider : Suppliers.memoize(() -> {
+      try {
+        return MetastoreConf.getPassword(conf, ConfVars.PWD);
+      } catch (IOException err) {
+        throw new RuntimeException("Error getting metastore password: " + err.getMessage(), err);
       }
-    } catch (IOException err) {
-      throw new RuntimeException("Error getting metastore password: " + err.getMessage(), err);
+    });
+    String passwd = passwordProvider.get();
+    if (org.apache.commons.lang.StringUtils.isNotEmpty(passwd)) {
+      // We can get away with the use of varname here because varname == hiveName for PWD
+      prop.setProperty(ConfVars.PWD.getVarname(), passwd);
     }
-
     if (LOG.isDebugEnabled()) {
       for (Entry<Object, Object> e : prop.entrySet()) {
         if (MetastoreConf.isPrintable(e.getKey().toString())) {

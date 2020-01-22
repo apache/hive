@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinByte
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -44,10 +45,12 @@ public class VectorMapJoinOptimizedStringHashMap
   private static class NonMatchedStringHashMapIterator extends NonMatchedBytesHashMapIterator {
 
     private BinarySortableDeserializeRead keyBinarySortableDeserializeRead;
+    private final VectorMapJoinOptimizedStringHashMap hashMap;
 
     NonMatchedStringHashMapIterator(MatchTracker matchTracker,
         VectorMapJoinOptimizedStringHashMap hashMap) {
       super(matchTracker, hashMap);
+      this.hashMap = hashMap;
     }
 
     @Override
@@ -55,8 +58,8 @@ public class VectorMapJoinOptimizedStringHashMap
       super.init();
 
       TypeInfo[] typeInfos = new TypeInfo[] {TypeInfoFactory.stringTypeInfo};
-      keyBinarySortableDeserializeRead =
-          new BinarySortableDeserializeRead(typeInfos, /* useExternalBuffer */ false);
+      keyBinarySortableDeserializeRead = BinarySortableDeserializeRead.with(
+              typeInfos, false, this.hashMap.stringCommon.getTableDesc().getProperties());
     }
 
     @Override
@@ -117,9 +120,9 @@ public class VectorMapJoinOptimizedStringHashMap
 
   }
 
-  public VectorMapJoinOptimizedStringHashMap(boolean isOuterJoin,
-      MapJoinTableContainer originalTableContainer, ReusableGetAdaptor hashMapRowGetter) {
+  public VectorMapJoinOptimizedStringHashMap(boolean isOuterJoin, MapJoinTableContainer originalTableContainer,
+                                             ReusableGetAdaptor hashMapRowGetter, TableDesc tableDesc) {
     super(originalTableContainer, hashMapRowGetter);
-    stringCommon =  new VectorMapJoinOptimizedStringCommon(isOuterJoin);
+    stringCommon =  new VectorMapJoinOptimizedStringCommon(isOuterJoin, tableDesc);
   }
 }

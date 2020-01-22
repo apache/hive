@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -185,10 +186,10 @@ final class HiveOpConverterUtils {
     ReduceSinkDesc rsDesc;
     if (order.isEmpty()) {
       rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, false, tag,
-          reduceKeys.size(), numReducers, acidOperation);
+          reduceKeys.size(), numReducers, acidOperation, NullOrdering.defaultNullOrder(hiveConf));
     } else {
       rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, false, tag,
-          partitionCols, order, nullOrder, numReducers, acidOperation);
+          partitionCols, order, nullOrder, NullOrdering.defaultNullOrder(hiveConf), numReducers, acidOperation);
     }
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(

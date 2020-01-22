@@ -456,13 +456,13 @@ POSTHOOK: query: select `mydate1` from `timestamptz_test` group by `mydate1`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamptz_test
 #### A masked pattern was here ####
-NULL
 2010-12-31 17:01:01.123 GMT-07:00
 2010-12-31 17:01:01.123456789 GMT-07:00
 2010-12-31 23:01:01.123 GMT-07:00
 2010-12-31 23:01:01.123456789 GMT-07:00
 2011-01-01 02:01:01.123 GMT-07:00
 2011-01-01 02:01:01.123456789 GMT-07:00
+NULL
 PREHOOK: query: select a.`mydate1` as c1, b.`mydate1` as c2
 from `timestamptz_test` a join `timestamptz_test` b
 on a.`mydate1` = b.`mydate1`
