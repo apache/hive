@@ -20,10 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -33,14 +29,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import org.apache.hadoop.hive.metastore.api.Database;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hdfs.DFSTestUtil;
@@ -58,30 +51,20 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableMap;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-
 /**
  * TestMetaStoreAuthorization.
  */
 public class TestMetaStoreMultipleEncryptionZones {
   private static HiveMetaStoreClient client;
-  private static HiveMetaStoreClient clientEncrypted;
   private static HiveConf hiveConf;
-  private static HiveConf hiveConfEncrypted;
   private static Configuration conf;
   private static Warehouse warehouse;
   private static FileSystem warehouseFs;
-  private static Warehouse warehouseEncrypted;
-  private static FileSystem warehouseFsEncrypted;
-  private static MiniDFSCluster m_dfs;
+  private static MiniDFSCluster miniDFSCluster;
   private static String cmroot;
   private static FileSystem fs;
+  private static HadoopShims.HdfsEncryptionShim shimCm;
   private static String cmrootEncrypted;
-  private static FileSystem fsEncrypted;
   private static String jksFile = System.getProperty("java.io.tmpdir") + "/test.jks";
 
   @BeforeClass
@@ -89,52 +72,29 @@ public class TestMetaStoreMultipleEncryptionZones {
     //Create secure cluster
     conf = new Configuration();
     conf.set("hadoop.security.key.provider.path", "jceks://file" + jksFile);
-    m_dfs = new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
-    DFSTestUtil.createKey("test_key_cm", m_dfs, conf);
-    DFSTestUtil.createKey("test_key_warehouse", m_dfs, conf);
+    miniDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+    DFSTestUtil.createKey("test_key_cm", miniDFSCluster, conf);
+    DFSTestUtil.createKey("test_key_db", miniDFSCluster, conf);
     hiveConf = new HiveConf(TestReplChangeManager.class);
     hiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
     hiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
-            "hdfs://" + m_dfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
 
-    cmroot = "hdfs://" + m_dfs.getNameNode().getHostAndPort() + "/cmroot";
+    cmroot = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmroot";
+    cmrootEncrypted = "/cmrootEncrypted/";
     hiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmroot);
+    hiveConf.set(HiveConf.ConfVars.REPLCMENCRYPTEDDIR.varname, cmrootEncrypted);
     warehouse = new Warehouse(hiveConf);
     warehouseFs = warehouse.getWhRoot().getFileSystem(hiveConf);
     fs = new Path(cmroot).getFileSystem(hiveConf);
     fs.mkdirs(warehouse.getWhRoot());
 
-    hiveConfEncrypted = new HiveConf(TestReplChangeManager.class);
-    hiveConfEncrypted.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
-    hiveConfEncrypted.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    cmrootEncrypted = "hdfs://" + m_dfs.getNameNode().getHostAndPort() + "/cmrootEncrypted";
-    hiveConfEncrypted.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootEncrypted);
-    hiveConfEncrypted.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
-            "hdfs://" + m_dfs.getNameNode().getHostAndPort() + "/user/hive/warehouseEncrypted");
-    warehouseEncrypted = new Warehouse(hiveConfEncrypted);
-    warehouseFsEncrypted = warehouseEncrypted.getWhRoot().getFileSystem(hiveConfEncrypted);
-    fsEncrypted = new Path(cmrootEncrypted).getFileSystem(hiveConfEncrypted);
-    fsEncrypted.mkdirs(warehouseEncrypted.getWhRoot());
-    fsEncrypted.mkdirs(new Path(cmrootEncrypted));
     //Create cm in encrypted zone
-    HadoopShims.HdfsEncryptionShim shimCm
-            = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fsEncrypted, conf);
-    shimCm.createEncryptionZone(new Path(cmrootEncrypted), "test_key_cm");
-    //Create warehouse in different encrypted zone
-    HadoopShims.HdfsEncryptionShim shimWarehouse
-            = ShimLoader.getHadoopShims().createHdfsEncryptionShim(warehouseFsEncrypted, conf);
-    shimWarehouse.createEncryptionZone(warehouseEncrypted.getWhRoot(), "test_key_warehouse");
+    shimCm = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
 
     try {
       client = new HiveMetaStoreClient(hiveConf);
-    } catch (Throwable e) {
-      System.err.println("Unable to open the metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw e;
-    }
-    try {
-      clientEncrypted = new HiveMetaStoreClient(hiveConfEncrypted);
     } catch (Throwable e) {
       System.err.println("Unable to open the metastore");
       System.err.println(StringUtils.stringifyException(e));
@@ -145,9 +105,8 @@ public class TestMetaStoreMultipleEncryptionZones {
   @AfterClass
   public static void tearDown() throws Exception {
     try {
-      m_dfs.shutdown();
+      miniDFSCluster.shutdown();
       client.close();
-      clientEncrypted.close();
     } catch (Throwable e) {
       System.err.println("Unable to close metastore");
       System.err.println(StringUtils.stringifyException(e));
@@ -156,19 +115,19 @@ public class TestMetaStoreMultipleEncryptionZones {
   }
 
   @Test
-  public void dropTableFailureWithDifferentEncryptionZonesForCm() throws Throwable {
-    String dbName = "simpdb";
-    String tblName = "simptbl";
+  public void dropTableWithDifferentEncryptionZonesDifferentKey() throws Throwable {
+    String dbName = "encrdb1";
+    String tblName1 = "encrtbl1";
+    String tblName2 = "encrtbl2";
     String typeName = "Person";
-    clientEncrypted.dropTable(dbName, tblName);
-    silentDropDatabase(dbName, clientEncrypted);
 
+    silentDropDatabase(dbName);
     new DatabaseBuilder()
             .setName(dbName)
             .addParam("repl.source.for", "1, 2, 3")
-            .create(clientEncrypted, hiveConfEncrypted);
+            .create(client, hiveConf);
 
-    clientEncrypted.dropType(typeName);
+    client.dropType(typeName);
     Type typ1 = new Type();
     typ1.setName(typeName);
     typ1.setFields(new ArrayList<>(2));
@@ -176,38 +135,248 @@ public class TestMetaStoreMultipleEncryptionZones {
             new FieldSchema("name", ColumnType.STRING_TYPE_NAME, ""));
     typ1.getFields().add(
             new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
-    clientEncrypted.createType(typ1);
+    client.createType(typ1);
 
-    Table tbl = new TableBuilder()
+    new TableBuilder()
             .setDbName(dbName)
-            .setTableName(tblName)
+            .setTableName(tblName1)
             .setCols(typ1.getFields())
             .setNumBuckets(1)
             .addBucketCol("name")
             .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
-            .create(clientEncrypted, hiveConfEncrypted);
+            .create(client, hiveConf);
 
-    Table tbl2 = clientEncrypted.getTable(dbName, tblName);
-    Assert.assertNotNull(tbl2);
+    Table tbl = client.getTable(dbName, tblName1);
+    Assert.assertNotNull(tbl);
 
-    Path dirDb = new Path(warehouseEncrypted.getWhRoot(), dbName +".db");
-    warehouseFsEncrypted.mkdirs(dirDb);
-    Path dirTbl1 = new Path(dirDb, tblName);
-    warehouseFsEncrypted.mkdirs(dirTbl1);
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName2)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
+    warehouseFs.mkdirs(dirDb);
+    Path dirTbl1 = new Path(dirDb, tblName1);
+    warehouseFs.mkdirs(dirTbl1);
+    shimCm.createEncryptionZone(dirTbl1, "test_key_db");
     Path part11 = new Path(dirTbl1, "part1");
-    createFile(part11, "testClearer11", hiveConfEncrypted);
+    createFile(part11, "testClearer11");
+
+    Path dirTbl2 = new Path(dirDb, tblName2);
+    warehouseFs.mkdirs(dirTbl2);
+    shimCm.createEncryptionZone(dirTbl2, "test_key_cm");
+    Path part12 = new Path(dirTbl2, "part1");
+    createFile(part12, "testClearer12");
 
     boolean exceptionThrown = false;
     try {
-      clientEncrypted.dropTable(dbName, tblName);
+      client.dropTable(dbName, tblName1);
     } catch (MetaException e) {
       exceptionThrown = true;
       assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
     }
     assertFalse(exceptionThrown);
-    assertFalse(warehouseFsEncrypted.exists(part11));
+    assertFalse(warehouseFs.exists(part11));
     try {
-      clientEncrypted.getTable(dbName, tblName);
+      client.getTable(dbName, tblName1);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertTrue(exceptionThrown);
+    exceptionThrown = false;
+    try {
+      client.dropTable(dbName, tblName2);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part12));
+    try {
+      client.getTable(dbName, tblName2);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertTrue(exceptionThrown);
+  }
+
+  @Test
+  public void dropTableWithDifferentEncryptionZones() throws Throwable {
+    String dbName = "encrdb2";
+    String tblName1 = "encrtbl1";
+    String tblName2 = "encrtbl2";
+    String typeName = "Person";
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+            .setName(dbName)
+            .addParam("repl.source.for", "1, 2, 3")
+            .create(client, hiveConf);
+
+    client.dropType(typeName);
+    Type typ1 = new Type();
+    typ1.setName(typeName);
+    typ1.setFields(new ArrayList<>(2));
+    typ1.getFields().add(
+            new FieldSchema("name", ColumnType.STRING_TYPE_NAME, ""));
+    typ1.getFields().add(
+            new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
+    client.createType(typ1);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName1)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Table tbl = client.getTable(dbName, tblName1);
+    Assert.assertNotNull(tbl);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName2)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
+    warehouseFs.mkdirs(dirDb);
+    Path dirTbl1 = new Path(dirDb, tblName1);
+    warehouseFs.mkdirs(dirTbl1);
+    shimCm.createEncryptionZone(dirTbl1, "test_key_db");
+    Path part11 = new Path(dirTbl1, "part1");
+    createFile(part11, "testClearer11");
+
+    Path dirTbl2 = new Path(dirDb, tblName2);
+    warehouseFs.mkdirs(dirTbl2);
+    shimCm.createEncryptionZone(dirTbl2, "test_key_db");
+    Path part12 = new Path(dirTbl2, "part2");
+    createFile(part12, "testClearer12");
+
+    boolean exceptionThrown = false;
+    try {
+      client.dropTable(dbName, tblName1);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part11));
+    try {
+      client.getTable(dbName, tblName1);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertTrue(exceptionThrown);
+    exceptionThrown = false;
+    try {
+      client.dropTable(dbName, tblName2);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part12));
+    try {
+      client.getTable(dbName, tblName2);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertTrue(exceptionThrown);
+  }
+
+  @Test
+  public void dropTableWithSameEncryptionZones() throws Throwable {
+    String dbName = "encrdb3";
+    String tblName1 = "encrtbl1";
+    String tblName2 = "encrtbl2";
+    String typeName = "Person";
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder()
+            .setName(dbName)
+            .addParam("repl.source.for", "1, 2, 3")
+            .create(client, hiveConf);
+
+    client.dropType(typeName);
+    Type typ1 = new Type();
+    typ1.setName(typeName);
+    typ1.setFields(new ArrayList<>(2));
+    typ1.getFields().add(
+            new FieldSchema("name", ColumnType.STRING_TYPE_NAME, ""));
+    typ1.getFields().add(
+            new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
+    client.createType(typ1);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName1)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Table tbl = client.getTable(dbName, tblName1);
+    Assert.assertNotNull(tbl);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName2)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
+    warehouseFs.delete(dirDb, true);
+    warehouseFs.mkdirs(dirDb);
+    shimCm.createEncryptionZone(dirDb, "test_key_db");
+    Path dirTbl1 = new Path(dirDb, tblName1);
+    warehouseFs.mkdirs(dirTbl1);
+    Path part11 = new Path(dirTbl1, "part1");
+    createFile(part11, "testClearer11");
+
+    Path dirTbl2 = new Path(dirDb, tblName2);
+    warehouseFs.mkdirs(dirTbl2);
+    Path part12 = new Path(dirTbl2, "part1");
+    createFile(part12, "testClearer12");
+
+    boolean exceptionThrown = false;
+    try {
+      client.dropTable(dbName, tblName1);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part11));
+    try {
+      client.getTable(dbName, tblName1);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertTrue(exceptionThrown);
+    exceptionThrown = false;
+    try {
+      client.dropTable(dbName, tblName2);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part12));
+    try {
+      client.getTable(dbName, tblName2);
     } catch (NoSuchObjectException e) {
       exceptionThrown = true;
     }
@@ -216,12 +385,10 @@ public class TestMetaStoreMultipleEncryptionZones {
 
   @Test
   public void dropTableWithoutEncryptionZonesForCm() throws Throwable {
-    String dbName = "simpdb";
+    String dbName = "simpdb1";
     String tblName = "simptbl";
     String typeName = "Person";
-    client.dropTable(dbName, tblName);
-    silentDropDatabase(dbName, client);
-
+    silentDropDatabase(dbName);
     new DatabaseBuilder()
             .setName(dbName)
             .addParam("repl.source.for", "1, 2, 3")
@@ -237,7 +404,7 @@ public class TestMetaStoreMultipleEncryptionZones {
             new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
     client.createType(typ1);
 
-    Table tbl = new TableBuilder()
+    new TableBuilder()
             .setDbName(dbName)
             .setTableName(tblName)
             .setCols(typ1.getFields())
@@ -246,15 +413,15 @@ public class TestMetaStoreMultipleEncryptionZones {
             .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
             .create(client, hiveConf);
 
-    Table tbl2 = client.getTable(dbName, tblName);
-    Assert.assertNotNull(tbl2);
+    Table tbl = client.getTable(dbName, tblName);
+    Assert.assertNotNull(tbl);
 
     Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
     warehouseFs.mkdirs(dirDb);
     Path dirTbl1 = new Path(dirDb, tblName);
     warehouseFs.mkdirs(dirTbl1);
     Path part11 = new Path(dirTbl1, "part1");
-    createFile(part11, "testClearer11", hiveConf);
+    createFile(part11, "testClearer11");
 
     boolean exceptionThrown = false;
     try {
@@ -273,19 +440,18 @@ public class TestMetaStoreMultipleEncryptionZones {
   }
 
   @Test
-  public void dropExternalTableWithDifferentEncryptionZonesForCm() throws Throwable {
-    String dbName = "simpdb";
-    String tblName = "simptbl";
+  public void dropExternalTableWithSameEncryptionZonesForCm() throws Throwable {
+    String dbName = "encrdb4";
+    String tblName1 = "encrtbl1";
+    String tblName2 = "encrtbl2";
     String typeName = "Person";
-    clientEncrypted.dropTable(dbName, tblName);
-    silentDropDatabase(dbName, clientEncrypted);
-
+    silentDropDatabase(dbName);
     new DatabaseBuilder()
             .setName(dbName)
             .addParam("repl.source.for", "1, 2, 3")
-            .create(clientEncrypted, hiveConfEncrypted);
+            .create(client, hiveConf);
 
-    clientEncrypted.dropType(typeName);
+    client.dropType(typeName);
     Type typ1 = new Type();
     typ1.setName(typeName);
     typ1.setFields(new ArrayList<>(2));
@@ -293,39 +459,255 @@ public class TestMetaStoreMultipleEncryptionZones {
             new FieldSchema("name", ColumnType.STRING_TYPE_NAME, ""));
     typ1.getFields().add(
             new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
-    clientEncrypted.createType(typ1);
+    client.createType(typ1);
 
-    Table tbl = new TableBuilder()
+    new TableBuilder()
             .setDbName(dbName)
-            .setTableName(tblName)
+            .setTableName(tblName1)
             .setCols(typ1.getFields())
             .setNumBuckets(1)
             .addBucketCol("name")
             .addTableParam("EXTERNAL", "true")
             .addTableParam("external.table.purge", "true")
             .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
-            .create(clientEncrypted, hiveConfEncrypted);
+            .create(client, hiveConf);
 
-    Table tbl2 = clientEncrypted.getTable(dbName, tblName);
-    Assert.assertNotNull(tbl2);
+    Table tbl = client.getTable(dbName, tblName1);
+    Assert.assertNotNull(tbl);
 
-    Path dirDb = new Path(warehouseEncrypted.getWhRoot(), dbName +".db");
-    warehouseFsEncrypted.mkdirs(dirDb);
-    Path dirTbl1 = new Path(dirDb, tblName);
-    warehouseFsEncrypted.mkdirs(dirTbl1);
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName2)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addTableParam("EXTERNAL", "true")
+            .addTableParam("external.table.purge", "true")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
+    warehouseFs.delete(dirDb, true);
+    warehouseFs.mkdirs(dirDb);
+    shimCm.createEncryptionZone(dirDb, "test_key_db");
+    Path dirTbl1 = new Path(dirDb, tblName1);
+    warehouseFs.mkdirs(dirTbl1);
     Path part11 = new Path(dirTbl1, "part1");
-    createFile(part11, "testClearer11", hiveConfEncrypted);
+    createFile(part11, "testClearer11");
+
+    Path dirTbl2 = new Path(dirDb, tblName2);
+    warehouseFs.mkdirs(dirTbl2);
+    Path part12 = new Path(dirTbl2, "part1");
+    createFile(part12, "testClearer12");
 
     boolean exceptionThrown = false;
     try {
-      clientEncrypted.dropTable(dbName, tblName);
+      client.dropTable(dbName, tblName1);
     } catch (MetaException e) {
       exceptionThrown = true;
     }
     assertFalse(exceptionThrown);
-    assertFalse(warehouseFsEncrypted.exists(part11));
+    assertFalse(warehouseFs.exists(part11));
     try {
-      clientEncrypted.getTable(dbName, tblName);
+      client.getTable(dbName, tblName1);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertTrue(exceptionThrown);
+    exceptionThrown = false;
+    try {
+      client.dropTable(dbName, tblName2);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part11));
+    try {
+      client.getTable(dbName, tblName2);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertTrue(exceptionThrown);
+  }
+
+  @Test
+  public void dropExternalTableWithDifferentEncryptionZones() throws Throwable {
+    String dbName = "encrdb5";
+    String tblName1 = "encrtbl1";
+    String tblName2 = "encrtbl2";
+    String typeName = "Person";
+
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+            .setName(dbName)
+            .addParam("repl.source.for", "1, 2, 3")
+            .create(client, hiveConf);
+
+    client.dropType(typeName);
+    Type typ1 = new Type();
+    typ1.setName(typeName);
+    typ1.setFields(new ArrayList<>(2));
+    typ1.getFields().add(
+            new FieldSchema("name", ColumnType.STRING_TYPE_NAME, ""));
+    typ1.getFields().add(
+            new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
+    client.createType(typ1);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName1)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addTableParam("EXTERNAL", "true")
+            .addTableParam("external.table.purge", "true")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Table tbl = client.getTable(dbName, tblName1);
+    Assert.assertNotNull(tbl);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName2)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addTableParam("EXTERNAL", "true")
+            .addTableParam("external.table.purge", "true")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
+    warehouseFs.mkdirs(dirDb);
+    Path dirTbl1 = new Path(dirDb, tblName1);
+    warehouseFs.mkdirs(dirTbl1);
+    shimCm.createEncryptionZone(dirTbl1, "test_key_db");
+    Path part11 = new Path(dirTbl1, "part1");
+    createFile(part11, "testClearer11");
+
+    Path dirTbl2 = new Path(dirDb, tblName2);
+    warehouseFs.mkdirs(dirTbl2);
+    shimCm.createEncryptionZone(dirTbl2, "test_key_db");
+    Path part12 = new Path(dirTbl2, "part1");
+    createFile(part12, "testClearer12");
+
+    boolean exceptionThrown = false;
+    try {
+      client.dropTable(dbName, tblName1);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part11));
+    try {
+      client.getTable(dbName, tblName1);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertTrue(exceptionThrown);
+    exceptionThrown = false;
+    try {
+      client.dropTable(dbName, tblName2);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part12));
+    try {
+      client.getTable(dbName, tblName2);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertTrue(exceptionThrown);
+  }
+
+  @Test
+  public void dropExternalTableWithDifferentEncryptionZonesDifferentKey() throws Throwable {
+    String dbName = "encrdb6";
+    String tblName1 = "encrtbl1";
+    String tblName2 = "encrtbl2";
+    String typeName = "Person";
+
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+            .setName(dbName)
+            .addParam("repl.source.for", "1, 2, 3")
+            .create(client, hiveConf);
+
+    client.dropType(typeName);
+    Type typ1 = new Type();
+    typ1.setName(typeName);
+    typ1.setFields(new ArrayList<>(2));
+    typ1.getFields().add(
+            new FieldSchema("name", ColumnType.STRING_TYPE_NAME, ""));
+    typ1.getFields().add(
+            new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
+    client.createType(typ1);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName1)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addTableParam("EXTERNAL", "true")
+            .addTableParam("external.table.purge", "true")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Table tbl = client.getTable(dbName, tblName1);
+    Assert.assertNotNull(tbl);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName2)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addTableParam("EXTERNAL", "true")
+            .addTableParam("external.table.purge", "true")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
+    warehouseFs.mkdirs(dirDb);
+    Path dirTbl1 = new Path(dirDb, tblName1);
+    warehouseFs.mkdirs(dirTbl1);
+    shimCm.createEncryptionZone(dirTbl1, "test_key_db");
+    Path part11 = new Path(dirTbl1, "part1");
+    createFile(part11, "testClearer11");
+
+    Path dirTbl2 = new Path(dirDb, tblName2);
+    warehouseFs.mkdirs(dirTbl2);
+    shimCm.createEncryptionZone(dirTbl2, "test_key_cm");
+    Path part12 = new Path(dirTbl2, "part1");
+    createFile(part12, "testClearer12");
+
+    boolean exceptionThrown = false;
+    try {
+      client.dropTable(dbName, tblName1);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part11));
+    try {
+      client.getTable(dbName, tblName1);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertTrue(exceptionThrown);
+    exceptionThrown = false;
+    try {
+      client.dropTable(dbName, tblName2);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part12));
+    try {
+      client.getTable(dbName, tblName2);
     } catch (NoSuchObjectException e) {
       exceptionThrown = true;
     }
@@ -334,12 +716,10 @@ public class TestMetaStoreMultipleEncryptionZones {
 
   @Test
   public void dropExternalTableWithoutEncryptionZonesForCm() throws Throwable {
-    String dbName = "simpdb";
+    String dbName = "simpdb2";
     String tblName = "simptbl";
     String typeName = "Person";
-    client.dropTable(dbName, tblName);
-    silentDropDatabase(dbName, client);
-
+    silentDropDatabase(dbName);
     new DatabaseBuilder()
             .setName(dbName)
             .addParam("repl.source.for", "1, 2, 3")
@@ -355,7 +735,7 @@ public class TestMetaStoreMultipleEncryptionZones {
             new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
     client.createType(typ1);
 
-    Table tbl = new TableBuilder()
+    new TableBuilder()
             .setDbName(dbName)
             .setTableName(tblName)
             .setCols(typ1.getFields())
@@ -366,15 +746,15 @@ public class TestMetaStoreMultipleEncryptionZones {
             .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
             .create(client, hiveConf);
 
-    Table tbl2 = client.getTable(dbName, tblName);
-    Assert.assertNotNull(tbl2);
+    Table tbl = client.getTable(dbName, tblName);
+    Assert.assertNotNull(tbl);
 
     Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
     warehouseFs.mkdirs(dirDb);
     Path dirTbl1 = new Path(dirDb, tblName);
     warehouseFs.mkdirs(dirTbl1);
     Path part11 = new Path(dirTbl1, "part1");
-    createFile(part11, "testClearer11", hiveConf);
+    createFile(part11, "testClearer11");
 
     boolean exceptionThrown = false;
     try {
@@ -393,66 +773,15 @@ public class TestMetaStoreMultipleEncryptionZones {
   }
 
   @Test
-  public void truncateTableFailureWithDifferentEncryptionZonesForCm() throws Throwable {
-    String dbName = "simpdb";
-    String tblName = "simptbl";
+  public void truncateTableWithDifferentEncryptionZones() throws Throwable {
+    String dbName = "encrdb7";
+    String tblName1 = "encrtbl1";
+    String tblName2 = "encrtbl2";
     String typeName = "Person";
-    clientEncrypted.dropTable(dbName, tblName);
-    silentDropDatabase(dbName, clientEncrypted);
 
-    new DatabaseBuilder()
-            .setName(dbName)
-            .addParam("repl.source.for", "1, 2, 3")
-            .create(clientEncrypted, hiveConfEncrypted);
-
-    clientEncrypted.dropType(typeName);
-    Type typ1 = new Type();
-    typ1.setName(typeName);
-    typ1.setFields(new ArrayList<>(2));
-    typ1.getFields().add(
-            new FieldSchema("name", ColumnType.STRING_TYPE_NAME, ""));
-    typ1.getFields().add(
-            new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
-    clientEncrypted.createType(typ1);
-
-    Table tbl = new TableBuilder()
-            .setDbName(dbName)
-            .setTableName(tblName)
-            .setCols(typ1.getFields())
-            .setNumBuckets(1)
-            .addBucketCol("name")
-            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
-            .create(clientEncrypted, hiveConfEncrypted);
-
-    Table tbl2 = clientEncrypted.getTable(dbName, tblName);
-    Assert.assertNotNull(tbl2);
-
-    Path dirDb = new Path(warehouseEncrypted.getWhRoot(), dbName +".db");
-    warehouseFsEncrypted.mkdirs(dirDb);
-    Path dirTbl1 = new Path(dirDb, tblName);
-    warehouseFsEncrypted.mkdirs(dirTbl1);
-    Path part11 = new Path(dirTbl1, "part1");
-    createFile(part11, "testClearer11", hiveConfEncrypted);
-
-    boolean exceptionThrown = false;
-    try {
-      clientEncrypted.truncateTable(dbName, tblName, null);
-    } catch (MetaException e) {
-      exceptionThrown = true;
-      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
-    }
-    assertFalse(exceptionThrown);
-    assertFalse(warehouseFsEncrypted.exists(part11));
-    Assert.assertNotNull(clientEncrypted.getTable(dbName, tblName));
-  }
-
-  @Test
-  public void truncateTableWithoutEncryptionZonesForCm() throws Throwable {
-    String dbName = "simpdb";
-    String tblName = "simptbl";
-    String typeName = "Person";
-    client.dropTable(dbName, tblName);
-    silentDropDatabase(dbName, client);
+    client.dropTable(dbName, tblName1);
+    client.dropTable(dbName, tblName2);
+    silentDropDatabase(dbName);
 
     new DatabaseBuilder()
             .setName(dbName)
@@ -469,7 +798,281 @@ public class TestMetaStoreMultipleEncryptionZones {
             new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
     client.createType(typ1);
 
-    Table tbl = new TableBuilder()
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName1)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Table tbl = client.getTable(dbName, tblName1);
+    Assert.assertNotNull(tbl);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName2)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
+    warehouseFs.mkdirs(dirDb);
+    Path dirTbl1 = new Path(dirDb, tblName1);
+    warehouseFs.mkdirs(dirTbl1);
+    shimCm.createEncryptionZone(dirTbl1, "test_key_db");
+    Path part11 = new Path(dirTbl1, "part1");
+    createFile(part11, "testClearer11");
+
+    Path dirTbl2 = new Path(dirDb, tblName2);
+    warehouseFs.mkdirs(dirTbl2);
+    shimCm.createEncryptionZone(dirTbl2, "test_key_db");
+    Path part12 = new Path(dirTbl2, "part1");
+    createFile(part12, "testClearer12");
+
+    boolean exceptionThrown = false;
+    try {
+      client.truncateTable(dbName, tblName1, null);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part11));
+    try {
+      client.getTable(dbName, tblName1);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertFalse(exceptionThrown);
+
+    try {
+      client.truncateTable(dbName, tblName2, null);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part12));
+    try {
+      client.getTable(dbName, tblName2);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertFalse(exceptionThrown);
+  }
+
+  @Test
+  public void truncateTableWithDifferentEncryptionZonesDifferentKey() throws Throwable {
+    String dbName = "encrdb8";
+    String tblName1 = "encrtbl1";
+    String tblName2 = "encrtbl2";
+    String typeName = "Person";
+
+    client.dropTable(dbName, tblName1);
+    client.dropTable(dbName, tblName2);
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder()
+            .setName(dbName)
+            .addParam("repl.source.for", "1, 2, 3")
+            .create(client, hiveConf);
+
+    client.dropType(typeName);
+    Type typ1 = new Type();
+    typ1.setName(typeName);
+    typ1.setFields(new ArrayList<>(2));
+    typ1.getFields().add(
+            new FieldSchema("name", ColumnType.STRING_TYPE_NAME, ""));
+    typ1.getFields().add(
+            new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
+    client.createType(typ1);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName1)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Table tbl = client.getTable(dbName, tblName1);
+    Assert.assertNotNull(tbl);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName2)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
+    warehouseFs.mkdirs(dirDb);
+    Path dirTbl1 = new Path(dirDb, tblName1);
+    warehouseFs.mkdirs(dirTbl1);
+    shimCm.createEncryptionZone(dirTbl1, "test_key_db");
+    Path part11 = new Path(dirTbl1, "part1");
+    createFile(part11, "testClearer11");
+
+    Path dirTbl2 = new Path(dirDb, tblName2);
+    warehouseFs.mkdirs(dirTbl2);
+    shimCm.createEncryptionZone(dirTbl2, "test_key_cm");
+    Path part12 = new Path(dirTbl2, "part1");
+    createFile(part12, "testClearer12");
+
+    boolean exceptionThrown = false;
+    try {
+      client.truncateTable(dbName, tblName1, null);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part11));
+    try {
+      client.getTable(dbName, tblName1);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertFalse(exceptionThrown);
+
+    try {
+      client.truncateTable(dbName, tblName2, null);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part12));
+    try {
+      client.getTable(dbName, tblName2);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertFalse(exceptionThrown);
+  }
+
+  @Test
+  public void truncateTableWithSameEncryptionZones() throws Throwable {
+    String dbName = "encrdb9";
+    String tblName1 = "encrtbl1";
+    String tblName2 = "encrtbl2";
+    String typeName = "Person";
+    client.dropTable(dbName, tblName1);
+    client.dropTable(dbName, tblName2);
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+            .setName(dbName)
+            .addParam("repl.source.for", "1, 2, 3")
+            .create(client, hiveConf);
+
+    client.dropType(typeName);
+    Type typ1 = new Type();
+    typ1.setName(typeName);
+    typ1.setFields(new ArrayList<>(2));
+    typ1.getFields().add(
+            new FieldSchema("name", ColumnType.STRING_TYPE_NAME, ""));
+    typ1.getFields().add(
+            new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
+    client.createType(typ1);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName1)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Table tbl = client.getTable(dbName, tblName1);
+    Assert.assertNotNull(tbl);
+
+    new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName2)
+            .setCols(typ1.getFields())
+            .setNumBuckets(1)
+            .addBucketCol("name")
+            .addStorageDescriptorParam("test_param_1", "Use this for comments etc")
+            .create(client, hiveConf);
+
+    Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
+    warehouseFs.delete(dirDb, true);
+    warehouseFs.mkdirs(dirDb);
+    shimCm.createEncryptionZone(dirDb, "test_key_db");
+    Path dirTbl1 = new Path(dirDb, tblName1);
+    warehouseFs.mkdirs(dirTbl1);
+    Path part11 = new Path(dirTbl1, "part1");
+    createFile(part11, "testClearer11");
+
+    Path dirTbl2 = new Path(dirDb, tblName2);
+    warehouseFs.mkdirs(dirTbl2);
+    Path part12 = new Path(dirTbl2, "part1");
+    createFile(part12, "testClearer12");
+
+    boolean exceptionThrown = false;
+    try {
+      client.truncateTable(dbName, tblName1, null);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part11));
+    try {
+      client.getTable(dbName, tblName1);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertFalse(exceptionThrown);
+
+    try {
+      client.truncateTable(dbName, tblName2, null);
+    } catch (MetaException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+    assertFalse(warehouseFs.exists(part12));
+    try {
+      client.getTable(dbName, tblName2);
+    } catch (NoSuchObjectException e) {
+      exceptionThrown = true;
+    }
+    assertFalse(exceptionThrown);
+  }
+
+  @Test
+  public void truncateTableWithoutEncryptionZonesForCm() throws Throwable {
+    String dbName = "simpdb3";
+    String tblName = "simptbl";
+    String typeName = "Person";
+    client.dropTable(dbName, tblName);
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder()
+            .setName(dbName)
+            .addParam("repl.source.for", "1, 2, 3")
+            .create(client, hiveConf);
+
+    client.dropType(typeName);
+    Type typ1 = new Type();
+    typ1.setName(typeName);
+    typ1.setFields(new ArrayList<>(2));
+    typ1.getFields().add(
+            new FieldSchema("name", ColumnType.STRING_TYPE_NAME, ""));
+    typ1.getFields().add(
+            new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
+    client.createType(typ1);
+
+    new TableBuilder()
             .setDbName(dbName)
             .setTableName(tblName)
             .setCols(typ1.getFields())
@@ -486,7 +1089,7 @@ public class TestMetaStoreMultipleEncryptionZones {
     Path dirTbl1 = new Path(dirDb, tblName);
     warehouseFs.mkdirs(dirTbl1);
     Path part11 = new Path(dirTbl1, "part1");
-    createFile(part11, "testClearer11", hiveConf);
+    createFile(part11, "testClearer11");
 
     boolean exceptionThrown = false;
     try {
@@ -507,17 +1110,17 @@ public class TestMetaStoreMultipleEncryptionZones {
   @Test
   public void recycleFailureWithDifferentEncryptionZonesForCm() throws Throwable {
 
-    long now = System.currentTimeMillis();
-    Path dirDb = new Path(warehouseEncrypted.getWhRoot(), "db3");
-    warehouseFsEncrypted.mkdirs(dirDb);
+    Path dirDb = new Path(warehouse.getWhRoot(), "db3");
+    warehouseFs.mkdirs(dirDb);
     Path dirTbl1 = new Path(dirDb, "tbl1");
-    warehouseFsEncrypted.mkdirs(dirTbl1);
+    warehouseFs.mkdirs(dirTbl1);
+    shimCm.createEncryptionZone(dirTbl1, "test_key_db");
     Path part11 = new Path(dirTbl1, "part1");
-    createFile(part11, "testClearer11", hiveConfEncrypted);
-    String fileChksum11 = ReplChangeManager.checksumFor(part11, warehouseFsEncrypted);
+    createFile(part11, "testClearer11");
+
     boolean exceptionThrown = false;
     try {
-      ReplChangeManager.getInstance(hiveConfEncrypted).recycle(dirTbl1, RecycleType.MOVE, false);
+      ReplChangeManager.getInstance(hiveConf).recycle(dirTbl1, RecycleType.MOVE, false);
     } catch (RemoteException e) {
       exceptionThrown = true;
       assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
@@ -526,9 +1129,13 @@ public class TestMetaStoreMultipleEncryptionZones {
   }
 
 
-
-
-  private static void silentDropDatabase(String dbName, HiveMetaStoreClient client) throws MetaException, TException{
+  private void createFile(Path path, String content) throws IOException {
+    FSDataOutputStream output = path.getFileSystem(hiveConf).create(path);
+    output.writeChars(content);
+    output.close();
+  }
+  
+  private void silentDropDatabase(String dbName) throws TException {
     try {
       for (String tableName : client.getTables(dbName, "*")) {
         client.dropTable(dbName, tableName);
@@ -537,11 +1144,5 @@ public class TestMetaStoreMultipleEncryptionZones {
     } catch (NoSuchObjectException|InvalidOperationException e) {
       // NOP
     }
-  }
-
-  private void createFile(Path path, String content, HiveConf hiveConf) throws IOException {
-    FSDataOutputStream output = path.getFileSystem(hiveConf).create(path);
-    output.writeChars(content);
-    output.close();
   }
 }

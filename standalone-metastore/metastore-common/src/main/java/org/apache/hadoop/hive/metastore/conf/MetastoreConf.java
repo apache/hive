@@ -917,6 +917,8 @@ public class MetastoreConf {
             "This class is used to store and retrieval of raw metadata objects such as table, database"),
     REPLCMDIR("metastore.repl.cmrootdir", "hive.repl.cmrootdir", "/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
+    REPLCMENCRYPTEDDIR("metastore.encrypted.repl.cmrootdir", "hive.encrypted.repl.cmrootdir", "/cmroot/",
+            "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
     REPLCMRETIAN("metastore.repl.cm.retain", "hive.repl.cm.retain",  24, TimeUnit.HOURS,
         "Time to retain removed files in cmrootdir."),
     REPLCMINTERVAL("metastore.repl.cm.interval", "hive.repl.cm.interval", 3600, TimeUnit.SECONDS,

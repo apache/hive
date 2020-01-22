@@ -1619,8 +1619,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         IOException, InvalidObjectException, InvalidInputException {
       boolean success = false;
       Database db = null;
-      Map<Table, Path> tablePaths = new HashMap<>();
-      Map<Table, List<Path>> partitionPaths = new HashMap<>();
+      List<Path> tablePaths = new ArrayList<>();
+      List<Path> partitionPaths = new ArrayList<>();
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
       if (name == null) {
         throw new MetaException("Database name cannot be null.");
@@ -1695,7 +1695,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
                 if (!FileUtils.isSubdirectory(databasePath.toString(),
                     materializedViewPath.toString())) {
-                  tablePaths.put(materializedView, materializedViewPath);
+                  tablePaths.add(materializedViewPath);
                 }
               }
               // Drop the materialized view but not its data
@@ -1737,14 +1737,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 }
 
                 if (!FileUtils.isSubdirectory(databasePath.toString(), tablePath.toString())) {
-                  tablePaths.put(table, tablePath);
+                  tablePaths.add(tablePath);
                 }
               }
 
               // For each partition in each table, drop the partitions and get a list of
               // partitions' locations which might need to be deleted
-              partitionPaths.put(table, dropPartitionsAndGetLocations(ms, catName, name, table.getTableName(),
-                  tablePath, tableDataShouldBeDeleted));
+              partitionPaths = dropPartitionsAndGetLocations(ms, catName, name, table.getTableName(),
+                  tablePath, tableDataShouldBeDeleted);
 
               // Drop the table but not its data
               drop_table(MetaStoreUtils.prependCatalogToDbName(table.getCatName(), table.getDbName(), conf),
@@ -1770,12 +1770,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.rollbackTransaction();
         } else if (deleteData) {
           // Delete the data in the partitions which have other locations
-          for (Table table : partitionPaths.keySet()) {
-            deletePartitionData(partitionPaths.get(table), false, ReplChangeManager.shouldEnableCm(db, table));
-          }
+          deletePartitionData(partitionPaths, false, db);
           // Delete the data in the tables which have other locations
-          for (Table table : tablePaths.keySet()) {
-            deleteTableData(tablePaths.get(table), false, ReplChangeManager.shouldEnableCm(db, table));
+          for (Path tablePath : tablePaths) {
+            deleteTableData(tablePath, false, db);
           }
           // Delete the data in the database
           try {
@@ -2847,6 +2845,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     /**
+     * Deletes the data in a table's location, if it fails logs an error.
+     *
+     * @param tablePath
+     * @param ifPurge completely purge the table (skipping trash) while removing
+     *                data from warehouse
+     * @param db Database
+     */
+    private void deleteTableData(Path tablePath, boolean ifPurge, Database db) throws MetaException {
+      if (tablePath != null) {
+        wh.deleteDir(tablePath, true, ifPurge, db);
+      }
+    }
+
+    /**
     * Give a list of partitions' locations, tries to delete each one
     * and for each that fails logs an error.
     *
@@ -2863,6 +2875,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           } catch (Exception e) {
             LOG.error("Failed to delete partition directory: " + partPath +
                 " " + e.getMessage());
+          }
+        }
+      }
+    }
+
+    /**
+     * Give a list of partitions' locations, tries to delete each one
+     * and for each that fails logs an error.
+     *
+     * @param partPaths
+     * @param ifPurge completely purge the partition (skipping trash) while
+     *                removing data from warehouse
+     * @param db Database
+     */
+    private void deletePartitionData(List<Path> partPaths, boolean ifPurge, Database db) {
+      if (partPaths != null && !partPaths.isEmpty()) {
+        for (Path partPath : partPaths) {
+          try {
+            wh.deleteDir(partPath, true, ifPurge, db);
+          } catch (Exception e) {
+            LOG.error("Failed to delete partition directory: " + partPath +
+                    " " + e.getMessage());
           }
         }
       }

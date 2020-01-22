@@ -565,7 +565,7 @@ public interface HadoopShims {
     public int comparePathKeyStrength(Path path1, Path path2) throws IOException;
 
     /**
-     * create encryption zone by path and keyname
+     * Create encryption zone by path and keyname.
      * @param path HDFS path to create encryption zone
      * @param keyName keyname
      * @throws IOException
@@ -574,11 +574,11 @@ public interface HadoopShims {
     public void createEncryptionZone(Path path, String keyName) throws IOException;
 
     /**
-     * get encryption zone by path
-     * @param path HDFS path to create encryption zone
+     * Get encryption zone by path.
+     * @param path HDFS path to create encryption zone.
      * @throws IOException
      */
-    public EncryptionZone getEncryptionZoneForPath(Path path) throws IOException;
+     EncryptionZone getEncryptionZoneForPath(Path path) throws IOException;
 
     /**
      * Creates an encryption key.

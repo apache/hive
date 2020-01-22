@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -58,7 +59,7 @@ public class ReplChangeManager {
 
   private static boolean inited = false;
   private static boolean enabled = false;
-  private static Map<String, Path> cmRootForEncryptionZone = new HashMap<>();
+  private static Map<String, Path> cmRootMapping = new HashMap<>();
   private static HadoopShims hadoopShims = ShimLoader.getHadoopShims();
   private static Configuration conf;
   private String msUser;
@@ -158,7 +159,7 @@ public class ReplChangeManager {
             cmFs.mkdirs(cmroot);
             cmFs.setPermission(cmroot, new FsPermission("700"));
           }
-          cmRootForEncryptionZone.put(NO_ENCRYPTION, cmroot);
+          cmRootMapping.put(NO_ENCRYPTION, cmroot);
 
           UserGroupInformation usergroupInfo = UserGroupInformation.getCurrentUser();
           msUser = usergroupInfo.getShortUserName();
@@ -193,7 +194,7 @@ public class ReplChangeManager {
    * @return int
    * @throws IOException
    */
-  public int recycle(Path path, RecycleType type, boolean ifPurge) throws IOException {
+  public int recycle(Path path, RecycleType type, boolean ifPurge) throws IOException, MetaException {
     if (!enabled) {
       return 0;
     }
@@ -226,9 +227,18 @@ public class ReplChangeManager {
         switch (type) {
         case MOVE: {
           LOG.info("Moving {} to {}", path.toString(), cmPath.toString());
-
           // Rename fails if the file with same name already exist.
-          success = fs.rename(path, cmPath);
+          Retry<Boolean> retriable = new Retry<Boolean>(IOException.class) {
+            @Override
+            public Boolean execute() throws IOException {
+              return fs.rename(path, cmPath);
+            }
+          };
+          try {
+            success = retriable.run();
+          } catch (Exception e) {
+            throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+          }
           break;
         }
         case COPY: {
@@ -475,9 +485,11 @@ public class ReplChangeManager {
           .namingPattern(CM_THREAD_NAME_PREFIX + "%d")
           .daemon(true)
           .build());
-      executor.scheduleAtFixedRate(new CMClearer(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR),
-          MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
-          0, MetastoreConf.getTimeVar(conf, ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
+      for (Path cmroot : cmRootMapping.values()) {
+        executor.scheduleAtFixedRate(new CMClearer(cmroot.toString(),
+                        MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
+                0, MetastoreConf.getTimeVar(conf, ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
+      }
     }
   }
 
@@ -517,20 +529,22 @@ public class ReplChangeManager {
     Path cmroot = null;
     HdfsEncryptionShim pathEncryptionShim = hadoopShims.createHdfsEncryptionShim(path.getFileSystem(conf), conf);
     if (!pathEncryptionShim.isPathEncrypted(path)) {
-      cmroot = cmRootForEncryptionZone.get(NO_ENCRYPTION);
+      cmroot = cmRootMapping.get(NO_ENCRYPTION);
     } else {
       EncryptionZone encryptionZone = pathEncryptionShim.getEncryptionZoneForPath(path);
-      cmroot = cmRootForEncryptionZone.get(encryptionZone.getPath());
+      cmroot = cmRootMapping.get(encryptionZone.getPath());
       if (cmroot == null) {
-        cmroot = new Path(path.getFileSystem(conf).getUri() + encryptionZone.getPath()
-                + new Path(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR)).toUri().getPath());
-        FileSystem cmFs = cmroot.getFileSystem(conf);
-        // Create cmroot with permission 700 if not exist
-        if (!cmFs.exists(cmroot)) {
-          cmFs.mkdirs(cmroot);
-          cmFs.setPermission(cmroot, new FsPermission("700"));
+        synchronized (instance) {
+          cmroot = new Path(path.getFileSystem(conf).getUri() + encryptionZone.getPath()
+                  + MetastoreConf.getVar(conf, ConfVars.REPLCMENCRYPTEDDIR));
+          FileSystem cmFs = cmroot.getFileSystem(conf);
+          // Create cmroot with permission 700 if not exist
+          if (!cmFs.exists(cmroot)) {
+            cmFs.mkdirs(cmroot);
+            cmFs.setPermission(cmroot, new FsPermission("700"));
+          }
+          cmRootMapping.put(encryptionZone.getPath(), cmroot);
         }
-        cmRootForEncryptionZone.put(encryptionZone.getPath(), cmroot);
       }
     }
     return cmroot;
