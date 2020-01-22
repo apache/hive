@@ -1633,6 +1633,9 @@ public class AcidUtils {
       //By definition there are no open txns with id < 1.
       return true;
     }
+    if (writeIdList.getMinOpenWriteId() != null && parsedBase.getWriteId() <= writeIdList.getMinOpenWriteId()) {
+      return true;
+    }
     if(isCompactedBase(parsedBase, fs, (HdfsDirSnapshot) null)) {
       return writeIdList.isValidBase(parsedBase.getWriteId());
     }
