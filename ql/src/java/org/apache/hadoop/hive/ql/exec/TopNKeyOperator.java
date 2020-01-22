@@ -28,6 +28,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.plan.api.OperatorType.TOPNKEY;
 
@@ -38,9 +41,12 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
 
   private static final long serialVersionUID = 1L;
 
-  private transient TopNKeyFilter<KeyWrapper> topNKeyFilter;
+  private transient Map<KeyWrapper, TopNKeyFilter<KeyWrapper>> topNKeyFilters;
 
+  private transient KeyWrapper partitionKeyWrapper;
   private transient KeyWrapper keyWrapper;
+
+  private transient KeyWrapperComparator keyWrapperComparator;
 
   /** Kryo ctor. */
   public TopNKeyOperator() {
@@ -55,38 +61,62 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
-    String columnSortOrder = conf.getColumnSortOrder();
-    String nullSortOrder = conf.getNullOrder();
-
     ObjectInspector rowInspector = inputObjInspectors[0];
     outputObjInspector = rowInspector;
 
-    // init keyFields
-    int numKeys = conf.getKeyColumns().size();
-    ExprNodeEvaluator[] keyFields = new ExprNodeEvaluator[numKeys];
-    ObjectInspector[] keyObjectInspectors = new ObjectInspector[numKeys];
-    ObjectInspector[] currentKeyObjectInspectors = new ObjectInspector[numKeys];
+    int numPartitionKeys = conf.getPartitionKeyColumns().size();
+    List<ExprNodeDesc> keyColumns = conf.getKeyColumns().subList(numPartitionKeys, conf.getKeyColumns().size());
+    String columnSortOrder = conf.getColumnSortOrder().substring(numPartitionKeys);
+    String nullSortOrder = conf.getNullOrder().substring(numPartitionKeys);
 
-    for (int i = 0; i < numKeys; i++) {
-      ExprNodeDesc key = conf.getKeyColumns().get(i);
+    // init keyFields
+    ObjectInspector[] keyObjectInspectors = new ObjectInspector[keyColumns.size()];
+    ObjectInspector[] currentKeyObjectInspectors = new ObjectInspector[keyColumns.size()];
+    keyWrapper = initObjectInspectors(hconf, keyColumns, rowInspector, keyObjectInspectors, currentKeyObjectInspectors);
+    ObjectInspector[] partitionKeyObjectInspectors = new ObjectInspector[numPartitionKeys];
+    ObjectInspector[] partitionCurrentKeyObjectInspectors = new ObjectInspector[numPartitionKeys];
+    partitionKeyWrapper = initObjectInspectors(hconf, conf.getPartitionKeyColumns(), rowInspector,
+            partitionKeyObjectInspectors, partitionCurrentKeyObjectInspectors);
+
+    keyWrapperComparator = new KeyWrapperComparator(
+            keyObjectInspectors, currentKeyObjectInspectors, columnSortOrder.toString(), nullSortOrder.toString());
+
+    this.topNKeyFilters = new HashMap<>();
+  }
+
+  private KeyWrapper initObjectInspectors(Configuration hconf,
+                                    List<ExprNodeDesc> keyColumns,
+                                    ObjectInspector rowInspector,
+                                    ObjectInspector[] keyObjectInspectors,
+                                    ObjectInspector[] currentKeyObjectInspectors) throws HiveException {
+    ExprNodeEvaluator[] keyFields = new ExprNodeEvaluator[keyColumns.size()];
+    for (int i = 0; i < keyColumns.size(); i++) {
+      ExprNodeDesc key = keyColumns.get(i);
       keyFields[i] = ExprNodeEvaluatorFactory.get(key, hconf);
       keyObjectInspectors[i] = keyFields[i].initialize(rowInspector);
       currentKeyObjectInspectors[i] = ObjectInspectorUtils.getStandardObjectInspector(keyObjectInspectors[i],
-                      ObjectInspectorUtils.ObjectInspectorCopyOption.WRITABLE);
+              ObjectInspectorUtils.ObjectInspectorCopyOption.WRITABLE);
     }
-
-    this.topNKeyFilter = new TopNKeyFilter<>(conf.getTopN(), new KeyWrapperComparator(
-            keyObjectInspectors, currentKeyObjectInspectors, columnSortOrder, nullSortOrder));
 
     KeyWrapperFactory keyWrapperFactory = new KeyWrapperFactory(keyFields, keyObjectInspectors,
             currentKeyObjectInspectors);
-    keyWrapper = keyWrapperFactory.getKeyWrapper();
+    return keyWrapperFactory.getKeyWrapper();
   }
 
   @Override
   public void process(Object row, int tag) throws HiveException {
+    partitionKeyWrapper.getNewKey(row, inputObjInspectors[tag]);
+    partitionKeyWrapper.setHashKey();
+
+    TopNKeyFilter<KeyWrapper> topNKeyFilter = topNKeyFilters.get(partitionKeyWrapper);
+    if (topNKeyFilter == null) {
+      topNKeyFilter = new TopNKeyFilter<>(conf.getTopN(), keyWrapperComparator);
+      topNKeyFilters.put(partitionKeyWrapper.copyKey(), topNKeyFilter);
+    }
+
     keyWrapper.getNewKey(row, inputObjInspectors[tag]);
     keyWrapper.setHashKey();
+
     if (topNKeyFilter.canForward(keyWrapper)) {
       forward(row, outputObjInspector);
     }
@@ -94,7 +124,7 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
 
   @Override
   protected final void closeOp(boolean abort) throws HiveException {
-    topNKeyFilter.clear();
+    topNKeyFilters.clear();
     super.closeOp(abort);
   }
 
