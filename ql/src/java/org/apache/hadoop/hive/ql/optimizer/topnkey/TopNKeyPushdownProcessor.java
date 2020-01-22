@@ -154,13 +154,12 @@ public class TopNKeyPushdownProcessor implements NodeProcessor {
     final TopNKeyDesc topNKeyDesc = topNKey.getConf();
 
     CommonKeyPrefix commonKeyPrefix = CommonKeyPrefix.map(topNKeyDesc, groupByDesc);
-    if (commonKeyPrefix.isEmpty()) {
+    if (commonKeyPrefix.isEmpty() || commonKeyPrefix.size() == topNKeyDesc.getPartitionKeyColumns().size()) {
       return;
     }
 
     LOG.debug("Pushing a copy of {} through {}", topNKey.getName(), groupBy.getName());
-    final TopNKeyDesc newTopNKeyDesc = new TopNKeyDesc(topNKeyDesc.getTopN(), commonKeyPrefix.getMappedOrder(),
-            commonKeyPrefix.getMappedNullOrder(), commonKeyPrefix.getMappedColumns());
+    final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
     pushdown(copyDown(groupBy, newTopNKeyDesc));
 
     if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
@@ -184,13 +183,12 @@ public class TopNKeyPushdownProcessor implements NodeProcessor {
     final TopNKeyDesc topNKeyDesc = topNKey.getConf();
 
     CommonKeyPrefix commonKeyPrefix = CommonKeyPrefix.map(topNKeyDesc, reduceSinkDesc);
-    if (commonKeyPrefix.isEmpty()) {
+    if (commonKeyPrefix.isEmpty() || commonKeyPrefix.size() == topNKeyDesc.getPartitionKeyColumns().size()) {
       return;
     }
 
     LOG.debug("Pushing a copy of {} through {}", topNKey.getName(), reduceSink.getName());
-    final TopNKeyDesc newTopNKeyDesc = new TopNKeyDesc(topNKeyDesc.getTopN(),
-            commonKeyPrefix.getMappedOrder(), commonKeyPrefix.getMappedNullOrder(), commonKeyPrefix.getMappedColumns());
+    final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
     pushdown(copyDown(reduceSink, newTopNKeyDesc));
 
     if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
@@ -242,14 +240,13 @@ public class TopNKeyPushdownProcessor implements NodeProcessor {
             reduceSinkDesc.getColumnExprMap(),
             reduceSinkDesc.getOrder(),
             reduceSinkDesc.getNullOrder());
-    if (commonKeyPrefix.isEmpty()) {
+    if (commonKeyPrefix.isEmpty() || commonKeyPrefix.size() == topNKeyDesc.getPartitionKeyColumns().size()) {
       return;
     }
 
     LOG.debug("Pushing a copy of {} through {} and {}",
             topNKey.getName(), join.getName(), reduceSinkOperator.getName());
-    final TopNKeyDesc newTopNKeyDesc = new TopNKeyDesc(topNKeyDesc.getTopN(),
-            commonKeyPrefix.getMappedOrder(), commonKeyPrefix.getMappedNullOrder(), commonKeyPrefix.getMappedColumns());
+    final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
     pushdown(copyDown(reduceSinkOperator, newTopNKeyDesc));
 
     if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {

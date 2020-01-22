@@ -2,6 +2,7 @@
 --! qt:dataset:part
 --! qt:dataset:lineitem
 set hive.mapred.mode=nonstrict;
+set hive.optimize.topnkey=false;
 
 -- SORT_QUERY_RESULTS
 
