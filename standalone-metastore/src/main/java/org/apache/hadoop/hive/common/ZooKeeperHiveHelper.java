@@ -205,11 +205,11 @@ public class ZooKeeperHiveHelper {
     }
   }
 
-  public boolean isDeregisteredWithZooKeeper() {
+  public synchronized boolean isDeregisteredWithZooKeeper() {
     return deregisteredWithZooKeeper;
   }
 
-  private void setDeregisteredWithZooKeeper(boolean deregisteredWithZooKeeper) {
+  private synchronized void setDeregisteredWithZooKeeper(boolean deregisteredWithZooKeeper) {
     this.deregisteredWithZooKeeper = deregisteredWithZooKeeper;
   }
 

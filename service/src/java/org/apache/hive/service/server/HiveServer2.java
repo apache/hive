@@ -624,10 +624,8 @@ public class HiveServer2 extends CompositeService {
    */
   public boolean isDeregisteredWithZooKeeper() {
     if (serviceDiscovery && !activePassiveHA) {
-      synchronized(this) {
-        if (zooKeeperHelper != null) {
-          return zooKeeperHelper.isDeregisteredWithZooKeeper();
-        }
+      if (zooKeeperHelper != null) {
+        return zooKeeperHelper.isDeregisteredWithZooKeeper();
       }
     }
     return false;
