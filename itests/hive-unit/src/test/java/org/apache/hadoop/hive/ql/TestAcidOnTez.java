@@ -699,7 +699,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     setupTez(confForTez);
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("delete from " + Table.ACIDTBL, confForTez);
-    runStatementOnDriver("insert into " + Table.ACIDTBL + TestTxnCommands2.makeValuesClause(values));//make sure both buckets are not empty
+    runStatementOnDriver("insert into " + Table.ACIDTBL + TestTxnCommands2.makeValuesClause(values), confForTez);//make sure both buckets are not empty
     runStatementOnDriver("drop table if exists T", confForTez);
     /*
     With bucketed target table Union All is not removed
