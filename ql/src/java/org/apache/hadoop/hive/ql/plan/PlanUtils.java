@@ -718,10 +718,10 @@ public final class PlanUtils {
             includeKeyCols ? outputColumnNames.subList(keyCols.size(),
                     outputColumnNames.size()) : outputColumnNames,
             includeKeyCols, tag, partitionCols, order, nullOrder, defaultNullOrder, numReducers, writeType);
-      if (writeType != AcidUtils.Operation.NOT_ACID) {
-        reduceSinkDesc.setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.FIXED));
-        reduceSinkDesc.setNumReducers(1);
-      }
+    if (writeType != AcidUtils.Operation.NOT_ACID) {
+      reduceSinkDesc.setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.FIXED));
+      reduceSinkDesc.setNumReducers(1);
+    }
     return reduceSinkDesc;
   }
 
