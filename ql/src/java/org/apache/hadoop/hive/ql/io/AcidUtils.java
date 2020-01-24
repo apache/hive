@@ -2836,8 +2836,10 @@ public class AcidUtils {
   public static List<LockComponent> makeLockComponents(Set<WriteEntity> outputs, Set<ReadEntity> inputs,
                                                        HiveConf conf) {
     List<LockComponent> lockComponents = new ArrayList<>();
-    // For each source to read, get a shared lock
     boolean skipReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_READ_LOCKS);
+    boolean skipNonAcidReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_NONACID_READ_LOCKS);
+
+    // For each source to read, get a shared lock
     for (ReadEntity input : inputs) {
       if (input.isDummy()
           || !input.needsLock()
@@ -2876,11 +2878,16 @@ public class AcidUtils {
           // This is a file or something we don't hold locks for.
           continue;
       }
+      if (skipNonAcidReadLock && !AcidUtils.isTransactionalTable(t)) {
+        // skip read-locks for non-transactional tables
+        // read-locks don't protect non-transactional tables data consistency
+        continue;
+      }
       if (t != null) {
         compBuilder.setIsTransactional(AcidUtils.isTransactionalTable(t));
       }
       LockComponent comp = compBuilder.build();
-      LOG.debug("Adding lock component to lock request " + comp.toString());
+      LOG.debug("Adding lock component to lock request {} ", comp);
       lockComponents.add(comp);
     }
     // For each source to write to, get the appropriate lock type.  If it's
