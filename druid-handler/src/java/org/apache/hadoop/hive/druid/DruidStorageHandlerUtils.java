@@ -718,7 +718,7 @@ public final class DruidStorageHandlerUtils {
     }
     String[] vals = values.trim().split(",");
     for (String val : vals) {
-      if (org.apache.commons.lang.StringUtils.isNotBlank(val)) {
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(val)) {
         rv.add(val);
       }
     }

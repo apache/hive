@@ -1034,7 +1034,7 @@ public final class FileUtils {
    * @return            the list of the file names in the format of URI formats.
    */
   public static Set<String> getJarFilesByPath(String pathString, Configuration conf) {
-    if (org.apache.commons.lang.StringUtils.isBlank(pathString)) {
+    if (org.apache.commons.lang3.StringUtils.isBlank(pathString)) {
       return Collections.emptySet();
     }
     Set<String> result = new HashSet<>();

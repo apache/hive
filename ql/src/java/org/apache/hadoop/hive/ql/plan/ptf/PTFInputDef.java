@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.plan.ptf;
 
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.plan.Explain;
 

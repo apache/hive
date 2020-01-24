@@ -120,6 +120,11 @@
        <version>${commons-lang3.version}</version>
     </dependency>
     <dependency>
+       <groupId>org.apache.commons</groupId>
+       <artifactId>commons-text</artifactId>
+       <version>${commons-text.version}</version>
+    </dependency>
+    <dependency>
       <groupId>javolution</groupId>
       <artifactId>javolution</artifactId>
       <version>${javolution.version}</version>

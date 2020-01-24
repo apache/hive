@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.metastore.utils;
 
 import java.util.Collections;
 import java.util.List;
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CATALOG_DB_SEPARATOR;
 
 import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
