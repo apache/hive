@@ -578,7 +578,7 @@ public interface HadoopShims {
      * @param path HDFS path to create encryption zone.
      * @throws IOException
      */
-     EncryptionZone getEncryptionZoneForPath(Path path) throws IOException;
+    EncryptionZone getEncryptionZoneForPath(Path path) throws IOException;
 
     /**
      * Creates an encryption key.

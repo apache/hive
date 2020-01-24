@@ -452,7 +452,7 @@ public class HiveConf extends Configuration {
     REPLCMRETIAN("hive.repl.cm.retain","24h",
         new TimeValidator(TimeUnit.HOURS),
         "Time to retain removed files in cmrootdir."),
-    REPLCMENCRYPTEDDIR("hive.encrypted.repl.cmrootdir", "/cmroot/",
+    REPLCMENCRYPTEDDIR("hive.repl.cm.encryptionzone.rootdir", ".cmroot",
             "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
     REPLCMINTERVAL("hive.repl.cm.interval","3600s",
         new TimeValidator(TimeUnit.SECONDS),

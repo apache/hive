@@ -19,8 +19,9 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +36,6 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
-import org.apache.hadoop.hdfs.protocol.EncryptionZone;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -59,7 +59,7 @@ public class ReplChangeManager {
 
   private static boolean inited = false;
   private static boolean enabled = false;
-  private static Map<String, Path> cmRootMapping = new HashMap<>();
+  private static Set<String> encryptionZones = new HashSet<>();
   private static HadoopShims hadoopShims = ShimLoader.getHadoopShims();
   private static Configuration conf;
   private String msUser;
@@ -72,6 +72,8 @@ public class ReplChangeManager {
   private static final String TXN_WRITE_EVENT_FILE_SEPARATOR = "]";
   static final String CM_THREAD_NAME_PREFIX = "cmclearer-";
   private static final String NO_ENCRYPTION = "noEncryption";
+  private static String cmRootDir;
+  private static String encryptedCmRootDir;
 
   public enum RecycleType {
     MOVE,
@@ -150,16 +152,23 @@ public class ReplChangeManager {
         if (MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED)) {
           ReplChangeManager.enabled = true;
           ReplChangeManager.conf = conf;
-
+          cmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMDIR);
+          encryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMENCRYPTEDDIR);
           //Create default cm root
-          Path cmroot = new Path(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR));
+          Path cmroot = new Path(cmRootDir);
+          HdfsEncryptionShim pathEncryptionShim = hadoopShims
+                  .createHdfsEncryptionShim(cmroot.getFileSystem(conf), conf);
+          if (pathEncryptionShim.isPathEncrypted(cmroot)) {
+            LOG.warn(ConfVars.REPLCMDIR + " should not be encrypted. To pass cm dir for encrypted path use "
+                    + ConfVars.REPLCMENCRYPTEDDIR);
+          }
           FileSystem cmFs = cmroot.getFileSystem(conf);
           // Create cmroot with permission 700 if not exist
           if (!cmFs.exists(cmroot)) {
             cmFs.mkdirs(cmroot);
             cmFs.setPermission(cmroot, new FsPermission("700"));
           }
-          cmRootMapping.put(NO_ENCRYPTION, cmroot);
+          encryptionZones.add(NO_ENCRYPTION);
 
           UserGroupInformation usergroupInfo = UserGroupInformation.getCurrentUser();
           msUser = usergroupInfo.getShortUserName();
@@ -194,7 +203,7 @@ public class ReplChangeManager {
    * @return int
    * @throws IOException
    */
-  public int recycle(Path path, RecycleType type, boolean ifPurge) throws IOException, MetaException {
+  public int recycle(Path path, RecycleType type, boolean ifPurge) throws IOException {
     if (!enabled) {
       return 0;
     }
@@ -237,7 +246,7 @@ public class ReplChangeManager {
           try {
             success = retriable.run();
           } catch (Exception e) {
-            throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+            throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
           }
           break;
         }
@@ -428,12 +437,12 @@ public class ReplChangeManager {
    * Thread to clear old files of cmroot recursively
    */
   static class CMClearer implements Runnable {
-    private Path cmroot;
+    private Set<String> encryptionZones;
     private long secRetain;
     private Configuration conf;
 
-    CMClearer(String cmrootString, long secRetain, Configuration conf) {
-      this.cmroot = new Path(cmrootString);
+    CMClearer(Set<String> encryptionZones, long secRetain, Configuration conf) {
+      this.encryptionZones = encryptionZones;
       this.secRetain = secRetain;
       this.conf = conf;
     }
@@ -442,32 +451,39 @@ public class ReplChangeManager {
     public void run() {
       try {
         LOG.info("CMClearer started");
+        for (String encryptionZone : encryptionZones) {
+          Path cmroot;
+          if (encryptionZone.equals(NO_ENCRYPTION)) {
+            cmroot = new Path(cmRootDir);
+          } else {
+            cmroot = new Path(encryptionZone + encryptedCmRootDir);
+          }
+          long now = System.currentTimeMillis();
+          FileSystem fs = cmroot.getFileSystem(conf);
+          FileStatus[] files = fs.listStatus(cmroot);
 
-        long now = System.currentTimeMillis();
-        FileSystem fs = cmroot.getFileSystem(conf);
-        FileStatus[] files = fs.listStatus(cmroot);
-
-        for (FileStatus file : files) {
-          long modifiedTime = file.getModificationTime();
-          if (now - modifiedTime > secRetain*1000) {
-            try {
-              if (fs.getXAttrs(file.getPath()).containsKey(REMAIN_IN_TRASH_TAG)) {
-                boolean succ = Trash.moveToAppropriateTrash(fs, file.getPath(), conf);
-                if (succ) {
-                  LOG.debug("Move " + file.toString() + " to trash");
+          for (FileStatus file : files) {
+            long modifiedTime = file.getModificationTime();
+            if (now - modifiedTime > secRetain * 1000) {
+              try {
+                if (fs.getXAttrs(file.getPath()).containsKey(REMAIN_IN_TRASH_TAG)) {
+                  boolean succ = Trash.moveToAppropriateTrash(fs, file.getPath(), conf);
+                  if (succ) {
+                    LOG.debug("Move " + file.toString() + " to trash");
+                  } else {
+                    LOG.warn("Fail to move " + file.toString() + " to trash");
+                  }
                 } else {
-                  LOG.warn("Fail to move " + file.toString() + " to trash");
+                  boolean succ = fs.delete(file.getPath(), false);
+                  if (succ) {
+                    LOG.debug("Remove " + file.toString());
+                  } else {
+                    LOG.warn("Fail to remove " + file.toString());
+                  }
                 }
-              } else {
-                boolean succ = fs.delete(file.getPath(), false);
-                if (succ) {
-                  LOG.debug("Remove " + file.toString());
-                } else {
-                  LOG.warn("Fail to remove " + file.toString());
-                }
+              } catch (UnsupportedOperationException e) {
+                LOG.warn("Error getting xattr for " + file.getPath().toString());
               }
-            } catch (UnsupportedOperationException e) {
-              LOG.warn("Error getting xattr for " + file.getPath().toString());
             }
           }
         }
@@ -485,11 +501,9 @@ public class ReplChangeManager {
           .namingPattern(CM_THREAD_NAME_PREFIX + "%d")
           .daemon(true)
           .build());
-      for (Path cmroot : cmRootMapping.values()) {
-        executor.scheduleAtFixedRate(new CMClearer(cmroot.toString(),
-                        MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
-                0, MetastoreConf.getTimeVar(conf, ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
-      }
+      executor.scheduleAtFixedRate(new CMClearer(encryptionZones,
+                      MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
+              0, MetastoreConf.getTimeVar(conf, ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
     }
   }
 
@@ -527,23 +541,26 @@ public class ReplChangeManager {
 
   private static Path getCmRoot(Path path) throws IOException {
     Path cmroot = null;
-    HdfsEncryptionShim pathEncryptionShim = hadoopShims.createHdfsEncryptionShim(path.getFileSystem(conf), conf);
-    if (!pathEncryptionShim.isPathEncrypted(path)) {
-      cmroot = cmRootMapping.get(NO_ENCRYPTION);
-    } else {
-      EncryptionZone encryptionZone = pathEncryptionShim.getEncryptionZoneForPath(path);
-      cmroot = cmRootMapping.get(encryptionZone.getPath());
-      if (cmroot == null) {
-        synchronized (instance) {
-          cmroot = new Path(path.getFileSystem(conf).getUri() + encryptionZone.getPath()
-                  + MetastoreConf.getVar(conf, ConfVars.REPLCMENCRYPTEDDIR));
-          FileSystem cmFs = cmroot.getFileSystem(conf);
-          // Create cmroot with permission 700 if not exist
-          if (!cmFs.exists(cmroot)) {
-            cmFs.mkdirs(cmroot);
-            cmFs.setPermission(cmroot, new FsPermission("700"));
+    if (enabled) {
+      HdfsEncryptionShim pathEncryptionShim = hadoopShims.createHdfsEncryptionShim(path.getFileSystem(conf), conf);
+      if (!pathEncryptionShim.isPathEncrypted(path)) {
+        cmroot = new Path(cmRootDir);
+      } else {
+        String encryptionZonePath = path.getFileSystem(conf).getUri()
+                + pathEncryptionShim.getEncryptionZoneForPath(path).getPath();
+        cmroot = new Path(encryptionZonePath + encryptedCmRootDir);
+        if (!encryptionZones.contains(encryptionZonePath)) {
+          synchronized (instance) {
+            if (!encryptionZones.contains(encryptionZonePath)) {
+              FileSystem cmFs = cmroot.getFileSystem(conf);
+              // Create cmroot with permission 700 if not exist
+              if (!cmFs.exists(cmroot)) {
+                cmFs.mkdirs(cmroot);
+                cmFs.setPermission(cmroot, new FsPermission("700"));
+              }
+              encryptionZones.add(encryptionZonePath);
+            }
           }
-          cmRootMapping.put(encryptionZone.getPath(), cmroot);
         }
       }
     }

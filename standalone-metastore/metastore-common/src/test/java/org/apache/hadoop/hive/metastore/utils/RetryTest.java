@@ -22,7 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Tests for retriable interface
+ * Tests for retriable interface.
  */
 public class RetryTest {
   @Test

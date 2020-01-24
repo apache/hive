@@ -79,7 +79,8 @@ public class TestMetaStoreMultipleEncryptionZones {
     hiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
     hiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
-            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
+                    + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
 
     cmroot = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmroot";
     cmrootEncrypted = "/cmrootEncrypted/";
@@ -1134,7 +1135,7 @@ public class TestMetaStoreMultipleEncryptionZones {
     output.writeChars(content);
     output.close();
   }
-  
+
   private void silentDropDatabase(String dbName) throws TException {
     try {
       for (String tableName : client.getTables(dbName, "*")) {
