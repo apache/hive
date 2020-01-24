@@ -460,7 +460,7 @@ public class PersistenceManagerProvider {
       }
     });
     String passwd = passwordProvider.get();
-    if (org.apache.commons.lang.StringUtils.isNotEmpty(passwd)) {
+    if (org.apache.commons.lang3.StringUtils.isNotEmpty(passwd)) {
       // We can get away with the use of varname here because varname == hiveName for PWD
       prop.setProperty(ConfVars.PWD.getVarname(), passwd);
     }
