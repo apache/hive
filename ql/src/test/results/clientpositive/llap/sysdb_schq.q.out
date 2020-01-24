@@ -132,4 +132,4 @@ POSTHOOK: query: select schedule_name,enabled from scheduled_queries
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_queries
 #### A masked pattern was here ####
-asd	true
+asd	false

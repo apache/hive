@@ -368,7 +368,7 @@ PREHOOK: query: FROM src
 
 #### A masked pattern was here ####
 'CREATE TABLE INSERT_TO_DERBY_TABLE (a BOOLEAN, b  INTEGER, c BIGINT, d FLOAT, e DOUBLE, f DATE, g VARCHAR(27),
-                                  h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT)' )
+                                  h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT, b1 CHAR(10))' )
 
 limit 1
 PREHOOK: type: QUERY
@@ -378,7 +378,7 @@ POSTHOOK: query: FROM src
 
 #### A masked pattern was here ####
 'CREATE TABLE INSERT_TO_DERBY_TABLE (a BOOLEAN, b  INTEGER, c BIGINT, d FLOAT, e DOUBLE, f DATE, g VARCHAR(27),
-                                  h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT)' )
+                                  h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT, b1 CHAR(10))' )
 
 limit 1
 POSTHOOK: type: QUERY
@@ -399,7 +399,8 @@ PREHOOK: query: CREATE EXTERNAL TABLE insert_to_ext_derby_table
  j TIMESTAMP,
  k DECIMAL(5,4),
  l TINYINT,
- m SMALLINT
+ m SMALLINT,
+ b1 BOOLEAN
  )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -428,7 +429,8 @@ POSTHOOK: query: CREATE EXTERNAL TABLE insert_to_ext_derby_table
  j TIMESTAMP,
  k DECIMAL(5,4),
  l TINYINT,
- m SMALLINT
+ m SMALLINT,
+ b1 BOOLEAN
  )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -457,7 +459,8 @@ PREHOOK: query: CREATE TABLE test_insert_tbl
  j TIMESTAMP,
  k DECIMAL(5,4),
  l TINYINT,
- m SMALLINT
+ m SMALLINT,
+ b1 BOOLEAN
  )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -476,21 +479,23 @@ POSTHOOK: query: CREATE TABLE test_insert_tbl
  j TIMESTAMP,
  k DECIMAL(5,4),
  l TINYINT,
- m SMALLINT
+ m SMALLINT,
+ b1 BOOLEAN
  )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_insert_tbl
-PREHOOK: query: INSERT INTO test_insert_tbl VALUES(true, 342, 8900, 9.63, 1099.9999, '2019-04-11', 'abcd', 'efgh', 'k', '2019-05-01 00:00:00', 1.8899, 1, 2)
+PREHOOK: query: INSERT INTO test_insert_tbl VALUES(true, 342, 8900, 9.63, 1099.9999, '2019-04-11', 'abcd', 'efgh', 'k', '2019-05-01 00:00:00', 1.8899, 1, 2, true)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_insert_tbl
-POSTHOOK: query: INSERT INTO test_insert_tbl VALUES(true, 342, 8900, 9.63, 1099.9999, '2019-04-11', 'abcd', 'efgh', 'k', '2019-05-01 00:00:00', 1.8899, 1, 2)
+POSTHOOK: query: INSERT INTO test_insert_tbl VALUES(true, 342, 8900, 9.63, 1099.9999, '2019-04-11', 'abcd', 'efgh', 'k', '2019-05-01 00:00:00', 1.8899, 1, 2, true)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_insert_tbl
 POSTHOOK: Lineage: test_insert_tbl.a SCRIPT []
 POSTHOOK: Lineage: test_insert_tbl.b SCRIPT []
+POSTHOOK: Lineage: test_insert_tbl.b1 SCRIPT []
 POSTHOOK: Lineage: test_insert_tbl.c SCRIPT []
 POSTHOOK: Lineage: test_insert_tbl.d SCRIPT []
 POSTHOOK: Lineage: test_insert_tbl.e SCRIPT []
@@ -502,11 +507,11 @@ POSTHOOK: Lineage: test_insert_tbl.j SCRIPT []
 POSTHOOK: Lineage: test_insert_tbl.k SCRIPT []
 POSTHOOK: Lineage: test_insert_tbl.l SCRIPT []
 POSTHOOK: Lineage: test_insert_tbl.m SCRIPT []
-PREHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(true, 10, 100, 2.63, 999.9999, '2019-01-11', 'test', 'test1', 'z', '2019-01-01 00:00:00', 1.7899, 1, 2)
+PREHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(true, 10, 100, 2.63, 999.9999, '2019-01-11', 'test', 'test1', 'z', '2019-01-01 00:00:00', 1.7899, 1, 2, true)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_to_ext_derby_table
-POSTHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(true, 10, 100, 2.63, 999.9999, '2019-01-11', 'test', 'test1', 'z', '2019-01-01 00:00:00', 1.7899, 1, 2)
+POSTHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(true, 10, 100, 2.63, 999.9999, '2019-01-11', 'test', 'test1', 'z', '2019-01-01 00:00:00', 1.7899, 1, 2, true)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_to_ext_derby_table
@@ -526,25 +531,25 @@ POSTHOOK: query: select * from insert_to_ext_derby_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_to_ext_derby_table
 #### A masked pattern was here ####
-true	10	100	2.63	999.9999	2019-01-11	test	test1	z 	2019-01-01 00:00:00	1.7899	1	2
-true	342	8900	9.63	1099.9999	2019-04-11	abcd	efgh	k 	2019-05-01 00:00:00	1.8899	1	2
-PREHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(false, 324, 53465, 2.6453, 599.9999, '2019-04-11', 'fgeg', 'asda', 'k', '2019-03-01 10:00:00', 1.7899, 1, 2)
+true	10	100	2.63	999.9999	2019-01-11	test	test1	z 	2019-01-01 00:00:00	1.7899	1	2	true
+true	342	8900	9.63	1099.9999	2019-04-11	abcd	efgh	k 	2019-05-01 00:00:00	1.8899	1	2	true
+PREHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(false, 324, 53465, 2.6453, 599.9999, '2019-04-11', 'fgeg', 'asda', 'k', '2019-03-01 10:00:00', 1.7899, 1, 2, false)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_to_ext_derby_table
-POSTHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(false, 324, 53465, 2.6453, 599.9999, '2019-04-11', 'fgeg', 'asda', 'k', '2019-03-01 10:00:00', 1.7899, 1, 2)
+POSTHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(false, 324, 53465, 2.6453, 599.9999, '2019-04-11', 'fgeg', 'asda', 'k', '2019-03-01 10:00:00', 1.7899, 1, 2, false)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_to_ext_derby_table
-PREHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(false, 10, 100, 2.63, 999.9999, '2019-11-11', 'test', 'test1', 'a', '2019-01-01 00:00:00', 1.7899, 1, 2),
-                                         (true, 100, 1000, 2.632, 9999.99999, '2019-12-11', 'test_1', 'test1_1', 'b', '2019-02-01 01:00:01', 5.7899, 3, 4),
-                                         (false, 10, 999, 23.632, 99999.99999, '2019-09-11', 'test_2', 'test1_2', 'c', '2019-03-01 11:00:01', 9.7899, 5, 6)
+PREHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(false, 10, 100, 2.63, 999.9999, '2019-11-11', 'test', 'test1', 'a', '2019-01-01 00:00:00', 1.7899, 1, 2, false),
+                                         (true, 100, 1000, 2.632, 9999.99999, '2019-12-11', 'test_1', 'test1_1', 'b', '2019-02-01 01:00:01', 5.7899, 3, 4, false),
+                                         (false, 10, 999, 23.632, 99999.99999, '2019-09-11', 'test_2', 'test1_2', 'c', '2019-03-01 11:00:01', 9.7899, 5, 6, false)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_to_ext_derby_table
-POSTHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(false, 10, 100, 2.63, 999.9999, '2019-11-11', 'test', 'test1', 'a', '2019-01-01 00:00:00', 1.7899, 1, 2),
-                                         (true, 100, 1000, 2.632, 9999.99999, '2019-12-11', 'test_1', 'test1_1', 'b', '2019-02-01 01:00:01', 5.7899, 3, 4),
-                                         (false, 10, 999, 23.632, 99999.99999, '2019-09-11', 'test_2', 'test1_2', 'c', '2019-03-01 11:00:01', 9.7899, 5, 6)
+POSTHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(false, 10, 100, 2.63, 999.9999, '2019-11-11', 'test', 'test1', 'a', '2019-01-01 00:00:00', 1.7899, 1, 2, false),
+                                         (true, 100, 1000, 2.632, 9999.99999, '2019-12-11', 'test_1', 'test1_1', 'b', '2019-02-01 01:00:01', 5.7899, 3, 4, false),
+                                         (false, 10, 999, 23.632, 99999.99999, '2019-09-11', 'test_2', 'test1_2', 'c', '2019-03-01 11:00:01', 9.7899, 5, 6, false)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_to_ext_derby_table
@@ -564,10 +569,10 @@ POSTHOOK: query: select * from insert_to_ext_derby_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_to_ext_derby_table
 #### A masked pattern was here ####
-true	10	100	2.63	999.9999	2019-01-11	test	test1	z 	2019-01-01 00:00:00	1.7899	1	2
-true	342	8900	9.63	1099.9999	2019-04-11	abcd	efgh	k 	2019-05-01 00:00:00	1.8899	1	2
-false	324	53465	2.6453	599.9999	2019-04-11	fgeg	asda	k 	2019-03-01 10:00:00	1.7899	1	2
-false	10	100	2.63	999.9999	2019-11-11	test	test1	a 	2019-01-01 00:00:00	1.7899	1	2
-true	100	1000	2.632	9999.99999	2019-12-11	test_1	test1_1	b 	2019-02-01 01:00:01	5.7899	3	4
-false	10	999	23.632	99999.99999	2019-09-11	test_2	test1_2	c 	2019-03-01 11:00:01	9.7899	5	6
-true	342	8900	9.63	1099.9999	2019-04-11	abcd	efgh	k 	2019-05-01 00:00:00	1.8899	1	2
+true	10	100	2.63	999.9999	2019-01-11	test	test1	z 	2019-01-01 00:00:00	1.7899	1	2	true
+true	342	8900	9.63	1099.9999	2019-04-11	abcd	efgh	k 	2019-05-01 00:00:00	1.8899	1	2	true
+false	324	53465	2.6453	599.9999	2019-04-11	fgeg	asda	k 	2019-03-01 10:00:00	1.7899	1	2	false
+false	10	100	2.63	999.9999	2019-11-11	test	test1	a 	2019-01-01 00:00:00	1.7899	1	2	false
+true	100	1000	2.632	9999.99999	2019-12-11	test_1	test1_1	b 	2019-02-01 01:00:01	5.7899	3	4	false
+false	10	999	23.632	99999.99999	2019-09-11	test_2	test1_2	c 	2019-03-01 11:00:01	9.7899	5	6	false
+true	342	8900	9.63	1099.9999	2019-04-11	abcd	efgh	k 	2019-05-01 00:00:00	1.8899	1	2	true
