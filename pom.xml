@@ -143,6 +143,7 @@
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <commons-pool2.version>2.6.1</commons-pool2.version>
     <commons-dbcp2.version>2.6.0</commons-dbcp2.version>
+    <commons-text.version>1.8</commons-text.version>
     <derby.version>10.14.1.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
@@ -372,6 +373,11 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-text</artifactId>
+        <version>${commons-text.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
@@ -1294,6 +1300,13 @@
                     <bannedImport>**.shaded.**</bannedImport>
                     <bannedImport>org.spark_project.guava.**</bannedImport>
                     <bannedImport>jersey.repackaged.com.google.**</bannedImport>
+                  </bannedImports>
+                  <includeTestCode>true</includeTestCode>
+                </restrictImports>
+                <restrictImports implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                  <reason>Do not use commons-lang</reason>
+                  <bannedImports>
+                    <bannedImport>org.apache.commons.lang.**</bannedImport>
                   </bannedImports>
                   <includeTestCode>true</includeTestCode>
                 </restrictImports>

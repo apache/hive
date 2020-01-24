@@ -52,8 +52,8 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -5437,7 +5437,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
   public void acquireLock(String key, LockHandle handle) {
     //the idea is that this will use LockHandle.dbConn
-    throw new NotImplementedException();
+    throw new NotImplementedException("acquireLock(String, LockHandle) is not implemented");
   }
   private static final class LockHandleImpl implements LockHandle {
     private final Connection dbConn;
@@ -5459,7 +5459,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     void addKey(String key) {
       //keys.add(key);
       //would need a list of (stmt,rs) pairs - 1 for each key
-      throw new NotImplementedException();
+      throw new NotImplementedException("addKey(String) is not implemented, would require a list of (stmt,rs) pairs / key");
     }
 
     @Override

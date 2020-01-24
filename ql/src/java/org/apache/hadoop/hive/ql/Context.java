@@ -923,7 +923,7 @@ public class Context {
    * Little abbreviation for StringUtils.
    */
   private static boolean strEquals(String str1, String str2) {
-    return org.apache.commons.lang.StringUtils.equals(str1, str2);
+    return org.apache.commons.lang3.StringUtils.equals(str1, str2);
   }
 
   /**

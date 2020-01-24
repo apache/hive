@@ -253,7 +253,7 @@ public class PersistenceManagerProvider {
       LOG.info(
           "Setting MetaStore object pin classes with hive.metastore.cache.pinobjtypes=\"{}\"",
           objTypes);
-      if (org.apache.commons.lang.StringUtils.isNotEmpty(objTypes)) {
+      if (org.apache.commons.lang3.StringUtils.isNotEmpty(objTypes)) {
         String[] typeTokens = objTypes.toLowerCase().split(",");
         for (String type : typeTokens) {
           type = type.trim();
@@ -261,7 +261,7 @@ public class PersistenceManagerProvider {
             dsc.pinAll(true, PINCLASSMAP.get(type));
           } else {
             LOG.warn("{} is not one of the pinnable object types: {}", type,
-                org.apache.commons.lang.StringUtils.join(PINCLASSMAP.keySet(), " "));
+                org.apache.commons.lang3.StringUtils.join(PINCLASSMAP.keySet(), " "));
           }
         }
       }
@@ -460,7 +460,7 @@ public class PersistenceManagerProvider {
       }
     });
     String passwd = passwordProvider.get();
-    if (org.apache.commons.lang.StringUtils.isNotEmpty(passwd)) {
+    if (org.apache.commons.lang3.StringUtils.isNotEmpty(passwd)) {
       // We can get away with the use of varname here because varname == hiveName for PWD
       prop.setProperty(ConfVars.PWD.getVarname(), passwd);
     }
