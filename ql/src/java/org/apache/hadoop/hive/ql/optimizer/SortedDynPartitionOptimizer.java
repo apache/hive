@@ -59,7 +59,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.*;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.orc.OrcConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -288,16 +289,29 @@ public class SortedDynPartitionOptimizer extends Transform {
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());
       List<String> colNames = new ArrayList<String>();
       String colName;
+      final List<ColumnInfo> fileSinkSchema = fsOp.getSchema().getSignature();
       for (int i = 0; i < allRSCols.size(); i++) {
         ExprNodeDesc col = allRSCols.get(i);
+        ExprNodeDesc newColumnExpr = null;
         colName = col.getExprString();
         colNames.add(colName);
         if (partitionPositions.contains(i) || sortPositions.contains(i)) {
-          descs.add(new ExprNodeColumnDesc(col.getTypeInfo(), ReduceField.KEY.toString()+"."+colName, null, false));
+          newColumnExpr = (new ExprNodeColumnDesc(col.getTypeInfo(), ReduceField.KEY.toString()+"."+colName, null, false));
         } else {
-          descs.add(new ExprNodeColumnDesc(col.getTypeInfo(), ReduceField.VALUE.toString()+"."+colName, null, false));
+          newColumnExpr = (new ExprNodeColumnDesc(col.getTypeInfo(), ReduceField.VALUE.toString()+"."+colName, null, false));
         }
+
+        // make sure column type matches with expected types in FS op
+        if(i < fileSinkSchema.size()) {
+          final ColumnInfo fsColInfo = fileSinkSchema.get(i);
+          if (!newColumnExpr.getTypeInfo().equals(fsColInfo.getType())) {
+            newColumnExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+                .createConversionCast(newColumnExpr, (PrimitiveTypeInfo) fsColInfo.getType());
+          }
+        }
+        descs.add(newColumnExpr);
       }
+
       RowSchema selRS = new RowSchema(fsParent.getSchema());
       if (bucketColumns!= null && !bucketColumns.isEmpty()) {
         descs.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
@@ -407,14 +421,7 @@ public class SortedDynPartitionOptimizer extends Transform {
               rsChild.getSchema().getSignature().size()) {
             return false;
           }
-          // if child is select and contains expression which isn't column it shouldn't
-          // be removed because otherwise we will end up with different types/schema later
-          // while introducing select for RS
-          for(ExprNodeDesc expr: rsChild.getColumnExprMap().values()){
-            if(!(expr instanceof ExprNodeColumnDesc)){
-              return false;
-            }
-          }
+
           rsParent.getChildOperators().remove(rsToRemove);
           rsParent.getChildOperators().add(rsGrandChild);
           rsGrandChild.getParentOperators().clear();
