@@ -106,6 +106,9 @@ public class ScheduledQueryExecutionService implements Closeable {
 
     private void processQuery(ScheduledQueryPollResponse q) {
       SessionState state = null;
+      info = new ScheduledQueryProgressInfo();
+      info.setScheduledExecutionId(q.getExecutionId());
+      info.setState(QueryState.EXECUTING);
       try {
         HiveConf conf = new HiveConf(context.conf);
         conf.set(Constants.HIVE_QUERY_EXCLUSIVE_LOCK, lockNameFor(q.getScheduleKey()));
@@ -113,9 +116,6 @@ public class ScheduledQueryExecutionService implements Closeable {
         conf.unset(HiveConf.ConfVars.HIVESESSIONID.varname);
         state = new SessionState(conf, q.getUser());
         SessionState.start(state);
-        info = new ScheduledQueryProgressInfo();
-        info.setScheduledExecutionId(q.getExecutionId());
-        info.setState(QueryState.EXECUTING);
         reportQueryProgress();
         try (
           IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(conf), null)) {
