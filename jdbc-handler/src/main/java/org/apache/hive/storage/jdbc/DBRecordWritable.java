@@ -20,9 +20,11 @@ package org.apache.hive.storage.jdbc;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Arrays;
 import org.apache.hadoop.io.Writable;
 
@@ -59,8 +61,13 @@ public class DBRecordWritable implements Writable,
     if (columnValues == null) {
       throw new SQLException("No data available to be written");
     }
+    ParameterMetaData parameterMetaData = statement.getParameterMetaData();
     for (int i = 0; i < columnValues.length; i++) {
-      statement.setObject(i + 1, columnValues[i]);
+      Object value = columnValues[i];
+      if ((parameterMetaData.getParameterType(i + 1) == Types.CHAR) && value != null && value instanceof Boolean) {
+        value = ((Boolean) value).booleanValue() ? "1" : "0";
+      }
+      statement.setObject(i + 1, value);
     }
   }
 
