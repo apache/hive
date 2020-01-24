@@ -2644,12 +2644,17 @@ public class HiveConf extends Configuration {
         "In nonstrict mode, for non-ACID resources, INSERT will only acquire shared lock, which\n" +
         "allows two concurrent writes to the same partition but still lets lock manager prevent\n" +
         "DROP TABLE etc. when the table is being written to"),
+    HIVE_TXN_NONACID_READ_LOCKS("hive.txn.nonacid.read.locks", true,
+        "Flag to turn off the read locks for non-ACID tables, when set to false.\n" +
+        "Could be exercised to improve the performance of non-ACID tables in clusters where read locking " +
+        "is enabled globally to support ACID. Can cause issues with concurrent DDL operations, or slow S3 writes."),
     HIVE_TXN_READ_LOCKS("hive.txn.read.locks", true,
-        "flag to turn off the strict read lock when set to false"),
+        "Flag to turn off the read locks, when set to false. Although its not recommended, \n" +
+        "but in performance critical scenarios this option may be exercised."),
     TXN_OVERWRITE_X_LOCK("hive.txn.xlock.iow", true,
         "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\n" +
-            "transactional tables.  This ensures that inserts (w/o overwrite) running concurrently\n" +
-            "are not hidden by the INSERT OVERWRITE."),
+        "transactional tables. This ensures that inserts (w/o overwrite) running concurrently\n" +
+        "are not hidden by the INSERT OVERWRITE."),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
 
