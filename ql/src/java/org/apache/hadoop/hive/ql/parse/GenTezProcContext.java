@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -61,7 +60,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * to break them into TezTasks.
  *
  */
-public class GenTezProcContext implements NodeProcessorCtx{
+public class GenTezProcContext implements NodeProcessorCtx {
 
   public final ParseContext parseContext;
   public final HiveConf conf;

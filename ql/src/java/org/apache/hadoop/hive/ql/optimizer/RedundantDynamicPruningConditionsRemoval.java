@@ -30,12 +30,12 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -78,12 +78,12 @@ public class RedundantDynamicPruningConditionsRemoval extends Transform {
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     // Make sure semijoin is not enabled. If it is, then do not remove the dynamic partition pruning predicates.
     if (!pctx.getConf().getBoolVar(HiveConf.ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION)) {
-      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
       opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%" +
               FilterOperator.getOperatorName() + "%"), new FilterTransformer());
 
-      Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
-      GraphWalker ogw = new DefaultGraphWalker(disp);
+      SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
+      SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
       List<Node> topNodes = new ArrayList<Node>();
       topNodes.addAll(pctx.getTopOps().values());
@@ -92,7 +92,7 @@ public class RedundantDynamicPruningConditionsRemoval extends Transform {
     return pctx;
   }
 
-  private class FilterTransformer implements NodeProcessor {
+  private class FilterTransformer implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)

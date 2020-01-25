@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -36,11 +35,11 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -56,11 +55,11 @@ import org.apache.hadoop.hive.ql.stats.fs.FSStatsPublisher;
 public class AnnotateRunTimeStatsOptimizer implements PhysicalPlanResolver {
   private static final Logger LOG = LoggerFactory.getLogger(AnnotateRunTimeStatsOptimizer.class);
 
-  private class AnnotateRunTimeStatsDispatcher implements Dispatcher {
+  private class AnnotateRunTimeStatsDispatcher implements SemanticDispatcher {
 
     private final PhysicalContext physicalContext;
 
-    public AnnotateRunTimeStatsDispatcher(PhysicalContext context, Map<Rule, NodeProcessor> rules) {
+    public AnnotateRunTimeStatsDispatcher(PhysicalContext context, Map<SemanticRule, SemanticNodeProcessor> rules) {
       super();
       physicalContext = context;
     }
@@ -143,9 +142,9 @@ public class AnnotateRunTimeStatsOptimizer implements PhysicalPlanResolver {
 
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    Dispatcher disp = new AnnotateRunTimeStatsDispatcher(pctx, opRules);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
+    SemanticDispatcher disp = new AnnotateRunTimeStatsDispatcher(pctx, opRules);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getRootTasks());
     ogw.startWalking(topNodes, null);

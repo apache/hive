@@ -37,15 +37,16 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.lib.CostLessRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.SubqueryExpressionWalker;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
+import org.apache.hadoop.hive.ql.parse.ASTErrorUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -183,7 +184,7 @@ public class TypeCheckProcFactory<T> {
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
 
-    SetMultimap<Integer, NodeProcessor> astNodeToProcessor = HashMultimap.create();
+    SetMultimap<Integer, SemanticNodeProcessor> astNodeToProcessor = HashMultimap.create();
     astNodeToProcessor.put(HiveParser.TOK_NULL, getNullExprProcessor());
 
     astNodeToProcessor.put(HiveParser.Number, getNumExprProcessor());
@@ -226,9 +227,9 @@ public class TypeCheckProcFactory<T> {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new CostLessRuleDispatcher(getDefaultExprProcessor(),
+    SemanticDispatcher disp = new CostLessRuleDispatcher(getDefaultExprProcessor(),
         astNodeToProcessor, tcCtx);
-    GraphWalker ogw = new SubqueryExpressionWalker(disp);
+    SemanticGraphWalker ogw = new SubqueryExpressionWalker(disp);
 
     // Create a list of top nodes
     ArrayList<Node> topNodes = Lists.<Node>newArrayList(expr);
@@ -255,7 +256,7 @@ public class TypeCheckProcFactory<T> {
   /**
    * Processor for processing NULL expression.
    */
-  public class NullExprProcessor implements NodeProcessor {
+  public class NullExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -287,7 +288,7 @@ public class TypeCheckProcFactory<T> {
   /**
    * Processor for processing numeric constants.
    */
-  public class NumExprProcessor implements NodeProcessor {
+  public class NumExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -337,7 +338,8 @@ public class TypeCheckProcFactory<T> {
         // do nothing here, we will throw an exception in the following block
       }
       if (result == null) {
-        throw new SemanticException(ErrorMsg.INVALID_NUMERICAL_CONSTANT.getMsg(expr));
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_NUMERICAL_CONSTANT.getMsg(), expr));
       }
       return result;
     }
@@ -356,7 +358,7 @@ public class TypeCheckProcFactory<T> {
   /**
    * Processor for processing string constants.
    */
-  public class StrExprProcessor implements NodeProcessor {
+  public class StrExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -413,7 +415,7 @@ public class TypeCheckProcFactory<T> {
   /**
    * Processor for boolean constants.
    */
-  public class BoolExprProcessor implements NodeProcessor {
+  public class BoolExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -458,7 +460,7 @@ public class TypeCheckProcFactory<T> {
   /**
    * Processor for date constants.
    */
-  public class DateTimeExprProcessor implements NodeProcessor {
+  public class DateTimeExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -513,7 +515,7 @@ public class TypeCheckProcFactory<T> {
   /**
    * Processor for interval constants.
    */
-  public class IntervalExprProcessor implements NodeProcessor {
+  public class IntervalExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -572,7 +574,7 @@ public class TypeCheckProcFactory<T> {
   /**
    * Processor for table columns.
    */
-  public class ColumnExprProcessor implements NodeProcessor {
+  public class ColumnExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -591,12 +593,14 @@ public class TypeCheckProcFactory<T> {
       ASTNode parent = stack.size() > 1 ? (ASTNode) stack.get(stack.size() - 2) : null;
       RowResolver input = ctx.getInputRR();
       if (input == null) {
-        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr), expr);
+        ctx.setError(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_COLUMN.getMsg(), expr), expr);
         return null;
       }
 
       if (expr.getType() != HiveParser.TOK_TABLE_OR_COL) {
-        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr), expr);
+        ctx.setError(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_COLUMN.getMsg(), expr), expr);
         return null;
       }
 
@@ -645,13 +649,15 @@ public class TypeCheckProcFactory<T> {
               }
               stack.push(tmp);
             }
-            ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(exprNode), expr);
+            ctx.setError(ASTErrorUtils.getMsg(
+                ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(), exprNode), expr);
             return null;
           } else {
             List<String> possibleColumnNames = input.getReferenceableColumnAliases(tableOrCol, -1);
             String reason = String.format("(possible column names are: %s)",
                 StringUtils.join(possibleColumnNames, ", "));
-            ctx.setError(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(expr.getChild(0), reason),
+            ctx.setError(ASTErrorUtils.getMsg(
+                ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(), expr.getChild(0), reason),
                 expr);
             LOG.debug(ErrorMsg.INVALID_TABLE_OR_COLUMN.toString() + ":"
                 + input.toString());
@@ -678,7 +684,7 @@ public class TypeCheckProcFactory<T> {
   /**
    * The default processor for typechecking.
    */
-  public class DefaultExprProcessor implements NodeProcessor {
+  public class DefaultExprProcessor implements SemanticNodeProcessor {
 
     protected boolean isRedundantConversionFunction(ASTNode expr,
         boolean isFunction, List<T> children) {
@@ -770,10 +776,11 @@ public class TypeCheckProcFactory<T> {
       // UDAF in filter condition, group-by caluse, param of funtion, etc.
       if (fi.getGenericUDAFResolver() != null) {
         if (isFunction) {
-          throw new SemanticException(ErrorMsg.UDAF_INVALID_LOCATION.getMsg((ASTNode) expr
-              .getChild(0)));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.UDAF_INVALID_LOCATION.getMsg(), (ASTNode) expr.getChild(0)));
         } else {
-          throw new SemanticException(ErrorMsg.UDAF_INVALID_LOCATION.getMsg(expr));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.UDAF_INVALID_LOCATION.getMsg(), expr));
         }
       }
       if (!ctx.getAllowStatefulFunctions() && (genericUDF != null)) {
@@ -823,7 +830,8 @@ public class TypeCheckProcFactory<T> {
           objectTypeInfo = ((ListTypeInfo) objectTypeInfo).getListElementTypeInfo();
         }
         if (objectTypeInfo.getCategory() != Category.STRUCT) {
-          throw new SemanticException(ErrorMsg.INVALID_DOT.getMsg(expr));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.INVALID_DOT.getMsg(), expr));
         }
         TypeInfo t = ((StructTypeInfo) objectTypeInfo).getStructFieldTypeInfo(fieldNameString);
         if (isList) {
@@ -834,7 +842,8 @@ public class TypeCheckProcFactory<T> {
       } else if (funcText.equals("[")) {
         // "[]" : LSQUARE/INDEX Expression
         if (!ctx.getallowIndexExpr()) {
-          throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(expr));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.INVALID_FUNCTION.getMsg(), expr));
         }
 
         assert (children.size() == 2);
@@ -856,14 +865,15 @@ public class TypeCheckProcFactory<T> {
         } else if (myt.getCategory() == Category.MAP) {
           if (!TypeInfoUtils.implicitConvertible(exprFactory.getTypeInfo(children.get(1)),
               ((MapTypeInfo) myt).getMapKeyTypeInfo())) {
-            throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_TYPE
-                .getMsg(expr));
+            throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.INVALID_MAPINDEX_TYPE.getMsg(), expr));
           }
           // Calculate TypeInfo
           TypeInfo t = ((MapTypeInfo) myt).getMapValueTypeInfo();
           desc = exprFactory.createFuncCallExpr(t, FunctionRegistry.getGenericUDFForIndex(), children);
         } else {
-          throw new SemanticException(ErrorMsg.NON_COLLECTION_TYPE.getMsg(expr, myt.getTypeName()));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.NON_COLLECTION_TYPE.getMsg(), expr, myt.getTypeName()));
         }
       } else {
         // other operators or functions
@@ -871,10 +881,11 @@ public class TypeCheckProcFactory<T> {
 
         if (fi == null) {
           if (isFunction) {
-            throw new SemanticException(ErrorMsg.INVALID_FUNCTION
-                .getMsg((ASTNode) expr.getChild(0)));
+            throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.INVALID_FUNCTION.getMsg(), (ASTNode) expr.getChild(0)));
           } else {
-            throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(expr));
+            throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.INVALID_FUNCTION.getMsg(), expr));
           }
         }
 
@@ -1192,7 +1203,8 @@ public class TypeCheckProcFactory<T> {
       }
 
       if (colInfo == null) {
-        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)), expr);
+        ctx.setError(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_COLUMN.getMsg(), expr.getChild(1)), expr);
         return null;
       }
       return exprFactory.toExpr(colInfo);
@@ -1282,7 +1294,8 @@ public class TypeCheckProcFactory<T> {
           String tableAlias = BaseSemanticAnalyzer.unescapeIdentifier(child.getChild(0).getText());
           Map<String, ColumnInfo> columns = input.getFieldMap(tableAlias);
           if (columns == null) {
-            throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(child));
+            throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.INVALID_TABLE_ALIAS.getMsg(), child));
           }
           for (Map.Entry<String, ColumnInfo> colMap : columns.entrySet()) {
             ColumnInfo colInfo = colMap.getValue();
@@ -1359,7 +1372,8 @@ public class TypeCheckProcFactory<T> {
         List<String> possibleColumnNames = getReferenceableColumnAliases(ctx);
         String reason = String.format("(possible column names are: %s)",
             StringUtils.join(possibleColumnNames, ", "));
-        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(0), reason),
+        ctx.setError(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_COLUMN.getMsg(), expr.getChild(0), reason),
             expr);
         return null;
       }
@@ -1368,14 +1382,17 @@ public class TypeCheckProcFactory<T> {
       try {
         return getXpathOrFuncExprNodeDesc(expr, isFunction, children, ctx);
       } catch (UDFArgumentTypeException e) {
-        throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_TYPE.getMsg(expr
-            .getChild(childrenBegin + e.getArgumentId()), e.getMessage()), e);
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_ARGUMENT_TYPE.getMsg(),
+            expr.getChild(childrenBegin + e.getArgumentId()), e.getMessage()), e);
       } catch (UDFArgumentLengthException e) {
-        throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_LENGTH.getMsg(
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_ARGUMENT_LENGTH.getMsg(),
             expr, e.getMessage()), e);
       } catch (UDFArgumentException e) {
-        throw new SemanticException(ErrorMsg.INVALID_ARGUMENT.getMsg(expr, e
-            .getMessage()), e);
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_ARGUMENT.getMsg(),
+            expr, e.getMessage()), e);
       }
     }
 
@@ -1396,7 +1413,7 @@ public class TypeCheckProcFactory<T> {
   /**
    * Processor for subquery expressions..
    */
-  public class SubQueryExprProcessor implements NodeProcessor {
+  public class SubQueryExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -1447,7 +1464,8 @@ public class TypeCheckProcFactory<T> {
         /*
          * Restriction.1.h :: SubQueries only supported in the SQL Where Clause.
          */
-        ctx.setError(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(sqNode,
+        ctx.setError(ASTErrorUtils.getMsg(
+            ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(), sqNode,
             "Currently only IN & EXISTS SubQuery expressions are allowed"),
             sqNode);
       }

@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.lib;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 
-public class SubqueryExpressionWalker extends ExpressionWalker{
+public class SubqueryExpressionWalker extends ExpressionWalker {
 
   /**
    * Constructor.
@@ -29,7 +29,7 @@ public class SubqueryExpressionWalker extends ExpressionWalker{
    * @param disp
    * dispatcher to call for each op encountered
    */
-  public SubqueryExpressionWalker(Dispatcher disp) {
+  public SubqueryExpressionWalker(SemanticDispatcher disp) {
     super(disp);
   }
 

@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +28,7 @@ import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -77,7 +76,7 @@ public final class MapJoinFactory {
    * may be performed as a bucketized map-side join (or sort-merge join), the map join operator
    * is enhanced to contain the bucketing info. when it is encountered.
    */
-  private static class TableScanMapJoinProcessor implements NodeProcessor {
+  private static class TableScanMapJoinProcessor implements SemanticNodeProcessor {
 
     public static void setupBucketMapJoinInfo(MapWork plan,
         AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp) {
@@ -233,7 +232,7 @@ public final class MapJoinFactory {
     }
   }
 
-  public static NodeProcessor getTableScanMapJoin() {
+  public static SemanticNodeProcessor getTableScanMapJoin() {
     return new TableScanMapJoinProcessor();
   }
 

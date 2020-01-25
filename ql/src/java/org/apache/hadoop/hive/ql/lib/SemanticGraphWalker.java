@@ -18,25 +18,28 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Stack;
+import java.util.Collection;
+import java.util.HashMap;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Rule interface for Operators Used in operator dispatching to dispatch
- * process/visitor functions for operators.
+ * Interface for operator graph walker.
  */
-public interface Rule {
+public interface SemanticGraphWalker extends GraphWalker {
 
   /**
-   * @return the cost of the rule - the lower the cost, the better the rule
-   *         matches
+   * starting point for walking.
+   * 
+   * @param startNodes
+   *          list of starting operators
+   * @param nodeOutput
+   *          If this parameter is not null, the call to the function returns
+   *          the map from node to objects returned by the processors.
    * @throws SemanticException
    */
-  int cost(Stack<Node> stack) throws SemanticException;
+  @Override
+  void startWalking(Collection<Node> startNodes,
+      HashMap<Node, Object> nodeOutput) throws SemanticException;
 
-  /**
-   * @return the name of the rule - may be useful for debugging
-   */
-  String getName();
 }

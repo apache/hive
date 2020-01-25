@@ -28,11 +28,11 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
  * Dispatches calls to relevant method in processor. The user registers various
  * rules with the dispatcher, and the processor corresponding to the type of node
  */
-public class CostLessRuleDispatcher implements Dispatcher {
+public class CostLessRuleDispatcher implements SemanticDispatcher {
 
-  private final SetMultimap<Integer, NodeProcessor> procRules;
+  private final SetMultimap<Integer, SemanticNodeProcessor> procRules;
   private final NodeProcessorCtx procCtx;
-  private final NodeProcessor defaultProc;
+  private final SemanticNodeProcessor defaultProc;
 
   /**
    * Constructor.
@@ -41,8 +41,8 @@ public class CostLessRuleDispatcher implements Dispatcher {
    * @param rules       Map mapping the node's type to processor
    * @param procCtx     operator processor context, which is opaque to the dispatcher
    */
-  public CostLessRuleDispatcher(NodeProcessor defaultProc, SetMultimap<Integer, NodeProcessor> rules,
-      NodeProcessorCtx procCtx) {
+  public CostLessRuleDispatcher(SemanticNodeProcessor defaultProc, SetMultimap<Integer, SemanticNodeProcessor> rules,
+                                NodeProcessorCtx procCtx) {
     this.defaultProc = defaultProc;
     procRules = rules;
     this.procCtx = procCtx;
@@ -59,7 +59,7 @@ public class CostLessRuleDispatcher implements Dispatcher {
       throws SemanticException {
 
     int nodeType = ((ASTNode) nd).getType();
-    NodeProcessor processor = this.defaultProc;
+    SemanticNodeProcessor processor = this.defaultProc;
     if (this.procRules.containsKey(nodeType)) {
       processor = this.procRules.get(((ASTNode) nd).getType()).iterator().next();
     }

@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -31,12 +30,12 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -56,7 +55,7 @@ public class SerializeFilter implements PhysicalPlanResolver {
 
   protected static transient final Logger LOG = LoggerFactory.getLogger(SerializeFilter.class);
 
-  public class Serializer implements Dispatcher {
+  public class Serializer implements SemanticDispatcher {
 
     private final PhysicalContext pctx;
 
@@ -110,12 +109,12 @@ public class SerializeFilter implements PhysicalPlanResolver {
 
     private void evaluateOperators(BaseWork w, PhysicalContext pctx) throws SemanticException {
 
-      Dispatcher disp = null;
+      SemanticDispatcher disp = null;
       final Set<TableScanOperator> tableScans = new LinkedHashSet<TableScanOperator>();
 
-      LinkedHashMap<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
+      LinkedHashMap<SemanticRule, SemanticNodeProcessor> rules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
       rules.put(new RuleRegExp("TS finder",
-              TableScanOperator.getOperatorName() + "%"), new NodeProcessor() {
+              TableScanOperator.getOperatorName() + "%"), new SemanticNodeProcessor() {
           @Override
           public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
               Object... nodeOutputs) {
@@ -125,7 +124,7 @@ public class SerializeFilter implements PhysicalPlanResolver {
         });
       disp = new DefaultRuleDispatcher(null, rules, null);
 
-      GraphWalker ogw = new DefaultGraphWalker(disp);
+      SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
       ArrayList<Node> topNodes = new ArrayList<Node>();
       topNodes.addAll(w.getAllRootOperators());
@@ -153,7 +152,7 @@ public class SerializeFilter implements PhysicalPlanResolver {
       }
     }
 
-    public class DefaultRule implements NodeProcessor {
+    public class DefaultRule implements SemanticNodeProcessor {
 
       @Override
       public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -169,7 +168,7 @@ public class SerializeFilter implements PhysicalPlanResolver {
     pctx.getConf();
 
     // create dispatcher and graph walker
-    Dispatcher disp = new Serializer(pctx);
+    SemanticDispatcher disp = new Serializer(pctx);
     TaskGraphWalker ogw = new TaskGraphWalker(disp);
 
     // get all the tasks nodes from root task

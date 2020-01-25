@@ -36,7 +36,7 @@ public class ExpressionWalker extends DefaultGraphWalker{
    * @param disp
    * dispatcher to call for each op encountered
    */
-  public ExpressionWalker(Dispatcher disp) {
+  public ExpressionWalker(SemanticDispatcher disp) {
     super(disp);
   }
 

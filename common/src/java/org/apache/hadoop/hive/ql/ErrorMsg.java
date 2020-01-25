@@ -15,17 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql;
 
-import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hdfs.protocol.DSQuotaExceededException;
 import org.apache.hadoop.hdfs.protocol.NSQuotaExceededException;
 import org.apache.hadoop.hdfs.protocol.UnresolvedPathException;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 import org.apache.hadoop.security.AccessControlException;
 
 import java.io.FileNotFoundException;
@@ -214,8 +209,7 @@ public enum ErrorMsg {
   ALTER_COMMAND_FOR_VIEWS(10131, "To alter a view you need to use the ALTER VIEW command."),
   ALTER_COMMAND_FOR_TABLES(10132, "To alter a base table you need to use the ALTER TABLE command."),
   ALTER_VIEW_DISALLOWED_OP(10133, "Cannot use this form of ALTER on a view"),
-  ALTER_TABLE_NON_NATIVE(10134, "ALTER TABLE can only be used for " + AlterTableType.NON_NATIVE_TABLE_ALLOWED +
-      " to a non-native table "),
+  ALTER_TABLE_NON_NATIVE(10134, "ALTER TABLE can only be used for {0} to a non-native table {1}"),
   SORTMERGE_MAPJOIN_FAILED(10135,
       "Sort merge bucketed join could not be performed. " +
       "If you really want to perform the operation, either set " +
@@ -775,88 +769,6 @@ public enum ErrorMsg {
     this.mesg = mesg;
     this.sqlState = sqlState;
     this.format = format ? new MessageFormat(mesg) : null;
-  }
-
-  private static int getLine(ASTNode tree) {
-    if (tree.getChildCount() == 0) {
-      return tree.getToken().getLine();
-    }
-
-    return getLine((ASTNode) tree.getChild(0));
-  }
-
-  private static int getCharPositionInLine(ASTNode tree) {
-    if (tree.getChildCount() == 0) {
-      return tree.getToken().getCharPositionInLine();
-    }
-
-    return getCharPositionInLine((ASTNode) tree.getChild(0));
-  }
-
-  // Dirty hack as this will throw away spaces and other things - find a better
-  // way!
-  public static String getText(ASTNode tree) {
-    if (tree.getChildCount() == 0) {
-      return tree.getText();
-    }
-    return getText((ASTNode) tree.getChild(tree.getChildCount() - 1));
-  }
-
-  public String getMsg(ASTNode tree) {
-    StringBuilder sb = new StringBuilder();
-    renderPosition(sb, tree);
-    sb.append(" ");
-    sb.append(mesg);
-    sb.append(" '");
-    sb.append(getText(tree));
-    sb.append("'");
-    renderOrigin(sb, tree.getOrigin());
-    return sb.toString();
-  }
-
-  static final String LINE_SEP = System.getProperty("line.separator");
-
-  public static void renderOrigin(StringBuilder sb, ASTNodeOrigin origin) {
-    while (origin != null) {
-      sb.append(" in definition of ");
-      sb.append(origin.getObjectType());
-      sb.append(" ");
-      sb.append(origin.getObjectName());
-      sb.append(" [");
-      sb.append(LINE_SEP);
-      sb.append(origin.getObjectDefinition());
-      sb.append(LINE_SEP);
-      sb.append("] used as ");
-      sb.append(origin.getUsageAlias());
-      sb.append(" at ");
-      ASTNode usageNode = origin.getUsageNode();
-      renderPosition(sb, usageNode);
-      origin = usageNode.getOrigin();
-    }
-  }
-
-  private static void renderPosition(StringBuilder sb, ASTNode tree) {
-    sb.append("Line ");
-    sb.append(getLine(tree));
-    sb.append(":");
-    sb.append(getCharPositionInLine(tree));
-  }
-  public static String renderPosition(ASTNode n) {
-    StringBuilder sb = new StringBuilder();
-    ErrorMsg.renderPosition(sb, n);
-    return sb.toString();
-  }
-
-  public String getMsg(Tree tree) {
-    return getMsg((ASTNode) tree);
-  }
-
-  public String getMsg(ASTNode tree, String reason) {
-    return getMsg(tree) + ": " + reason;
-  }
-
-  public String getMsg(Tree tree, String reason) {
-    return getMsg((ASTNode) tree, reason);
   }
 
   public String getMsg(String reason) {
