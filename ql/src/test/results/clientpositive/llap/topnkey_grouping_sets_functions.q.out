@@ -116,7 +116,6 @@ STAGE PLANS:
                       null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 26 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col2 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -245,7 +244,6 @@ STAGE PLANS:
                       null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 26 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col2 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -374,7 +372,6 @@ STAGE PLANS:
                       null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 26 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col2 (type: int)
         Reducer 3 
             Execution mode: llap

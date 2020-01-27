@@ -120,7 +120,6 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: tw_a (type: string)
                       Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -280,7 +279,6 @@ STAGE PLANS:
                       sort order: ++-
                       Map-reduce partition columns: tw_a (type: string)
                       Statistics: Num rows: 26 Data size: 2153 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -438,7 +436,6 @@ STAGE PLANS:
                       sort order: +++
                       Map-reduce partition columns: tw_a (type: string), tw_b (type: string)
                       Statistics: Num rows: 26 Data size: 3924 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
