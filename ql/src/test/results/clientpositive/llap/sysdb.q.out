@@ -1185,6 +1185,7 @@ POSTHOOK: query: select principal_name, grantor from role_map order by principal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@role_map
 #### A masked pattern was here ####
+hive_admin_user	admin
 PREHOOK: query: explain vectorization detail
 select count(*) from sds
 PREHOOK: type: QUERY

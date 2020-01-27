@@ -1,12 +1,16 @@
+--! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:dataset:src
 --! qt:sysdb
 
-use sys;
+set user.name=hive_admin_user;
+set role admin;
 
 create scheduled query asd cron '* * * * * ? *' defined as select 1;
 
 !sleep 10;
+
+use sys;
 
 desc formatted scheduled_queries;
 
