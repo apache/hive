@@ -446,14 +446,14 @@ class ScheduledQueryMaintenanceRequestType:
 class QueryState:
   INITED = 0
   EXECUTING = 1
-  ERRORED = 2
+  FAILED = 2
   FINISHED = 3
   TIMED_OUT = 4
 
   _VALUES_TO_NAMES = {
     0: "INITED",
     1: "EXECUTING",
-    2: "ERRORED",
+    2: "FAILED",
     3: "FINISHED",
     4: "TIMED_OUT",
   }
@@ -461,7 +461,7 @@ class QueryState:
   _NAMES_TO_VALUES = {
     "INITED": 0,
     "EXECUTING": 1,
-    "ERRORED": 2,
+    "FAILED": 2,
     "FINISHED": 3,
     "TIMED_OUT": 4,
   }

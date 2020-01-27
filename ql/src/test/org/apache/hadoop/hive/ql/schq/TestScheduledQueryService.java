@@ -129,7 +129,7 @@ public class TestScheduledQueryService {
     public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
       System.out.printf("%d, state: %s, error: %s", info.getScheduledExecutionId(), info.getState(),
           info.getErrorMessage());
-      if (info.getState() == QueryState.FINISHED || info.getState() == QueryState.ERRORED) {
+      if (info.getState() == QueryState.FINISHED || info.getState() == QueryState.FAILED) {
         // Query is done, notify any waiters
         synchronized (notifier) {
           notifier.notifyAll();

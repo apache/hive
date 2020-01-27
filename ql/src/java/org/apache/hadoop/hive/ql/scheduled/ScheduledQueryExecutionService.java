@@ -64,7 +64,7 @@ public class ScheduledQueryExecutionService implements Closeable {
   }
 
   static boolean isTerminalState(QueryState state) {
-    return state == QueryState.FINISHED || state == QueryState.ERRORED;
+    return state == QueryState.FINISHED || state == QueryState.FAILED;
   }
 
   class ScheduledQueryExecutor implements Runnable {
@@ -85,9 +85,7 @@ public class ScheduledQueryExecutionService implements Closeable {
           try {
             Thread.sleep(context.getIdleSleepTime());
           } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            LOG.info("interrupted");
-            break;
+            LOG.warn("interrupt discarded");
           }
         }
       }
@@ -120,12 +118,13 @@ public class ScheduledQueryExecutionService implements Closeable {
         try (
           IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(conf), null)) {
           info.setExecutorQueryId(driver.getQueryState().getQueryId());
+          reportQueryProgress();
           driver.run(q.getQuery());
           info.setState(QueryState.FINISHED);
         }
       } catch (Throwable t) {
         info.setErrorMessage(getErrorStringForException(t));
-        info.setState(QueryState.ERRORED);
+        info.setState(QueryState.FAILED);
       } finally {
         if (state != null) {
           try {
@@ -160,9 +159,13 @@ public class ScheduledQueryExecutionService implements Closeable {
         try {
           Thread.sleep(context.getProgressReporterSleepTime());
         } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
+          LOG.warn("interrupt discarded");
         }
-        worker.reportQueryProgress();
+        try {
+          worker.reportQueryProgress();
+        } catch (Exception e) {
+          LOG.error("ProgressReporter encountered exception ", e);
+        }
       }
     }
   }

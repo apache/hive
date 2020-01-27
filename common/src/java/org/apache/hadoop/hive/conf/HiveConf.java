@@ -4818,6 +4818,8 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "While scheduled queries are in flight; "
             + "a background update happens periodically to report the actual state of the query"),
+    HIVE_SCHEDULED_QUERIES_CREATE_AS_ENABLED("hive.scheduled.queries.create.as.enabled", true,
+        "This option sets the default behaviour of newly created scheduled queries."),
     HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED("hive.security.authorization.scheduled.queries.supported",
         false,
         "Enable this if the configured authorizer is able to handle scheduled query related calls."),

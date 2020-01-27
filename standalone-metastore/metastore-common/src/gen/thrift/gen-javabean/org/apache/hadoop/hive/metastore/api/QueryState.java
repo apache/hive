@@ -14,7 +14,7 @@ import org.apache.thrift.TEnum;
 public enum QueryState implements org.apache.thrift.TEnum {
   INITED(0),
   EXECUTING(1),
-  ERRORED(2),
+  FAILED(2),
   FINISHED(3),
   TIMED_OUT(4);
 
@@ -42,7 +42,7 @@ public enum QueryState implements org.apache.thrift.TEnum {
       case 1:
         return EXECUTING;
       case 2:
-        return ERRORED;
+        return FAILED;
       case 3:
         return FINISHED;
       case 4:

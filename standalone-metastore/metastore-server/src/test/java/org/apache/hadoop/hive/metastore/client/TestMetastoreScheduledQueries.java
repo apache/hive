@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.QueryState;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
@@ -48,26 +49,34 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.model.MScheduledExecution;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.Matchers;
 
 /**
  * Tests handling of scheduled queries related calls to the metastore.
  *
- * Checks wether expected state changes are being done to the HMS database.
+ * Checks whether expected state changes are being done to the HMS database.
  */
 @RunWith(Parameterized.class)
 @Category(MetastoreUnitTest.class)
 public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   private final AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   public TestMetastoreScheduledQueries(String name, AbstractMetaStoreService metaStore) throws Exception {
     metaStore.getConf().set("scheduled.queries.progress.timeout", "3");
@@ -329,13 +338,13 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     Thread.sleep(1000);
 
     info = new ScheduledQueryProgressInfo(
-        pollResult.getExecutionId(), QueryState.ERRORED, "executor-query-id");
+        pollResult.getExecutionId(), QueryState.FAILED, "executor-query-id");
     //    info.set
     client.scheduledQueryProgress(info);
 
     try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
       MScheduledExecution q = pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
-      assertEquals(QueryState.ERRORED, q.getState());
+      assertEquals(QueryState.FAILED, q.getState());
       assertEquals("executor-query-id", q.getExecutorQueryId());
       assertNull(q.getLastUpdateTime());
       assertTrue(q.getEndTime() <= getEpochSeconds());
@@ -408,6 +417,48 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
       MScheduledExecution execution = pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
       assertEquals(QueryState.TIMED_OUT, execution.getState());
+    }
+  }
+
+  @Test
+  public void testDisabledMaintenance() throws MetaException, TException {
+    try {
+      MetastoreConf.setBoolVar(metaStore.getConf(), ConfVars.SCHEDULED_QUERIES_ENABLED, false);
+      ObjectStore objStore = new ObjectStore();
+      objStore.setConf(metaStore.getConf());
+      thrown.expect(MetaException.class);
+      thrown.expectMessage(Matchers.contains(ConfVars.SCHEDULED_QUERIES_ENABLED.getVarname()));
+      objStore.scheduledQueryMaintenance(new ScheduledQueryMaintenanceRequest());
+    } finally {
+      MetastoreConf.setBoolVar(metaStore.getConf(), ConfVars.SCHEDULED_QUERIES_ENABLED, true);
+    }
+  }
+
+  @Test
+  public void testDisabledPoll() throws MetaException, TException {
+    try {
+      MetastoreConf.setBoolVar(metaStore.getConf(), ConfVars.SCHEDULED_QUERIES_ENABLED, false);
+      ObjectStore objStore = new ObjectStore();
+      objStore.setConf(metaStore.getConf());
+      thrown.expect(MetaException.class);
+      thrown.expectMessage(Matchers.contains(ConfVars.SCHEDULED_QUERIES_ENABLED.getVarname()));
+      objStore.scheduledQueryPoll(new ScheduledQueryPollRequest());
+    } finally {
+      MetastoreConf.setBoolVar(metaStore.getConf(), ConfVars.SCHEDULED_QUERIES_ENABLED, true);
+    }
+  }
+
+  @Test //(expected = MetaException.class)
+  public void testDisabledProgress() throws MetaException, TException {
+    try {
+      MetastoreConf.setBoolVar(metaStore.getConf(), ConfVars.SCHEDULED_QUERIES_ENABLED, false);
+      ObjectStore objStore = new ObjectStore();
+      objStore.setConf(metaStore.getConf());
+      thrown.expect(MetaException.class);
+      thrown.expectMessage(Matchers.contains(ConfVars.SCHEDULED_QUERIES_ENABLED.getVarname()));
+      objStore.scheduledQueryProgress(new ScheduledQueryProgressInfo());
+    } finally {
+      MetastoreConf.setBoolVar(metaStore.getConf(), ConfVars.SCHEDULED_QUERIES_ENABLED, true);
     }
   }
 
