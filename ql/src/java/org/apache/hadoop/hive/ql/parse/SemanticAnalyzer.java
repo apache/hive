@@ -490,7 +490,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       mergeIsDirect = false;
     }
-    tabNameToTabObject.clear();
     loadTableWork.clear();
     loadFileWork.clear();
     columnStatsAutoGatherContexts.clear();
@@ -2142,14 +2141,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Get table details from tabNameToTabObject cache
       Table tab = getTableObjectByName(tabName, false);
       if (tab != null) {
-        // copy table object in case downstream changes it
-        Table newTab = new Table(tab.getTTable().deepCopy());
-        // copy constraints, we do not need deep copy as
-        // they should not be changed
-        newTab.setPrimaryKeyInfo(tab.getPrimaryKeyInfo());
-        newTab.setForeignKeyInfo(tab.getForeignKeyInfo());
-        newTab.setUniqueKeyInfo(tab.getUniqueKeyInfo());
-        newTab.setNotNullConstraint(tab.getNotNullConstraint());
+        Table newTab = tab.makeCopy();
         tab = newTab;
       }
       if (tab == null ||
