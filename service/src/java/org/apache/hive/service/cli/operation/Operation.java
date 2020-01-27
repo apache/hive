@@ -240,6 +240,16 @@ public abstract class Operation {
     ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
     createOperationLog();
     LogUtils.registerLoggingContext(queryState.getConf());
+
+    LOG.info(
+        "[opType={}, queryId={}, startTime={}, sessionId={}, createTime={}, userName={}, ipAddress={}]",
+        opHandle.getOperationType(),
+        queryState.getQueryId(),
+        beginTime,
+        parentSession.getSessionState().getSessionId(),
+        parentSession.getCreationTime(),
+        parentSession.getUserName(),
+        parentSession.getIpAddress());
   }
 
   /**
