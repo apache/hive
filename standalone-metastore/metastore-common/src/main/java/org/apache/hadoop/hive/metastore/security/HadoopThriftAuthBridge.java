@@ -25,6 +25,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
+import java.util.Base64;
 import java.util.Locale;
 import java.util.Map;
 
@@ -39,7 +40,6 @@ import javax.security.sasl.RealmChoiceCallback;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -304,11 +304,11 @@ public abstract class HadoopThriftAuthBridge {
       }
 
       static String encodeIdentifier(byte[] identifier) {
-        return new String(Base64.encodeBase64(identifier));
+        return new String(Base64.getEncoder().encode(identifier));
       }
 
       static char[] encodePassword(byte[] password) {
-        return new String(Base64.encodeBase64(password)).toCharArray();
+        return Base64.getEncoder().encodeToString(password).toCharArray();
       }
     }
   }
@@ -519,7 +519,7 @@ public abstract class HadoopThriftAuthBridge {
       }
 
       private char[] encodePassword(byte[] password) {
-        return new String(Base64.encodeBase64(password)).toCharArray();
+        return Base64.getEncoder().encodeToString(password).toCharArray();
       }
       /** {@inheritDoc} */
 
