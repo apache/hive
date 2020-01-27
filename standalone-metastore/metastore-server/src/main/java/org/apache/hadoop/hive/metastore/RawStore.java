@@ -1820,5 +1820,5 @@ public interface RawStore extends Configurable {
 
   int deleteScheduledExecutions(int maxRetainSecs);
 
-  int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException;
+  int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException;
 }

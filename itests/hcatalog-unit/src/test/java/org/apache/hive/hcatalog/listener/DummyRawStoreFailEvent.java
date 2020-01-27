@@ -1375,7 +1375,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
 
   @Override
-  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException {
     return objectStore.markScheduledExecutionsTimedOut(timeoutSecs);
   }
 }

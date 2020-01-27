@@ -211,11 +211,11 @@ end
 module QueryState
   INITED = 0
   EXECUTING = 1
-  ERRORED = 2
+  FAILED = 2
   FINISHED = 3
   TIMED_OUT = 4
-  VALUE_MAP = {0 => "INITED", 1 => "EXECUTING", 2 => "ERRORED", 3 => "FINISHED", 4 => "TIMED_OUT"}
-  VALID_VALUES = Set.new([INITED, EXECUTING, ERRORED, FINISHED, TIMED_OUT]).freeze
+  VALUE_MAP = {0 => "INITED", 1 => "EXECUTING", 2 => "FAILED", 3 => "FINISHED", 4 => "TIMED_OUT"}
+  VALID_VALUES = Set.new([INITED, EXECUTING, FAILED, FINISHED, TIMED_OUT]).freeze
 end
 
 module PartitionFilterMode

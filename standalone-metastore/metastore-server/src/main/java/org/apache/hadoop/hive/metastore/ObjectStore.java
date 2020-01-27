@@ -12643,7 +12643,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) {
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException {
+    ensureScheduledQueriesEnabled();
     String namespace = request.getClusterNamespace();
     boolean commited = false;
     ScheduledQueryPollResponse ret = new ScheduledQueryPollResponse();
@@ -12691,7 +12692,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws InvalidOperationException {
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws InvalidOperationException, MetaException {
+    ensureScheduledQueriesEnabled();
     boolean commited = false;
     try {
       openTransaction();
@@ -12712,7 +12714,7 @@ public class ObjectStore implements RawStore, Configurable {
       case EXECUTING:
         execution.setLastUpdateTime((int) (System.currentTimeMillis() / 1000));
         break;
-      case ERRORED:
+      case FAILED:
       case FINISHED:
       case TIMED_OUT:
         execution.setEndTime((int) (System.currentTimeMillis() / 1000));
@@ -12730,6 +12732,13 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private void ensureScheduledQueriesEnabled() throws MetaException {
+    if (!MetastoreConf.getBoolVar(conf, ConfVars.SCHEDULED_QUERIES_ENABLED)) {
+      throw new MetaException(
+          "Scheduled query request processing is disabled via " + ConfVars.SCHEDULED_QUERIES_ENABLED.getVarname());
+    }
+  }
+
   private boolean validateStateChange(QueryState from, QueryState to) {
     switch (from) {
     case INITED:
@@ -12737,7 +12746,7 @@ public class ObjectStore implements RawStore, Configurable {
     case EXECUTING:
       return to == QueryState.FINISHED
           || to == QueryState.EXECUTING
-          || to == QueryState.ERRORED;
+          || to == QueryState.FAILED;
     default:
       return false;
     }
@@ -12769,6 +12778,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request)
       throws MetaException, NoSuchObjectException, AlreadyExistsException, InvalidInputException {
+    ensureScheduledQueriesEnabled();
     switch (request.getType()) {
     case CREATE:
       scheduledQueryInsert(request.getScheduledQuery());
@@ -12913,7 +12923,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException {
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException {
     if (timeoutSecs < 0) {
       LOG.debug("scheduled executions - time_out mark is disabled");
       return 0;
