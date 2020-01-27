@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 PREHOOK: query: CREATE DATABASE IF NOT EXISTS SYS
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:SYS
@@ -3308,16 +3309,22 @@ POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.schedule_name SIMPLE [(scheduled_queries
 POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.scheduled_execution_id SIMPLE [(scheduled_executions)se.FieldSchema(name:scheduled_execution_id, type:bigint, comment:from deserializer), ]
 POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.start_time EXPRESSION [(scheduled_executions)se.FieldSchema(name:start_time, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.state SIMPLE [(scheduled_executions)se.FieldSchema(name:state, type:string, comment:from deserializer), ]
+=======
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
+PREHOOK: type: QUERY
+POSTHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
+POSTHOOK: type: QUERY
+>>>>>>> 7bb1d1edfcb... HIVE-22518: SQLStdHiveAuthorizerFactoryForTest doesn't work correctly for llap tests (Zoltan Haindrich reviewed by Miklos Gergely)
 PREHOOK: query: use sys
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:sys
 POSTHOOK: query: use sys
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:sys
-PREHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
-PREHOOK: type: QUERY
-POSTHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
-POSTHOOK: type: QUERY
 PREHOOK: query: desc formatted scheduled_queries
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: sys@scheduled_queries
@@ -3406,7 +3413,7 @@ POSTHOOK: query: select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_queries
 #### A masked pattern was here ####
-1	asd	true	hive	* * * * * ? *	hive_test_user	select 1	true
+1	asd	true	hive	* * * * * ? *	hive_admin_user	select 1	true
 PREHOOK: query: select	scheduled_execution_id,
 	scheduled_query_id,
 	state,

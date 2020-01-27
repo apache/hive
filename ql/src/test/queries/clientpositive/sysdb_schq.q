@@ -1,13 +1,17 @@
+--! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:dataset:src
 
 source ../../metastore/scripts/upgrade/hive/hive-schema-3.1.3000.hive.sql;
 
-use sys;
+set user.name=hive_admin_user;
+set role admin;
 
 create scheduled query asd cron '* * * * * ? *' defined as select 1;
 
 !sleep 10;
+
+use sys;
 
 desc formatted scheduled_queries;
 

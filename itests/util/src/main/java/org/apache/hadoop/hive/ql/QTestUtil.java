@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
+import org.apache.hadoop.hive.ql.qoption.QTestAuthorizerHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryCleaner;
@@ -553,6 +554,7 @@ public class QTestUtil {
             new File(conf.get("test.data.set.files"));
 
     conf.setVar(ConfVars.HIVE_QUERY_RESULTS_CACHE_DIRECTORY, "/tmp/hive/_resultscache_" + ProcessUtils.getPid());
+    dispatcher.register("authorizer", new QTestAuthorizerHandler());
     dispatcher.register("dataset", new FakeDatasetHandler());
     dispatcher.register("replace", replaceHandler);
     dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider(conf));
