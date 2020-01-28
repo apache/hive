@@ -2842,7 +2842,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (tablePath != null) {
         try {
           wh.deleteDir(tablePath, true, ifPurge, shouldEnableCm);
-        } catch (MetaException e) {
+        } catch (Exception e) {
           LOG.error("Failed to delete table directory: " + tablePath +
                   " " + e.getMessage());
         }
@@ -2861,7 +2861,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (tablePath != null) {
         try {
           wh.deleteDir(tablePath, true, ifPurge, db);
-        } catch (MetaException e) {
+        } catch (Exception e) {
           LOG.error("Failed to delete table directory: " + tablePath +
                   " " + e.getMessage());
         }

@@ -104,8 +104,6 @@ public class TestJdbcWithMiniHS2 {
   public static void setupBeforeClass() throws Exception {
     MiniHS2.cleanupLocalDir();
     HiveConf conf = new HiveConf();
-   // conf.set(HiveConf.ConfVars.REPLCMDIR.varname, "hdfs://cmroot");
-   // conf.set(ConfVars.REPLCMENABLED.varname, "true");
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
 
