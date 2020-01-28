@@ -366,7 +366,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
 
   @Override
   public void close() throws StreamingIOFailure {
-    heapMemoryMonitor.close();
+    if(heapMemoryMonitor != null) {
+      heapMemoryMonitor.close();
+    }
     boolean haveError = false;
     String partition = null;
     if (LOG.isDebugEnabled()) {
@@ -395,7 +397,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       logStats("Stats after close:");
     }
     try {
-      this.fs.close();
+      if(this.fs != null) {
+        this.fs.close();
+      }
     } catch (IOException e) {
       throw new StreamingIOFailure("Error while closing FileSystem", e);
     }
@@ -630,7 +634,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       .filter(Objects::nonNull)
       .mapToLong(RecordUpdater::getBufferedRowCount)
       .sum();
-    MemoryUsage memoryUsage = heapMemoryMonitor.getTenuredGenMemoryUsage();
+    MemoryUsage memoryUsage = heapMemoryMonitor == null ? null : heapMemoryMonitor.getTenuredGenMemoryUsage();
     String oldGenUsage = "NA";
     if (memoryUsage != null) {
       oldGenUsage = "used/max => " + LlapUtil.humanReadableByteCount(memoryUsage.getUsed()) + "/" +
