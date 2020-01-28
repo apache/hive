@@ -44,6 +44,8 @@ public class TestHCatStorer extends AbstractHCatStorerTest {
       add("testDynamicPartitioningMultiPartColsInDataNoSpec");
       add("testDynamicPartitioningMultiPartColsInDataPartialSpec");
       add("testDynamicPartitioningMultiPartColsNoDataInDataNoSpec");
+      add("testStaticPartitioningMultiPartCols");
+      add("testStaticPartitioningMultiPartColsNoData");
       add("testEmptyStore");
       add("testMultiPartColsInData");
       add("testNoAlias");
@@ -282,6 +284,20 @@ public class TestHCatStorer extends AbstractHCatStorerTest {
     super.testDynamicPartitioningMultiPartColsNoDataInDataNoSpec();
   }
 
+  @Test
+  @Override
+  public void testStaticPartitioningMultiPartCols() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
+    super.testStaticPartitioningMultiPartCols();
+  }
+
+  @Test
+  @Override
+  public void testStaticPartitioningMultiPartColsNoData() throws Exception {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
+    super.testStaticPartitioningMultiPartColsNoData();
+  }
+  
   @Test
   @Override
   public void testPartitionPublish() throws Exception {
