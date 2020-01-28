@@ -150,7 +150,6 @@ public class OrcEncodedDataConsumer
     int currentStripeIndex = batch.getBatchKey().stripeIx;
 
     boolean sameStripe = currentStripeIndex == previousStripeIndex;
-    boolean [] skipRows = new boolean[VectorizedRowBatch.DEFAULT_SIZE];
 
     try {
       ConsumerStripeMetadata stripeMetadata = stripes.get(currentStripeIndex);
@@ -211,6 +210,7 @@ public class OrcEncodedDataConsumer
         }
 
         ColumnVectorBatch cvb = cvbPool.take();
+        boolean [] skipRows = new boolean[batchSize];
         // assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
         cvb.size = batchSize;
         // for every column of the row group
@@ -261,9 +261,11 @@ public class OrcEncodedDataConsumer
           ColumnVector cv = cvb.cols[idx];
           cv.reset();
           cv.ensureSize(batchSize, false);
-          reader.nextVector(cv, skipRows, batchSize);
+          // EncodedTreeReader - not just TreeReader
+          reader.nextVector(cv, null, skipRows, batchSize);
           // if this is the probeKey Col and all rows are skipped -> skip decoding for the remaining batch columns
-          if ((idx == this.probeDecodeColId) && checkProbeDecode(cv, batchSize, skipRows)) break;
+          if ((idx == this.probeDecodeColId))
+            checkProbeDecode(cv, batchSize, skipRows);
         }
         // we are done reading a batch, send it downstream for processing if not all Nulls!
         if (skippedRowCount != batchSize) {
@@ -276,6 +278,7 @@ public class OrcEncodedDataConsumer
       counters.incrWallClockCounter(LlapIOCounters.DECODE_TIME_NS, startTime);
       counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, maxBatchesRG);
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
+      counters.incrCounter(LlapIOCounters.NUM_DECODED_ROWS, (nonNullRowCount - skippedRowCount));
     } catch (IOException e) {
       // Caller will return the batch.
       downstreamConsumer.setError(e);
@@ -288,20 +291,19 @@ public class OrcEncodedDataConsumer
         && this.smallMapJoinTable != null) {
       // TODO: What about other ColumnVector types
       LongColumnVector dcv = (LongColumnVector) cv;
-      Arrays.fill(skipRows, true);
       for (int row = 0; row < batchSize; row++) {
         // if dcv.vector[row] is in HashTable
-        if (this.smallMapJoinTable.containsKey(Longs.toByteArray(dcv.vector[row]))) {
-          skipRows[row] = false;
-        } else {
+        if (!this.smallMapJoinTable.containsKey(Longs.toByteArray(dcv.vector[row]))) {
+          skipRows[row] = true;
           this.skippedRowCount++;
         }
       }
-      // Propagate skipRows values -> isNull to avoid probing again on the Join Side: i.e: used by the VectorMapJoinInnerLongOperator
-      if (skippedCount > 0) {
-        dcv.noNulls = false;
-        System.arraycopy(skipRows, 0, dcv.isNull, 0, VectorizedRowBatch.DEFAULT_SIZE);
-      }
+      // Now done in the ORC level
+//      // Propagate skipRows values -> isNull to avoid probing again on the Join Side: i.e: used by the VectorMapJoinInnerLongOperator
+//      if (skippedCount > 0) {
+//        dcv.noNulls = false;
+//        System.arraycopy(skipRows, 0, dcv.isNull, 0, batchSize);
+//      }
     }
     return (skippedCount == batchSize);
   }

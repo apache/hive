@@ -675,7 +675,8 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     default:
       throw new RuntimeException("Unknown vector map join hash table implementation type " + hashTableImplementationType.name());
     }
-    LOG.info("Using " + vectorMapJoinHashTable.getClass().getSimpleName() + " from " + this.getClass().getSimpleName());
+    LOG.info("Using " + vectorMapJoinHashTable.getClass().getSimpleName() + " from " + this.getClass().getSimpleName() +
+        "with size: " + vectorMapJoinHashTable.size() + " and cache_key " + this.getCacheKey());
   }
 
   /*

@@ -25,6 +25,7 @@ public enum LlapIOCounters {
   NUM_VECTOR_BATCHES(true),
   NUM_DECODED_BATCHES(true),
   SELECTED_ROWGROUPS(true),
+  NUM_DECODED_ROWS(true),
   NUM_ERRORS(true),
   ROWS_EMITTED(true),
   METADATA_CACHE_HIT(true),

@@ -220,22 +220,26 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     Stack<Operator<?>> opStack = new Stack<>();
     // Children BFS
     opStack.addAll(mapWork.getWorks());
+    VectorMapJoinCommonOperator vop = null;
     String mjCacheKey = null;
+    int colIndex = 0;
     while (!opStack.empty()) {
       Operator<?> op = opStack.pop();
       if (op instanceof MapJoinOperator && noDynamicPruningMapJoin(op) && validProbeDecodeMapJoin(op)) {
-        VectorMapJoinCommonOperator vop = (VectorMapJoinCommonOperator) op;
+        vop = (VectorMapJoinCommonOperator) op;
         // Following MapJoinOperator cache key definition
         mjCacheKey = vop.getCacheKey() != null ? vop.getCacheKey(): MapJoinDesc.generateCacheKey(op.getOperatorId());
-        int colIndex = ((VectorMapJoinDesc)((VectorMapJoinCommonOperator) op).getVectorDesc()).getVectorMapJoinInfo().getBigTableKeyColumnMap()[0];
+        ((VectorMapJoinCommonOperator) op).getVectorMapJoinHashTable();
+        colIndex = ((VectorMapJoinDesc)((VectorMapJoinCommonOperator) op).getVectorDesc()).getVectorMapJoinInfo().getBigTableKeyColumnMap()[0];
         job.setInt(ConfVars.HIVE_MAPJOIN_PROBEDECODE_COLKEY.varname, colIndex);
-        LOG.info("ProbeDecode found MapJoin op {}  with CacheKey {} MapJoin ColID {} and ColName {}", op.getName(), mjCacheKey,
-            colIndex, vop.getInputVectorizationContext().getInitialColumnNames().get(colIndex));
-        break;
       }
       if (op.getChildOperators() != null) {
         opStack.addAll(op.getChildOperators());
       }
+    }
+    if (mjCacheKey != null) {
+      LOG.info("ProbeDecode found MapJoin op {}  with CacheKey {} MapJoin ColID {} and ColName {}", vop.getName(), mjCacheKey,
+          colIndex, vop.getInputVectorizationContext().getInitialColumnNames().get(colIndex));
     }
     return mjCacheKey;
   }
