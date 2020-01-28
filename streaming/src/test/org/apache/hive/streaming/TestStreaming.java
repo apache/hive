@@ -1819,6 +1819,27 @@ public class TestStreaming {
 
   }
 
+  @Test(expected = ClassCastException.class)
+  public void testFileSystemError() throws Exception {
+    // Bad file system object, ClassCastException should occur during record writer init
+    conf.set("fs.raw.impl", Object.class.getName());
+
+    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
+            .withFieldDelimiter(',')
+            .build();
+
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+            .withDatabase(dbName)
+            .withTable(tblName)
+            .withStaticPartitionValues(partitionVals)
+            .withAgentInfo("UT_" + Thread.currentThread().getName())
+            .withRecordWriter(writer)
+            .withHiveConf(conf)
+            .connect();
+
+    connection.beginTransaction();
+  }
+
 
   @Test
   public void testTransactionBatchAbortAndCommit() throws Exception {
