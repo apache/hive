@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.QueryState;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
@@ -99,6 +100,9 @@ public class TestScheduledQueryService {
     return res.size();
   }
 
+  // Use notify/wait on this object to indicate when the scheduled query has finished executing.
+  static Object notifier = new Object();
+
   public static class MockScheduledQueryService implements IScheduledQueryMaintenanceService {
     int id = 0;
     private String stmt;
@@ -125,6 +129,12 @@ public class TestScheduledQueryService {
     public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
       System.out.printf("%d, state: %s, error: %s", info.getScheduledExecutionId(), info.getState(),
           info.getErrorMessage());
+      if (info.getState() == QueryState.FINISHED || info.getState() == QueryState.FAILED) {
+        // Query is done, notify any waiters
+        synchronized (notifier) {
+          notifier.notifyAll();
+        }
+      }
     }
 
     @Override
@@ -144,9 +154,14 @@ public class TestScheduledQueryService {
     ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
     ScheduledQueryExecutionService sQ = new ScheduledQueryExecutionService(ctx);
 
-    Thread.sleep(5000);
     executor.shutdown();
-    executor.awaitTermination(2, TimeUnit.SECONDS);
+    // Wait for the scheduled query to finish. Hopefully 30 seconds should be more than enough.
+    SessionState.getConsole().logInfo("Waiting for query execution to finish ...");
+    synchronized (notifier) {
+      notifier.wait(30000);
+    }
+    SessionState.getConsole().logInfo("Done waiting for query execution!");
+    executor.shutdownNow();
 
     int nr = getNumRowsReturned(driver, "select 1 from tu");
     assertThat(nr, Matchers.equalTo(5));

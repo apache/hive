@@ -316,14 +316,14 @@ const std::map<int, const char*> _ScheduledQueryMaintenanceRequestType_VALUES_TO
 int _kQueryStateValues[] = {
   QueryState::INITED,
   QueryState::EXECUTING,
-  QueryState::ERRORED,
+  QueryState::FAILED,
   QueryState::FINISHED,
   QueryState::TIMED_OUT
 };
 const char* _kQueryStateNames[] = {
   "INITED",
   "EXECUTING",
-  "ERRORED",
+  "FAILED",
   "FINISHED",
   "TIMED_OUT"
 };

@@ -3156,7 +3156,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException {
     return rawStore.markScheduledExecutionsTimedOut(timeoutSecs);
   }
 }

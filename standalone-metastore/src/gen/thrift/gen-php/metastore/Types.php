@@ -295,13 +295,13 @@ final class ScheduledQueryMaintenanceRequestType {
 final class QueryState {
   const INITED = 0;
   const EXECUTING = 1;
-  const ERRORED = 2;
+  const FAILED = 2;
   const FINISHED = 3;
   const TIMED_OUT = 4;
   static public $__names = array(
     0 => 'INITED',
     1 => 'EXECUTING',
-    2 => 'ERRORED',
+    2 => 'FAILED',
     3 => 'FINISHED',
     4 => 'TIMED_OUT',
   );

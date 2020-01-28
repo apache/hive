@@ -274,7 +274,7 @@ struct QueryState {
   enum type {
     INITED = 0,
     EXECUTING = 1,
-    ERRORED = 2,
+    FAILED = 2,
     FINISHED = 3,
     TIMED_OUT = 4
   };

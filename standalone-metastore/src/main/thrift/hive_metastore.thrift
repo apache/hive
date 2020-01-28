@@ -1764,7 +1764,7 @@ struct ScheduledQueryMaintenanceRequest {
 enum QueryState {
    INITED,
    EXECUTING,
-   ERRORED,
+   FAILED,
    FINISHED,
    TIMED_OUT,
 }
