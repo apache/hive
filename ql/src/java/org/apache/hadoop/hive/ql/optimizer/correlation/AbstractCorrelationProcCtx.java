@@ -28,12 +28,8 @@ import java.util.Set;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 abstract class AbstractCorrelationProcCtx implements NodeProcessorCtx {
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractCorrelationProcCtx.class);
   private ParseContext pctx;
   // For queries using script, the optimization cannot be applied without user's confirmation
   // If script preserves alias and value for columns related to keys, user can set this true
@@ -49,22 +45,7 @@ abstract class AbstractCorrelationProcCtx implements NodeProcessorCtx {
   public AbstractCorrelationProcCtx(ParseContext pctx) {
     removedOps = new HashSet<Operator<?>>();
     trustScript = pctx.getConf().getBoolVar(HIVESCRIPTOPERATORTRUST);
-    if(pctx.hasAcidWrite()) {
-      StringBuilder tblNames = new StringBuilder();
-      for(FileSinkDesc fsd : pctx.getAcidSinks()) {
-        if(fsd.getTable() != null) {
-          tblNames.append(fsd.getTable().getDbName()).append('.').append(fsd.getTable().getTableName()).append(',');
-        }
-      }
-      if(tblNames.length() > 0) {
-        tblNames.setLength(tblNames.length() - 1);//traling ','
-      }
-      LOG.info("Overriding " + HIVEOPTREDUCEDEDUPLICATIONMINREDUCER + " to 1 due to a write to transactional table(s) " + tblNames);
-      minReducer = 1;
-    }
-    else {
-      minReducer = pctx.getConf().getIntVar(HIVEOPTREDUCEDEDUPLICATIONMINREDUCER);
-    }
+    minReducer = pctx.getConf().getIntVar(HIVEOPTREDUCEDEDUPLICATIONMINREDUCER);
     isMapAggr = pctx.getConf().getBoolVar(HIVEMAPSIDEAGGREGATE);
     this.pctx = pctx;
   }

@@ -576,11 +576,7 @@ public class OrcRecordUpdater implements RecordUpdater {
           if (options.isWritingBase()) {
             // With insert overwrite we need the empty file to delete the previous content of the table
             LOG.debug("Empty file has been created for overwrite: {}", path);
-
-            OrcFile.WriterOptions wo = OrcFile.writerOptions(this.options.getConfiguration())
-                .inspector(rowInspector)
-                .callback(new OrcRecordUpdater.KeyIndexBuilder("testEmpty"));
-            OrcFile.createWriter(path, wo).close();
+            OrcFile.createWriter(path, writerOptions).close();
           } else {
             LOG.debug("No insert events in path: {}.. Deleting..", path);
             fs.delete(path, false);
