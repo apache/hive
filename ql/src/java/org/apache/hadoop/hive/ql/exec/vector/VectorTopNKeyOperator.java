@@ -194,7 +194,6 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
 
   @Override
   protected void closeOp(boolean abort) throws HiveException {
-//    LOG.info("Closing TopNKeyFilter: {}.", topNKeyFilter);
     for (TopNKeyFilter topNKeyFilter : topNKeyFilters.values()) {
       topNKeyFilter.clear();
     }

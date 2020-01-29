@@ -18,6 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.hadoop.hive.ql.plan.api.OperatorType.TOPNKEY;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -27,13 +34,6 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.apache.hadoop.hive.ql.plan.api.OperatorType.TOPNKEY;
-
 /**
  * TopNKeyOperator passes rows that contains top N keys only.
  */
@@ -41,7 +41,7 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
 
   private static final long serialVersionUID = 1L;
 
-  private transient Map<KeyWrapper, TopNKeyFilter<KeyWrapper>> topNKeyFilters;
+  private transient Map<KeyWrapper, TopNKeyFilter> topNKeyFilters;
 
   private transient KeyWrapper partitionKeyWrapper;
   private transient KeyWrapper keyWrapper;
@@ -108,9 +108,9 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
     partitionKeyWrapper.getNewKey(row, inputObjInspectors[tag]);
     partitionKeyWrapper.setHashKey();
 
-    TopNKeyFilter<KeyWrapper> topNKeyFilter = topNKeyFilters.get(partitionKeyWrapper);
+    TopNKeyFilter topNKeyFilter = topNKeyFilters.get(partitionKeyWrapper);
     if (topNKeyFilter == null) {
-      topNKeyFilter = new TopNKeyFilter<>(conf.getTopN(), keyWrapperComparator);
+      topNKeyFilter = new TopNKeyFilter(conf.getTopN(), keyWrapperComparator);
       topNKeyFilters.put(partitionKeyWrapper.copyKey(), topNKeyFilter);
     }
 
@@ -124,6 +124,9 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
 
   @Override
   protected final void closeOp(boolean abort) throws HiveException {
+    for (TopNKeyFilter each : topNKeyFilters.values()) {
+      each.clear();
+    }
     topNKeyFilters.clear();
     super.closeOp(abort);
   }

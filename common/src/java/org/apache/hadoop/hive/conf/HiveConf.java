@@ -2360,6 +2360,8 @@ public class HiveConf extends Configuration {
         "would change the query plan to take care of it, and hive.optimize.skewjoin will be a no-op."),
 
     HIVE_OPTIMIZE_TOPNKEY("hive.optimize.topnkey", true, "Whether to enable top n key optimizer."),
+    HIVE_MAX_TOPN_ALLOWED("hive.optimize.topnkey.max", 128, "Maximum topN value allowed by top n key optimizer.\n" +
+      "If the LIMIT is greater than this value then top n key optimization won't be used."),
 
     HIVE_SHARED_WORK_OPTIMIZATION("hive.optimize.shared.work", true,
         "Whether to enable shared work optimizer. The optimizer finds scan operator over the same table\n" +
