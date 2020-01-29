@@ -722,6 +722,13 @@ public class ASTConverter {
         }
         break;
       case CAST:
+        assert(call.getOperands().size() == 1);
+        if(call.getType().isStruct()) {
+          // cast for struct types can be ignored safely because explicit casting on struct
+          // types are not possible, implicit casting e.g. CAST(ROW__ID as <...>) can be ignored
+          return call.getOperands().get(0).accept(this);
+        }
+
         HiveToken ht = TypeConverter.hiveToken(call.getType());
         ASTBuilder astBldr = ASTBuilder.construct(ht.type, ht.text);
         if (ht.args != null) {
@@ -730,9 +737,7 @@ public class ASTConverter {
           }
         }
         astNodeLst.add(astBldr.node());
-        for (RexNode operand : call.operands) {
-          astNodeLst.add(operand.accept(this));
-        }
+        astNodeLst.add(call.getOperands().get(0).accept(this));
         break;
       case EXTRACT:
         // Extract on date: special handling since function in Hive does
