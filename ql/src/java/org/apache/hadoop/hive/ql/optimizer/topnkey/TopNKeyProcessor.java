@@ -43,8 +43,10 @@ import java.util.Stack;
  */
 public class TopNKeyProcessor implements NodeProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(TopNKeyProcessor.class);
+  private final int maxTopNAllowed;
 
-  public TopNKeyProcessor() {
+  public TopNKeyProcessor(int maxTopNAllowed) {
+    this.maxTopNAllowed = maxTopNAllowed;
   }
 
   @Override
@@ -57,6 +59,10 @@ public class TopNKeyProcessor implements NodeProcessor {
 
     // Check whether the reduce sink operator contains top n
     if (reduceSinkDesc.getTopN() < 0 || !reduceSinkDesc.isOrdering()) {
+      return null;
+    }
+
+    if (reduceSinkDesc.getTopN() > maxTopNAllowed) {
       return null;
     }
 

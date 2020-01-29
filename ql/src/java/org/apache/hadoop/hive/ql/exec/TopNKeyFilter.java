@@ -17,38 +17,67 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import static java.util.Arrays.binarySearch;
+
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.PriorityQueue;
 
 /**
  * Implementation of filtering out keys.
  * An instance of this class is wrapped in {@link TopNKeyOperator} and
  * {@link org.apache.hadoop.hive.ql.exec.vector.VectorTopNKeyOperator}
- * @param <T> - Type of {@link KeyWrapper}. Each key is stored in a KeyWrapper instance.
  */
-public class TopNKeyFilter<T extends KeyWrapper> {
-  private final PriorityQueue<T> priorityQueue;
+public final class TopNKeyFilter {
   private final int topN;
+  private Comparator<? extends KeyWrapper> comparator;
+  private KeyWrapper[] sortedTopItems;
+  private int size = 0;
+  private long repeated = 0;
+  private long added = 0;
+  private long total = 0;
 
-  public TopNKeyFilter(int topN, Comparator<T> comparator) {
-    // We need a reversed comparator because the PriorityQueue.poll() method is used for filtering out keys.
-    // Ex.: When ORDER BY key1 ASC then call of poll() should remove the largest key.
-    this.priorityQueue = new PriorityQueue<>(topN + 1, comparator.reversed());
+  public TopNKeyFilter(int topN, Comparator<? extends KeyWrapper> comparator) {
+    this.comparator = comparator;
+    this.sortedTopItems = new KeyWrapper[topN +1];
     this.topN = topN;
   }
 
-  public boolean canForward(T kw) {
-    if (!priorityQueue.contains(kw)) {
-      priorityQueue.offer((T) kw.copyKey());
+  public final boolean canForward(KeyWrapper kw) {
+    total++;
+    int pos = binarySearch(sortedTopItems, 0, size, kw, (Comparator<? super KeyWrapper>) comparator);
+    if (pos >= 0) { // found
+      repeated++;
+      return true;
     }
-    if (priorityQueue.size() > topN) {
-      priorityQueue.poll();
+    pos = -pos -1; // not found, calculate insertion point
+    if (pos >= topN) { // would be inserted to the end, there are topN elements which are smaller/larger
+      return false;
     }
-
-    return priorityQueue.contains(kw);
+    System.arraycopy(sortedTopItems, pos, sortedTopItems, pos +1, size - pos); // make space by shifting
+    sortedTopItems[pos] = kw.copyKey();
+    added++;
+    if (size < topN) {
+      size++;
+    }
+    return true;
   }
 
   public void clear() {
-    priorityQueue.clear();
+    this.size = 0;
+    this.repeated = 0;
+    this.added = 0;
+    this.total = 0;
+    Arrays.fill(sortedTopItems, null);
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("TopNKeyFilter{");
+    sb.append("topN=").append(topN);
+    sb.append(", repeated=").append(repeated);
+    sb.append(", added=").append(added);
+    sb.append(", total=").append(total);
+    sb.append('}');
+    return sb.toString();
   }
 }
