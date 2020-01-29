@@ -706,8 +706,7 @@ public abstract class TaskCompiler {
         pCtx.getReduceSinkOperatorsAddedByEnforceBucketingSorting(),
         pCtx.getAnalyzeRewrite(), pCtx.getCreateTable(),
         pCtx.getCreateViewDesc(), pCtx.getMaterializedViewUpdateDesc(),
-        pCtx.getQueryProperties(), pCtx.getViewProjectToTableSchema(),
-        pCtx.getAcidSinks());
+        pCtx.getQueryProperties(), pCtx.getViewProjectToTableSchema());
     clone.setFetchTask(pCtx.getFetchTask());
     clone.setLineageInfo(pCtx.getLineageInfo());
     clone.setMapJoinOps(pCtx.getMapJoinOps());
