@@ -1289,7 +1289,7 @@ public class TezCompiler extends TaskCompiler {
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(
         new RuleRegExp("Top n key optimization", ReduceSinkOperator.getOperatorName() + "%"),
-        new TopNKeyProcessor());
+        new TopNKeyProcessor(HiveConf.getIntVar(procCtx.conf, HiveConf.ConfVars.HIVE_MAX_TOPN_ALLOWED)));
     opRules.put(
             new RuleRegExp("Top n key pushdown", TopNKeyOperator.getOperatorName() + "%"),
             new TopNKeyPushdownProcessor());

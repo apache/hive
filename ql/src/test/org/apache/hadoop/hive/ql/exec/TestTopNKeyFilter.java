@@ -36,14 +36,14 @@ public class TestTopNKeyFilter {
 
   @Test
   public void testNothingCanBeForwardedIfTopNIs0() {
-    TopNKeyFilter<TestKeyWrapper> topNKeyFilter = new TopNKeyFilter<>(0, TEST_KEY_WRAPPER_COMPARATOR);
+    TopNKeyFilter topNKeyFilter = new TopNKeyFilter(0, TEST_KEY_WRAPPER_COMPARATOR);
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(1)), is(false));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(-1)), is(false));
   }
 
   @Test
   public void testFirstTopNKeysCanBeForwarded() {
-    TopNKeyFilter<TestKeyWrapper> topNKeyFilter = new TopNKeyFilter<>(3, TEST_KEY_WRAPPER_COMPARATOR);
+    TopNKeyFilter topNKeyFilter = new TopNKeyFilter(3, TEST_KEY_WRAPPER_COMPARATOR);
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(1)), is(true));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(5)), is(true));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(10)), is(true));
@@ -52,7 +52,7 @@ public class TestTopNKeyFilter {
 
   @Test
   public void testKeyCanNotBeForwardedIfItIsDroppedOutFromTopNKeys() {
-    TopNKeyFilter<TestKeyWrapper> topNKeyFilter = new TopNKeyFilter<>(2, TEST_KEY_WRAPPER_COMPARATOR);
+    TopNKeyFilter topNKeyFilter = new TopNKeyFilter(2, TEST_KEY_WRAPPER_COMPARATOR);
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(1)), is(true));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(3)), is(true));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(2)), is(true));
@@ -61,7 +61,7 @@ public class TestTopNKeyFilter {
 
   @Test
   public void testMembersOfTopNKeysStillCanBeForwardedAfterNonTopNKeysTried() {
-    TopNKeyFilter<TestKeyWrapper> topNKeyFilter = new TopNKeyFilter<>(2, TEST_KEY_WRAPPER_COMPARATOR);
+    TopNKeyFilter topNKeyFilter = new TopNKeyFilter(2, TEST_KEY_WRAPPER_COMPARATOR);
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(1)), is(true));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(3)), is(true));
     assertThat(topNKeyFilter.canForward(new TestKeyWrapper(5)), is(false));
