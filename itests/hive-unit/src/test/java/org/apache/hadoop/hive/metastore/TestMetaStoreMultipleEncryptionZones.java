@@ -83,7 +83,7 @@ public class TestMetaStoreMultipleEncryptionZones {
                     + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
 
     cmroot = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmroot";
-    cmrootEncrypted = "/cmrootEncrypted/";
+    cmrootEncrypted = "cmrootEncrypted";
     hiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmroot);
     hiveConf.set(HiveConf.ConfVars.REPLCMENCRYPTEDDIR.varname, cmrootEncrypted);
     warehouse = new Warehouse(hiveConf);

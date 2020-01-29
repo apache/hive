@@ -19,8 +19,9 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +59,7 @@ public class ReplChangeManager {
 
   private static boolean inited = false;
   private static boolean enabled = false;
-  private static Map<String, Path> encryptionZones = new HashMap<>();
+  private static Set<String> encryptionZones = new HashSet<>();
   private static HadoopShims hadoopShims = ShimLoader.getHadoopShims();
   private static Configuration conf;
   private String msUser;
@@ -156,13 +157,21 @@ public class ReplChangeManager {
           //Create default cm root
           Path cmroot = new Path(cmRootDir);
           createCmRoot(cmroot);
+          FileSystem cmRootFs = cmroot.getFileSystem(conf);
           HdfsEncryptionShim pathEncryptionShim = hadoopShims
-                  .createHdfsEncryptionShim(cmroot.getFileSystem(conf), conf);
+                  .createHdfsEncryptionShim(cmRootFs, conf);
           if (pathEncryptionShim.isPathEncrypted(cmroot)) {
-            String encryptionZonePath = pathEncryptionShim.getEncryptionZoneForPath(cmroot).getPath();
-            encryptionZones.put(encryptionZonePath, cmroot);
+            //cm root cannot be encrypted. So we move the current cmroot data to a cmroot in a encrypted zone
+            String encryptionZonePath = cmRootFs.getUri()
+                    + pathEncryptionShim.getEncryptionZoneForPath(cmroot).getPath();
+            cmRootFs.rename(cmroot, new Path(encryptionZonePath + encryptedCmRootDir));
+            encryptionZones.add(encryptionZonePath);
           } else {
-            encryptionZones.put(NO_ENCRYPTION, cmroot);
+            encryptionZones.add(NO_ENCRYPTION);
+          }
+          Path cmRootEncrypted = new Path(encryptedCmRootDir);
+          if (cmRootEncrypted.isAbsolute()) {
+            throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be a relative path");
           }
           UserGroupInformation usergroupInfo = UserGroupInformation.getCurrentUser();
           msUser = usergroupInfo.getShortUserName();
@@ -431,11 +440,11 @@ public class ReplChangeManager {
    * Thread to clear old files of cmroot recursively
    */
   static class CMClearer implements Runnable {
-    private Map<String, Path> encryptionZones;
+    private Set<String> encryptionZones;
     private long secRetain;
     private Configuration conf;
 
-    CMClearer(Map<String, Path> encryptionZones, long secRetain, Configuration conf) {
+    CMClearer(Set<String> encryptionZones, long secRetain, Configuration conf) {
       this.encryptionZones = encryptionZones;
       this.secRetain = secRetain;
       this.conf = conf;
@@ -445,7 +454,8 @@ public class ReplChangeManager {
     public void run() {
       try {
         LOG.info("CMClearer started");
-        for (Path cmroot : encryptionZones.values()) {
+        for (String encryptionZone : encryptionZones) {
+          Path cmroot = new Path(encryptionZone + encryptedCmRootDir);
           long now = System.currentTimeMillis();
           FileSystem fs = cmroot.getFileSystem(conf);
           FileStatus[] files = fs.listStatus(cmroot);
@@ -531,30 +541,23 @@ public class ReplChangeManager {
     Path cmroot = null;
     if (enabled) {
       HdfsEncryptionShim pathEncryptionShim = hadoopShims.createHdfsEncryptionShim(path.getFileSystem(conf), conf);
-      if (!pathEncryptionShim.isPathEncrypted(path)) {
-        if (encryptionZones.containsKey(NO_ENCRYPTION)) {
-          cmroot = encryptionZones.get(NO_ENCRYPTION);
-        } else {
+      if (pathEncryptionShim.isPathEncrypted(path)) {
+        String encryptionZonePath = path.getFileSystem(conf).getUri()
+                + pathEncryptionShim.getEncryptionZoneForPath(path).getPath();
+        cmroot = new Path(encryptionZonePath + Path.SEPARATOR + encryptedCmRootDir);
+        if (!encryptionZones.contains(encryptionZonePath)) {
           synchronized (instance) {
-            if (!encryptionZones.containsKey(NO_ENCRYPTION)) {
-              cmroot = new Path(path.getFileSystem(conf).getUri() + ".cmroot");
+            if (!encryptionZones.contains(encryptionZonePath)) {
               createCmRoot(cmroot);
-              encryptionZones.put(NO_ENCRYPTION, cmroot);
+              encryptionZones.add(encryptionZonePath);
             }
           }
         }
       } else {
-        String encryptionZonePath = pathEncryptionShim.getEncryptionZoneForPath(path).getPath();
-        if (encryptionZones.containsKey(encryptionZonePath)) {
-          cmroot = encryptionZones.get(encryptionZonePath);
+        if (encryptionZones.contains(NO_ENCRYPTION)) {
+          cmroot = new Path(cmRootDir);
         } else {
-          synchronized (instance) {
-            if (!encryptionZones.containsKey(encryptionZonePath)) {
-              cmroot = new Path(path.getFileSystem(conf).getUri() + encryptionZonePath + encryptedCmRootDir);
-              createCmRoot(cmroot);
-              encryptionZones.put(encryptionZonePath, cmroot);
-            }
-          }
+          throw new IOException(ConfVars.REPLCMDIR.getVarname() + " should be non encrypted path");
         }
       }
     }
