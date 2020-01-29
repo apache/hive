@@ -36,6 +36,7 @@ public enum LlapIOCounters {
   ALLOCATED_USED_BYTES(true),
   TOTAL_IO_TIME_NS(false),
   DECODE_TIME_NS(false),
+  PROBE_DECODE_TIME_NS(false),
   HDFS_TIME_NS(false),
   CONSUMER_TIME_NS(false),
   IO_CPU_NS(false),

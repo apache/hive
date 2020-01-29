@@ -147,6 +147,7 @@ public class OrcEncodedDataConsumer
   protected void decodeBatch(OrcEncodedColumnBatch batch,
       Consumer<ColumnVectorBatch> downstreamConsumer) throws InterruptedException {
     long startTime = counters.startTimeCounter();
+    long startDecodeTime = 0l;
     int currentStripeIndex = batch.getBatchKey().stripeIx;
 
     boolean sameStripe = currentStripeIndex == previousStripeIndex;
@@ -264,8 +265,10 @@ public class OrcEncodedDataConsumer
           // EncodedTreeReader - not just TreeReader
           reader.nextVector(cv, null, skipRows, batchSize);
           // if this is the probeKey Col and all rows are skipped -> skip decoding for the remaining batch columns
-          if ((idx == this.probeDecodeColId))
-            checkProbeDecode(cv, batchSize, skipRows);
+          if ((idx == this.probeDecodeColId)) {
+            startDecodeTime = counters.startTimeCounter();
+            checkProbeDecode(cv, batchSize, Arrays.copyOf(skipRows, skipRows.length));
+          }
         }
         // we are done reading a batch, send it downstream for processing if not all Nulls!
         if (skippedRowCount != batchSize) {
@@ -276,6 +279,7 @@ public class OrcEncodedDataConsumer
       LlapIoImpl.ORC_LOGGER.debug("Done with decode, skippedRows {} out of {} on {} Cols", skippedRowCount,
           nonNullRowCount, columnReaders.length);
       counters.incrWallClockCounter(LlapIOCounters.DECODE_TIME_NS, startTime);
+      counters.incrWallClockCounter(LlapIOCounters.PROBE_DECODE_TIME_NS, startDecodeTime);
       counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, maxBatchesRG);
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
       counters.incrCounter(LlapIOCounters.NUM_DECODED_ROWS, (nonNullRowCount - skippedRowCount));
