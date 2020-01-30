@@ -975,8 +975,8 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
         "emp_country STRING , emp_state STRING", driver, storageFormat);
 
     String[] inputData =
-        { "111237\tKrishna\t01/01/1990\tM\tIN\tKA", "111238\tKalpana\t01/01/2000\tF\tIN\tKA",
-            "111239\tSatya\t01/01/2001\tM\tIN\tKA", "111240\tKavya\t01/01/2002\tF\tIN\tKA" };
+        {"111237\tKrishna\t01/01/1990\tM\tIN\tKA", "111238\tKalpana\t01/01/2000\tF\tIN\tKA",
+            "111239\tSatya\t01/01/2001\tM\tIN\tKA", "111240\tKavya\t01/01/2002\tF\tIN\tKA"};
 
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
     PigServer pig = createPigServer(false);
@@ -999,7 +999,6 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     assertEquals(inputData[3], results.get(3));
     driver.run("drop table employee");
   }
-  
 
   @Test
   public void testStaticPartitioningMultiPartColsNoData() throws Exception {
@@ -1026,7 +1025,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     assertEquals(0, results.size());
     driver.run("drop table employee");
   }
-  
+
   @Test
   public void testPartitionPublish() throws Exception {
     AbstractHCatLoaderTest.dropTable("ptn_fail", driver);
