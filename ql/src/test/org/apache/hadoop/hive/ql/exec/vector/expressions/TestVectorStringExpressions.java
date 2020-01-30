@@ -1819,6 +1819,11 @@ public class TestVectorStringExpressions {
       resultLen = StringExpr.rightTrimAndTruncate(blanksLeft, 0, blanksLeft.length, 5);
       Assert.assertTrue(resultLen == blanksLeft.length);
 
+      // Truncate everything and nothing to trim
+      Assert.assertTrue(StringExpr.characterCount(blanksLeft, 0, blanksLeft.length) == 5);
+      resultLen = StringExpr.rightTrimAndTruncate(blanksLeft, 0, blanksLeft.length, 0);
+      Assert.assertTrue(resultLen == 0);
+
       // Simple trims.
       Assert.assertTrue(StringExpr.characterCount(blanksRight, 0, blanksRight.length) == 5);
       resultLen = StringExpr.rightTrimAndTruncate(blanksRight, 0, blanksRight.length, 5);
@@ -2212,7 +2217,6 @@ public class TestVectorStringExpressions {
       resultLen = StringExpr.rightTrimAndTruncate(sentenceBlankRanges, 7, 17, 11);
       Assert.assertTrue(resultLen == 12);
       Assert.assertTrue(StringExpr.characterCount(sentenceBlankRanges, 7, resultLen) == 8);
-
   }
 
   @Test
