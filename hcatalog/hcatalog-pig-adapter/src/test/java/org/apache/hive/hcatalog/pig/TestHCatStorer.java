@@ -297,7 +297,7 @@ public class TestHCatStorer extends AbstractHCatStorerTest {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testStaticPartitioningMultiPartColsNoData();
   }
-  
+
   @Test
   @Override
   public void testPartitionPublish() throws Exception {
