@@ -3444,6 +3444,45 @@ POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.schedule_name SIMPLE [(scheduled_queries
 POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.scheduled_execution_id SIMPLE [(scheduled_executions)se.FieldSchema(name:scheduled_execution_id, type:bigint, comment:from deserializer), ]
 POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.start_time EXPRESSION [(scheduled_executions)se.FieldSchema(name:start_time, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: SCHEDULED_EXECUTIONS.state SIMPLE [(scheduled_executions)se.FieldSchema(name:state, type:string, comment:from deserializer), ]
+PREHOOK: query: SELECT 'Upgrading MetaStore schema from 3.1.3000 to 3.1.3000.7.1.0.0'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 'Upgrading MetaStore schema from 3.1.3000 to 3.1.3000.7.1.0.0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Upgrading MetaStore schema from 3.1.3000 to 3.1.3000.7.1.0.0
+PREHOOK: query: USE SYS
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:sys
+POSTHOOK: query: USE SYS
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:sys
+PREHOOK: query: CREATE OR REPLACE VIEW `CDH_VERSION` AS SELECT 1 AS `VER_ID`, '3.1.3000.7.1.0.0' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.3000 for CDH 7.1.0.0' AS `VERSION_COMMENT`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: SYS@CDH_VERSION
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE OR REPLACE VIEW `CDH_VERSION` AS SELECT 1 AS `VER_ID`, '3.1.3000.7.1.0.0' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.3000 for CDH 7.1.0.0' AS `VERSION_COMMENT`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: SYS@CDH_VERSION
+POSTHOOK: Output: database:sys
+POSTHOOK: Lineage: CDH_VERSION.schema_version SIMPLE []
+POSTHOOK: Lineage: CDH_VERSION.ver_id SIMPLE []
+POSTHOOK: Lineage: CDH_VERSION.version_comment SIMPLE []
+PREHOOK: query: SELECT 'Finished upgrading MetaStore schema from 3.1.3000 to 3.1.3000.7.1.0.0'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 'Finished upgrading MetaStore schema from 3.1.3000 to 3.1.3000.7.1.0.0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Finished upgrading MetaStore schema from 3.1.3000 to 3.1.3000.7.1.0.0
 PREHOOK: query: use sys
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:sys
@@ -3516,6 +3555,9 @@ cbo_t3	c_float
 cbo_t3	c_int
 cbo_t3	key
 cbo_t3	value
+cdh_version	schema_version
+cdh_version	ver_id
+cdh_version	version_comment
 cds	cd_id
 column_privileges	column_name
 column_privileges	grantee
@@ -4227,7 +4269,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-81
+82
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -4623,6 +4665,7 @@ default	information_schema	table_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	
 default	information_schema	tables	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	views	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	bucketing_cols	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	cdh_version	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	cds	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	columns_v2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	database_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -4770,6 +4813,7 @@ information_schema	schemata
 information_schema	table_privileges
 information_schema	tables
 information_schema	views
+sys	cdh_version
 sys	partition_stats_view
 sys	table_stats_view
 sys	version

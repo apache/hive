@@ -101,11 +101,17 @@ public interface IMetaStoreSchemaInfo {
   String getMetaStoreSchemaVersion(
       HiveSchemaHelper.MetaStoreConnectionInfo metastoreDbConnectionInfo) throws HiveMetaException;
   /**
-   * A dbVersion is compatible with hive version if it is greater or equal to the hive version. This
-   * is result of the db schema upgrade design principles followed in hive project. The state where
-   * db schema version is ahead of hive software version is often seen when a 'rolling upgrade' or
-   * 'rolling downgrade' is happening. This is a state where hive is functional and returning non
-   * zero status for it is misleading.
+   * A dbVersion is compatible with hive version when following items are all met:
+   * 1. first three digit of dbVersion >= hiveVersion (ex: dbVersion = 3.1.3000 > hiveVersion = 3.1.2000)
+   * 2. dbVersion >= minRequiredSchemaVersion
+   *
+   * minRequiredSchemaVersion is the largest toVersion in cdh.upgrade.order file whom is less than or equal to hiveVersion.
+   * Ex: cdh.upgrade.order file looks like following and current we are on hiveVersion 3.1.3000.7.1.0.0
+   *
+   * 3.1.3000-to-3.1.3000.7.1.0.0
+   * 3.1.3000.7.1.0.0-to-3.1.3000.7.1.1.0
+   *
+   * In this example, the minRequiredSchemaVersion is 3.1.3000.7.1.0.0
    *
    * @param productVersion version of hive software
    * @param dbVersion version of metastore rdbms schema

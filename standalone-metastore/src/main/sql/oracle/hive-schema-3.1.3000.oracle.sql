@@ -1209,3 +1209,15 @@ CREATE INDEX IDX_SCHEDULED_EX_SQ_ID ON "SCHEDULED_EXECUTIONS" ("SCHEDULED_QUERY_
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
 INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '3.1.3000', 'Hive release version 3.1.3000');
+
+CREATE TABLE CDH_VERSION (
+  VER_ID NUMBER NOT NULL,
+  SCHEMA_VERSION VARCHAR(127) NOT NULL,
+  VERSION_COMMENT VARCHAR(255)
+);
+
+ALTER TABLE CDH_VERSION ADD CONSTRAINT CDH_VERSION_PK PRIMARY KEY (VER_ID);
+
+INSERT INTO CDH_VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '3.1.3000.7.1.0.0', 'Hive release version 3.1.3000 for CDH 7.1.0.0');
+
+SELECT 'Finished upgrading MetaStore schema from 3.1.3000 to 3.1.3000.7.1.0.0' AS Status from dual;

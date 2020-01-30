@@ -1,3 +1,4 @@
+SELECT 'Upgrading MetaStore schema from 3.1.2000 to 3.1.3000' AS Status from dual;
 CREATE TABLE "SCHEDULED_QUERIES" (
 	"SCHEDULED_QUERY_ID" number(19) NOT NULL,
 	"CLUSTER_NAMESPACE" VARCHAR(256),
@@ -32,4 +33,4 @@ ALTER TABLE KEY_CONSTRAINTS ADD CONSTRAINT CONSTRAINTS_PK PRIMARY KEY (PARENT_TB
 
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.1.3000', VERSION_COMMENT='Hive release version 3.1.3000' where VER_ID=1;
-SELECT 'Finished upgrading MetaStore schema from 3.1.2000 to 3.1.3000';
+SELECT 'Finished upgrading MetaStore schema from 3.1.2000 to 3.1.3000' AS Status from dual;

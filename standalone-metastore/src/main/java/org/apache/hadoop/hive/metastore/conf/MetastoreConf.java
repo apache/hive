@@ -869,7 +869,7 @@ public class MetastoreConf {
         "Maximum file size (in bytes) that Hive uses to do single HDFS copies between directories." +
             "Distributed copies (distcp) will be used instead for bigger files so that copies can be done faster."),
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
-        "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
+        "org.apache.hadoop.hive.metastore.CDHMetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"
             + "which is used by schematool to fetch the schema information.\n"
             + " This class should implement the IMetaStoreSchemaInfo interface"),

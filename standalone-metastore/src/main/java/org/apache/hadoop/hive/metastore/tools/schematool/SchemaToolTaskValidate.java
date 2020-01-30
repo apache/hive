@@ -42,11 +42,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
-import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.NestedScriptParser;
-import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -237,16 +235,11 @@ class SchemaToolTaskValidate extends SchemaToolTask {
     List<String> schemaTables = new ArrayList<>();
     List<String> subScripts   = new ArrayList<>();
 
-    //In SDX, schema version could be upgraded by DWX, and causing validation failure in generateInitFileName()
-    String hiveVersion = schemaTool.getMetaStoreSchemaInfo().getHiveSchemaVersion();
-    if (!hiveVersion.equalsIgnoreCase(version) &&
-        schemaTool.getMetaStoreSchemaInfo().isVersionCompatible(hiveVersion, version)) {
-      return true;
-    }
-
     String baseDir = new File(schemaTool.getMetaStoreSchemaInfo().getMetaStoreScriptDir()).getParent();
+    // need to consider the case that db version might be larger than current Hive Version
+    String hiveVersion = schemaTool.getMetaStoreSchemaInfo().getHiveSchemaVersion();
     String schemaFile = new File(schemaTool.getMetaStoreSchemaInfo().getMetaStoreScriptDir(),
-        schemaTool.getMetaStoreSchemaInfo().generateInitFileName(version)).getPath();
+        schemaTool.getMetaStoreSchemaInfo().generateInitFileName(hiveVersion)).getPath();
 
     try {
       LOG.debug("Parsing schema script " + schemaFile);

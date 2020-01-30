@@ -137,9 +137,11 @@ public class TestSchemaToolForMetastore {
   @Test
   public void testValidateSchemaTables() throws Exception {
     execute(new SchemaToolTaskInit(), "-initSchemaTo 1.2.0");
-
+    // db version is initialized to 1.2.0 and which is lower than current Hive version
+    // validator will test if the tables of current hive version's schema file are all appears
+    // in the metastore db
     boolean isValid = validator.validateSchemaTables(conn);
-    Assert.assertTrue(isValid);
+    Assert.assertFalse(isValid);
 
     // upgrade from 1.2.0 schema and re-validate
     execute(new SchemaToolTaskUpgrade(), "-upgradeSchemaFrom 1.2.0");
@@ -184,8 +186,28 @@ public class TestSchemaToolForMetastore {
       Assert.assertTrue("Bad SQLException message: " + causeMessage, causeMessage.contains(
           BadMetaDataConnection.FAILURE_TEXT));
     }
-  }
 
+    // Increment current DB version, validator should validate on current hive version
+    HiveSchemaHelper.MetaStoreConnectionInfo connectionInfo = schemaTool.getConnectionInfo(false);
+    String DBVersion = schemaTool.getMetaStoreSchemaInfo().getMetaStoreSchemaVersion(connectionInfo);
+    String incrementedDBVersion = getVersionIncrementByTen(DBVersion);
+    scripts = new String[] {
+            "UPDATE \"APP\".CDH_VERSION SET SCHEMA_VERSION='" + incrementedDBVersion + "' where VER_ID=1;"
+    };
+    scriptFile = generateTestScript(scripts);
+    schemaTool.execSql(scriptFile.getPath());
+    // validator will look up hive-schema file for current hive version instead of for incrementedDBVersion
+    isValid = validator.validateSchemaTables(conn);
+    Assert.assertTrue(isValid);
+    // Restored the updated table
+    scripts = new String[] {
+            "UPDATE \"APP\".CDH_VERSION SET SCHEMA_VERSION='" + DBVersion + "' where VER_ID=1;"
+    };
+    scriptFile = generateTestScript(scripts);
+    schemaTool.execSql(scriptFile.getPath());
+    isValid = validator.validateSchemaTables(conn);
+    Assert.assertTrue(isValid);
+  }
 
   // Test the validation of incorrect NULL values in the tables
   @Test
@@ -288,9 +310,10 @@ public class TestSchemaToolForMetastore {
   public void testValidateSchemaVersions() throws Exception {
     execute(new SchemaToolTaskInit(), "-initSchema");
     boolean isValid = validator.validateSchemaVersions();
-    // Test an invalid case with multiple versions
+    // In 3.1.2000.7.1.0.0, CDH_VERSION table is introduced to store full version string (i.e. Hive version + CDH version)
+    // Test an invalid case with multiple versions.
     String[] scripts = new String[] {
-        "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0')"
+        "insert into CDH_VERSION values(100, '2.2.0.7.1.0.0', 'Hive release version 2.2.0 for CDH 7.1.0.0')"
     };
     File scriptFile = generateTestScript(scripts);
     schemaTool.execSql(scriptFile.getPath());
@@ -298,14 +321,21 @@ public class TestSchemaToolForMetastore {
     Assert.assertFalse(isValid);
 
     scripts = new String[] {
-        "delete from VERSION where VER_ID = 100"
+        "delete from CDH_VERSION where VER_ID = 100"
     };
     scriptFile = generateTestScript(scripts);
     schemaTool.execSql(scriptFile.getPath());
     isValid = validator.validateSchemaVersions();
     Assert.assertTrue(isValid);
 
-    // Test an invalid case without version
+    // Test an invalid case without CDH_VERSION tables
+    scripts = new String[] {
+        "delete from CDH_VERSION"
+    };
+    scriptFile = generateTestScript(scripts);
+    schemaTool.execSql(scriptFile.getPath());
+
+    // Test an invalid case without VERSION tables
     scripts = new String[] {
         "delete from VERSION"
     };
@@ -457,6 +487,8 @@ public class TestSchemaToolForMetastore {
   @Test
   public void testHiveMetastoreDbPropertiesTable() throws HiveMetaException, IOException {
     execute(new SchemaToolTaskInit(), "-initSchemaTo 3.0.0");
+    boolean isValid = (boolean) validator.validateSchemaTables(conn);
+    Assert.assertFalse(isValid);
     validateMetastoreDbPropertiesTable();
   }
 
@@ -464,6 +496,8 @@ public class TestSchemaToolForMetastore {
   public void testMetastoreDbPropertiesAfterUpgrade() throws HiveMetaException, IOException {
     execute(new SchemaToolTaskInit(), "-initSchemaTo 1.2.0");
     execute(new SchemaToolTaskUpgrade(), "-upgradeSchema");
+    boolean isValid = (boolean) validator.validateSchemaTables(conn);
+    Assert.assertTrue(isValid);
     validateMetastoreDbPropertiesTable();
   }
 
@@ -481,8 +515,6 @@ public class TestSchemaToolForMetastore {
   }
 
   private void validateMetastoreDbPropertiesTable() throws HiveMetaException, IOException {
-    boolean isValid = (boolean) validator.validateSchemaTables(conn);
-    Assert.assertTrue(isValid);
     // adding same property key twice should throw unique key constraint violation exception
     String[] scripts = new String[] {
         "insert into METASTORE_DB_PROPERTIES values ('guid', 'test-uuid-1', 'dummy uuid 1')",
@@ -557,5 +589,21 @@ public class TestSchemaToolForMetastore {
 
     task.setHiveSchemaTool(schemaTool);
     task.execute();
+  }
+
+  private String getVersionIncrementByTen(String Version) {
+    String[] strArray = Version.split("\\.", 4);
+    StringBuilder sb = new StringBuilder();
+    String seperator = "";
+    for (int i = 0; i < strArray.length; i++) {
+      if (i == 2) {
+        Integer IncrementThirdDigit = Integer.valueOf(strArray[i]) + 10;
+        sb.append(seperator + IncrementThirdDigit + "");
+      } else {
+        sb.append(seperator + strArray[i]);
+      }
+      seperator = ".";
+    }
+    return sb.toString();
   }
 }

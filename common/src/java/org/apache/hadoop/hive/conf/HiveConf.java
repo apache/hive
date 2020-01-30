@@ -1059,7 +1059,7 @@ public class HiveConf extends Configuration {
      */
     @Deprecated
     METASTORE_SCHEMA_INFO_CLASS("hive.metastore.schema.info.class",
-        "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
+        "org.apache.hadoop.hive.metastore.CDHMetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"
         + "which is used by schematool to fetch the schema information.\n"
         + " This class should implement the IMetaStoreSchemaInfo interface"),
