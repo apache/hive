@@ -940,6 +940,7 @@
                 <includes>
                   <!-- order is meant to be the same as the ant build -->
                   <include>org.apache.hive:hive-common</include>
+                  <include>org.apache.hive:hive-udf</include>
                   <include>org.apache.hive:hive-exec</include>
                   <include>org.apache.hive:hive-serde</include>
                   <include>org.apache.hive:hive-llap-common</include>

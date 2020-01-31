@@ -37,6 +37,12 @@
     <!-- intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-udf</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
