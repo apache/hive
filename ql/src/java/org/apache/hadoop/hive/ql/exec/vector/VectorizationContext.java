@@ -215,6 +215,7 @@ public class VectorizationContext {
     if (hiveConf != null) {
       setHiveConfVars(hiveConf);
     }
+    this.tryDecimal64Cast = false;
   }
 
   // Convenient constructor for initial batch creation takes
@@ -241,6 +242,7 @@ public class VectorizationContext {
     if (hiveConf != null) {
       setHiveConfVars(hiveConf);
     }
+    this.tryDecimal64Cast = false;
   }
 
   public VectorizationContext(String contextName, List<String> initialColumnNames,
@@ -264,6 +266,7 @@ public class VectorizationContext {
     projectionColumnNames = new ArrayList<String>();
     projectionColumnMap = new HashMap<String, Integer>();
     this.ocm = new OutputColumnManager(0);
+    this.tryDecimal64Cast = false;
     this.firstOutputColumnIndex = 0;
     vMap = new VectorExpressionDescriptor();
 
@@ -292,6 +295,7 @@ public class VectorizationContext {
     this.projectionColumnMap = new HashMap<String, Integer>();
 
     this.ocm = vContext.ocm;
+    this.tryDecimal64Cast = false;
     this.firstOutputColumnIndex = vContext.firstOutputColumnIndex;
     vMap = new VectorExpressionDescriptor();
 
@@ -439,6 +443,9 @@ public class VectorizationContext {
   //Map column number to type (this is always non-null for a useful vec context)
   private OutputColumnManager ocm;
 
+  //Can cast to decimal64
+  boolean tryDecimal64Cast;
+
   // Set of UDF classes for type casting data types in row-mode.
   private static Set<Class<?>> castExpressionUdfs = new HashSet<Class<?>>();
   static {
@@ -515,6 +522,28 @@ public class VectorizationContext {
     udfsNeedingImplicitDecimalCast.add(UDFTan.class);
     udfsNeedingImplicitDecimalCast.add(UDFOPLongDivide.class);
   }
+
+  private static final long[] POWEROFTENTABLE = {
+      1L,                   // 0
+      10L,
+      100L,
+      1_000L,
+      10_000L,
+      100_000L,
+      1_000_000L,
+      10_000_000L,
+      100_000_000L,           // 8
+      1_000_000_000L,
+      10_000_000_000L,
+      100_000_000_000L,
+      1_000_000_000_000L,
+      10_000_000_000_000L,
+      100_000_000_000_000L,
+      1_000_000_000_000_000L,
+      10_000_000_000_000_000L,   // 16
+      100_000_000_000_000_000L,
+      1_000_000_000_000_000_000L, // 18
+  };
 
   protected boolean needsImplicitCastForDecimal(GenericUDF udf) {
     Class<?> udfClass = udf.getClass();
@@ -1538,7 +1567,9 @@ public class VectorizationContext {
 
       GenericUDF udf = ((ExprNodeGenericFuncDesc) exprNodeDesc).getGenericUDF();
       Class<?> udfClass = udf.getClass();
-
+      if (udf instanceof GenericUDFToDecimal) {
+        return true;
+      }
       // We have a class-level annotation that says whether the UDF's vectorization expressions
       // support Decimal64.
       VectorizedExpressionsSupportDecimal64 annotation =
@@ -1599,6 +1630,7 @@ public class VectorizationContext {
     boolean isDecimal64ScaleEstablished = false;
     int decimal64ColumnScale = 0;
     boolean hasConstants = false;
+    boolean scaleMismatch = false;
 
     for (int i = 0; i < numChildren; i++) {
       ExprNodeDesc childExpr = childExprs.get(i);
@@ -1617,11 +1649,12 @@ public class VectorizationContext {
           childExpr instanceof ExprNodeColumnDesc) {
         if (isExprDecimal64) {
           DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
-          if (!isDecimal64ScaleEstablished) {
+          if (decimalTypeInfo.getScale() != decimal64ColumnScale && i > 0) {
+            scaleMismatch = true;
+          }
+          if (decimalTypeInfo.getScale() >= decimal64ColumnScale) {
             decimal64ColumnScale = decimalTypeInfo.getScale();
             isDecimal64ScaleEstablished = true;
-          } else if (decimalTypeInfo.getScale() != decimal64ColumnScale) {
-            return null;
           }
         }
         builder.setInputExpressionType(i, InputExpressionType.COLUMN);
@@ -1680,7 +1713,7 @@ public class VectorizationContext {
       returnDataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
     }
 
-    if(dontRescaleArguments && hasConstants) {
+    if (dontRescaleArguments && hasConstants) {
       builder.setUnscaled(true);
     }
     VectorExpressionDescriptor.Descriptor descriptor = builder.build();
@@ -1692,98 +1725,149 @@ public class VectorizationContext {
 
     VectorExpressionDescriptor.Mode childrenMode = getChildrenMode(mode, udfClass);
 
+    // Rewrite the operand with smaller scale, so we can process Decimal64 operations
+    // on all the arithmetic and comparison operations.
+    if (scaleMismatch && !hasConstants &&
+        (genericUdf instanceof GenericUDFBaseArithmetic
+        || genericUdf instanceof GenericUDFBaseCompare)) {
+      ExprNodeDesc left = childExprs.get(0);
+      ExprNodeDesc right = childExprs.get(1);
+      DecimalTypeInfo leftTypeInfo = (DecimalTypeInfo)left.getTypeInfo();
+      DecimalTypeInfo rightTypeInfo = (DecimalTypeInfo)right.getTypeInfo();
+      int leftScale = leftTypeInfo.getScale();
+      int rightScale = rightTypeInfo.getScale();
+      int leftPrecision = leftTypeInfo.precision();
+      int rightPrecision = rightTypeInfo.precision();
+      ExprNodeDesc newConstant;
+      List<ExprNodeDesc> children = new ArrayList<>();
+      DecimalTypeInfo resultTypeInfo;
+      int childIndexToRewrite = -1;
+      int scaleDiff = 0;
+      int resultPrecision = 0;
+      int resultScale = 0;
+      if (leftScale < rightScale) {
+        scaleDiff = rightScale - leftScale;
+        childIndexToRewrite = 0;
+        resultPrecision = leftPrecision + rightScale - leftScale;
+        resultScale = rightScale;
+      } else {
+        scaleDiff = leftScale - rightScale;
+        childIndexToRewrite = 1;
+        resultPrecision = rightPrecision + leftScale - rightScale;
+        resultScale = leftScale;
+      }
+      newConstant = new ExprNodeConstantDesc(new DecimalTypeInfo(scaleDiff, 0),
+          HiveDecimal.create(POWEROFTENTABLE[scaleDiff]));
+      resultTypeInfo = new DecimalTypeInfo(resultPrecision, resultScale);
+      children.add(childExprs.get(childIndexToRewrite));
+      children.add(newConstant);
+      ExprNodeGenericFuncDesc newScaledExpr = new ExprNodeGenericFuncDesc(resultTypeInfo,
+          new GenericUDFOPScaleUpDecimal64(), " ScaleUp ", children);
+      childExprs.remove(childIndexToRewrite);
+      childExprs.add(childIndexToRewrite, newScaledExpr);
+    }
+
     return createDecimal64VectorExpression(
         vectorClass, childExprs, childrenMode,
         isDecimal64ScaleEstablished, decimal64ColumnScale,
-        returnTypeInfo, returnDataTypePhysicalVariation, dontRescaleArguments);
+        returnTypeInfo, returnDataTypePhysicalVariation, dontRescaleArguments, genericUdf);
   }
 
   private VectorExpression createDecimal64VectorExpression(Class<?> vectorClass,
       List<ExprNodeDesc> childExprs, VectorExpressionDescriptor.Mode childrenMode,
       boolean isDecimal64ScaleEstablished, int decimal64ColumnScale,
       TypeInfo returnTypeInfo, DataTypePhysicalVariation returnDataTypePhysicalVariation,
-      boolean dontRescaleArguments)
+      boolean dontRescaleArguments, GenericUDF genericUdf)
           throws HiveException {
 
     final int numChildren = childExprs.size();
+    VectorExpression vectorExpression = null;
+    boolean oldTryDecimal64Cast = this.tryDecimal64Cast;
+    tryDecimal64Cast = true;
 
     /*
      * Custom build arguments.
      */
+    try {
+      List<VectorExpression> children = new ArrayList<VectorExpression>();
+      Object[] arguments = new Object[numChildren];
+      TypeInfo[] typeInfos = new TypeInfo[numChildren];
+      DataTypePhysicalVariation[] dataTypePhysicalVariations = new DataTypePhysicalVariation[numChildren];
 
-    List<VectorExpression> children = new ArrayList<VectorExpression>();
-    Object[] arguments = new Object[numChildren];
-    TypeInfo[] typeInfos = new TypeInfo[numChildren];
-    DataTypePhysicalVariation[] dataTypePhysicalVariations = new DataTypePhysicalVariation[numChildren];
-
-    for (int i = 0; i < numChildren; i++) {
-      ExprNodeDesc childExpr = childExprs.get(i);
-      TypeInfo typeInfo = childExpr.getTypeInfo();
-      typeInfos[i] = typeInfo;
-      dataTypePhysicalVariations[i] =
-          (checkTypeInfoForDecimal64(typeInfo) ?
-              DataTypePhysicalVariation.DECIMAL_64 : DataTypePhysicalVariation.NONE);
-      if (childExpr instanceof ExprNodeGenericFuncDesc) {
-        VectorExpression vChild = getVectorExpression(childExpr, childrenMode);
-        children.add(vChild);
-        arguments[i] = vChild.getOutputColumnNum();
-      } else if (childExpr instanceof ExprNodeColumnDesc) {
-        int colIndex = getInputColumnIndex((ExprNodeColumnDesc) childExpr);
-        if (childrenMode == VectorExpressionDescriptor.Mode.FILTER) {
-
-          VectorExpression filterExpr =
-              getFilterOnBooleanColumnExpression((ExprNodeColumnDesc) childExpr, colIndex);
-          if (filterExpr == null) {
+      for (int i = 0; i < numChildren; i++) {
+        ExprNodeDesc childExpr = childExprs.get(i);
+        TypeInfo typeInfo = childExpr.getTypeInfo();
+        typeInfos[i] = typeInfo;
+        dataTypePhysicalVariations[i] =
+            (checkTypeInfoForDecimal64(typeInfo) ?
+                DataTypePhysicalVariation.DECIMAL_64 : DataTypePhysicalVariation.NONE);
+        if (childExpr instanceof ExprNodeGenericFuncDesc) {
+          VectorExpression vChild = getVectorExpression(childExpr, childrenMode);
+          if (genericUdf instanceof GenericUDFBaseBinary
+            && vChild.getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.NONE) {
             return null;
           }
+          children.add(vChild);
+          arguments[i] = vChild.getOutputColumnNum();
+        } else if (childExpr instanceof ExprNodeColumnDesc) {
+          int colIndex = getInputColumnIndex((ExprNodeColumnDesc) childExpr);
+          if (childrenMode == VectorExpressionDescriptor.Mode.FILTER) {
 
-          children.add(filterExpr);
-        }
-        arguments[i] = colIndex;
-      } else if (childExpr instanceof ExprNodeConstantDesc) {
-        ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) childExpr;
-        if (typeInfo instanceof DecimalTypeInfo) {
-          if (!isDecimal64ScaleEstablished) {
-            return null;
-          }
-          HiveDecimal hiveDecimal = (HiveDecimal) constDesc.getValue();
-          if (hiveDecimal.scale() > decimal64ColumnScale) {
+            VectorExpression filterExpr = getFilterOnBooleanColumnExpression((ExprNodeColumnDesc) childExpr, colIndex);
+            if (filterExpr == null) {
+              return null;
+            }
 
-            // For now, bail out on decimal constants with larger scale than column scale.
-            return null;
+            children.add(filterExpr);
           }
-          if (dontRescaleArguments) {
-            arguments[i] = new HiveDecimalWritable(hiveDecimal).serialize64(hiveDecimal.scale());
+          arguments[i] = colIndex;
+        } else if (childExpr instanceof ExprNodeConstantDesc) {
+          ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) childExpr;
+          if (typeInfo instanceof DecimalTypeInfo) {
+            if (!isDecimal64ScaleEstablished) {
+              return null;
+            }
+            HiveDecimal hiveDecimal = (HiveDecimal) constDesc.getValue();
+            if (hiveDecimal.scale() > decimal64ColumnScale) {
+
+              // For now, bail out on decimal constants with larger scale than column scale.
+              return null;
+            }
+            if (dontRescaleArguments) {
+              arguments[i] = new HiveDecimalWritable(hiveDecimal).serialize64(hiveDecimal.scale());
+            } else {
+              arguments[i] = new HiveDecimalWritable(hiveDecimal).serialize64(decimal64ColumnScale);
+            }
           } else {
-            arguments[i] = new HiveDecimalWritable(hiveDecimal).serialize64(decimal64ColumnScale);
+            Object scalarValue = getVectorTypeScalarValue(constDesc);
+            arguments[i] = (scalarValue == null) ?
+                getConstantVectorExpression(null, typeInfo, childrenMode) : scalarValue;
           }
         } else {
-          Object scalarValue = getVectorTypeScalarValue(constDesc);
-          arguments[i] =
-              (scalarValue == null) ?
-                  getConstantVectorExpression(null, typeInfo, childrenMode) : scalarValue;
+          return null;
         }
-      } else {
-        return null;
       }
-    }
 
-    /*
-     * Instantiate Decimal64 vector expression.
-     *
-     * The instantiateExpression method sets the output column and type information.
-     */
-    VectorExpression  vectorExpression =
-        instantiateExpression(vectorClass, returnTypeInfo, returnDataTypePhysicalVariation, arguments);
-    if (vectorExpression == null) {
-      handleCouldNotInstantiateVectorExpression(vectorClass, returnTypeInfo, returnDataTypePhysicalVariation, arguments);
-    }
+      /*
+       * Instantiate Decimal64 vector expression.
+       *
+       * The instantiateExpression method sets the output column and type information.
+       */
+      vectorExpression =
+          instantiateExpression(vectorClass, returnTypeInfo, returnDataTypePhysicalVariation, arguments);
+      if (vectorExpression == null) {
+        handleCouldNotInstantiateVectorExpression(vectorClass, returnTypeInfo, returnDataTypePhysicalVariation,
+            arguments);
+      }
 
-    vectorExpression.setInputTypeInfos(typeInfos);
-    vectorExpression.setInputDataTypePhysicalVariations(dataTypePhysicalVariations);
+      vectorExpression.setInputTypeInfos(typeInfos);
+      vectorExpression.setInputDataTypePhysicalVariations(dataTypePhysicalVariations);
 
-    if ((vectorExpression != null) && !children.isEmpty()) {
-      vectorExpression.setChildExpressions(children.toArray(new VectorExpression[0]));
+      if (!children.isEmpty()) {
+        vectorExpression.setChildExpressions(children.toArray(new VectorExpression[0]));
+      }
+    } finally {
+      tryDecimal64Cast = oldTryDecimal64Cast;
     }
 
     return vectorExpression;
@@ -1824,7 +1908,7 @@ public class VectorizationContext {
         throw new RuntimeException("Unexpected multi-child UDF");
       }
       VectorExpressionDescriptor.Mode childrenMode = getChildrenMode(mode, udfClass);
-      return createVectorExpression(vclass, childExpr, childrenMode, returnType);
+      return createVectorExpression(vclass, childExpr, childrenMode, returnType, DataTypePhysicalVariation.NONE);
     }
     if (numChildren > VectorExpressionDescriptor.MAX_NUM_ARGUMENTS) {
       return null;
@@ -1879,7 +1963,7 @@ public class VectorizationContext {
       return null;
     }
     VectorExpressionDescriptor.Mode childrenMode = getChildrenMode(mode, udfClass);
-    return createVectorExpression(vclass, childExpr, childrenMode, returnType);
+    return createVectorExpression(vclass, childExpr, childrenMode, returnType, DataTypePhysicalVariation.NONE);
   }
 
   private VectorExpression createDecimal64ToDecimalConversion(int colIndex, TypeInfo resultTypeInfo)
@@ -1941,7 +2025,8 @@ public class VectorizationContext {
   }
 
   private VectorExpression createVectorExpression(Class<?> vectorClass,
-      List<ExprNodeDesc> childExpr, VectorExpressionDescriptor.Mode childrenMode, TypeInfo returnType) throws HiveException {
+      List<ExprNodeDesc> childExpr, VectorExpressionDescriptor.Mode childrenMode, TypeInfo returnType,
+      DataTypePhysicalVariation returnDataTypePhysicalVariation) throws HiveException {
     int numChildren = childExpr == null ? 0: childExpr.size();
 
     TypeInfo[] inputTypeInfos = new TypeInfo[numChildren];
@@ -2006,7 +2091,8 @@ public class VectorizationContext {
         throw new HiveException("Cannot handle expression type: " + child.getClass().getSimpleName());
       }
     }
-    VectorExpression vectorExpression = instantiateExpression(vectorClass, returnType, DataTypePhysicalVariation.NONE, arguments);
+    VectorExpression vectorExpression = instantiateExpression(vectorClass, returnType, returnDataTypePhysicalVariation,
+        arguments);
     if (vectorExpression == null) {
       handleCouldNotInstantiateVectorExpression(vectorClass, returnType, DataTypePhysicalVariation.NONE, arguments);
     }
@@ -2240,7 +2326,7 @@ public class VectorizationContext {
     // Replace with the milliseconds conversion
     if (!udf.isIntToTimestampInSeconds() && ve instanceof CastLongToTimestamp) {
       ve = createVectorExpression(CastMillisecondsLongToTimestamp.class,
-          childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+          childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType, DataTypePhysicalVariation.NONE);
     }
 
     return ve;
@@ -2564,7 +2650,8 @@ public class VectorizationContext {
 
     Class<?> cl = (mode == VectorExpressionDescriptor.Mode.FILTER ? FilterStructColumnInList.class : StructColumnInList.class);
 
-    expr = createVectorExpression(cl, null, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+    expr = createVectorExpression(cl, null, VectorExpressionDescriptor.Mode.PROJECTION, returnType,
+        DataTypePhysicalVariation.NONE);
 
     ((IStringInExpr) expr).setInListValues(serializedInChildren);
 
@@ -2623,7 +2710,8 @@ public class VectorizationContext {
       for (int i = 0; i != inVals.length; i++) {
         inVals[i] = getIntFamilyScalarAsLong((ExprNodeConstantDesc) childrenForInList.get(i));
       }
-      expr = createVectorExpression(cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      expr = createVectorExpression(cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType,
+          DataTypePhysicalVariation.NONE);
       ((ILongInExpr) expr).setInListValues(inVals);
     } else if (isTimestampFamily(colType)) {
       cl = (mode == VectorExpressionDescriptor.Mode.FILTER ? FilterTimestampColumnInList.class : TimestampColumnInList.class);
@@ -2631,7 +2719,8 @@ public class VectorizationContext {
       for (int i = 0; i != inVals.length; i++) {
         inVals[i] = getTimestampScalar(childrenForInList.get(i));
       }
-      expr = createVectorExpression(cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      expr = createVectorExpression(cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType,
+          DataTypePhysicalVariation.NONE);
       ((ITimestampInExpr) expr).setInListValues(inVals);
     } else if (isStringFamily(colType)) {
       cl = (mode == VectorExpressionDescriptor.Mode.FILTER ? FilterStringColumnInList.class : StringColumnInList.class);
@@ -2639,7 +2728,8 @@ public class VectorizationContext {
       for (int i = 0; i != inVals.length; i++) {
         inVals[i] = getStringScalarAsByteArray((ExprNodeConstantDesc) childrenForInList.get(i));
       }
-      expr = createVectorExpression(cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      expr = createVectorExpression(cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType,
+          DataTypePhysicalVariation.NONE);
       ((IStringInExpr) expr).setInListValues(inVals);
     } else if (isFloatFamily(colType)) {
       cl = (mode == VectorExpressionDescriptor.Mode.FILTER ? FilterDoubleColumnInList.class : DoubleColumnInList.class);
@@ -2647,7 +2737,8 @@ public class VectorizationContext {
       for (int i = 0; i != inValsD.length; i++) {
         inValsD[i] = getNumericScalarAsDouble(childrenForInList.get(i));
       }
-      expr = createVectorExpression(cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      expr = createVectorExpression(cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType,
+          DataTypePhysicalVariation.NONE);
       ((IDoubleInExpr) expr).setInListValues(inValsD);
     } else if (isDecimalFamily(colType)) {
 
@@ -2662,7 +2753,7 @@ public class VectorizationContext {
             /* isDecimal64ScaleEstablished */ true,
             /* decimal64ColumnScale */ scale,
             returnType, DataTypePhysicalVariation.NONE,
-            /* dontRescaleArguments */ false);
+            /* dontRescaleArguments */ false, new GenericUDFIn());
         if (expr != null) {
           long[] inVals = new long[childrenForInList.size()];
           for (int i = 0; i != inVals.length; i++) {
@@ -2679,7 +2770,8 @@ public class VectorizationContext {
         cl = (mode == VectorExpressionDescriptor.Mode.FILTER ?
             FilterDecimalColumnInList.class : DecimalColumnInList.class);
         expr = createVectorExpression(
-            cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+            cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType,
+            DataTypePhysicalVariation.NONE);
         HiveDecimal[] inValsD = new HiveDecimal[childrenForInList.size()];
         for (int i = 0; i != inValsD.length; i++) {
           inValsD[i] = (HiveDecimal) getVectorTypeScalarValue(
@@ -2693,7 +2785,8 @@ public class VectorizationContext {
       for (int i = 0; i != inVals.length; i++) {
         inVals[i] = (Long) getVectorTypeScalarValue((ExprNodeConstantDesc) childrenForInList.get(i));
       }
-      expr = createVectorExpression(cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      expr = createVectorExpression(cl, childExpr.subList(0, 1), VectorExpressionDescriptor.Mode.PROJECTION, returnType,
+          DataTypePhysicalVariation.NONE);
       ((ILongInExpr) expr).setInListValues(inVals);
     }
 
@@ -3001,6 +3094,14 @@ public class VectorizationContext {
       // Return a constant vector expression
       try {
         Object constantValue = ((ExprNodeConstantDesc) child).getValue();
+        if (tryDecimal64Cast) {
+          if (((DecimalTypeInfo)returnType).precision() + ((DecimalTypeInfo)returnType).scale() <= 18) {
+            Long longValue = castConstantToLong(constantValue, child.getTypeInfo(), PrimitiveCategory.LONG);
+            return getConstantVectorExpression(longValue, TypeInfoFactory.longTypeInfo,
+                VectorExpressionDescriptor.Mode.PROJECTION);
+          }
+          return null;
+        }
         HiveDecimal decimalValue = castConstantToDecimal(constantValue, child.getTypeInfo());
         return getConstantVectorExpression(decimalValue, returnType, VectorExpressionDescriptor.Mode.PROJECTION);
       } catch (Exception e) {
@@ -3010,11 +3111,21 @@ public class VectorizationContext {
       }
     }
     if (isIntFamily(inputType)) {
-      return createVectorExpression(CastLongToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      if (tryDecimal64Cast) {
+        if (((DecimalTypeInfo)returnType).precision() + ((DecimalTypeInfo)returnType).scale() <= 18) {
+          return createVectorExpression(CastLongToDecimal64.class, childExpr,
+              VectorExpressionDescriptor.Mode.PROJECTION, returnType, DataTypePhysicalVariation.DECIMAL_64);
+        }
+        return null;
+      }
+      return createVectorExpression(CastLongToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (inputType.equals("float")) {
-      return createVectorExpression(CastFloatToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastFloatToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (inputType.equals("double")) {
-      return createVectorExpression(CastDoubleToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastDoubleToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (decimalTypePattern.matcher(inputType).matches()) {
       if (child instanceof ExprNodeColumnDesc) {
         int colIndex = getInputColumnIndex((ExprNodeColumnDesc) child);
@@ -3025,16 +3136,18 @@ public class VectorizationContext {
           return createDecimal64ToDecimalConversion(colIndex, returnType);
         } else {
           return createVectorExpression(CastDecimalToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
-              returnType);
+              returnType, DataTypePhysicalVariation.NONE);
         }
       } else {
         return createVectorExpression(CastDecimalToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
-            returnType);
+            returnType, DataTypePhysicalVariation.NONE);
       }
     } else if (isStringFamily(inputType)) {
-      return createVectorExpression(CastStringToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastStringToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (inputType.equals("timestamp")) {
-      return createVectorExpression(CastTimestampToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastTimestampToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     }
     return null;
   }
@@ -3058,19 +3171,26 @@ public class VectorizationContext {
     }
     if (inputType.equals("boolean")) {
       // Boolean must come before the integer family. It's a special case.
-      return createVectorExpression(CastBooleanToStringViaLongToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastBooleanToStringViaLongToString.class, childExpr,
+          VectorExpressionDescriptor.Mode.PROJECTION, returnType, DataTypePhysicalVariation.NONE);
     } else if (isIntFamily(inputType)) {
-      return createVectorExpression(CastLongToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastLongToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (inputType.equals("float")) {
-      return createVectorExpression(CastFloatToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastFloatToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (inputType.equals("double")) {
-      return createVectorExpression(CastDoubleToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastDoubleToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isDecimalFamily(inputType)) {
-      return createVectorExpression(CastDecimalToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastDecimalToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isDateFamily(inputType)) {
-      return createVectorExpression(CastDateToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastDateToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isTimestampFamily(inputType)) {
-      return createVectorExpression(CastTimestampToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastTimestampToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isStringFamily(inputType)) {
 
       // STRING and VARCHAR types require no conversion, so use a no-op.
@@ -3092,21 +3212,29 @@ public class VectorizationContext {
     }
     if (inputType.equals("boolean")) {
       // Boolean must come before the integer family. It's a special case.
-      return createVectorExpression(CastBooleanToCharViaLongToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastBooleanToCharViaLongToChar.class, childExpr,
+          VectorExpressionDescriptor.Mode.PROJECTION, returnType, DataTypePhysicalVariation.NONE);
     } else if (isIntFamily(inputType)) {
-      return createVectorExpression(CastLongToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastLongToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (inputType.equals("float")) {
-      return createVectorExpression(CastFloatToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastFloatToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (inputType.equals("double")) {
-      return createVectorExpression(CastDoubleToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastDoubleToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isDecimalFamily(inputType)) {
-      return createVectorExpression(CastDecimalToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastDecimalToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isDateFamily(inputType)) {
-      return createVectorExpression(CastDateToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastDateToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isTimestampFamily(inputType)) {
-      return createVectorExpression(CastTimestampToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastTimestampToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isStringFamily(inputType)) {
-      return createVectorExpression(CastStringGroupToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastStringGroupToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     }
     return null;
   }
@@ -3122,21 +3250,29 @@ public class VectorizationContext {
     }
     if (inputType.equals("boolean")) {
       // Boolean must come before the integer family. It's a special case.
-      return createVectorExpression(CastBooleanToVarCharViaLongToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastBooleanToVarCharViaLongToVarChar.class, childExpr,
+          VectorExpressionDescriptor.Mode.PROJECTION, returnType, DataTypePhysicalVariation.NONE);
     } else if (isIntFamily(inputType)) {
-      return createVectorExpression(CastLongToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastLongToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (inputType.equals("float")) {
-      return createVectorExpression(CastFloatToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastFloatToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (inputType.equals("double")) {
-      return createVectorExpression(CastDoubleToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastDoubleToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isDecimalFamily(inputType)) {
-      return createVectorExpression(CastDecimalToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastDecimalToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isDateFamily(inputType)) {
-      return createVectorExpression(CastDateToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastDateToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isTimestampFamily(inputType)) {
-      return createVectorExpression(CastTimestampToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastTimestampToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isStringFamily(inputType)) {
-      return createVectorExpression(CastStringGroupToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastStringGroupToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     }
     return null;
   }
@@ -3155,7 +3291,8 @@ public class VectorizationContext {
       // STRING and VARCHAR types require no conversion, so use a no-op.
       return getIdentityExpression(childExpr);
     } else if (charTypePattern.matcher(inputType).matches()) {
-      return createVectorExpression(CastCharToBinary.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+      return createVectorExpression(CastCharToBinary.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+          returnType, DataTypePhysicalVariation.NONE);
     }
     return null;
   }
@@ -3173,13 +3310,15 @@ public class VectorizationContext {
     if (isIntFamily(inputType)) {
       if (udf.equals(UDFToFloat.class)) {
         // In order to convert from integer to float correctly, we need to apply the float cast not the double cast (HIVE-13338).
-        return createVectorExpression(CastLongToFloatViaLongToDouble.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+        return createVectorExpression(CastLongToFloatViaLongToDouble.class, childExpr,
+            VectorExpressionDescriptor.Mode.PROJECTION, returnType, DataTypePhysicalVariation.NONE);
       } else {
-        return createVectorExpression(CastLongToDouble.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+        return createVectorExpression(CastLongToDouble.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
+            returnType, DataTypePhysicalVariation.NONE);
       }
     } else if (inputType.equals("timestamp")) {
       return createVectorExpression(CastTimestampToDouble.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
-          returnType);
+          returnType, DataTypePhysicalVariation.NONE);
     } else if (isFloatFamily(inputType)) {
 
       // float types require no conversion, so use a no-op
@@ -3205,7 +3344,7 @@ public class VectorizationContext {
     if (isStringFamily(inputType)) {
 
       VectorExpression lenExpr = createVectorExpression(CastStringToBoolean.class, childExpr,
-          VectorExpressionDescriptor.Mode.PROJECTION, TypeInfoFactory.booleanTypeInfo);
+          VectorExpressionDescriptor.Mode.PROJECTION, TypeInfoFactory.booleanTypeInfo, DataTypePhysicalVariation.NONE);
 
       return lenExpr;
     }
@@ -3238,7 +3377,7 @@ public class VectorizationContext {
 
     Class<?> veClass = getCastFormatVectorExpressionClass(childExpr, returnType, inputType);
     return createVectorExpression(
-        veClass, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+        veClass, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType, DataTypePhysicalVariation.NONE);
   }
 
   private Class<?> getCastFormatVectorExpressionClass(List<ExprNodeDesc> childExpr,
@@ -3296,7 +3435,8 @@ public class VectorizationContext {
             /* isDecimal64ScaleEstablished */ true,
             /* decimal64ColumnScale */ ((DecimalTypeInfo) colExpr.getTypeInfo()).getScale(),
             returnTypeInfo, DataTypePhysicalVariation.NONE,
-            /* dontRescaleArguments */ false);
+            /* dontRescaleArguments */ false,
+            new GenericUDFBetween());
   }
 
   /* Get a [NOT] BETWEEN filter or projection expression. This is treated as a special case
@@ -3519,7 +3659,7 @@ public class VectorizationContext {
       }
     }
     return createVectorExpression(
-        cl, childrenAfterNot, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+        cl, childrenAfterNot, VectorExpressionDescriptor.Mode.PROJECTION, returnType, DataTypePhysicalVariation.NONE);
   }
 
   private boolean isCondExpr(ExprNodeDesc exprNodeDesc) {
