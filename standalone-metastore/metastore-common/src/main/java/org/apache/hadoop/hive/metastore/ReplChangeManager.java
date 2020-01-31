@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
@@ -455,7 +456,12 @@ public class ReplChangeManager {
       try {
         LOG.info("CMClearer started");
         for (String encryptionZone : encryptionZones) {
-          Path cmroot = new Path(encryptionZone + encryptedCmRootDir);
+          Path cmroot = null;
+          if (encryptionZone.contains(NO_ENCRYPTION)) {
+            cmroot = new Path(cmRootDir);
+          } else {
+            cmroot = new Path(encryptionZone + Path.SEPARATOR + encryptedCmRootDir);
+          }
           long now = System.currentTimeMillis();
           FileSystem fs = cmroot.getFileSystem(conf);
           FileStatus[] files = fs.listStatus(cmroot);
@@ -537,7 +543,8 @@ public class ReplChangeManager {
     return commaSeparatedString.split("\\s*" + TXN_WRITE_EVENT_FILE_SEPARATOR + "\\s*");
   }
 
-  private static Path getCmRoot(Path path) throws IOException {
+  @VisibleForTesting
+  static Path getCmRoot(Path path) throws IOException {
     Path cmroot = null;
     if (enabled) {
       HdfsEncryptionShim pathEncryptionShim = hadoopShims.createHdfsEncryptionShim(path.getFileSystem(conf), conf);
@@ -571,5 +578,13 @@ public class ReplChangeManager {
       cmFs.mkdirs(cmroot);
       cmFs.setPermission(cmroot, new FsPermission("700"));
     }
+  }
+
+  @VisibleForTesting
+  static void deinit() {
+    inited = false;
+    enabled = false;
+    instance = null;
+    encryptionZones.clear();
   }
 }

@@ -1110,8 +1110,8 @@ public class TestMetaStoreMultipleEncryptionZones {
 
   @Test
   public void recycleFailureWithDifferentEncryptionZonesForCm() throws Throwable {
-
-    Path dirDb = new Path(warehouse.getWhRoot(), "db3");
+    Path dirDb = new Path(warehouse.getWhRoot(), "db2");
+    warehouseFs.delete(dirDb, true);
     warehouseFs.mkdirs(dirDb);
     Path dirTbl1 = new Path(dirDb, "tbl1");
     warehouseFs.mkdirs(dirTbl1);
@@ -1127,6 +1127,171 @@ public class TestMetaStoreMultipleEncryptionZones {
       assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
     }
     assertFalse(exceptionThrown);
+  }
+
+  @Test
+  public void testClearerEncrypted() throws Exception {
+    HiveConf hiveConfCmClearer = new HiveConf(TestReplChangeManager.class);
+    hiveConfCmClearer.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    hiveConfCmClearer.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
+    hiveConfCmClearer.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
+                    + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+
+    String cmrootCmClearer = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootClearer";
+    hiveConfCmClearer.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootCmClearer);
+    Warehouse warehouseCmClearer = new Warehouse(hiveConfCmClearer);
+    FileSystem cmfs = new Path(cmrootCmClearer).getFileSystem(hiveConfCmClearer);
+    cmfs.mkdirs(warehouseCmClearer.getWhRoot());
+
+    HadoopShims.HdfsEncryptionShim shimCmEncrypted = ShimLoader.getHadoopShims().createHdfsEncryptionShim(cmfs, conf);
+
+    FileSystem fsWarehouse = warehouseCmClearer.getWhRoot().getFileSystem(hiveConfCmClearer);
+    long now = System.currentTimeMillis();
+    Path dirDb = new Path(warehouseCmClearer.getWhRoot(), "db1");
+    fsWarehouse.delete(dirDb, true);
+    fsWarehouse.mkdirs(dirDb);
+    Path dirTbl1 = new Path(dirDb, "tbl1");
+    fsWarehouse.mkdirs(dirTbl1);
+    shimCmEncrypted.createEncryptionZone(dirTbl1, "test_key_db");
+    Path part11 = new Path(dirTbl1, "part1");
+    createFile(part11, "testClearer11");
+    String fileChksum11 = ReplChangeManager.checksumFor(part11, fsWarehouse);
+    Path part12 = new Path(dirTbl1, "part2");
+    createFile(part12, "testClearer12");
+    String fileChksum12 = ReplChangeManager.checksumFor(part12, fsWarehouse);
+    Path dirTbl2 = new Path(dirDb, "tbl2");
+    fsWarehouse.mkdirs(dirTbl2);
+    shimCmEncrypted.createEncryptionZone(dirTbl2, "test_key_db");
+    Path part21 = new Path(dirTbl2, "part1");
+    createFile(part21, "testClearer21");
+    String fileChksum21 = ReplChangeManager.checksumFor(part21, fsWarehouse);
+    Path part22 = new Path(dirTbl2, "part2");
+    createFile(part22, "testClearer22");
+    String fileChksum22 = ReplChangeManager.checksumFor(part22, fsWarehouse);
+    Path dirTbl3 = new Path(dirDb, "tbl3");
+    fsWarehouse.mkdirs(dirTbl3);
+    shimCmEncrypted.createEncryptionZone(dirTbl3, "test_key_cm");
+    Path part31 = new Path(dirTbl3, "part1");
+    createFile(part31, "testClearer31");
+    String fileChksum31 = ReplChangeManager.checksumFor(part31, fsWarehouse);
+    Path part32 = new Path(dirTbl3, "part2");
+    createFile(part32, "testClearer32");
+    String fileChksum32 = ReplChangeManager.checksumFor(part32, fsWarehouse);
+
+    ReplChangeManager.getInstance(hiveConfCmClearer).recycle(dirTbl1, RecycleType.MOVE, false);
+    ReplChangeManager.getInstance(hiveConfCmClearer).recycle(dirTbl2, RecycleType.MOVE, false);
+    ReplChangeManager.getInstance(hiveConfCmClearer).recycle(dirTbl3, RecycleType.MOVE, true);
+
+    assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part11.getName(), fileChksum11,
+            ReplChangeManager.getCmRoot(part11).toString())));
+    assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part12.getName(), fileChksum12,
+            ReplChangeManager.getCmRoot(part12).toString())));
+    assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part21.getName(), fileChksum21,
+            ReplChangeManager.getCmRoot(part21).toString())));
+    assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part22.getName(), fileChksum22,
+            ReplChangeManager.getCmRoot(part22).toString())));
+    assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part31.getName(), fileChksum31,
+            ReplChangeManager.getCmRoot(part31).toString())));
+    assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part32.getName(), fileChksum32,
+            ReplChangeManager.getCmRoot(part32).toString())));
+
+    fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part11.getName(), fileChksum11,
+            ReplChangeManager.getCmRoot(part11).toString()),
+            now - 86400*1000*2, now - 86400*1000*2);
+    fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part21.getName(), fileChksum21,
+            ReplChangeManager.getCmRoot(part21).toString()),
+            now - 86400*1000*2, now - 86400*1000*2);
+    fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part31.getName(), fileChksum31,
+            ReplChangeManager.getCmRoot(part31).toString()),
+            now - 86400*1000*2, now - 86400*1000*2);
+    fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part32.getName(), fileChksum32,
+            ReplChangeManager.getCmRoot(part32).toString()),
+            now - 86400*1000*2, now - 86400*1000*2);
+
+    ReplChangeManager.scheduleCMClearer(hiveConfCmClearer);
+
+    long start = System.currentTimeMillis();
+    long end;
+    boolean cleared = false;
+    do {
+      Thread.sleep(200);
+      end = System.currentTimeMillis();
+      if (end - start > 5000) {
+        Assert.fail("timeout, cmroot has not been cleared");
+      }
+      if (!fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part11.getName(), fileChksum11,
+              ReplChangeManager.getCmRoot(part11).toString())) &&
+              fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part12.getName(), fileChksum12,
+                      ReplChangeManager.getCmRoot(part12).toString())) &&
+              !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part21.getName(), fileChksum21,
+                      ReplChangeManager.getCmRoot(part21).toString())) &&
+              fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part22.getName(), fileChksum22,
+                      ReplChangeManager.getCmRoot(part22).toString())) &&
+              !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part31.getName(), fileChksum31,
+                      ReplChangeManager.getCmRoot(part31).toString())) &&
+              !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part32.getName(), fileChksum32,
+                      ReplChangeManager.getCmRoot(part32).toString()))) {
+        cleared = true;
+      }
+    } while (!cleared);
+  }
+
+  @Test
+  public void testCmrootEncrypted() throws Exception {
+    HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
+    encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
+    encryptedHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
+                    + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+
+    String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmroot";
+    encryptedHiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootdirEncrypted);
+    //Create cm in encrypted zone
+    HadoopShims.HdfsEncryptionShim shimCmEncrypted = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+    shimCmEncrypted.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db");
+    ReplChangeManager.deinit();
+    Warehouse warehouseEncrypted = new Warehouse(encryptedHiveConf);
+    FileSystem warehouseFsEncrypted = warehouseEncrypted.getWhRoot().getFileSystem(encryptedHiveConf);
+    FileSystem fsCmEncrypted = new Path(cmrootdirEncrypted).getFileSystem(encryptedHiveConf);
+    fsCmEncrypted.mkdirs(warehouseEncrypted.getWhRoot());
+
+    Path dirDb = new Path(warehouseEncrypted.getWhRoot(), "db3");
+    warehouseFsEncrypted.delete(dirDb, true);
+    warehouseFsEncrypted.mkdirs(dirDb);
+    Path dirTbl1 = new Path(dirDb, "tbl1");
+    warehouseFsEncrypted.mkdirs(dirTbl1);
+    shimCmEncrypted.createEncryptionZone(dirTbl1, "test_key_db");
+    Path part11 = new Path(dirTbl1, "part1");
+    createFile(part11, "testClearer11");
+
+    boolean exceptionThrown = false;
+    try {
+      ReplChangeManager.getInstance(encryptedHiveConf).recycle(dirTbl1, RecycleType.MOVE, false);
+    } catch (RemoteException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("can't be moved from encryption zone"));
+    }
+    assertFalse(exceptionThrown);
+
+    Path dirDbUnEncrypted = new Path(warehouseEncrypted.getWhRoot(), "db3en");
+    warehouseFsEncrypted.delete(dirDbUnEncrypted, true);
+    warehouseFsEncrypted.mkdirs(dirDbUnEncrypted);
+    Path dirTblun1 = new Path(dirDbUnEncrypted, "tbl1");
+    warehouseFsEncrypted.mkdirs(dirTblun1);
+    Path partun11 = new Path(dirTblun1, "part1");
+    createFile(partun11, "testClearer11");
+
+    exceptionThrown = false;
+    try {
+      ReplChangeManager.getInstance(encryptedHiveConf).recycle(dirDbUnEncrypted, RecycleType.MOVE, false);
+    } catch (IOException e) {
+      exceptionThrown = true;
+      assertTrue(e.getMessage().contains("metastore.repl.cmrootdir should be non encrypted path"));
+    }
+    assertTrue(exceptionThrown);
+    ReplChangeManager.deinit();
   }
 
 
