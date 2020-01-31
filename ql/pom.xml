@@ -967,6 +967,7 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+			  <finalName>hive-core-shaded-exec-${project.version}</finalName>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>core-shaded</shadedClassifierName>
               <artifactSet>
