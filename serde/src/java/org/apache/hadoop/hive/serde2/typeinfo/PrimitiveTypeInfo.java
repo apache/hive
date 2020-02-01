@@ -43,6 +43,8 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
   // Base name (varchar vs fully qualified name such as varchar(200)).
   protected String typeName;
 
+  protected transient PrimitiveTypeEntry typeEntry;
+
   /**
    * For java serialization use only.
    */
@@ -55,6 +57,7 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
   PrimitiveTypeInfo(String typeName) {
     Objects.requireNonNull(typeName);
     this.typeName = typeName;
+    this.typeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName);
   }
 
   /**
@@ -80,6 +83,7 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
   // The following 2 methods are for java serialization use only.
   public void setTypeName(String typeName) {
     this.typeName = typeName;
+    this.typeEntry = null;
   }
 
   @Override
@@ -88,7 +92,10 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
   }
 
   public PrimitiveTypeEntry getPrimitiveTypeEntry() {
-    return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName);
+    if (typeEntry == null) {
+      typeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName);
+    }
+    return typeEntry;
   }
 
   @Override
