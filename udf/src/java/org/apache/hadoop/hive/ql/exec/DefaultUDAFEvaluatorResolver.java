@@ -80,7 +80,7 @@ public class DefaultUDAFEvaluatorResolver implements UDAFEvaluatorResolver {
       }
     }
 
-    Method m = FunctionRegistry.getMethodInternal(udafClass, mList, false, argClasses);
+    Method m = MethodUtils.getMethodInternal(udafClass, mList, false, argClasses);
 
     // Find the class that has this method.
     // Note that Method.getDeclaringClass() may not work here because the method

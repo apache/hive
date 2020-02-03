@@ -23,8 +23,8 @@ import org.apache.hadoop.hive.ql.udf.UDFType;
 /**
  * A User-defined function (UDF) for use with Hive.
  * <p>
- * New UDF classes need to inherit from this UDF class (or from {@link
- * org.apache.hadoop.hive.ql.udf.generic.GenericUDF GenericUDF} which provides more flexibility at
+ * New UDF classes need to inherit from this UDF class (or from
+ * org.apache.hadoop.hive.ql.udf.generic.GenericUDF GenericUDF which provides more flexibility at
  * the cost of more complexity).
  * <p>
  * Requirements for all classes extending this UDF are:
@@ -53,7 +53,7 @@ import org.apache.hadoop.hive.ql.udf.UDFType;
  * @see Description
  * @see UDFType
  *
- * @deprecated use {@link org.apache.hadoop.hive.ql.udf.generic.GenericUDF}
+ * @deprecated use org.apache.hadoop.hive.ql.udf.generic.GenericUDF
  */
 @Deprecated
 @UDFType(deterministic = true)
@@ -97,9 +97,6 @@ public class UDF {
   /**
    * This can be overridden to include JARs required by this UDF.
    *
-   * @see org.apache.hadoop.hive.ql.udf.generic.GenericUDF#getRequiredJars()
-   *      GenericUDF.getRequiredJars()
-   *
    * @return an array of paths to files to include, {@code null} by default.
    */
   public String[] getRequiredJars() {
@@ -108,9 +105,6 @@ public class UDF {
 
   /**
    * This can be overridden to include files required by this UDF.
-   *
-   * @see org.apache.hadoop.hive.ql.udf.generic.GenericUDF#getRequiredFiles()
-   *      GenericUDF.getRequiredFiles()
    *
    * @return an array of paths to files to include, {@code null} by default.
    */
