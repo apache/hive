@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -59,7 +59,7 @@ import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFOR
  * SetSparkReducerParallelism determines how many reducers should
  * be run for a given reduce sink, clone from SetReducerParallelism.
  */
-public class SetSparkReducerParallelism implements NodeProcessor {
+public class SetSparkReducerParallelism implements SemanticNodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(SetSparkReducerParallelism.class.getName());
 
@@ -76,7 +76,7 @@ public class SetSparkReducerParallelism implements NodeProcessor {
 
   @Override
   public Object process(Node nd, Stack<Node> stack,
-      NodeProcessorCtx procContext, Object... nodeOutputs)
+                        NodeProcessorCtx procContext, Object... nodeOutputs)
       throws SemanticException {
 
     OptimizeSparkProcContext context = (OptimizeSparkProcContext) procContext;

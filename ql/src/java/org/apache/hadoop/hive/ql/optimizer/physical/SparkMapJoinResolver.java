@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -66,7 +66,7 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
 
-    Dispatcher dispatcher = new SparkMapJoinTaskDispatcher(pctx);
+    SemanticDispatcher dispatcher = new SparkMapJoinTaskDispatcher(pctx);
     TaskGraphWalker graphWalker = new TaskGraphWalker(dispatcher);
 
     ArrayList<Node> topNodes = new ArrayList<Node>();
@@ -92,7 +92,7 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
   }
 
   @SuppressWarnings("unchecked")
-  class SparkMapJoinTaskDispatcher implements Dispatcher {
+  class SparkMapJoinTaskDispatcher implements SemanticDispatcher {
 
     private final PhysicalContext physicalContext;
 

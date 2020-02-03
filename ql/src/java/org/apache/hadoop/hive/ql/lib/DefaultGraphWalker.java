@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * (dispatchedList) and a list of operators that are discovered but not yet
  * dispatched
  */
-public class DefaultGraphWalker implements GraphWalker {
+public class DefaultGraphWalker implements SemanticGraphWalker {
 
   /**
    * opStack keeps the nodes that have been visited, but have not been
@@ -55,7 +55,7 @@ public class DefaultGraphWalker implements GraphWalker {
    */
   protected final List<Node> toWalk = new ArrayList<Node>();
   protected final IdentityHashMap<Node, Object> retMap = new  IdentityHashMap<Node, Object>();
-  protected final Dispatcher dispatcher;
+  protected final SemanticDispatcher dispatcher;
 
   /**
    * Constructor.
@@ -63,7 +63,7 @@ public class DefaultGraphWalker implements GraphWalker {
    * @param disp
    *          dispatcher to call for each op encountered
    */
-  public DefaultGraphWalker(Dispatcher disp) {
+  public DefaultGraphWalker(SemanticDispatcher disp) {
     dispatcher = disp;
     opStack = new Stack<Node>();
     opQueue = new LinkedList<Node>();

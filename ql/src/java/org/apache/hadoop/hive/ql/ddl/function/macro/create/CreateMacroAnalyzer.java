@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
@@ -91,7 +92,7 @@ public class CreateMacroAnalyzer extends BaseSemanticAnalyzer {
     if (!arguments.isEmpty()) {
       // Walk down expression to see which arguments are actually used.
       Node expression = (Node) root.getChild(2);
-      PreOrderWalker walker = new PreOrderWalker(new Dispatcher() {
+      PreOrderWalker walker = new PreOrderWalker(new SemanticDispatcher() {
         @Override
         public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs) throws SemanticException {
           if (nd instanceof ASTNode) {

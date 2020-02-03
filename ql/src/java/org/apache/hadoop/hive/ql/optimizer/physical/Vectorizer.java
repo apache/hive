@@ -106,7 +106,7 @@ import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
@@ -997,7 +997,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return vectorChild;
   }
 
-  class VectorizationDispatcher implements Dispatcher {
+  class VectorizationDispatcher implements SemanticDispatcher {
 
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
@@ -2548,7 +2548,7 @@ public class Vectorizer implements PhysicalPlanResolver {
             HiveConf.ConfVars.HIVE_TEST_VECTORIZATION_SUPPRESS_EXPLAIN_EXECUTION_MODE);
 
     // create dispatcher and graph walker
-    Dispatcher disp = new VectorizationDispatcher();
+    SemanticDispatcher disp = new VectorizationDispatcher();
     TaskGraphWalker ogw = new TaskGraphWalker(disp);
 
     // get all the tasks nodes from root task

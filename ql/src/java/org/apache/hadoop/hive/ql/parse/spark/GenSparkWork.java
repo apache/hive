@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -56,7 +56,7 @@ import com.google.common.base.Preconditions;
  *
  * Cloned from GenTezWork.
  */
-public class GenSparkWork implements NodeProcessor {
+public class GenSparkWork implements SemanticNodeProcessor {
   static final private Logger LOG = LoggerFactory.getLogger(GenSparkWork.class.getName());
 
   // instance of shared utils
@@ -71,7 +71,7 @@ public class GenSparkWork implements NodeProcessor {
 
   @Override
   public Object process(Node nd, Stack<Node> stack,
-      NodeProcessorCtx procContext, Object... nodeOutputs) throws SemanticException {
+                        NodeProcessorCtx procContext, Object... nodeOutputs) throws SemanticException {
     GenSparkProcContext context = (GenSparkProcContext) procContext;
 
     Preconditions.checkArgument(context != null,

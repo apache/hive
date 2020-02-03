@@ -46,10 +46,9 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
@@ -107,7 +106,7 @@ import org.slf4j.LoggerFactory;
  * MapredLocalTask. then make this new generated task depends on current task's parent task, and
  * make current task depends on this new generated task
  */
-public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher implements Dispatcher {
+public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher implements SemanticDispatcher {
 
   protected final Logger LOG = LoggerFactory.getLogger(CommonJoinTaskDispatcher.class);
 

@@ -27,8 +27,8 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TopNKeyOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * TopNKeyProcessor is a processor for TopNKeyOperator.
  * A TopNKeyOperator will be placed before any ReduceSinkOperator which has a topN property >= 0.
  */
-public class TopNKeyProcessor implements NodeProcessor {
+public class TopNKeyProcessor implements SemanticNodeProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(TopNKeyProcessor.class);
   private float efficiencyThreshold;
   private long checkEfficiencyNumBatches;

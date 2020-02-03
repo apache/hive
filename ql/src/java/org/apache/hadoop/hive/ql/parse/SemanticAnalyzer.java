@@ -166,8 +166,8 @@ import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -979,7 +979,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     sb.append(" ");
     sb.append(message);
     sb.append(". Error encountered near token '");
-    sb.append(ErrorMsg.getText(ast));
+    sb.append(ASTErrorUtils.getText(ast));
     sb.append("'");
     return sb.toString();
   }
@@ -1061,8 +1061,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // If the alias is already there then we have a conflict
     if (qb.exists(alias)) {
-      throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(tabref
-          .getChild(aliasIndex)));
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(),
+          tabref.getChild(aliasIndex)));
     }
     if (tsampleIndex >= 0) {
       ASTNode sampleClause = (ASTNode) tabref.getChild(tsampleIndex);
@@ -1167,7 +1168,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // This is a subquery and must have an alias
     if (subq.getChildCount() != 2) {
-      throw new SemanticException(ErrorMsg.NO_SUBQUERY_ALIAS.getMsg(subq));
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.NO_SUBQUERY_ALIAS.getMsg(), subq));
     }
     ASTNode subqref = (ASTNode) subq.getChild(0);
     String alias = unescapeIdentifier(subq.getChild(1).getText());
@@ -1179,8 +1181,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // If the alias is already there then we have a conflict
     if (qb.exists(alias)) {
-      throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(subq
-          .getChild(1)));
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(),
+          subq.getChild(1)));
     }
     // Insert this map into the stats
     qb.setSubqAlias(alias, qbexpr);
@@ -1208,7 +1211,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qName += alias.toLowerCase();
 
       if ( aliasToCTEs.containsKey(qName)) {
-        throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(cte.getChild(1)));
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(),
+            cte.getChild(1)));
       }
       aliasToCTEs.put(qName, new CTEClause(qName, cteQry));
     }
@@ -1486,8 +1491,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // is not supported. Instead, the lateral view must be in a subquery
         // SELECT * FROM (SELECT * FROM src1 LATERAL VIEW udtf() AS myTable) a
         // JOIN src2 ...
-        throw new SemanticException(ErrorMsg.LATERAL_VIEW_WITH_JOIN
-            .getMsg(join));
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.LATERAL_VIEW_WITH_JOIN.getMsg(), join));
       } else if (isJoinToken(child)) {
         processJoin(qb, child);
       }
@@ -1528,8 +1533,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       alias = processLateralView(qb, next);
       break;
     default:
-      throw new SemanticException(ErrorMsg.LATERAL_VIEW_INVALID_CHILD
-          .getMsg(lateralView));
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), lateralView));
     }
     alias = alias.toLowerCase();
     qb.getParseInfo().addLateralViewForAlias(alias, lateralView);
@@ -1622,7 +1627,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // is there a insert in the subquery
         if (qbp.getIsSubQ() && !isTmpFileDest) {
-          throw new SemanticException(ErrorMsg.NO_INSERT_INSUBQUERY.getMsg(ast));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.NO_INSERT_INSUBQUERY.getMsg(), ast));
         }
 
         qbp.setDestForClause(ctx_1.dest, (ASTNode) ast.getChild(0));
@@ -2148,7 +2154,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         ASTNode src = qb.getParseInfo().getSrcForAlias(alias);
         if (null != src) {
-          throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(src));
+          throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.INVALID_TABLE.getMsg(), src));
         } else {
           throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(alias));
         }
@@ -2259,8 +2265,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Class<?> outputFormatClass = ts.tableHandle.getOutputFormatClass();
         if (!ts.tableHandle.isNonNative() &&
             !HiveOutputFormat.class.isAssignableFrom(outputFormatClass)) {
-          throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
-              .getMsg(ast, "The class is " + outputFormatClass.toString()));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg(),
+              ast, "The class is " + outputFormatClass.toString()));
         }
 
         boolean isTableWrittenTo = qb.getParseInfo().isInsertIntoTable(ts.tableHandle.getDbName(),
@@ -2599,7 +2606,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
             ctx, db, tabNameToTabObject, ignoredTokens);
       }
-      Dispatcher nodeOriginDispatcher = new Dispatcher() {
+      SemanticDispatcher nodeOriginDispatcher = new SemanticDispatcher() {
         @Override
         public Object dispatch(Node nd, java.util.Stack<Node> stack,
                                Object... nodeOutputs) {
@@ -2607,7 +2614,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           return null;
         }
       };
-      GraphWalker nodeOriginTagger = new DefaultGraphWalker(
+      SemanticGraphWalker nodeOriginTagger = new DefaultGraphWalker(
           nodeOriginDispatcher);
       nodeOriginTagger.startWalking(java.util.Collections
           .<Node> singleton(viewTree), null);
@@ -2619,7 +2626,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       StringBuilder sb = new StringBuilder();
       sb.append(e.getMessage());
-      ErrorMsg.renderOrigin(sb, viewOrigin);
+      ASTErrorUtils.renderOrigin(sb, viewOrigin);
       throw new SemanticException(sb.toString(), e);
     }
     QBExpr qbexpr = new QBExpr(alias);
@@ -2673,15 +2680,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (tabAlias == null) {
             tabAlias = opEntry.getKey();
           } else {
-            throw new SemanticException(
-                ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(columnRef.getChild(0)));
+            throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(), columnRef.getChild(0)));
           }
         }
       }
     }
     if ( tabAlias == null ) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(columnRef
-          .getChild(0)));
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.INVALID_TABLE_ALIAS.getMsg(), columnRef.getChild(0)));
     }
     return tabAlias;
   }
@@ -3366,7 +3373,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
        * Restriction.9.m :: disallow nested SubQuery expressions.
        */
       if (qb.getSubQueryPredicateDef() != null  ) {
-        throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(),
             subQueriesInOriginalTree.get(0), "Nested SubQuery expressions are not supported."));
       }
 
@@ -3375,7 +3383,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
        */
       if (subQueriesInOriginalTree.size() > 1 ) {
 
-        throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(),
             subQueriesInOriginalTree.get(1), "Only 1 SubQuery expression is supported."));
       }
 
@@ -3423,7 +3432,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             subQuery.getOperator().getType() != SubQueryType.NOT_EXISTS &&
             sqRR.getColumnInfos().size() -
                 subQuery.getNumOfCorrelationExprsAddedToSQSelect() > 1 ) {
-          throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(),
               subQueryAST, "SubQuery can contain only 1 item in Select List."));
         }
 
@@ -3599,7 +3609,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     // The table alias should exist
     if (tabAlias != null && !colSrcRR.hasTableAlias(tabAlias)) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(sel));
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.INVALID_TABLE_ALIAS.getMsg(), sel));
     }
 
     // TODO: Have to put in the support for AS clause
@@ -3607,8 +3618,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       regex = Pattern.compile(colRegex, Pattern.CASE_INSENSITIVE);
     } catch (PatternSyntaxException e) {
-      throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(sel, e
-          .getMessage()));
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.INVALID_COLUMN.getMsg(), sel, e.getMessage()));
     }
 
     StringBuilder replacementText = new StringBuilder();
@@ -3783,7 +3794,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (matched == 0) {
-      throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(sel));
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.INVALID_COLUMN.getMsg(), sel));
     }
 
     if (unparseTranslator.isEnabled()) {
@@ -4859,7 +4871,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (null == result) {
       String reason = "Looking for UDAF Evaluator\"" + aggName
           + "\" with parameters " + originalParameterTypeInfos;
-      throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg(
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg(),
           (ASTNode) aggTree.getChild(0), reason));
     }
     return result;
@@ -5004,7 +5017,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnInfo exprInfo = groupByInputRowResolver.getExpression(grpbyExpr);
 
       if (exprInfo == null) {
-        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(grpbyExpr));
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_COLUMN.getMsg(), grpbyExpr));
       }
 
       groupByKeys.add(new ExprNodeColumnDesc(exprInfo.getType(), exprInfo
@@ -5046,7 +5060,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ColumnInfo paraExprInfo =
             groupByInputRowResolver.getExpression(paraExpr);
         if (paraExprInfo == null) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(paraExpr));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.INVALID_COLUMN.getMsg(), paraExpr));
         }
 
         String paraExpression = paraExprInfo.getInternalName();
@@ -5215,7 +5230,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnInfo exprInfo = groupByInputRowResolver.getExpression(grpbyExpr);
 
       if (exprInfo == null) {
-        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(grpbyExpr));
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_COLUMN.getMsg(), grpbyExpr));
       }
 
       groupByKeys.add(new ExprNodeColumnDesc(exprInfo));
@@ -5303,8 +5319,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ColumnInfo paraExprInfo =
               groupByInputRowResolver.getExpression(paraExpr);
           if (paraExprInfo == null) {
-            throw new SemanticException(ErrorMsg.INVALID_COLUMN
-                .getMsg(paraExpr));
+            throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.INVALID_COLUMN.getMsg(),
+                paraExpr));
           }
 
           String paraExpression = paraExprInfo.getInternalName();
@@ -5332,7 +5349,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         ColumnInfo paraExprInfo = groupByInputRowResolver.getExpression(value);
         if (paraExprInfo == null) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(value));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.INVALID_COLUMN.getMsg(), value));
         }
         String paraExpression = paraExprInfo.getInternalName();
         assert (paraExpression != null);
@@ -6011,7 +6029,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode grpbyExpr = grpByExprs.get(i);
       ColumnInfo exprInfo = groupByInputRowResolver2.getExpression(grpbyExpr);
       if (exprInfo == null) {
-        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(grpbyExpr));
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_COLUMN.getMsg(), grpbyExpr));
       }
 
       String expression = exprInfo.getInternalName();
@@ -6045,7 +6064,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode value = entry.getValue();
       ColumnInfo paraExprInfo = groupByInputRowResolver2.getExpression(value);
       if (paraExprInfo == null) {
-        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(value));
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_COLUMN.getMsg(), value));
       }
       String paraExpression = paraExprInfo.getInternalName();
       assert (paraExpression != null);
@@ -8511,7 +8531,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!updating(dest) && !deleting(dest) && inColumnCnt != outColumnCnt) {
       String reason = "Table " + dest + " has " + outColumnCnt
           + " columns, but query has " + inColumnCnt + " columns.";
-      throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(),
           qb.getParseInfo().getDestForClause(dest), reason));
     }
 
@@ -8562,8 +8583,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (column == null) {
             String reason = "Cannot convert column " + i + " from "
                 + rowFieldTypeInfo + " to " + tableFieldTypeInfo + ".";
-            throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH
-                .getMsg(qb.getParseInfo().getDestForClause(dest), reason));
+            throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(),
+                qb.getParseInfo().getDestForClause(dest), reason));
           }
         }
         expressions.add(column);
@@ -8824,8 +8846,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (column == null) {
           String reason = "Cannot convert column " + posn + " from "
               + rowFieldTypeInfo + " to " + tableFieldTypeInfo + ".";
-          throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH
-              .getMsg(qb.getParseInfo().getDestForClause(dest), reason));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(),
+              qb.getParseInfo().getDestForClause(dest), reason));
         }
       }
       expressions.add(column);
@@ -13224,7 +13247,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnInfo colInfo = input.get(null, tableOrCol);
       String errMsg;
       if (colInfo == null && input.getIsExprResolver()){
-        errMsg = ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr);
+        errMsg = ASTErrorUtils.getMsg(
+            ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(), expr);
       } else {
         errMsg = tcCtx.getError();
       }

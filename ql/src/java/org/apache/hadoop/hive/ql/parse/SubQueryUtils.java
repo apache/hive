@@ -118,8 +118,9 @@ public class SubQueryUtils {
      */
     if (subqueryExprNode.getChildren().size() == 3
         && subqueryExprNode.getChild(2).getType() == HiveParser.TOK_SUBQUERY_EXPR) {
-      throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION
-          .getMsg(subqueryExprNode.getChild(2), "SubQuery on left hand side is not supported."));
+      throw new CalciteSubquerySemanticException(
+          ASTErrorUtils.getMsg(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(),
+          subqueryExprNode.getChild(2), "SubQuery on left hand side is not supported."));
     }
 
     // avoid subquery restrictions for SOME/ALL for now
@@ -145,8 +146,8 @@ public class SubQueryUtils {
 
     if (outerQueryExpr != null && outerQueryExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
       throw new CalciteSubquerySemanticException(
-          ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-              outerQueryExpr, "IN/EXISTS/SOME/ALL subqueries are not allowed in LHS"));
+          ASTErrorUtils.getMsg(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(),
+          outerQueryExpr, "IN/EXISTS/SOME/ALL subqueries are not allowed in LHS"));
     }
 
     QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx, subqueryExprNode,
@@ -165,8 +166,6 @@ public class SubQueryUtils {
     }
     //}
   }
-
-
 
   /*
    * Check that SubQuery is a top level conjuncts.
@@ -261,7 +260,8 @@ public class SubQueryUtils {
       /*
        *  Restriction.7.h :: SubQuery predicates can appear only as top level conjuncts.
        */
-      throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(),
           subQuery, "Only SubQuery expressions that are top level conjuncts are allowed"));
     }
   }

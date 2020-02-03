@@ -53,12 +53,12 @@ import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -73,7 +73,6 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +111,7 @@ public class LlapDecider implements PhysicalPlanResolver {
   }
 
 
-  class LlapDecisionDispatcher implements Dispatcher {
+  class LlapDecisionDispatcher implements SemanticDispatcher {
     private final HiveConf conf;
     private final boolean doSkipUdfCheck;
     private final boolean arePermanentFnsAllowed;
@@ -120,7 +119,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     private final float minReducersPerExec;
     private final int executorsPerNode;
     private List<MapJoinOperator> mapJoinOpList;
-    private final Map<Rule, NodeProcessor> rules;
+    private final Map<SemanticRule, SemanticNodeProcessor> rules;
 
     public LlapDecisionDispatcher(PhysicalContext pctx, LlapMode mode) {
       conf = pctx.getConf();
@@ -377,10 +376,10 @@ public class LlapDecider implements PhysicalPlanResolver {
       return true;
     }
 
-    private Map<Rule, NodeProcessor> getRules() {
-      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    private Map<SemanticRule, SemanticNodeProcessor> getRules() {
+      Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
       opRules.put(new RuleRegExp("No scripts", ScriptOperator.getOperatorName() + "%"),
-          new NodeProcessor() {
+          new SemanticNodeProcessor() {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
@@ -389,7 +388,7 @@ public class LlapDecider implements PhysicalPlanResolver {
           }
         });
       opRules.put(new RuleRegExp("No user code in fil", FilterOperator.getOperatorName() + "%"),
-          new NodeProcessor() {
+          new SemanticNodeProcessor() {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
@@ -402,7 +401,7 @@ public class LlapDecider implements PhysicalPlanResolver {
           }
         });
       opRules.put(new RuleRegExp("No user code in gby", GroupByOperator.getOperatorName() + "%"),
-          new NodeProcessor() {
+          new SemanticNodeProcessor() {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
@@ -416,7 +415,7 @@ public class LlapDecider implements PhysicalPlanResolver {
           }
         });
       opRules.put(new RuleRegExp("No user code in select", SelectOperator.getOperatorName() + "%"),
-          new NodeProcessor() {
+          new SemanticNodeProcessor() {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
@@ -433,7 +432,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       if (!conf.getBoolVar(HiveConf.ConfVars.LLAP_ENABLE_GRACE_JOIN_IN_LLAP)) {
         opRules.put(
             new RuleRegExp("Disable grace hash join if LLAP mode and not dynamic partition hash join",
-                MapJoinOperator.getOperatorName() + "%"), new NodeProcessor() {
+                MapJoinOperator.getOperatorName() + "%"), new SemanticNodeProcessor() {
               @Override
               public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
                 MapJoinOperator mapJoinOp = (MapJoinOperator) n;
@@ -452,8 +451,8 @@ public class LlapDecider implements PhysicalPlanResolver {
     private boolean evaluateOperators(BaseWork work) throws SemanticException {
       // lets take a look at the operators. we're checking for user
       // code in those. we will not run that in llap.
-      Dispatcher disp = new DefaultRuleDispatcher(null, rules, null);
-      GraphWalker ogw = new DefaultGraphWalker(disp);
+      SemanticDispatcher disp = new DefaultRuleDispatcher(null, rules, null);
+      SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
       ArrayList<Node> topNodes = new ArrayList<Node>();
       topNodes.addAll(work.getAllRootOperators());
@@ -548,7 +547,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     }
 
     // create dispatcher and graph walker
-    Dispatcher disp = new LlapDecisionDispatcher(pctx, mode);
+    SemanticDispatcher disp = new LlapDecisionDispatcher(pctx, mode);
     TaskGraphWalker ogw = new TaskGraphWalker(disp);
 
     // get all the tasks nodes from root task

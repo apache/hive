@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.parse.ASTErrorUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -76,7 +77,8 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
       ASTNode parent = stack.size() > 1 ? (ASTNode) stack.get(stack.size() - 2) : null;
 
       if (expr.getType() != HiveParser.TOK_TABLE_OR_COL) {
-        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr), expr);
+        ctx.setError(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_COLUMN.getMsg(), expr), expr);
         return null;
       }
 
@@ -94,7 +96,8 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
         return null;
       } else {
         // Qualified column access for which table was not found
-        throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(expr));
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_TABLE_ALIAS.getMsg(), expr));
       }
     }
 
@@ -107,7 +110,8 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
       }
 
       if (tblAliasCnt > 1) {
-        throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(expr));
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(), expr));
       }
 
       return (tblAliasCnt == 1) ? true : false;
@@ -122,7 +126,8 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
         tmp = rr.get(tabName, colAlias);
         if (tmp != null) {
           if (cInfoToRet != null) {
-            throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(expr));
+            throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(), expr));
           }
           cInfoToRet = tmp;
         }
@@ -168,7 +173,8 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
           ((ExprNodeConstantDesc) nodeOutputs[1]).getValue().toString(), expr);
 
       if (colInfo == null) {
-        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)), expr);
+        ctx.setError(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_COLUMN.getMsg(), expr.getChild(1)), expr);
         return null;
       }
       return new ExprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName(), tableAlias,
@@ -184,7 +190,8 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
         tmp = rr.get(tabName, colAlias);
         if (tmp != null) {
           if (cInfoToRet != null) {
-            throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(expr));
+            throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(), expr));
           }
           cInfoToRet = tmp;
         }

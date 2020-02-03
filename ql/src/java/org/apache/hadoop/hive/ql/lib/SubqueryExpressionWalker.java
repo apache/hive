@@ -29,7 +29,7 @@ public class SubqueryExpressionWalker extends ExpressionWalker{
    * @param disp
    * dispatcher to call for each op encountered
    */
-  public SubqueryExpressionWalker(Dispatcher disp) {
+  public SubqueryExpressionWalker(SemanticDispatcher disp) {
     super(disp);
   }
 

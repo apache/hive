@@ -29,10 +29,10 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -46,7 +46,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
  */
 public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
 
-  static class UniqueOpIdChecker implements NodeProcessor {
+  static class UniqueOpIdChecker implements SemanticNodeProcessor {
 
     Map<String, Operator<?>> opMap = new HashMap<>();
 
@@ -94,8 +94,8 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
       return;
     }
 
-    Dispatcher disp = new DefaultRuleDispatcher(new UniqueOpIdChecker(), new HashMap<>(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(new UniqueOpIdChecker(), new HashMap<>(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
     ogw.startWalking(rootOps, nodeOutput);

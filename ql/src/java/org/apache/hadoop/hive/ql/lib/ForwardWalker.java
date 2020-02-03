@@ -30,7 +30,7 @@ public class ForwardWalker extends DefaultGraphWalker {
    * @param disp
    * dispatcher to call for each op encountered
    */
-  public ForwardWalker(Dispatcher disp) {
+  public ForwardWalker(SemanticDispatcher disp) {
     super(disp);
   }
 

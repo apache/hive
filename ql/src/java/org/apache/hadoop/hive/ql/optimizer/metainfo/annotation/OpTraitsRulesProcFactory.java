@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -69,7 +69,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.PartitionDef;
 
 public class OpTraitsRulesProcFactory {
 
-  public static class DefaultRule implements NodeProcessor {
+  public static class DefaultRule implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -86,7 +86,7 @@ public class OpTraitsRulesProcFactory {
    * Reduce sink operator is the de-facto operator
    * for determining keyCols (emit keys of a map phase)
    */
-  public static class ReduceSinkRule implements NodeProcessor {
+  public static class ReduceSinkRule implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -173,7 +173,7 @@ public class OpTraitsRulesProcFactory {
    * Table scan has the table object and pruned partitions that has information
    * such as bucketing, sorting, etc. that is used later for optimization.
    */
-  public static class TableScanRule implements NodeProcessor {
+  public static class TableScanRule implements SemanticNodeProcessor {
 
     public boolean checkBucketedTable(Table tbl, ParseContext pGraphContext,
         PrunedPartitionList prunedParts) throws SemanticException {
@@ -252,7 +252,7 @@ public class OpTraitsRulesProcFactory {
   /*
    * Group-by re-orders the keys emitted hence, the keyCols would change.
    */
-  public static class GroupByRule implements NodeProcessor {
+  public static class GroupByRule implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -287,7 +287,7 @@ public class OpTraitsRulesProcFactory {
   /*
    * PTFOperator re-orders the keys just like Group By Operator does.
    */
-  public static class PTFRule implements NodeProcessor {
+  public static class PTFRule implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -328,7 +328,7 @@ public class OpTraitsRulesProcFactory {
     }
   }
 
-  public static class SelectRule implements NodeProcessor {
+  public static class SelectRule implements SemanticNodeProcessor {
 
     // For bucket columns
     // If all the columns match to the parent, put them in the bucket cols
@@ -410,7 +410,7 @@ public class OpTraitsRulesProcFactory {
     }
   }
 
-  public static class JoinRule implements NodeProcessor {
+  public static class JoinRule implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -487,7 +487,7 @@ public class OpTraitsRulesProcFactory {
    * When we have operators that have multiple parents, it is not clear which
    * parent's traits we need to propagate forward.
    */
-  public static class MultiParentRule implements NodeProcessor {
+  public static class MultiParentRule implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -521,35 +521,35 @@ public class OpTraitsRulesProcFactory {
     }
   }
 
-  public static NodeProcessor getTableScanRule() {
+  public static SemanticNodeProcessor getTableScanRule() {
     return new TableScanRule();
   }
 
-  public static NodeProcessor getReduceSinkRule() {
+  public static SemanticNodeProcessor getReduceSinkRule() {
     return new ReduceSinkRule();
   }
 
-  public static NodeProcessor getSelectRule() {
+  public static SemanticNodeProcessor getSelectRule() {
     return new SelectRule();
   }
 
-  public static NodeProcessor getDefaultRule() {
+  public static SemanticNodeProcessor getDefaultRule() {
     return new DefaultRule();
   }
 
-  public static NodeProcessor getMultiParentRule() {
+  public static SemanticNodeProcessor getMultiParentRule() {
     return new MultiParentRule();
   }
 
-  public static NodeProcessor getGroupByRule() {
+  public static SemanticNodeProcessor getGroupByRule() {
     return new GroupByRule();
   }
 
-  public static NodeProcessor getPTFRule() {
+  public static SemanticNodeProcessor getPTFRule() {
     return new PTFRule();
   }
 
-  public static NodeProcessor getJoinRule() {
+  public static SemanticNodeProcessor getJoinRule() {
     return new JoinRule();
   }
 }

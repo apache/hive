@@ -18,27 +18,31 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Interface for operator graph walker.
+ * Dispatcher interface for Operators Used in operator graph walking to dispatch
+ * process/visitor functions for operators.
  */
-public interface GraphWalker {
+public interface SemanticDispatcher extends Dispatcher {
 
   /**
-   * starting point for walking.
-   * 
-   * @param startNodes
-   *          list of starting operators
-   * @param nodeOutput
-   *          If this parameter is not null, the call to the function returns
-   *          the map from node to objects returned by the processors.
+   * Dispatcher function.
+   *
+   * @param nd
+   *          operator to process.
+   * @param stack
+   *          operator stack to process.
+   * @param nodeOutputs
+   *          The argument list of outputs from processing other nodes that are
+   *          passed to this dispatcher from the walker.
+   * @return Object The return object from the processing call.
    * @throws SemanticException
    */
-  void startWalking(Collection<Node> startNodes,
-      HashMap<Node, Object> nodeOutput) throws SemanticException;
+  @Override
+  Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+      throws SemanticException;
 
 }

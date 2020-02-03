@@ -27,14 +27,13 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleExactMatch;
-import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -62,8 +61,8 @@ public final class PrunerUtils {
    * @throws SemanticException
    */
   public static void walkOperatorTree(ParseContext pctx, NodeProcessorCtx opWalkerCtx,
-      NodeProcessor filterProc, NodeProcessor defaultProc) throws SemanticException {
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+                                      SemanticNodeProcessor filterProc, SemanticNodeProcessor defaultProc) throws SemanticException {
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
 
     // Build regular expression for operator rule.
     // "(TS%FIL%)|(TS%FIL%FIL%)"
@@ -75,8 +74,8 @@ public final class PrunerUtils {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(defaultProc, opRules, opWalkerCtx);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(defaultProc, opRules, opWalkerCtx);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
@@ -97,21 +96,21 @@ public final class PrunerUtils {
    * @throws SemanticException
    */
   public static Map<Node, Object> walkExprTree(ExprNodeDesc pred, NodeProcessorCtx ctx,
-      NodeProcessor colProc, NodeProcessor fieldProc, NodeProcessor genFuncProc,
-      NodeProcessor defProc)
+                                               SemanticNodeProcessor colProc, SemanticNodeProcessor fieldProc, SemanticNodeProcessor genFuncProc,
+                                               SemanticNodeProcessor defProc)
       throws SemanticException {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> exprRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     exprRules.put(new TypeRule(ExprNodeColumnDesc.class) , colProc);
     exprRules.put(new TypeRule(ExprNodeFieldDesc.class), fieldProc);
     exprRules.put(new TypeRule(ExprNodeGenericFuncDesc.class), genFuncProc);
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(defProc, exprRules, ctx);
-    GraphWalker egw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(defProc, exprRules, ctx);
+    SemanticGraphWalker egw = new DefaultGraphWalker(disp);
 
     List<Node> startNodes = new ArrayList<Node>();
     startNodes.add(pred);

@@ -29,10 +29,10 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
@@ -56,7 +56,7 @@ public class AccurateEstimatesCheckerHook extends AbstractSemanticAnalyzerHook {
   private double absErr;
   private double relErr;
 
-  class EstimateCheckerHook implements NodeProcessor {
+  class EstimateCheckerHook implements SemanticNodeProcessor {
 
     Map<String, Operator<?>> opMap = new HashMap<>();
 
@@ -136,8 +136,8 @@ public class AccurateEstimatesCheckerHook extends AbstractSemanticAnalyzerHook {
       return;
     }
 
-    Dispatcher disp = new DefaultRuleDispatcher(new EstimateCheckerHook(), new HashMap<>(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(new EstimateCheckerHook(), new HashMap<>(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
     ogw.startWalking(rootOps, nodeOutput);

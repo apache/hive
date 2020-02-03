@@ -25,12 +25,12 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-public class SortedMergeBucketMapjoinProc extends AbstractSMBJoinProc implements NodeProcessor {
+public class SortedMergeBucketMapjoinProc extends AbstractSMBJoinProc implements SemanticNodeProcessor {
   public SortedMergeBucketMapjoinProc(ParseContext pctx) {
     super(pctx);
   }

@@ -3347,7 +3347,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           inputRel = genLateralViewPlans(next, aliasToRel);
           break;
         default:
-          throw new SemanticException(ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(lateralView));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), lateralView));
       }
       // Input row resolver
       RowResolver inputRR = this.relToHiveRR.get(inputRel);
@@ -3470,44 +3471,44 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       Set<ASTNode> corrScalarQueriesWithAgg = new HashSet<ASTNode>();
       boolean isSubQuery = false;
-        Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
-        stack.push(node);
+      Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
+      stack.push(node);
 
       while (!stack.isEmpty()) {
         ASTNode next = stack.pop();
 
-          switch (next.getType()) {
-          case HiveParser.TOK_SUBQUERY_EXPR:
+        switch (next.getType()) {
+        case HiveParser.TOK_SUBQUERY_EXPR:
 
-            //disallow subqueries which HIVE doesn't currently support
-            SubQueryUtils.subqueryRestrictionCheck(qb, next, srcRel, forHavingClause,
-                corrScalarQueriesWithAgg, ctx, this.relToHiveRR);
-            String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
-            QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
-            qbSQ.setInsideView(qb.isInsideView());
-            Phase1Ctx ctx1 = initPhase1Ctx();
-            doPhase1((ASTNode) next.getChild(1), qbSQ, ctx1, null);
-            getMetaData(qbSQ);
-            this.subqueryId++;
-            RelNode subQueryRelNode =
-                genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
-            subQueryToRelNode.put(next, subQueryRelNode);
-            //keep track of subqueries which are scalar, correlated and contains aggregate
-            // subquery expression. This will later be special cased in Subquery remove rule
-            // for correlated scalar queries with aggregate we have take care of the case where
-            // inner aggregate happens on empty result
-            if (corrScalarQueriesWithAgg.contains(next)) {
-              corrScalarRexSQWithAgg.add(subQueryRelNode);
-            }
-            isSubQuery = true;
-            break;
-          default:
-            int childCount = next.getChildCount();
-            for (int i = childCount - 1; i >= 0; i--) {
-              stack.push((ASTNode) next.getChild(i));
-            }
+          //disallow subqueries which HIVE doesn't currently support
+          SubQueryUtils.subqueryRestrictionCheck(qb, next, srcRel, forHavingClause,
+              corrScalarQueriesWithAgg, ctx, this.relToHiveRR);
+          String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
+          QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
+          qbSQ.setInsideView(qb.isInsideView());
+          Phase1Ctx ctx1 = initPhase1Ctx();
+          doPhase1((ASTNode) next.getChild(1), qbSQ, ctx1, null);
+          getMetaData(qbSQ);
+          this.subqueryId++;
+          RelNode subQueryRelNode =
+              genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
+          subQueryToRelNode.put(next, subQueryRelNode);
+          //keep track of subqueries which are scalar, correlated and contains aggregate
+          // subquery expression. This will later be special cased in Subquery remove rule
+          // for correlated scalar queries with aggregate we have take care of the case where
+          // inner aggregate happens on empty result
+          if (corrScalarQueriesWithAgg.contains(next)) {
+            corrScalarRexSQWithAgg.add(subQueryRelNode);
+          }
+          isSubQuery = true;
+          break;
+        default:
+          int childCount = next.getChildCount();
+          for (int i = childCount - 1; i >= 0; i--) {
+            stack.push((ASTNode) next.getChild(i));
           }
         }
+      }
       if(isSubQuery) {
         // since subqueries will later be rewritten into JOINs we want join reordering logic to trigger
         profilesCBO.add(ExtendedCBOProfile.JOIN_REORDERING);

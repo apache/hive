@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -42,7 +43,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
@@ -68,13 +69,13 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
     this.pctx = pctx;
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getRootTasks());
-    TaskGraphWalker taskWalker = new TaskGraphWalker(new EquivalentWorkMatcher());
+    SemanticGraphWalker taskWalker = new TaskGraphWalker(new EquivalentWorkMatcher());
     HashMap<Node, Object> nodeOutput = Maps.newHashMap();
     taskWalker.startWalking(topNodes, nodeOutput);
     return pctx;
   }
 
-  class EquivalentWorkMatcher implements Dispatcher {
+  class EquivalentWorkMatcher implements SemanticDispatcher {
     private Comparator<BaseWork> baseWorkComparator = new Comparator<BaseWork>() {
       @Override
       public int compare(BaseWork o1, BaseWork o2) {

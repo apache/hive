@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 
 /**
@@ -35,7 +35,7 @@ public class GenMapRedWalker extends DefaultGraphWalker {
    * @param disp
    *          the dispatcher to be called for each node visited
    */
-  public GenMapRedWalker(Dispatcher disp) {
+  public GenMapRedWalker(SemanticDispatcher disp) {
     super(disp);
   }
 

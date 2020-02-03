@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -59,7 +59,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 /**
  * this transformation does bucket map join optimization.
  */
-abstract public class AbstractBucketJoinProc implements NodeProcessor {
+abstract public class AbstractBucketJoinProc implements SemanticNodeProcessor {
 
   protected ParseContext pGraphContext;
 

@@ -22,17 +22,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -56,7 +52,7 @@ import com.google.common.base.Preconditions;
  *
  * Cloned from Tez ProcessAnalyzeTable.
  */
-public class SparkProcessAnalyzeTable implements NodeProcessor {
+public class SparkProcessAnalyzeTable implements SemanticNodeProcessor {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkProcessAnalyzeTable.class.getName());
 
   // shared plan utils for spark
@@ -72,7 +68,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
   @SuppressWarnings("unchecked")
   @Override
   public Object process(Node nd, Stack<Node> stack,
-      NodeProcessorCtx procContext, Object... nodeOutputs) throws SemanticException {
+                        NodeProcessorCtx procContext, Object... nodeOutputs) throws SemanticException {
     GenSparkProcContext context = (GenSparkProcContext) procContext;
 
     TableScanOperator tableScan = (TableScanOperator) nd;

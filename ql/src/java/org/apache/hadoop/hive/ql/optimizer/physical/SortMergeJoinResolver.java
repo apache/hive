@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -43,7 +43,7 @@ public class SortMergeJoinResolver implements PhysicalPlanResolver {
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
 
     // create dispatcher and graph walker
-    Dispatcher disp = new SortMergeJoinTaskDispatcher(pctx);
+    SemanticDispatcher disp = new SortMergeJoinTaskDispatcher(pctx);
     TaskGraphWalker ogw = new TaskGraphWalker(disp);
 
     // get all the tasks nodes from root task

@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * to break them into TezTasks.
  *
  */
-public class GenTezProcContext implements NodeProcessorCtx{
+public class GenTezProcContext implements NodeProcessorCtx {
 
   public final ParseContext parseContext;
   public final HiveConf conf;

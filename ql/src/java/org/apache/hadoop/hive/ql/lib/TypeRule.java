@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Rule that matches a particular type of node.
  */
-public class TypeRule implements Rule {
+public class TypeRule implements SemanticRule {
 
   private Class<?> nodeClass;
 

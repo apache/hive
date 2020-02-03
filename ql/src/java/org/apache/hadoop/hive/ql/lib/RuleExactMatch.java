@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * process/visitor functions for Nodes.  The cost method returns 1 if there is an exact
  * match between the expression and the stack, otherwise -1.
  */
-public class RuleExactMatch implements Rule {
+public class RuleExactMatch implements SemanticRule {
 
   private final String ruleName;
   private final String[] pattern;

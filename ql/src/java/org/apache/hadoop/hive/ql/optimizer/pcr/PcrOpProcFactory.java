@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -56,7 +56,7 @@ public final class PcrOpProcFactory {
    * Remove partition condition in a filter operator when possible. This is
    * called only when the filter follows a table scan operator.
    */
-  public static class FilterPCR implements NodeProcessor {
+  public static class FilterPCR implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -158,7 +158,7 @@ public final class PcrOpProcFactory {
   /**
    * Default processor which does nothing
    */
-  public static class DefaultPCR implements NodeProcessor {
+  public static class DefaultPCR implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -168,11 +168,11 @@ public final class PcrOpProcFactory {
     }
   }
 
-  public static NodeProcessor getFilterProc() {
+  public static SemanticNodeProcessor getFilterProc() {
     return new FilterPCR();
   }
 
-  public static NodeProcessor getDefaultProc() {
+  public static SemanticNodeProcessor getDefaultProc() {
     return new DefaultPCR();
   }
 

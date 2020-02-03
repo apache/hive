@@ -56,7 +56,7 @@ public class DefaultUDFMethodResolver implements UDFMethodResolver {
    */
   @Override
   public Method getEvalMethod(List<TypeInfo> argClasses) throws UDFArgumentException {
-    return FunctionRegistry.getMethodInternal(udfClass, "evaluate", false,
+    return MethodUtils.getMethodInternal(udfClass, "evaluate", false,
         argClasses);
   }
 }

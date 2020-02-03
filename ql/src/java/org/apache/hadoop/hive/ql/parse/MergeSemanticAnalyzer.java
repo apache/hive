@@ -522,7 +522,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
   }
 
   private static String addParseInfo(ASTNode n) {
-    return " at " + ErrorMsg.renderPosition(n);
+    return " at " + ASTErrorUtils.renderPosition(n);
   }
 
   private boolean isAliased(ASTNode n) {

@@ -39,12 +39,12 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -70,7 +70,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
 
     // create dispatcher and graph walker
-    Dispatcher disp = new LocalMapJoinTaskDispatcher(pctx);
+    SemanticDispatcher disp = new LocalMapJoinTaskDispatcher(pctx);
     TaskGraphWalker ogw = new TaskGraphWalker(disp);
 
     // get all the tasks nodes from root task
@@ -87,7 +87,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
    * MapredLocalTask. then make this new generated task depends on current task's parent task, and
    * make current task depends on this new generated task
    */
-  class LocalMapJoinTaskDispatcher implements Dispatcher {
+  class LocalMapJoinTaskDispatcher implements SemanticDispatcher {
 
     private PhysicalContext physicalContext;
 
@@ -250,14 +250,14 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         throws SemanticException {
       LocalMapJoinProcCtx localMapJoinProcCtx = new LocalMapJoinProcCtx(task, physicalContext
           .getParseContext());
-      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
       opRules.put(new RuleRegExp("R1", MapJoinOperator.getOperatorName() + "%"),
         LocalMapJoinProcFactory.getJoinProc());
       // The dispatcher fires the processor corresponding to the closest
       // matching rule and passes the context along
-      Dispatcher disp = new DefaultRuleDispatcher(LocalMapJoinProcFactory.getDefaultProc(),
+      SemanticDispatcher disp = new DefaultRuleDispatcher(LocalMapJoinProcFactory.getDefaultProc(),
           opRules, localMapJoinProcCtx);
-      GraphWalker ogw = new DefaultGraphWalker(disp);
+      SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
       // iterator the reducer operator tree
       ArrayList<Node> topNodes = new ArrayList<Node>();
       topNodes.addAll(task.getWork().getAliasToWork().values());

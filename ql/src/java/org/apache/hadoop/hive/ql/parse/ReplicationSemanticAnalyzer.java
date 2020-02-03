@@ -240,7 +240,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           .get(new ReplDumpWork(
               replScope,
               oldReplScope,
-              ErrorMsg.INVALID_PATH.getMsg(ast),
+              ASTErrorUtils.getMsg(ErrorMsg.INVALID_PATH.getMsg(), ast),
               ctx.getResFile().toUri().toString()
       ), conf);
       rootTasks.add(replDumpWorkTask);
