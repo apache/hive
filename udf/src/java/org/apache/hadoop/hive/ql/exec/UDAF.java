@@ -66,8 +66,8 @@ package org.apache.hadoop.hive.ql.exec;
  *   <li>public boolean aggregatePartial(String partial);</li>
  * </ul>
  *
- * @deprecated Either implement {@link org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2} or extend
- * {@link org.apache.hadoop.hive.ql.udf.generic.AbstractGenericUDAFResolver} instead.
+ * @deprecated Either implement org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2 or extend
+ * org.apache.hadoop.hive.ql.udf.generic.AbstractGenericUDAFResolver instead.
  */
 @Deprecated
 public class UDAF {
