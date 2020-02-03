@@ -232,17 +232,43 @@ public class TestCompactionTxnHandler {
   }
 
   @Test
+  public void testShowCompactions() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
+    txnHandler.compact(rqst);
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    showCompactResponse.getCompacts().forEach(e -> {
+      assertEquals(dbName, e.getDbname());
+      assertEquals(tableName, e.getTablename());
+      assertEquals(partitionName, e.getPartitionname());
+      assertEquals("initiated", e.getState());
+      assertEquals(CompactionType.MINOR, e.getType());
+      assertEquals(1, e.getId());
+    });
+  }
+
+  @Test
   public void testMarkFailed() throws Exception {
-    CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
-    rqst.setPartitionname("ds=today");
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    final String workerId = "fred";
+    final String status = "failed";
+    final String errorMessage = "Dummy error";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
     txnHandler.compact(rqst);
     assertEquals(0, txnHandler.findReadyToClean().size());
-    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    CompactionInfo ci = txnHandler.findNextToCompact(workerId);
     assertNotNull(ci);
 
     assertEquals(0, txnHandler.findReadyToClean().size());
+    ci.errorMessage = errorMessage;
     txnHandler.markFailed(ci);
-    assertNull(txnHandler.findNextToCompact("fred"));
+    assertNull(txnHandler.findNextToCompact(workerId));
     boolean failedCheck = txnHandler.checkFailedCompactions(ci);
     assertFalse(failedCheck);
     try {
@@ -262,23 +288,37 @@ public class TestCompactionTxnHandler {
 
     // Add more failed compactions so that the total is exactly COMPACTOR_INITIATOR_FAILED_THRESHOLD
     for (int i = 1 ; i <  conf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD); i++) {
-      addFailedCompaction("foo", "bar", CompactionType.MINOR, "ds=today");
+      addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     }
     // Now checkFailedCompactions() will return true
     assertTrue(txnHandler.checkFailedCompactions(ci));
-
+    // Check the output of show compactions
+    checkShowCompaction(dbName, tableName, partitionName, status, errorMessage);
     // Now add enough failed compactions to ensure purgeCompactionHistory() will attempt delete;
     // HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED is enough for this.
     // But we also want enough to tickle the code in TxnUtils.buildQueryWithINClauseStrings()
     // so that it produces multiple queries. For that we need at least 290.
     for (int i = 0 ; i < 300; i++) {
-      addFailedCompaction("foo", "bar", CompactionType.MINOR, "ds=today");
+      addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     }
+    checkShowCompaction(dbName, tableName, partitionName, status, errorMessage);
     txnHandler.purgeCompactionHistory();
   }
 
+  private void checkShowCompaction(String dbName, String tableName, String partition,
+      String status, String errorMessage) throws MetaException {
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    showCompactResponse.getCompacts().forEach(e -> {
+      assertEquals(dbName, e.getDbname());
+      assertEquals(tableName, e.getTablename());
+      assertEquals(partition, e.getPartitionname());
+      assertEquals(status, e.getState());
+      assertEquals(errorMessage, e.getErrorMessage());
+    });
+  }
+
   private void addFailedCompaction(String dbName, String tableName, CompactionType type,
-      String partitionName) throws MetaException {
+      String partitionName, String errorMessage) throws MetaException {
     CompactionRequest rqst;
     CompactionInfo ci;
     rqst = new CompactionRequest(dbName, tableName, type);
@@ -286,6 +326,7 @@ public class TestCompactionTxnHandler {
     txnHandler.compact(rqst);
     ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
+    ci.errorMessage = errorMessage;
     txnHandler.markFailed(ci);
   }
 

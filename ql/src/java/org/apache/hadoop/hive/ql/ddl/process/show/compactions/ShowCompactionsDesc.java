@@ -32,8 +32,8 @@ public class ShowCompactionsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final String SCHEMA =
-      "compactionid,dbname,tabname,partname,type,state,hostname,workerid,starttime,duration,hadoopjobid#" +
-      "string:string:string:string:string:string:string:string:string:string:string";
+      "compactionid,dbname,tabname,partname,type,state,hostname,workerid,starttime,duration,hadoopjobid,errormessage#" +
+      "string:string:string:string:string:string:string:string:string:string:string:string";
 
   private String resFile;
 

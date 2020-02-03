@@ -153,7 +153,8 @@ public final class TxnDbUtil {
           " CQ_RUN_AS varchar(128)," +
           " CQ_HIGHEST_WRITE_ID bigint," +
           " CQ_META_INFO varchar(2048) for bit data," +
-          " CQ_HADOOP_JOB_ID varchar(32))");
+          " CQ_HADOOP_JOB_ID varchar(32)," +
+          " CQ_ERROR_MESSAGE clob)");
 
       stmt.execute("CREATE TABLE NEXT_COMPACTION_QUEUE_ID (NCQ_NEXT bigint NOT NULL)");
       stmt.execute("INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1)");
@@ -172,7 +173,8 @@ public final class TxnDbUtil {
           " CC_RUN_AS varchar(128)," +
           " CC_HIGHEST_WRITE_ID bigint," +
           " CC_META_INFO varchar(2048) for bit data," +
-          " CC_HADOOP_JOB_ID varchar(32))");
+          " CC_HADOOP_JOB_ID varchar(32)," +
+          " CC_ERROR_MESSAGE clob)");
 
       stmt.execute("CREATE TABLE AUX_TABLE (" +
         " MT_KEY1 varchar(128) NOT NULL," +
