@@ -22,12 +22,12 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-public class SortedMergeJoinProc extends AbstractSMBJoinProc implements NodeProcessor {
+public class SortedMergeJoinProc extends AbstractSMBJoinProc implements SemanticNodeProcessor {
 
   public SortedMergeJoinProc(ParseContext pctx) {
     super(pctx);

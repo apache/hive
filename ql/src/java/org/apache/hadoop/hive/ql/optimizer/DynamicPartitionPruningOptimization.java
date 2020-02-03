@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -95,7 +95,7 @@ import com.google.common.base.Preconditions;
  * can use an existing join to dynamically prune partitions. This class sets up
  * the infrastructure for that.
  */
-public class DynamicPartitionPruningOptimization implements NodeProcessor {
+public class DynamicPartitionPruningOptimization implements SemanticNodeProcessor {
 
   static final private Logger LOG = LoggerFactory.getLogger(DynamicPartitionPruningOptimization.class
       .getName());

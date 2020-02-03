@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,7 +36,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * (dispatchedList) and a list of operators that are discovered but not yet
  * dispatched
  */
-public class TaskGraphWalker implements GraphWalker {
+public class TaskGraphWalker implements SemanticGraphWalker {
 
 
   public class TaskGraphWalkerContext{
@@ -56,7 +55,7 @@ public class TaskGraphWalker implements GraphWalker {
   protected Stack<Node> opStack;
   private final List<Node> toWalk = new ArrayList<Node>();
   private final HashMap<Node, Object> retMap = new HashMap<Node, Object>();
-  private final Dispatcher dispatcher;
+  private final SemanticDispatcher dispatcher;
   private final  TaskGraphWalkerContext walkerCtx;
 
   /**
@@ -65,7 +64,7 @@ public class TaskGraphWalker implements GraphWalker {
    * @param disp
    *          dispatcher to call for each op encountered
    */
-  public TaskGraphWalker(Dispatcher disp) {
+  public TaskGraphWalker(SemanticDispatcher disp) {
     dispatcher = disp;
     opStack = new Stack<Node>();
     walkerCtx = new TaskGraphWalkerContext(retMap);

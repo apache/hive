@@ -39,7 +39,7 @@ public class PreOrderWalker extends DefaultGraphWalker {
    * @param disp
    *          dispatcher to call for each op encountered
    */
-  public PreOrderWalker(Dispatcher disp) {
+  public PreOrderWalker(SemanticDispatcher disp) {
     super(disp);
   }
 

@@ -3275,7 +3275,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           inputRel = genLateralViewPlans(next, aliasToRel);
           break;
         default:
-          throw new SemanticException(ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(lateralView));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), lateralView));
       }
       // Input row resolver
       RowResolver inputRR = this.relToHiveRR.get(inputRel);

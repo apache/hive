@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,12 +28,12 @@ import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -53,8 +52,8 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
 
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
-    Dispatcher disp = new SkewJoinTaskDispatcher(pctx);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new SkewJoinTaskDispatcher(pctx);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getRootTasks());
     ogw.startWalking(topNodes, null);
@@ -64,7 +63,7 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
   /**
    * Iterator a task with a rule dispatcher for its reducer operator tree.
    */
-  class SkewJoinTaskDispatcher implements Dispatcher {
+  class SkewJoinTaskDispatcher implements SemanticDispatcher {
 
     private PhysicalContext physicalContext;
 
@@ -107,16 +106,16 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
 
       SkewJoinProcCtx skewJoinProcContext = new SkewJoinProcCtx(task, pc);
 
-      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
       opRules.put(new RuleRegExp("R1",
         CommonJoinOperator.getOperatorName() + "%"),
         SkewJoinProcFactory.getJoinProc());
 
       // The dispatcher fires the processor corresponding to the closest
       // matching rule and passes the context along
-      Dispatcher disp = new DefaultRuleDispatcher(SkewJoinProcFactory
+      SemanticDispatcher disp = new DefaultRuleDispatcher(SkewJoinProcFactory
           .getDefaultProc(), opRules, skewJoinProcContext);
-      GraphWalker ogw = new DefaultGraphWalker(disp);
+      SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
       // iterator the reducer operator tree
       ArrayList<Node> topNodes = new ArrayList<Node>();

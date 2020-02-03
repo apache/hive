@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * FileSinkProcessor handles addition of merge, move and stats tasks for filesinks.
  * Cloned from tez's FileSinkProcessor.
  */
-public class SparkFileSinkProcessor implements NodeProcessor {
+public class SparkFileSinkProcessor implements SemanticNodeProcessor {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkFileSinkProcessor.class.getName());
 
   /*
@@ -43,7 +43,7 @@ public class SparkFileSinkProcessor implements NodeProcessor {
    */
   @Override
   public Object process(Node nd, Stack<Node> stack,
-      NodeProcessorCtx procCtx, Object... nodeOutputs)
+                        NodeProcessorCtx procCtx, Object... nodeOutputs)
       throws SemanticException {
 
     GenSparkProcContext context = (GenSparkProcContext) procCtx;

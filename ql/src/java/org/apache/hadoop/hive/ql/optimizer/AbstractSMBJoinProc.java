@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.util.ReflectionUtils;
 
 //try to replace a bucket map join with a sorted merge map join
-abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc implements NodeProcessor {
+abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc implements SemanticNodeProcessor {
 
   public AbstractSMBJoinProc(ParseContext pctx) {
     super(pctx);

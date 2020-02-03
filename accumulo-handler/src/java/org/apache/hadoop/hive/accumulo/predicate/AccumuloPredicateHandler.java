@@ -52,11 +52,11 @@ import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler.DecomposedPredicate;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -260,9 +260,9 @@ public class AccumuloPredicateHandler {
                                   String hiveRowIdColumnName, ExprNodeDesc root) {
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler,
         columnMapper.getRowIdMapping(), hiveRowIdColumnName);
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule, NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     List<Node> roots = new ArrayList<Node>();
     roots.add(root);
     HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();

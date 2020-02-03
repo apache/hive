@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.physical.GenMRSkewJoinProcessor;
@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,15 +67,15 @@ public class SparkSkewJoinProcFactory {
     // prevent instantiation
   }
 
-  public static NodeProcessor getDefaultProc() {
+  public static SemanticNodeProcessor getDefaultProc() {
     return SkewJoinProcFactory.getDefaultProc();
   }
 
-  public static NodeProcessor getJoinProc() {
+  public static SemanticNodeProcessor getJoinProc() {
     return new SparkSkewJoinJoinProcessor();
   }
 
-  public static class SparkSkewJoinJoinProcessor implements NodeProcessor {
+  public static class SparkSkewJoinJoinProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,

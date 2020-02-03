@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -48,7 +47,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 /**
  * Processor for the rule - table scan followed by reduce sink.
  */
-public class GenMRFileSink1 implements NodeProcessor {
+public class GenMRFileSink1 implements SemanticNodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(GenMRFileSink1.class.getName());
 
@@ -173,7 +172,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    * @throws SemanticException
    */
   private Path processFS(FileSinkOperator fsOp, Stack<Node> stack,
-      NodeProcessorCtx opProcCtx, boolean chDir) throws SemanticException {
+                         NodeProcessorCtx opProcCtx, boolean chDir) throws SemanticException {
 
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     Task<?> currTask = ctx.getCurrTask();

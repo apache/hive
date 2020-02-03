@@ -371,20 +371,20 @@ public abstract class BaseSemanticAnalyzer {
 
     if (tableNameNode.getType() != HiveParser.TOK_TABNAME ||
         (tableNameNode.getChildCount() != 1 && tableNameNode.getChildCount() != 2)) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME.getMsg(tableNameNode));
+      throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.INVALID_TABLE_NAME.getMsg(), tableNameNode));
     }
 
     if (tableNameNode.getChildCount() == 2) {
       String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
       String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
       if (dbName.contains(".") || tableName.contains(".")) {
-        throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tableNameNode));
+        throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tableNameNode));
       }
       return Pair.of(dbName, tableName);
     } else {
       String tableName = unescapeIdentifier(tableNameNode.getChild(0).getText());
       if (tableName.contains(".")) {
-        throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tableNameNode));
+        throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tableNameNode));
       }
       return Pair.of(null,tableName);
     }
@@ -427,19 +427,22 @@ public abstract class BaseSemanticAnalyzer {
   public static TableName getQualifiedTableName(ASTNode tabNameNode, String catalogName) throws SemanticException {
     if (tabNameNode.getType() != HiveParser.TOK_TABNAME || (tabNameNode.getChildCount() != 1
         && tabNameNode.getChildCount() != 2)) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME.getMsg(tabNameNode));
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.INVALID_TABLE_NAME.getMsg(), tabNameNode));
     }
     if (tabNameNode.getChildCount() == 2) {
       final String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
       final String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
       if (dbName.contains(".") || tableName.contains(".")) {
-        throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tabNameNode));
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tabNameNode));
       }
       return HiveTableName.ofNullable(tableName, dbName);
     }
     final String tableName = unescapeIdentifier(tabNameNode.getChild(0).getText());
     if (tableName.contains(".")) {
-      throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tabNameNode));
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tabNameNode));
     }
     return HiveTableName.ofNullable(tableName);
   }
@@ -1014,11 +1017,12 @@ public abstract class BaseSemanticAnalyzer {
           tableHandle = db.getTable(tableName);
         }
       } catch (InvalidTableException ite) {
-        throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(ast
-            .getChild(0)), ite);
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_TABLE.getMsg(), ast.getChild(0)), ite);
       } catch (HiveException e) {
-        throw new SemanticException(ErrorMsg.CANNOT_RETRIEVE_TABLE_METADATA.getMsg(ast
-            .getChild(childIndex), e.getMessage()), e);
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.CANNOT_RETRIEVE_TABLE_METADATA.getMsg(),
+            ast.getChild(childIndex), e.getMessage()), e);
       }
 
       // get partition metadata if partition specified
@@ -1080,8 +1084,8 @@ public abstract class BaseSemanticAnalyzer {
           for (FieldSchema fs: parts) {
             if (partSpec.get(fs.getName().toLowerCase()) == null) {
               if (numStaPart > 0) { // found a DP, but there exists ST as subpartition
-                throw new SemanticException(
-                    ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(ast.getChild(childIndex)));
+                throw new SemanticException(ASTErrorUtils.getMsg(
+                    ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(), ast.getChild(childIndex)));
               }
               break;
             } else {
@@ -1106,8 +1110,8 @@ public abstract class BaseSemanticAnalyzer {
               }
             }
           } catch (HiveException e) {
-            throw new SemanticException(
-                ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(childIndex)), e);
+            throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.INVALID_PARTITION.getMsg(), ast.getChild(childIndex)), e);
           }
           specType = SpecType.STATIC_PARTITION;
         }

@@ -33,12 +33,12 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer.WalkerCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -61,14 +61,14 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
   @Override
   public PhysicalContext resolve(PhysicalContext pctx)
       throws SemanticException {
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<>();
     opRules.put(
         new RuleRegExp("R1",
             TableScanOperator.getOperatorName() + "%.*"
                 + FilterOperator.getOperatorName() + "%"),
         new WhereFalseProcessor());
-    Dispatcher disp = new NullScanTaskDispatcher(pctx, opRules);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new NullScanTaskDispatcher(pctx, opRules);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     List<Node> topNodes = new ArrayList<>(pctx.getRootTasks());
     ogw.startWalking(topNodes, null);
 
@@ -109,7 +109,7 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
     return true;
   }
 
-  private static class WhereFalseProcessor implements NodeProcessor {
+  private static class WhereFalseProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -139,7 +139,7 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
     }
   }
 
-  private static class Limit0Processor implements NodeProcessor {
+  private static class Limit0Processor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -165,7 +165,7 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
     }
   }
 
-  private static class TSMarker implements NodeProcessor {
+  private static class TSMarker implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,

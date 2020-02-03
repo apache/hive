@@ -65,6 +65,16 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-parser</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-udf</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-service-rpc</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -143,16 +153,6 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
       <version>${log4j2.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>antlr-runtime</artifactId>
-      <version>${antlr.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>ST4</artifactId>
-      <version>${ST4.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.avro</groupId>
@@ -857,25 +857,6 @@
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifectId -->
       <plugin>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr3-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>antlr</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <sourceDirectory>${basedir}/src/java</sourceDirectory>
-          <includes>
-            <include>**/HiveLexer.g</include>
-            <include>**/HiveParser.g</include>
-            <include>**/HintParser.g</include>
-          </includes>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
@@ -959,6 +940,7 @@
                 <includes>
                   <!-- order is meant to be the same as the ant build -->
                   <include>org.apache.hive:hive-common</include>
+                  <include>org.apache.hive:hive-udf</include>
                   <include>org.apache.hive:hive-exec</include>
                   <include>org.apache.hive:hive-serde</include>
                   <include>org.apache.hive:hive-llap-common</include>

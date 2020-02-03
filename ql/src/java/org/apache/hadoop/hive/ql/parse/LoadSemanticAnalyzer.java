@@ -164,7 +164,8 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     // local mode implies that scheme should be "file"
     // we can change this going forward
     if (isLocal && !fromURI.getScheme().equals("file")) {
-      throw new SemanticException(ErrorMsg.ILLEGAL_PATH.getMsg(fromTree,
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.ILLEGAL_PATH.getMsg(), fromTree,
           "Source file system should be \"file\" if \"local\" is specified"));
     }
 
@@ -172,7 +173,8 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
       FileSystem fileSystem = FileSystem.get(fromURI, conf);
       srcs = matchFilesOrDir(fileSystem, new Path(fromURI));
       if (srcs == null || srcs.length == 0) {
-        throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree,
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.INVALID_PATH.getMsg(), fromTree,
             "No files matching path " + fromURI));
       }
 
@@ -212,8 +214,9 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
       }
     } catch (IOException e) {
       // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang3.StringUtils
-      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree), e);
+      // org.apache.commons.lang.StringUtils
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.INVALID_PATH.getMsg(), fromTree), e);
     }
 
     return Lists.newArrayList(srcs);
@@ -280,8 +283,8 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
       String fromPath = stripQuotes(fromTree.getText());
       fromURI = initializeFromURI(fromPath, isLocal);
     } catch (IOException | URISyntaxException e) {
-      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree, e
-          .getMessage()), e);
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.INVALID_PATH.getMsg(), fromTree, e.getMessage()), e);
     }
 
     // initialize destination table/partition
