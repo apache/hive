@@ -86,6 +86,8 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.writeBytes("Duration(ms)");
     os.write(Utilities.tabCode);
     os.writeBytes("HadoopJobId");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Error message");
     os.write(Utilities.newLineCode);
   }
 
@@ -115,6 +117,9 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.writeBytes(e.isSetEndTime() ? Long.toString(e.getEndTime() - e.getStart()) : NO_VAL);
     os.write(Utilities.tabCode);
     os.writeBytes(e.isSetHadoopJobId() ?  e.getHadoopJobId() : NO_VAL);
+    os.write(Utilities.tabCode);
+    String error = e.getErrorMessage();
+    os.writeBytes(error == null ? NO_VAL : error);
     os.write(Utilities.newLineCode);
   }
 }
