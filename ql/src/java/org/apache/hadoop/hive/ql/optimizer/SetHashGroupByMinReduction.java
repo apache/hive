@@ -24,7 +24,7 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -41,14 +41,14 @@ import org.slf4j.LoggerFactory;
  * SetHashGroupByMinReduction determines the min reduction to perform
  * a hash aggregation for a group by.
  */
-public class SetHashGroupByMinReduction implements NodeProcessor {
+public class SetHashGroupByMinReduction implements SemanticNodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(SetHashGroupByMinReduction.class.getName());
 
   @SuppressWarnings("unchecked")
   @Override
   public Object process(Node nd, Stack<Node> stack,
-      NodeProcessorCtx procContext, Object... nodeOutputs)
+                        NodeProcessorCtx procContext, Object... nodeOutputs)
       throws SemanticException {
 
     GroupByOperator groupByOperator = (GroupByOperator) nd;

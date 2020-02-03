@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -43,7 +42,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.BucketMapjoinProc;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
@@ -64,7 +63,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
  * converted (e.g.: full outer joins cannot be handled as map joins) as well
  * as memory restrictions (one side of the join has to fit into memory).
  */
-public class SparkMapJoinOptimizer implements NodeProcessor {
+public class SparkMapJoinOptimizer implements SemanticNodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(SparkMapJoinOptimizer.class.getName());
 

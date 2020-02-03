@@ -265,7 +265,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               oldReplScope,
               eventFrom,
               eventTo,
-              ErrorMsg.INVALID_PATH.getMsg(ast),
+              ASTErrorUtils.getMsg(ErrorMsg.INVALID_PATH.getMsg(), ast),
               maxEventLimit,
               ctx.getResFile().toUri().toString()
       ), conf);

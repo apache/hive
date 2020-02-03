@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -1043,7 +1043,7 @@ public final class ConstantPropagateProcFactory {
    * Node Processor for Constant Propagation on Filter Operators. The processor is to fold
    * conditional expressions and extract assignment expressions and propagate them.
    */
-  public static class ConstantPropagateFilterProc implements NodeProcessor {
+  public static class ConstantPropagateFilterProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
@@ -1098,7 +1098,7 @@ public final class ConstantPropagateProcFactory {
   /**
    * Node Processor for Constant Propagate for Group By Operators.
    */
-  public static class ConstantPropagateGroupByProc implements NodeProcessor {
+  public static class ConstantPropagateGroupByProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
@@ -1147,7 +1147,7 @@ public final class ConstantPropagateProcFactory {
   /**
    * The Default Node Processor for Constant Propagation.
    */
-  public static class ConstantPropagateDefaultProc implements NodeProcessor {
+  public static class ConstantPropagateDefaultProc implements SemanticNodeProcessor {
     @Override
     @SuppressWarnings("unchecked")
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
@@ -1187,7 +1187,7 @@ public final class ConstantPropagateProcFactory {
   /**
    * The Node Processor for Constant Propagation for Select Operators.
    */
-  public static class ConstantPropagateSelectProc implements NodeProcessor {
+  public static class ConstantPropagateSelectProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
@@ -1255,7 +1255,7 @@ public final class ConstantPropagateProcFactory {
    * The Node Processor for constant propagation for FileSink Operators. In addition to constant
    * propagation, this processor also prunes dynamic partitions to static partitions if possible.
    */
-  public static class ConstantPropagateFileSinkProc implements NodeProcessor {
+  public static class ConstantPropagateFileSinkProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
@@ -1301,7 +1301,7 @@ public final class ConstantPropagateProcFactory {
     }
   }
 
-  public static NodeProcessor getFileSinkProc() {
+  public static SemanticNodeProcessor getFileSinkProc() {
     return new ConstantPropagateFileSinkProc();
   }
 
@@ -1309,7 +1309,7 @@ public final class ConstantPropagateProcFactory {
    * The Node Processor for Constant Propagation for Operators which is designed to stop propagate.
    * Currently these kinds of Operators include UnionOperator and ScriptOperator.
    */
-  public static class ConstantPropagateStopProc implements NodeProcessor {
+  public static class ConstantPropagateStopProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
@@ -1323,7 +1323,7 @@ public final class ConstantPropagateProcFactory {
     }
   }
 
-  public static NodeProcessor getStopProc() {
+  public static SemanticNodeProcessor getStopProc() {
     return new ConstantPropagateStopProc();
   }
 
@@ -1332,7 +1332,7 @@ public final class ConstantPropagateProcFactory {
    * a join, then only those constants from inner join tables, or from the 'inner side' of a outer
    * join (left table for left outer join and vice versa) can be propagated.
    */
-  public static class ConstantPropagateReduceSinkProc implements NodeProcessor {
+  public static class ConstantPropagateReduceSinkProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
@@ -1429,14 +1429,14 @@ public final class ConstantPropagateProcFactory {
 
   }
 
-  public static NodeProcessor getReduceSinkProc() {
+  public static SemanticNodeProcessor getReduceSinkProc() {
     return new ConstantPropagateReduceSinkProc();
   }
 
   /**
    * The Node Processor for Constant Propagation for Join Operators.
    */
-  public static class ConstantPropagateJoinProc implements NodeProcessor {
+  public static class ConstantPropagateJoinProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
@@ -1503,14 +1503,14 @@ public final class ConstantPropagateProcFactory {
 
   }
 
-  public static NodeProcessor getJoinProc() {
+  public static SemanticNodeProcessor getJoinProc() {
     return new ConstantPropagateJoinProc();
   }
 
   /**
    * The Node Processor for Constant Propagation for Table Scan Operators.
    */
-  public static class ConstantPropagateTableScanProc implements NodeProcessor {
+  public static class ConstantPropagateTableScanProc implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
@@ -1534,7 +1534,7 @@ public final class ConstantPropagateProcFactory {
     }
   }
 
-  public static NodeProcessor getTableScanProc() {
+  public static SemanticNodeProcessor getTableScanProc() {
     return new ConstantPropagateTableScanProc();
   }
 }

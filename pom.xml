@@ -46,6 +46,8 @@
     <module>hplsql</module>
     <module>jdbc</module>
     <module>metastore</module>
+    <module>parser</module>
+    <module>udf</module>
     <module>ql</module>
     <module>serde</module>
     <module>service-rpc</module>

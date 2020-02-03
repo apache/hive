@@ -35,13 +35,11 @@ import org.apache.hadoop.hive.ql.io.sarg.ExpressionTree.Operator;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.PrunerOperatorFactory.FilterPruner;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -69,7 +67,7 @@ public class FixedBucketPruningOptimizer extends Transform {
     this.compat = compat;
   }
 
-  public class NoopWalker implements NodeProcessor {
+  public class NoopWalker implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -82,7 +80,7 @@ public class FixedBucketPruningOptimizer extends Transform {
 
     @Override
     protected void generatePredicate(NodeProcessorCtx procCtx,
-        FilterOperator fop, TableScanOperator top) throws SemanticException{
+                                     FilterOperator fop, TableScanOperator top) throws SemanticException{
       FixedBucketPruningOptimizerCtxt ctxt = ((FixedBucketPruningOptimizerCtxt) procCtx);
       Table tbl = top.getConf().getTableMetadata();
       int numBuckets = tbl.getNumBuckets();

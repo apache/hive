@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Stack;
 
@@ -26,7 +25,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -35,7 +34,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 /**
  * Processor for the rule - reduce sink followed by reduce sink.
  */
-public class GenMRRedSink2 implements NodeProcessor {
+public class GenMRRedSink2 implements SemanticNodeProcessor {
 
   public GenMRRedSink2() {
   }

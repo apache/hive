@@ -155,7 +155,7 @@ public class TestFunctionRegistry {
     inputTypes.add(inputType);
 
     // narrow down the possible choices based on type affinity
-    FunctionRegistry.filterMethodsByTypeAffinity(mlist, inputTypes);
+    MethodUtils.filterMethodsByTypeAffinity(mlist, inputTypes);
     assertEquals(expectedNumFoundMethods, mlist.size());
     if (expectedNumFoundMethods == 1) {
       assertEquals(expectedFoundType, mlist.get(0).getParameterTypes()[0]);
@@ -194,7 +194,7 @@ public class TestFunctionRegistry {
     Method result = null;
 
     try {
-      result = FunctionRegistry.getMethodInternal(udf, name, false, args);
+      result = MethodUtils.getMethodInternal(udf, name, false, args);
     } catch (UDFArgumentException e) {
       assert(throwException);
       return;

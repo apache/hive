@@ -24,22 +24,20 @@ import org.apache.hadoop.hive.accumulo.AccumuloHiveConstants;
 import org.apache.hadoop.hive.accumulo.TestAccumuloDefaultIndexScanner;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
-import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToString;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
@@ -47,7 +45,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Before;
@@ -113,9 +110,9 @@ public class TestAccumuloRangeGenerator {
         .asList(new Range(new Key("f"), true, new Key("m\0"), false));
 
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler, rowIdMapping, "rid");
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule,NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(both);
     HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
@@ -168,9 +165,9 @@ public class TestAccumuloRangeGenerator {
     List<Range> expectedRanges = Arrays.asList(new Range());
 
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler, rowIdMapping, "rid");
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule,NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(both);
     HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
@@ -241,9 +238,9 @@ public class TestAccumuloRangeGenerator {
     List<Range> expectedRanges = Arrays.asList(new Range(new Key("q"), true, null, false));
 
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler, rowIdMapping, "rid");
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule,NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(both);
     HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
@@ -296,9 +293,9 @@ public class TestAccumuloRangeGenerator {
     List<Range> expectedRanges = Arrays.asList(new Range(new Key("f"), true, null, false));
 
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler, rowIdMapping, "rid");
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule,NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(both);
     HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
@@ -354,9 +351,9 @@ public class TestAccumuloRangeGenerator {
         "2014-07-01"), false));
 
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler, rowIdMapping, "rid");
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule,NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(both);
     HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
@@ -401,9 +398,9 @@ public class TestAccumuloRangeGenerator {
         new GenericUDFOPEqualOrGreaterThan(), Arrays.asList(key, cast));
 
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler, rowIdMapping, "key");
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule,NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(node);
     HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
@@ -450,9 +447,9 @@ public class TestAccumuloRangeGenerator {
         new GenericUDFOPAnd(), bothFilters);
 
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler, rowIdMapping, "rid");
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule,NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(both);
     HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
@@ -500,9 +497,9 @@ public class TestAccumuloRangeGenerator {
 
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler, rowIdMapping, "rid");
     rangeGenerator.setIndexScanner(TestAccumuloDefaultIndexScanner.buildMockHandler(10));
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule,NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(both);
     HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
@@ -558,9 +555,9 @@ public class TestAccumuloRangeGenerator {
 
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler, rowIdMapping, "rid");
     rangeGenerator.setIndexScanner(TestAccumuloDefaultIndexScanner.buildMockHandler(10));
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule,NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(both);
     HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
@@ -598,9 +595,9 @@ public class TestAccumuloRangeGenerator {
 
     AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler, rowIdMapping, "rid");
     rangeGenerator.setIndexScanner(TestAccumuloDefaultIndexScanner.buildMockHandler(10));
-    Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule,NodeProcessor> emptyMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
+        Collections.<SemanticRule, SemanticNodeProcessor> emptyMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(node);
     HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();

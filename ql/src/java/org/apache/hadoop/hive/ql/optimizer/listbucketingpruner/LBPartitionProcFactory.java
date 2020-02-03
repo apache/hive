@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -50,7 +50,7 @@ public class LBPartitionProcFactory extends PrunerOperatorFactory {
 
     @Override
     protected void generatePredicate(NodeProcessorCtx procCtx, FilterOperator fop,
-        TableScanOperator top) throws SemanticException, UDFArgumentException {
+                                     TableScanOperator top) throws SemanticException, UDFArgumentException {
       LBOpPartitionWalkerCtx owc = (LBOpPartitionWalkerCtx) procCtx;
       Table tbl = top.getConf().getTableMetadata();
       if (tbl.isPartitioned()) {
@@ -74,7 +74,7 @@ public class LBPartitionProcFactory extends PrunerOperatorFactory {
 
   }
 
-  public static NodeProcessor getFilterProc() {
+  public static SemanticNodeProcessor getFilterProc() {
     return new LBPRPartitionFilterPruner();
   }
 
