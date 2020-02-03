@@ -1132,6 +1132,7 @@ struct CompactionInfoStruct {
     10: optional string workerId
     11: optional i64 start
     12: optional i64 highestWriteId
+    13: optional string errorMessage
 }
 
 struct OptionalCompactionInfoStruct {
@@ -1161,6 +1162,7 @@ struct ShowCompactResponseElement {
     11: optional i64 endTime,
     12: optional string hadoopJobId = "None",
     13: optional i64 id,
+    14: optional string errorMessage,
 }
 
 struct ShowCompactResponse {

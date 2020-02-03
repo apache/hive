@@ -15214,6 +15214,7 @@ class CompactionInfoStruct:
    - workerId
    - start
    - highestWriteId
+   - errorMessage
   """
 
   thrift_spec = (
@@ -15230,9 +15231,10 @@ class CompactionInfoStruct:
     (10, TType.STRING, 'workerId', None, None, ), # 10
     (11, TType.I64, 'start', None, None, ), # 11
     (12, TType.I64, 'highestWriteId', None, None, ), # 12
+    (13, TType.STRING, 'errorMessage', None, None, ), # 13
   )
 
-  def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None,):
+  def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None,):
     self.id = id
     self.dbname = dbname
     self.tablename = tablename
@@ -15245,6 +15247,7 @@ class CompactionInfoStruct:
     self.workerId = workerId
     self.start = start
     self.highestWriteId = highestWriteId
+    self.errorMessage = errorMessage
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15315,6 +15318,11 @@ class CompactionInfoStruct:
           self.highestWriteId = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 13:
+        if ftype == TType.STRING:
+          self.errorMessage = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15373,6 +15381,10 @@ class CompactionInfoStruct:
       oprot.writeFieldBegin('highestWriteId', TType.I64, 12)
       oprot.writeI64(self.highestWriteId)
       oprot.writeFieldEnd()
+    if self.errorMessage is not None:
+      oprot.writeFieldBegin('errorMessage', TType.STRING, 13)
+      oprot.writeString(self.errorMessage)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15402,6 +15414,7 @@ class CompactionInfoStruct:
     value = (value * 31) ^ hash(self.workerId)
     value = (value * 31) ^ hash(self.start)
     value = (value * 31) ^ hash(self.highestWriteId)
+    value = (value * 31) ^ hash(self.errorMessage)
     return value
 
   def __repr__(self):
@@ -15640,6 +15653,7 @@ class ShowCompactResponseElement:
    - endTime
    - hadoopJobId
    - id
+   - errorMessage
   """
 
   thrift_spec = (
@@ -15657,9 +15671,10 @@ class ShowCompactResponseElement:
     (11, TType.I64, 'endTime', None, None, ), # 11
     (12, TType.STRING, 'hadoopJobId', None, "None", ), # 12
     (13, TType.I64, 'id', None, None, ), # 13
+    (14, TType.STRING, 'errorMessage', None, None, ), # 14
   )
 
-  def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId=thrift_spec[12][4], id=None,):
+  def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId=thrift_spec[12][4], id=None, errorMessage=None,):
     self.dbname = dbname
     self.tablename = tablename
     self.partitionname = partitionname
@@ -15673,6 +15688,7 @@ class ShowCompactResponseElement:
     self.endTime = endTime
     self.hadoopJobId = hadoopJobId
     self.id = id
+    self.errorMessage = errorMessage
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15748,6 +15764,11 @@ class ShowCompactResponseElement:
           self.id = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 14:
+        if ftype == TType.STRING:
+          self.errorMessage = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15810,6 +15831,10 @@ class ShowCompactResponseElement:
       oprot.writeFieldBegin('id', TType.I64, 13)
       oprot.writeI64(self.id)
       oprot.writeFieldEnd()
+    if self.errorMessage is not None:
+      oprot.writeFieldBegin('errorMessage', TType.STRING, 14)
+      oprot.writeString(self.errorMessage)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15840,6 +15865,7 @@ class ShowCompactResponseElement:
     value = (value * 31) ^ hash(self.endTime)
     value = (value * 31) ^ hash(self.hadoopJobId)
     value = (value * 31) ^ hash(self.id)
+    value = (value * 31) ^ hash(self.errorMessage)
     return value
 
   def __repr__(self):

@@ -3120,9 +3120,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt = dbConn.createStatement();
         String s = "select cq_database, cq_table, cq_partition, cq_state, cq_type, cq_worker_id, " +
           //-1 because 'null' literal doesn't work for all DBs...
-          "cq_start, -1 cc_end, cq_run_as, cq_hadoop_job_id, cq_id from COMPACTION_QUEUE union all " +
+          "cq_start, -1 cc_end, cq_run_as, cq_hadoop_job_id, cq_id, cq_error_message from COMPACTION_QUEUE union all " +
           "select cc_database, cc_table, cc_partition, cc_state, cc_type, cc_worker_id, " +
-          "cc_start, cc_end, cc_run_as, cc_hadoop_job_id, cc_id from COMPLETED_COMPACTIONS"; //todo: sort by cq_id?
+          "cc_start, cc_end, cc_run_as, cc_hadoop_job_id, cc_id, cc_error_message from COMPLETED_COMPACTIONS"; //todo: sort by cq_id?
         //what I want is order by cc_end desc, cc_start asc (but derby has a bug https://issues.apache.org/jira/browse/DERBY-6013)
         //to sort so that currently running jobs are at the end of the list (bottom of screen)
         //and currently running ones are in sorted by start time
@@ -3153,6 +3153,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           e.setRunAs(rs.getString(9));
           e.setHadoopJobId(rs.getString(10));
           e.setId(rs.getLong(11));
+          e.setErrorMessage(rs.getString(12));
           response.addToCompacts(e);
         }
         LOG.debug("Going to rollback");

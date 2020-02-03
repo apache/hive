@@ -97,12 +97,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       // so wrap it in a big catch Throwable statement.
       CompactionHeartbeater heartbeater = null;
       long compactorTxnId = NOT_SET;
+      CompactionInfo ci = null;
       try {
         if (msc == null) {
           msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
         }
-        final CompactionInfo ci = CompactionInfo.optionalCompactionInfoStructToInfo(
-            msc.findNextCompact(workerName));
+        ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(workerName));
         LOG.debug("Processing compaction request " + ci);
 
         if (ci == null && !stop.get()) {
@@ -214,10 +214,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
               UserGroupInformation.getLoginUser());
             final Partition fp = p;
+            final CompactionInfo fci = ci;
             ugi.doAs(new PrivilegedExceptionAction<Object>() {
               @Override
               public Object run() throws Exception {
-                mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, ci, su, msc, dir);
+                mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, fci, su, msc, dir);
                 return null;
               }
             });
@@ -236,16 +237,26 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         } catch (Exception e) {
           LOG.error("Caught exception while trying to compact " + ci +
               ".  Marking failed to avoid repeated failures, " + StringUtils.stringifyException(e));
+          ci.errorMessage = e.getMessage();
           msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
           msc.abortTxns(Collections.singletonList(compactorTxnId));
         }
       } catch (TException | IOException t) {
         LOG.error("Caught an exception in the main loop of compactor worker " + workerName + ", " +
             StringUtils.stringifyException(t));
-        if (msc != null) {
-          msc.close();
+        try {
+          if (msc != null && ci != null) {
+            ci.errorMessage = t.getMessage();
+            msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
+          }
+        } catch (TException e) {
+          LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, e);
+        } finally {
+          if (msc != null) {
+            msc.close();
+            msc = null;
+          }
         }
-        msc = null;
         try {
           Thread.sleep(SLEEP_TIME);
         } catch (InterruptedException e) {
