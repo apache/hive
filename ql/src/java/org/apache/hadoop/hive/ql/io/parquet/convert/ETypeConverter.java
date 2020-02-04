@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.ParquetTimestampUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -48,6 +49,7 @@ import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.LogicalTypeAnnotation.DecimalLogicalTypeAnnotation;
 import org.apache.parquet.schema.LogicalTypeAnnotation.LogicalTypeAnnotationVisitor;
 import org.apache.parquet.schema.LogicalTypeAnnotation.StringLogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.TimestampLogicalTypeAnnotation;
 import org.apache.parquet.schema.LogicalTypeAnnotation.DateLogicalTypeAnnotation;
 import org.apache.parquet.schema.PrimitiveType;
 
@@ -683,6 +685,21 @@ public enum ETypeConverter {
       };
     }
   },
+  EINT64_TIMESTAMP_CONVERTER(TimestampWritableV2.class) {
+    @Override
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent,
+        TypeInfo hiveTypeInfo) {
+      return new PrimitiveConverter() {
+        @Override
+        public void addLong(final long value) {
+          TimestampLogicalTypeAnnotation logicalType = (TimestampLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+          Timestamp timestamp =
+              ParquetTimestampUtils.getTimestamp(value, logicalType.getUnit(), logicalType.isAdjustedToUTC());
+          parent.set(index, new TimestampWritableV2(timestamp));
+        }
+      };
+    }
+  },
   EDATE_CONVERTER(DateWritableV2.class) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
@@ -729,6 +746,11 @@ public enum ETypeConverter {
             @Override
             public Optional<PrimitiveConverter> visit(DateLogicalTypeAnnotation logicalTypeAnnotation) {
               return Optional.of(EDATE_CONVERTER.getConverter(type, index, parent, hiveTypeInfo));
+            }
+
+            @Override
+            public Optional<PrimitiveConverter> visit(TimestampLogicalTypeAnnotation logicalTypeAnnotation) {
+              return Optional.of(EINT64_TIMESTAMP_CONVERTER.getConverter(type, index, parent, hiveTypeInfo));
             }
           });
 
