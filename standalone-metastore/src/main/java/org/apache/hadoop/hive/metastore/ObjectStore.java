@@ -9976,8 +9976,10 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void debugLog(String message) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("{} {}", message, getCallStack());
+    if (LOG.isTraceEnabled()) {
+      LOG.debug("{}", message, new Exception("Debug Dump Stack Trace (Not an Exception)"));
+    } else {
+      LOG.debug("{}", message);
     }
   }
 
