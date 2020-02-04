@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.schq;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -144,6 +146,23 @@ public class TestScheduledQueryStatements {
       Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("alter1", "hive"));
       assertTrue(sq.isPresent());
       assertEquals("user3", sq.get().toThrift().getUser());
+    }
+
+  }
+
+  @Test
+  public void testExecuteImmediate() throws ParseException, Exception {
+    IDriver driver = createDriver();
+
+    driver.run("set role admin");
+    driver.run("create scheduled query immed cron '0 0 * * * ? *' as select 1");
+    //    driver.run("alter scheduled query immed execute");
+
+    try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
+      Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("immed", "hive"));
+      assertTrue(sq.isPresent());
+      int now = (int) (System.currentTimeMillis() / 1000);
+      assertThat(sq.get().getNextExecution(), Matchers.lessThanOrEqualTo(now));
     }
 
   }
