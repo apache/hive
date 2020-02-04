@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -41,6 +42,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class ScheduledQueryExecutionService implements Closeable {
+
+  static AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
 
   private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryExecutionService.class);
 
@@ -83,10 +86,21 @@ public class ScheduledQueryExecutionService implements Closeable {
           }
         } else {
           try {
-            Thread.sleep(context.getIdleSleepTime());
+            sleep(context.getIdleSleepTime());
           } catch (InterruptedException e) {
             LOG.warn("interrupt discarded");
           }
+        }
+      }
+    }
+
+    private void sleep(long idleSleepTime) throws InterruptedException {
+      long checkIntrvalMs = 1000;
+      int origResets = forcedScheduleCheckCounter.get();
+      for (long i = 0; i < idleSleepTime; i += checkIntrvalMs) {
+        Thread.sleep(checkIntrvalMs);
+        if (forcedScheduleCheckCounter.get() != origResets) {
+          return;
         }
       }
     }
@@ -180,8 +194,14 @@ public class ScheduledQueryExecutionService implements Closeable {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
-
-
   }
 
+  public static void forceScheduleCheck() {
+    forcedScheduleCheckCounter.incrementAndGet();
+  }
+
+  @VisibleForTesting
+  public static int getForcedScheduleCheckCount() {
+    return forcedScheduleCheckCounter.get();
+  }
 }

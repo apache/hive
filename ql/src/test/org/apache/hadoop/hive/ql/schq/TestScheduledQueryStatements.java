@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.schq;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -157,12 +158,15 @@ public class TestScheduledQueryStatements {
 
     driver.run("set role admin");
     driver.run("create scheduled query immed cron '0 0 7 * * ? *' as select 1");
+    int cnt0 = ScheduledQueryExecutionService.getForcedScheduleCheckCount();
     driver.run("alter scheduled query immed execute");
 
     try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
       Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("immed", "hive"));
       assertTrue(sq.isPresent());
       assertThat(sq.get().getNextExecution(), Matchers.lessThanOrEqualTo((int) (System.currentTimeMillis() / 1000)));
+      int cnt1 = ScheduledQueryExecutionService.getForcedScheduleCheckCount();
+      assertNotEquals(cnt1, cnt0);
     }
   }
 
