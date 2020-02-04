@@ -169,6 +169,10 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_QUERY:
       schq.setQuery(unparseTree(node.getChild(0)));
       return;
+    case HiveParser.TOK_EXECUTE:
+      int now = (int) (System.currentTimeMillis() / 1000);
+      schq.setNextExecution(now);
+      return;
     default:
       throw new SemanticException("Unexpected token: " + node.getType());
     }

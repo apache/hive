@@ -156,7 +156,7 @@ public class TestScheduledQueryStatements {
 
     driver.run("set role admin");
     driver.run("create scheduled query immed cron '0 0 * * * ? *' as select 1");
-    //    driver.run("alter scheduled query immed execute");
+    driver.run("alter scheduled query immed execute");
 
     try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
       Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("immed", "hive"));
