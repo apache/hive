@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.time.ZoneId;
+
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.io.parquet.convert.ETypeConverter.BinaryConverter;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
@@ -43,6 +45,8 @@ import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.PrimitiveConverter;
 import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.TimeUnit;
+import org.apache.parquet.schema.LogicalTypeAnnotation.TimestampLogicalTypeAnnotation;
 import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type.Repetition;
@@ -111,6 +115,69 @@ public class TestETypeConverter {
     PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.INT96).named("value");
     Writable writable = getWritableFromBinaryConverter(null, primitiveType, nanoTime.toBinary());
     TimestampWritableV2 timestampWritable = (TimestampWritableV2) writable;
+    assertEquals(timestamp.getNanos(), timestampWritable.getNanos());
+  }
+
+  @Test
+  public void testGetTimestampProlepticConverter() throws Exception {
+    Timestamp timestamp = Timestamp.valueOf("1572-06-15 15:12:20.0");
+    NanoTime nanoTime = NanoTimeUtils.getNanoTime(timestamp, true);
+    PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.INT96).named("value");
+    Writable writable = getWritableFromBinaryConverter(null, primitiveType, nanoTime.toBinary());
+    TimestampWritableV2 timestampWritable = (TimestampWritableV2) writable;
+    assertEquals(timestamp.getNanos(), timestampWritable.getNanos());
+  }
+
+  @Test
+  public void testGetInt64MillisTimestampConverter() throws Exception {
+    Timestamp timestamp = Timestamp.valueOf("2018-07-15 15:12:20.112");
+    PrimitiveType primitiveType = createInt64TimestampType(false, TimeUnit.MILLIS);
+    Writable writable = getWritableFromPrimitiveConverter(null, primitiveType, timestamp.toEpochMilli());
+    TimestampWritableV2 timestampWritable = (TimestampWritableV2) writable;
+    assertEquals(timestamp.toEpochMilli(), timestampWritable.getTimestamp().toEpochMilli());
+  }
+
+  @Test
+  public void testGetInt64MillisTimestampProlepticConverter() throws Exception {
+    Timestamp timestamp = Timestamp.valueOf("1572-07-15 15:12:20.112");
+    PrimitiveType primitiveType = createInt64TimestampType(false, TimeUnit.MILLIS);
+    Writable writable = getWritableFromPrimitiveConverter(null, primitiveType, timestamp.toEpochMilli());
+    TimestampWritableV2 timestampWritable = (TimestampWritableV2) writable;
+    assertEquals(timestamp.toEpochMilli(), timestampWritable.getTimestamp().toEpochMilli());
+  }
+
+  @Test
+  public void testGetInt64MicrosTimestampConverter() throws Exception {
+    Timestamp timestamp = Timestamp.valueOf("2018-07-15 15:12:20.112233");
+    PrimitiveType primitiveType = createInt64TimestampType(false, TimeUnit.MICROS);
+    long time = timestamp.toEpochSecond() * 1000000 + timestamp.getNanos() / 1000;
+    Writable writable = getWritableFromPrimitiveConverter(null, primitiveType, time);
+    TimestampWritableV2 timestampWritable = (TimestampWritableV2) writable;
+    assertEquals(timestamp.toEpochMilli(), timestampWritable.getTimestamp().toEpochMilli());
+    assertEquals(timestamp.getNanos(), timestampWritable.getNanos());
+  }
+
+  @Test
+  public void testGetInt64NanosTimestampConverter() throws Exception {
+    Timestamp timestamp = Timestamp.valueOf("2018-07-15 15:12:20.11223344");
+    PrimitiveType primitiveType = createInt64TimestampType(false, TimeUnit.NANOS);
+    long time = timestamp.toEpochSecond() * 1000000000 + timestamp.getNanos();
+    Writable writable = getWritableFromPrimitiveConverter(null, primitiveType, time);
+    TimestampWritableV2 timestampWritable = (TimestampWritableV2) writable;
+    assertEquals(timestamp.toEpochMilli(), timestampWritable.getTimestamp().toEpochMilli());
+    assertEquals(timestamp.getNanos(), timestampWritable.getNanos());
+  }
+
+  @Test
+  public void testGetInt64NanosAdjustedToUTCTimestampConverter() throws Exception {
+    ZoneId zone = ZoneId.systemDefault();
+    Timestamp timestamp = Timestamp.valueOf("2018-07-15 15:12:20.11223344");
+    PrimitiveType primitiveType = createInt64TimestampType(true, TimeUnit.NANOS);
+    long time = timestamp.toEpochSecond() * 1000000000 + timestamp.getNanos();
+    Writable writable = getWritableFromPrimitiveConverter(null, primitiveType, time);
+    TimestampWritableV2 timestampWritable = (TimestampWritableV2) writable;
+    timestamp = Timestamp.ofEpochSecond(timestamp.toEpochSecond(), timestamp.getNanos(), zone);
+    assertEquals(timestamp.toEpochMilli(), timestampWritable.getTimestamp().toEpochMilli());
     assertEquals(timestamp.getNanos(), timestampWritable.getNanos());
   }
 
@@ -292,9 +359,23 @@ public class TestETypeConverter {
     return converterParent.getValue();
   }
 
+  private Writable getWritableFromPrimitiveConverter(TypeInfo hiveTypeInfo, PrimitiveType primitiveType,
+      Long valueToAdd) {
+    MyConverterParent converterParent = new MyConverterParent();
+    PrimitiveConverter converter = ETypeConverter.getNewConverter(primitiveType, 1, converterParent, hiveTypeInfo);
+    ((PrimitiveConverter) converter).addLong(valueToAdd);
+    return converterParent.getValue();
+  }
+
   private PrimitiveTypeInfo createHiveTypeInfo(String typeName) {
     PrimitiveTypeInfo hiveTypeInfo = new PrimitiveTypeInfo();
     hiveTypeInfo.setTypeName(typeName);
     return hiveTypeInfo;
+  }
+
+  private PrimitiveType createInt64TimestampType(boolean isAdjustedToUTC, TimeUnit unit) {
+    TimestampLogicalTypeAnnotation logicalType = TimestampLogicalTypeAnnotation.timestampType(isAdjustedToUTC, unit);
+    PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.INT64).as(logicalType).named("value");
+    return primitiveType;
   }
 }
