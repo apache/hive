@@ -138,7 +138,7 @@ public class TestScheduledQueryStatements {
     IDriver driver = createDriver();
 
     driver.run("set role admin");
-    driver.run("create scheduled query alter1 cron '* * * * * ? *' as select 1 from tu");
+    driver.run("create scheduled query alter1 cron '0 0 7 * * ? *' as select 1 from tu");
     driver.run("alter scheduled query alter1 executed as 'user3'");
     driver.run("alter scheduled query alter1 defined as select 22 from tu");
 
@@ -146,6 +146,7 @@ public class TestScheduledQueryStatements {
       Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("alter1", "hive"));
       assertTrue(sq.isPresent());
       assertEquals("user3", sq.get().toThrift().getUser());
+      assertThat(sq.get().getNextExecution(), Matchers.greaterThan((int) (System.currentTimeMillis() / 1000)));
     }
 
   }
@@ -155,16 +156,14 @@ public class TestScheduledQueryStatements {
     IDriver driver = createDriver();
 
     driver.run("set role admin");
-    driver.run("create scheduled query immed cron '0 0 * * * ? *' as select 1");
+    driver.run("create scheduled query immed cron '0 0 7 * * ? *' as select 1");
     driver.run("alter scheduled query immed execute");
 
     try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
       Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("immed", "hive"));
       assertTrue(sq.isPresent());
-      int now = (int) (System.currentTimeMillis() / 1000);
-      assertThat(sq.get().getNextExecution(), Matchers.lessThanOrEqualTo(now));
+      assertThat(sq.get().getNextExecution(), Matchers.lessThanOrEqualTo((int) (System.currentTimeMillis() / 1000)));
     }
-
   }
 
   @Test

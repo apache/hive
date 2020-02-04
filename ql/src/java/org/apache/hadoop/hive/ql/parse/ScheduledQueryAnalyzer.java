@@ -77,6 +77,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
           // in case the user will change; we have to run an authorization check beforehand
           checkAuthorization(type, schqStored);
         }
+        // clear the next execution time
+        schqStored.setNextExecutionIsSet(false);
         return composeOverlayObject(schqChanges, schqStored);
       } catch (TException e) {
         throw new SemanticException("unable to get Scheduled query" + e);

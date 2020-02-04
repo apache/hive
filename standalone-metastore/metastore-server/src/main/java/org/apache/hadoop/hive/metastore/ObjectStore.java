@@ -12852,7 +12852,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MScheduledQuery persisted = existing.get();
       persisted.doUpdate(schq);
-      if (schq.getNextExecution() == null) {
+      if (!scheduledQuery.isSetNextExecution()) {
         Integer nextExecutionTime = computeNextExecutionTime(schq.getSchedule());
         if (nextExecutionTime == null) {
           throw new InvalidInputException("Invalid schedule: " + schq.getSchedule());
