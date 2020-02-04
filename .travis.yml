@@ -16,6 +16,10 @@
 
 # https://docs.travis-ci.com/user/ci-environment/
 # trusty - 7.5GB memory and 2 cores
+arch:
+  - arm64
+  - amd64
+
 sudo: required
 dist: trusty
 
@@ -38,6 +42,10 @@ env:
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:
+  - if [ "$(uname -m)" == aarch64 ]; then
+     sudo apt-get -y install openjdk-8-jdk && export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64;
+   fi 
+ 
   - sed -i.bak -e 's|https://nexus.codehaus.org/snapshots/|https://oss.sonatype.org/content/repositories/codehaus-snapshots/|g' ~/.m2/settings.xml
 
 
