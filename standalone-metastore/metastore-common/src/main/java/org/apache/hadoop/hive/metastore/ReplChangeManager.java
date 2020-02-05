@@ -582,4 +582,12 @@ public class ReplChangeManager {
     instance = null;
     encryptionZones.clear();
   }
+
+  public static final PathFilter CMROOT_PATH_FILTER = new PathFilter() {
+    @Override
+    public boolean accept(Path p) {
+      String name = p.getName();
+      return !name.contains(".cmroot") && !name.contains(cmRootDir) && !name.contains(encryptedCmRootDir);
+    }
+  };
 }

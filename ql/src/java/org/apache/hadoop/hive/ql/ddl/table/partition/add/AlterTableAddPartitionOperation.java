@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.partition.add;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -82,6 +83,14 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
       Partition partition = convertPartitionSpecToMetaPartition(table, partitionDesc);
       if (partition != null && writeId > 0) {
         partition.setWriteId(writeId);
+        try {
+          if (partition.getSd().getLocation() != null
+                  && DDLUtils.isEncryptionZoneRoot(new Path(partition.getSd().getLocation()), context.getConf())) {
+            throw new HiveException("Partition Location cannot be set to encryption zone root dir");
+          }
+        } catch (IOException e) {
+          throw new HiveException(e);
+        }
       }
       partitions.add(partition);
     }

@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.partition.exchange;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -47,6 +49,14 @@ public class AlterTableExchangePartitionsOperation extends DDLOperation<AlterTab
     List<Partition> partitions = context.getDb().exchangeTablePartitions(partitionSpecs, sourceTable.getDbName(),
         sourceTable.getTableName(), destTable.getDbName(), destTable.getTableName());
     for (Partition partition : partitions) {
+      try {
+        if (partition.getLocation() != null
+                && DDLUtils.isEncryptionZoneRoot(new Path(partition.getLocation()), context.getConf())) {
+          throw new HiveException("Partition Location cannot be set to encryption zone root dir");
+        }
+      } catch (IOException e) {
+        throw new HiveException(e);
+      }
       // Reuse the partition specs from dest partition since they should be the same
       context.getWork().getInputs().add(new ReadEntity(new Partition(sourceTable, partition.getSpec(), null)));
 

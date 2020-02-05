@@ -2841,7 +2841,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
       if (tablePath != null) {
         try {
-          wh.deleteDir(tablePath, true, ifPurge, shouldEnableCm);
+          //Don't delete cmdir if its inside the table path
+          FileStatus[] statuses = tablePath.getFileSystem(conf).listStatus(tablePath,
+                  ReplChangeManager.CMROOT_PATH_FILTER);
+          for (final FileStatus status : statuses) {
+            wh.deleteDir(status.getPath(), true, ifPurge, shouldEnableCm);
+          }
         } catch (Exception e) {
           LOG.error("Failed to delete table directory: " + tablePath +
                   " " + e.getMessage());
@@ -2881,7 +2886,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (partPaths != null && !partPaths.isEmpty()) {
         for (Path partPath : partPaths) {
           try {
-            wh.deleteDir(partPath, true, ifPurge, shouldEnableCm);
+            //Don't delete cmdir if its inside the partition path
+            FileStatus[] statuses = partPath.getFileSystem(conf).listStatus(partPath,
+                    ReplChangeManager.CMROOT_PATH_FILTER);
+            for (final FileStatus status : statuses) {
+              wh.deleteDir(status.getPath(), true, ifPurge, shouldEnableCm);
+            }
           } catch (Exception e) {
             LOG.error("Failed to delete partition directory: " + partPath +
                 " " + e.getMessage());

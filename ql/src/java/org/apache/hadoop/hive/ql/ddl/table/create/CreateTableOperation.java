@@ -59,6 +59,14 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
     LOG.debug("creating table {} on {}", tbl.getFullyQualifiedName(), tbl.getDataLocation());
 
     boolean replDataLocationChanged = false;
+    try {
+      if (tbl.getSd().getLocation() != null
+              && DDLUtils.isEncryptionZoneRoot(new Path(tbl.getSd().getLocation()), context.getConf())) {
+        throw new HiveException("Table Location cannot be set to encryption zone root dir");
+      }
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
     if (desc.getReplicationSpec().isInReplicationScope()) {
       // If in replication scope, we should check if the object we're looking at exists, and if so,
       // trigger replace-mode semantics.
