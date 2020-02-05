@@ -66,6 +66,7 @@ import org.apache.thrift.TException;
 public class SQLAuthorizationUtils {
 
   private static final String[] SUPPORTED_PRIVS = { "INSERT", "UPDATE", "DELETE", "SELECT" };
+  private static final String ALL = "ALL";
   private static final Set<String> SUPPORTED_PRIVS_SET = new HashSet<String>(
       Arrays.asList(SUPPORTED_PRIVS));
   public static final Logger LOG = LoggerFactory.getLogger(SQLAuthorizationUtils.class);
@@ -349,8 +350,17 @@ public class SQLAuthorizationUtils {
     }
     for (Map.Entry<String, List<PrivilegeGrantInfo>> userPriv : availPrivs.entrySet()) {
       List<PrivilegeGrantInfo> userPrivGInfos = userPriv.getValue();
-      for (PrivilegeGrantInfo userPrivGInfo : userPrivGInfos) {
-        reqPrivs.addPrivilege(userPrivGInfo.getPrivilege(), userPrivGInfo.isGrantOption());
+      if (userPrivGInfos != null) {
+        for (PrivilegeGrantInfo userPrivGInfo : userPrivGInfos) {
+          if (userPrivGInfo.getPrivilege().toUpperCase(Locale.US).equals(ALL)) {
+            // expand to all supported privileges
+            for (SQLPrivilegeType privType : SQLPrivilegeType.values()) {
+              reqPrivs.addPrivilege(privType.name(), true);
+            }
+          } else {
+            reqPrivs.addPrivilege(userPrivGInfo.getPrivilege(), userPrivGInfo.isGrantOption());
+          }
+        }
       }
     }
   }

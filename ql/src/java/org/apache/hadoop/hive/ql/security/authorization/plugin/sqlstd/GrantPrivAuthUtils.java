@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
@@ -34,6 +35,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
  * Utility class to authorize grant/revoke privileges
  */
 public class GrantPrivAuthUtils {
+
+  private static final String ALL = "ALL";
 
   static void authorize(List<HivePrincipal> hivePrincipals, List<HivePrivilege> hivePrivileges,
       HivePrivilegeObject hivePrivObject, boolean grantOption, IMetaStoreClient metastoreClient,
@@ -75,8 +78,17 @@ public class GrantPrivAuthUtils {
   private static RequiredPrivileges getGrantRequiredPrivileges(List<HivePrivilege> hivePrivileges)
       throws HiveAuthzPluginException {
     RequiredPrivileges reqPrivs = new RequiredPrivileges();
-    for (HivePrivilege hivePriv : hivePrivileges) {
-      reqPrivs.addPrivilege(hivePriv.getName(), true /* grant priv required */);
+    if (hivePrivileges != null) {
+      for (HivePrivilege hivePriv : hivePrivileges) {
+        if (hivePriv.getName().equals(ALL)) {
+          // expand to all supported privileges
+          for (SQLPrivilegeType privType : SQLPrivilegeType.values()) {
+            reqPrivs.addPrivilege(privType.name(), true);
+          }
+        } else {
+          reqPrivs.addPrivilege(hivePriv.getName(), true /* grant priv required */);
+        }
+      }
     }
     return reqPrivs;
   }
