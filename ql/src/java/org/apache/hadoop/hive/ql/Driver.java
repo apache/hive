@@ -18,14 +18,10 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.DataInput;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -53,26 +49,18 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
-import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
-import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.TaskResult;
-import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
-import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
-import org.apache.hadoop.hive.ql.hooks.HookContext;
-import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lock.CompileLock;
 import org.apache.hadoop.hive.ql.lock.CompileLockFactory;
@@ -82,7 +70,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
@@ -102,7 +89,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.common.util.TxnIdUtils;
@@ -111,7 +97,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 
 public class Driver implements IDriver {
 
@@ -124,14 +109,10 @@ public class Driver implements IDriver {
   private int maxRows = 100;
   private ByteStream.Output bos = new ByteStream.Output();
 
-  private DataInput resStream;
   private Context context;
   private final DriverContext driverContext;
   private TaskQueue taskQueue;
   private final List<HiveLock> hiveLocks = new ArrayList<HiveLock>();
-
-  // HS2 operation handle guid string
-  private String operationId;
 
   private DriverState driverState = new DriverState();
 
@@ -945,7 +926,9 @@ public class Driver implements IDriver {
       }
 
       try {
-        execute();
+        taskQueue = new TaskQueue(context); // for canceling the query (should be bound to session?)
+        Executor executor = new Executor(context, driverContext, driverState, taskQueue);
+        executor.execute();
       } catch (CommandProcessorException cpe) {
         rollback(cpe);
         throw cpe;
@@ -1081,535 +1064,6 @@ public class Driver implements IDriver {
     return false;
   }
 
-  private void useFetchFromCache(CacheEntry cacheEntry) {
-    // Change query FetchTask to use new location specified in results cache.
-    FetchTask fetchTaskFromCache = (FetchTask) TaskFactory.get(cacheEntry.getFetchWork());
-    fetchTaskFromCache.initialize(driverContext.getQueryState(), driverContext.getPlan(), null, context);
-    driverContext.getPlan().setFetchTask(fetchTaskFromCache);
-    driverContext.setCacheUsage(new CacheUsage(CacheUsage.CacheStatus.QUERY_USING_CACHE, cacheEntry));
-  }
-
-  private void preExecutionCacheActions() throws Exception {
-    if (driverContext.getCacheUsage() != null) {
-      if (driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
-          driverContext.getPlan().getFetchTask() != null) {
-        ValidTxnWriteIdList txnWriteIdList = null;
-        if (driverContext.getPlan().hasAcidResourcesInQuery()) {
-          txnWriteIdList = AcidUtils.getValidTxnWriteIdList(driverContext.getConf());
-        }
-        // The results of this query execution might be cacheable.
-        // Add a placeholder entry in the cache so other queries know this result is pending.
-        CacheEntry pendingCacheEntry =
-            QueryResultsCache.getInstance().addToCache(driverContext.getCacheUsage().getQueryInfo(), txnWriteIdList);
-        if (pendingCacheEntry != null) {
-          // Update cacheUsage to reference the pending entry.
-          this.driverContext.getCacheUsage().setCacheEntry(pendingCacheEntry);
-        }
-      }
-    }
-  }
-
-  private void postExecutionCacheActions() throws Exception {
-    if (driverContext.getCacheUsage() != null) {
-      if (driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.QUERY_USING_CACHE) {
-        // Using a previously cached result.
-        CacheEntry cacheEntry = driverContext.getCacheUsage().getCacheEntry();
-
-        // Reader count already incremented during cache lookup.
-        // Save to usedCacheEntry to ensure reader is released after query.
-        driverContext.setUsedCacheEntry(cacheEntry);
-      } else if (driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
-          driverContext.getCacheUsage().getCacheEntry() != null &&
-          driverContext.getPlan().getFetchTask() != null) {
-        // Save results to the cache for future queries to use.
-        PerfLogger perfLogger = SessionState.getPerfLogger();
-        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
-
-        ValidTxnWriteIdList txnWriteIdList = null;
-        if (driverContext.getPlan().hasAcidResourcesInQuery()) {
-          txnWriteIdList = AcidUtils.getValidTxnWriteIdList(driverContext.getConf());
-        }
-        CacheEntry cacheEntry = driverContext.getCacheUsage().getCacheEntry();
-        boolean savedToCache = QueryResultsCache.getInstance().setEntryValid(
-            cacheEntry,
-            driverContext.getPlan().getFetchTask().getWork());
-        LOG.info("savedToCache: {} ({})", savedToCache, cacheEntry);
-        if (savedToCache) {
-          useFetchFromCache(driverContext.getCacheUsage().getCacheEntry());
-          // setEntryValid() already increments the reader count. Set usedCacheEntry so it gets released.
-          driverContext.setUsedCacheEntry(driverContext.getCacheUsage().getCacheEntry());
-        }
-
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
-      }
-    }
-  }
-
-  private void execute() throws CommandProcessorException {
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
-
-    boolean noName = Strings.isNullOrEmpty(driverContext.getConf().get(MRJobConfig.JOB_NAME));
-
-    int maxlen;
-    if ("spark".equals(driverContext.getConf().getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
-      maxlen = driverContext.getConf().getIntVar(HiveConf.ConfVars.HIVESPARKJOBNAMELENGTH);
-    } else {
-      maxlen = driverContext.getConf().getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
-    }
-    Metrics metrics = MetricsFactory.getInstance();
-
-    String queryId = driverContext.getPlan().getQueryId();
-    // Get the query string from the conf file as the compileInternal() method might
-    // hide sensitive information during query redaction.
-    String queryStr = driverContext.getConf().getQueryString();
-
-    driverState.lock();
-    try {
-      // if query is not in compiled state, or executing state which is carried over from
-      // a combined compile/execute in runInternal, throws the error
-      if (!driverState.isCompiled() && !driverState.isExecuting()) {
-        String errorMessage = "FAILED: unexpected driverstate: " + driverState + ", for query " + queryStr;
-        CONSOLE.printError(errorMessage);
-        throw DriverUtils.createProcessorException(driverContext, 1000, errorMessage, "HY008", null);
-      } else {
-        driverState.executing();
-      }
-    } finally {
-      driverState.unlock();
-    }
-
-    HookContext hookContext = null;
-
-    // Whether there's any error occurred during query execution. Used for query lifetime hook.
-    boolean executionError = false;
-
-    try {
-      LOG.info("Executing command(queryId=" + queryId + "): " + queryStr);
-      // compile and execute can get called from different threads in case of HS2
-      // so clear timing in this thread's Hive object before proceeding.
-      Hive.get().clearMetaCallTiming();
-
-      driverContext.getPlan().setStarted();
-
-      if (SessionState.get() != null) {
-        SessionState.get().getHiveHistory().startQuery(queryStr, queryId);
-        SessionState.get().getHiveHistory().logPlanProgress(driverContext.getPlan());
-      }
-      resStream = null;
-
-      SessionState ss = SessionState.get();
-
-      // TODO: should this use getUserFromAuthenticator?
-      hookContext = new PrivateHookContext(driverContext.getPlan(), driverContext.getQueryState(),
-          context.getPathToCS(), SessionState.get().getUserName(), ss.getUserIpAddress(),
-          InetAddress.getLocalHost().getHostAddress(), operationId, ss.getSessionId(), Thread.currentThread().getName(),
-          ss.isHiveServerQuery(), perfLogger, driverContext.getQueryInfo(), context);
-      hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
-
-      driverContext.getHookRunner().runPreHooks(hookContext);
-
-      // Trigger query hooks before query execution.
-      driverContext.getHookRunner().runBeforeExecutionHook(queryStr, hookContext);
-
-      setQueryDisplays(driverContext.getPlan().getRootTasks());
-      int mrJobs = Utilities.getMRTasks(driverContext.getPlan().getRootTasks()).size();
-      int jobs = mrJobs + Utilities.getTezTasks(driverContext.getPlan().getRootTasks()).size()
-          + Utilities.getSparkTasks(driverContext.getPlan().getRootTasks()).size();
-      if (jobs > 0) {
-        logMrWarning(mrJobs);
-        CONSOLE.printInfo("Query ID = " + queryId);
-        CONSOLE.printInfo("Total jobs = " + jobs);
-      }
-      if (SessionState.get() != null) {
-        SessionState.get().getHiveHistory().setQueryProperty(queryId, Keys.QUERY_NUM_TASKS,
-            String.valueOf(jobs));
-        SessionState.get().getHiveHistory().setIdToTableMap(driverContext.getPlan().getIdToTableNameMap());
-      }
-      String jobname = Utilities.abbreviate(queryStr, maxlen - 6);
-
-      // A runtime that launches runnable tasks as separate Threads through
-      // TaskRunners
-      // As soon as a task isRunnable, it is put in a queue
-      // At any time, at most maxthreads tasks can be running
-      // The main thread polls the TaskRunners to check if they have finished.
-
-      DriverUtils.checkInterrupted(driverState, driverContext, "before running tasks.", hookContext, perfLogger);
-
-      taskQueue = new TaskQueue(context); // for canceling the query (should be bound to session?)
-      taskQueue.prepare(driverContext.getPlan());
-
-      context.setHDFSCleanup(true);
-
-      SessionState.get().setMapRedStats(new LinkedHashMap<>());
-      SessionState.get().setStackTraces(new HashMap<>());
-      SessionState.get().setLocalMapRedErrors(new HashMap<>());
-
-      // Add root Tasks to runnable
-      for (Task<?> tsk : driverContext.getPlan().getRootTasks()) {
-        // This should never happen, if it does, it's a bug with the potential to produce
-        // incorrect results.
-        assert tsk.getParentTasks() == null || tsk.getParentTasks().isEmpty();
-        taskQueue.addToRunnable(tsk);
-
-        if (metrics != null) {
-          tsk.updateTaskMetrics(metrics);
-        }
-      }
-
-      preExecutionCacheActions();
-
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RUN_TASKS);
-      // Loop while you either have tasks running, or tasks queued up
-      while (taskQueue.isRunning()) {
-        // Launch upto maxthreads tasks
-        Task<?> task;
-        int maxthreads = HiveConf.getIntVar(driverContext.getConf(), HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
-        while ((task = taskQueue.getRunnable(maxthreads)) != null) {
-          TaskRunner runner = launchTask(task, queryId, noName, jobname, jobs, taskQueue);
-          if (!runner.isRunning()) {
-            break;
-          }
-        }
-
-        // poll the Tasks to see which one completed
-        TaskRunner tskRun = taskQueue.pollFinished();
-        if (tskRun == null) {
-          continue;
-        }
-        /*
-          This should be removed eventually. HIVE-17814 gives more detail
-          explanation of whats happening and HIVE-17815 as to why this is done.
-          Briefly for replication the graph is huge and so memory pressure is going to be huge if
-          we keep a lot of references around.
-        */
-        String opName = driverContext.getPlan().getOperationName();
-        boolean isReplicationOperation = opName.equals(HiveOperation.REPLDUMP.getOperationName())
-            || opName.equals(HiveOperation.REPLLOAD.getOperationName());
-        if (!isReplicationOperation) {
-          hookContext.addCompleteTask(tskRun);
-        }
-
-        driverContext.getQueryDisplay().setTaskResult(tskRun.getTask().getId(), tskRun.getTaskResult());
-
-        Task<?> tsk = tskRun.getTask();
-        TaskResult result = tskRun.getTaskResult();
-
-        int exitVal = result.getExitVal();
-        DriverUtils.checkInterrupted(driverState, driverContext, "when checking the execution result.", hookContext,
-            perfLogger);
-
-        if (exitVal != 0) {
-          Task<?> backupTask = tsk.getAndInitBackupTask();
-          if (backupTask != null) {
-            String errorMessage = getErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
-            CONSOLE.printError(errorMessage);
-            errorMessage = "ATTEMPT: Execute BackupTask: " + backupTask.getClass().getName();
-            CONSOLE.printError(errorMessage);
-
-            // add backup task to runnable
-            if (TaskQueue.isLaunchable(backupTask)) {
-              taskQueue.addToRunnable(backupTask);
-            }
-            continue;
-
-          } else {
-            String errorMessage = getErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
-            if (taskQueue.isShutdown()) {
-              errorMessage = "FAILED: Operation cancelled. " + errorMessage;
-            }
-            DriverUtils.invokeFailureHooks(driverContext, perfLogger, hookContext,
-              errorMessage + Strings.nullToEmpty(tsk.getDiagnosticsMessage()), result.getTaskError());
-            String sqlState = "08S01";
-
-            // 08S01 (Communication error) is the default sql state.  Override the sqlstate
-            // based on the ErrorMsg set in HiveException.
-            if (result.getTaskError() instanceof HiveException) {
-              ErrorMsg errorMsg = ((HiveException) result.getTaskError()).
-                  getCanonicalErrorMsg();
-              if (errorMsg != ErrorMsg.GENERIC_ERROR) {
-                sqlState = errorMsg.getSQLState();
-              }
-            }
-
-            CONSOLE.printError(errorMessage);
-            taskQueue.shutdown();
-            // in case we decided to run everything in local mode, restore the
-            // the jobtracker setting to its initial value
-            context.restoreOriginalTracker();
-            throw DriverUtils.createProcessorException(driverContext, exitVal, errorMessage, sqlState,
-                result.getTaskError());
-          }
-        }
-
-        taskQueue.finished(tskRun);
-
-        if (SessionState.get() != null) {
-          SessionState.get().getHiveHistory().setTaskProperty(queryId, tsk.getId(),
-              Keys.TASK_RET_CODE, String.valueOf(exitVal));
-          SessionState.get().getHiveHistory().endTask(queryId, tsk);
-        }
-
-        if (tsk.getChildTasks() != null) {
-          for (Task<?> child : tsk.getChildTasks()) {
-            if (TaskQueue.isLaunchable(child)) {
-              taskQueue.addToRunnable(child);
-            }
-          }
-        }
-      }
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RUN_TASKS);
-
-      postExecutionCacheActions();
-
-      // in case we decided to run everything in local mode, restore the
-      // the jobtracker setting to its initial value
-      context.restoreOriginalTracker();
-
-      if (taskQueue.isShutdown()) {
-        String errorMessage = "FAILED: Operation cancelled";
-        DriverUtils.invokeFailureHooks(driverContext, perfLogger, hookContext, errorMessage, null);
-        CONSOLE.printError(errorMessage);
-        throw DriverUtils.createProcessorException(driverContext, 1000, errorMessage, "HY008", null);
-      }
-
-      // remove incomplete outputs.
-      // Some incomplete outputs may be added at the beginning, for eg: for dynamic partitions.
-      // remove them
-      HashSet<WriteEntity> remOutputs = new LinkedHashSet<WriteEntity>();
-      for (WriteEntity output : driverContext.getPlan().getOutputs()) {
-        if (!output.isComplete()) {
-          remOutputs.add(output);
-        }
-      }
-
-      for (WriteEntity output : remOutputs) {
-        driverContext.getPlan().getOutputs().remove(output);
-      }
-
-
-      hookContext.setHookType(HookContext.HookType.POST_EXEC_HOOK);
-
-      driverContext.getHookRunner().runPostExecHooks(hookContext);
-
-      if (SessionState.get() != null) {
-        SessionState.get().getHiveHistory().setQueryProperty(queryId, Keys.QUERY_RET_CODE,
-            String.valueOf(0));
-        SessionState.get().getHiveHistory().printRowCount(queryId);
-      }
-      releasePlan(driverContext.getPlan());
-    } catch (CommandProcessorException cpe) {
-      executionError = true;
-      throw cpe;
-    } catch (Throwable e) {
-      executionError = true;
-
-      DriverUtils.checkInterrupted(driverState, driverContext, "during query execution: \n" + e.getMessage(),
-          hookContext, perfLogger);
-
-      context.restoreOriginalTracker();
-      if (SessionState.get() != null) {
-        SessionState.get().getHiveHistory().setQueryProperty(queryId, Keys.QUERY_RET_CODE,
-            String.valueOf(12));
-      }
-      // TODO: do better with handling types of Exception here
-      String errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
-      if (hookContext != null) {
-        try {
-          DriverUtils.invokeFailureHooks(driverContext, perfLogger, hookContext, errorMessage, e);
-        } catch (Exception t) {
-          LOG.warn("Failed to invoke failure hook", t);
-        }
-      }
-      CONSOLE.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
-      throw DriverUtils.createProcessorException(driverContext, 12, errorMessage, "08S01", e);
-    } finally {
-      // Trigger query hooks after query completes its execution.
-      try {
-        driverContext.getHookRunner().runAfterExecutionHook(queryStr, hookContext, executionError);
-      } catch (Exception e) {
-        LOG.warn("Failed when invoking query after execution hook", e);
-      }
-
-      if (SessionState.get() != null) {
-        SessionState.get().getHiveHistory().endQuery(queryId);
-      }
-      if (noName) {
-        driverContext.getConf().set(MRJobConfig.JOB_NAME, "");
-      }
-      double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE)/1000.00;
-
-      ImmutableMap<String, Long> executionHMSTimings = Hive.dumpMetaCallTimingWithoutEx("execution");
-      driverContext.getQueryDisplay().setHmsTimings(QueryDisplay.Phase.EXECUTION, executionHMSTimings);
-
-      Map<String, MapRedStats> stats = SessionState.get().getMapRedStats();
-      if (stats != null && !stats.isEmpty()) {
-        long totalCpu = 0;
-        long numModifiedRows = 0;
-        CONSOLE.printInfo("MapReduce Jobs Launched: ");
-        for (Map.Entry<String, MapRedStats> entry : stats.entrySet()) {
-          CONSOLE.printInfo("Stage-" + entry.getKey() + ": " + entry.getValue());
-          totalCpu += entry.getValue().getCpuMSec();
-
-          if (numModifiedRows > -1) {
-            //if overflow, then numModifiedRows is set as -1. Else update numModifiedRows with the sum.
-            numModifiedRows = addWithOverflowCheck(numModifiedRows, entry.getValue().getNumModifiedRows());
-          }
-        }
-        driverContext.getQueryState().setNumModifiedRows(numModifiedRows);
-        CONSOLE.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
-      }
-      SparkSession ss = SessionState.get().getSparkSession();
-      if (ss != null) {
-        ss.onQueryCompletion(queryId);
-      }
-      driverState.lock();
-      try {
-        driverState.executionFinished(executionError);
-      } finally {
-        driverState.unlock();
-      }
-      if (driverState.isAborted()) {
-        LOG.info("Executing command(queryId=" + queryId + ") has been interrupted after " + duration + " seconds");
-      } else {
-        LOG.info("Completed executing command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
-      }
-    }
-  }
-
-  private long addWithOverflowCheck(long val1, long val2) {
-    try {
-      return Math.addExact(val1, val2);
-    } catch (ArithmeticException e) {
-      return -1;
-    }
-  }
-
-  private void releasePlan(QueryPlan plan) {
-    // Plan maybe null if Driver.close is called in another thread for the same Driver object
-    driverState.lock();
-    try {
-      if (plan != null) {
-        plan.setDone();
-        if (SessionState.get() != null) {
-          try {
-            SessionState.get().getHiveHistory().logPlanProgress(plan);
-          } catch (Exception e) {
-            // Log and ignore
-            LOG.warn("Could not log query plan progress", e);
-          }
-        }
-      }
-    } finally {
-      driverState.unlock();
-    }
-  }
-
-  private void setQueryDisplays(List<Task<?>> tasks) {
-    if (tasks != null) {
-      Set<Task<?>> visited = new HashSet<Task<?>>();
-      while (!tasks.isEmpty()) {
-        tasks = setQueryDisplays(tasks, visited);
-      }
-    }
-  }
-
-  private List<Task<?>> setQueryDisplays(
-          List<Task<?>> tasks,
-          Set<Task<?>> visited) {
-    List<Task<?>> childTasks = new ArrayList<>();
-    for (Task<?> task : tasks) {
-      if (visited.contains(task)) {
-        continue;
-      }
-      task.setQueryDisplay(driverContext.getQueryDisplay());
-      if (task.getDependentTasks() != null) {
-        childTasks.addAll(task.getDependentTasks());
-      }
-      visited.add(task);
-    }
-    return childTasks;
-  }
-
-  private void logMrWarning(int mrJobs) {
-    if (mrJobs <= 0 || !("mr".equals(HiveConf.getVar(driverContext.getConf(), ConfVars.HIVE_EXECUTION_ENGINE)))) {
-      return;
-    }
-    String warning = HiveConf.generateMrDeprecationWarning();
-    LOG.warn(warning);
-  }
-
-  private String getErrorMsgAndDetail(int exitVal, Throwable downstreamError, Task tsk) {
-    String errorMessage = "FAILED: Execution Error, return code " + exitVal + " from " + tsk.getClass().getName();
-    if (downstreamError != null) {
-      //here we assume that upstream code may have parametrized the msg from ErrorMsg
-      //so we want to keep it
-      if (downstreamError.getMessage() != null) {
-        errorMessage += ". " + downstreamError.getMessage();
-      } else {
-        errorMessage += ". " + StringUtils.stringifyException(downstreamError);
-      }
-    }
-    else {
-      ErrorMsg em = ErrorMsg.getErrorMsg(exitVal);
-      if (em != null) {
-        errorMessage += ". " +  em.getMsg();
-      }
-    }
-
-    return errorMessage;
-  }
-
-  /**
-   * Launches a new task
-   *
-   * @param tsk
-   *          task being launched
-   * @param queryId
-   *          Id of the query containing the task
-   * @param noName
-   *          whether the task has a name set
-   * @param jobname
-   *          name of the task, if it is a map-reduce job
-   * @param jobs
-   *          number of map-reduce jobs
-   * @param taskQueue
-   *          the task queue
-   */
-  private TaskRunner launchTask(Task<?> tsk, String queryId, boolean noName,
-      String jobname, int jobs, TaskQueue taskQueue) throws HiveException {
-    if (SessionState.get() != null) {
-      SessionState.get().getHiveHistory().startTask(queryId, tsk, tsk.getClass().getName());
-    }
-    if (tsk.isMapRedTask() && !(tsk instanceof ConditionalTask)) {
-      if (noName) {
-        driverContext.getConf().set(MRJobConfig.JOB_NAME, jobname + " (" + tsk.getId() + ")");
-      }
-      driverContext.getConf().set(DagUtils.MAPREDUCE_WORKFLOW_NODE_NAME, tsk.getId());
-      Utilities.setWorkflowAdjacencies(driverContext.getConf(), driverContext.getPlan());
-      taskQueue.incCurJobNo(1);
-      CONSOLE.printInfo("Launching Job " + taskQueue.getCurJobNo() + " out of " + jobs);
-    }
-    tsk.initialize(driverContext.getQueryState(), driverContext.getPlan(), taskQueue, context);
-    TaskRunner tskRun = new TaskRunner(tsk, taskQueue);
-
-    taskQueue.launching(tskRun);
-    // Launch Task
-    if (HiveConf.getBoolVar(tsk.getConf(), HiveConf.ConfVars.EXECPARALLEL) && tsk.canExecuteInParallel()) {
-      // Launch it in the parallel mode, as a separate thread only for MR tasks
-      if (LOG.isInfoEnabled()){
-        LOG.info("Starting task [" + tsk + "] in parallel");
-      }
-      tskRun.start();
-    } else {
-      if (LOG.isInfoEnabled()){
-        LOG.info("Starting task [" + tsk + "] in serial mode");
-      }
-      tskRun.runSequential();
-    }
-    return tskRun;
-  }
-
   @Override
   public boolean isFetchingTable() {
     return driverContext.getFetchTask() != null;
@@ -1635,10 +1089,10 @@ public class Driver implements IDriver {
       return driverContext.getFetchTask().fetch(res);
     }
 
-    if (resStream == null) {
-      resStream = context.getStream();
+    if (driverContext.getResStream() == null) {
+      driverContext.setResStream(context.getStream());
     }
-    if (resStream == null) {
+    if (driverContext.getResStream() == null) {
       return false;
     }
 
@@ -1646,7 +1100,7 @@ public class Driver implements IDriver {
     String row = null;
 
     while (numRows < maxRows) {
-      if (resStream == null) {
+      if (driverContext.getResStream() == null) {
         if (numRows > 0) {
           return true;
         } else {
@@ -1657,7 +1111,7 @@ public class Driver implements IDriver {
       bos.reset();
       Utilities.StreamStatus ss;
       try {
-        ss = Utilities.readColumn(resStream, bos);
+        ss = Utilities.readColumn(driverContext.getResStream(), bos);
         if (bos.getLength() > 0) {
           row = new String(bos.getData(), 0, bos.getLength(), "UTF-8");
         } else if (ss == Utilities.StreamStatus.TERMINATED) {
@@ -1675,7 +1129,7 @@ public class Driver implements IDriver {
       }
 
       if (ss == Utilities.StreamStatus.EOF) {
-        resStream = context.getStream();
+        driverContext.setResStream(context.getStream());
       }
     }
     return true;
@@ -1696,7 +1150,7 @@ public class Driver implements IDriver {
       driverContext.getFetchTask().initialize(driverContext.getQueryState(), null, null, context);
     } else {
       context.resetStream();
-      resStream = null;
+      driverContext.setResStream(null);
     }
   }
 
@@ -1756,9 +1210,9 @@ public class Driver implements IDriver {
 
   private void releaseResStream() {
     try {
-      if (resStream != null) {
-        ((FSDataInputStream) resStream).close();
-        resStream = null;
+      if (driverContext.getResStream() != null) {
+        ((FSDataInputStream) driverContext.getResStream()).close();
+        driverContext.setResStream(null);
       }
     } catch (Exception e) {
       LOG.debug(" Exception while closing the resStream ", e);
@@ -1883,11 +1337,11 @@ public class Driver implements IDriver {
 
   /**
    * Set the HS2 operation handle's guid string
-   * @param opId base64 encoded guid string
+   * @param operationId base64 encoded guid string
    */
   @Override
-  public void setOperationId(String opId) {
-    this.operationId = opId;
+  public void setOperationId(String operationId) {
+    driverContext.setOperationId(operationId);
   }
 
   @Override
