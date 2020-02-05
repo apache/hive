@@ -589,7 +589,7 @@ public class ReplChangeManager {
     @Override
     public boolean accept(Path p) {
       String name = p.getName();
-      return !name.contains(".cmroot") && !name.contains(cmRootDir) && !name.contains(encryptedCmRootDir)
+      return !name.contains(cmRootDir) && !name.contains(encryptedCmRootDir)
               && !name.contains(fallbackNonEncryptedCmRootDir);
     }
   };
