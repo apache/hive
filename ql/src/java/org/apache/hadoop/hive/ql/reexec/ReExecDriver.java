@@ -143,8 +143,8 @@ public class ReExecDriver implements IDriver {
   }
 
   @Override
-  public void setOperationId(String guid64) {
-    coreDriver.setOperationId(guid64);
+  public void setOperationId(String operationId) {
+    coreDriver.setOperationId(operationId);
   }
 
   @Override

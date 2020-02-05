@@ -45,7 +45,7 @@ public interface IDriver extends CommandProcessor {
 
   QueryDisplay getQueryDisplay();
 
-  void setOperationId(String guid64);
+  void setOperationId(String operationId);
 
   CommandProcessorResponse run() throws CommandProcessorException;
 
