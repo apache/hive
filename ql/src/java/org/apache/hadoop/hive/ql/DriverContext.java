@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.DataInput;
+
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -70,6 +72,11 @@ public class DriverContext {
 
   private Context backupContext = null;
   private boolean retrial = false;
+
+  private DataInput resStream;
+
+  // HS2 operation handle guid string
+  private String operationId;
 
   public DriverContext(QueryState queryState, QueryInfo queryInfo, HookRunner hookRunner,
       HiveTxnManager initTxnManager) {
@@ -214,5 +221,21 @@ public class DriverContext {
 
   public void setRetrial(boolean retrial) {
     this.retrial = retrial;
+  }
+
+  public DataInput getResStream() {
+    return resStream;
+  }
+
+  public void setResStream(DataInput resStream) {
+    this.resStream = resStream;
+  }
+
+  public String getOperationId() {
+    return operationId;
+  }
+
+  public void setOperationId(String operationId) {
+    this.operationId = operationId;
   }
 }
