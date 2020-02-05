@@ -1,5 +1,4 @@
 --! qt:authorizer
-
 -- Setup results cache
 set hive.compute.query.using.stats=false;
 set hive.query.results.cache.enabled=true;

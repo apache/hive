@@ -12378,8 +12378,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  boolean genResolvedParseTree(PlannerContext plannerCtx) throws SemanticException {
+  boolean genResolvedParseTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     ASTNode child = ast;
+    this.ast = ast;
     viewsExpanded = new ArrayList<String>();
     ctesExpanded = new ArrayList<String>();
 
@@ -12482,12 +12483,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  Operator genOPTree(PlannerContext plannerCtx) throws SemanticException {
-    // Parameters are not utilized when CBO is disabled.
-    return genOPTree();
-  }
-
-  Operator genOPTree() throws SemanticException {
+  Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     // fetch all the hints in qb
     List<ASTNode> hintsList = new ArrayList<>();
     getHintsFromQB(qb, hintsList);
@@ -12541,15 +12537,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("checkstyle:methodlength")
-  void analyzeInternal(final ASTNode astToAnalyze, Supplier<PlannerContext> pcf) throws SemanticException {
+  void analyzeInternal(ASTNode ast, Supplier<PlannerContext> pcf) throws SemanticException {
     LOG.info("Starting Semantic Analysis");
+    // 1. Generate Resolved Parse tree from syntax tree
     boolean needsTransform = needsTransform();
     //change the location of position alias process here
-    processPositionAlias(astToAnalyze);
+    processPositionAlias(ast);
     PlannerContext plannerCtx = pcf.get();
-    this.setAST(astToAnalyze);
-    // 1. Generate Resolved Parse tree from syntax tree
-    if (!genResolvedParseTree(plannerCtx)) {
+    if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
     }
 
@@ -12577,7 +12572,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isCacheEnabled = isResultsCacheEnabled();
     QueryResultsCache.LookupInfo lookupInfo = null;
     if (isCacheEnabled && !needsTransform && queryTypeCanUseCache()) {
-      lookupInfo = createLookupInfoForQuery(astToAnalyze);
+      lookupInfo = createLookupInfoForQuery(ast);
       if (checkResultsCache(lookupInfo, false)) {
         return;
       }
@@ -12589,13 +12584,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // If we use CBO and we may apply masking/filtering policies, we create a copy of the ast.
       // The reason is that the generation of the operator tree may modify the initial ast,
       // but if we need to parse for a second time, we would like to parse the unmodified ast.
-      astForMasking = (ASTNode) ParseDriver.adaptor.dupTree(astToAnalyze);
+      astForMasking = (ASTNode) ParseDriver.adaptor.dupTree(ast);
     } else {
-      astForMasking = astToAnalyze;
+      astForMasking = ast;
     }
 
     // 2. Gen OP Tree from resolved Parse Tree
-    Operator sinkOp = genOPTree(plannerCtx);
+    Operator sinkOp = genOPTree(ast, plannerCtx);
 
     boolean usesMasking = false;
     if (!unparseTranslator.isEnabled() &&
@@ -12610,12 +12605,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         init(true);
         //change the location of position alias process here
         processPositionAlias(rewrittenAST);
-        this.setAST(rewrittenAST);
-        genResolvedParseTree(plannerCtx);
+        genResolvedParseTree(rewrittenAST, plannerCtx);
         if (this instanceof CalcitePlanner) {
           ((CalcitePlanner) this).resetCalciteConfiguration();
         }
-        sinkOp = genOPTree(plannerCtx);
+        sinkOp = genOPTree(rewrittenAST, plannerCtx);
       }
     }
 
@@ -12623,7 +12617,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // In the case that row or column masking/filtering was required, we do not support caching.
     // TODO: Enable caching for queries with masking/filtering
     if (isCacheEnabled && needsTransform && !usesMasking && queryTypeCanUseCache()) {
-      lookupInfo = createLookupInfoForQuery(astToAnalyze);
+      lookupInfo = createLookupInfoForQuery(ast);
       if (checkResultsCache(lookupInfo, false)) {
         return;
       }
