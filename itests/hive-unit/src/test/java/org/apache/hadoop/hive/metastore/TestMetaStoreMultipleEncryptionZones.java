@@ -68,6 +68,7 @@ public class TestMetaStoreMultipleEncryptionZones {
   private static HadoopShims.HdfsEncryptionShim shimCm;
   private static String cmrootEncrypted;
   private static String jksFile = System.getProperty("java.io.tmpdir") + "/test.jks";
+  private static String cmrootFallBack;
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -85,9 +86,11 @@ public class TestMetaStoreMultipleEncryptionZones {
                     + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
 
     cmroot = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmroot";
+    cmrootFallBack = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootFallback";
     cmrootEncrypted = "cmrootEncrypted";
     hiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmroot);
     hiveConf.set(HiveConf.ConfVars.REPLCMENCRYPTEDDIR.varname, cmrootEncrypted);
+    hiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmrootFallBack);
     initReplChangeManager();
     //Create cm in encrypted zone
     shimCm = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
@@ -1363,6 +1366,8 @@ public class TestMetaStoreMultipleEncryptionZones {
 
     String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmroot";
     encryptedHiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootdirEncrypted);
+    encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmrootFallBack);
+
     //Create cm in encrypted zone
     HadoopShims.HdfsEncryptionShim shimCmEncrypted = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
     shimCmEncrypted.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db");

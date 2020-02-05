@@ -74,6 +74,7 @@ public class ReplChangeManager {
   private static final String NO_ENCRYPTION = "noEncryption";
   private static String cmRootDir;
   private static String encryptedCmRootDir;
+  private static String fallbackNonEncryptedCmRootDir;
 
   public enum RecycleType {
     MOVE,
@@ -154,6 +155,7 @@ public class ReplChangeManager {
           ReplChangeManager.conf = conf;
           cmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMDIR);
           encryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMENCRYPTEDDIR);
+          fallbackNonEncryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR);
           //Create default cm root
           Path cmroot = new Path(cmRootDir);
           createCmRoot(cmroot);
@@ -540,7 +542,7 @@ public class ReplChangeManager {
   static Path getCmRoot(Path path) throws IOException {
     Path cmroot = null;
     //Default path if hive.repl.cm dir is encrypted
-    String cmrootDir = path.getFileSystem(conf).getUri() + Path.SEPARATOR + ".cmroot";
+    String cmrootDir = fallbackNonEncryptedCmRootDir;
     String encryptionZonePath = NO_ENCRYPTION;
     if (enabled) {
       HdfsEncryptionShim pathEncryptionShim = hadoopShims.createHdfsEncryptionShim(path.getFileSystem(conf), conf);
@@ -587,7 +589,8 @@ public class ReplChangeManager {
     @Override
     public boolean accept(Path p) {
       String name = p.getName();
-      return !name.contains(".cmroot") && !name.contains(cmRootDir) && !name.contains(encryptedCmRootDir);
+      return !name.contains(".cmroot") && !name.contains(cmRootDir) && !name.contains(encryptedCmRootDir)
+              && !name.contains(fallbackNonEncryptedCmRootDir);
     }
   };
 }
