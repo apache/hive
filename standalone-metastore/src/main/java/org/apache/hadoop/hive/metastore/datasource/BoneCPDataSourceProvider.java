@@ -24,6 +24,9 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
+
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -61,14 +64,19 @@ public class BoneCPDataSourceProvider implements DataSourceProvider {
       throw new SQLException("Cannot create BoneCP configuration: ", e);
     }
     config.setJdbcUrl(driverUrl);
-    //if we are waiting for connection for a long time, something is really wrong
-    //better raise an error than hang forever
-    //see DefaultConnectionStrategy.getConnectionInternal()
+    // if we are waiting for connection for a long time, something is really wrong
+    // better raise an error than hang forever
+    // see DefaultConnectionStrategy.getConnectionInternal()
     config.setConnectionTimeoutInMs(connectionTimeout);
     config.setMaxConnectionsPerPartition(maxPoolSize);
     config.setPartitionCount(Integer.parseInt(partitionCount));
     config.setUser(user);
     config.setPassword(passwd);
+
+    if (determineDatabaseProduct(driverUrl) == MYSQL) {
+      config.setInitSQL("SET @@session.sql_mode=ANSI_QUOTES");
+    }
+
     return new BoneCPDataSource(config);
   }
 
