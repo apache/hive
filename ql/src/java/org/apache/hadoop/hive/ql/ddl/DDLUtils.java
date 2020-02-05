@@ -229,7 +229,9 @@ public final class DDLUtils {
             = hadoopShims.createHdfsEncryptionShim(
             path.getFileSystem(conf), conf);
     if (pathEncryptionShim.isPathEncrypted(path)) {
-      if (pathEncryptionShim.getEncryptionZoneForPath(path).getPath().equals(path)) {
+      Path encryptionZoneRoot = new Path(path.getFileSystem(conf).getUri()
+              + pathEncryptionShim.getEncryptionZoneForPath(path).getPath());
+      if (encryptionZoneRoot.equals(path)) {
         return true;
       }
     }
