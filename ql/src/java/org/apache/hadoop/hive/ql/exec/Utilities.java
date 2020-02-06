@@ -2412,16 +2412,39 @@ public final class Utilities {
         Path partPath = status[i].getPath();
         assert fs.getFileStatus(partPath).isDir() : "partitions " + partPath
             + " is not a directory !";
-
-        // generate a full partition specification
-        LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
-        Warehouse.makeSpecFromName(fullPartSpec, partPath);
-        fullPartSpecs.add(fullPartSpec);
+        fullPartSpecs.add(extractPartSpecFromPath(partSpec, partPath));
       }
       return fullPartSpecs;
     } catch (IOException e) {
       throw new HiveException(e);
     }
+  }
+
+  public static LinkedHashMap<String, String> extractPartSpecFromPath(
+      Map<String, String> partSpec, Path partPath) {
+    // generate a full partition specification
+    LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>();
+    Warehouse.makeSpecFromName(fullPartSpec, partPath);
+
+    // retain partSpecs only.. we believe the path is created as part-spec
+    List<String> nonPartSpecs = new ArrayList<String>();
+    for (Map.Entry<String, String> entry : fullPartSpec.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      if (!partSpec.containsKey(key)) {
+        nonPartSpecs.add(key);
+        continue;
+      }
+      String expected = partSpec.get(key);
+      if (StringUtils.isNotEmpty(expected) && !expected.equals(value)) {
+        // should not happen
+        LOG.warn("Path " + entry + " is not consistent with expected " + key + "=" + expected);
+      }
+    }
+    for (String nonPartSpec : nonPartSpecs) {
+      fullPartSpec.remove(nonPartSpec);
+    }
+    return fullPartSpec;
   }
 
   public static StatsPublisher getStatsPublisher(JobConf jc) {

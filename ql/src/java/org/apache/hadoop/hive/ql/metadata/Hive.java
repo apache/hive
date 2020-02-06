@@ -1908,8 +1908,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // and load the partition based on that
       for(final Path partPath : validPartitions) {
         // generate a full partition specification
-        final LinkedHashMap<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
-        Warehouse.makeSpecFromName(fullPartSpec, partPath);
+        final LinkedHashMap<String, String> fullPartSpec = 
+          Utilities.extractPartSpecFromPath(partSpec, partPath);        
         futures.add(pool.submit(new Callable<Void>() {
           @Override
           public Void call() throws Exception {
