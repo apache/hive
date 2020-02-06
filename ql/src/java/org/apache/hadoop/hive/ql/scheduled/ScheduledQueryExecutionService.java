@@ -45,7 +45,7 @@ public class ScheduledQueryExecutionService implements Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryExecutionService.class);
 
-  static ScheduledQueryExecutionService INSTANCE = null;
+  private static ScheduledQueryExecutionService INSTANCE = null;
 
   private ScheduledQueryExecutionContext context;
   private ScheduledQueryExecutor worker;
