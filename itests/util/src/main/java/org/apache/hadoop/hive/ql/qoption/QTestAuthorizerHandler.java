@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.qoption;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * QTest authorizer option
@@ -45,6 +46,8 @@ public class QTestAuthorizerHandler implements QTestOptionHandler {
       qt.getConf().set("hive.security.authenticator.manager",
           "org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator");
       qt.getConf().set("hive.security.authorization.enabled", "true");
+      SessionState.get().setAuthenticator(null);
+      SessionState.get().setAuthorizer(null);
     }
   }
 

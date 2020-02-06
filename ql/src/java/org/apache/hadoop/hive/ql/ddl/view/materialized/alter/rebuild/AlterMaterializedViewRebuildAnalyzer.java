@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,8 +54,14 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       return;
     }
 
-    String[] qualifiedTableName = getQualifiedTableName((ASTNode)root.getChild(0));
+    ASTNode tableTree = (ASTNode) root.getChild(0);
+    String[] qualifiedTableName = getQualifiedTableName(tableTree);
     String dbDotTable = getDotName(qualifiedTableName);
+    if (ctx.enableUnparse()) {
+      unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
+      return;
+    }
+
     ASTNode rewrittenAST = getRewrittenAST(qualifiedTableName, dbDotTable);
 
     mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;

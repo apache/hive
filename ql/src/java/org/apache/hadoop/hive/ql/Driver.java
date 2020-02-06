@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lock.CompileLock;
 import org.apache.hadoop.hive.ql.lock.CompileLockFactory;
+import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -670,7 +671,7 @@ public class Driver implements IDriver {
           // or a shared write lock
           if ((lckCmp.getType() == LockType.EXCLUSIVE ||
               lckCmp.getType() == LockType.SHARED_WRITE) &&
-              lckCmp.getTablename() != null) {
+              lckCmp.getTablename() != null && lckCmp.getDbname() != DbTxnManager.GLOBAL_LOCKS) {
             nonSharedLocks.add(
                 TableName.getDbTable(
                     lckCmp.getDbname(), lckCmp.getTablename()));

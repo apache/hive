@@ -21,7 +21,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,15 +30,15 @@ import org.apache.hadoop.hive.ql.QTestUtil;
 
 /**
  * Provides facilities to invoke {@link QTestOptionHandler}-s.
- * 
+ *
  * Enables to dispatch option arguments to a specific option handler.
- * The option invocation format is '--! qt:<optionName>:<optionArgs> 
- * 
- * Please refer to specific implementations of {@link QTestOptionHandler} for more detailed information about them. 
+ * The option invocation format is '--! qt:<optionName>:<optionArgs>
+ *
+ * Please refer to specific implementations of {@link QTestOptionHandler} for more detailed information about them.
  */
 public class QTestOptionDispatcher {
 
-  Map<String, QTestOptionHandler> handlers = new HashMap<String, QTestOptionHandler>();
+  Map<String, QTestOptionHandler> handlers = new LinkedHashMap<String, QTestOptionHandler>();
 
   public void register(String prefix, QTestOptionHandler datasetHandler) {
     if (handlers.containsKey(prefix)) {
@@ -55,7 +55,7 @@ public class QTestOptionDispatcher {
 
   public void parse(File file) {
     Pattern p = Pattern.compile(" *--! ?qt:([a-z]+):?(.*)");
-    
+
     try (BufferedReader br = new BufferedReader(new FileReader(file))) {
       for (String line = br.readLine(); line != null; line = br.readLine()) {
         String l = line.trim();

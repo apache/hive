@@ -3315,10 +3315,14 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role admin
 POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
-PREHOOK: type: QUERY
+PREHOOK: type: CREATE SCHEDULED QUERY
 POSTHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
+<<<<<<< HEAD
 POSTHOOK: type: QUERY
 >>>>>>> 7bb1d1edfcb... HIVE-22518: SQLStdHiveAuthorizerFactoryForTest doesn't work correctly for llap tests (Zoltan Haindrich reviewed by Miklos Gergely)
+=======
+POSTHOOK: type: CREATE SCHEDULED QUERY
+>>>>>>> 89cf44f7ecf... HIVE-22809: Support materialized view rebuild as a scheduled query (Zoltan Haindrich reviewed by Jesus Camacho Rodriguez)
 PREHOOK: query: use sys
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:sys
