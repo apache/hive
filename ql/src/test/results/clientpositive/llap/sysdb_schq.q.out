@@ -3,9 +3,9 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role admin
 POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
-PREHOOK: type: QUERY
+PREHOOK: type: CREATE SCHEDULED QUERY
 POSTHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: CREATE SCHEDULED QUERY
 PREHOOK: query: use sys
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:sys

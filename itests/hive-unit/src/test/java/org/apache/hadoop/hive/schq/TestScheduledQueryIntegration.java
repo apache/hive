@@ -54,6 +54,7 @@ public class TestScheduledQueryIntegration {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    envSetup.getTestCtx().hiveConf.set("hive.users.in.admin.role", "user1");
     IDriver driver = createDriver();
     dropTables(driver);
     String cmds[] = {
@@ -73,6 +74,7 @@ public class TestScheduledQueryIntegration {
   public static void afterClass() throws Exception {
     envSetup.getTestCtx().hiveConf.set("hive.test.authz.sstd.hs2.mode", "false");
     envSetup.getTestCtx().hiveConf.set("hive.security.authorization.enabled", "false");
+    envSetup.getTestCtx().hiveConf.set("hive.users.in.admin.role", "user1");
 
     IDriver driver = createDriver();
     dropTables(driver);
@@ -111,7 +113,7 @@ public class TestScheduledQueryIntegration {
         ScheduledQueryExecutionService.startScheduledQueryExecutorService(envSetup.getTestCtx().hiveConf)) {
 
       runAsUser("user1",
-          "create scheduled query s1 cron '* * * * * ? *' defined as create table tx1 as select 12 as i");
+          "create scheduled query s1 cron '* * * * * ? *' defined as create table tx1 as select 12 as i", true);
 
       Thread.sleep(20000);
 
@@ -120,7 +122,7 @@ public class TestScheduledQueryIntegration {
     // table exists - and owner is able to select from it
     runAsUser("user1", "select * from tx1");
 
-    // other user cant drop it
+    // other user can't drop it
     try {
       runAsUser("user2", "drop table tx1");
       fail("should have failed");
@@ -132,10 +134,21 @@ public class TestScheduledQueryIntegration {
     runAsUser("user1", "drop table tx1");
   }
 
+
   private CommandProcessorResponse runAsUser(String userName, String sql) throws CommandProcessorException {
+    return runAsUser(userName, sql, false);
+  }
+
+  private CommandProcessorResponse runAsUser(String userName, String sql, boolean asAdmin)
+      throws CommandProcessorException {
     HiveConf conf = envSetup.getTestCtx().hiveConf;
     conf.set("user.name", userName);
-    try(IDriver driver = createDriver()) {
+    SessionState.get().setAuthenticator(null);
+    SessionState.get().setAuthorizer(null);
+    try (IDriver driver = createDriver()) {
+      if (asAdmin) {
+        driver.run("set role admin");
+      }
       return driver.run(sql);
     }
   }
