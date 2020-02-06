@@ -43,21 +43,28 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class ScheduledQueryExecutionService implements Closeable {
 
-  static AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
-
   private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryExecutionService.class);
+
+  static ScheduledQueryExecutionService INSTANCE = null;
 
   private ScheduledQueryExecutionContext context;
   private ScheduledQueryExecutor worker;
+  private AtomicInteger forcedScheduleCheckCounter = new AtomicInteger();
 
   public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf conf0) {
-    HiveConf conf = new HiveConf(conf0);
-    MetastoreBasedScheduledQueryService qService = new MetastoreBasedScheduledQueryService(conf);
-    ExecutorService executor =
-        Executors.newCachedThreadPool(
-            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Scheduled Query Thread %d").build());
-    ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
-    return new ScheduledQueryExecutionService(ctx);
+    synchronized (ScheduledQueryExecutionService.class) {
+      if (INSTANCE != null) {
+        throw new IllegalStateException(
+            "There is already a ScheduledQueryExecutionService in service; check it and close it explicitly if neccessary");
+      }
+      HiveConf conf = new HiveConf(conf0);
+      MetastoreBasedScheduledQueryService qService = new MetastoreBasedScheduledQueryService(conf);
+      ExecutorService executor = Executors.newCachedThreadPool(
+          new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Scheduled Query Thread %d").build());
+      ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
+      INSTANCE = new ScheduledQueryExecutionService(ctx);
+      return INSTANCE;
+    }
   }
 
   public ScheduledQueryExecutionService(ScheduledQueryExecutionContext ctx) {
@@ -187,21 +194,27 @@ public class ScheduledQueryExecutionService implements Closeable {
   @VisibleForTesting
   @Override
   public void close() throws IOException {
-    context.executor.shutdown();
-    try {
-      context.executor.awaitTermination(1, TimeUnit.SECONDS);
-      context.executor.shutdownNow();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
+    synchronized (ScheduledQueryExecutionService.class) {
+      if (INSTANCE == null || INSTANCE != this) {
+        throw new IllegalStateException("The current ScheduledQueryExecutionService INSTANCE is invalid");
+      }
+      INSTANCE = null;
+      context.executor.shutdown();
+      try {
+        context.executor.awaitTermination(1, TimeUnit.SECONDS);
+        context.executor.shutdownNow();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
     }
   }
 
   public static void forceScheduleCheck() {
-    forcedScheduleCheckCounter.incrementAndGet();
+    INSTANCE.forcedScheduleCheckCounter.incrementAndGet();
   }
 
   @VisibleForTesting
   public static int getForcedScheduleCheckCount() {
-    return forcedScheduleCheckCounter.get();
+    return INSTANCE.forcedScheduleCheckCounter.get();
   }
 }
