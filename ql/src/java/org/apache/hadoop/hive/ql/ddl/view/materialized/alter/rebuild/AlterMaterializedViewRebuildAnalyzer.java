@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild;
 
+import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +56,12 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       return;
     }
 
-    TableName tableName = getQualifiedTableName((ASTNode) root.getChild(0));
+    ASTNode tableTree = (ASTNode) root.getChild(0);
+    TableName tableName = getQualifiedTableName(tableTree);
+    if (ctx.enableUnparse()) {
+      unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
+      return;
+    }
     ASTNode rewrittenAST = getRewrittenAST(tableName);
 
     mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;

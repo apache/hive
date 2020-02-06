@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintenanceWork;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
@@ -76,6 +77,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     }
     work = new ScheduledQueryMaintenanceWork(type, schq);
     rootTasks.add(TaskFactory.get(work));
+    queryState.setCommandType(toHiveOperation(type));
   }
 
   private ScheduledQuery  fillScheduledQuery(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schqChanges)
@@ -302,6 +304,19 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       return HiveOperationType.ALTER_SCHEDULED_QUERY;
     case DROP:
       return HiveOperationType.DROP_SCHEDULED_QUERY;
+    default:
+      throw new SemanticException("Unexpected type: " + type);
+    }
+  }
+
+  private HiveOperation toHiveOperation(ScheduledQueryMaintenanceRequestType type) throws SemanticException {
+    switch (type) {
+    case CREATE:
+      return HiveOperation.CREATE_SCHEDULED_QUERY;
+    case ALTER:
+      return HiveOperation.ALTER_SCHEDULED_QUERY;
+    case DROP:
+      return HiveOperation.DROP_SCHEDULED_QUERY;
     default:
       throw new SemanticException("Unexpected type: " + type);
     }

@@ -95,6 +95,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   static final private String CLASS_NAME = DbTxnManager.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  public static final String GLOBAL_LOCKS = "__GLOBAL_LOCKS";
 
   private volatile DbLockManager lockMgr = null;
   /**
@@ -449,7 +450,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       compBuilder.setExclusive();
       compBuilder.setOperationType(DataOperationType.UPDATE);
-      compBuilder.setDbName("__GLOBAL_LOCKS");
+      compBuilder.setDbName(GLOBAL_LOCKS);
       compBuilder.setTableName(lockName);
       globalLocks.add(compBuilder.build());
       LOG.debug("Adding global lock: " + lockName);
