@@ -12678,7 +12678,7 @@ public class ObjectStore implements RawStore, Configurable {
       ObjectStoreTestHook.onScheduledQueryPoll();
       commited = commitTransaction();
       ret.setScheduleKey(schq.getScheduleKey());
-      ret.setQuery(schq.getQuery());
+      ret.setQuery("/* schedule: " + schq.getScheduleName() + " */" + schq.getQuery());
       ret.setUser(schq.getUser());
       int executionId = ((IntIdentity) pm.getObjectId(execution)).getKey();
       ret.setExecutionId(executionId);
