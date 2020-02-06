@@ -210,7 +210,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cond_vector
-            Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -222,13 +222,13 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [4]
                   selectExpressions: IfExprCondExprNull(col 2:boolean, col 3:map<string,string>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(map('a':a)) -> 3:map<string,string>) -> 4:map<string,string>
-              Statistics: Num rows: 3 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 File Sink Vectorization:
                     className: VectorFileSinkOperator
                     native: false
-                Statistics: Num rows: 3 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -289,7 +289,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cond_vector
-            Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -301,13 +301,13 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [5]
                   selectExpressions: IfExprCondExprNull(col 2:boolean, col 4:map<string,map<string,string>>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(map('a':map('b':a)))(children: VectorUDFAdaptor(map('b':a)) -> 3:map<string,string>) -> 4:map<string,map<string,string>>) -> 5:map<string,map<string,string>>
-              Statistics: Num rows: 3 Data size: 1656 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 File Sink Vectorization:
                     className: VectorFileSinkOperator
                     native: false
-                Statistics: Num rows: 3 Data size: 1656 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -526,7 +526,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cond_vector
-            Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -538,13 +538,13 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [4]
                   selectExpressions: IfExprCondExprNull(col 2:boolean, col 3:array<string>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(array('a',a)) -> 3:array<string>) -> 4:array<string>
-              Statistics: Num rows: 3 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 File Sink Vectorization:
                     className: VectorFileSinkOperator
                     native: false
-                Statistics: Num rows: 3 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -605,7 +605,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cond_vector
-            Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -617,13 +617,13 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [6]
                   selectExpressions: IfExprCondExprNull(col 2:boolean, col 5:array<array<string>>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(array(array('a',a),array('b','c')))(children: VectorUDFAdaptor(array('a',a)) -> 3:array<string>, VectorUDFAdaptor(array('b','c')) -> 4:array<string>) -> 5:array<array<string>>) -> 6:array<array<string>>
-              Statistics: Num rows: 3 Data size: 19280 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 File Sink Vectorization:
                     className: VectorFileSinkOperator
                     native: false
-                Statistics: Num rows: 3 Data size: 19280 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
