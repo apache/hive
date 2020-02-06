@@ -59,14 +59,6 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
     LOG.debug("creating table {} on {}", tbl.getFullyQualifiedName(), tbl.getDataLocation());
 
     boolean replDataLocationChanged = false;
-    try {
-      if (tbl.getSd().getLocation() != null
-              && DDLUtils.isEncryptionZoneRoot(new Path(tbl.getSd().getLocation()), context.getConf())) {
-        throw new HiveException("Table Location cannot be set to encryption zone root dir");
-      }
-    } catch (IOException e) {
-      throw new HiveException(e);
-    }
     if (desc.getReplicationSpec().isInReplicationScope()) {
       // If in replication scope, we should check if the object we're looking at exists, and if so,
       // trigger replace-mode semantics.
@@ -75,7 +67,6 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
         if (desc.getReplicationSpec().allowEventReplacementInto(existingTable.getParameters())) {
           desc.setReplaceMode(true); // we replace existing table.
           ReplicationSpec.copyLastReplId(existingTable.getParameters(), tbl.getParameters());
-
           // If location of an existing managed table is changed, then need to delete the old location if exists.
           // This scenario occurs when a managed table is converted into external table at source. In this case,
           // at target, the table data would be moved to different location under base directory for external tables.

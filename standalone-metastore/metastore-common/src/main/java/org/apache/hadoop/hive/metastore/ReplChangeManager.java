@@ -588,9 +588,12 @@ public class ReplChangeManager {
   public static final PathFilter CMROOT_PATH_FILTER = new PathFilter() {
     @Override
     public boolean accept(Path p) {
-      String name = p.getName();
-      return !name.contains(cmRootDir) && !name.contains(encryptedCmRootDir)
-              && !name.contains(fallbackNonEncryptedCmRootDir);
+      if (enabled) {
+        String name = p.getName();
+        return !name.contains(cmRootDir) && !name.contains(encryptedCmRootDir)
+                && !name.contains(fallbackNonEncryptedCmRootDir);
+      }
+      return true;
     }
   };
 }
