@@ -31,6 +31,9 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
+
 /**
  * DataSourceProvider for the dbcp connection pool.
  */
@@ -98,7 +101,12 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     // This doesn't get used, but it's still necessary, see
     // https://git1-us-west.apache.org/repos/asf?p=commons-dbcp.git;a=blob;f=doc/ManualPoolingDataSourceExample.java;
     // h=f45af2b8481f030b27364e505984c0eef4f35cdb;hb=refs/heads/DBCP_1_5_x_BRANCH
-    new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
+    PoolableConnectionFactory poolableConnFactory =
+        new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
+
+    if (determineDatabaseProduct(driverUrl) == MYSQL) {
+      poolableConnFactory.setValidationQuery("SET @@session.sql_mode=ANSI_QUOTES");
+    }
 
     return new PoolingDataSource(objectPool);
   }

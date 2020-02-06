@@ -44,7 +44,7 @@
     <druid.guava.version>16.0.1</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>
     <kafka.test.version>2.0.0</kafka.test.version>
-    <slf4j.version>1.7.25</slf4j.version>
+    <slf4j.version>1.7.30</slf4j.version>
   </properties>
       <dependencies>
         <dependency>

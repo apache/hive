@@ -88,5 +88,3 @@ revoke select on table src_autho_test_n11 from role sRc_roLE;
 -- drop role
 drop role sRc_roLE;
 
-set hive.security.authorization.enabled=false;
-drop table src_autho_test_n11;

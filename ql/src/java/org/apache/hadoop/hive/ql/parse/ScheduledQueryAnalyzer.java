@@ -18,9 +18,15 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import com.cronutils.builder.CronBuilder;
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinition;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.model.field.expression.FieldExpression;
 import com.google.common.base.Objects;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
@@ -29,15 +35,22 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintenanceWork;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.common.util.TimestampParser;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.cronutils.model.field.expression.FieldExpressionFactory.always;
+import static com.cronutils.model.field.expression.FieldExpressionFactory.on;
+import static com.cronutils.model.field.expression.FieldExpressionFactory.every;
+import static com.cronutils.model.field.expression.FieldExpressionFactory.questionMark;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +77,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     }
     work = new ScheduledQueryMaintenanceWork(type, schq);
     rootTasks.add(TaskFactory.get(work));
+    queryState.setCommandType(toHiveOperation(type));
   }
 
   private ScheduledQuery  fillScheduledQuery(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schqChanges)
@@ -165,6 +179,9 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_CRON:
       schq.setSchedule(unescapeSQLString(node.getChild(0).getText()));
       return;
+    case HiveParser.TOK_SCHEDULE:
+      schq.setSchedule(interpretEveryNode(parseInteger(node.getChild(0).getChild(0), 1), node.getChild(1).getType(), parseTimeStamp(node.getChild(2))));
+      return;
     case HiveParser.TOK_EXECUTED_AS:
       schq.setUser(unescapeSQLString(node.getChild(0).getText()));
       return;
@@ -178,6 +195,82 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     default:
       throw new SemanticException("Unexpected token: " + node.getType());
     }
+  }
+
+  private String interpretEveryNode(int every, int intervalToken, Timestamp ts) throws SemanticException {
+    CronBuilder b = getDefaultCronBuilder();
+    switch (intervalToken) {
+    case HiveParser.TOK_INTERVAL_DAY_LITERAL:
+      if (every != 1) {
+        throw new SemanticException("EVERY " + every + " DAY is not supported; only EVERY DAY is supported");
+      }
+      b.withSecond(on(ts.getSeconds()));
+      b.withMinute(on(ts.getMinutes()));
+      b.withHour(on(ts.getHours()));
+      break;
+    case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
+      b.withSecond(on(ts.getSeconds()));
+      b.withMinute(on(ts.getMinutes()));
+      b.withHour(every(on0(ts.getHours()), every));
+      break;
+    case HiveParser.TOK_INTERVAL_MINUTE_LITERAL:
+      b.withSecond(on(ts.getSeconds()));
+      b.withMinute(every(on0(ts.getMinutes()), every));
+      break;
+    case HiveParser.TOK_INTERVAL_SECOND_LITERAL:
+      b.withSecond(every(on0(ts.getSeconds()), every));
+      break;
+    default:
+      throw new SemanticException("not supported schedule interval(only HOUR/MINUTE/SECOND is supported)");
+    }
+
+    return b.instance().asString();
+  }
+
+  private FieldExpression on0(int n) {
+    if (n == 0) {
+      return always();
+    } else {
+      return on(n);
+    }
+  }
+
+  private int parseInteger(Tree node, int def) {
+    if (node == null) {
+      return def;
+    } else {
+      return Integer.parseInt(node.getText());
+    }
+  }
+
+  private Timestamp parseTimeStamp(Tree offsetNode) {
+    if (offsetNode == null) {
+      return new Timestamp();
+    }
+    List<String> s = new ArrayList<>();
+    s.add(TimestampParser.ISO_8601_FORMAT_STR);
+    s.add(TimestampParser.RFC_1123_FORMAT_STR);
+    s.add("HH:mm:ss");
+    s.add("H:mm:ss");
+    s.add("HH:mm");
+
+    TimestampParser p = new TimestampParser(s);
+    return p.parseTimestamp(unescapeSQLString(offsetNode.getText()));
+  }
+
+
+  private CronBuilder getDefaultCronBuilder() {
+    CronDefinition definition = CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ);
+    CronBuilder b = CronBuilder.cron(definition)
+        .withYear(always())
+        .withDoM(always())
+        .withMonth(always())
+        .withDoW(questionMark())
+        .withHour(always())
+        .withMinute(always())
+        .withMinute(always())
+        .withSecond(always());
+    return b;
   }
 
   private void checkAuthorization(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schq)
@@ -217,6 +310,19 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       return HiveOperationType.ALTER_SCHEDULED_QUERY;
     case DROP:
       return HiveOperationType.DROP_SCHEDULED_QUERY;
+    default:
+      throw new SemanticException("Unexpected type: " + type);
+    }
+  }
+
+  private HiveOperation toHiveOperation(ScheduledQueryMaintenanceRequestType type) throws SemanticException {
+    switch (type) {
+    case CREATE:
+      return HiveOperation.CREATE_SCHEDULED_QUERY;
+    case ALTER:
+      return HiveOperation.ALTER_SCHEDULED_QUERY;
+    case DROP:
+      return HiveOperation.DROP_SCHEDULED_QUERY;
     default:
       throw new SemanticException("Unexpected type: " + type);
     }

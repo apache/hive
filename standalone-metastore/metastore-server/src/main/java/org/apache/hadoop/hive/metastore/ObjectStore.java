@@ -9682,7 +9682,11 @@ public class ObjectStore implements RawStore, Configurable {
 
   private void debugLog(final String message) {
     if (LOG.isDebugEnabled()) {
-      LOG.debug("{}", message, new Exception("Debug Dump Stack Trace (Not an Exception)"));
+      if (LOG.isTraceEnabled()) {
+        LOG.debug("{}", message, new Exception("Debug Dump Stack Trace (Not an Exception)"));
+      } else {
+        LOG.debug("{}", message);
+      }
     }
   }
 
@@ -12674,7 +12678,7 @@ public class ObjectStore implements RawStore, Configurable {
       ObjectStoreTestHook.onScheduledQueryPoll();
       commited = commitTransaction();
       ret.setScheduleKey(schq.getScheduleKey());
-      ret.setQuery(schq.getQuery());
+      ret.setQuery("/* schedule: " + schq.getScheduleName() + " */" + schq.getQuery());
       ret.setUser(schq.getUser());
       int executionId = ((IntIdentity) pm.getObjectId(execution)).getKey();
       ret.setExecutionId(executionId);
