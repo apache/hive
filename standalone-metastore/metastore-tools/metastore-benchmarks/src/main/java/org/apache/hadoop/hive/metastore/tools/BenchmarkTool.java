@@ -202,7 +202,9 @@ public class BenchmarkTool implements Runnable {
           .add("dropDatabase" + '.' + howMany,
               () -> benchmarkDropDatabase(bench, bData, howMany))
           .add("openTxns" + '.' + howMany,
-              () -> benchmarkOpenTxns(bench, bData, howMany));
+              () -> benchmarkOpenTxns(bench, bData, howMany))
+          .add("lock",
+              () -> benchmarkLocks(bench, bData, howMany));
     }
 
     if (doList) {

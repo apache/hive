@@ -20,28 +20,22 @@ package org.apache.hadoop.hive.metastore.tools;
 
 import com.google.common.base.Joiner;
 import com.google.common.net.HostAndPort;
+import org.apache.hadoop.hive.metastore.LockComponentBuilder;
+import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.thrift.TException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -380,6 +374,229 @@ public final class Util {
         partition.getSd().setLocation(location);
       }
       return partition;
+    }
+  }
+
+  /**
+   * Builder of lock requests
+   */
+  public static class LockRequestBuilder {
+    private LockRequest req;
+    private LockTrie trie;
+    private boolean userSet;
+
+    LockRequestBuilder(String agentInfo) {
+      req = new LockRequest();
+      trie = new LockTrie();
+      userSet = false;
+
+      if(agentInfo != null) {
+        req.setAgentInfo(agentInfo);
+      }
+    }
+
+    public LockRequest build() {
+      if (!userSet) {
+        throw new RuntimeException("Cannot build a lock without giving a user");
+      }
+      trie.addLocksToRequest(req);
+      try {
+        req.setHostname(InetAddress.getLocalHost().getHostName());
+      } catch (UnknownHostException e) {
+        throw new RuntimeException("Unable to determine our local host!");
+      }
+      return req;
+    }
+
+    /**
+     * Set the transaction id.
+     * @param txnid transaction id
+     * @return reference to this builder
+     */
+    public LockRequestBuilder setTransactionId(long txnid) {
+      req.setTxnid(txnid);
+      return this;
+    }
+
+    public LockRequestBuilder setUser(String user) {
+      if (user == null) user = "unknown";
+      req.setUser(user);
+      userSet = true;
+      return this;
+    }
+
+    /**
+     * Add a lock component to the lock request
+     * @param component to add
+     * @return reference to this builder
+     */
+    public LockRequestBuilder addLockComponent(LockComponent component) {
+      trie.add(component);
+      return this;
+    }
+
+    /**
+     * Add a collection with lock components to the lock request
+     * @param components to add
+     * @return reference to this builder
+     */
+    public LockRequestBuilder addLockComponents(Collection<LockComponent> components) {
+      trie.addAll(components);
+      return this;
+    }
+
+    private static class LockTrie {
+      Map<String, TableTrie> trie;
+
+      LockTrie() {
+        trie = new LinkedHashMap<>();
+      }
+
+      public void add(LockComponent comp) {
+        TableTrie tabs = trie.get(comp.getDbname());
+        if (tabs == null) {
+          tabs = new TableTrie();
+          trie.put(comp.getDbname(), tabs);
+        }
+        setTable(comp, tabs);
+      }
+
+      public void addAll(Collection<LockComponent> components) {
+        for(LockComponent component: components) {
+          add(component);
+        }
+      }
+
+      public void addLocksToRequest(LockRequest request) {
+        for (TableTrie tab : trie.values()) {
+          for (PartTrie part : tab.values()) {
+            for (LockComponent lock :  part.values()) {
+              request.addToComponent(lock);
+            }
+          }
+        }
+      }
+
+      private void setTable(LockComponent comp, TableTrie tabs) {
+        PartTrie parts = tabs.get(comp.getTablename());
+        if (parts == null) {
+          parts = new PartTrie();
+          tabs.put(comp.getTablename(), parts);
+        }
+        setPart(comp, parts);
+      }
+
+      private void setPart(LockComponent comp, PartTrie parts) {
+        LockComponent existing = parts.get(comp.getPartitionname());
+        if (existing == null) {
+          // No existing lock for this partition.
+          parts.put(comp.getPartitionname(), comp);
+        } else if (existing.getType() != LockType.EXCLUSIVE && (comp.getType() == LockType.EXCLUSIVE
+            || comp.getType() == LockType.SHARED_WRITE)) {
+          // We only need to promote if comp.type is > existing.type.  For
+          // efficiency we check if existing is exclusive (in which case we
+          // need never promote) or if comp is exclusive or shared_write (in
+          // which case we can promote even though they may both be shared
+          // write).  If comp is shared_read there's never a need to promote.
+          parts.put(comp.getPartitionname(), comp);
+        }
+      }
+    }
+
+    private static class TableTrie extends LinkedHashMap<String, PartTrie> {}
+    private static class PartTrie extends LinkedHashMap<String, LockComponent> {}
+  }
+
+  public static class LockComponentBuilder {
+    private LockComponent component;
+    private boolean tableNameSet;
+    private boolean partNameSet;
+
+    public LockComponentBuilder() {
+      component = new LockComponent();
+      tableNameSet = partNameSet = false;
+    }
+
+    /**
+     * Set the lock to be exclusive.
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setExclusive() {
+      component.setType(LockType.EXCLUSIVE);
+      return this;
+    }
+
+    /**
+     * Set the lock to be semi-shared.
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setSemiShared() {
+      component.setType(LockType.SHARED_WRITE);
+      return this;
+    }
+
+    /**
+     * Set the lock to be shared.
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setShared() {
+      component.setType(LockType.SHARED_READ);
+      return this;
+    }
+
+    /**
+     * Set the database name.
+     * @param dbName database name
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setDbName(String dbName) {
+      component.setDbname(dbName);
+      return this;
+    }
+
+    public LockComponentBuilder setIsTransactional(boolean t) {
+      component.setIsTransactional(t);
+      return this;
+    }
+
+    public LockComponentBuilder setOperationType(DataOperationType dop) {
+      component.setOperationType(dop);
+      return this;
+    }
+
+    /**
+     * Set the table name.
+     * @param tableName table name
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setTableName(String tableName) {
+      component.setTablename(tableName);
+      tableNameSet = true;
+      return this;
+    }
+
+    /**
+     * Set the partition name.
+     * @param partitionName partition name
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setPartitionName(String partitionName) {
+      component.setPartitionname(partitionName);
+      partNameSet = true;
+      return this;
+    }
+
+    public LockComponent build() {
+      LockLevel level = LockLevel.DB;
+      if (tableNameSet) level = LockLevel.TABLE;
+      if (partNameSet) level = LockLevel.PARTITION;
+      component.setLevel(level);
+      return component;
+    }
+
+    public LockComponent setLock(LockType type) {
+      component.setType(type);
+      return component;
     }
   }
 

@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.metastore.tools;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.thrift.TException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -417,6 +417,45 @@ final class HMSBenchmarks {
         () -> throwingSupplierWrapper(() -> client.abortTxns(client.getOpenTxns())));
   }
 
+  static DescriptiveStatistics benchmarkLocks(@NotNull MicroBenchmark bench,
+                                              @NotNull BenchData data,
+                                              int nTables){
+    HMSClient client = data.getClient();
+    String dbName = data.dbName;
+    String tableNameFormat = "tmp_table_%d";
+    String user = "hclient";
+    List<LockComponent> lockComponents = new ArrayList<>();
+    List<Long> txnIds = new ArrayList<>();
+
+    try {
+      LOG.info("Beginning prep");
+      // 1. create nTables number of tables
+      LOG.info("Creating {} tables", nTables);
+      createManyTables(client, nTables, dbName, tableNameFormat);
+      // 2. create LockComponents
+      LOG.info("Creating LockComponents for tables");
+      for (int i = 0; i < nTables; i++) {
+        lockComponents.add(new Util.LockComponentBuilder()
+            .setDbName(dbName)
+            .setTableName(String.format(tableNameFormat, i))
+            .setShared()
+            .setOperationType(DataOperationType.SELECT)
+            .build());
+      }
+
+      return bench.measure(() -> {
+        long txnId = executeOpenTxn(client, user);
+        txnIds.add(txnId);
+        executeLock(client, txnId, user, lockComponents);
+      });
+    } finally {
+      LOG.info("Cleanup");
+      txnIds.forEach(txnId -> executeCommitTxn(client, txnId));
+      txnIds.forEach(txnId -> executeUnlock(client, txnId));
+      dropManyTables(client, nTables, dbName, tableNameFormat);
+    }
+  }
+
   private static void createManyTables(HMSClient client, int howMany, String dbName, String format) {
     List<FieldSchema> columns = createSchema(new ArrayList<>(Arrays.asList("name", "string")));
     List<FieldSchema> partitions = createSchema(new ArrayList<>(Arrays.asList("date", "string")));
@@ -446,12 +485,38 @@ final class HMSBenchmarks {
             .build()));
   }
 
+  private static void executeLock(HMSClient client, long txnId, String user, List<LockComponent> lockComponents) {
+    LOG.debug("execute lock");
+    throwingSupplierWrapper(() -> client.lock(
+        new Util.LockRequestBuilder(Thread.currentThread().getName())
+            .setUser(user)
+            .setTransactionId(txnId)
+            .addLockComponents(lockComponents)
+            .build()
+    ));
+  }
+
+  private static void executeUnlock(HMSClient client, long lockId) {
+    throwingSupplierWrapper(() -> client.unlock(new UnlockRequest(lockId)));
+  }
+
+  private static long executeOpenTxn(HMSClient client, String user) {
+    return throwingSupplierWrapper(() -> client.openTxn(user));
+  }
+
+  private static void executeAbortTxns(HMSClient client, List<Long> txnIds) {
+    throwingSupplierWrapper(() -> client.abortTxns(txnIds));
+  }
+
+  private static void executeCommitTxn(HMSClient client, long txnId) {
+    throwingSupplierWrapper(() -> client.commitTxn(txnId));
+  }
+
   static DescriptiveStatistics benchmarkGetNotificationId(@NotNull MicroBenchmark benchmark,
                                                           @NotNull BenchData data) {
     HMSClient client = data.getClient();
     return benchmark.measure(() ->
         throwingSupplierWrapper(client::getCurrentNotificationId));
   }
-
 
 }
