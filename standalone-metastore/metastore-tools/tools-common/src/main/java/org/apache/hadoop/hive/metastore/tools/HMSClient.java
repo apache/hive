@@ -360,6 +360,39 @@ final class HMSClient implements AutoCloseable {
     return true;
   }
 
+
+  LockResponse lock(@NotNull LockRequest rqst) throws TException {
+    return client.lock(rqst);
+  }
+
+  LockResponse checkLock(@NotNull CheckLockRequest rqst) throws TException {
+    return client.check_lock(rqst);
+  }
+
+  boolean unlock(@NotNull UnlockRequest rqst) throws TException {
+    client.unlock(rqst);
+    return true;
+  }
+
+  GetOpenTxnsResponse getOpenTxns() throws TException {
+    return client.get_open_txns();
+  }
+
+  boolean commitTxn(long txnId) throws TException {
+    client.commit_txn(new CommitTxnRequest(txnId));
+    return true;
+  }
+
+  boolean abortTxns(List<Long> txnIds) throws TException {
+    client.abort_txns(new AbortTxnsRequest(txnIds));
+    return true;
+  }
+
+  long openTxn(String user) throws TException {
+    OpenTxnsResponse txns = openTxnsIntr(user, 1, null, null, null);
+    return txns.getTxn_ids().get(0);
+  }
+
   private TTransport open(Configuration conf, @NotNull URI uri) throws
       TException, IOException, LoginException {
     boolean useSSL = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
@@ -457,6 +490,31 @@ final class HMSClient implements AutoCloseable {
 
     LOG.debug("Connected to metastore, using compact protocol = {}", useCompactProtocol);
     return transport;
+  }
+
+  private OpenTxnsResponse openTxnsIntr(String user, int numTxns, String replPolicy,
+                       List<Long> srcTxnIds, TxnType txnType) throws TException {
+    String hostname;
+    try {
+      hostname = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      LOG.error("Unable to resolve my host name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+    OpenTxnRequest rqst = new OpenTxnRequest(numTxns, user, hostname);
+    if (replPolicy != null) {
+      assert srcTxnIds != null;
+      assert numTxns == srcTxnIds.size();
+      // need to set this only for replication tasks
+      rqst.setReplPolicy(replPolicy);
+      rqst.setReplSrcTxnIds(srcTxnIds);
+    } else {
+      assert srcTxnIds == null;
+    }
+    if (txnType != null) {
+      rqst.setTxn_type(txnType);
+    }
+    return client.open_txns(rqst);
   }
 
   @Override
