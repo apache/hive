@@ -260,11 +260,11 @@ public class Cleaner extends MetaStoreCompactorThread {
 
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
-    boolean isSourceOfRepl = ReplChangeManager.isSourceOfReplication(db);
+    Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
 
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
-      if (isSourceOfRepl) {
+      if (ReplChangeManager.shouldEnableCm(db, table)) {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
       }
       fs.delete(dead, true);

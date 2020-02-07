@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage;
 
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -308,7 +309,8 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
 
   private void deleteIntermediateOriginalDir(Table table, Path intermediateOriginalDir) throws HiveException {
     if (HdfsUtils.pathExists(intermediateOriginalDir, context.getConf())) {
-      AlterTableArchiveUtils.deleteDir(intermediateOriginalDir, context.getDb().getDatabase(table.getDbName()),
+      AlterTableArchiveUtils.deleteDir(intermediateOriginalDir,
+              ReplChangeManager.shouldEnableCm(context.getDb().getDatabase(table.getDbName()), table.getTTable()),
           context.getConf());
     }
   }
