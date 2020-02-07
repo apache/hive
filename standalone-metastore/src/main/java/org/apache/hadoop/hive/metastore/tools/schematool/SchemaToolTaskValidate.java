@@ -42,9 +42,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.NestedScriptParser;
+import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -235,9 +237,17 @@ class SchemaToolTaskValidate extends SchemaToolTask {
     List<String> schemaTables = new ArrayList<>();
     List<String> subScripts   = new ArrayList<>();
 
-    String baseDir    = new File(schemaTool.getMetaStoreSchemaInfo().getMetaStoreScriptDir()).getParent();
+    //In SDX, schema version could be upgraded by DWX, and causing validation failure in generateInitFileName()
+    String hiveVersion = schemaTool.getMetaStoreSchemaInfo().getHiveSchemaVersion();
+    if (!hiveVersion.equalsIgnoreCase(version) &&
+        schemaTool.getMetaStoreSchemaInfo().isVersionCompatible(hiveVersion, version)) {
+      return true;
+    }
+
+    String baseDir = new File(schemaTool.getMetaStoreSchemaInfo().getMetaStoreScriptDir()).getParent();
     String schemaFile = new File(schemaTool.getMetaStoreSchemaInfo().getMetaStoreScriptDir(),
         schemaTool.getMetaStoreSchemaInfo().generateInitFileName(version)).getPath();
+
     try {
       LOG.debug("Parsing schema script " + schemaFile);
       subScripts.addAll(findCreateTable(schemaFile, schemaTables));
@@ -251,6 +261,7 @@ class SchemaToolTaskValidate extends SchemaToolTask {
       System.out.println("Failed in schema table validation.");
       return false;
     }
+
 
     LOG.debug("Schema tables:[ " + Arrays.toString(schemaTables.toArray()) + " ]");
     LOG.debug("DB tables:[ " + Arrays.toString(dbTables.toArray()) + " ]");
