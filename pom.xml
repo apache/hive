@@ -29,45 +29,6 @@
     <maven>2.2.1</maven>
   </prerequisites>
 
-  <modules>
-    <module>storage-api</module>
-    <module>accumulo-handler</module>
-    <module>vector-code-gen</module>
-    <module>beeline</module>
-    <module>classification</module>
-    <module>cli</module>
-    <module>common</module>
-    <module>contrib</module>
-    <module>druid-handler</module>
-    <module>hbase-handler</module>
-    <module>jdbc-handler</module>
-    <module>hcatalog</module>
-    <module>hplsql</module>
-    <module>jdbc</module>
-    <module>metastore</module>
-    <module>parser</module>
-    <module>udf</module>
-    <module>ql</module>
-    <module>serde</module>
-    <module>service-rpc</module>
-    <module>service</module>
-    <module>streaming</module>
-    <module>llap-common</module>
-    <module>llap-client</module>
-    <module>llap-ext-client</module>
-    <module>llap-tez</module>
-    <module>llap-server</module>
-    <module>shims</module>
-    <module>spark-client</module>
-    <module>kryo-registrator</module>
-    <module>kudu-handler</module>
-    <module>testutils</module>
-    <module>upgrade-acid</module>
-    <module>packaging</module>
-    <module>standalone-metastore</module>
-    <module>kafka-handler</module>
-  </modules>
-
   <properties>
     <hive.version.shortname>3.1.0</hive.version.shortname>
 
@@ -1536,8 +1497,8 @@
 	    <exclude>checkstyle/**</exclude>
 	    <exclude>bin/**</exclude>
 	    <exclude>itests/**</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>**/*.iml</exclude>
+	    <exclude>**/README.md</exclude>
+	    <exclude>**/*.iml</exclude>
 	    <exclude>**/*.txt</exclude>
 	    <exclude>**/*.log</exclude>
 	    <exclude>**/*.arcconfig</exclude>
@@ -1564,7 +1525,7 @@
 	    <exclude>**/xmlReport.pl</exclude>
 	    <exclude>**/*.html</exclude>
 	    <exclude>**/sit</exclude>
-      <exclude>**/test/queries/**/*.sql</exclude>
+	    <exclude>**/test/queries/**/*.sql</exclude>
         <exclude>**/patchprocess/**</exclude>
         <exclude>**/metastore_db/**</exclude>
 	  </excludes>
@@ -1579,6 +1540,64 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>full-build</id>
+      <activation>
+        <file>
+          <exists>pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>accumulo-handler</module>
+        <module>vector-code-gen</module>
+        <module>beeline</module>
+        <module>cli</module>
+        <module>contrib</module>
+        <module>druid-handler</module>
+        <module>hbase-handler</module>
+        <module>jdbc-handler</module>
+        <module>hcatalog</module>
+        <module>hplsql</module>
+        <module>jdbc</module>
+        <module>ql</module>
+        <module>service</module>
+        <module>streaming</module>
+        <module>llap-common</module>
+        <module>llap-client</module>
+        <module>llap-ext-client</module>
+        <module>llap-tez</module>
+        <module>llap-server</module>
+        <module>spark-client</module>
+        <module>kryo-registrator</module>
+        <module>kudu-handler</module>
+        <module>testutils</module>
+        <module>upgrade-acid</module>
+        <module>packaging</module>
+        <module>kafka-handler</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>libs-build</id>
+      <activation>
+        <file>
+          <exists>pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>storage-api</module>
+        <module>classification</module>
+        <module>common</module>
+        <module>shims</module>
+        <module>standalone-metastore</module>
+        <module>metastore</module>
+        <module>parser</module>
+        <module>udf</module>
+        <module>service-rpc</module>
+        <module>serde</module>
+      </modules>
+    </profile>
+
     <profile>
       <id>thriftif</id>
       <build>
