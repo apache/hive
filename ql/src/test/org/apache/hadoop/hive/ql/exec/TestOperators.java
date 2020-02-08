@@ -34,7 +34,8 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -232,7 +233,7 @@ public class TestOperators {
       ExprNodeDesc expr1 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col0", "",
           false);
       ExprNodeDesc expr2 = new ExprNodeConstantDesc("1");
-      ExprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor
+      ExprNodeDesc exprDesc2 = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
           .getFuncExprNodeDesc("concat", expr1, expr2);
 
       // select operator to project these two columns

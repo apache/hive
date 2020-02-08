@@ -38,6 +38,9 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
+
 /**
  * DataSourceProvider for the BoneCP connection pool.
  */
@@ -79,6 +82,10 @@ public class BoneCPDataSourceProvider implements DataSourceProvider {
     config.setPartitionCount(Integer.parseInt(partitionCount));
     config.setUser(user);
     config.setPassword(passwd);
+
+    if (determineDatabaseProduct(driverUrl) == MYSQL) {
+      config.setInitSQL("SET @@session.sql_mode=ANSI_QUOTES");
+    }
 
     return initMetrics(new BoneCPDataSource(config));
   }

@@ -546,6 +546,7 @@ columns_v2	comment
 columns_v2	integer_idx
 columns_v2	type_name
 compaction_queue	cq_database
+compaction_queue	cq_error_message
 #### A masked pattern was here ####
 compaction_queue	cq_highest_write_id
 compaction_queue	cq_id
@@ -586,6 +587,7 @@ compactions	c_worker_id
 compactions	c_worker_id
 completed_compactions	cc_database
 completed_compactions	cc_end
+completed_compactions	cc_error_message
 #### A masked pattern was here ####
 completed_compactions	cc_highest_write_id
 completed_compactions	cc_id
@@ -1185,6 +1187,7 @@ POSTHOOK: query: select principal_name, grantor from role_map order by principal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@role_map
 #### A masked pattern was here ####
+hive_admin_user	admin
 PREHOOK: query: explain vectorization detail
 select count(*) from sds
 PREHOOK: type: QUERY

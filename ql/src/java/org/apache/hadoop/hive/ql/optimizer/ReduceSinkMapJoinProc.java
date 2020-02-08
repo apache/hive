@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.GenTezProcContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
-public class ReduceSinkMapJoinProc implements NodeProcessor {
+public class ReduceSinkMapJoinProc implements SemanticNodeProcessor {
 
   private final static Logger LOG = LoggerFactory.getLogger(ReduceSinkMapJoinProc.class.getName());
 

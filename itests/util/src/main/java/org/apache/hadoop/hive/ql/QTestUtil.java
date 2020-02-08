@@ -27,7 +27,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -41,7 +40,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -76,6 +75,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
+import org.apache.hadoop.hive.ql.qoption.QTestAuthorizerHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestSysDbHandler;
@@ -216,6 +216,7 @@ public class QTestUtil {
     dispatcher.register("sysdb", new QTestSysDbHandler());
     dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider(conf));
     dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
+    dispatcher.register("authorizer", new QTestAuthorizerHandler());
 
     String scriptsDir = getScriptsDir();
 

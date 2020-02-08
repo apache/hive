@@ -29,13 +29,13 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.ExpressionWalker;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -206,7 +206,7 @@ public final class PcrExprProcFactory {
   /**
    * Processor for column expressions.
    */
-  public static class ColumnExprProcessor implements NodeProcessor {
+  public static class ColumnExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -250,7 +250,7 @@ public final class PcrExprProcFactory {
    * If it is deterministic, we evaluate result vector if any of the children
    * is partition column. Otherwise, we pass it as it is.
    */
-  public static class GenericFuncExprProcessor implements NodeProcessor {
+  public static class GenericFuncExprProcessor implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -497,7 +497,7 @@ public final class PcrExprProcFactory {
    * FieldExprProcessor.
    *
    */
-  public static class FieldExprProcessor implements NodeProcessor {
+  public static class FieldExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -525,7 +525,7 @@ public final class PcrExprProcFactory {
    * Processor for constants and null expressions. For such expressions the
    * processor simply returns.
    */
-  public static class DefaultExprProcessor implements NodeProcessor {
+  public static class DefaultExprProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -538,19 +538,19 @@ public final class PcrExprProcFactory {
     }
   }
 
-  public static NodeProcessor getDefaultExprProcessor() {
+  public static SemanticNodeProcessor getDefaultExprProcessor() {
     return new DefaultExprProcessor();
   }
 
-  public static NodeProcessor getGenericFuncProcessor() {
+  public static SemanticNodeProcessor getGenericFuncProcessor() {
     return new GenericFuncExprProcessor();
   }
 
-  public static NodeProcessor getFieldProcessor() {
+  public static SemanticNodeProcessor getFieldProcessor() {
     return new FieldExprProcessor();
   }
 
-  public static NodeProcessor getColumnProcessor() {
+  public static SemanticNodeProcessor getColumnProcessor() {
     return new ColumnExprProcessor();
   }
 
@@ -574,7 +574,7 @@ public final class PcrExprProcFactory {
     // Create the walker, the rules dispatcher and the context.
     PcrExprProcCtx pprCtx = new PcrExprProcCtx(tabAlias, parts, vcs);
 
-    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> exprRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     exprRules.put(
         new RuleRegExp("R1", ExprNodeColumnDesc.class.getName() + "%"),
         getColumnProcessor());
@@ -586,9 +586,9 @@ public final class PcrExprProcFactory {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(getDefaultExprProcessor(),
+    SemanticDispatcher disp = new DefaultRuleDispatcher(getDefaultExprProcessor(),
         exprRules, pprCtx);
-    GraphWalker egw = new ExpressionWalker(disp);
+    SemanticGraphWalker egw = new ExpressionWalker(disp);
 
     List<Node> startNodes = new ArrayList<Node>();
     startNodes.add(pred);

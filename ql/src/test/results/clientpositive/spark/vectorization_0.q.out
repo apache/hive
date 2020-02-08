@@ -1078,7 +1078,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterDecimalColNotEqualDecimalScalar(col 13:decimal(13,3), val 79.553)(children: CastLongToDecimal(col 2:int) -> 13:decimal(13,3)), FilterDoubleColLessDoubleColumn(col 14:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 14:double), FilterStringColLikeStringScalar(col 7:string, pattern %b%))
+                        predicateExpression: FilterExprOrExpr(children: FilterDecimal64ColNotEqualDecimal64Scalar(col 13:decimal(13,3)/DECIMAL_64, val 79553)(children: CastLongToDecimal64(col 2:int) -> 13:decimal(13,3)/DECIMAL_64), FilterDoubleColLessDoubleColumn(col 14:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 14:double), FilterStringColLikeStringScalar(col 7:string, pattern %b%))
                     predicate: ((CAST( cint AS decimal(13,3)) <> 79.553) or (UDFToDouble(cbigint) < cdouble) or (cstring2 like '%b%')) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1128,7 +1128,7 @@ STAGE PLANS:
                     includeColumns: [0, 2, 3, 4, 5, 7]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(13,3), double, double, double, double, double]
+                    scratchColumnTypeNames: [decimal(13,3)/DECIMAL_64, double, double, double, double, double]
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:

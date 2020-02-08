@@ -2565,6 +2565,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames, String engine) throws TException {
+    if(colNames.isEmpty()) {
+      return Collections.emptyList();
+    }
     TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
     rqst.setCatName(catName);
     rqst.setEngine(engine);
@@ -2581,6 +2584,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames, String engine, String validWriteIdList) throws TException {
+    if(colNames.isEmpty()) {
+      return Collections.emptyList();
+    }
     TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
     rqst.setCatName(catName);
     rqst.setEngine(engine);
@@ -2641,7 +2647,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<FieldSchema> getSchema(String catName, String db, String tableName) throws TException {
     EnvironmentContext envCxt = null;
     String addedJars = MetastoreConf.getVar(conf, ConfVars.ADDED_JARS);
-    if (org.apache.commons.lang.StringUtils.isNotBlank(addedJars)) {
+    if (org.apache.commons.lang3.StringUtils.isNotBlank(addedJars)) {
       Map<String, String> props = new HashMap<>();
       props.put("hive.added.jars.path", addedJars);
       envCxt = new EnvironmentContext(props);

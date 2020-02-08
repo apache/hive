@@ -22,7 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.testutil.BaseScalarUdfTest;
 import org.apache.hadoop.hive.ql.testutil.DataBuilder;
@@ -65,7 +66,8 @@ public class TestGenericUDFConcat extends BaseScalarUdfTest {
   public List<ExprNodeDesc> getExpressionList() throws UDFArgumentException {
     ExprNodeDesc expr1 = OperatorTestUtils.getStringColumn("a");
     ExprNodeDesc expr2 = OperatorTestUtils.getStringColumn("b");
-    ExprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", expr1, expr2);
+    ExprNodeDesc exprDesc2 = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+        .getFuncExprNodeDesc("concat", expr1, expr2);
     List<ExprNodeDesc> earr = new ArrayList<ExprNodeDesc>();
     earr.add(expr1);
     earr.add(exprDesc2);

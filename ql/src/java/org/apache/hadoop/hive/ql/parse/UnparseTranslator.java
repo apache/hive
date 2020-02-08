@@ -140,7 +140,7 @@ public class UnparseTranslator {
    * @param node
    *          source node (which must be an tabName) to be replaced
    */
-  void addTableNameTranslation(ASTNode tableName, String currentDatabaseName) {
+  public void addTableNameTranslation(ASTNode tableName, String currentDatabaseName) {
     if (!enabled) {
       return;
     }
@@ -175,7 +175,7 @@ public class UnparseTranslator {
    * @param node
    *          source node (which must be an identifier) to be replaced
    */
-  void addIdentifierTranslation(ASTNode identifier) {
+  public void addIdentifierTranslation(ASTNode identifier) {
     if (!enabled) {
       return;
     }
@@ -198,7 +198,7 @@ public class UnparseTranslator {
    * @param sourceNode the node providing the replacement text
    *
    */
-  void addCopyTranslation(ASTNode targetNode, ASTNode sourceNode) {
+  public void addCopyTranslation(ASTNode targetNode, ASTNode sourceNode) {
     if (!enabled) {
       return;
     }
@@ -221,7 +221,7 @@ public class UnparseTranslator {
    */
   void applyTranslations(TokenRewriteStream tokenRewriteStream) {
     for (Map.Entry<Integer, Translation> entry : translations.entrySet()) {
-      if (entry.getKey() > 0) { // negative means the key didn't exist in the original 
+      if (entry.getKey() > 0) { // negative means the key didn't exist in the original
                                 // stream (i.e.: we changed the tree)
         tokenRewriteStream.replace(
            entry.getKey(),

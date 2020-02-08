@@ -174,7 +174,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
           msg = "Failed to monitor Job[" + sparkJobStatus.getJobId() + "]" + msg;
 
           // Has to use full name to make sure it does not conflict with
-          // org.apache.commons.lang.StringUtils
+          // org.apache.commons.lang3.StringUtils
           console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
         }
         rc = 1;

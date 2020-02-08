@@ -760,19 +760,21 @@ public class MetastoreConf {
          86400, TimeUnit.SECONDS, "Maximum duration for query producing a materialization. After this time, transaction" +
          "entries that are not relevant for materializations can be removed from invalidation cache."),
 
-    RUNTIME_STATS_CLEAN_FREQUENCY("runtime.stats.clean.frequency", "hive.metastore.runtime.stats.clean.frequency", 3600,
+    RUNTIME_STATS_CLEAN_FREQUENCY("metastore.runtime.stats.clean.frequency", "hive.metastore.runtime.stats.clean.frequency", 3600,
         TimeUnit.SECONDS, "Frequency at which timer task runs to remove outdated runtime stat entries."),
-    RUNTIME_STATS_MAX_AGE("runtime.stats.max.age", "hive.metastore.runtime.stats.max.age", 86400 * 3, TimeUnit.SECONDS,
+    RUNTIME_STATS_MAX_AGE("metastore.runtime.stats.max.age", "hive.metastore.runtime.stats.max.age", 86400 * 3, TimeUnit.SECONDS,
         "Stat entries which are older than this are removed."),
 
-    SCHEDULED_QUERIES_EXECUTION_PROGRESS_TIMEOUT("scheduled.queries.execution.timeout",
+    SCHEDULED_QUERIES_ENABLED("metastore.scheduled.queries.enabled", "hive.metastore.scheduled.queries.enabled", true,
+        "Wheter scheduled query metastore requests be processed"),
+    SCHEDULED_QUERIES_EXECUTION_PROGRESS_TIMEOUT("metastore.scheduled.queries.execution.timeout",
         "hive.metastore.scheduled.queries.progress.timeout", 120, TimeUnit.SECONDS,
         "If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
-    SCHEDULED_QUERIES_EXECUTION_MAINT_TASK_FREQUENCY("scheduled.queries.execution.maint.task.frequency",
+    SCHEDULED_QUERIES_EXECUTION_MAINT_TASK_FREQUENCY("metastore.scheduled.queries.execution.maint.task.frequency",
         "hive.metastore.scheduled.queries.execution.clean.frequency", 60, TimeUnit.SECONDS,
         "Interval of scheduled query maintenance task. Which removes executions above max age;"
             + "and marks executions as timed out if the condition is met"),
-    SCHEDULED_QUERIES_EXECUTION_MAX_AGE("scheduled.queries.execution.max.age",
+    SCHEDULED_QUERIES_EXECUTION_MAX_AGE("metastore.scheduled.queries.execution.max.age",
         "hive.metastore.scheduled.queries.execution.max.age", 30 * 86400, TimeUnit.SECONDS,
         "Maximal age of a scheduled query execution entry before it is removed."),
 
@@ -915,6 +917,11 @@ public class MetastoreConf {
             "This class is used to store and retrieval of raw metadata objects such as table, database"),
     REPLCMDIR("metastore.repl.cmrootdir", "hive.repl.cmrootdir", "/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
+    REPLCMENCRYPTEDDIR("metastore.repl.cm.encryptionzone.rootdir", "hive.repl.cm.encryptionzone.rootdir", ".cmroot",
+            "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
+    REPLCMFALLBACKNONENCRYPTEDDIR("metastore.repl.cm.nonencryptionzone.rootdir",
+            "hive.repl.cm.nonencryptionzone.rootdir", "/user/${system:user.name}/cmroot/",
+            "Root dir for ChangeManager for non encrypted paths if hive.repl.cmrootdir is encrypted."),
     REPLCMRETIAN("metastore.repl.cm.retain", "hive.repl.cm.retain",  24, TimeUnit.HOURS,
         "Time to retain removed files in cmrootdir."),
     REPLCMINTERVAL("metastore.repl.cm.interval", "hive.repl.cm.interval", 3600, TimeUnit.SECONDS,

@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.processors;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;

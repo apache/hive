@@ -226,8 +226,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveNoAggregateIn
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewRewritingRelVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.JoinCondTypeCheckProcFactory;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.JoinTypeCheckCtx;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.JoinCondTypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.type.JoinTypeCheckCtx;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.PlanModifierForReturnPath;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
@@ -243,6 +244,8 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -2689,8 +2692,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         } else if (unparseTranslator != null && unparseTranslator.isEnabled()) {
           genAllExprNodeDesc(joinCond, input, jCtx);
         }
-        Map<ASTNode, ExprNodeDesc> exprNodes = JoinCondTypeCheckProcFactory.genExprNode(joinCond,
-            jCtx);
+        Map<ASTNode, ExprNodeDesc> exprNodes = ExprNodeTypeCheck.genExprNodeJoinCond(
+            joinCond, jCtx);
         if (jCtx.getError() != null) {
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(jCtx.getErrorSrcNode(),
               jCtx.getError()));
@@ -3272,7 +3275,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           inputRel = genLateralViewPlans(next, aliasToRel);
           break;
         default:
-          throw new SemanticException(ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(lateralView));
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), lateralView));
       }
       // Input row resolver
       RowResolver inputRR = this.relToHiveRR.get(inputRel);
@@ -4542,7 +4546,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       ASTNode expr = (ASTNode) selExprList.getChild(posn).getChild(0);
       int exprType = expr.getType();
       if (exprType == HiveParser.TOK_FUNCTION || exprType == HiveParser.TOK_FUNCTIONSTAR) {
-        String funcName = TypeCheckProcFactory.DefaultExprProcessor.getFunctionText(expr, true);
+        String funcName = TypeCheckProcFactory.getFunctionText(expr, true);
         FunctionInfo fi = FunctionRegistry.getFunctionInfo(funcName);
         if (fi != null && fi.getGenericUDTF() != null) {
           LOG.debug("Find UDTF " + funcName);
@@ -5222,24 +5226,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   @Override
-  protected Table getTableObjectByName(String tableName, boolean throwException) throws HiveException {
-    if (!tabNameToTabObject.containsKey(tableName)) {
-      // TODO: The code below should be a single HMS call and possibly unified with method in SemanticAnalyzer
-      Table table = db.getTable(tableName, throwException);
+  protected Table getTableObjectByName(String tabName, boolean throwException) throws HiveException {
+    String[] names = Utilities.getDbTableName(tabName);
+    final String  tableName = names[1];
+    final String  dbName = names[0];
+    final String fullyQualName = dbName + "." + tableName;
+    if (!tabNameToTabObject.containsKey(fullyQualName)) {
+      Table table = db.getTable(dbName, tableName, throwException);
       if (table != null) {
-        table.setPrimaryKeyInfo(db.getReliablePrimaryKeys(
-            table.getDbName(), table.getTableName()));
-        table.setForeignKeyInfo(db.getReliableForeignKeys(
-            table.getDbName(), table.getTableName()));
-        table.setUniqueKeyInfo(db.getReliableUniqueConstraints(
-            table.getDbName(), table.getTableName()));
-        table.setNotNullConstraint(db.getReliableNotNullConstraints(
-            table.getDbName(), table.getTableName()));
-        tabNameToTabObject.put(tableName, table);
+        tabNameToTabObject.put(fullyQualName, table);
       }
       return table;
     }
-    return tabNameToTabObject.get(tableName);
+    return tabNameToTabObject.get(fullyQualName);
   }
 
   /**
@@ -5256,4 +5255,5 @@ public class CalcitePlanner extends SemanticAnalyzer {
     NATIVE,
     JDBC
   }
+
 }

@@ -193,7 +193,7 @@ public class QTestResultProcessor {
 
   public static QTestProcessExecResult executeCmd(String[] args, String outFile, String errFile)
       throws Exception {
-    System.out.println("Running: " + org.apache.commons.lang.StringUtils.join(args, ' '));
+    System.out.println("Running: " + org.apache.commons.lang3.StringUtils.join(args, ' '));
 
     PrintStream out = outFile == null ? SessionState.getConsole().getChildOutStream()
       : new PrintStream(new FileOutputStream(outFile), true, "UTF-8");

@@ -46,7 +46,7 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
   // Batch processing
   private transient int[] temporarySelected;
   private transient VectorHashKeyWrapperBatch keyWrappersBatch;
-  private transient TopNKeyFilter<VectorHashKeyWrapperBase> topNKeyFilter;
+  private transient TopNKeyFilter topNKeyFilter;
 
   public VectorTopNKeyOperator(CompilationOpContext ctx, OperatorDesc conf,
       VectorizationContext vContext, VectorDesc vectorDesc) {
@@ -80,7 +80,7 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
     temporarySelected = new int [VectorizedRowBatch.DEFAULT_SIZE];
 
     keyWrappersBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
-    this.topNKeyFilter = new TopNKeyFilter<>(conf.getTopN(), keyWrappersBatch.getComparator(
+    this.topNKeyFilter = new TopNKeyFilter(conf.getTopN(), keyWrappersBatch.getComparator(
             conf.getColumnSortOrder(),
             conf.getNullOrder()));
   }
@@ -169,6 +169,7 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
 
   @Override
   protected void closeOp(boolean abort) throws HiveException {
+    LOG.info("Closing TopNKeyFilter: {}.", topNKeyFilter);
     topNKeyFilter.clear();
     super.closeOp(abort);
   }

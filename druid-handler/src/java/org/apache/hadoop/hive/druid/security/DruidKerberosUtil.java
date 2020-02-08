@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.druid.security;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.hadoop.security.authentication.util.KerberosUtil;
@@ -33,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -42,7 +41,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public final class DruidKerberosUtil {
   protected static final Logger LOG = LoggerFactory.getLogger(DruidKerberosUtil.class);
-  private static final Base64 BASE_64_CODEC = new Base64(0);
   private static final ReentrantLock KERBEROS_LOCK = new ReentrantLock(true);
 
   private DruidKerberosUtil() {
@@ -78,7 +76,7 @@ public final class DruidKerberosUtil {
       gssContext.dispose();
       // Base64 encoded and stringified token for server
       LOG.debug("Got valid challenge for host {}", serverName);
-      return new String(BASE_64_CODEC.encode(outToken), StandardCharsets.US_ASCII);
+      return Base64.getEncoder().encodeToString(outToken);
     } catch (GSSException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
       throw new AuthenticationException(e);
     } finally {

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,7 +64,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -710,13 +711,18 @@ public final class PlanUtils {
       List<String> outputColumnNames, boolean includeKeyCols, int tag,
       List<ExprNodeDesc> partitionCols, String order, String nullOrder, NullOrdering defaultNullOrder,
       int numReducers, AcidUtils.Operation writeType) {
-    return getReduceSinkDesc(keyCols, keyCols.size(), valueCols,
-        new ArrayList<List<Integer>>(),
-        includeKeyCols ? outputColumnNames.subList(0, keyCols.size()) :
-          new ArrayList<String>(),
-        includeKeyCols ? outputColumnNames.subList(keyCols.size(),
-            outputColumnNames.size()) : outputColumnNames,
-        includeKeyCols, tag, partitionCols, order, nullOrder, defaultNullOrder, numReducers, writeType);
+    ReduceSinkDesc reduceSinkDesc = getReduceSinkDesc(keyCols, keyCols.size(), valueCols,
+            new ArrayList<List<Integer>>(),
+            includeKeyCols ? outputColumnNames.subList(0, keyCols.size()) :
+                    new ArrayList<String>(),
+            includeKeyCols ? outputColumnNames.subList(keyCols.size(),
+                    outputColumnNames.size()) : outputColumnNames,
+            includeKeyCols, tag, partitionCols, order, nullOrder, defaultNullOrder, numReducers, writeType);
+    if (writeType == AcidUtils.Operation.UPDATE || writeType == AcidUtils.Operation.DELETE) {
+      reduceSinkDesc.setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.FIXED));
+      reduceSinkDesc.setNumReducers(1);
+    }
+    return reduceSinkDesc;
   }
 
   /**
@@ -866,7 +872,8 @@ public final class PlanUtils {
       partitionCols.addAll(keyCols.subList(0, numPartitionFields));
     } else {
       // numPartitionFields = -1 means random partitioning
-      partitionCols.add(TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("rand"));
+      partitionCols.add(ExprNodeTypeCheck.getExprNodeDefaultExprProcessor().
+          getFuncExprNodeDesc("rand"));
     }
 
     StringBuilder order = new StringBuilder();

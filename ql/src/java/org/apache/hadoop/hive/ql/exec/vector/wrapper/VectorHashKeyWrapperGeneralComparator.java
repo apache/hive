@@ -133,4 +133,8 @@ public class VectorHashKeyWrapperGeneralComparator
     }
     return 0;
   }
+
+  public List<VectorHashKeyWrapperBaseComparator> getComparators() {
+    return comparators;
+  }
 }

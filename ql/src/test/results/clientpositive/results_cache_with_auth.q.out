@@ -110,11 +110,3 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@results_cache_with_auth_t1
 #### A masked pattern was here ####
 1
-PREHOOK: query: drop table results_cache_with_auth_t1
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@results_cache_with_auth_t1
-PREHOOK: Output: default@results_cache_with_auth_t1
-POSTHOOK: query: drop table results_cache_with_auth_t1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@results_cache_with_auth_t1
-POSTHOOK: Output: default@results_cache_with_auth_t1

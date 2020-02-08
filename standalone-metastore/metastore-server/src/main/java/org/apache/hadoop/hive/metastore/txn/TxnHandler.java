@@ -52,8 +52,8 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -3191,9 +3191,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt = dbConn.createStatement();
         String s = "SELECT \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", \"CQ_STATE\", \"CQ_TYPE\", \"CQ_WORKER_ID\", " +
           //-1 because 'null' literal doesn't work for all DBs...
-          "\"CQ_START\", -1 \"CC_END\", \"CQ_RUN_AS\", \"CQ_HADOOP_JOB_ID\", \"CQ_ID\" FROM \"COMPACTION_QUEUE\" UNION ALL " +
+          "\"CQ_START\", -1 \"CC_END\", \"CQ_RUN_AS\", \"CQ_HADOOP_JOB_ID\", \"CQ_ID\", \"CQ_ERROR_MESSAGE\" " +
+          "FROM \"COMPACTION_QUEUE\" UNION ALL " +
           "SELECT \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_WORKER_ID\", " +
-          "\"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HADOOP_JOB_ID\", \"CC_ID\" FROM \"COMPLETED_COMPACTIONS\""; //todo: sort by cq_id?
+          "\"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HADOOP_JOB_ID\", \"CC_ID\", \"CC_ERROR_MESSAGE\"" +
+          " FROM \"COMPLETED_COMPACTIONS\""; //todo: sort by cq_id?
         //what I want is order by cc_end desc, cc_start asc (but derby has a bug https://issues.apache.org/jira/browse/DERBY-6013)
         //to sort so that currently running jobs are at the end of the list (bottom of screen)
         //and currently running ones are in sorted by start time
@@ -3224,6 +3226,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           e.setRunAs(rs.getString(9));
           e.setHadoopJobId(rs.getString(10));
           e.setId(rs.getLong(11));
+          e.setErrorMessage(rs.getString(12));
           response.addToCompacts(e);
         }
         LOG.debug("Going to rollback");
@@ -5437,7 +5440,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
   public void acquireLock(String key, LockHandle handle) {
     //the idea is that this will use LockHandle.dbConn
-    throw new NotImplementedException();
+    throw new NotImplementedException("acquireLock(String, LockHandle) is not implemented");
   }
   private static final class LockHandleImpl implements LockHandle {
     private final Connection dbConn;
@@ -5459,7 +5462,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     void addKey(String key) {
       //keys.add(key);
       //would need a list of (stmt,rs) pairs - 1 for each key
-      throw new NotImplementedException();
+      throw new NotImplementedException("addKey(String) is not implemented, would require a list of (stmt,rs) pairs / key");
     }
 
     @Override

@@ -354,11 +354,3 @@ PREHOOK: query: drop role sRc_roLE
 PREHOOK: type: DROPROLE
 POSTHOOK: query: drop role sRc_roLE
 POSTHOOK: type: DROPROLE
-PREHOOK: query: drop table src_autho_test_n11
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_autho_test_n11
-PREHOOK: Output: default@src_autho_test_n11
-POSTHOOK: query: drop table src_autho_test_n11
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_autho_test_n11
-POSTHOOK: Output: default@src_autho_test_n11

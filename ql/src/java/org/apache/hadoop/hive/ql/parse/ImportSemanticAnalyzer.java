@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -467,7 +467,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         needRecycle = false;
       } else {
         org.apache.hadoop.hive.metastore.api.Database db = x.getHive().getDatabase(table.getDbName());
-        needRecycle = db != null && ReplChangeManager.isSourceOfReplication(db);
+        needRecycle = db != null && ReplChangeManager.shouldEnableCm(db, table.getTTable());
       }
     } else {
       if (AcidUtils.isTransactionalTable(table) && !replicationSpec.isInReplicationScope()) {
@@ -613,7 +613,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           needRecycle = false;
         } else {
           org.apache.hadoop.hive.metastore.api.Database db = x.getHive().getDatabase(table.getDbName());
-          needRecycle = db != null && ReplChangeManager.isSourceOfReplication(db);
+          needRecycle = db != null && ReplChangeManager.shouldEnableCm(db, table.getTTable());
         }
       } else {
         loadFileType = replicationSpec.isReplace() ?

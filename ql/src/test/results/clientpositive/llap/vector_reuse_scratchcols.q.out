@@ -105,7 +105,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 13:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 1:smallint) -> 13:float), FilterDoubleColGreaterDoubleScalar(col 14:double, val -5.0)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), FilterDoubleColNotEqualDoubleColumn(col 5:double, col 15:double)(children: CastLongToDouble(col 2:int) -> 15:double)), FilterExprAndExpr(children: FilterDecimalColLessEqualDecimalScalar(col 16:decimal(22,3), val -1.389)(children: CastLongToDecimal(col 3:bigint) -> 16:decimal(22,3)), FilterStringGroupColNotEqualStringScalar(col 7:string, val a), FilterDecimalColNotEqualDecimalScalar(col 17:decimal(13,3), val 79.553)(children: CastLongToDecimal(col 2:int) -> 17:decimal(13,3)), FilterLongColNotEqualLongColumn(col 11:boolean, col 10:boolean)), FilterLongColEqualLongScalar(col 3:bigint, val 762), FilterStringGroupColEqualStringScalar(col 6:string, val a))
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 13:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 1:smallint) -> 13:float), FilterDoubleColGreaterDoubleScalar(col 14:double, val -5.0)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), FilterDoubleColNotEqualDoubleColumn(col 5:double, col 15:double)(children: CastLongToDouble(col 2:int) -> 15:double)), FilterExprAndExpr(children: FilterDecimalColLessEqualDecimalScalar(col 16:decimal(22,3), val -1.389)(children: CastLongToDecimal(col 3:bigint) -> 16:decimal(22,3)), FilterStringGroupColNotEqualStringScalar(col 7:string, val a), FilterDecimal64ColNotEqualDecimal64Scalar(col 17:decimal(13,3)/DECIMAL_64, val 79553)(children: CastLongToDecimal64(col 2:int) -> 17:decimal(13,3)/DECIMAL_64), FilterLongColNotEqualLongColumn(col 11:boolean, col 10:boolean)), FilterLongColEqualLongScalar(col 3:bigint, val 762), FilterStringGroupColEqualStringScalar(col 6:string, val a))
                     predicate: (((UDFToFloat(csmallint) < cfloat) and (UDFToDouble(ctimestamp2) > -5.0D) and (cdouble <> UDFToDouble(cint))) or ((CAST( cbigint AS decimal(22,3)) <= -1.389) and (cstring2 <> 'a') and (CAST( cint AS decimal(13,3)) <> 79.553) and (cboolean2 <> cboolean1)) or (cbigint = 762L) or (cstring1 = 'a')) (type: boolean)
                     Statistics: Num rows: 5465 Data size: 1101870 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -156,7 +156,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double, decimal(22,3), decimal(13,3), double, double, double, double, double, double, double, double]
+                    scratchColumnTypeNames: [double, double, double, decimal(22,3), decimal(13,3)/DECIMAL_64, double, double, double, double, double, double, double, double]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -318,7 +318,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 13:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 1:smallint) -> 13:float), FilterDoubleColGreaterDoubleScalar(col 14:double, val -5.0)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), FilterDoubleColNotEqualDoubleColumn(col 5:double, col 15:double)(children: CastLongToDouble(col 2:int) -> 15:double)), FilterExprAndExpr(children: FilterDecimalColLessEqualDecimalScalar(col 16:decimal(22,3), val -1.389)(children: CastLongToDecimal(col 3:bigint) -> 16:decimal(22,3)), FilterStringGroupColNotEqualStringScalar(col 7:string, val a), FilterDecimalColNotEqualDecimalScalar(col 17:decimal(13,3), val 79.553)(children: CastLongToDecimal(col 2:int) -> 17:decimal(13,3)), FilterLongColNotEqualLongColumn(col 11:boolean, col 10:boolean)), FilterLongColEqualLongScalar(col 3:bigint, val 762), FilterStringGroupColEqualStringScalar(col 6:string, val a))
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 13:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 1:smallint) -> 13:float), FilterDoubleColGreaterDoubleScalar(col 14:double, val -5.0)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), FilterDoubleColNotEqualDoubleColumn(col 5:double, col 15:double)(children: CastLongToDouble(col 2:int) -> 15:double)), FilterExprAndExpr(children: FilterDecimalColLessEqualDecimalScalar(col 16:decimal(22,3), val -1.389)(children: CastLongToDecimal(col 3:bigint) -> 16:decimal(22,3)), FilterStringGroupColNotEqualStringScalar(col 7:string, val a), FilterDecimal64ColNotEqualDecimal64Scalar(col 17:decimal(13,3)/DECIMAL_64, val 79553)(children: CastLongToDecimal64(col 2:int) -> 17:decimal(13,3)/DECIMAL_64), FilterLongColNotEqualLongColumn(col 11:boolean, col 10:boolean)), FilterLongColEqualLongScalar(col 3:bigint, val 762), FilterStringGroupColEqualStringScalar(col 6:string, val a))
                     predicate: (((UDFToFloat(csmallint) < cfloat) and (UDFToDouble(ctimestamp2) > -5.0D) and (cdouble <> UDFToDouble(cint))) or ((CAST( cbigint AS decimal(22,3)) <= -1.389) and (cstring2 <> 'a') and (CAST( cint AS decimal(13,3)) <> 79.553) and (cboolean2 <> cboolean1)) or (cbigint = 762L) or (cstring1 = 'a')) (type: boolean)
                     Statistics: Num rows: 5465 Data size: 1101870 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -369,7 +369,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double, decimal(22,3), decimal(13,3), double, double, double, double, double, double, double, double]
+                    scratchColumnTypeNames: [double, double, double, decimal(22,3), decimal(13,3)/DECIMAL_64, double, double, double, double, double, double, double, double]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:

@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TopNKeyOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -48,7 +48,7 @@ import static org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor.copyD
 /**
  * Implementation of TopNKey operator pushdown.
  */
-public class TopNKeyPushdownProcessor implements NodeProcessor {
+public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(TopNKeyPushdownProcessor.class);
 
   @Override

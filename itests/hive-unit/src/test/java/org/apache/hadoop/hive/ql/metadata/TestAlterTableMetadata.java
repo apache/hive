@@ -63,5 +63,6 @@ public class TestAlterTableMetadata {
     table = Hive.get(conf).getTable("t1");
     assertEquals(PrincipalType.ROLE, table.getOwnerType());
     assertEquals("r1", table.getOwner());
+
   }
 }

@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -179,7 +179,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         final String refreshMode = "Manual refresh";
         final String timeWindowString = mv.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
         final String mode;
-        if (!org.apache.commons.lang.StringUtils.isEmpty(timeWindowString)) {
+        if (!org.apache.commons.lang3.StringUtils.isEmpty(timeWindowString)) {
           long time = HiveConf.toTime(timeWindowString,
               HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
               TimeUnit.MINUTES);

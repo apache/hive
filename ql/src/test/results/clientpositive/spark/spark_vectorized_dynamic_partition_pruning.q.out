@@ -1662,7 +1662,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 5:decimal(10,0))(children: CastLongToDecimal(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:decimal(10,0)))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 5:decimal(10,0)/DECIMAL_64)(children: CastLongToDecimal64(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:decimal(10,0)/DECIMAL_64))
                     predicate: ((date = '2008-04-08') and CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1713,7 +1713,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: ds:string, date:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, decimal(10,0), bigint, bigint, decimal(10,0)]
+                    scratchColumnTypeNames: [bigint, bigint, decimal(10,0)/DECIMAL_64, bigint, bigint, decimal(10,0)]
 
   Stage: Stage-1
     Spark
@@ -1735,7 +1735,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 7:decimal(10,0))(children: CastLongToDecimal(col 6:smallint)(children: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int) -> 7:decimal(10,0))
+                        predicateExpression: SelectColumnIsNotNull(col 7:decimal(10,0)/DECIMAL_64)(children: CastLongToDecimal64(col 6:smallint)(children: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int) -> 7:decimal(10,0)/DECIMAL_64)
                     predicate: CAST( UDFToShort(day(CAST( ds AS DATE))) AS decimal(10,0)) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1774,7 +1774,7 @@ STAGE PLANS:
                     dataColumns: key:string, value:string
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: [bigint, bigint, decimal(10,0), bigint, bigint, decimal(10,0)]
+                    scratchColumnTypeNames: [bigint, bigint, decimal(10,0)/DECIMAL_64, bigint, bigint, decimal(10,0)]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1788,7 +1788,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 5:decimal(10,0))(children: CastLongToDecimal(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:decimal(10,0)))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 5:decimal(10,0)/DECIMAL_64)(children: CastLongToDecimal64(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:decimal(10,0)/DECIMAL_64))
                     predicate: ((date = '2008-04-08') and CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1826,7 +1826,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: ds:string, date:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, decimal(10,0), bigint, bigint, decimal(10,0)]
+                    scratchColumnTypeNames: [bigint, bigint, decimal(10,0)/DECIMAL_64, bigint, bigint, decimal(10,0)]
         Reducer 2 
             Reduce Vectorization:
                 enabled: true

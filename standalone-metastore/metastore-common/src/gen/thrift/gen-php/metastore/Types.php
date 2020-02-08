@@ -295,13 +295,13 @@ final class ScheduledQueryMaintenanceRequestType {
 final class QueryState {
   const INITED = 0;
   const EXECUTING = 1;
-  const ERRORED = 2;
+  const FAILED = 2;
   const FINISHED = 3;
   const TIMED_OUT = 4;
   static public $__names = array(
     0 => 'INITED',
     1 => 'EXECUTING',
-    2 => 'ERRORED',
+    2 => 'FAILED',
     3 => 'FINISHED',
     4 => 'TIMED_OUT',
   );
@@ -22369,6 +22369,10 @@ class CompactionInfoStruct {
    * @var int
    */
   public $highestWriteId = null;
+  /**
+   * @var string
+   */
+  public $errorMessage = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -22421,6 +22425,10 @@ class CompactionInfoStruct {
           'var' => 'highestWriteId',
           'type' => TType::I64,
           ),
+        13 => array(
+          'var' => 'errorMessage',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -22459,6 +22467,9 @@ class CompactionInfoStruct {
       }
       if (isset($vals['highestWriteId'])) {
         $this->highestWriteId = $vals['highestWriteId'];
+      }
+      if (isset($vals['errorMessage'])) {
+        $this->errorMessage = $vals['errorMessage'];
       }
     }
   }
@@ -22566,6 +22577,13 @@ class CompactionInfoStruct {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 13:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->errorMessage);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -22637,6 +22655,11 @@ class CompactionInfoStruct {
     if ($this->highestWriteId !== null) {
       $xfer += $output->writeFieldBegin('highestWriteId', TType::I64, 12);
       $xfer += $output->writeI64($this->highestWriteId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->errorMessage !== null) {
+      $xfer += $output->writeFieldBegin('errorMessage', TType::STRING, 13);
+      $xfer += $output->writeString($this->errorMessage);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -22952,6 +22975,10 @@ class ShowCompactResponseElement {
    * @var int
    */
   public $id = null;
+  /**
+   * @var string
+   */
+  public $errorMessage = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -23008,6 +23035,10 @@ class ShowCompactResponseElement {
           'var' => 'id',
           'type' => TType::I64,
           ),
+        14 => array(
+          'var' => 'errorMessage',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -23049,6 +23080,9 @@ class ShowCompactResponseElement {
       }
       if (isset($vals['id'])) {
         $this->id = $vals['id'];
+      }
+      if (isset($vals['errorMessage'])) {
+        $this->errorMessage = $vals['errorMessage'];
       }
     }
   }
@@ -23163,6 +23197,13 @@ class ShowCompactResponseElement {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 14:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->errorMessage);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -23239,6 +23280,11 @@ class ShowCompactResponseElement {
     if ($this->id !== null) {
       $xfer += $output->writeFieldBegin('id', TType::I64, 13);
       $xfer += $output->writeI64($this->id);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->errorMessage !== null) {
+      $xfer += $output->writeFieldBegin('errorMessage', TType::STRING, 14);
+      $xfer += $output->writeString($this->errorMessage);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

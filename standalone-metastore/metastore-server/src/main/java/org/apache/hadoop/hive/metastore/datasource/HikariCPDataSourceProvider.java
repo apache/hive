@@ -30,6 +30,9 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
+
 /**
  * DataSourceProvider for the HikariCP connection pool.
  */
@@ -64,6 +67,10 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setJdbcUrl(driverUrl);
     config.setUsername(user);
     config.setPassword(passwd);
+
+    if (determineDatabaseProduct(driverUrl) == MYSQL) {
+      config.setConnectionInitSql("SET @@session.sql_mode=ANSI_QUOTES");
+    }
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
 

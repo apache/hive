@@ -36,12 +36,12 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.spark.GenSparkProcContext;
@@ -61,11 +61,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
-public class SparkReduceSinkMapJoinProc implements NodeProcessor {
+public class SparkReduceSinkMapJoinProc implements SemanticNodeProcessor {
 
   public static final Logger LOG = LoggerFactory.getLogger(SparkReduceSinkMapJoinProc.class.getName());
 
-  public static class SparkMapJoinFollowedByGroupByProcessor implements NodeProcessor {
+  public static class SparkMapJoinFollowedByGroupByProcessor implements SemanticNodeProcessor {
     private boolean hasGroupBy = false;
 
     @Override
@@ -88,11 +88,11 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
   private boolean hasGroupBy(Operator<? extends OperatorDesc> mapjoinOp,
                              GenSparkProcContext context) throws SemanticException {
     List<Operator<? extends OperatorDesc>> childOps = mapjoinOp.getChildOperators();
-    Map<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> rules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     SparkMapJoinFollowedByGroupByProcessor processor = new SparkMapJoinFollowedByGroupByProcessor();
     rules.put(new RuleRegExp("GBY", GroupByOperator.getOperatorName() + "%"), processor);
-    Dispatcher disp = new DefaultRuleDispatcher(null, rules, context);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, rules, context);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(childOps);
     ogw.startWalking(topNodes, null);

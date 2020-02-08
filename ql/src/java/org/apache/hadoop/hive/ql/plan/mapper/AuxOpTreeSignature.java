@@ -26,10 +26,10 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -60,7 +60,7 @@ public final class AuxOpTreeSignature {
     return sig.toString();
   }
 
-  static class AuxSignatureLinker implements NodeProcessor {
+  static class AuxSignatureLinker implements SemanticNodeProcessor {
 
     private PlanMapper pm;
 
@@ -86,8 +86,8 @@ public final class AuxOpTreeSignature {
 
     PlanMapper pm = pctx.getContext().getPlanMapper();
     pm.clearSignatureCache();
-    Dispatcher disp = new DefaultRuleDispatcher(new AuxSignatureLinker(pm), new HashMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(new AuxSignatureLinker(pm), new HashMap(), null);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
     ogw.startWalking(topNodes, null);
 

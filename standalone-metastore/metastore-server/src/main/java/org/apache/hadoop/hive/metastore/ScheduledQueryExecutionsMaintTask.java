@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,9 @@ public class ScheduledQueryExecutionsMaintTask implements MetastoreTaskThread {
   @Override
   public void run() {
     try {
+      if (!MetastoreConf.getBoolVar(conf, ConfVars.SCHEDULED_QUERIES_ENABLED)) {
+        return;
+      }
       RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
 
       int timeoutSecs = (int) MetastoreConf.getTimeVar(conf,

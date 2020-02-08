@@ -51,12 +51,12 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer.EnabledOverride;
 import org.apache.hadoop.hive.ql.parse.GenMapRedWalker;
@@ -932,7 +932,7 @@ public class MapJoinProcessor extends Transform {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(new RuleRegExp("R0",
       MapJoinOperator.getOperatorName() + "%"),
       getCurrentMapJoin());
@@ -948,10 +948,10 @@ public class MapJoinProcessor extends Transform {
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(getDefault(), opRules, new MapJoinWalkerCtx(
+    SemanticDispatcher disp = new DefaultRuleDispatcher(getDefault(), opRules, new MapJoinWalkerCtx(
         listMapJoinOpsNoRed, pactx));
 
-    GraphWalker ogw = new GenMapRedWalker(disp);
+    SemanticGraphWalker ogw = new GenMapRedWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(listMapJoinOps);
     ogw.startWalking(topNodes, null);
@@ -964,7 +964,7 @@ public class MapJoinProcessor extends Transform {
    * CurrentMapJoin.
    *
    */
-  public static class CurrentMapJoin implements NodeProcessor {
+  public static class CurrentMapJoin implements SemanticNodeProcessor {
 
     /**
      * Store the current mapjoin in the context.
@@ -1074,7 +1074,7 @@ public class MapJoinProcessor extends Transform {
    * MapJoinFS.
    *
    */
-  public static class MapJoinFS implements NodeProcessor {
+  public static class MapJoinFS implements SemanticNodeProcessor {
 
     /**
      * Store the current mapjoin in a list of mapjoins followed by a filesink.
@@ -1101,7 +1101,7 @@ public class MapJoinProcessor extends Transform {
    * MapJoinDefault.
    *
    */
-  public static class MapJoinDefault implements NodeProcessor {
+  public static class MapJoinDefault implements SemanticNodeProcessor {
 
     /**
      * Store the mapjoin in a rejected list.
@@ -1120,7 +1120,7 @@ public class MapJoinProcessor extends Transform {
    * Default.
    *
    */
-  public static class Default implements NodeProcessor {
+  public static class Default implements SemanticNodeProcessor {
 
     /**
      * Nothing to do.
@@ -1132,19 +1132,19 @@ public class MapJoinProcessor extends Transform {
     }
   }
 
-  public static NodeProcessor getMapJoinFS() {
+  public static SemanticNodeProcessor getMapJoinFS() {
     return new MapJoinFS();
   }
 
-  public static NodeProcessor getMapJoinDefault() {
+  public static SemanticNodeProcessor getMapJoinDefault() {
     return new MapJoinDefault();
   }
 
-  public static NodeProcessor getDefault() {
+  public static SemanticNodeProcessor getDefault() {
     return new Default();
   }
 
-  public static NodeProcessor getCurrentMapJoin() {
+  public static SemanticNodeProcessor getCurrentMapJoin() {
     return new CurrentMapJoin();
   }
 

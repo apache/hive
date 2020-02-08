@@ -140,6 +140,7 @@ public class Initiator extends MetaStoreCompactorThread {
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact {}. " +
                   "Marking failed to avoid repeated failures, {}", ci, t);
+              ci.errorMessage = t.getMessage();
               txnHandler.markFailed(ci);
             }
           }
@@ -459,12 +460,20 @@ public class Initiator extends MetaStoreCompactorThread {
       if (txnHandler.checkFailedCompactions(ci)) {
         LOG.warn("Will not initiate compaction for " + ci.getFullPartitionName() + " since last " +
             MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " attempts to compact it failed.");
+        ci.errorMessage = "Compaction is not initiated since last " +
+            MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " consecutive compaction attempts failed)";
         txnHandler.markFailed(ci);
         return false;
       }
     } catch (Throwable e) {
-      LOG.error("Caught exception while checking compaction eligibility " +
-          StringUtils.stringifyException(e));
+      LOG.error("Caught exception while checking compaction eligibility.", e);
+      try {
+        ci.errorMessage = e.getMessage();
+        txnHandler.markFailed(ci);
+      } catch (MetaException ex) {
+        LOG.error("Caught exception while marking compaction as failed.", e);
+        return false;
+      }
     }
     return true;
   }

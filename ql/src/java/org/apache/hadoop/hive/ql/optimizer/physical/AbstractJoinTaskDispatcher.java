@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -29,7 +28,7 @@ import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker.TaskGraphWalkerContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -38,7 +37,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 /**
  * Common iteration methods for converting joins and sort-merge joins.
  */
-public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
+public abstract class AbstractJoinTaskDispatcher implements SemanticDispatcher {
 
   protected final PhysicalContext physicalContext;
 

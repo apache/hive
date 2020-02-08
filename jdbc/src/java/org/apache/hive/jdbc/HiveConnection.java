@@ -27,7 +27,7 @@ import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;

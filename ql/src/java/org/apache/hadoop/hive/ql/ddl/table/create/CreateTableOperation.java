@@ -67,7 +67,6 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
         if (desc.getReplicationSpec().allowEventReplacementInto(existingTable.getParameters())) {
           desc.setReplaceMode(true); // we replace existing table.
           ReplicationSpec.copyLastReplId(existingTable.getParameters(), tbl.getParameters());
-
           // If location of an existing managed table is changed, then need to delete the old location if exists.
           // This scenario occurs when a managed table is converted into external table at source. In this case,
           // at target, the table data would be moved to different location under base directory for external tables.

@@ -25,13 +25,12 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.serde2.SerDeException;
 
 /**
  * Operator factory for pruning processing of operator graph We find
@@ -49,7 +48,7 @@ public abstract class PrunerOperatorFactory {
    * Determines the partition pruner for the filter. This is called only when
    * the filter follows a table scan operator.
    */
-  public static abstract class FilterPruner implements NodeProcessor {
+  public static abstract class FilterPruner implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -102,7 +101,7 @@ public abstract class PrunerOperatorFactory {
      * @throws UDFArgumentException
      */
     protected abstract void generatePredicate(NodeProcessorCtx procCtx, FilterOperator fop,
-        TableScanOperator top) throws SemanticException;
+                                              TableScanOperator top) throws SemanticException;
     /**
      * Add pruning predicate.
      *
@@ -117,8 +116,8 @@ public abstract class PrunerOperatorFactory {
       ExprNodeDesc pruner_pred = null;
       if (old_pruner_pred != null) {
         // or the old_pruner_pred and the new_ppr_pred
-        pruner_pred = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("OR",
-            old_pruner_pred, new_pruner_pred);
+        pruner_pred = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor().getFuncExprNodeDesc(
+            "OR", old_pruner_pred, new_pruner_pred);
       } else {
         pruner_pred = new_pruner_pred;
       }
@@ -153,8 +152,8 @@ public abstract class PrunerOperatorFactory {
         ExprNodeDesc old_pruner_pred = oldPartToPruner.get(part.getName());
         if (old_pruner_pred != null) {
           // or the old_pruner_pred and the new_ppr_pred
-          pruner_pred = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("OR",
-              old_pruner_pred, new_pruner_pred);
+          pruner_pred = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor().getFuncExprNodeDesc(
+              "OR", old_pruner_pred, new_pruner_pred);
         } else {
           pruner_pred = new_pruner_pred;
         }
@@ -173,7 +172,7 @@ public abstract class PrunerOperatorFactory {
   /**
    * Default processor which just merges its children.
    */
-  public static class DefaultPruner implements NodeProcessor {
+  public static class DefaultPruner implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -190,7 +189,7 @@ public abstract class PrunerOperatorFactory {
    *
    * @return
    */
-  public final static NodeProcessor getDefaultProc() {
+  public final static SemanticNodeProcessor getDefaultProc() {
     return new DefaultPruner();
   }
 

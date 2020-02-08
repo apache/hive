@@ -36,7 +36,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -51,6 +51,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.stringtemplate.v4.ST;
 
@@ -142,14 +148,62 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
 
   private String getColumns(Table table) {
     List<String> columnDescs = new ArrayList<String>();
-    for (FieldSchema col : table.getCols()) {
-      String columnDesc = "  `" + col.getName() + "` " + col.getType();
-      if (col.getComment() != null) {
-        columnDesc += " COMMENT '" + HiveStringUtils.escapeHiveCommand(col.getComment()) + "'";
+    for (FieldSchema column : table.getCols()) {
+      String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
+      String columnDesc = "  `" + column.getName() + "` " + columnType;
+      if (column.getComment() != null) {
+        columnDesc += " COMMENT '" + HiveStringUtils.escapeHiveCommand(column.getComment()) + "'";
       }
       columnDescs.add(columnDesc);
     }
     return StringUtils.join(columnDescs, ", \n");
+  }
+
+  /** Struct fields are identifiers, need to be put between ``. */
+  private String formatType(TypeInfo typeInfo) {
+    switch (typeInfo.getCategory()) {
+    case PRIMITIVE:
+      return typeInfo.getTypeName();
+    case STRUCT:
+      StringBuilder structFormattedType = new StringBuilder();
+
+      StructTypeInfo structTypeInfo = (StructTypeInfo)typeInfo;
+      for (int i = 0; i < structTypeInfo.getAllStructFieldNames().size(); i++) {
+        if (structFormattedType.length() != 0) {
+          structFormattedType.append(", ");
+        }
+
+        String structElementName = structTypeInfo.getAllStructFieldNames().get(i);
+        String structElementType = formatType(structTypeInfo.getAllStructFieldTypeInfos().get(i));
+
+        structFormattedType.append("`" + structElementName + "`:" + structElementType);
+      }
+      return "struct<" + structFormattedType.toString() + ">";
+    case LIST:
+      ListTypeInfo listTypeInfo = (ListTypeInfo)typeInfo;
+      String elementType = formatType(listTypeInfo.getListElementTypeInfo());
+      return "array<" + elementType + ">";
+    case MAP:
+      MapTypeInfo mapTypeInfo = (MapTypeInfo)typeInfo;
+      String keyTypeInfo = mapTypeInfo.getMapKeyTypeInfo().getTypeName();
+      String valueTypeInfo = formatType(mapTypeInfo.getMapValueTypeInfo());
+      return "map<" + keyTypeInfo + "," + valueTypeInfo + ">";
+    case UNION:
+      StringBuilder unionFormattedType = new StringBuilder();
+
+      UnionTypeInfo unionTypeInfo = (UnionTypeInfo)typeInfo;
+      for (TypeInfo unionElementTypeInfo : unionTypeInfo.getAllUnionObjectTypeInfos()) {
+        if (unionFormattedType.length() != 0) {
+          unionFormattedType.append(", ");
+        }
+
+        String unionElementType = formatType(unionElementTypeInfo);
+        unionFormattedType.append(unionElementType);
+      }
+      return "uniontype<" + unionFormattedType.toString() + ">";
+    default:
+      throw new RuntimeException("Unknown type: " + typeInfo.getCategory());
+    }
   }
 
   private String getComment(Table table) {

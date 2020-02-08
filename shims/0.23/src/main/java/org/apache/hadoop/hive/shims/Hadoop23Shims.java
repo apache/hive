@@ -39,7 +39,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.security.auth.Subject;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.CipherSuite;
 import org.apache.hadoop.crypto.key.KeyProvider;
@@ -1242,7 +1242,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       return (getEncryptionZoneForPath(fullPath) != null);
     }
 
-    private EncryptionZone getEncryptionZoneForPath(Path path) throws IOException {
+    public EncryptionZone getEncryptionZoneForPath(Path path) throws IOException {
       if (path.getFileSystem(conf).exists(path)) {
         return hdfsAdmin.getEncryptionZoneForPath(path);
       } else if (!path.getParent().equals(path)) {

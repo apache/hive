@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -427,7 +427,7 @@ public class CachedStore implements RawStore, Configurable {
       Collection<String> catalogsToCache;
       try {
         catalogsToCache = catalogsToCache(rawStore);
-        LOG.info("Going to cache catalogs: " + org.apache.commons.lang.StringUtils.join(catalogsToCache, ", "));
+        LOG.info("Going to cache catalogs: " + org.apache.commons.lang3.StringUtils.join(catalogsToCache, ", "));
         List<Catalog> catalogs = new ArrayList<>(catalogsToCache.size());
         for (String catName : catalogsToCache) {
           catalogs.add(rawStore.getCatalog(catName));
@@ -2890,7 +2890,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException{
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException {
     return rawStore.markScheduledExecutionsTimedOut(timeoutSecs);
   }
 }

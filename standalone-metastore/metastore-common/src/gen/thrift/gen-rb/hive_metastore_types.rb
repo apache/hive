@@ -211,11 +211,11 @@ end
 module QueryState
   INITED = 0
   EXECUTING = 1
-  ERRORED = 2
+  FAILED = 2
   FINISHED = 3
   TIMED_OUT = 4
-  VALUE_MAP = {0 => "INITED", 1 => "EXECUTING", 2 => "ERRORED", 3 => "FINISHED", 4 => "TIMED_OUT"}
-  VALID_VALUES = Set.new([INITED, EXECUTING, ERRORED, FINISHED, TIMED_OUT]).freeze
+  VALUE_MAP = {0 => "INITED", 1 => "EXECUTING", 2 => "FAILED", 3 => "FINISHED", 4 => "TIMED_OUT"}
+  VALID_VALUES = Set.new([INITED, EXECUTING, FAILED, FINISHED, TIMED_OUT]).freeze
 end
 
 module PartitionFilterMode
@@ -3466,6 +3466,7 @@ class CompactionInfoStruct
   WORKERID = 10
   START = 11
   HIGHESTWRITEID = 12
+  ERRORMESSAGE = 13
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -3479,7 +3480,8 @@ class CompactionInfoStruct
     STATE => {:type => ::Thrift::Types::STRING, :name => 'state', :optional => true},
     WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId', :optional => true},
     START => {:type => ::Thrift::Types::I64, :name => 'start', :optional => true},
-    HIGHESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'highestWriteId', :optional => true}
+    HIGHESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'highestWriteId', :optional => true},
+    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3566,6 +3568,7 @@ class ShowCompactResponseElement
   ENDTIME = 11
   HADOOPJOBID = 12
   ID = 13
+  ERRORMESSAGE = 14
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -3580,7 +3583,8 @@ class ShowCompactResponseElement
     METAINFO => {:type => ::Thrift::Types::STRING, :name => 'metaInfo', :optional => true},
     ENDTIME => {:type => ::Thrift::Types::I64, :name => 'endTime', :optional => true},
     HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true},
-    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true}
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
+    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true}
   }
 
   def struct_fields; FIELDS; end

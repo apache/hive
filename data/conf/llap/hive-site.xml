@@ -373,4 +373,9 @@
   <value>org.apache.hadoop.hive.ql.hooks.ScheduledQueryCreationRegistryHook</value>
 </property>
 
+<property>
+  <name>hive.users.in.admin.role</name>
+  <value>hive_admin_user</value>
+</property>
+
 </configuration>

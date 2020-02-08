@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -265,7 +265,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               oldReplScope,
               eventFrom,
               eventTo,
-              ErrorMsg.INVALID_PATH.getMsg(ast),
+              ASTErrorUtils.getMsg(ErrorMsg.INVALID_PATH.getMsg(), ast),
               maxEventLimit,
               ctx.getResFile().toUri().toString()
       ), conf);

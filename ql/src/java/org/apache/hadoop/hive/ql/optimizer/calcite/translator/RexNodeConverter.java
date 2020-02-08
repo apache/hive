@@ -70,9 +70,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOpe
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter.HiveNlsString.Interpretation;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeSubQueryDesc;
+import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
@@ -219,8 +220,8 @@ public class RexNodeConverter {
   // <>ANY and =ALL is not supported
   private RexNode convertSubquerySomeAll(final ExprNodeSubQueryDesc subQueryDesc)
       throws SemanticException {
-    assert(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.SOME
-        || subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.ALL);
+    assert(subQueryDesc.getType() == SubqueryType.SOME
+        || subQueryDesc.getType() == SubqueryType.ALL);
 
     RexNode rexNodeLhs = convert(subQueryDesc.getSubQueryLhs());
     ASTNode comparisonOp = subQueryDesc.getComparisonOp();
@@ -228,7 +229,7 @@ public class RexNodeConverter {
 
     switch (comparisonOp.getType()) {
     case HiveParser.EQUAL:
-      if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.ALL) {
+      if(subQueryDesc.getType() == SubqueryType.ALL) {
         throwInvalidSubqueryError(comparisonOp);
       }
       quantifyOperator = SqlStdOperatorTable.SOME_EQ;
@@ -246,7 +247,7 @@ public class RexNodeConverter {
       quantifyOperator = SqlStdOperatorTable.SOME_GE;
       break;
     case HiveParser.NOTEQUAL:
-      if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.SOME) {
+      if(subQueryDesc.getType() == SubqueryType.SOME) {
         throwInvalidSubqueryError(comparisonOp);
       }
       quantifyOperator = SqlStdOperatorTable.SOME_NE;
@@ -256,19 +257,19 @@ public class RexNodeConverter {
           "Invalid operator:" + comparisonOp.toString()));
     }
 
-    if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.ALL) {
+    if(subQueryDesc.getType() == SubqueryType.ALL) {
       quantifyOperator = SqlStdOperatorTable.some(quantifyOperator.comparisonKind.negateNullSafe());
     }
     RexNode someQuery = getSomeSubquery(subQueryDesc.getRexSubQuery(), rexNodeLhs,
         quantifyOperator);
-    if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.ALL) {
+    if(subQueryDesc.getType() == SubqueryType.ALL) {
       return cluster.getRexBuilder().makeCall(SqlStdOperatorTable.NOT, someQuery);
     }
     return someQuery;
   }
 
   private RexNode convert(final ExprNodeSubQueryDesc subQueryDesc) throws  SemanticException {
-    if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.IN) {
+    if(subQueryDesc.getType() == SubqueryType.IN) {
       /*
        * Check.5.h :: For In and Not In the SubQuery must implicitly or
        * explicitly only contain one select item.
@@ -284,10 +285,10 @@ public class RexNodeConverter {
       RexNode rexSubQuery = RexSubQuery.in(subQueryDesc.getRexSubQuery(),
           ImmutableList.<RexNode>of(rexNodeLhs));
       return  rexSubQuery;
-    } else if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.EXISTS) {
+    } else if(subQueryDesc.getType() == SubqueryType.EXISTS) {
       RexNode subQueryNode = RexSubQuery.exists(subQueryDesc.getRexSubQuery());
       return subQueryNode;
-    } else if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.SCALAR){
+    } else if(subQueryDesc.getType() == SubqueryType.SCALAR){
       if(subQueryDesc.getRexSubQuery().getRowType().getFieldCount() > 1) {
         throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
             "SubQuery can contain only 1 item in Select List."));
@@ -295,8 +296,8 @@ public class RexNodeConverter {
       //create RexSubQuery node
       RexNode rexSubQuery = RexSubQuery.scalar(subQueryDesc.getRexSubQuery());
       return rexSubQuery;
-    } else if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.SOME
-        || subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.ALL) {
+    } else if(subQueryDesc.getType() == SubqueryType.SOME
+        || subQueryDesc.getType() == SubqueryType.ALL) {
       return convertSubquerySomeAll(subQueryDesc);
     } else {
       throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
@@ -382,13 +383,15 @@ public class RexNodeConverter {
           // For compare, we will convert requisite children
           // For BETWEEN skip the first child (the revert boolean)
           if (!isBetween || i > 0) {
-            tmpExprNode = ParseUtils.createConversionCast(childExpr, (PrimitiveTypeInfo) tgtDT);
+            tmpExprNode = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+                .createConversionCast(childExpr, (PrimitiveTypeInfo) tgtDT);
           }
         } else if (isNumeric) {
           // For numeric, we'll do minimum necessary cast - if we cast to the type
           // of expression, bad things will happen.
           PrimitiveTypeInfo minArgType = ExprNodeDescUtils.deriveMinArgumentCast(childExpr, tgtDT);
-          tmpExprNode = ParseUtils.createConversionCast(childExpr, minArgType);
+          tmpExprNode = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+              .createConversionCast(childExpr, minArgType);
         } else {
           throw new AssertionError("Unexpected " + tgtDT + " - not a numeric op or compare");
         }

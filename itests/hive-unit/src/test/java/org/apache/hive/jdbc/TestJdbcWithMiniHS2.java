@@ -58,7 +58,7 @@ import java.util.concurrent.TimeoutException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -106,6 +106,7 @@ public class TestJdbcWithMiniHS2 {
     HiveConf conf = new HiveConf();
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
+
     try {
       startMiniHS2(conf);
     } catch (Exception e) {

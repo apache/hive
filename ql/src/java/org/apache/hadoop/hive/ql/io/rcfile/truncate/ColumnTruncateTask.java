@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -192,7 +192,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
     } catch (Exception e) {
       String mesg = rj != null ? ("Ended Job = " + rj.getJobID()) : "Job Submission failed";
       // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang.StringUtils
+      // org.apache.commons.lang3.StringUtils
       LOG.error(mesg, org.apache.hadoop.util.StringUtils.stringifyException(e));
       setException(e);
 
