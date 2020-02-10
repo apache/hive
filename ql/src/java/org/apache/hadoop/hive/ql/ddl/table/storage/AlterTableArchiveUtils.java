@@ -25,7 +25,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
@@ -95,10 +94,10 @@ final class AlterTableArchiveUtils {
     return new Path(dir.getParent(), dir.getName() + intermediateDirSuffix);
   }
 
-  static void deleteDir(Path dir, Database db, Configuration conf) throws HiveException {
+  static void deleteDir(Path dir, boolean shouldEnableCm, Configuration conf) throws HiveException {
     try {
       Warehouse wh = new Warehouse(conf);
-      wh.deleteDir(dir, true, db);
+      wh.deleteDir(dir, true, false, shouldEnableCm);
     } catch (MetaException e) {
       throw new HiveException(e);
     }

@@ -43,6 +43,7 @@ public class AlterTableSetLocationOperation extends AbstractAlterTableOperation<
   protected void doAlteration(Table table, Partition partition) throws HiveException {
     StorageDescriptor sd = getStorageDescriptor(table, partition);
     String newLocation = desc.getLocation();
+
     try {
       URI locUri = new URI(newLocation);
       if (!new Path(locUri).isAbsolute()) {

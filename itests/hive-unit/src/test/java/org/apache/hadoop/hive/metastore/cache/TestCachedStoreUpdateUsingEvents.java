@@ -48,6 +48,8 @@ public class TestCachedStoreUpdateUsingEvents {
     MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_CACHE_CAN_USE_EVENT, true);
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED, true);
     MetastoreConf.setBoolVar(conf, ConfVars.AGGREGATE_STATS_CACHE_ENABLED, false);
+    MetastoreConf.setBoolVar(conf, ConfVars.REPLCMENABLED, true);
+    MetastoreConf.setVar(conf, ConfVars.REPLCMDIR, "cmroot");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     hmsHandler = new HiveMetaStore.HMSHandler("testCachedStore", conf, true);

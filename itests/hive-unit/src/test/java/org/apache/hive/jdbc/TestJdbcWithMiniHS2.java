@@ -106,6 +106,7 @@ public class TestJdbcWithMiniHS2 {
     HiveConf conf = new HiveConf();
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
+
     try {
       startMiniHS2(conf);
     } catch (Exception e) {
