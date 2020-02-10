@@ -349,13 +349,8 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
       }
 
       if (externalSessions != null) {
-        // Make sure that if the session is returned to the pool, it doesn't live in the global.
-        SessionState sessionState = SessionState.get();
-        if (sessionState != null) {
-          sessionState.setTezSession(null);
-        }
         if (tezSessionState.getTezClient() != null && tezSessionState.getTezClient().getAppMasterApplicationId() != null) {
-          externalSessions.returnSession(tezSessionState.getTezClient().getAppMasterApplicationId().toString());
+          tezSessionState.close(false);
         } else {
           LOG.warn("Not returning session '{}' as tez client or app id is null", tezSessionState.getSessionId());
         }
@@ -553,6 +548,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
     synchronized (openSessions) {
       openSessions.add(session);
       updateSessions();
+      LOG.info("Registering session with pool manager. {} #OpenTezSessions: {}", session, openSessions.size());
     }
   }
 
@@ -589,6 +585,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
     }
     synchronized (openSessions) {
       openSessions.remove(session);
+      LOG.info("Unregistering session from pool manager. {} #OpenTezSessions: {}", session, openSessions.size());
       updateSessions();
     }
     if (defaultSessionPool != null) {
