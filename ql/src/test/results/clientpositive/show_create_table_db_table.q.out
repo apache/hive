@@ -34,6 +34,14 @@ POSTHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt3(key string, value int) skewe
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:tmp_feng
 POSTHOOK: Output: tmp_feng@tmp_showcrt3
+PREHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt4(s1 struct<p1:string>, s2 struct<p2:array<map<int, uniontype<struct<a:int, b:string>, array<struct<c:int, d:string>>>>>>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tmp_feng
+PREHOOK: Output: tmp_feng@tmp_showcrt4
+POSTHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt4(s1 struct<p1:string>, s2 struct<p2:array<map<int, uniontype<struct<a:int, b:string>, array<struct<c:int, d:string>>>>>>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tmp_feng
+POSTHOOK: Output: tmp_feng@tmp_showcrt4
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -105,6 +113,26 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt4
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: tmp_feng@tmp_showcrt4
+POSTHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt4
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: tmp_feng@tmp_showcrt4
+CREATE TABLE `tmp_feng.tmp_showcrt4`(
+  `s1` struct<`p1`:string>, 
+  `s2` struct<`p2`:array<map<int,uniontype<struct<`a`:int, `b`:string>, array<struct<`c`:int, `d`:string>>>>>>)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tmp_feng@tmp_showcrt1
@@ -129,6 +157,14 @@ POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tmp_feng@tmp_showcrt3
 POSTHOOK: Output: tmp_feng@tmp_showcrt3
+PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tmp_feng@tmp_showcrt4
+PREHOOK: Output: tmp_feng@tmp_showcrt4
+POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tmp_feng@tmp_showcrt4
+POSTHOOK: Output: tmp_feng@tmp_showcrt4
 PREHOOK: query: DROP DATABASE tmp_feng
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:tmp_feng
