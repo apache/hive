@@ -1541,6 +1541,28 @@
 
   <profiles>
     <profile>
+      <id>libs-build</id>
+      <activation>
+        <file>
+          <exists>pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>storage-api</module>
+        <module>classification</module>
+        <module>common</module>
+        <module>shims</module>
+        <module>standalone-metastore</module>
+        <module>metastore</module>
+        <module>parser</module>
+        <module>udf</module>
+        <module>service-rpc</module>
+        <module>serde</module>
+        <module>packaging</module>
+      </modules>
+    </profile>
+
+    <profile>
       <id>full-build</id>
       <activation>
         <file>
@@ -1572,29 +1594,7 @@
         <module>kudu-handler</module>
         <module>testutils</module>
         <module>upgrade-acid</module>
-        <module>packaging</module>
         <module>kafka-handler</module>
-      </modules>
-    </profile>
-
-    <profile>
-      <id>libs-build</id>
-      <activation>
-        <file>
-          <exists>pom.xml</exists>
-        </file>
-      </activation>
-      <modules>
-        <module>storage-api</module>
-        <module>classification</module>
-        <module>common</module>
-        <module>shims</module>
-        <module>standalone-metastore</module>
-        <module>metastore</module>
-        <module>parser</module>
-        <module>udf</module>
-        <module>service-rpc</module>
-        <module>serde</module>
       </modules>
     </profile>
 
