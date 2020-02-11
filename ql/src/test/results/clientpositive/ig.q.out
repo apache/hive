@@ -1,0 +1,83 @@
+PREHOOK: query: drop table if exists t
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists t
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists s
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists s
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table s(id integer, cnt integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s
+POSTHOOK: query: create table s(id integer, cnt integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s
+PREHOOK: query: create table t(id integer, cnt integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t(id integer, cnt integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: create table t_offset(offset integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_offset
+POSTHOOK: query: create table t_offset(offset integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_offset
+PREHOOK: query: insert into t_offset values(0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_offset
+POSTHOOK: query: insert into t_offset values(0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_offset
+POSTHOOK: Lineage: t_offset.offset SCRIPT []
+PREHOOK: query: insert into s values(1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@s
+POSTHOOK: query: insert into s values(1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@s
+POSTHOOK: Lineage: s.cnt SCRIPT []
+POSTHOOK: Lineage: s.id SCRIPT []
+Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+PREHOOK: query: from (select * from s
+join t_offset on id>offset) s1
+insert into t select id,cnt
+insert overwrite table t_offset select max(s1.id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s
+PREHOOK: Input: default@t_offset
+PREHOOK: Output: default@t
+PREHOOK: Output: default@t_offset
+POSTHOOK: query: from (select * from s
+join t_offset on id>offset) s1
+insert into t select id,cnt
+insert overwrite table t_offset select max(s1.id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s
+POSTHOOK: Input: default@t_offset
+POSTHOOK: Output: default@t
+POSTHOOK: Output: default@t_offset
+POSTHOOK: Lineage: t.cnt SIMPLE [(s)s.FieldSchema(name:cnt, type:int, comment:null), ]
+POSTHOOK: Lineage: t.id SIMPLE [(s)s.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: t_offset.offset EXPRESSION [(s)s.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: insert into s values(2,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@s
+POSTHOOK: query: insert into s values(2,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@s
+POSTHOOK: Lineage: s.cnt SCRIPT []
+POSTHOOK: Lineage: s.id SCRIPT []
