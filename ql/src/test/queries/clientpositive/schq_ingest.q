@@ -1,4 +1,9 @@
+--! qt:authorizer
+--! qt:scheduledqueryservice
 --! qt:sysdb
+
+set user.name=hive_admin_user;
+set role admin;
 
 drop table if exists t;
 drop table if exists s;
