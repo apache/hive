@@ -184,7 +184,8 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
     }
 
     // Set hashFunc
-    hashFunc = conf.getBucketingVersion() == 2 && !vectorDesc.getIsAcidChange() ?
+    bucketingCheck();
+    hashFunc = getBucketingVersion1() == 2 && !vectorDesc.getIsAcidChange() ?
       ObjectInspectorUtils::getBucketHashCode :
       ObjectInspectorUtils::getBucketHashCodeOld;
 

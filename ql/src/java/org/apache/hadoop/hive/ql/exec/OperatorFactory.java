@@ -267,6 +267,7 @@ public final class OperatorFactory {
     ret.setConf(conf);
 
     // Set the bucketing Version
+    ret.setBucketingVersion(oplist0.getBucketingVersion());
     ret.conf.setBucketingVersion(oplist0.getConf().getBucketingVersion());
 
     // Add the new operator as child of each of the passed in operators
