@@ -46,6 +46,9 @@ public class ScheduledQueryExecutionContext {
     this.schedulerService = service;
     try {
       this.executorHostName = InetAddress.getLocalHost().getHostName();
+      if (executorHostName == null) {
+        throw new RuntimeException("Hostname is null; Can't function without a valid hostname!");
+      }
     } catch (UnknownHostException e) {
       throw new RuntimeException("Can't function without a valid hostname!", e);
     }
@@ -64,9 +67,7 @@ public class ScheduledQueryExecutionContext {
   }
 
   public String getExecutorHostName() {
-
-    // TODO Auto-generated method stub
-    return null;
+    return executorHostName;
   }
 
 }
