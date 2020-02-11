@@ -71,6 +71,6 @@ select `(NEXT_EXECUTION)?+.+` from sys.scheduled_queries;
 
 alter scheduled query d execute;
 
-!sleep 3
+!sleep 3;
 select state,error_message from sys.scheduled_executions where schedule_name='sc1';
 
