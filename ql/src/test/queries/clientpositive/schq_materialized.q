@@ -72,5 +72,6 @@ select `(NEXT_EXECUTION)?+.+` from sys.scheduled_queries;
 alter scheduled query d execute;
 
 !sleep 3;
-select state,error_message from sys.scheduled_executions;
 
+-- the scheduled execution will fail - because of missing TXN; but overall it works..
+select state,error_message from sys.scheduled_executions;
